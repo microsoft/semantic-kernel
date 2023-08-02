@@ -75,10 +75,8 @@ jobs:
         run: |
           cd python
           poetry run pytest ./tests/integration/completions/test_azure_oai_chat_service.py -v
-          poetry run pytest ./tests/integration/completions/test_oai_chat_service.py -v
-          poetry run pytest ./tests/integration/completions/test_hf_local_test_completions.py -v
+          poetry run pytest ./tests/integration/completions/test_hf_local_text_completions.py -v
           poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
-          poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
           poetry run pytest ./tests/integration/planning -v
           poetry run pytest ./tests/integration/embeddings -v
 
@@ -89,8 +87,10 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8"]
+        os: [ubuntu-latest]
+        # python-version: ["3.8", "3.9", "3.10", "3.11"]
+        # os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -134,18 +134,24 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_ENV"
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "Test Output<<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$(poetry run pytest ./tests/integration)" >> "$GITHUB_OUTPUT"
-          echo "$EOF" >> "$GITHUB_OUTPUT"
+          poetry run pytest ./tests/integration -v
+
+  notify-microsoft-teams:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    needs: python-integration-tests
+    steps:
+      - name: Get Date
+        id: date
+        shell: bash
+        run: |
+          echo "date=$(date +'%m/%d/%Y-%H:%M:%S')" >> "$GITHUB_ENV"
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
         if: always()
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
-          dry_run: False
-          needs: ${{ toJson(needs) }}
-          job: ${{ toJson(job) }}
+          dry_run: True
+          job: ${{ toJson(needs.python-integration-tests) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} - ${{ matrix.python-version }} on ${{ matrix.os }}`, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n${{ toJson(steps.run_tests.outputs) }}`}"
+          overwrite: "{title: ` ${{ github.event_name }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} `}"

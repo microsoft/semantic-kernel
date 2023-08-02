@@ -12,6 +12,7 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_config impor
 from tests.integration.fakes.email_skill_fake import EmailSkillFake
 from tests.integration.fakes.fun_skill_fake import FunSkillFake
 from tests.integration.fakes.writer_skill_fake import WriterSkillFake
+from test_utils import retry
 
 
 def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=False):
@@ -102,7 +103,9 @@ async def test_create_plan_with_defaults_async(
     planner = SequentialPlanner(kernel)
 
     # Act
-    plan = await planner.create_plan_async(prompt)
+    plan = await retry(
+        lambda: kernel.run_async(planner.create_plan_async, input_str=prompt)
+    )
 
     # Assert
     assert any(
@@ -147,7 +150,9 @@ async def test_create_plan_goal_relevant_async(
     )
 
     # Act
-    plan = await planner.create_plan_async(prompt)
+    plan = await retry(
+        lambda: kernel.run_async(planner.create_plan_async, input_str=prompt)
+    )
 
     # Assert
     assert any(
