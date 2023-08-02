@@ -250,7 +250,7 @@ public class ChromaMemoryStore : IMemoryStore
         }
         catch (ChromaClientException e) when (e.CollectionDoesNotExistException(collectionName))
         {
-            this._logger.LogError("Collection {0} does not exist", collectionName);
+            this._logger.LogDebug("Collection {0} does not exist", collectionName);
 
             return null;
         }
