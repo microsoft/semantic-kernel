@@ -12,13 +12,13 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Reliability;
 
-public class NullHttpRetryHandlerTests
+public class NullHttpHandlerTests
 {
     [Fact]
     public async Task ItDoesNotRetryOnExceptionAsync()
     {
         // Arrange
-        using var retry = new NullHttpRetryHandler();
+        using var retry = new NullHttpHandler();
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -38,7 +38,7 @@ public class NullHttpRetryHandlerTests
     public async Task NoExceptionNoRetryAsync()
     {
         // Arrange
-        using var retry = new NullHttpRetryHandler();
+        using var retry = new NullHttpHandler();
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.OK);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -58,7 +58,7 @@ public class NullHttpRetryHandlerTests
     public async Task TaskCanceledExceptionThrownOnCancellationTokenAsync()
     {
         // Arrange
-        using var retry = new NullHttpRetryHandler();
+        using var retry = new NullHttpHandler();
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -80,7 +80,7 @@ public class NullHttpRetryHandlerTests
     public async Task ItDoestExecuteOnFalseCancellationTokenAsync()
     {
         // Arrange
-        using var retry = new NullHttpRetryHandler();
+        using var retry = new NullHttpHandler();
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);

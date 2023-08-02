@@ -80,8 +80,7 @@ public static class Example42_KernelBuilder
         var templateEngine = new PromptTemplateEngine(logger);
         var kernelConfig = new KernelConfig();
 
-        using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
-        using var httpClient = new HttpClient(httpHandler);
+        using var httpClient = new HttpClient();
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(
             modelId: azureOpenAITextCompletionDeployment,
@@ -133,30 +132,6 @@ public static class Example42_KernelBuilder
                 apiKey: azureOpenAIKey,
                 setAsDefault: true)
             .Build();
-
-        // ==========================================================================================================
-        // When invoking AI, by default the kernel will retry on transient errors, such as throttling and timeouts.
-        // The default behavior can be configured or a custom retry handler can be injected that will apply to all
-        // AI requests (when using the kernel).
-
-        var kernel8 = Kernel.Builder
-            .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true,
-                //  MinRetryDelay = TimeSpan.FromSeconds(2),
-                //  MaxRetryDelay = TimeSpan.FromSeconds(8),
-                //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
-                //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
-                //  RetryableExceptions = new[] { typeof(HttpRequestException) }
-            }))
-            .Build();
-
-        var kernel9 = Kernel.Builder
-            .Configure(c => c.SetHttpRetryHandlerFactory(new NullHttpRetryHandlerFactory()))
-            .Build();
-
-        var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
 
         return Task.CompletedTask;
     }

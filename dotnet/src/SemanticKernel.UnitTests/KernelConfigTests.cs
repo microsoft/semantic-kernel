@@ -27,11 +27,11 @@ public class KernelConfigTests
     public void HttpRetryHandlerFactoryIsSet()
     {
         // Arrange
-        var retry = new NullHttpRetryHandlerFactory();
+        var retry = new NullHttpHandlerFactory();
         var config = new KernelConfig();
 
         // Act
-        config.SetHttpRetryHandlerFactory(retry);
+        config.SetHttpHandlerFactory(retry);
 
         // Assert
         Assert.Equal(retry, config.HttpHandlerFactory);
@@ -45,33 +45,33 @@ public class KernelConfigTests
         var config = new KernelConfig();
 
         // Act
-        config.SetHttpRetryHandlerFactory(retry.Object);
+        config.SetHttpHandlerFactory(retry.Object);
 
         // Assert
         Assert.Equal(retry.Object, config.HttpHandlerFactory);
     }
 
     [Fact]
-    public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNull()
+    public void HttpHandlerFactoryIsSetToNullHttpHandlerFactoryIfNull()
     {
         // Arrange
         var config = new KernelConfig();
 
         // Act
-        config.SetHttpRetryHandlerFactory(null);
+        config.SetHttpHandlerFactory(null);
 
         // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
+        Assert.IsType<NullHttpHandlerFactory>(config.HttpHandlerFactory);
     }
 
     [Fact]
-    public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNotSet()
+    public void HttpHandlerFactoryIsSetToNullHttpHandlerFactoryIfNotSet()
     {
         // Arrange
         var config = new KernelConfig();
 
         // Act
         // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
+        Assert.IsType<NullHttpHandlerFactory>(config.HttpHandlerFactory);
     }
 }

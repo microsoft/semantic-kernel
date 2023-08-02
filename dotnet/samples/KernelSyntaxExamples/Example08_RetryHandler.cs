@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -16,42 +15,15 @@ public static class Example08_RetryHandler
     public static async Task RunAsync()
     {
         var kernel = InitializeKernel();
-        var retryHandlerFactory = new RetryThreeTimesWithBackoffFactory();
+        var retryHandlerFactory = new PollyHttpHandlerFactory<PollyRetryThreeTimesWithBackoff>();
         InfoLogger.Logger.LogInformation("============================== RetryThreeTimesWithBackoff ==============================");
         await RunRetryPolicyAsync(kernel, retryHandlerFactory);
 
         InfoLogger.Logger.LogInformation("========================= RetryThreeTimesWithRetryAfterBackoff =========================");
-        await RunRetryPolicyBuilderAsync(typeof(RetryThreeTimesWithRetryAfterBackoffFactory));
+        await RunRetryPolicyBuilderAsync(typeof(PollyHttpHandlerFactory<PollyRetryThreeTimesWithRetryAfterBackoff>));
 
         InfoLogger.Logger.LogInformation("==================================== NoRetryPolicy =====================================");
-        await RunRetryPolicyBuilderAsync(typeof(NullHttpRetryHandlerFactory));
-
-        InfoLogger.Logger.LogInformation("=============================== DefaultHttpRetryHandler ================================");
-        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
-
-        InfoLogger.Logger.LogInformation("======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======");
-        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
-    }
-
-    private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? httpConfig = null)
-    {
-        var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Logger);
-        if (httpConfig != null)
-        {
-            kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(httpConfig));
-        }
-
-        // Add 401 to the list of retryable status codes
-        // Typically 401 would not be something we retry but for demonstration
-        // purposes we are doing so as it's easy to trigger when using an invalid key.
-        kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
-
-        // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY");
-
-        var kernel = kernelBuilder.Build();
-
-        await ImportAndExecuteSkillAsync(kernel);
+        await RunRetryPolicyBuilderAsync(typeof(NullHttpHandlerFactory));
     }
 
     private static IKernel InitializeKernel()
@@ -67,7 +39,7 @@ public static class Example08_RetryHandler
 
     private static async Task RunRetryPolicyAsync(IKernel kernel, IDelegatingHandlerFactory retryHandlerFactory)
     {
-        kernel.Config.SetHttpRetryHandlerFactory(retryHandlerFactory);
+        kernel.Config.SetHttpHandlerFactory(retryHandlerFactory);
         await ImportAndExecuteSkillAsync(kernel);
     }
 

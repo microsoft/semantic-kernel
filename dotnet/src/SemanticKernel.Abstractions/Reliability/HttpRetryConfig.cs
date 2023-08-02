@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel.Reliability;
 /// <summary>
 /// Retry configuration for IHttpRetryPolicy that uses RetryAfter header when present.
 /// </summary>
+[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated")]
 public sealed class HttpRetryConfig
 {
     /// <summary>

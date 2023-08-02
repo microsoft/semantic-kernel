@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.SemanticKernel.Reliability;
 
 namespace Microsoft.SemanticKernel;
@@ -13,36 +14,30 @@ public sealed class KernelConfig
     /// <summary>
     /// Factory for creating HTTP handlers.
     /// </summary>
-    public IDelegatingHandlerFactory HttpHandlerFactory { get; private set; } = new DefaultHttpRetryHandlerFactory(new HttpRetryConfig());
+    public IDelegatingHandlerFactory HttpHandlerFactory { get; private set; } = new NullHttpHandlerFactory();
 
     /// <summary>
     /// Default HTTP retry configuration for built-in HTTP handler factory.
     /// </summary>
-    public HttpRetryConfig DefaultHttpRetryConfig { get; private set; } = new();
+    [Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated")]
+    public HttpRetryConfig DefaultHttpRetryConfig =>
+        throw new NotSupportedException("Usage of Semantic Kernel internal retry abstractions is deprecated");
 
     /// <summary>
-    /// Set the http retry handler factory to use for the kernel.
+    /// Set your custom http handler factory to use for the kernel.
     /// </summary>
     /// <param name="httpHandlerFactory">Http retry handler factory to use.</param>
     /// <returns>The updated kernel configuration.</returns>
-    public KernelConfig SetHttpRetryHandlerFactory(IDelegatingHandlerFactory? httpHandlerFactory = null)
+    public KernelConfig SetHttpHandlerFactory(IDelegatingHandlerFactory? httpHandlerFactory = null)
     {
-        if (httpHandlerFactory != null)
-        {
-            this.HttpHandlerFactory = httpHandlerFactory;
-        }
+        this.HttpHandlerFactory = httpHandlerFactory ?? new NullHttpHandlerFactory();
 
         return this;
     }
 
+    [Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated, provide a factory for custom http handling")]
     public KernelConfig SetDefaultHttpRetryConfig(HttpRetryConfig? httpRetryConfig)
     {
-        if (httpRetryConfig != null)
-        {
-            this.DefaultHttpRetryConfig = httpRetryConfig;
-            this.SetHttpRetryHandlerFactory(new DefaultHttpRetryHandlerFactory(httpRetryConfig));
-        }
-
-        return this;
+        throw new NotSupportedException("Usage of Semantic Kernel internal retry abstractions is deprecated");
     }
 }

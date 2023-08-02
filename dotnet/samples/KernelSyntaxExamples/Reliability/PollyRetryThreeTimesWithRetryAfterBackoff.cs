@@ -5,31 +5,19 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Reliability;
 using Polly;
 using Polly.Retry;
 
 namespace Reliability;
 
 /// <summary>
-/// A factory for creating a retry handler.
+/// An example of a retry mechanism that retries three times with backoff using the RetryAfter value.
 /// </summary>
-public class RetryThreeTimesWithBackoffFactory : IDelegatingHandlerFactory
-{
-    public DelegatingHandler Create(ILogger? logger)
-    {
-        return new RetryThreeTimesWithBackoff(logger);
-    }
-}
-
-/// <summary>
-/// A basic example of a retry mechanism that retries three times with backoff.
-/// </summary>
-public class RetryThreeTimesWithBackoff : DelegatingHandler
+public class PollyRetryThreeTimesWithRetryAfterBackoff : DelegatingHandler
 {
     private readonly AsyncRetryPolicy<HttpResponseMessage> _policy;
 
-    public RetryThreeTimesWithBackoff(ILogger? logger)
+    public PollyRetryThreeTimesWithRetryAfterBackoff(ILogger? logger)
     {
         this._policy = GetPolicy(logger);
     }
@@ -51,16 +39,22 @@ public class RetryThreeTimesWithBackoff : DelegatingHandler
         return Policy
             .HandleResult<HttpResponseMessage>(response =>
                 response.StatusCode is System.Net.HttpStatusCode.TooManyRequests or System.Net.HttpStatusCode.Unauthorized)
-            .WaitAndRetryAsync(new[]
+            .WaitAndRetryAsync(
+                retryCount: 3,
+                sleepDurationProvider: (_, r, _) =>
                 {
-                    TimeSpan.FromSeconds(2),
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(8)
+                    var response = r.Result;
+                    var retryAfter = response.Headers.RetryAfter?.Delta ?? response.Headers.RetryAfter?.Date - DateTimeOffset.Now;
+                    return retryAfter ?? TimeSpan.FromSeconds(2);
                 },
-                (outcome, timespan, retryCount, _) => logger?.LogWarning(
-                    "Error executing action [attempt {0} of 3], pausing {1}ms. Outcome: {2}",
-                    retryCount,
-                    timespan.TotalMilliseconds,
-                    outcome.Result.StatusCode));
+                (outcome, timespan, retryCount, _) =>
+                {
+                    logger?.LogWarning(
+                        "Error executing action [attempt {0} of 3], pausing {1}ms. Outcome: {2}",
+                        retryCount,
+                        timespan.TotalMilliseconds,
+                        outcome.Result.StatusCode);
+                    return Task.CompletedTask;
+                });
     }
 }

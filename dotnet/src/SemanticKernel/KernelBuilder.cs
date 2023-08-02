@@ -41,11 +41,6 @@ public sealed class KernelBuilder
     /// <returns>Kernel instance</returns>
     public IKernel Build()
     {
-        if (this._httpHandlerFactory != null)
-        {
-            this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
-        }
-
         var instance = new Kernel(
             new SkillCollection(this._logger),
             this._aiServices.Build(),
