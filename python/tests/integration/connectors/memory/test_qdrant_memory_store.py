@@ -119,9 +119,7 @@ async def test_upsert_async_and_get_async(memory_record1):
 
     await qdrant_mem_store.create_collection_async("test_collection")
     await qdrant_mem_store.upsert_async("test_collection", memory_record1)
-    result = await qdrant_mem_store.get_async(
-        "test_collection", memory_record1._id
-    )
+    result = await qdrant_mem_store.get_async("test_collection", memory_record1._id)
     assert result is not None
     assert result._id == memory_record1._id
     assert result._text == memory_record1._text

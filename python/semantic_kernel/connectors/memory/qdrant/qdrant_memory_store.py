@@ -348,7 +348,5 @@ class QdrantMemoryStore(MemoryStoreBase):
         embedding = payload.pop("_embedding")
 
         return qdrant_models.PointStruct(
-            id=pointId,
-            vector=embedding.tolist(),
-            payload=payload
+            id=pointId, vector=embedding.tolist(), payload=payload
         )

@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
-import shutil
+
 import numpy as np
 import pytest
 
@@ -19,6 +18,7 @@ except ImportError:
 pytestmark = pytest.mark.skipif(
     not chromadb_installed, reason="chromadb is not installed"
 )
+
 
 @pytest.fixture
 def setup_chroma():
