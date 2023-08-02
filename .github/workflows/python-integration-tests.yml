@@ -150,4 +150,4 @@ jobs:
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: False
-          needa: ${{ toJson(needs) }}
+          needs: ${{ toJson(needs) }}
