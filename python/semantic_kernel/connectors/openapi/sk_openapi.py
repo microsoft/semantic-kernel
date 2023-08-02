@@ -16,7 +16,9 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 
 class PreparedRestApiRequest:
-    def __init__(self, method: str, url: str, params=None, headers=None, request_body=None):
+    def __init__(
+        self, method: str, url: str, params=None, headers=None, request_body=None
+    ):
         self.method = method
         self.url = url
         self.params = params
@@ -175,7 +177,7 @@ class OpenApiParser:
         for path, methods in paths.items():
             for method, details in methods.items():
                 server_url = parsed_document.get("servers", [])
-                server_url = server_url[0].get("url") if server_url else '/'
+                server_url = server_url[0].get("url") if server_url else "/"
 
                 request_method = method.lower()
 
@@ -275,8 +277,12 @@ def register_openapi_skill(
         @sk_function_context_parameter(
             name="query_params", description="A dictionary of query parameters"
         )
-        @sk_function_context_parameter(name="headers", description="A dictionary of headers")
-        @sk_function_context_parameter(name="request_body", description="A dictionary of the request body")
+        @sk_function_context_parameter(
+            name="headers", description="A dictionary of headers"
+        )
+        @sk_function_context_parameter(
+            name="request_body", description="A dictionary of the request body"
+        )
         async def run_openapi_operation(sk_context: SKContext) -> str:
             has_path_params, path_params = sk_context.variables.get("path_params")
             has_query_params, query_params = sk_context.variables.get("query_params")
