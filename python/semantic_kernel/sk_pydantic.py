@@ -2,7 +2,10 @@ import abc
 import json
 import typing as t
 
+import numpy as np
+import pydantic as pdt
 import typing_extensions as te
+from pydantic.generics import GenericModel
 from pydantic.parse import Protocol
 from pydantic.types import StrBytes
 
@@ -56,3 +59,32 @@ class PydanticField(abc.ABC):
     def __eq__(self, other: t.Any) -> bool:
         """Check if two instances are equal."""
         return isinstance(other, self.__class__)
+
+
+_JSON_ENCODERS: t.Final[t.Dict[t.Type[t.Any], t.Callable[[t.Any], str]]] = {
+    PydanticField: lambda v: v.json(),
+    np.ndarray: lambda v: json.dumps(v.tolist()),
+}
+
+
+class SKBaseModel(pdt.BaseModel):
+    """Base class for all pydantic models in the SK."""
+
+    class Config:
+        """Pydantic configuration."""
+
+        json_encoders = _JSON_ENCODERS
+        # See the `allow_population_by_field_name` section of
+        # https://docs.pydantic.dev/latest/usage/model_config/#options
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+
+
+class SKGenericModel(GenericModel):
+    """Base class for all pydantic `GenericModel`s in the SK."""
+
+    class Config:
+        """Pydantic configuration."""
+
+        json_encoders = _JSON_ENCODERS
+        arbitrary_types_allowed = True

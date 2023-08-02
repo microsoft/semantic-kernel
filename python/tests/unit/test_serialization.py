@@ -1,6 +1,5 @@
 import typing as t
 
-import pydantic as pdt
 import pytest
 
 from semantic_kernel.core_skills.conversation_summary_skill import (
@@ -14,7 +13,12 @@ from semantic_kernel.core_skills.text_skill import TextSkill
 from semantic_kernel.core_skills.time_skill import TimeSkill
 from semantic_kernel.core_skills.wait_skill import WaitSkill
 from semantic_kernel.core_skills.web_search_engine_skill import WebSearchEngineSkill
-from semantic_kernel.sk_pydantic import PydanticField
+from semantic_kernel.sk_pydantic import PydanticField, SKBaseModel
+from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
+from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
+    PromptTemplatingEngine,
+)
+from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
 PydanticFieldT = t.TypeVar("PydanticFieldT", bound=PydanticField)
 
@@ -35,6 +39,9 @@ PydanticFieldT = t.TypeVar("PydanticFieldT", bound=PydanticField)
         pytest.param(
             WebSearchEngineSkill, marks=pytest.mark.xfail(reason="Contains data")
         ),
+        CodeRenderer,
+        PromptTemplatingEngine,
+        TextRenderer,
     ],
 )
 def test_usage_in_pydantic_fields(sk_type: t.Type[PydanticFieldT]) -> None:
@@ -43,7 +50,7 @@ def test_usage_in_pydantic_fields(sk_type: t.Type[PydanticFieldT]) -> None:
     Otherwise, they cannot be used in Pydantic models.
     """
 
-    class TestModel(pdt.BaseModel):
+    class TestModel(SKBaseModel):
         """A test model."""
 
         field: t.Optional[sk_type] = None
@@ -53,5 +60,4 @@ def test_usage_in_pydantic_fields(sk_type: t.Type[PydanticFieldT]) -> None:
     serialized = test_model.json()
     assert isinstance(serialized, str)
     deserialized = TestModel.parse_raw(serialized)
-    assert isinstance(deserialized, TestModel)
     assert deserialized == test_model
