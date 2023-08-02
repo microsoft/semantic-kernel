@@ -142,6 +142,7 @@ jobs:
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: False
+          needs: ${{ toJson(needs) }}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: `Daily python integration tests for ${{ matrix.python-version }} on ${{ matrix.os }}`, text: `${{ steps.run_tests.outputs.stdout }}`}"
+          overwrite: "{title: `Daily python integration tests for ${{ matrix.python-version }} on ${{ matrix.os }}`, summary: `${{ steps.run_tests.outputs.stdout }} \n\n [Workflow Link](${workflow_link})`}"
