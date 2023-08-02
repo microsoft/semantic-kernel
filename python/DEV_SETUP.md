@@ -1,4 +1,4 @@
-lidadwith This document describes how to setup your environment with Python and Poetry,
+This document describes how to setup your environment with Python and Poetry,
 if you're working on new features or a bug fix for Semantic Kernel, or simply
 want to run the tests included.
 
