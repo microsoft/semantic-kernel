@@ -1,8 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Common;
@@ -200,7 +206,7 @@ public class KustoMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var inClauseValue = string.Join(',', keys.Select(k => $"'{k}'"));
+        var inClauseValue = string.Join(",", keys.Select(k => $"'{k}'"));
         var query = $"{this.GetBaseQuery(collectionName)} " +
             $"| where Key in ({inClauseValue}) " +
             "| project " +
@@ -321,7 +327,7 @@ public class KustoMemoryStore : IMemoryStore
     {
         if (keys != null)
         {
-            var keysString = string.Join(',', keys.Select(k => $"'{k}'"));
+            var keysString = string.Join(",", keys.Select(k => $"'{k}'"));
             using var resp = await this._adminClient
                 .ExecuteControlCommandAsync(
                     this._database,
