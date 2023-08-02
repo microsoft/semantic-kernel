@@ -267,7 +267,9 @@ async def test_run_operation_with_valid_request(mock_request, openapi_runner):
     headers = {"Authorization": "Bearer abc123"}
     request_body = {"title": "Buy milk", "completed": False}
     mock_request.return_value.__aenter__.return_value.text.return_value = 200
-    response = await runner.run_operation(operation, headers=headers, request_body=request_body)
+    response = await runner.run_operation(
+        operation, headers=headers, request_body=request_body
+    )
     assert response == 200
 
 
@@ -280,7 +282,9 @@ async def test_run_operation_with_invalid_request(mock_request, openapi_runner):
     request_body = {"title": "Buy milk"}
     mock_request.return_value.__aenter__.return_value.text.return_value = 400
     with pytest.raises(Exception):
-        await runner.run_operation(operation, headers=headers, request_body=request_body)
+        await runner.run_operation(
+            operation, headers=headers, request_body=request_body
+        )
 
 
 @patch("aiohttp.ClientSession.request")
@@ -292,4 +296,6 @@ async def test_run_operation_with_error(mock_request, openapi_runner):
     request_body = {"title": "Buy milk", "completed": False}
     mock_request.side_effect = Exception("Error")
     with pytest.raises(Exception):
-        await runner.run_operation(operation, headers=headers, request_body=request_body)
+        await runner.run_operation(
+            operation, headers=headers, request_body=request_body
+        )
