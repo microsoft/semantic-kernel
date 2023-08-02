@@ -136,7 +136,6 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        // kernel.Setup(x => x.Logger).Returns(new Mock<ILogger>().Object);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);
 

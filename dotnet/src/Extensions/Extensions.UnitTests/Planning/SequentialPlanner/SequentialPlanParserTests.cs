@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
@@ -26,18 +25,15 @@ public class SequentialPlanParserTests
     }
 
     private Mock<IKernel> CreateKernelMock(
-        out Mock<ISemanticTextMemory> semanticMemoryMock,
         out Mock<IReadOnlySkillCollection> mockSkillCollection,
         out Mock<ILogger> mockLogger)
     {
-        semanticMemoryMock = new Mock<ISemanticTextMemory>();
         mockSkillCollection = new Mock<IReadOnlySkillCollection>();
         mockLogger = new Mock<ILogger>();
 
         var kernelMock = new Mock<IKernel>();
         kernelMock.SetupGet(k => k.Skills).Returns(mockSkillCollection.Object);
         kernelMock.SetupGet(k => k.Logger).Returns(mockLogger.Object);
-        kernelMock.SetupGet(k => k.Memory).Returns(semanticMemoryMock.Object);
 
         return kernelMock;
     }
@@ -61,7 +57,7 @@ public class SequentialPlanParserTests
     private void CreateKernelAndFunctionCreateMocks(List<(string name, string skillName, string description, bool isSemantic, string result)> functions,
         out IKernel kernel)
     {
-        var kernelMock = this.CreateKernelMock(out _, out var skills, out _);
+        var kernelMock = this.CreateKernelMock(out var skills, out _);
         kernel = kernelMock.Object;
 
         // For Create
