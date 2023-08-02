@@ -1,3 +1,6 @@
+[History]
+{{SummarizePlugin.Summarize $history}}
+
 User: {{$input}}
 
 ---------------------------------------------

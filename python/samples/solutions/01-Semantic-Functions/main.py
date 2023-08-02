@@ -29,7 +29,7 @@ async def main():
         plugins_directory, "OrchestratorPlugin"
     )
     summarization_plugin = kernel.import_semantic_skill_from_directory(  # noqa: F841
-        plugins_directory, "SummarizeSkill"
+        plugins_directory, "SummarizePlugin"
     )
     get_intent_function = orchestrator_plugin["GetIntent"]
 

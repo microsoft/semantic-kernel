@@ -12,9 +12,19 @@
      "input": {
           "parameters": [
                {
-               "name": "input",
-               "description": "The user's request.",
-               "defaultValue": ""
+                    "name": "input",
+                    "description": "The user's request.",
+                    "defaultValue": ""
+               },
+               {
+                    "name": "history",
+                    "description": "The history of the conversation.",
+                    "defaultValue": ""
+               },
+               {
+                    "name": "options",
+                    "description": "The options to choose from.",
+                    "defaultValue": ""
                }
           ]
      }
