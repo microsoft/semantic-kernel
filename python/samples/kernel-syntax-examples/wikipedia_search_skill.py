@@ -32,7 +32,7 @@ async def main():
     prompt = """
     Answer the question using only the data that is provided in the data section.
     Do not use any prior knowledge to answer the question.
-    Data: {{WebSearch.SearchAsync "Machine learning"}}
+    Data: {{WebSearch.SearchAsync "What is machine learning?"}}
     Question: "Explain specific applications of machine learning."
     Answer:
     """

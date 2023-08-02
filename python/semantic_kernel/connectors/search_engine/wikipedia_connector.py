@@ -82,6 +82,8 @@ class WikipediaConnector(ConnectorBase):
             "srsearch": query,
             "srlimit": num_results,
             "sroffset": offset,
+            "srenablerewrites": 1,  # Enable rewriting of query to help with mistakes, typos, etc.
+            "srprop": "snippet",
         }
 
         self._logger.info("Sending GET request to Wikipedia API.")
@@ -99,6 +101,7 @@ class WikipediaConnector(ConnectorBase):
                     result = []
                     for sr in all_search_results:
                         article_title = sr["title"]
+                        # Remove span tags that come from the search
                         article_snippet = re.sub(SNIPPET_PATTERN, r"\1", sr["snippet"])
                         result.append((article_title, article_snippet))
 
