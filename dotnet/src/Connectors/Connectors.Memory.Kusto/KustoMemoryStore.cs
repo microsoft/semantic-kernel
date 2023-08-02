@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -32,7 +31,7 @@ internal static class KustoSerializer
             return default;
         }
 
-        float[]? floatArray = JsonConvert.DeserializeObject<float[]>(embedding);
+        float[]? floatArray = JsonConvert.DeserializeObject<float[]>(embedding!);
 
         if (floatArray == null)
         {
