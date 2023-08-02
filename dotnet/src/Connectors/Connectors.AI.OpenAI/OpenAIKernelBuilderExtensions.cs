@@ -365,6 +365,74 @@ public static class OpenAIKernelBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds the Azure OpenAI ChatGPT completion service to the list.
+    /// See https://platform.openai.com/docs for service details.
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithAzureChatCompletionService(this KernelBuilder builder,
+        string deploymentName,
+        OpenAIClient openAIClient,
+        bool alsoAsTextCompletion = true,
+        string? serviceId = null,
+        bool setAsDefault = false)
+    {
+        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters)
+        {
+            return new(deploymentName, openAIClient, parameters.Logger);
+        };
+
+        builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
+
+        // If the class implements the text completion interface, allow to use it also for semantic functions
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        {
+            builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the OpenAI ChatGPT completion service to the list.
+    /// See https://platform.openai.com/docs for service details.
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithOpenAIChatCompletionService(this KernelBuilder builder,
+        string deploymentName,
+        OpenAIClient openAIClient,
+        bool alsoAsTextCompletion = true,
+        string? serviceId = null,
+        bool setAsDefault = false)
+    {
+        OpenAIChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters)
+        {
+            return new(deploymentName, openAIClient, parameters.Logger);
+        };
+
+        builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
+
+        // If the class implements the text completion interface, allow to use it also for semantic functions
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        {
+            builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
+        }
+
+        return builder;
+    }
+
     #endregion
 
     #region Images
