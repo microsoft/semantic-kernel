@@ -6,8 +6,8 @@ The `02-Native-Functions` console application shows the final solution to the [C
 
 - [.NET 6](https://dotnet.microsoft.com/download/dotnet/6.0) is required to run this sample.
 - Install the recommended extensions
-  - [C#](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
-  - [Semantic Kernel Tools](https://marketplace.visualstudio.com/items?itemName=ms-semantic-kernel.semantic-kernel)
+- [C#](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
+- [Semantic Kernel Tools](https://marketplace.visualstudio.com/items?itemName=ms-semantic-kernel.semantic-kernel) (optional)
 
 ## Configuring the sample
 

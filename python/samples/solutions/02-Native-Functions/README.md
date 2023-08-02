@@ -5,8 +5,8 @@ This console application demonstrates the final solution to the [Creating native
 ## Prerequisites
 
 - [Python](https://www.python.org/downloads/) 3.8 and above
-  - [Poetry](https://python-poetry.org/) is used for packaging and dependency management
-  - [Semantic Kernel Tools](https://marketplace.visualstudio.com/items?itemName=ms-semantic-kernel.semantic-kernel)
+- [Poetry](https://python-poetry.org/) is used for packaging and dependency management
+- [Semantic Kernel Tools](https://marketplace.visualstudio.com/items?itemName=ms-semantic-kernel.semantic-kernel) (optional)
 
 ## Configuring the sample
 
