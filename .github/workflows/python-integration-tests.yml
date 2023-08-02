@@ -151,3 +151,5 @@ jobs:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: False
           needs: ${{ toJson(needs) }}
+          job: ${{ toJson(needs.python_integration_tests) }}
+          overwrite: "{title: `Daily python integration tests ${workflow_link}`}"
