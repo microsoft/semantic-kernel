@@ -6,26 +6,30 @@ name: Python Integration Tests
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "python/**"
+  merge_group:
     branches: ["main"]
     paths:
       - "python/**"
   schedule:
-    - cron: "0 */12 * * *" # Run every 12 hours: midnight UTC and noon UTC
+    - cron: "0 0 * * *" # Run at midnight UTC daily
 
 permissions:
   contents: read
 
 jobs:
-  python-integration-tests:
+  python-merge-gate:
+    if: ${{ github.event_name == 'merge_group' }}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
+        python-version: ["3.11"]
+        os: [windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -44,8 +48,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
-          cd python && poetry install
+          cd python
+          poetry install --without azure_cognitive_search --without weaviate --without pinecone --without postgres
       - name: Run Integration Tests
+        id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
@@ -68,4 +74,78 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          poetry run pytest ./tests/integration
+          poetry run pytest ./tests/integration/completions/test_azure_oai_chat_service.py -v
+          poetry run pytest ./tests/integration/completions/test_oai_chat_service.py -v
+          poetry run pytest ./tests/integration/completions/test_hf_local_test_completions.py -v
+          poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
+          poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
+          poetry run pytest ./tests/integration/planning -v
+          poetry run pytest ./tests/integration/embeddings -v
+
+  python-integration-tests:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies with hnswlib native disabled
+        if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
+        run: |
+          export HNSWLIB_NO_NATIVE=1
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install poetry pytest
+          cd python && poetry install
+      - name: Install dependencies with hnswlib native enabled
+        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install poetry pytest
+          cd python && poetry install
+      - name: Run Integration Tests
+        id: run_tests
+        shell: bash
+        env: # Set Azure credentials secret as an input
+          HNSWLIB_NO_NATIVE: 1
+          Python_Integration_Tests: Python_Integration_Tests
+          AzureOpenAI__Label: azure-text-davinci-003
+          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
+          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
+          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
+          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+        run: |
+          cd python
+          echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_ENV"
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "Test Output<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$(poetry run pytest ./tests/integration)" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@master
+        if: always()
+        with:
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
+          dry_run: False
+          needs: ${{ toJson(needs) }}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} - ${{ matrix.python-version }} on ${{ matrix.os }}`, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n${{ toJson(steps.run_tests.outputs) }}`}"
