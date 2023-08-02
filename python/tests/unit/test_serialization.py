@@ -1,3 +1,4 @@
+import logging
 import typing as t
 
 import pydantic as pdt
@@ -23,11 +24,14 @@ from semantic_kernel.template_engine.blocks.function_id_block import FunctionIdB
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.blocks.val_block import ValBlock
 from semantic_kernel.template_engine.blocks.var_block import VarBlock
+from semantic_kernel.template_engine.code_tokenizer import CodeTokenizer
+from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
+from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 
 PydanticFieldT = t.TypeVar("PydanticFieldT", bound=PydanticField)
 
@@ -55,6 +59,9 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         TextBlock: TextBlock("baz"),
         ValBlock: ValBlock("qux"),
         VarBlock: VarBlock("quux"),
+        CodeTokenizer: CodeTokenizer(log=logging.getLogger("test")),
+        PromptTemplateEngine: PromptTemplateEngine(logger=logging.getLogger("test")),
+        TemplateTokenizer: TemplateTokenizer(log=logging.getLogger("test")),
     }
 
     def constructor(cls: t.Type[_Serializable]) -> _Serializable:
@@ -81,6 +88,12 @@ PROTOCOLS = [
     TextRenderer,
 ]
 
+STATELESS_CLASSES = [
+    CodeTokenizer,
+    PromptTemplateEngine,
+    TemplateTokenizer,
+]
+
 ENUMS = [BlockTypes]
 
 PYDANTIC_MODELS = [
@@ -94,7 +107,9 @@ PYDANTIC_MODELS = [
 
 
 class TestUsageInPydanticFields:
-    @pytest.mark.parametrize("sk_type", PROTOCOLS + ENUMS + PYDANTIC_MODELS)
+    @pytest.mark.parametrize(
+        "sk_type", PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES
+    )
     def test_usage_as_optional_field(
         self,
         sk_type: t.Type[PydanticFieldT],
@@ -111,7 +126,7 @@ class TestUsageInPydanticFields:
 
         assert_serializable(TestModel(), TestModel)
 
-    @pytest.mark.parametrize("sk_type", PYDANTIC_MODELS)
+    @pytest.mark.parametrize("sk_type", PYDANTIC_MODELS + STATELESS_CLASSES)
     def test_usage_as_required_field(
         self,
         sk_factory: t.Callable[[t.Type[PydanticFieldT]], PydanticFieldT],

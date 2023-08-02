@@ -3,6 +3,7 @@
 from logging import Logger
 from typing import List
 
+from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -20,7 +21,7 @@ from semantic_kernel.utils.null_logger import NullLogger
 #                      | "{{" [function-call] "}}"
 # [text-block]     ::= [any-char] | [any-char] [text-block]
 # [any-char]       ::= any char
-class TemplateTokenizer:
+class TemplateTokenizer(PydanticField):
     def __init__(self, log: Logger = None):
         self.log = log or NullLogger()
         self.code_tokenizer = CodeTokenizer(self.log)
