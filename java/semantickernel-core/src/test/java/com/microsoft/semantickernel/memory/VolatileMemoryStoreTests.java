@@ -48,7 +48,7 @@ class VolatileMemoryStoreTests {
                             "test" + i,
                             "text" + i,
                             "description" + i,
-                            new Embedding<Float>(Arrays.asList(1f, 1f, 1f)),
+                            new Embedding(Arrays.asList(1f, 1f, 1f)),
                             NULL_ADDITIONAL_METADATA,
                             NULL_KEY,
                             NULL_TIMESTAMP);
@@ -61,7 +61,7 @@ class VolatileMemoryStoreTests {
                             "test" + i,
                             "sourceName" + i,
                             "description" + i,
-                            new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                            new Embedding(Arrays.asList(1f, 2f, 3f)),
                             NULL_ADDITIONAL_METADATA,
                             NULL_KEY,
                             NULL_TIMESTAMP);
@@ -117,7 +117,7 @@ class VolatileMemoryStoreTests {
                         "test",
                         "text",
                         "description",
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -139,7 +139,7 @@ class VolatileMemoryStoreTests {
                         "test",
                         "text",
                         "description",
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -173,7 +173,7 @@ class VolatileMemoryStoreTests {
                         "test",
                         "text",
                         "description",
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -198,7 +198,7 @@ class VolatileMemoryStoreTests {
                         "test",
                         "text",
                         "description",
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         ZonedDateTime.now(ZoneId.of("UTC")));
@@ -224,7 +224,7 @@ class VolatileMemoryStoreTests {
                         commonId,
                         "text",
                         "description",
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -233,7 +233,7 @@ class VolatileMemoryStoreTests {
                         commonId,
                         "text2",
                         "description2",
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 4f)),
+                        new Embedding(Arrays.asList(1f, 2f, 4f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -261,7 +261,7 @@ class VolatileMemoryStoreTests {
                         "test",
                         "text",
                         "description",
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -322,7 +322,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesReturnsAllResultsWithNoMinScoreAsync() {
         // Arrange
-        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -333,7 +333,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 1f, 1f)),
+                        new Embedding(Arrays.asList(1f, 1f, 1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -345,7 +345,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -1f, -1f)),
+                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -357,7 +357,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -369,7 +369,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -2f, -3f)),
+                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -381,7 +381,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, -1f, -2f)),
+                        new Embedding(Arrays.asList(1f, -1f, -2f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -411,7 +411,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesReturnsLimit() {
         // Arrange
-        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         this._db.createCollectionAsync(collection).block();
@@ -421,7 +421,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 1f, 1f)),
+                        new Embedding(Arrays.asList(1f, 1f, 1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -433,7 +433,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -1f, -1f)),
+                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -445,7 +445,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -457,7 +457,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -2f, -3f)),
+                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -469,7 +469,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, -1f, -2f)),
+                        new Embedding(Arrays.asList(1f, -1f, -2f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -491,7 +491,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesReturnsEmptyIfLimitZero() {
         // Arrange
-        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         this._db.createCollectionAsync(collection).block();
@@ -501,7 +501,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 1f, 1f)),
+                        new Embedding(Arrays.asList(1f, 1f, 1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -513,7 +513,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -1f, -1f)),
+                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -525,7 +525,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -537,7 +537,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -2f, -3f)),
+                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -549,7 +549,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, -1f, -2f)),
+                        new Embedding(Arrays.asList(1f, -1f, -2f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -570,7 +570,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesReturnsEmptyIfCollectionEmpty() {
         // Arrange
-        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         this._db.createCollectionAsync(collection).block();
@@ -591,7 +591,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync() {
         // Arrange
-        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -602,7 +602,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 1f, 1f)),
+                        new Embedding(Arrays.asList(1f, 1f, 1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -614,7 +614,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -1f, -1f)),
+                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -626,7 +626,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -638,7 +638,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -2f, -3f)),
+                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -650,7 +650,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, -1f, -2f)),
+                        new Embedding(Arrays.asList(1f, -1f, -2f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -681,7 +681,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchAsyncReturnsExpectedAsync() {
         // Arrange
-        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -692,7 +692,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 1f, 1f)),
+                        new Embedding(Arrays.asList(1f, 1f, 1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -704,7 +704,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -1f, -1f)),
+                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -716,7 +716,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, 2f, 3f)),
+                        new Embedding(Arrays.asList(1f, 2f, 3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -728,7 +728,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(-1f, -2f, -3f)),
+                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -740,7 +740,7 @@ class VolatileMemoryStoreTests {
                         "test" + i,
                         "text" + i,
                         "description" + i,
-                        new Embedding<Float>(Arrays.asList(1f, -1f, -2f)),
+                        new Embedding(Arrays.asList(1f, -1f, -2f)),
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
@@ -762,7 +762,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatcheReturnsEmptyIfCollectionEmpty() {
         // Arrange
-        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -782,7 +782,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync() {
         // Arrange
-        Embedding<Float> compareEmbedding = new Embedding<>(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -794,7 +794,7 @@ class VolatileMemoryStoreTests {
                             "test" + i,
                             "text" + i,
                             "description" + i,
-                            new Embedding<>(Arrays.asList(1f, 1f, 1f)),
+                             new Embedding(Arrays.asList(1f, 1f, 1f)),
                             NULL_ADDITIONAL_METADATA,
                             NULL_KEY,
                             NULL_TIMESTAMP);

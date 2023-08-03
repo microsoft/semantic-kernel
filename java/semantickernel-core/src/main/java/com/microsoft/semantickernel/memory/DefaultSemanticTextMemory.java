@@ -162,7 +162,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                         externalId,
                                         externalSourceName,
                                         description,
-                                        (Embedding<Float>) embeddings.iterator().next(),
+                                        (Embedding) embeddings.iterator().next(),
                                         additionalMetadata,
                                         null,
                                         null))

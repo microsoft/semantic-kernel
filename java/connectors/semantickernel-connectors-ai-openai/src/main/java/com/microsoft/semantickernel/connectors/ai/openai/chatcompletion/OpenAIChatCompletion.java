@@ -102,7 +102,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
                         .map(
                                 it ->
                                         new ChatMessage(
-                                                toChatRole(it.getAuthorRoles()), it.getContent()))
+                                                toChatRole(it.getAuthorRoles())).setContent(it.getContent()))
                         .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(messages);

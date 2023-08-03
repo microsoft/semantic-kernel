@@ -22,11 +22,11 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
     }
 
     @Override
-    public Mono<List<Embedding<Float>>> generateEmbeddingsAsync(List<String> data) {
+    public Mono<List<Embedding>> generateEmbeddingsAsync(List<String> data) {
         return this.internalGenerateTextEmbeddingsAsync(data);
     }
 
-    protected Mono<List<Embedding<Float>>> internalGenerateTextEmbeddingsAsync(List<String> data) {
+    protected Mono<List<Embedding>> internalGenerateTextEmbeddingsAsync(List<String> data) {
         EmbeddingsOptions options =
                 new EmbeddingsOptions(data).setModel(getModelId()).setUser("default");
 

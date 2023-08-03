@@ -11,24 +11,22 @@ import java.util.stream.Collectors;
 
 /**
  * Represents a strongly typed vector of numeric data
- *
- * @param <TEmbedding>
- */
-public class EmbeddingVector<TEmbedding extends Number>
-        implements DotProduct<TEmbedding>,
+ **/
+public class EmbeddingVector
+        implements DotProduct,
                 EuclideanLength,
-                CosineSimilarity<TEmbedding>,
-                Multiply<TEmbedding>,
-                Divide<TEmbedding>,
-                Normalize<TEmbedding> {
+                CosineSimilarity,
+                Multiply,
+                Divide,
+                Normalize {
 
-    private final List<TEmbedding> vector;
+    private final List<Float> vector;
 
-    public EmbeddingVector(List<TEmbedding> vector) {
+    public EmbeddingVector(List<Float> vector) {
         this.vector = Collections.unmodifiableList(vector);
     }
 
-    public EmbeddingVector(TEmbedding[] vector) {
+    public EmbeddingVector(Float vector) {
         this.vector = Collections.unmodifiableList(Arrays.asList(vector));
     }
 
@@ -45,7 +43,7 @@ public class EmbeddingVector<TEmbedding extends Number>
         return this.vector.size();
     }
 
-    public List<TEmbedding> getVector() {
+    public List<Float> getVector() {
         return Collections.unmodifiableList(this.vector);
     }
 
@@ -56,14 +54,14 @@ public class EmbeddingVector<TEmbedding extends Number>
      * @return Dot product between vectors
      */
     @Override
-    public double dot(EmbeddingVector<TEmbedding> other) {
+    public float dot(EmbeddingVector other) {
         if (this.size() != other.size()) {
             throw new IllegalArgumentException("Vectors lengths must be equal");
         }
 
-        double result = 0;
+        float result = 0;
         for (int i = 0; i < this.size(); ++i) {
-            result += this.vector.get(i).doubleValue() * other.getVector().get(i).doubleValue();
+            result += this.vector.get(i) * other.getVector().get(i);
         }
 
         return result;
@@ -75,8 +73,8 @@ public class EmbeddingVector<TEmbedding extends Number>
      * @return Euclidean length
      */
     @Override
-    public double euclideanLength() {
-        return Math.sqrt(this.dot(this));
+    public float euclideanLength() {
+        return (float) Math.sqrt(this.dot(this));
     }
 
     /**
@@ -86,44 +84,44 @@ public class EmbeddingVector<TEmbedding extends Number>
      * @return Cosine similarity between vectors
      */
     @Override
-    public double cosineSimilarity(EmbeddingVector<TEmbedding> other) {
+    public float cosineSimilarity(EmbeddingVector other) {
         if (this.size() != other.size()) {
             throw new IllegalArgumentException("Vectors lengths must be equal");
         }
 
-        double dotProduct = this.dot(other);
-        double normX = this.dot(this);
-        double normY = other.dot(other);
+        float dotProduct = this.dot(other);
+        float normX = this.dot(this);
+        float normY = other.dot(other);
 
         if (normX == 0 || normY == 0) {
             throw new IllegalArgumentException("Vectors cannot have zero norm");
         }
 
-        return dotProduct / (Math.sqrt(normX) * Math.sqrt(normY));
+        return dotProduct / (float)(Math.sqrt(normX) * Math.sqrt(normY));
     }
 
     @Override
-    public EmbeddingVector<TEmbedding> multiply(double multiplier) {
-        List<Double> result =
+    public EmbeddingVector multiply(float multiplier) {
+        List<Float> result =
                 this.getVector().stream()
-                        .map(x -> x.doubleValue() * multiplier)
+                        .map(x -> x * multiplier)
                         .collect(Collectors.toList());
 
-        return (EmbeddingVector<TEmbedding>) new EmbeddingVector<>(result);
+        return (EmbeddingVector) new EmbeddingVector(result);
     }
 
     @Override
-    public EmbeddingVector<TEmbedding> divide(double divisor) {
-        if (Double.isNaN(divisor) || divisor == 0) {
+    public EmbeddingVector divide(float divisor) {
+        if (Float.isNaN(divisor) || divisor == 0) {
             throw new IllegalArgumentException("Divisor cannot be zero");
         }
 
-        List<Double> result =
+        List<Float> result =
                 this.getVector().stream()
-                        .map(x -> x.doubleValue() / divisor)
+                        .map(x -> x / divisor)
                         .collect(Collectors.toList());
 
-        return (EmbeddingVector<TEmbedding>) new EmbeddingVector<>(result);
+        return new EmbeddingVector(result);
     }
 
     /**
@@ -132,7 +130,7 @@ public class EmbeddingVector<TEmbedding extends Number>
      * @return Normalized embedding
      */
     @Override
-    public EmbeddingVector<TEmbedding> normalize() {
+    public EmbeddingVector normalize() {
         return this.divide(this.euclideanLength());
     }
 }
