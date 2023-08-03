@@ -89,7 +89,7 @@ demonstrate how to use Semantic Kernel with code snippets that you can run with 
 - [Getting Started with Python notebook](samples/notebooks/python/00-getting-started.ipynb)
 
 Once you've finished the getting started notebooks, you can then check out the main walkthroughs
-on our Learn site along with their accompany code samples:
+on our Learn site. Each sample comes with a completed C# and Python project that you can run locally.
 
 1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
 1. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
