@@ -124,7 +124,7 @@ public class SqliteMemoryStoreTest {
                         "test",
                         "test",
                         "test",
-                        new Embedding<>(new ArrayList<>(Arrays.asList(1.23f, 4.56f, 7.89f))),
+                        new Embedding(new ArrayList<>(Arrays.asList(1.23f, 4.56f, 7.89f))),
                         null,
                         "test",
                         ZonedDateTime.now());

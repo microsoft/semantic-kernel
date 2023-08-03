@@ -7,20 +7,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /** Represents a strongly typed vector of numeric data. */
-public class Embedding<EmbeddingType extends Number> {
+public class Embedding {
 
-    public List<EmbeddingType> getVector() {
+    public List<Float> getVector() {
         return Collections.unmodifiableList(vector);
     }
 
-    private final List<EmbeddingType> vector;
+    private final List<Float> vector;
 
-    private static final Embedding<Number> EMPTY =
+    private static final Embedding EMPTY =
             new Embedding(Collections.unmodifiableList(new ArrayList<>()));
 
-    @SuppressWarnings("unchecked")
-    public static <EmbeddingType extends Number> Embedding<EmbeddingType> empty() {
-        return (Embedding<EmbeddingType>) EMPTY;
+    public static Embedding empty() {
+        return EMPTY;
     }
 
     /** Initializes a new instance of the Embedding class. */
@@ -34,7 +33,7 @@ public class Embedding<EmbeddingType extends Number> {
      *
      * @param vector The collection whose elements are copied to the new Embedding
      */
-    public Embedding(List<EmbeddingType> vector) {
+    public Embedding(List<Float> vector) {
         //        Verify.NotNull(vector, nameof(vector));
         this.vector =
                 vector != null ? Collections.unmodifiableList(vector) : Collections.emptyList();
@@ -45,7 +44,7 @@ public class Embedding<EmbeddingType extends Number> {
         if (this == o) return true;
         if (!(o instanceof Embedding)) return false;
 
-        Embedding<?> embedding = (Embedding<?>) o;
+        Embedding embedding = (Embedding) o;
 
         return vector.equals(embedding.vector);
     }

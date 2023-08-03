@@ -14,7 +14,7 @@
     <description>Parent pom for the Semantic Kernel Project</description>
 
     <properties>
-        <azure-ai-openai.version>1.0.0-beta.3</azure-ai-openai.version>
+        <azure-ai-openai.version>1.0.0-beta.2</azure-ai-openai.version>
         <checkstyle.version>10.12.2</checkstyle.version>
         <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>

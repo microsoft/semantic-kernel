@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
  * will invalidate existing metadata stored in persistent vector DBs.
  */
 public class MemoryRecord extends DataEntryBase {
-    @Nonnull private final Embedding<? extends Number> embedding;
+    @Nonnull private final Embedding embedding;
 
     @Nonnull private final MemoryRecordMetadata metadata;
 
@@ -29,7 +29,7 @@ public class MemoryRecord extends DataEntryBase {
      */
     public MemoryRecord(
             @Nonnull MemoryRecordMetadata metadata,
-            @Nonnull Embedding<? extends Number> embedding,
+            @Nonnull Embedding embedding,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
         super(key, timestamp);
@@ -42,7 +42,7 @@ public class MemoryRecord extends DataEntryBase {
      *
      * @return The source content embeddings.
      */
-    public Embedding<? extends Number> getEmbedding() {
+    public Embedding getEmbedding() {
         return embedding;
     }
 
@@ -73,7 +73,7 @@ public class MemoryRecord extends DataEntryBase {
             @Nonnull String externalId,
             @Nonnull String sourceName,
             @Nullable String description,
-            @Nonnull Embedding<Float> embedding,
+            @Nonnull Embedding embedding,
             @Nullable String additionalMetadata,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
@@ -106,7 +106,7 @@ public class MemoryRecord extends DataEntryBase {
             @Nonnull String id,
             @Nonnull String text,
             @Nullable String description,
-            @Nonnull Embedding<Float> embedding,
+            @Nonnull Embedding embedding,
             @Nullable String additionalMetadata,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
@@ -135,7 +135,7 @@ public class MemoryRecord extends DataEntryBase {
      */
     public static MemoryRecord fromMetadata(
             @Nonnull MemoryRecordMetadata metadata,
-            @Nullable Embedding<Float> embedding,
+            @Nullable Embedding embedding,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
         return new MemoryRecord(
@@ -175,7 +175,7 @@ public class MemoryRecord extends DataEntryBase {
 
     public static MemoryRecord fromJsonMetadata(
             String json,
-            @Nullable Embedding<Float> embedding,
+            @Nullable Embedding embedding,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp)
             throws JsonProcessingException {
