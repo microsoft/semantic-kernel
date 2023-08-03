@@ -37,13 +37,13 @@ public class Example25_ReadOnlyMemoryStore
     {
         var store = new ReadOnlyMemoryStore(JSON_VECTOR_ENTRIES);
 
-        var embedding = new Embedding<Float>(Arrays.asList(22f, 4f, 6f));
+        var embedding = new Embedding(Arrays.asList(22f, 4f, 6f));
 
         System.out.println("Reading data from custom read-only memory store");
         Mono<?> mono = store.getAsync("collection", "key3", true)
                 .mapNotNull(memoryRecord -> {
                     String memoryRecordId = memoryRecord.getMetadata().getId();
-                    Embedding<? extends Number> memoryRecordEmbedding = memoryRecord.getEmbedding();
+                    Embedding memoryRecordEmbedding = memoryRecord.getEmbedding();
                     System.out.printf("ID = %s, Embedding = %s%n", memoryRecordId, embeddingVectorToString(memoryRecordEmbedding));
                     return memoryRecord;
                 });
@@ -53,7 +53,7 @@ public class Example25_ReadOnlyMemoryStore
                         .mapNotNull(result -> {
                                     Float similarity = result.getT2().floatValue();
                                     MemoryRecord memoryRecord = result.getT1();
-                                    Embedding<? extends Number> memoryRecordEmbedding = memoryRecord.getEmbedding();
+                                    Embedding memoryRecordEmbedding = memoryRecord.getEmbedding();
                                     System.out.printf("Embedding = %s, Similarity = %f%n", embeddingVectorToString(memoryRecordEmbedding), similarity);
                                     return result;
                                 }
@@ -64,14 +64,10 @@ public class Example25_ReadOnlyMemoryStore
 
     }
 
-    private static String embeddingVectorToString(Embedding<? extends Number> embedding) {
+    private static String embeddingVectorToString(Embedding embedding) {
         StringJoiner stringJoiner = new StringJoiner(", ", "[", "]");
         embedding.getVector().stream().map(Number::toString).forEach(stringJoiner::add);
         return stringJoiner.toString();
-    }
-
-    private static List<Float> toFloatList(List<? extends Number> list) {
-        return list.stream().map(Number::floatValue).collect(Collectors.toList());
     }
 
     private static class ReadOnlyMemoryStore implements MemoryStore
@@ -135,16 +131,16 @@ public class Example25_ReadOnlyMemoryStore
         }
 
         @Override
-        public Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(String collectionName, Embedding<? extends Number> embedding, double minRelevanceScore,
+        public Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(String collectionName, Embedding embedding, double minRelevanceScore,
                                                                         boolean withEmbedding)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            final EmbeddingVector<Float> embeddingVector = new EmbeddingVector<>(toFloatList(embedding.getVector()));
+            final EmbeddingVector embeddingVector = new EmbeddingVector(embedding.getVector());
             return Mono.justOrEmpty(
             Arrays.stream(this._memoryRecords)
                     .map(it -> {
-                        EmbeddingVector<Float> memoryRecordEmbeddingVector =
-                                new EmbeddingVector<>(toFloatList(it.getEmbedding().getVector()));
+                        EmbeddingVector memoryRecordEmbeddingVector =
+                                new EmbeddingVector(it.getEmbedding().getVector());
                         double cosineSimilarity = -1d;
                         try {
                             cosineSimilarity = memoryRecordEmbeddingVector.cosineSimilarity(embeddingVector);
@@ -159,16 +155,16 @@ public class Example25_ReadOnlyMemoryStore
         }
 
         @Override
-        public Mono<Collection<Tuple2<MemoryRecord, Number>>> getNearestMatchesAsync(String collectionName, Embedding<? extends Number> embedding, int limit,
+        public Mono<Collection<Tuple2<MemoryRecord, Number>>> getNearestMatchesAsync(String collectionName, Embedding embedding, int limit,
             double minRelevanceScore, boolean withEmbeddings)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            final EmbeddingVector<Float> embeddingVector = new EmbeddingVector<>(toFloatList(embedding.getVector()));
+            final EmbeddingVector embeddingVector = new EmbeddingVector(embedding.getVector());
             return Mono.justOrEmpty(
                     Arrays.stream(this._memoryRecords)
                             .map(it -> {
-                                EmbeddingVector<Float> memoryRecordEmbeddingVector =
-                                        new EmbeddingVector<>(toFloatList(it.getEmbedding().getVector()));
+                                EmbeddingVector memoryRecordEmbeddingVector =
+                                        new EmbeddingVector(it.getEmbedding().getVector());
                                 double cosineSimilarity = -1d;
                                 try {
                                     cosineSimilarity = memoryRecordEmbeddingVector.cosineSimilarity(embeddingVector);
