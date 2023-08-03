@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -22,7 +23,11 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        if (!this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>()))
+        try
+        {
+            this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>());
+        }
+        catch (Exception ex) when (ex is ArgumentNullException || ex is OverflowException)
         {
             return Task.FromException(new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, $"Could not create collection {collectionName}"));
         }

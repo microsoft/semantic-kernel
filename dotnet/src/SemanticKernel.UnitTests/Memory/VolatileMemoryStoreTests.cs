@@ -75,17 +75,15 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public async Task ItCannotCreateDuplicateCollectionAsync()
+    public async Task ItHandlesExceptionsWhenCreatingCollectionAsync()
     {
         // Arrange
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-
-        // Act
-        await this._db.CreateCollectionAsync(collection);
+        string? collection = null;
 
         // Assert
+#pragma warning disable CS8604 // Possible null reference argument for parameter
         await Assert.ThrowsAsync<MemoryException>(async () => await this._db.CreateCollectionAsync(collection));
+#pragma warning restore CS8604 // Possible null reference argument for parameter
     }
 
     [Fact]
