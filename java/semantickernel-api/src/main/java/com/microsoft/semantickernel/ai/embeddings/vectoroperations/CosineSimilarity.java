@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.ai.vectoroperations;
+package com.microsoft.semantickernel.ai.embeddings.vectoroperations;
 
-import com.microsoft.semantickernel.ai.EmbeddingVector;
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingVector;
 
 public interface CosineSimilarity {
     float cosineSimilarity(EmbeddingVector other);

@@ -6,11 +6,13 @@ import com.microsoft.semantickernel.memory.MemoryRecord;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import reactor.util.function.Tuple2;
 
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class SqliteMemoryStoreTest {
@@ -146,5 +148,36 @@ public class SqliteMemoryStoreTest {
                 testRecord.getMetadata().getExternalSourceName(),
                 inserted.getMetadata().getExternalSourceName());
         Assertions.assertEquals(testRecord.getMetadata().getId(), inserted.getMetadata().getId());
+    }
+
+    @Test
+    public void testGetNearestMatchesAsync() throws SQLException {
+        SqliteMemoryStore memory = connect();
+        String collectionName = getNewCollectionName();
+        Embedding embedding = new Embedding(Arrays.asList(1.23f, 4.56f, 7.89f));
+        memory.createCollectionAsync(collectionName).block();
+
+        MemoryRecord testRecord =
+                MemoryRecord.localRecord(
+                        "test",
+                        "test",
+                        "test",
+                        embedding,
+                        null,
+                        "test",
+                        ZonedDateTime.now());
+
+        Collection<Tuple2<MemoryRecord,Float>> matches =
+                memory.upsertAsync(collectionName, testRecord)
+                .then(memory.getNearestMatchesAsync(
+                        collectionName,
+                        embedding,
+                        1,
+                        0,
+                        true)).block();
+
+        Assertions.assertNotNull(matches);
+        Assertions.assertEquals(1, matches.size());
+        Assertions.assertEquals(embedding, matches.iterator().next().getT1().getEmbedding());
     }
 }

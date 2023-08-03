@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.ai;
+package com.microsoft.semantickernel.ai.embeddings;
 
-import com.microsoft.semantickernel.ai.vectoroperations.*;
+import com.microsoft.semantickernel.ai.embeddings.vectoroperations.CosineSimilarity;
+import com.microsoft.semantickernel.ai.embeddings.vectoroperations.Divide;
+import com.microsoft.semantickernel.ai.embeddings.vectoroperations.DotProduct;
+import com.microsoft.semantickernel.ai.embeddings.vectoroperations.EuclideanLength;
+import com.microsoft.semantickernel.ai.embeddings.vectoroperations.Multiply;
+import com.microsoft.semantickernel.ai.embeddings.vectoroperations.Normalize;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,11 +19,11 @@ import java.util.stream.Collectors;
  **/
 public class EmbeddingVector
         implements DotProduct,
-                EuclideanLength,
-                CosineSimilarity,
-                Multiply,
-                Divide,
-                Normalize {
+        EuclideanLength,
+        CosineSimilarity,
+        Multiply,
+        Divide,
+        Normalize {
 
     private final List<Float> vector;
 

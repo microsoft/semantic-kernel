@@ -4,12 +4,14 @@ package com.microsoft.semantickernel.connectors.memory.sqlite;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingVector;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -168,7 +170,38 @@ public class SqliteMemoryStore implements MemoryStore {
             int limit,
             double minRelevanceScore,
             boolean withEmbeddings) {
-        return null;
+
+        Mono<List<Database.DatabaseEntry>> entries =
+                this.dbConnector.readAllAsync(this.dbConnection, collectionName);
+
+        return entries.flatMap(
+                databaseEntries -> {
+                    EmbeddingVector embeddingVector = embedding.getVector();
+                    List<Tuple2<MemoryRecord, Float>> results = new ArrayList<>();
+                    for (Database.DatabaseEntry entry : databaseEntries) {
+                        if (entry.getEmbedding() == null || entry.getEmbedding().isEmpty()) {
+                            continue;
+                        }
+                        try {
+                            Embedding recordEmbedding =
+                                    new ObjectMapper()
+                                            .readValue(entry.getEmbedding(), Embedding.class);
+                            float relevanceScore = embeddingVector.cosineSimilarity(recordEmbedding.getVector());
+                            if (relevanceScore >= minRelevanceScore) {
+                                MemoryRecord record =
+                                        MemoryRecord.fromJsonMetadata(
+                                                entry.getMetadata(),
+                                                recordEmbedding,
+                                                entry.getKey(),
+                                                entry.getTimestamp());
+                                results.add(Tuples.of(record, relevanceScore));
+                            }
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    return Mono.just(results);
+                });
     }
 
     @Override
