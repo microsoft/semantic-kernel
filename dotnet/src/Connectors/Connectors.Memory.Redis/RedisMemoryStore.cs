@@ -31,12 +31,12 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <param name="database">The database of the Redis server.</param>
     /// <param name="vectorSize">Embedding vector size, defaults to 1536</param>
     /// <param name="vectorIndexAlgorithm">Indexing algorithm for vectors, defaults to "HNSW"</param>
-    /// <param name="vectorType">Vector type, defaults to "FLOAT32"</param>
     /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to "COSINE"</param>
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
-    public RedisMemoryStore(IDatabase database, int vectorSize = 1536,
+    public RedisMemoryStore(
+        IDatabase database,
+        int vectorSize = VectorSize,
         VectorIndexAlgorithms vectorIndexAlgorithm = VectorIndexAlgorithm,
-        VectorTypes vectorType = VectorType,
         VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
         int queryDialect = QueryDialect)
     {
@@ -44,6 +44,7 @@ public sealed class RedisMemoryStore : IMemoryStore
         {
             throw new ArgumentException("Vector size must be a positive integer.");
         }
+
         if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
         {
             throw new ArgumentException("Unsupported vector indexing algorithm.");
@@ -52,7 +53,6 @@ public sealed class RedisMemoryStore : IMemoryStore
         this._database = database;
         this._vectorSize = vectorSize;
         this._ft = database.FT();
-        this._vectorType = vectorType.ToString();
         this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
     }
@@ -63,31 +63,16 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <param name="connectionString">Provide connection URL to a Redis instance</param>
     /// <param name="vectorSize">Embedding vector size, defaults to 1536</param>
     /// <param name="vectorIndexAlgorithm">Indexing algorithm for vectors, defaults to "HNSW"</param>
-    /// <param name="vectorType">Vector type, defaults to "FLOAT32"</param>
     /// <param name="vectorDistanceMetric">Metric for measuring vector distances, defaults to "COSINE"</param>
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
-    public RedisMemoryStore(string connectionString, int vectorSize = 1536,
+    public RedisMemoryStore(
+        string connectionString,
+        int vectorSize = VectorSize,
         VectorIndexAlgorithms vectorIndexAlgorithm = VectorIndexAlgorithm,
-        VectorTypes vectorType = VectorType,
         VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
         int queryDialect = QueryDialect)
-    {
-        if (vectorSize <= 0)
-        {
-            throw new ArgumentException("Vector size must be a positive integer.");
-        }
-        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
-        {
-            throw new ArgumentException("Unsupported vector indexing algorithm.");
-        }
-
-        this._database = ConnectionMultiplexer.Connect(connectionString).GetDatabase();
-        this._vectorSize = vectorSize;
-        this._ft = this._database.FT();
-        this._vectorType = vectorType.ToString();
-        this._vectorDistanceMetric = vectorDistanceMetric.ToString();
-        this._queryDialect = queryDialect;
-    }
+        : this(ConnectionMultiplexer.Connect(connectionString).GetDatabase(), vectorSize, vectorIndexAlgorithm, vectorDistanceMetric, queryDialect)
+    { }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -107,7 +92,7 @@ public sealed class RedisMemoryStore : IMemoryStore
             .AddTextField("metadata")
             .AddNumericField("timestamp")
             .AddVectorField("embedding", this._vectorIndexAlgorithm, new Dictionary<string, object> {
-                    {"TYPE", this._vectorType},
+                    {"TYPE", VectorType},
                     {"DIM", this._vectorSize},
                     {"DISTANCE_METRIC", this._vectorDistanceMetric},
                 });
@@ -123,7 +108,7 @@ public sealed class RedisMemoryStore : IMemoryStore
             await this._ft.InfoAsync(collectionName).ConfigureAwait(false);
             return true;
         }
-        catch (RedisServerException ex) when (ex.Message == MESSAGE_WHEN_INDEX_DOES_NOT_EXIST)
+        catch (RedisServerException ex) when (ex.Message.Equals(IndexDoesNotExistErrorMessage, StringComparison.Ordinal))
         {
             return false;
         }
@@ -164,7 +149,7 @@ public sealed class RedisMemoryStore : IMemoryStore
         await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
-            new HashEntry("embedding", ConvertEmbeddingToBytes(record.Embedding)),
+            new HashEntry("embedding", this.ConvertEmbeddingToBytes(record.Embedding)),
             new HashEntry("timestamp", ToTimestampLong(record.Timestamp))
         }, flags: CommandFlags.None).ConfigureAwait(false);
 
@@ -207,7 +192,7 @@ public sealed class RedisMemoryStore : IMemoryStore
         }
 
         var query = new Query($"*=>[KNN {limit} @embedding $embedding AS vector_score]")
-                    .AddParam("embedding", ConvertEmbeddingToBytes(embedding))
+                    .AddParam("embedding", this.ConvertEmbeddingToBytes(embedding))
                     .SetSortBy("vector_score")
                     .ReturnFields("key", "metadata", "embedding", "timestamp", "vector_score")
                     .Limit(0, limit)
@@ -250,7 +235,7 @@ public sealed class RedisMemoryStore : IMemoryStore
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    #region constants  ================================================================================
+    #region private ================================================================================
 
     /// <summary>
     /// Vector similarity index algorithm. Supported algorithms are {FLAT, HNSW}. The default value is "HNSW".
@@ -259,9 +244,10 @@ public sealed class RedisMemoryStore : IMemoryStore
     private const VectorIndexAlgorithms VectorIndexAlgorithm = VectorIndexAlgorithms.HNSW;
 
     /// <summary>
-    /// Vector type. Supported types are {FLOAT32, FLOAT64}. The default value is "FLOAT32".
+    /// Vector type. Available values are {FLOAT32, FLOAT64}.
+    /// Value "FLOAT32" is used by default based on <see cref="MemoryRecord.Embedding"/> <see cref="float"/> type.
     /// </summary>
-    private const VectorTypes VectorType = VectorTypes.FLOAT32;
+    private const string VectorType = "FLOAT32";
 
     /// <summary>
     /// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
@@ -275,20 +261,20 @@ public sealed class RedisMemoryStore : IMemoryStore
     private const int QueryDialect = 2;
 
     /// <summary>
+    /// Embedding vector size.
+    /// </summary>
+    private const int VectorSize = 1536;
+
+    /// <summary>
     /// Message when index does not exist.
     /// <see href="https://github.com/RediSearch/RediSearch/blob/master/src/info_command.c#L97"/>
     /// </summary>
-    internal const string MESSAGE_WHEN_INDEX_DOES_NOT_EXIST = "Unknown Index name";
-
-    #endregion
-
-    #region private ================================================================================
+    private const string IndexDoesNotExistErrorMessage = "Unknown Index name";
 
     private readonly IDatabase _database;
     private readonly int _vectorSize;
     private readonly SearchCommands _ft;
     private readonly Schema.VectorField.VectorAlgo _vectorIndexAlgorithm;
-    private readonly string _vectorType;
     private readonly string _vectorDistanceMetric;
     private readonly int _queryDialect;
 
@@ -353,18 +339,7 @@ public sealed class RedisMemoryStore : IMemoryStore
 
     private byte[] ConvertEmbeddingToBytes(Embedding<float> embedding)
     {
-        byte[] embeddingBytes = Array.Empty<byte>();
-        if (this._vectorType == "FLOAT32")
-        {
-            embeddingBytes = MemoryMarshal.Cast<float, byte>(embedding.AsReadOnlySpan()).ToArray();
-        }
-        else if (this._vectorType == "FLOAT64")
-        {
-            var toDouble = embedding.Vector.Select(x => (double)new decimal(x)).ToArray();
-            embeddingBytes = MemoryMarshal.Cast<double, byte>(toDouble).ToArray();
-        }
-
-        return embeddingBytes;
+        return MemoryMarshal.Cast<float, byte>(embedding.AsReadOnlySpan()).ToArray();
     }
 
     #endregion
