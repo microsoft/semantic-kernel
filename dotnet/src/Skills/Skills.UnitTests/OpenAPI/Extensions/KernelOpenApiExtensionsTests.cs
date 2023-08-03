@@ -10,6 +10,7 @@ using SemanticKernel.Skills.UnitTests.OpenAPI.TestSkills;
 using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI.Extensions;
+
 public sealed class KernelOpenApiExtensionsTests : IDisposable
 {
     /// <summary>
