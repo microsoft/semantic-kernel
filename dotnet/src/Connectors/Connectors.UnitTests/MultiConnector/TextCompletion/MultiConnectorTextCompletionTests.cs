@@ -125,27 +125,26 @@ public class ArithmeticCompletionService : ITextCompletion
 
     public CallRequestCostCreditor Creditor { get; set; }
 
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         this.Creditor.Credit(this.CostPerRequest);
-        ArithmeticStreamingResultBase streamingResult = this.ComputeResult(text, requestSettings);
-
-        return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
+        ArithmeticStreamingResultBase streamingResult = await this.ComputeResultAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        return new List<ITextResult>
         {
             streamingResult
-        });
+        };
     }
 
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletions(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.Creditor.Credit(this.CostPerRequest);
-        ArithmeticStreamingResultBase streamingResult = this.ComputeResult(text, requestSettings);
+        ArithmeticStreamingResultBase streamingResult = await this.ComputeResultAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
         yield return streamingResult;
     }
 
-    private ArithmeticStreamingResultBase ComputeResult(string text, CompleteRequestSettings requestSettings)
+    private async Task<ArithmeticStreamingResultBase> ComputeResultAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        Thread.Sleep(this.CallTime);
+        await Task.Delay(this.CallTime, cancellationToken);
         var isVetting = this.VettingPromptSettings.PromptType.Signature.Matches(text, requestSettings);
         ArithmeticStreamingResultBase streamingResult;
         if (isVetting)
@@ -301,8 +300,10 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync(CancellationToken cancellationToken = default)
+    public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync()
     {
+        CancellationToken cancellationToken = default;
+
         var settings = new MultiTextCompletionSettings()
         {
             AnalysisSettings = new MultiCompletionAnalysisSettings()
@@ -323,7 +324,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         //Arrange
         var completions = this.CreateCompletions(settings, primaryCallDuration, primaryCostPerRequest, secondaryCallDuration, secondaryCostPerRequest, creditor);
 
-        var prompts = Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().Select(arithmeticOperation => ArithmeticEngine.GeneratePrompt(arithmeticOperation, 4, 2)).ToArray();
+        var prompts = Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().Select(arithmeticOperation => ArithmeticEngine.GeneratePrompt(arithmeticOperation, 8, 2)).ToArray();
 
         var requestSettings = new CompleteRequestSettings()
         {

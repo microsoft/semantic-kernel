@@ -78,12 +78,12 @@ public class MultiTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletions(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         var promptSettings = this._settings.GetPromptSettings(text, requestSettings);
         var textCompletion = promptSettings.SelectAppropriateTextCompletion(this._textCompletions);
 
-        var result = textCompletion.TextCompletion.GetStreamingCompletions(text, requestSettings, cancellationToken);
+        var result = textCompletion.TextCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
 
         _ = this.CollectStreamingTestResultAsync(text, requestSettings, textCompletion, result, cancellationToken);
 
@@ -143,9 +143,10 @@ public class MultiTextCompletion : ITextCompletion
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        // TODO: start the collection and optimization
                         // Evaluate the test
                         await this._settings.AnalysisSettings.EvaluatePromptConnectorsAsync(connectorTest, this._textCompletions, this._settings, this._logger, cancellationToken).ConfigureAwait(false);
+                        // Raise the event after optimization is done
+                        this.OnOptimizationCompleted();
                     }
                 }
             }
@@ -154,6 +155,19 @@ public class MultiTextCompletion : ITextCompletion
         {
             this._logger?.LogTrace(message: "OptimizeCompletionsAsync Optimize task was cancelled", exception: exception);
         }
+        catch (Exception exception)
+        {
+            this._logger?.LogError(message: "OptimizeCompletionsAsync Optimize task failed with exception", exception: exception);
+        }
+    }
+
+    // Define the event
+    public event EventHandler OptimizationCompleted;
+
+    // Method to raise the event
+    protected virtual void OnOptimizationCompleted()
+    {
+        this.OptimizationCompleted?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>

@@ -116,19 +116,26 @@ RESPONSE IS VALID? (true/false):
             for (int i = 0; i < this.NbPromptTests; i++)
             {
                 var stopWatch = Stopwatch.StartNew();
+                string result = "";
+                try
+                {
+                    var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, originalTest.RequestSettings, cancellationToken).ConfigureAwait(false);
 
-                var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, originalTest.RequestSettings, cancellationToken).ConfigureAwait(false);
+                    var firstResult = completions[0];
 
-                var firstResult = completions[0];
+                    result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
 
-                string result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
+                    stopWatch.Stop();
+                    var duration = stopWatch.Elapsed;
 
-                stopWatch.Stop();
-                var duration = stopWatch.Elapsed;
-
-                // For the management task
-                var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
-                tests.Add(connectorTest);
+                    // For the management task
+                    var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
+                    tests.Add(connectorTest);
+                }
+                catch (Exception e)
+                {
+                    logger?.LogError("Failed to test prompt with connector.\nPrompt:\n {0}\nConnector: {1} ", originalTest.Prompt, namedTextCompletion.Name);
+                }
             }
         }
 
