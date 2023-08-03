@@ -22,11 +22,9 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        if (!this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>()))
-        {
-            return Task.FromException(new MemoryException(MemoryException.ErrorCodes.FailedToCreateCollection, $"Could not create collection {collectionName}"));
-        }
+        Verify.NotNullOrWhiteSpace(collectionName);
 
+        this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>());
         return Task.CompletedTask;
     }
 
