@@ -35,7 +35,7 @@ public class SKBuilders {
         return BuildersSingleton.INST.getTextCompletionBuilder();
     }
 
-    public static EmbeddingGeneration.Builder<String, Float> textEmbeddingGenerationService() {
+    public static EmbeddingGeneration.Builder<String> textEmbeddingGenerationService() {
         return BuildersSingleton.INST.getTextEmbeddingGenerationBuilder();
     }
 

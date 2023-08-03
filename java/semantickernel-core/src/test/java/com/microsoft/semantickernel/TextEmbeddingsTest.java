@@ -48,7 +48,7 @@ public class TextEmbeddingsTest {
 
     public void testEmbeddingGeneration(OpenAIAsyncClient client, int expectedEmbeddingSize) {
         String model = "text-embedding-ada-002";
-        EmbeddingGeneration<String, Float> embeddingGeneration =
+        EmbeddingGeneration<String> embeddingGeneration =
                 new OpenAITextEmbeddingGeneration(client, model);
 
         List<String> data = new ArrayList<>();
