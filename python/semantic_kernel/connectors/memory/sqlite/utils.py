@@ -1,10 +1,12 @@
 import json
-import numpy as np
 from datetime import datetime
+from collections import defaultdict
 from typing import Optional
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 from dataclasses import dataclass, asdict
+
+import numpy as np
 
 
 @dataclass
@@ -60,8 +62,8 @@ def serialize_metadata(metadata: Metadata) -> str:
     return json.dumps(asdict(metadata))
 
 
-def deserialize_metadata(metadata: str) -> dict:
-    return json.loads(metadata)
+def deserialize_metadata(metadata: str) -> defaultdict:
+    return defaultdict(lambda: None, json.loads(metadata))
 
 
 def deserialize_embedding(embedding: str) -> np.ndarray:
@@ -74,7 +76,7 @@ def serialize_embedding(embedding: np.ndarray) -> str:
 
 # C# implementation uses `timestamp?.ToString("u", CultureInfo.InvariantCulture);` to serialize timestamps.
 # which is the below format accoridng to https://stackoverflow.com/questions/46778141/datetime-formats-used-in-invariantculture
-TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ssZ"
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%fZ"
 
 
 def deserialize_timestamp(timestamp: Optional[str]) -> Optional[datetime]:

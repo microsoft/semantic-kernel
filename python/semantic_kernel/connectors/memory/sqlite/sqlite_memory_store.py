@@ -25,11 +25,11 @@ class SQLiteMemoryStore(MemoryStoreBase):
     """A memory store that uses SQLite as the backend."""
 
     _filepath: str
-    _conn: sqlite.Connection
+    _conn: Optional[sqlite.Connection]
     _logger: Logger
 
-    def __init__(self, filepath: str, logger: Optional[Logger]) -> None:
-        """Initializes a new instance of the SQLiteMemoryStore class.
+    def __init__(self, filepath: str, logger: Optional[Logger] = None) -> None:
+        """Initializes a new instance of the SQLiteMemoryStore class. DB connection is not established until connect() is called.
 
         Arguments:
             filepath {str}: The path to the SQLite database file.
@@ -37,22 +37,24 @@ class SQLiteMemoryStore(MemoryStoreBase):
         """
         super().__init__()
         self._filepath = filepath
-        self._conn = sqlite.connect(filepath)
+        self._conn = None
         self._logger = logger or NullLogger()
 
     async def __aenter__(self):
         self._logger.debug("Entering __aenter__")
+        await self.connect()
         await self._create_table_if_not_exists_async()
+        return self
+
+    async def __aexit__(self, *args):
+        await self.close_async()
 
     async def close_async(self):
         self._logger.debug("close_async called")
         await self._conn.close()
 
-    @staticmethod
-    async def connect_async(filepath: str):
-        store = SQLiteMemoryStore(filepath)
-        await store._create_table_if_not_exists_async()
-        return store
+    async def connect(self):
+        self._conn = await sqlite.connect(self._filepath)
 
     async def _create_table_if_not_exists_async(self) -> None:
         async with self._conn.execute(
@@ -64,7 +66,7 @@ class SQLiteMemoryStore(MemoryStoreBase):
                 timestamp TEXT,
                 PRIMARY KEY(collection, key))"""
         ):
-            self._conn.commit()
+            await self._conn.commit()
             return
 
     async def create_collection_async(self, collection_name: str) -> None:
@@ -76,6 +78,8 @@ class SQLiteMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
+        if await self.does_collection_exist_async(collection_name):
+            return
         async with self._conn.execute_insert(
             f"""
             INSERT INTO {TABLE_NAME}(collection)
@@ -99,9 +103,7 @@ class SQLiteMemoryStore(MemoryStoreBase):
         """
         async with self._conn.execute_fetchall(
             f"""
-                SELECT DISTINCT(collection)
-                FROM {TABLE_NAME}
-                WHERE collection = ?;";
+                SELECT DISTINCT(collection) FROM {TABLE_NAME} WHERE collection = ?
             """,
             [collection_name],
         ) as rows:
@@ -115,11 +117,10 @@ class SQLiteMemoryStore(MemoryStoreBase):
         """
         async with self._conn.execute_fetchall(
             f"""
-                SELECT DISTINCT(collection)
-                FROM {TABLE_NAME}";
+                SELECT DISTINCT(collection) FROM {TABLE_NAME};
             """
         ) as rows:
-            return list(map(lambda r: r["collection"], rows))
+            return list(map(lambda r: r[0], rows))
 
     async def delete_collection_async(self, collection_name: str):
         """Deletes a collection from the memory store.
@@ -151,16 +152,16 @@ class SQLiteMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- A list of keys for the upserted records.
         """
-        with self._conn.executemany(
+        async with self._conn.executemany(
             f"""
                 INSERT INTO {TABLE_NAME}(collection, key, metadata, embedding, timestamp)
                 VALUES(?, ?, ?, ?, ?)
-                ON CONFLICT(collection, key) DO UPDATE SET metadata = ?, embedding = ?, timestamp = ?
+                ON CONFLICT(collection, key) DO UPDATE SET metadata = excluded.metadata, embedding = excluded.embedding, timestamp = excluded.timestamp;
             """,
             map(
                 lambda r: (
                     collection,
-                    r._key,
+                    r._id or r._key,
                     Metadata.from_memory_record(r).to_json(),
                     serialize_embedding(r.embedding),
                     serialize_timestamp(r._timestamp),
@@ -168,8 +169,8 @@ class SQLiteMemoryStore(MemoryStoreBase):
                 records,
             ),
         ):
-            self._conn.commit()
-            return [r._key for r in records]
+            await self._conn.commit()
+            return [r._id or r._key for r in records]
 
     async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a single record into the memory store.
@@ -182,13 +183,14 @@ class SQLiteMemoryStore(MemoryStoreBase):
             str -- The key for the upserted record.
         """
         keys = await self.upsert_batch_async(collection_name, [record])
+
         if len(keys) == 0:
             raise Exception("upsert failed")
 
         return keys[0]
 
     async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
+        self, collection_name: str, key: str, with_embedding: bool = False
     ) -> MemoryRecord:
         """Gets a single record from the memory store.
 
@@ -212,17 +214,15 @@ class SQLiteMemoryStore(MemoryStoreBase):
                     f"Collection[{collection_name}] or Key[{key}] not found"
                 )
 
-            metadata = deserialize_metadata(record["metadata"])
+            metadata = Metadata.from_json(record[0])
 
             return MemoryRecord.local_record(
                 id=key,
-                text=metadata["text"] or "",
-                description=metadata["description"],
-                additional_metadata=metadata["additional_metadata"],
-                embedding=deserialize_embedding(record["embedding"])
-                if with_embedding
-                else None,
-                timestamp=deserialize_timestamp(record["timestamp"]),
+                text=metadata.text,
+                description=metadata.description,
+                additional_metadata=metadata.additional_metadata,
+                embedding=deserialize_embedding(record[1]) if with_embedding else None,
+                timestamp=deserialize_timestamp(record[2]),
             )
 
     async def get_batch_async(
