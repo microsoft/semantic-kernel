@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
- * The following example shows how to use Semantic Kernel with Text Completion as streaming
+ * The following example shows how to use Semantic Kernel with streaming Chat Completion
  */
 // ReSharper disable once InconsistentNaming
 public static class Example33_StreamingChat
@@ -62,8 +62,7 @@ public static class Example33_StreamingChat
         await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
     }
 
-    private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, ChatHistory chatHistory,
-        AuthorRole authorRole)
+    private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, ChatHistory chatHistory, AuthorRole authorRole)
     {
         Console.Write($"{authorRole}: ");
         string fullMessage = string.Empty;
