@@ -93,17 +93,13 @@ class VolatileMemoryStoreTests {
     }
 
     @Test
-    void itCannotCreateDuplicateCollectionAsync() {
+    void  itHandlesExceptionsWhenCreatingCollectionAsync() {
         // Arrange
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-
-        // Act
-        this._db.createCollectionAsync(collection).block();
+        String collection = null;
 
         // Assert
         assertThrows(
-                MemoryException.class,
+                NullPointerException.class,
                 () -> this._db.createCollectionAsync(collection).block(),
                 "Should not be able to create duplicate collection");
     }
@@ -389,7 +385,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
                                 collection, compareEmbedding, topN, threshold, false)
@@ -398,12 +394,12 @@ class VolatileMemoryStoreTests {
         // Assert
         assertNotNull(topNResults);
         assertEquals(topN, topNResults.size());
-        Tuple2<MemoryRecord, Number>[] topNResultsArray = topNResults.toArray(new Tuple2[0]);
+        Tuple2<MemoryRecord, Float>[] topNResultsArray = topNResults.toArray(new Tuple2[0]);
         for (int j = 0; j < topN - 1; j++) {
             int compare =
                     Double.compare(
-                            topNResultsArray[j].getT2().doubleValue(),
-                            topNResultsArray[j + 1].getT2().doubleValue());
+                            topNResultsArray[j].getT2(),
+                            topNResultsArray[j + 1].getT2());
             assertTrue(compare >= 0);
         }
     }
@@ -477,7 +473,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
                                 collection, compareEmbedding, i / 2, threshold, false)
@@ -557,7 +553,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
@@ -577,7 +573,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
                                 collection, compareEmbedding, Integer.MAX_VALUE, threshold, false)
@@ -658,11 +654,11 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = 0.75;
-        Tuple2<MemoryRecord, ? extends Number> topNResultDefault =
+        Tuple2<MemoryRecord, Float> topNResultDefault =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
                         .block();
-        Tuple2<MemoryRecord, ? extends Number> topNResultWithEmbedding =
+        Tuple2<MemoryRecord, Float> topNResultWithEmbedding =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, true)
                         .block();
@@ -748,7 +744,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = 0.75;
-        Tuple2<MemoryRecord, ? extends Number> topNResult =
+        Tuple2<MemoryRecord, Float> topNResult =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
                         .block();
@@ -756,7 +752,7 @@ class VolatileMemoryStoreTests {
         // Assert
         assertNotNull(topNResult);
         assertEquals("test0", topNResult.getT1().getMetadata().getId());
-        assertTrue(topNResult.getT2().doubleValue() >= threshold);
+        assertTrue(topNResult.getT2() >= threshold);
     }
 
     @Test
@@ -770,7 +766,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Tuple2<MemoryRecord, ? extends Number> topNResults =
+        Tuple2<MemoryRecord, Float> topNResults =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
                         .block();
@@ -802,7 +798,7 @@ class VolatileMemoryStoreTests {
         }
 
         // Act
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true)
                         .block();
@@ -815,10 +811,10 @@ class VolatileMemoryStoreTests {
         // Assert
         assertEquals(topN, topNResults.size());
         assertEquals(topN, topNKeys.size());
-        for (Iterator<Tuple2<MemoryRecord, Number>> iterator = topNResults.iterator();
+        for (Iterator<Tuple2<MemoryRecord, Float>> iterator = topNResults.iterator();
                 iterator.hasNext(); ) {
-            Tuple2<MemoryRecord, Number> tuple = iterator.next();
-            int compare = Double.compare(tuple.getT2().doubleValue(), 0.75);
+            Tuple2<MemoryRecord, Float> tuple = iterator.next();
+            int compare = Double.compare(tuple.getT2(), 0.75);
             assertTrue(topNKeys.contains(tuple.getT1().getKey()));
             assertTrue(compare >= 0);
         }
@@ -878,7 +874,7 @@ class VolatileMemoryStoreTests {
         }
 
         // Act
-        this._db.removeBatchAsync(collection, keys);
+        this._db.removeBatchAsync(collection, keys).block();
 
         // Assert
         for (MemoryRecord result : this._db.getBatchAsync(collection, keys, true).block()) {

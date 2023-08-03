@@ -83,7 +83,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
     }
 
     private static final Function<
-                    Collection<Tuple2<MemoryRecord, Number>>, Mono<List<MemoryQueryResult>>>
+                    Collection<Tuple2<MemoryRecord, Float>>, Mono<List<MemoryQueryResult>>>
             transformMatchesToResults =
                     records -> {
                         if (records.isEmpty()) {
