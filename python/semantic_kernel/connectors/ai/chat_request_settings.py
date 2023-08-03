@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, List
 
 if TYPE_CHECKING:
     from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -18,6 +18,7 @@ class ChatRequestSettings:
     number_of_responses: int = 1
     max_tokens: int = 256
     token_selection_biases: Dict[int, int] = field(default_factory=dict)
+    stop_sequences: List[str] = field(default_factory=list)
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
@@ -28,6 +29,7 @@ class ChatRequestSettings:
         self.frequency_penalty = completion_config.frequency_penalty
         self.number_of_responses = completion_config.number_of_responses
         self.max_tokens = completion_config.max_tokens
+        self.stop_sequences = completion_config.stop_sequences
 
     @staticmethod
     def from_completion_config(
