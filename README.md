@@ -15,7 +15,7 @@ and [Hugging Face](https://huggingface.co/)
 with conventional programming languages like C# and Python. By doing so, you can
 create AI apps that combine the best of both worlds.
 
-## Combine AI and conventional code
+## Seamlessly integrate LLMs into your existing code
 
 With Semantic Kernel, you can define
 [semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions) (functions powered by LLMs)
