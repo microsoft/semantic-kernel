@@ -121,7 +121,7 @@ more features, such as connectors to services and Skills to perform specific act
 Unless you need to optimize which packages to include in your app, you will usually
 start by installing this meta-package first:
 
-* **[Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/#readme-body-tab)**
+* **[Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/)**
 
 This meta package includes core packages and OpenAI connectors, allowing to run
 most samples and build apps with OpenAI and Azure OpenAI.
