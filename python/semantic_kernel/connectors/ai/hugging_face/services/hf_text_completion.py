@@ -56,7 +56,9 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             )
 
         self.device = (
-            "cuda:" + str(device) if device >= 0 and torch.cuda.is_available() else "cpu"
+            "cuda:" + str(device)
+            if device >= 0 and torch.cuda.is_available()
+            else "cpu"
         )
         self.generator = transformers.pipeline(
             task=self._task, model=self._model_id, device=self.device
