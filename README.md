@@ -13,15 +13,15 @@ is an SDK that integrates Large Language Models (LLMs) like
 [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service),
 and [Hugging Face](https://huggingface.co/)
 with conventional programming languages like C# and Python. Semantic Kernel achieves this
-by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins),
-that can be [chained together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
-in just a few lines of code.
+by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
+that can be chained together
+in just a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Csharp#using-the-runasync-method-to-simplify-your-code).
 
 What makes Semantic Kernel _special_, however, is its ability to _automatically_ orchestrate
-[plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins) with AI.
-With [planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner), you
+plugins with AI. With Semantic Kernel
+[planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner), you
 can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards,
-Semantic Kernel will execute the plan.
+Semantic Kernel will execute the plan for the user.
 
 ![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
 
@@ -82,14 +82,14 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 
 ## Learning how to use Semantic Kernel
 
-For a quick guide, you can check out the C# and Python Jupyter notebooks. These notebooks
-demonstrate how to use Semantic Kernel with code snippets that you can easily run inline.
+The fastest way to learn how to use Semantic Kernel is with our C# and Python Jupyter notebooks. These notebooks
+demonstrate how to use Semantic Kernel with code snippets that you can run with a push of a button.
 
 - [Getting Started with C# notebook](samples/notebooks/dotnet/00-getting-started.ipynb)
 - [Getting Started with Python notebook](samples/notebooks/python/00-getting-started.ipynb)
 
-Once you've finished the getting started notebooks, you can check out the main walkthroughs
-on our Learn site:
+Once you've finished the getting started notebooks, you can then check out the main walkthroughs
+on our Learn site along with their accompany code samples:
 
 1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
 1. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
@@ -108,12 +108,13 @@ Finally, refer to our API references for more details on the C# and Python APIs:
 
 If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
 our [Chat Copilot](https://github.com/microsoft/chat-copilot) reference application. Chat Copilot
-is a chatbot that demonstrates the power of Semantic Kernel. By combining memory, planning, and
-AI plugins, Chat Copilot can have a conversation with you about any topic and autocomplete tasks.
+is a chatbot that demonstrates the power of Semantic Kernel. By combining plugins, planners, and persons,
+we demonstrate how you can build a chatbot that can maintain long-running conversations with users while
+also leveraging plugins to integrate with other services.
 
 ![Chat Copilot answering a question](https://learn.microsoft.com/en-us/semantic-kernel/media/chat-copilot-in-action.gif)
 
-You can find it's repo by navigating to its [GitHub repo](https://github.com/microsoft/chat-copilot).
+You can run the app yourself by downloading it from its [GitHub repo](https://github.com/microsoft/chat-copilot).
 
 ## Check out our other repos!
 
