@@ -4,8 +4,9 @@ Answer the following questions as accurately as possible using the provided func
 [AVAILABLE FUNCTIONS]
 The function definitions below are in the following format:
 <functionName>: <description>
- - <parameterName>: <parameterDescription>
- - ...
+  inputs:
+    - <parameterName>: <parameterDescription>
+    - ...
 
 {{$function_descriptions}}
 [END AVAILABLE FUNCTIONS]

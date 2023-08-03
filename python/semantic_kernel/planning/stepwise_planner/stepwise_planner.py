@@ -436,7 +436,7 @@ class StepwisePlanner:
 
     def to_manual_string(self, function: FunctionView) -> str:
         inputs = [
-            f"  - {parameter.name}: {parameter.description}"
+            f"    - {parameter.name}: {parameter.description}"
             + (
                 f" (default value={parameter.default_value})"
                 if parameter.default_value
@@ -449,9 +449,9 @@ class StepwisePlanner:
         function_description = function.description.strip()
 
         if is_null_or_empty(inputs):
-            return f"{self.to_fully_qualified_name(function)}: {function_description}\n"
+            return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs: None\n"
 
-        return f"{self.to_fully_qualified_name(function)}: {function_description}\n{inputs}\n"
+        return f"{self.to_fully_qualified_name(function)}: {function_description}\n  inputs:\n{inputs}\n"
 
     def to_fully_qualified_name(self, function: FunctionView):
         return f"{function.skill_name}.{function.name}"
