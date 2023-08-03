@@ -1,0 +1,4161 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "230730",
+    "title": "PlayFab Admin API",
+    "description": "APIs for managing title configurations, uploaded Game Server code executables, and user data",
+    "termsOfService": "https://playfab.com/terms/",
+    "contact": {
+      "url": "https://community.playfab.com/index.html"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://github.com/PlayFab/API_Specs/blob/master/LICENSE"
+    }
+  },
+  "host": "titleId.playfabapi.com",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/Admin/CreateSegment": {
+      "post": {
+        "operationId": "CreateSegment",
+        "tags": [
+          "Segments"
+        ],
+        "description": "Creates a new player segment by defining the conditions on player properties. Also, create actions to target the player segments for a title.",
+        "externalDocs": {
+          "url": "https://docs.microsoft.com/rest/api/playfab/admin/segments/createsegment"
+        },
+        "parameters": [
+          {
+            "$ref": "#/parameters/CreateSegmentRequest"
+          }
+        ],
+        "security": [
+          {
+            "SecretKey": [
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/CreateSegmentResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiErrorWrapper"
+          }
+        },
+        "x-requestDetails": "Send all the segment details part of CreateSegmentRequest",
+        "x-ms-docs-errors": [
+          "InvalidSegment",
+          "NameNotAvailable",
+          "SegmentManagementInvalidInput",
+          "SegmentManagementInvalidSegmentId",
+          "SegmentManagementInvalidSegmentName",
+          "SegmentManagementNoExpressionTree",
+          "SegmentManagementSegmentCountOverLimit",
+          "SegmentManagementTriggerActionCountOverLimit",
+          "UnknownError"
+        ]
+      }
+    },
+    "/Admin/DeleteSegment": {
+      "post": {
+        "operationId": "DeleteSegment",
+        "tags": [
+          "Segments"
+        ],
+        "description": "Deletes an existing player segment and its associated action(s) for a title.",
+        "externalDocs": {
+          "url": "https://docs.microsoft.com/rest/api/playfab/admin/segments/deletesegment"
+        },
+        "parameters": [
+          {
+            "$ref": "#/parameters/DeleteSegmentRequest"
+          }
+        ],
+        "security": [
+          {
+            "SecretKey": [
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DeleteSegmentsResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiErrorWrapper"
+          }
+        },
+        "x-requestDetails": "Send segment id planning to delete part of DeleteSegmentRequest object",
+        "x-ms-docs-errors": [
+          "SegmentManagementInvalidSegmentId",
+          "UnknownError"
+        ]
+      }
+    },
+    "/Admin/GetDataReport": {
+      "post": {
+        "operationId": "GetDataReport",
+        "tags": [
+          "Player Data Management"
+        ],
+        "description": "Retrieves a download URL for the requested report",
+        "externalDocs": {
+          "url": "https://docs.microsoft.com/rest/api/playfab/admin/player-data-management/getdatareport"
+        },
+        "parameters": [
+          {
+            "$ref": "#/parameters/GetDataReportRequest"
+          }
+        ],
+        "security": [
+          {
+            "SecretKey": [
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetDataReportResult"
+          },
+          "400": {
+            "$ref": "#/responses/ApiErrorWrapper"
+          }
+        },
+        "x-requestDetails": "Gets the download URL for the requested report data (in CSV form). The reports available through this API call are those available in the Game Manager, in the Analytics->Reports tab.",
+        "x-ms-docs-errors": [
+          "InvalidReportDate",
+          "ReportNotAvailable"
+        ]
+      }
+    },
+    "/Admin/GetPlayerStatisticDefinitions": {
+      "post": {
+        "operationId": "GetPlayerStatisticDefinitions",
+        "tags": [
+          "Player Data Management"
+        ],
+        "description": "Retrieves the configuration information for all player statistics defined in the title, regardless of whether they have a reset interval.",
+        "externalDocs": {
+          "url": "https://docs.microsoft.com/rest/api/playfab/admin/player-data-management/getplayerstatisticdefinitions"
+        },
+        "parameters": [
+          {
+            "$ref": "#/parameters/GetPlayerStatisticDefinitionsRequest"
+          }
+        ],
+        "security": [
+          {
+            "SecretKey": [
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetPlayerStatisticDefinitionsResult"
+          },
+          "400": {
+            "$ref": "#/responses/ApiErrorWrapper"
+          }
+        },
+        "x-responseDetails": "Statistics are numeric values, with each statistic in the title also generating a leaderboard. The ResetInterval defines the period of time at which the leaderboard for the statistic will automatically reset. Upon reset, the statistic updates to a new version with no values (effectively removing all players from the leaderboard). The previous version's statistic values are also archived for retrieval, if needed (see GetPlayerStatisticVersions). Statistics not created via a call to CreatePlayerStatisticDefinition by default have a VersionChangeInterval of Never, meaning they do not reset on a schedule, but they can be set to do so via a call to UpdatePlayerStatisticDefinition. Once a statistic has been reset (sometimes referred to as versioned or incremented), the previous version can still be written to for up a short, pre-defined period (currently 10 seconds), to prevent issues with levels completing around the time of the reset. Also, once reset, the historical statistics for players in the title may be retrieved using the URL specified in the version information (GetPlayerStatisticVersions). The AggregationMethod defines what action is taken when a new statistic value is submitted - always update with the new value (Last), use the highest of the old and new values (Max), use the smallest (Min), or add them together (Sum).",
+        "x-seeAlso": [
+          "Admin/CreatePlayerStatisticDefinition",
+          "Client/GetPlayerStatistics",
+          "Server/GetPlayerStatistics",
+          "Admin/UpdatePlayerStatisticDefinition",
+          "Client/UpdatePlayerStatistics",
+          "Server/UpdatePlayerStatistics"
+        ]
+      }
+    },
+    "/Admin/GetPlayerStatisticVersions": {
+      "post": {
+        "operationId": "GetPlayerStatisticVersions",
+        "tags": [
+          "Player Data Management"
+        ],
+        "description": "Retrieves the information on the available versions of the specified statistic.",
+        "externalDocs": {
+          "url": "https://docs.microsoft.com/rest/api/playfab/admin/player-data-management/getplayerstatisticversions"
+        },
+        "parameters": [
+          {
+            "$ref": "#/parameters/GetPlayerStatisticVersionsRequest"
+          }
+        ],
+        "security": [
+          {
+            "SecretKey": [
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetPlayerStatisticVersionsResult"
+          },
+          "400": {
+            "$ref": "#/responses/ApiErrorWrapper"
+          }
+        },
+        "x-responseDetails": "Statistics are numeric values, with each statistic in the title also generating a leaderboard. The information returned in the results defines the state of a specific version of a statistic, including when it was or will become the currently active version, when it will (or did) become a previous version, and its archival state if it is no longer the active version. For a statistic which has been reset, once the archival status is Complete, the full set of statistics for all players in the leaderboard for that version may be retrieved via the ArchiveDownloadUrl. Statistics which have not been reset (incremented/versioned) will only have a single version which is not scheduled to reset.",
+        "x-seeAlso": [
+          "Admin/CreatePlayerStatisticDefinition",
+          "Admin/GetPlayerStatisticDefinitions",
+          "Client/GetPlayerStatistics",
+          "Server/GetPlayerStatistics",
+          "Admin/UpdatePlayerStatisticDefinition",
+          "Client/UpdatePlayerStatistics",
+          "Server/UpdatePlayerStatistics"
+        ],
+        "x-ms-docs-errors": [
+          "StatisticNotFound"
+        ]
+      }
+    },
+    "/Admin/GetSegments": {
+      "post": {
+        "operationId": "GetSegments",
+        "tags": [
+          "Segments"
+        ],
+        "description": "Get detail information of a segment and its associated definition(s) and action(s) for a title.",
+        "externalDocs": {
+          "url": "https://docs.microsoft.com/rest/api/playfab/admin/segments/getsegments"
+        },
+        "parameters": [
+          {
+            "$ref": "#/parameters/GetSegmentsRequest"
+          }
+        ],
+        "security": [
+          {
+            "SecretKey": [
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetSegmentsResponse"
+          },
+          "400": {
+            "$ref": "#/responses/ApiErrorWrapper"
+          }
+        },
+        "x-requestDetails": "Send segment filter details part of GetSegmentsRequest object",
+        "x-ms-docs-errors": [
+          "GetSegmentsRateLimitExceeded",
+          "UnknownError"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ApiErrorWrapper": {
+      "description": "The basic wrapper around every failed API response",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Numerical HTTP code",
+          "type": "integer"
+        },
+        "status": {
+          "description": "String HTTP code",
+          "type": "string"
+        },
+        "error": {
+          "description": "Playfab error code",
+          "type": "string"
+        },
+        "errorCode": {
+          "description": "Numerical PlayFab error code",
+          "type": "integer"
+        },
+        "errorMessage": {
+          "description": "Description for the PlayFab errorCode",
+          "type": "string"
+        },
+        "errorDetails": {
+          "description": "Detailed description of individual issues with the request object",
+          "type": "object"
+        }
+      },
+      "required": [
+        "code",
+        "errorCode"
+      ]
+    },
+    "AdCampaignAttribution": {
+      "type": "object",
+      "properties": {
+        "AttributedAt": {
+          "description": "UTC time stamp of attribution",
+          "type": "string"
+        },
+        "CampaignId": {
+          "description": "Attribution campaign identifier",
+          "type": "string"
+        },
+        "Platform": {
+          "description": "Attribution network name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "AttributedAt"
+      ]
+    },
+    "AdCampaignAttributionModel": {
+      "type": "object",
+      "properties": {
+        "AttributedAt": {
+          "description": "UTC time stamp of attribution",
+          "type": "string"
+        },
+        "CampaignId": {
+          "description": "Attribution campaign identifier",
+          "type": "string"
+        },
+        "Platform": {
+          "description": "Attribution network name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "AttributedAt"
+      ]
+    },
+    "AdCampaignSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "CampaignId": {
+          "description": "Campaign id.",
+          "type": "string"
+        },
+        "CampaignSource": {
+          "description": "Campaign source.",
+          "type": "string"
+        },
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Campaign comparison.",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "AllPlayersSegmentFilter": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "BanInfo": {
+      "description": "Contains information for a ban.",
+      "type": "object",
+      "properties": {
+        "Active": {
+          "description": "The active state of this ban. Expired bans may still have this value set to true but they will have no effect.",
+          "type": "boolean"
+        },
+        "BanId": {
+          "description": "The unique Ban Id associated with this ban.",
+          "type": "string"
+        },
+        "Created": {
+          "description": "The time when this ban was applied.",
+          "type": "string"
+        },
+        "Expires": {
+          "description": "The time when this ban expires. Permanent bans do not have expiration date.",
+          "type": "string"
+        },
+        "IPAddress": {
+          "description": "The IP address on which the ban was applied. May affect multiple players.",
+          "type": "string"
+        },
+        "PlayFabId": {
+          "description": "Unique PlayFab assigned ID of the user on whom the operation will be performed.",
+          "type": "string"
+        },
+        "Reason": {
+          "description": "The reason why this ban was applied.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "Active"
+      ]
+    },
+    "BanPlayerSegmentAction": {
+      "type": "object",
+      "properties": {
+        "BanHours": {
+          "description": "Ban hours duration.",
+          "type": "number",
+          "x-actualtype": "uint32"
+        },
+        "ReasonForBan": {
+          "description": "Reason for ban.",
+          "type": "string"
+        }
+      }
+    },
+    "BanRequest": {
+      "description": "Represents a single ban request.",
+      "type": "object",
+      "properties": {
+        "DurationInHours": {
+          "description": "The duration in hours for the ban. Leave this blank for a permanent ban.",
+          "type": "number",
+          "x-actualtype": "uint32"
+        },
+        "IPAddress": {
+          "description": "IP address to be banned. May affect multiple players.",
+          "type": "string"
+        },
+        "PlayFabId": {
+          "description": "Unique PlayFab assigned ID of the user on whom the operation will be performed.",
+          "type": "string"
+        },
+        "Reason": {
+          "description": "The reason for this ban. Maximum 140 characters.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "PlayFabId"
+      ]
+    },
+    "BlankResult": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "ChurnPredictionSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Comparison",
+          "type": "string",
+          "x-isenum": true
+        },
+        "RiskLevel": {
+          "$ref": "#/definitions/ChurnRiskLevel",
+          "description": "RiskLevel",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "ChurnRiskLevel": {
+      "type": "string",
+      "enum": [
+        "NoData",
+        "LowRisk",
+        "MediumRisk",
+        "HighRisk"
+      ]
+    },
+    "Conditionals": {
+      "type": "string",
+      "enum": [
+        "Any",
+        "True",
+        "False"
+      ]
+    },
+    "ContactEmailInfo": {
+      "type": "object",
+      "properties": {
+        "EmailAddress": {
+          "description": "The email address",
+          "type": "string"
+        },
+        "Name": {
+          "description": "The name of the email info data",
+          "type": "string"
+        },
+        "VerificationStatus": {
+          "$ref": "#/definitions/EmailVerificationStatus",
+          "description": "The verification status of the email",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "ContactEmailInfoModel": {
+      "type": "object",
+      "properties": {
+        "EmailAddress": {
+          "description": "The email address",
+          "type": "string"
+        },
+        "Name": {
+          "description": "The name of the email info data",
+          "type": "string"
+        },
+        "VerificationStatus": {
+          "$ref": "#/definitions/EmailVerificationStatus",
+          "description": "The verification status of the email",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "ContinentCode": {
+      "type": "string",
+      "enum": [
+        "AF",
+        "AN",
+        "AS",
+        "EU",
+        "NA",
+        "OC",
+        "SA"
+      ]
+    },
+    "CountryCode": {
+      "type": "string",
+      "enum": [
+        "AF",
+        "AX",
+        "AL",
+        "DZ",
+        "AS",
+        "AD",
+        "AO",
+        "AI",
+        "AQ",
+        "AG",
+        "AR",
+        "AM",
+        "AW",
+        "AU",
+        "AT",
+        "AZ",
+        "BS",
+        "BH",
+        "BD",
+        "BB",
+        "BY",
+        "BE",
+        "BZ",
+        "BJ",
+        "BM",
+        "BT",
+        "BO",
+        "BQ",
+        "BA",
+        "BW",
+        "BV",
+        "BR",
+        "IO",
+        "BN",
+        "BG",
+        "BF",
+        "BI",
+        "KH",
+        "CM",
+        "CA",
+        "CV",
+        "KY",
+        "CF",
+        "TD",
+        "CL",
+        "CN",
+        "CX",
+        "CC",
+        "CO",
+        "KM",
+        "CG",
+        "CD",
+        "CK",
+        "CR",
+        "CI",
+        "HR",
+        "CU",
+        "CW",
+        "CY",
+        "CZ",
+        "DK",
+        "DJ",
+        "DM",
+        "DO",
+        "EC",
+        "EG",
+        "SV",
+        "GQ",
+        "ER",
+        "EE",
+        "ET",
+        "FK",
+        "FO",
+        "FJ",
+        "FI",
+        "FR",
+        "GF",
+        "PF",
+        "TF",
+        "GA",
+        "GM",
+        "GE",
+        "DE",
+        "GH",
+        "GI",
+        "GR",
+        "GL",
+        "GD",
+        "GP",
+        "GU",
+        "GT",
+        "GG",
+        "GN",
+        "GW",
+        "GY",
+        "HT",
+        "HM",
+        "VA",
+        "HN",
+        "HK",
+        "HU",
+        "IS",
+        "IN",
+        "ID",
+        "IR",
+        "IQ",
+        "IE",
+        "IM",
+        "IL",
+        "IT",
+        "JM",
+        "JP",
+        "JE",
+        "JO",
+        "KZ",
+        "KE",
+        "KI",
+        "KP",
+        "KR",
+        "KW",
+        "KG",
+        "LA",
+        "LV",
+        "LB",
+        "LS",
+        "LR",
+        "LY",
+        "LI",
+        "LT",
+        "LU",
+        "MO",
+        "MK",
+        "MG",
+        "MW",
+        "MY",
+        "MV",
+        "ML",
+        "MT",
+        "MH",
+        "MQ",
+        "MR",
+        "MU",
+        "YT",
+        "MX",
+        "FM",
+        "MD",
+        "MC",
+        "MN",
+        "ME",
+        "MS",
+        "MA",
+        "MZ",
+        "MM",
+        "NA",
+        "NR",
+        "NP",
+        "NL",
+        "NC",
+        "NZ",
+        "NI",
+        "NE",
+        "NG",
+        "NU",
+        "NF",
+        "MP",
+        "NO",
+        "OM",
+        "PK",
+        "PW",
+        "PS",
+        "PA",
+        "PG",
+        "PY",
+        "PE",
+        "PH",
+        "PN",
+        "PL",
+        "PT",
+        "PR",
+        "QA",
+        "RE",
+        "RO",
+        "RU",
+        "RW",
+        "BL",
+        "SH",
+        "KN",
+        "LC",
+        "MF",
+        "PM",
+        "VC",
+        "WS",
+        "SM",
+        "ST",
+        "SA",
+        "SN",
+        "RS",
+        "SC",
+        "SL",
+        "SG",
+        "SX",
+        "SK",
+        "SI",
+        "SB",
+        "SO",
+        "ZA",
+        "GS",
+        "SS",
+        "ES",
+        "LK",
+        "SD",
+        "SR",
+        "SJ",
+        "SZ",
+        "SE",
+        "CH",
+        "SY",
+        "TW",
+        "TJ",
+        "TZ",
+        "TH",
+        "TL",
+        "TG",
+        "TK",
+        "TO",
+        "TT",
+        "TN",
+        "TR",
+        "TM",
+        "TC",
+        "TV",
+        "UG",
+        "UA",
+        "AE",
+        "GB",
+        "US",
+        "UM",
+        "UY",
+        "UZ",
+        "VU",
+        "VE",
+        "VN",
+        "VG",
+        "VI",
+        "WF",
+        "EH",
+        "YE",
+        "ZM",
+        "ZW"
+      ]
+    },
+    "CreateSegmentRequest": {
+      "description": "Send all the segment details part of CreateSegmentRequest",
+      "type": "object",
+      "properties": {
+        "SegmentModel": {
+          "$ref": "#/definitions/SegmentModel",
+          "description": "Segment model with all of the segment properties data.",
+          "type": "object",
+          "x-isclass": true
+        }
+      },
+      "required": [
+        "SegmentModel"
+      ],
+      "example": {
+        "SegmentModel": {
+          "Name": "My user segment",
+          "SegmentOrDefinitions": [
+            {
+              "SegmentAndDefinitions": [
+                {
+                  "AllPlayersFilter": {
+                  }
+                }
+              ]
+            }
+          ],
+          "EnteredSegmentActions": [
+            {
+              "BanPlayerAction": {
+                "BanHours": 2,
+                "ReasonForBan": "Not played for a year"
+              }
+            }
+          ],
+          "LeftSegmentActions": [
+            {
+              "ExecuteAzureFunctionAction": {
+                "AzureFunction": "AzureFunction1",
+                "FunctionParameter": "{\"InputParam\": \"1\"}"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "CreateSegmentResponse": {
+      "type": "object",
+      "properties": {
+        "ErrorMessage": {
+          "description": "Error message.",
+          "type": "string"
+        },
+        "SegmentId": {
+          "description": "Segment id.",
+          "type": "string"
+        }
+      }
+    },
+    "Currency": {
+      "type": "string",
+      "enum": [
+        "AED",
+        "AFN",
+        "ALL",
+        "AMD",
+        "ANG",
+        "AOA",
+        "ARS",
+        "AUD",
+        "AWG",
+        "AZN",
+        "BAM",
+        "BBD",
+        "BDT",
+        "BGN",
+        "BHD",
+        "BIF",
+        "BMD",
+        "BND",
+        "BOB",
+        "BRL",
+        "BSD",
+        "BTN",
+        "BWP",
+        "BYR",
+        "BZD",
+        "CAD",
+        "CDF",
+        "CHF",
+        "CLP",
+        "CNY",
+        "COP",
+        "CRC",
+        "CUC",
+        "CUP",
+        "CVE",
+        "CZK",
+        "DJF",
+        "DKK",
+        "DOP",
+        "DZD",
+        "EGP",
+        "ERN",
+        "ETB",
+        "EUR",
+        "FJD",
+        "FKP",
+        "GBP",
+        "GEL",
+        "GGP",
+        "GHS",
+        "GIP",
+        "GMD",
+        "GNF",
+        "GTQ",
+        "GYD",
+        "HKD",
+        "HNL",
+        "HRK",
+        "HTG",
+        "HUF",
+        "IDR",
+        "ILS",
+        "IMP",
+        "INR",
+        "IQD",
+        "IRR",
+        "ISK",
+        "JEP",
+        "JMD",
+        "JOD",
+        "JPY",
+        "KES",
+        "KGS",
+        "KHR",
+        "KMF",
+        "KPW",
+        "KRW",
+        "KWD",
+        "KYD",
+        "KZT",
+        "LAK",
+        "LBP",
+        "LKR",
+        "LRD",
+        "LSL",
+        "LYD",
+        "MAD",
+        "MDL",
+        "MGA",
+        "MKD",
+        "MMK",
+        "MNT",
+        "MOP",
+        "MRO",
+        "MUR",
+        "MVR",
+        "MWK",
+        "MXN",
+        "MYR",
+        "MZN",
+        "NAD",
+        "NGN",
+        "NIO",
+        "NOK",
+        "NPR",
+        "NZD",
+        "OMR",
+        "PAB",
+        "PEN",
+        "PGK",
+        "PHP",
+        "PKR",
+        "PLN",
+        "PYG",
+        "QAR",
+        "RON",
+        "RSD",
+        "RUB",
+        "RWF",
+        "SAR",
+        "SBD",
+        "SCR",
+        "SDG",
+        "SEK",
+        "SGD",
+        "SHP",
+        "SLL",
+        "SOS",
+        "SPL",
+        "SRD",
+        "STD",
+        "SVC",
+        "SYP",
+        "SZL",
+        "THB",
+        "TJS",
+        "TMT",
+        "TND",
+        "TOP",
+        "TRY",
+        "TTD",
+        "TVD",
+        "TWD",
+        "TZS",
+        "UAH",
+        "UGX",
+        "USD",
+        "UYU",
+        "UZS",
+        "VEF",
+        "VND",
+        "VUV",
+        "WST",
+        "XAF",
+        "XCD",
+        "XDR",
+        "XOF",
+        "XPF",
+        "YER",
+        "ZAR",
+        "ZMW",
+        "ZWD"
+      ]
+    },
+    "DeletePlayerRequest": {
+      "description": "Deletes all data associated with the player, including statistics, custom data, inventory, purchases, virtual currency balances, characters and shared group memberships. Removes the player from all leaderboards and player search indexes. Does not delete PlayStream event history associated with the player. Does not delete the publisher user account that created the player in the title nor associated data such as username, password, email address, account linkages, or friends list. Note, this API queues the player for deletion and returns immediately. It may take several minutes or more before all player data is fully deleted. Until the player data is fully deleted, attempts to recreate the player with the same user account in the same title will fail with the 'AccountDeleted' error.",
+      "type": "object",
+      "properties": {
+        "PlayFabId": {
+          "description": "Unique PlayFab assigned ID of the user on whom the operation will be performed.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "PlayFabId"
+      ],
+      "example": {
+        "PlayFabId": "A68C908B66C23C5"
+      }
+    },
+    "DeletePlayerResult": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "DeletePlayerSegmentAction": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "DeletePlayerSharedSecretRequest": {
+      "description": "Player Shared Secret Keys are used for the call to Client/GetTitlePublicKey, which exchanges the shared secret for an RSA CSP blob to be used to encrypt the payload of account creation requests when that API requires a signature header.",
+      "type": "object",
+      "properties": {
+        "SecretKey": {
+          "description": "The shared secret key to delete",
+          "type": "string"
+        }
+      },
+      "example": {
+        "SecretKey": "keysaresecret"
+      }
+    },
+    "DeletePlayerSharedSecretResult": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "DeletePlayerStatisticSegmentAction": {
+      "type": "object",
+      "properties": {
+        "StatisticName": {
+          "description": "Statistic name.",
+          "type": "string"
+        }
+      }
+    },
+    "DeleteSegmentRequest": {
+      "description": "Send segment id planning to delete part of DeleteSegmentRequest object",
+      "type": "object",
+      "properties": {
+        "SegmentId": {
+          "description": "Segment id.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "SegmentId"
+      ],
+      "example": {
+        "SegmentId": "97EF0E9302CBE996"
+      }
+    },
+    "DeleteSegmentsResponse": {
+      "type": "object",
+      "properties": {
+        "ErrorMessage": {
+          "description": "Error message.",
+          "type": "string"
+        }
+      }
+    },
+    "EffectType": {
+      "type": "string",
+      "enum": [
+        "Allow",
+        "Deny"
+      ]
+    },
+    "EmailNotificationSegmentAction": {
+      "type": "object",
+      "properties": {
+        "EmailTemplateId": {
+          "description": "Email template id.",
+          "type": "string"
+        },
+        "EmailTemplateName": {
+          "description": "Email template name.",
+          "type": "string"
+        }
+      }
+    },
+    "EmptyResponse": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "EmailVerificationStatus": {
+      "type": "string",
+      "enum": [
+        "Unverified",
+        "Pending",
+        "Confirmed"
+      ]
+    },
+    "ExecuteAzureFunctionSegmentAction": {
+      "type": "object",
+      "properties": {
+        "AzureFunction": {
+          "description": "Azure function.",
+          "type": "string"
+        },
+        "FunctionParameter": {
+          "description": "Azure function parameter.",
+          "type": "object"
+        },
+        "GenerateFunctionExecutedEvents": {
+          "description": "Generate play stream event.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "GenerateFunctionExecutedEvents"
+      ]
+    },
+    "ExecuteCloudScriptSegmentAction": {
+      "type": "object",
+      "properties": {
+        "CloudScriptFunction": {
+          "description": "Cloud script function.",
+          "type": "string"
+        },
+        "CloudScriptPublishResultsToPlayStream": {
+          "description": "Generate play stream event.",
+          "type": "boolean"
+        },
+        "FunctionParameter": {
+          "description": "Cloud script function parameter.",
+          "type": "object"
+        },
+        "FunctionParameterJson": {
+          "description": "Cloud script function parameter json text.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "CloudScriptPublishResultsToPlayStream"
+      ]
+    },
+    "FirstLoginDateSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "First player login date comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "LogInDate": {
+          "description": "First player login date.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "LogInDate"
+      ]
+    },
+    "FirstLoginTimespanSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "First player login duration comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "DurationInMinutes": {
+          "description": "First player login duration.",
+          "type": "number",
+          "x-actualtype": "double"
+        }
+      },
+      "required": [
+        "DurationInMinutes"
+      ]
+    },
+    "GenericErrorCodes": {
+      "type": "string",
+      "enum": [
+        "Success",
+        "UnkownError",
+        "InvalidParams",
+        "AccountNotFound",
+        "AccountBanned",
+        "InvalidUsernameOrPassword",
+        "InvalidTitleId",
+        "InvalidEmailAddress",
+        "EmailAddressNotAvailable",
+        "InvalidUsername",
+        "InvalidPassword",
+        "UsernameNotAvailable",
+        "InvalidSteamTicket",
+        "AccountAlreadyLinked",
+        "LinkedAccountAlreadyClaimed",
+        "InvalidFacebookToken",
+        "AccountNotLinked",
+        "FailedByPaymentProvider",
+        "CouponCodeNotFound",
+        "InvalidContainerItem",
+        "ContainerNotOwned",
+        "KeyNotOwned",
+        "InvalidItemIdInTable",
+        "InvalidReceipt",
+        "ReceiptAlreadyUsed",
+        "ReceiptCancelled",
+        "GameNotFound",
+        "GameModeNotFound",
+        "InvalidGoogleToken",
+        "UserIsNotPartOfDeveloper",
+        "InvalidTitleForDeveloper",
+        "TitleNameConflicts",
+        "UserisNotValid",
+        "ValueAlreadyExists",
+        "BuildNotFound",
+        "PlayerNotInGame",
+        "InvalidTicket",
+        "InvalidDeveloper",
+        "InvalidOrderInfo",
+        "RegistrationIncomplete",
+        "InvalidPlatform",
+        "UnknownError",
+        "SteamApplicationNotOwned",
+        "WrongSteamAccount",
+        "TitleNotActivated",
+        "RegistrationSessionNotFound",
+        "NoSuchMod",
+        "FileNotFound",
+        "DuplicateEmail",
+        "ItemNotFound",
+        "ItemNotOwned",
+        "ItemNotRecycleable",
+        "ItemNotAffordable",
+        "InvalidVirtualCurrency",
+        "WrongVirtualCurrency",
+        "WrongPrice",
+        "NonPositiveValue",
+        "InvalidRegion",
+        "RegionAtCapacity",
+        "ServerFailedToStart",
+        "NameNotAvailable",
+        "InsufficientFunds",
+        "InvalidDeviceID",
+        "InvalidPushNotificationToken",
+        "NoRemainingUses",
+        "InvalidPaymentProvider",
+        "PurchaseInitializationFailure",
+        "DuplicateUsername",
+        "InvalidBuyerInfo",
+        "NoGameModeParamsSet",
+        "BodyTooLarge",
+        "ReservedWordInBody",
+        "InvalidTypeInBody",
+        "InvalidRequest",
+        "ReservedEventName",
+        "InvalidUserStatistics",
+        "NotAuthenticated",
+        "StreamAlreadyExists",
+        "ErrorCreatingStream",
+        "StreamNotFound",
+        "InvalidAccount",
+        "PurchaseDoesNotExist",
+        "InvalidPurchaseTransactionStatus",
+        "APINotEnabledForGameClientAccess",
+        "NoPushNotificationARNForTitle",
+        "BuildAlreadyExists",
+        "BuildPackageDoesNotExist",
+        "CustomAnalyticsEventsNotEnabledForTitle",
+        "InvalidSharedGroupId",
+        "NotAuthorized",
+        "MissingTitleGoogleProperties",
+        "InvalidItemProperties",
+        "InvalidPSNAuthCode",
+        "InvalidItemId",
+        "PushNotEnabledForAccount",
+        "PushServiceError",
+        "ReceiptDoesNotContainInAppItems",
+        "ReceiptContainsMultipleInAppItems",
+        "InvalidBundleID",
+        "JavascriptException",
+        "InvalidSessionTicket",
+        "UnableToConnectToDatabase",
+        "InternalServerError",
+        "InvalidReportDate",
+        "ReportNotAvailable",
+        "DatabaseThroughputExceeded",
+        "InvalidGameTicket",
+        "ExpiredGameTicket",
+        "GameTicketDoesNotMatchLobby",
+        "LinkedDeviceAlreadyClaimed",
+        "DeviceAlreadyLinked",
+        "DeviceNotLinked",
+        "PartialFailure",
+        "PublisherNotSet",
+        "ServiceUnavailable",
+        "VersionNotFound",
+        "RevisionNotFound",
+        "InvalidPublisherId",
+        "DownstreamServiceUnavailable",
+        "APINotIncludedInTitleUsageTier",
+        "DAULimitExceeded",
+        "APIRequestLimitExceeded",
+        "InvalidAPIEndpoint",
+        "BuildNotAvailable",
+        "ConcurrentEditError",
+        "ContentNotFound",
+        "CharacterNotFound",
+        "CloudScriptNotFound",
+        "ContentQuotaExceeded",
+        "InvalidCharacterStatistics",
+        "PhotonNotEnabledForTitle",
+        "PhotonApplicationNotFound",
+        "PhotonApplicationNotAssociatedWithTitle",
+        "InvalidEmailOrPassword",
+        "FacebookAPIError",
+        "InvalidContentType",
+        "KeyLengthExceeded",
+        "DataLengthExceeded",
+        "TooManyKeys",
+        "FreeTierCannotHaveVirtualCurrency",
+        "MissingAmazonSharedKey",
+        "AmazonValidationError",
+        "InvalidPSNIssuerId",
+        "PSNInaccessible",
+        "ExpiredAuthToken",
+        "FailedToGetEntitlements",
+        "FailedToConsumeEntitlement",
+        "TradeAcceptingUserNotAllowed",
+        "TradeInventoryItemIsAssignedToCharacter",
+        "TradeInventoryItemIsBundle",
+        "TradeStatusNotValidForCancelling",
+        "TradeStatusNotValidForAccepting",
+        "TradeDoesNotExist",
+        "TradeCancelled",
+        "TradeAlreadyFilled",
+        "TradeWaitForStatusTimeout",
+        "TradeInventoryItemExpired",
+        "TradeMissingOfferedAndAcceptedItems",
+        "TradeAcceptedItemIsBundle",
+        "TradeAcceptedItemIsStackable",
+        "TradeInventoryItemInvalidStatus",
+        "TradeAcceptedCatalogItemInvalid",
+        "TradeAllowedUsersInvalid",
+        "TradeInventoryItemDoesNotExist",
+        "TradeInventoryItemIsConsumed",
+        "TradeInventoryItemIsStackable",
+        "TradeAcceptedItemsMismatch",
+        "InvalidKongregateToken",
+        "FeatureNotConfiguredForTitle",
+        "NoMatchingCatalogItemForReceipt",
+        "InvalidCurrencyCode",
+        "NoRealMoneyPriceForCatalogItem",
+        "TradeInventoryItemIsNotTradable",
+        "TradeAcceptedCatalogItemIsNotTradable",
+        "UsersAlreadyFriends",
+        "LinkedIdentifierAlreadyClaimed",
+        "CustomIdNotLinked",
+        "TotalDataSizeExceeded",
+        "DeleteKeyConflict",
+        "InvalidXboxLiveToken",
+        "ExpiredXboxLiveToken",
+        "ResettableStatisticVersionRequired",
+        "NotAuthorizedByTitle",
+        "NoPartnerEnabled",
+        "InvalidPartnerResponse",
+        "APINotEnabledForGameServerAccess",
+        "StatisticNotFound",
+        "StatisticNameConflict",
+        "StatisticVersionClosedForWrites",
+        "StatisticVersionInvalid",
+        "APIClientRequestRateLimitExceeded",
+        "InvalidJSONContent",
+        "InvalidDropTable",
+        "StatisticVersionAlreadyIncrementedForScheduledInterval",
+        "StatisticCountLimitExceeded",
+        "StatisticVersionIncrementRateExceeded",
+        "ContainerKeyInvalid",
+        "CloudScriptExecutionTimeLimitExceeded",
+        "NoWritePermissionsForEvent",
+        "CloudScriptFunctionArgumentSizeExceeded",
+        "CloudScriptAPIRequestCountExceeded",
+        "CloudScriptAPIRequestError",
+        "CloudScriptHTTPRequestError",
+        "InsufficientGuildRole",
+        "GuildNotFound",
+        "OverLimit",
+        "EventNotFound",
+        "InvalidEventField",
+        "InvalidEventName",
+        "CatalogNotConfigured",
+        "OperationNotSupportedForPlatform",
+        "SegmentNotFound",
+        "StoreNotFound",
+        "InvalidStatisticName",
+        "TitleNotQualifiedForLimit",
+        "InvalidServiceLimitLevel",
+        "ServiceLimitLevelInTransition",
+        "CouponAlreadyRedeemed",
+        "GameServerBuildSizeLimitExceeded",
+        "GameServerBuildCountLimitExceeded",
+        "VirtualCurrencyCountLimitExceeded",
+        "VirtualCurrencyCodeExists",
+        "TitleNewsItemCountLimitExceeded",
+        "InvalidTwitchToken",
+        "TwitchResponseError",
+        "ProfaneDisplayName",
+        "UserAlreadyAdded",
+        "InvalidVirtualCurrencyCode",
+        "VirtualCurrencyCannotBeDeleted",
+        "IdentifierAlreadyClaimed",
+        "IdentifierNotLinked",
+        "InvalidContinuationToken",
+        "ExpiredContinuationToken",
+        "InvalidSegment",
+        "InvalidSessionId",
+        "SessionLogNotFound",
+        "InvalidSearchTerm",
+        "TwoFactorAuthenticationTokenRequired",
+        "GameServerHostCountLimitExceeded",
+        "PlayerTagCountLimitExceeded",
+        "RequestAlreadyRunning",
+        "ActionGroupNotFound",
+        "MaximumSegmentBulkActionJobsRunning",
+        "NoActionsOnPlayersInSegmentJob",
+        "DuplicateStatisticName",
+        "ScheduledTaskNameConflict",
+        "ScheduledTaskCreateConflict",
+        "InvalidScheduledTaskName",
+        "InvalidTaskSchedule",
+        "SteamNotEnabledForTitle",
+        "LimitNotAnUpgradeOption",
+        "NoSecretKeyEnabledForCloudScript",
+        "TaskNotFound",
+        "TaskInstanceNotFound",
+        "InvalidIdentityProviderId",
+        "MisconfiguredIdentityProvider",
+        "InvalidScheduledTaskType",
+        "BillingInformationRequired",
+        "LimitedEditionItemUnavailable",
+        "InvalidAdPlacementAndReward",
+        "AllAdPlacementViewsAlreadyConsumed",
+        "GoogleOAuthNotConfiguredForTitle",
+        "GoogleOAuthError",
+        "UserNotFriend",
+        "InvalidSignature",
+        "InvalidPublicKey",
+        "GoogleOAuthNoIdTokenIncludedInResponse",
+        "StatisticUpdateInProgress",
+        "LeaderboardVersionNotAvailable",
+        "StatisticAlreadyHasPrizeTable",
+        "PrizeTableHasOverlappingRanks",
+        "PrizeTableHasMissingRanks",
+        "PrizeTableRankStartsAtZero",
+        "InvalidStatistic",
+        "ExpressionParseFailure",
+        "ExpressionInvokeFailure",
+        "ExpressionTooLong",
+        "DataUpdateRateExceeded",
+        "RestrictedEmailDomain",
+        "EncryptionKeyDisabled",
+        "EncryptionKeyMissing",
+        "EncryptionKeyBroken",
+        "NoSharedSecretKeyConfigured",
+        "SecretKeyNotFound",
+        "PlayerSecretAlreadyConfigured",
+        "APIRequestsDisabledForTitle",
+        "InvalidSharedSecretKey",
+        "PrizeTableHasNoRanks",
+        "ProfileDoesNotExist",
+        "ContentS3OriginBucketNotConfigured",
+        "InvalidEnvironmentForReceipt",
+        "EncryptedRequestNotAllowed",
+        "SignedRequestNotAllowed",
+        "RequestViewConstraintParamsNotAllowed",
+        "BadPartnerConfiguration",
+        "XboxBPCertificateFailure",
+        "XboxXASSExchangeFailure",
+        "InvalidEntityId",
+        "StatisticValueAggregationOverflow",
+        "EmailMessageFromAddressIsMissing",
+        "EmailMessageToAddressIsMissing",
+        "SmtpServerAuthenticationError",
+        "SmtpServerLimitExceeded",
+        "SmtpServerInsufficientStorage",
+        "SmtpServerCommunicationError",
+        "SmtpServerGeneralFailure",
+        "EmailClientTimeout",
+        "EmailClientCanceledTask",
+        "EmailTemplateMissing",
+        "InvalidHostForTitleId",
+        "EmailConfirmationTokenDoesNotExist",
+        "EmailConfirmationTokenExpired",
+        "AccountDeleted",
+        "PlayerSecretNotConfigured",
+        "InvalidSignatureTime",
+        "NoContactEmailAddressFound",
+        "InvalidAuthToken",
+        "AuthTokenDoesNotExist",
+        "AuthTokenExpired",
+        "AuthTokenAlreadyUsedToResetPassword",
+        "MembershipNameTooLong",
+        "MembershipNotFound",
+        "GoogleServiceAccountInvalid",
+        "GoogleServiceAccountParseFailure",
+        "EntityTokenMissing",
+        "EntityTokenInvalid",
+        "EntityTokenExpired",
+        "EntityTokenRevoked",
+        "InvalidProductForSubscription",
+        "XboxInaccessible",
+        "SubscriptionAlreadyTaken",
+        "SmtpAddonNotEnabled",
+        "APIConcurrentRequestLimitExceeded",
+        "XboxRejectedXSTSExchangeRequest",
+        "VariableNotDefined",
+        "TemplateVersionNotDefined",
+        "FileTooLarge",
+        "TitleDeleted",
+        "TitleContainsUserAccounts",
+        "TitleDeletionPlayerCleanupFailure",
+        "EntityFileOperationPending",
+        "NoEntityFileOperationPending",
+        "EntityProfileVersionMismatch",
+        "TemplateVersionTooOld",
+        "MembershipDefinitionInUse",
+        "PaymentPageNotConfigured",
+        "FailedLoginAttemptRateLimitExceeded",
+        "EntityBlockedByGroup",
+        "RoleDoesNotExist",
+        "EntityIsAlreadyMember",
+        "DuplicateRoleId",
+        "GroupInvitationNotFound",
+        "GroupApplicationNotFound",
+        "OutstandingInvitationAcceptedInstead",
+        "OutstandingApplicationAcceptedInstead",
+        "RoleIsGroupDefaultMember",
+        "RoleIsGroupAdmin",
+        "RoleNameNotAvailable",
+        "GroupNameNotAvailable",
+        "EmailReportAlreadySent",
+        "EmailReportRecipientBlacklisted",
+        "EventNamespaceNotAllowed",
+        "EventEntityNotAllowed",
+        "InvalidEntityType",
+        "NullTokenResultFromAad",
+        "InvalidTokenResultFromAad",
+        "NoValidCertificateForAad",
+        "InvalidCertificateForAad",
+        "DuplicateDropTableId",
+        "MultiplayerServerError",
+        "MultiplayerServerTooManyRequests",
+        "MultiplayerServerNoContent",
+        "MultiplayerServerBadRequest",
+        "MultiplayerServerUnauthorized",
+        "MultiplayerServerForbidden",
+        "MultiplayerServerNotFound",
+        "MultiplayerServerConflict",
+        "MultiplayerServerInternalServerError",
+        "MultiplayerServerUnavailable",
+        "ExplicitContentDetected",
+        "PIIContentDetected",
+        "InvalidScheduledTaskParameter",
+        "PerEntityEventRateLimitExceeded",
+        "TitleDefaultLanguageNotSet",
+        "EmailTemplateMissingDefaultVersion",
+        "FacebookInstantGamesIdNotLinked",
+        "InvalidFacebookInstantGamesSignature",
+        "FacebookInstantGamesAuthNotConfiguredForTitle",
+        "EntityProfileConstraintValidationFailed",
+        "TelemetryIngestionKeyPending",
+        "TelemetryIngestionKeyNotFound",
+        "StatisticChildNameInvalid",
+        "DataIntegrityError",
+        "VirtualCurrencyCannotBeSetToOlderVersion",
+        "VirtualCurrencyMustBeWithinIntegerRange",
+        "EmailTemplateInvalidSyntax",
+        "EmailTemplateMissingCallback",
+        "PushNotificationTemplateInvalidPayload",
+        "InvalidLocalizedPushNotificationLanguage",
+        "MissingLocalizedPushNotificationMessage",
+        "PushNotificationTemplateMissingPlatformPayload",
+        "PushNotificationTemplatePayloadContainsInvalidJson",
+        "PushNotificationTemplateContainsInvalidIosPayload",
+        "PushNotificationTemplateContainsInvalidAndroidPayload",
+        "PushNotificationTemplateIosPayloadMissingNotificationBody",
+        "PushNotificationTemplateAndroidPayloadMissingNotificationBody",
+        "PushNotificationTemplateNotFound",
+        "PushNotificationTemplateMissingDefaultVersion",
+        "PushNotificationTemplateInvalidSyntax",
+        "PushNotificationTemplateNoCustomPayloadForV1",
+        "NoLeaderboardForStatistic",
+        "TitleNewsMissingDefaultLanguage",
+        "TitleNewsNotFound",
+        "TitleNewsDuplicateLanguage",
+        "TitleNewsMissingTitleOrBody",
+        "TitleNewsInvalidLanguage",
+        "EmailRecipientBlacklisted",
+        "InvalidGameCenterAuthRequest",
+        "GameCenterAuthenticationFailed",
+        "CannotEnablePartiesForTitle",
+        "PartyError",
+        "PartyRequests",
+        "PartyNoContent",
+        "PartyBadRequest",
+        "PartyUnauthorized",
+        "PartyForbidden",
+        "PartyNotFound",
+        "PartyConflict",
+        "PartyInternalServerError",
+        "PartyUnavailable",
+        "PartyTooManyRequests",
+        "PushNotificationTemplateMissingName",
+        "CannotEnableMultiplayerServersForTitle",
+        "WriteAttemptedDuringExport",
+        "MultiplayerServerTitleQuotaCoresExceeded",
+        "AutomationRuleNotFound",
+        "EntityAPIKeyLimitExceeded",
+        "EntityAPIKeyNotFound",
+        "EntityAPIKeyOrSecretInvalid",
+        "EconomyServiceUnavailable",
+        "EconomyServiceInternalError",
+        "QueryRateLimitExceeded",
+        "EntityAPIKeyCreationDisabledForEntity",
+        "ForbiddenByEntityPolicy",
+        "UpdateInventoryRateLimitExceeded",
+        "StudioCreationRateLimited",
+        "StudioCreationInProgress",
+        "DuplicateStudioName",
+        "StudioNotFound",
+        "StudioDeleted",
+        "StudioDeactivated",
+        "StudioActivated",
+        "TitleCreationRateLimited",
+        "TitleCreationInProgress",
+        "DuplicateTitleName",
+        "TitleActivationRateLimited",
+        "TitleActivationInProgress",
+        "TitleDeactivated",
+        "TitleActivated",
+        "CloudScriptAzureFunctionsExecutionTimeLimitExceeded",
+        "CloudScriptAzureFunctionsArgumentSizeExceeded",
+        "CloudScriptAzureFunctionsReturnSizeExceeded",
+        "CloudScriptAzureFunctionsHTTPRequestError",
+        "VirtualCurrencyBetaGetError",
+        "VirtualCurrencyBetaCreateError",
+        "VirtualCurrencyBetaInitialDepositSaveError",
+        "VirtualCurrencyBetaSaveError",
+        "VirtualCurrencyBetaDeleteError",
+        "VirtualCurrencyBetaRestoreError",
+        "VirtualCurrencyBetaSaveConflict",
+        "VirtualCurrencyBetaUpdateError",
+        "InsightsManagementDatabaseNotFound",
+        "InsightsManagementOperationNotFound",
+        "InsightsManagementErrorPendingOperationExists",
+        "InsightsManagementSetPerformanceLevelInvalidParameter",
+        "InsightsManagementSetStorageRetentionInvalidParameter",
+        "InsightsManagementGetStorageUsageInvalidParameter",
+        "InsightsManagementGetOperationStatusInvalidParameter",
+        "DuplicatePurchaseTransactionId",
+        "EvaluationModePlayerCountExceeded",
+        "GetPlayersInSegmentRateLimitExceeded",
+        "CloudScriptFunctionNameSizeExceeded",
+        "PaidInsightsFeaturesNotEnabled",
+        "CloudScriptAzureFunctionsQueueRequestError",
+        "EvaluationModeTitleCountExceeded",
+        "InsightsManagementTitleNotInFlight",
+        "LimitNotFound",
+        "LimitNotAvailableViaAPI",
+        "InsightsManagementSetStorageRetentionBelowMinimum",
+        "InsightsManagementSetStorageRetentionAboveMaximum",
+        "AppleNotEnabledForTitle",
+        "InsightsManagementNewActiveEventExportLimitInvalid",
+        "InsightsManagementSetPerformanceRateLimited",
+        "PartyRequestsThrottledFromRateLimiter",
+        "XboxServiceTooManyRequests",
+        "NintendoSwitchNotEnabledForTitle",
+        "RequestMultiplayerServersThrottledFromRateLimiter",
+        "TitleDataOverrideNotFound",
+        "DuplicateKeys",
+        "WasNotCreatedWithCloudRoot",
+        "LegacyMultiplayerServersDeprecated",
+        "VirtualCurrencyCurrentlyUnavailable",
+        "SteamUserNotFound",
+        "ElasticSearchOperationFailed",
+        "NotImplemented",
+        "PublisherNotFound",
+        "PublisherDeleted",
+        "ApiDisabledForMigration",
+        "ResourceNameUpdateNotAllowed",
+        "ApiNotEnabledForTitle",
+        "DuplicateTitleNameForPublisher",
+        "AzureTitleCreationInProgress",
+        "TitleConstraintsPublisherDeletion",
+        "InvalidPlayerAccountPoolId",
+        "PlayerAccountPoolNotFound",
+        "PlayerAccountPoolDeleted",
+        "TitleCleanupInProgress",
+        "AzureResourceConcurrentOperationInProgress",
+        "TitlePublisherUpdateNotAllowed",
+        "AzureResourceManagerNotSupportedInStamp",
+        "ApiNotIncludedInAzurePlayFabFeatureSet",
+        "GoogleServiceAccountFailedAuth",
+        "GoogleAPIServiceUnavailable",
+        "GoogleAPIServiceUnknownError",
+        "NoValidIdentityForAad",
+        "PlayerIdentityLinkNotFound",
+        "PhotonApplicationIdAlreadyInUse",
+        "CloudScriptUnableToDeleteProductionRevision",
+        "CustomIdNotFound",
+        "AutomationInvalidInput",
+        "AutomationInvalidRuleName",
+        "AutomationRuleAlreadyExists",
+        "AutomationRuleLimitExceeded",
+        "InvalidGooglePlayGamesServerAuthCode",
+        "PlayStreamConnectionFailed",
+        "InvalidEventContents",
+        "InsightsV1Deprecated",
+        "AnalysisSubscriptionNotFound",
+        "AnalysisSubscriptionFailed",
+        "AnalysisSubscriptionFoundAlready",
+        "AnalysisSubscriptionManagementInvalidInput",
+        "InvalidGameCenterId",
+        "InvalidNintendoSwitchAccountId",
+        "EntityAPIKeysNotSupported",
+        "IpAddressBanned",
+        "EntityLineageBanned",
+        "NamespaceMismatch",
+        "InvalidServiceConfiguration",
+        "InvalidNamespaceMismatch",
+        "MatchmakingEntityInvalid",
+        "MatchmakingPlayerAttributesInvalid",
+        "MatchmakingQueueNotFound",
+        "MatchmakingMatchNotFound",
+        "MatchmakingTicketNotFound",
+        "MatchmakingAlreadyJoinedTicket",
+        "MatchmakingTicketAlreadyCompleted",
+        "MatchmakingQueueConfigInvalid",
+        "MatchmakingMemberProfileInvalid",
+        "NintendoSwitchDeviceIdNotLinked",
+        "MatchmakingNotEnabled",
+        "MatchmakingPlayerAttributesTooLarge",
+        "MatchmakingNumberOfPlayersInTicketTooLarge",
+        "MatchmakingAttributeInvalid",
+        "MatchmakingPlayerHasNotJoinedTicket",
+        "MatchmakingRateLimitExceeded",
+        "MatchmakingTicketMembershipLimitExceeded",
+        "MatchmakingUnauthorized",
+        "MatchmakingQueueLimitExceeded",
+        "MatchmakingRequestTypeMismatch",
+        "MatchmakingBadRequest",
+        "PubSubFeatureNotEnabledForTitle",
+        "PubSubTooManyRequests",
+        "PubSubConnectionNotFoundForEntity",
+        "PubSubConnectionHandleInvalid",
+        "PubSubSubscriptionLimitExceeded",
+        "TitleConfigNotFound",
+        "TitleConfigUpdateConflict",
+        "TitleConfigSerializationError",
+        "CatalogApiNotImplemented",
+        "CatalogEntityInvalid",
+        "CatalogTitleIdMissing",
+        "CatalogPlayerIdMissing",
+        "CatalogClientIdentityInvalid",
+        "CatalogOneOrMoreFilesInvalid",
+        "CatalogItemMetadataInvalid",
+        "CatalogItemIdInvalid",
+        "CatalogSearchParameterInvalid",
+        "CatalogFeatureDisabled",
+        "CatalogConfigInvalid",
+        "CatalogItemTypeInvalid",
+        "CatalogBadRequest",
+        "CatalogTooManyRequests",
+        "ExportInvalidStatusUpdate",
+        "ExportInvalidPrefix",
+        "ExportBlobContainerDoesNotExist",
+        "ExportNotFound",
+        "ExportCouldNotUpdate",
+        "ExportInvalidStorageType",
+        "ExportAmazonBucketDoesNotExist",
+        "ExportInvalidBlobStorage",
+        "ExportKustoException",
+        "ExportKustoConnectionFailed",
+        "ExportUnknownError",
+        "ExportCantEditPendingExport",
+        "ExportLimitExports",
+        "ExportLimitEvents",
+        "ExportInvalidPartitionStatusModification",
+        "ExportCouldNotCreate",
+        "ExportNoBackingDatabaseFound",
+        "ExportCouldNotDelete",
+        "ExportCannotDetermineEventQuery",
+        "ExportInvalidQuerySchemaModification",
+        "ExportQuerySchemaMissingRequiredColumns",
+        "ExportCannotParseQuery",
+        "ExportControlCommandsNotAllowed",
+        "ExportQueryMissingTableReference",
+        "ExportInsightsV1Deprecated",
+        "ExplorerBasicInvalidQueryName",
+        "ExplorerBasicInvalidQueryDescription",
+        "ExplorerBasicInvalidQueryConditions",
+        "ExplorerBasicInvalidQueryStartDate",
+        "ExplorerBasicInvalidQueryEndDate",
+        "ExplorerBasicInvalidQueryGroupBy",
+        "ExplorerBasicInvalidQueryAggregateType",
+        "ExplorerBasicInvalidQueryAggregateProperty",
+        "ExplorerBasicLoadQueriesError",
+        "ExplorerBasicLoadQueryError",
+        "ExplorerBasicCreateQueryError",
+        "ExplorerBasicDeleteQueryError",
+        "ExplorerBasicUpdateQueryError",
+        "ExplorerBasicSavedQueriesLimit",
+        "ExplorerBasicSavedQueryNotFound",
+        "TenantShardMapperShardNotFound",
+        "TitleNotEnabledForParty",
+        "PartyVersionNotFound",
+        "MultiplayerServerBuildReferencedByMatchmakingQueue",
+        "MultiplayerServerBuildReferencedByBuildAlias",
+        "MultiplayerServerBuildAliasReferencedByMatchmakingQueue",
+        "PartySerializationError",
+        "ExperimentationExperimentStopped",
+        "ExperimentationExperimentRunning",
+        "ExperimentationExperimentNotFound",
+        "ExperimentationExperimentNeverStarted",
+        "ExperimentationExperimentDeleted",
+        "ExperimentationClientTimeout",
+        "ExperimentationInvalidVariantConfiguration",
+        "ExperimentationInvalidVariableConfiguration",
+        "ExperimentInvalidId",
+        "ExperimentationNoScorecard",
+        "ExperimentationTreatmentAssignmentFailed",
+        "ExperimentationTreatmentAssignmentDisabled",
+        "ExperimentationInvalidDuration",
+        "ExperimentationMaxExperimentsReached",
+        "ExperimentationExperimentSchedulingInProgress",
+        "ExperimentationInvalidEndDate",
+        "ExperimentationInvalidStartDate",
+        "ExperimentationMaxDurationExceeded",
+        "ExperimentationExclusionGroupNotFound",
+        "ExperimentationExclusionGroupInsufficientCapacity",
+        "ExperimentationExclusionGroupCannotDelete",
+        "ExperimentationExclusionGroupInvalidTrafficAllocation",
+        "ExperimentationExclusionGroupInvalidName",
+        "MaxActionDepthExceeded",
+        "TitleNotOnUpdatedPricingPlan",
+        "SegmentManagementTitleNotInFlight",
+        "SegmentManagementNoExpressionTree",
+        "SegmentManagementTriggerActionCountOverLimit",
+        "SegmentManagementSegmentCountOverLimit",
+        "SegmentManagementInvalidSegmentId",
+        "SegmentManagementInvalidInput",
+        "SegmentManagementInvalidSegmentName",
+        "DeleteSegmentRateLimitExceeded",
+        "CreateSegmentRateLimitExceeded",
+        "UpdateSegmentRateLimitExceeded",
+        "GetSegmentsRateLimitExceeded",
+        "AsyncExportNotInFlight",
+        "AsyncExportNotFound",
+        "AsyncExportRateLimitExceeded",
+        "AnalyticsSegmentCountOverLimit",
+        "SnapshotNotFound",
+        "InventoryApiNotImplemented",
+        "LobbyDoesNotExist",
+        "LobbyRateLimitExceeded",
+        "LobbyPlayerAlreadyJoined",
+        "LobbyNotJoinable",
+        "LobbyMemberCannotRejoin",
+        "LobbyCurrentPlayersMoreThanMaxPlayers",
+        "LobbyPlayerNotPresent",
+        "LobbyBadRequest",
+        "LobbyPlayerMaxLobbyLimitExceeded",
+        "LobbyNewOwnerMustBeConnected",
+        "LobbyCurrentOwnerStillConnected",
+        "LobbyMemberIsNotOwner",
+        "EventSamplingInvalidRatio",
+        "EventSamplingInvalidEventNamespace",
+        "EventSamplingInvalidEventName",
+        "EventSamplingRatioNotFound",
+        "TelemetryKeyNotFound",
+        "TelemetryKeyInvalidName",
+        "TelemetryKeyAlreadyExists",
+        "TelemetryKeyInvalid",
+        "TelemetryKeyCountOverLimit",
+        "TelemetryKeyDeactivated",
+        "TelemetryKeyLongInsightsRetentionNotAllowed",
+        "EventSinkConnectionInvalid",
+        "EventSinkConnectionUnauthorized",
+        "EventSinkRegionInvalid",
+        "EventSinkLimitExceeded",
+        "EventSinkSasTokenInvalid",
+        "EventSinkNotFound",
+        "EventSinkNameInvalid",
+        "EventSinkSasTokenPermissionInvalid",
+        "EventSinkSecretInvalid",
+        "EventSinkTenantNotFound",
+        "EventSinkAadNotFound",
+        "EventSinkDatabaseNotFound",
+        "OperationCanceled",
+        "InvalidDisplayNameRandomSuffixLength",
+        "AllowNonUniquePlayerDisplayNamesDisableNotAllowed",
+        "PartitionedEventInvalid",
+        "PartitionedEventCountOverLimit",
+        "PlayerCustomPropertiesPropertyNameTooLong",
+        "PlayerCustomPropertiesPropertyNameIsInvalid",
+        "PlayerCustomPropertiesStringPropertyValueTooLong",
+        "PlayerCustomPropertiesValueIsInvalidType",
+        "PlayerCustomPropertiesVersionMismatch",
+        "PlayerCustomPropertiesPropertyCountTooHigh",
+        "PlayerCustomPropertiesDuplicatePropertyName",
+        "PlayerCustomPropertiesPropertyDoesNotExist",
+        "AddonAlreadyExists",
+        "AddonDoesntExist"
+      ]
+    },
+    "GetContentUploadUrlResult": {
+      "type": "object",
+      "properties": {
+        "URL": {
+          "description": "URL for uploading content via HTTP PUT method. The URL requires the 'x-ms-blob-type' header to have the value 'BlockBlob'. The URL will expire in approximately one hour.",
+          "type": "string"
+        }
+      },
+      "example": {
+        "URL": "https://..."
+      }
+    },
+    "GetDataReportRequest": {
+      "description": "Gets the download URL for the requested report data (in CSV form). The reports available through this API call are those available in the Game Manager, in the Analytics->Reports tab.",
+      "type": "object",
+      "properties": {
+        "Day": {
+          "description": "Reporting year (UTC)",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "Month": {
+          "description": "Reporting month (UTC)",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "ReportName": {
+          "description": "Report name",
+          "type": "string"
+        },
+        "Year": {
+          "description": "Reporting year (UTC)",
+          "type": "number",
+          "x-actualtype": "int32"
+        }
+      },
+      "required": [
+        "ReportName",
+        "Year",
+        "Month",
+        "Day"
+      ],
+      "example": {
+        "ReportName": "PurchaseDataReport",
+        "Year": 2014,
+        "Month": 12,
+        "Day": 5
+      }
+    },
+    "GetDataReportResult": {
+      "type": "object",
+      "properties": {
+        "DownloadUrl": {
+          "description": "The URL where the requested report can be downloaded. This can be any PlayFab generated reports. The full list of reports can be found at: https://docs.microsoft.com/en-us/gaming/playfab/features/analytics/reports/quickstart.",
+          "type": "string"
+        }
+      },
+      "example": {
+        "DownloadUrl": "https://data-reports-dev.s3-us-west-1.amazonaws.com/2730/PurchaseDataReport/2014/12/5/data.json?AWSAccessKeyId=AKIAJB5VEITH4PHABPAA&Expires=1418151409&Signature=1cF0Xre4FETLW%2BIu5BCW0TL8ShQ%3D"
+      }
+    },
+    "GetPlayerStatisticDefinitionsRequest": {
+      "type": "object",
+      "properties": {
+      },
+      "example": {
+      }
+    },
+    "GetPlayerStatisticDefinitionsResult": {
+      "description": "Statistics are numeric values, with each statistic in the title also generating a leaderboard. The ResetInterval defines the period of time at which the leaderboard for the statistic will automatically reset. Upon reset, the statistic updates to a new version with no values (effectively removing all players from the leaderboard). The previous version's statistic values are also archived for retrieval, if needed (see GetPlayerStatisticVersions). Statistics not created via a call to CreatePlayerStatisticDefinition by default have a VersionChangeInterval of Never, meaning they do not reset on a schedule, but they can be set to do so via a call to UpdatePlayerStatisticDefinition. Once a statistic has been reset (sometimes referred to as versioned or incremented), the previous version can still be written to for up a short, pre-defined period (currently 10 seconds), to prevent issues with levels completing around the time of the reset. Also, once reset, the historical statistics for players in the title may be retrieved using the URL specified in the version information (GetPlayerStatisticVersions). The AggregationMethod defines what action is taken when a new statistic value is submitted - always update with the new value (Last), use the highest of the old and new values (Max), use the smallest (Min), or add them together (Sum).",
+      "type": "object",
+      "properties": {
+        "Statistics": {
+          "description": "the player statistic definitions for the title",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PlayerStatisticDefinition"
+          },
+          "x-isclass": true
+        }
+      },
+      "example": {
+        "Statistics": [
+          {
+            "StatisticName": "headshots",
+            "CurrentVersion": 2,
+            "VersionChangeInterval": "Day"
+          }
+        ]
+      }
+    },
+    "GetPlayerStatisticVersionsRequest": {
+      "type": "object",
+      "properties": {
+        "CustomTags": {
+          "description": "The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).",
+          "type": "object"
+        },
+        "StatisticName": {
+          "description": "unique name of the statistic",
+          "type": "string"
+        }
+      },
+      "example": {
+        "StatisticName": "headshots"
+      }
+    },
+    "GetPlayerStatisticVersionsResult": {
+      "description": "Statistics are numeric values, with each statistic in the title also generating a leaderboard. The information returned in the results defines the state of a specific version of a statistic, including when it was or will become the currently active version, when it will (or did) become a previous version, and its archival state if it is no longer the active version. For a statistic which has been reset, once the archival status is Complete, the full set of statistics for all players in the leaderboard for that version may be retrieved via the ArchiveDownloadUrl. Statistics which have not been reset (incremented/versioned) will only have a single version which is not scheduled to reset.",
+      "type": "object",
+      "properties": {
+        "StatisticVersions": {
+          "description": "version change history of the statistic",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PlayerStatisticVersion"
+          },
+          "x-isclass": true
+        }
+      },
+      "example": {
+        "StatisticVersions": [
+          {
+            "StatisticName": "headshots",
+            "Version": 2,
+            "ActivationTime": "2016-12-05T10:02:01",
+            "Status": "Archived",
+            "ArchiveDownloadUrl": "https://Someurl"
+          }
+        ]
+      }
+    },
+    "GetSegmentResult": {
+      "type": "object",
+      "properties": {
+        "ABTestParent": {
+          "description": "Identifier of the segments AB Test, if it is attached to one.",
+          "type": "string"
+        },
+        "Id": {
+          "description": "Unique identifier for this segment.",
+          "type": "string"
+        },
+        "Name": {
+          "description": "Segment name.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "Id"
+      ],
+      "example": {
+        "Id": "1337AA00",
+        "Name": "Fast Players"
+      }
+    },
+    "GetSegmentsRequest": {
+      "description": "Given input segment ids, return list of segments.",
+      "type": "object",
+      "properties": {
+        "SegmentIds": {
+          "description": "Segment ids to filter title segments.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "SegmentIds"
+      ],
+      "example": {
+        "SegmentIds": [
+          "B05FC8CB558A6570",
+          "97EF0E9302CBE996"
+        ]
+      }
+    },
+    "GetSegmentsResponse": {
+      "type": "object",
+      "properties": {
+        "ErrorMessage": {
+          "description": "Error message.",
+          "type": "string"
+        },
+        "Segments": {
+          "description": "List of title segments.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SegmentModel"
+          },
+          "x-isclass": true
+        }
+      }
+    },
+    "GrantedItemInstance": {
+      "description": "Result of granting an item to a user. Note, to retrieve additional information for an item such as Tags, Description that are the same across all instances of the item, a call to GetCatalogItems is required. The ItemID of can be matched to a catalog entry, which contains the additional information. Also note that Custom Data is only set when the User's specific instance has updated the CustomData via a call to UpdateUserInventoryItemCustomData. Other fields such as UnitPrice and UnitCurrency are only set when the item was granted via a purchase.",
+      "type": "object",
+      "properties": {
+        "Annotation": {
+          "description": "Game specific comment associated with this instance when it was added to the user inventory.",
+          "type": "string"
+        },
+        "BundleContents": {
+          "description": "Array of unique items that were awarded when this catalog item was purchased.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "BundleParent": {
+          "description": "Unique identifier for the parent inventory item, as defined in the catalog, for object which were added from a bundle or container.",
+          "type": "string"
+        },
+        "CatalogVersion": {
+          "description": "Catalog version for the inventory item, when this instance was created.",
+          "type": "string"
+        },
+        "CharacterId": {
+          "description": "Unique PlayFab assigned ID for a specific character owned by a user",
+          "type": "string"
+        },
+        "CustomData": {
+          "description": "A set of custom key-value pairs on the instance of the inventory item, which is not to be confused with the catalog item's custom data.",
+          "type": "object"
+        },
+        "DisplayName": {
+          "description": "CatalogItem.DisplayName at the time this item was purchased.",
+          "type": "string"
+        },
+        "Expiration": {
+          "description": "Timestamp for when this instance will expire.",
+          "type": "string"
+        },
+        "ItemClass": {
+          "description": "Class name for the inventory item, as defined in the catalog.",
+          "type": "string"
+        },
+        "ItemId": {
+          "description": "Unique identifier for the inventory item, as defined in the catalog.",
+          "type": "string"
+        },
+        "ItemInstanceId": {
+          "description": "Unique item identifier for this specific instance of the item.",
+          "type": "string"
+        },
+        "PlayFabId": {
+          "description": "Unique PlayFab assigned ID of the user on whom the operation will be performed.",
+          "type": "string"
+        },
+        "PurchaseDate": {
+          "description": "Timestamp for when this instance was purchased.",
+          "type": "string"
+        },
+        "RemainingUses": {
+          "description": "Total number of remaining uses, if this is a consumable item.",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "Result": {
+          "description": "Result of this operation.",
+          "type": "boolean"
+        },
+        "UnitCurrency": {
+          "description": "Currency type for the cost of the catalog item. Not available when granting items.",
+          "type": "string"
+        },
+        "UnitPrice": {
+          "description": "Cost of the catalog item in the given currency. Not available when granting items.",
+          "type": "number",
+          "x-actualtype": "uint32"
+        },
+        "UsesIncrementedBy": {
+          "description": "The number of uses that were added or removed to this item in this call.",
+          "type": "number",
+          "x-actualtype": "int32"
+        }
+      },
+      "required": [
+        "Result",
+        "UnitPrice"
+      ],
+      "example": {
+        "PlayFabId": "20394883",
+        "Result": true,
+        "ItemId": "shield_level_5",
+        "ItemInstanceId": "133713371337",
+        "ItemClass": "shields",
+        "PurchaseDate": "2017-03-07T00:00:00",
+        "Expiration": "2018-10-01T00:00:00",
+        "RemainingUses": 10,
+        "Annotation": "Entered Level 2",
+        "CatalogVersion": "5",
+        "BundleParent": "crate block 1"
+      },
+      "x-sortKey": "ItemInstanceId"
+    },
+    "GrantItemSegmentAction": {
+      "type": "object",
+      "properties": {
+        "CatelogId": {
+          "description": "Item catalog id.",
+          "type": "string"
+        },
+        "ItemId": {
+          "description": "Item id.",
+          "type": "string"
+        },
+        "Quantity": {
+          "description": "Item quantity.",
+          "type": "number",
+          "x-actualtype": "uint32"
+        }
+      },
+      "required": [
+        "Quantity"
+      ]
+    },
+    "GrantVirtualCurrencySegmentAction": {
+      "type": "object",
+      "properties": {
+        "Amount": {
+          "description": "Virtual currency amount.",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "CurrencyCode": {
+          "description": "Virtual currency code.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "Amount"
+      ]
+    },
+    "IncrementLimitedEditionItemAvailabilityRequest": {
+      "description": "This operation will increment the global counter for the number of these items available. This number cannot be decremented, except by actual grants.",
+      "type": "object",
+      "properties": {
+        "Amount": {
+          "description": "Amount to increase availability by.",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "CatalogVersion": {
+          "description": "Which catalog is being updated. If null, uses the default catalog.",
+          "type": "string"
+        },
+        "CustomTags": {
+          "description": "The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).",
+          "type": "object"
+        },
+        "ItemId": {
+          "description": "The item which needs more availability.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ItemId",
+        "Amount"
+      ],
+      "example": {
+        "CatalogVersion": "Rares",
+        "ItemId": "FreeHoodie",
+        "Amount": 50
+      }
+    },
+    "IncrementLimitedEditionItemAvailabilityResult": {
+      "type": "object",
+      "properties": {
+      },
+      "example": {
+      }
+    },
+    "IncrementPlayerStatisticSegmentAction": {
+      "type": "object",
+      "properties": {
+        "IncrementValue": {
+          "description": "Increment value.",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "StatisticName": {
+          "description": "Statistic name.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "IncrementValue"
+      ]
+    },
+    "IncrementPlayerStatisticVersionRequest": {
+      "description": "Statistics are numeric values, with each statistic in the title also generating a leaderboard. When this call is made on a given statistic, this forces a reset of that statistic. Upon reset, the statistic updates to a new version with no values (effectively removing all players from the leaderboard). The previous version's statistic values are also archived for retrieval, if needed (see GetPlayerStatisticVersions). Statistics not created via a call to CreatePlayerStatisticDefinition by default have a VersionChangeInterval of Never, meaning they do not reset on a schedule, but they can be set to do so via a call to UpdatePlayerStatisticDefinition. Once a statistic has been reset (sometimes referred to as versioned or incremented), the now-previous version can still be written to for up a short, pre-defined period (currently 10 seconds), to prevent issues with levels completing around the time of the reset. Also, once reset, the historical statistics for players in the title may be retrieved using the URL specified in the version information (GetPlayerStatisticVersions).",
+      "type": "object",
+      "properties": {
+        "CustomTags": {
+          "description": "The optional custom tags associated with the request (e.g. build number, external trace identifiers, etc.).",
+          "type": "object"
+        },
+        "StatisticName": {
+          "description": "unique name of the statistic",
+          "type": "string"
+        }
+      },
+      "example": {
+        "StatisticName": "headshots"
+      }
+    },
+    "IncrementPlayerStatisticVersionResult": {
+      "type": "object",
+      "properties": {
+        "StatisticVersion": {
+          "$ref": "#/definitions/PlayerStatisticVersion",
+          "description": "version change history of the statistic",
+          "type": "object",
+          "x-isclass": true
+        }
+      },
+      "example": {
+        "StatisticVersion": {
+          "StatisticName": "headshots",
+          "Version": 2,
+          "ActivationTime": "2016-12-05T10:02:01",
+          "Status": "Archived",
+          "ArchiveDownloadUrl": "https://Someurl"
+        }
+      }
+    },
+    "InsightsScalingTaskParameter": {
+      "type": "object",
+      "properties": {
+        "Level": {
+          "description": "Insights Performance Level to scale to.",
+          "type": "number",
+          "x-actualtype": "int32"
+        }
+      },
+      "required": [
+        "Level"
+      ]
+    },
+    "LastLoginDateSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Last player login date comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "LogInDate": {
+          "description": "Last player login date.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "LogInDate"
+      ]
+    },
+    "LastLoginTimespanSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Last player login duration comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "DurationInMinutes": {
+          "description": "Last player login duration.",
+          "type": "number",
+          "x-actualtype": "double"
+        }
+      },
+      "required": [
+        "DurationInMinutes"
+      ]
+    },
+    "LinkedPlatformAccountModel": {
+      "type": "object",
+      "properties": {
+        "Email": {
+          "description": "Linked account email of the user on the platform, if available",
+          "type": "string"
+        },
+        "Platform": {
+          "$ref": "#/definitions/LoginIdentityProvider",
+          "description": "Authentication platform",
+          "type": "string",
+          "x-isenum": true
+        },
+        "PlatformUserId": {
+          "description": "Unique account identifier of the user on the platform",
+          "type": "string"
+        },
+        "Username": {
+          "description": "Linked account username of the user on the platform, if available",
+          "type": "string"
+        }
+      }
+    },
+    "LinkedUserAccountHasEmailSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Login provider comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "LoginProvider": {
+          "$ref": "#/definitions/SegmentLoginIdentityProvider",
+          "description": "Login provider.",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "LinkedUserAccountSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "LoginProvider": {
+          "$ref": "#/definitions/SegmentLoginIdentityProvider",
+          "description": "Login provider.",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "LocationModel": {
+      "type": "object",
+      "properties": {
+        "City": {
+          "description": "City name.",
+          "type": "string"
+        },
+        "ContinentCode": {
+          "$ref": "#/definitions/ContinentCode",
+          "description": "The two-character continent code for this location",
+          "type": "string",
+          "x-isenum": true
+        },
+        "CountryCode": {
+          "$ref": "#/definitions/CountryCode",
+          "description": "The two-character ISO 3166-1 country code for the country associated with the location",
+          "type": "string",
+          "x-isenum": true
+        },
+        "Latitude": {
+          "description": "Latitude coordinate of the geographic location.",
+          "type": "number",
+          "x-actualtype": "double"
+        },
+        "Longitude": {
+          "description": "Longitude coordinate of the geographic location.",
+          "type": "number",
+          "x-actualtype": "double"
+        }
+      }
+    },
+    "LocationSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "CountryCode": {
+          "$ref": "#/definitions/SegmentCountryCode",
+          "description": "Segment country code.",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "LoginIdentityProvider": {
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "PlayFab",
+        "Custom",
+        "GameCenter",
+        "GooglePlay",
+        "Steam",
+        "XBoxLive",
+        "PSN",
+        "Kongregate",
+        "Facebook",
+        "IOSDevice",
+        "AndroidDevice",
+        "Twitch",
+        "WindowsHello",
+        "GameServer",
+        "CustomServer",
+        "NintendoSwitch",
+        "FacebookInstantGames",
+        "OpenIdConnect",
+        "Apple",
+        "NintendoSwitchAccount",
+        "GooglePlayGames"
+      ]
+    },
+    "LogStatement": {
+      "type": "object",
+      "properties": {
+        "Data": {
+          "description": "Optional object accompanying the message as contextual information",
+          "type": "object"
+        },
+        "Level": {
+          "description": "'Debug', 'Info', or 'Error'",
+          "type": "string"
+        },
+        "Message": {
+          "type": "string"
+        }
+      }
+    },
+    "NameIdentifier": {
+      "description": "Identifier by either name or ID. Note that a name may change due to renaming, or reused after being deleted. ID is immutable and unique.",
+      "type": "object",
+      "properties": {
+        "Id": {
+          "description": "Id Identifier, if present",
+          "type": "string"
+        },
+        "Name": {
+          "description": "Name Identifier, if present",
+          "type": "string"
+        }
+      },
+      "example": {
+        "Name": "MyTask",
+        "Id": "d739e188-22f6-4d13-a4d5-df2e93d4d2f7"
+      }
+    },
+    "PlayerChurnPredictionSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Comparison",
+          "type": "string",
+          "x-isenum": true
+        },
+        "RiskLevel": {
+          "$ref": "#/definitions/ChurnRiskLevel",
+          "description": "RiskLevel",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "PlayerChurnPredictionTimeSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Comparison",
+          "type": "string",
+          "x-isenum": true
+        },
+        "DurationInDays": {
+          "description": "DurationInDays",
+          "type": "number",
+          "x-actualtype": "double"
+        }
+      },
+      "required": [
+        "DurationInDays"
+      ]
+    },
+    "PlayerChurnPreviousPredictionSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Comparison",
+          "type": "string",
+          "x-isenum": true
+        },
+        "RiskLevel": {
+          "$ref": "#/definitions/ChurnRiskLevel",
+          "description": "RiskLevel",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "PlayerLinkedAccount": {
+      "type": "object",
+      "properties": {
+        "Email": {
+          "description": "Linked account's email",
+          "type": "string"
+        },
+        "Platform": {
+          "$ref": "#/definitions/LoginIdentityProvider",
+          "description": "Authentication platform",
+          "type": "string",
+          "x-isenum": true
+        },
+        "PlatformUserId": {
+          "description": "Platform user identifier",
+          "type": "string"
+        },
+        "Username": {
+          "description": "Linked account's username",
+          "type": "string"
+        }
+      }
+    },
+    "PlayerLocation": {
+      "type": "object",
+      "properties": {
+        "City": {
+          "description": "City of the player's geographic location.",
+          "type": "string"
+        },
+        "ContinentCode": {
+          "$ref": "#/definitions/ContinentCode",
+          "description": "The two-character continent code for this location",
+          "type": "string",
+          "x-isenum": true
+        },
+        "CountryCode": {
+          "$ref": "#/definitions/CountryCode",
+          "description": "The two-character ISO 3166-1 country code for the country associated with the location",
+          "type": "string",
+          "x-isenum": true
+        },
+        "Latitude": {
+          "description": "Latitude coordinate of the player's geographic location.",
+          "type": "number",
+          "x-actualtype": "double"
+        },
+        "Longitude": {
+          "description": "Longitude coordinate of the player's geographic location.",
+          "type": "number",
+          "x-actualtype": "double"
+        }
+      },
+      "required": [
+        "ContinentCode",
+        "CountryCode"
+      ]
+    },
+    "PlayerStatistic": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "description": "Statistic ID",
+          "type": "string"
+        },
+        "Name": {
+          "description": "Statistic name",
+          "type": "string"
+        },
+        "StatisticValue": {
+          "description": "Current statistic value",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "StatisticVersion": {
+          "description": "Statistic version (0 if not a versioned statistic)",
+          "type": "number",
+          "x-actualtype": "int32"
+        }
+      },
+      "required": [
+        "StatisticVersion",
+        "StatisticValue"
+      ]
+    },
+    "PlayerStatisticDefinition": {
+      "type": "object",
+      "properties": {
+        "AggregationMethod": {
+          "$ref": "#/definitions/StatisticAggregationMethod",
+          "description": "the aggregation method to use in updating the statistic (defaults to last)",
+          "type": "string",
+          "x-isenum": true
+        },
+        "CurrentVersion": {
+          "description": "current active version of the statistic, incremented each time the statistic resets",
+          "type": "number",
+          "x-actualtype": "uint32"
+        },
+        "StatisticName": {
+          "description": "unique name of the statistic",
+          "type": "string"
+        },
+        "VersionChangeInterval": {
+          "$ref": "#/definitions/StatisticResetIntervalOption",
+          "description": "interval at which the values of the statistic for all players are reset automatically",
+          "type": "string",
+          "x-isenum": true
+        }
+      },
+      "required": [
+        "CurrentVersion"
+      ],
+      "example": {
+        "StatisticName": "headshots",
+        "CurrentVersion": 2,
+        "VersionChangeInterval": "Day"
+      }
+    },
+    "PlayerStatisticVersion": {
+      "type": "object",
+      "properties": {
+        "ActivationTime": {
+          "description": "time when the statistic version became active",
+          "type": "string"
+        },
+        "ArchiveDownloadUrl": {
+          "description": "URL for the downloadable archive of player statistic values, if available",
+          "type": "string"
+        },
+        "DeactivationTime": {
+          "description": "time when the statistic version became inactive due to statistic version incrementing",
+          "type": "string"
+        },
+        "ScheduledActivationTime": {
+          "description": "time at which the statistic version was scheduled to become active, based on the configured ResetInterval",
+          "type": "string"
+        },
+        "ScheduledDeactivationTime": {
+          "description": "time at which the statistic version was scheduled to become inactive, based on the configured ResetInterval",
+          "type": "string"
+        },
+        "StatisticName": {
+          "description": "name of the statistic when the version became active",
+          "type": "string"
+        },
+        "Status": {
+          "$ref": "#/definitions/StatisticVersionStatus",
+          "description": "status of the statistic version",
+          "type": "string",
+          "x-isenum": true
+        },
+        "Version": {
+          "description": "version of the statistic",
+          "type": "number",
+          "x-actualtype": "uint32"
+        }
+      },
+      "required": [
+        "Version",
+        "ActivationTime"
+      ],
+      "example": {
+        "StatisticName": "headshots",
+        "Version": 2,
+        "ActivationTime": "2016-12-05T10:02:01",
+        "Status": "Archived",
+        "ArchiveDownloadUrl": "https://Someurl"
+      }
+    },
+    "PushNotificationPlatform": {
+      "type": "string",
+      "enum": [
+        "ApplePushNotificationService",
+        "GoogleCloudMessaging"
+      ]
+    },
+    "PushNotificationRegistration": {
+      "type": "object",
+      "properties": {
+        "NotificationEndpointARN": {
+          "description": "Notification configured endpoint",
+          "type": "string"
+        },
+        "Platform": {
+          "$ref": "#/definitions/PushNotificationPlatform",
+          "description": "Push notification platform",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "PushNotificationRegistrationModel": {
+      "type": "object",
+      "properties": {
+        "NotificationEndpointARN": {
+          "description": "Notification configured endpoint",
+          "type": "string"
+        },
+        "Platform": {
+          "$ref": "#/definitions/PushNotificationPlatform",
+          "description": "Push notification platform",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "PushNotificationSegmentAction": {
+      "type": "object",
+      "properties": {
+        "PushNotificationTemplateId": {
+          "description": "Push notification template id.",
+          "type": "string"
+        }
+      }
+    },
+    "PushNotificationSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "PushNotificationDevicePlatform": {
+          "$ref": "#/definitions/SegmentPushNotificationDevicePlatform",
+          "description": "Push notification device platform.",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "SegmentAndDefinition": {
+      "type": "object",
+      "properties": {
+        "AdCampaignFilter": {
+          "$ref": "#/definitions/AdCampaignSegmentFilter",
+          "description": "Filter property for ad campaign filter.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "AllPlayersFilter": {
+          "$ref": "#/definitions/AllPlayersSegmentFilter",
+          "description": "property for all player filter.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "ChurnPredictionFilter": {
+          "$ref": "#/definitions/ChurnPredictionSegmentFilter",
+          "description": "Filter property for player churn risk level.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "FirstLoginDateFilter": {
+          "$ref": "#/definitions/FirstLoginDateSegmentFilter",
+          "description": "Filter property for first login date.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "FirstLoginFilter": {
+          "$ref": "#/definitions/FirstLoginTimespanSegmentFilter",
+          "description": "Filter property for first login timespan.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "LastLoginDateFilter": {
+          "$ref": "#/definitions/LastLoginDateSegmentFilter",
+          "description": "Filter property for last login date.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "LastLoginFilter": {
+          "$ref": "#/definitions/LastLoginTimespanSegmentFilter",
+          "description": "Filter property for last login timespan.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "LinkedUserAccountFilter": {
+          "$ref": "#/definitions/LinkedUserAccountSegmentFilter",
+          "description": "Filter property for linked in user account.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "LinkedUserAccountHasEmailFilter": {
+          "$ref": "#/definitions/LinkedUserAccountHasEmailSegmentFilter",
+          "description": "Filter property for linked in user account has email.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "LocationFilter": {
+          "$ref": "#/definitions/LocationSegmentFilter",
+          "description": "Filter property for location.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "PlayerChurnPredictionFilter": {
+          "$ref": "#/definitions/PlayerChurnPredictionSegmentFilter",
+          "description": "Filter property for current player churn value.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "PlayerChurnPredictionTimeFilter": {
+          "$ref": "#/definitions/PlayerChurnPredictionTimeSegmentFilter",
+          "description": "Filter property for player churn timespan.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "PlayerChurnPreviousPredictionFilter": {
+          "$ref": "#/definitions/PlayerChurnPreviousPredictionSegmentFilter",
+          "description": "Filter property for previous player churn value.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "PushNotificationFilter": {
+          "$ref": "#/definitions/PushNotificationSegmentFilter",
+          "description": "Filter property for push notification.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "StatisticFilter": {
+          "$ref": "#/definitions/StatisticSegmentFilter",
+          "description": "Filter property for statistics.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "TagFilter": {
+          "$ref": "#/definitions/TagSegmentFilter",
+          "description": "Filter property for tags.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "TotalValueToDateInUSDFilter": {
+          "$ref": "#/definitions/TotalValueToDateInUSDSegmentFilter",
+          "description": "Filter property for total value to date in USD.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "UserOriginationFilter": {
+          "$ref": "#/definitions/UserOriginationSegmentFilter",
+          "description": "Filter property for user origination.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "ValueToDateFilter": {
+          "$ref": "#/definitions/ValueToDateSegmentFilter",
+          "description": "Filter property for value to date.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "VirtualCurrencyBalanceFilter": {
+          "$ref": "#/definitions/VirtualCurrencyBalanceSegmentFilter",
+          "description": "Filter property for virtual currency.",
+          "type": "object",
+          "x-isclass": true
+        }
+      }
+    },
+    "SegmentCountryCode": {
+      "type": "string",
+      "enum": [
+        "AF",
+        "AX",
+        "AL",
+        "DZ",
+        "AS",
+        "AD",
+        "AO",
+        "AI",
+        "AQ",
+        "AG",
+        "AR",
+        "AM",
+        "AW",
+        "AU",
+        "AT",
+        "AZ",
+        "BS",
+        "BH",
+        "BD",
+        "BB",
+        "BY",
+        "BE",
+        "BZ",
+        "BJ",
+        "BM",
+        "BT",
+        "BO",
+        "BQ",
+        "BA",
+        "BW",
+        "BV",
+        "BR",
+        "IO",
+        "BN",
+        "BG",
+        "BF",
+        "BI",
+        "KH",
+        "CM",
+        "CA",
+        "CV",
+        "KY",
+        "CF",
+        "TD",
+        "CL",
+        "CN",
+        "CX",
+        "CC",
+        "CO",
+        "KM",
+        "CG",
+        "CD",
+        "CK",
+        "CR",
+        "CI",
+        "HR",
+        "CU",
+        "CW",
+        "CY",
+        "CZ",
+        "DK",
+        "DJ",
+        "DM",
+        "DO",
+        "EC",
+        "EG",
+        "SV",
+        "GQ",
+        "ER",
+        "EE",
+        "ET",
+        "FK",
+        "FO",
+        "FJ",
+        "FI",
+        "FR",
+        "GF",
+        "PF",
+        "TF",
+        "GA",
+        "GM",
+        "GE",
+        "DE",
+        "GH",
+        "GI",
+        "GR",
+        "GL",
+        "GD",
+        "GP",
+        "GU",
+        "GT",
+        "GG",
+        "GN",
+        "GW",
+        "GY",
+        "HT",
+        "HM",
+        "VA",
+        "HN",
+        "HK",
+        "HU",
+        "IS",
+        "IN",
+        "ID",
+        "IR",
+        "IQ",
+        "IE",
+        "IM",
+        "IL",
+        "IT",
+        "JM",
+        "JP",
+        "JE",
+        "JO",
+        "KZ",
+        "KE",
+        "KI",
+        "KP",
+        "KR",
+        "KW",
+        "KG",
+        "LA",
+        "LV",
+        "LB",
+        "LS",
+        "LR",
+        "LY",
+        "LI",
+        "LT",
+        "LU",
+        "MO",
+        "MK",
+        "MG",
+        "MW",
+        "MY",
+        "MV",
+        "ML",
+        "MT",
+        "MH",
+        "MQ",
+        "MR",
+        "MU",
+        "YT",
+        "MX",
+        "FM",
+        "MD",
+        "MC",
+        "MN",
+        "ME",
+        "MS",
+        "MA",
+        "MZ",
+        "MM",
+        "NA",
+        "NR",
+        "NP",
+        "NL",
+        "NC",
+        "NZ",
+        "NI",
+        "NE",
+        "NG",
+        "NU",
+        "NF",
+        "MP",
+        "NO",
+        "OM",
+        "PK",
+        "PW",
+        "PS",
+        "PA",
+        "PG",
+        "PY",
+        "PE",
+        "PH",
+        "PN",
+        "PL",
+        "PT",
+        "PR",
+        "QA",
+        "RE",
+        "RO",
+        "RU",
+        "RW",
+        "BL",
+        "SH",
+        "KN",
+        "LC",
+        "MF",
+        "PM",
+        "VC",
+        "WS",
+        "SM",
+        "ST",
+        "SA",
+        "SN",
+        "RS",
+        "SC",
+        "SL",
+        "SG",
+        "SX",
+        "SK",
+        "SI",
+        "SB",
+        "SO",
+        "ZA",
+        "GS",
+        "SS",
+        "ES",
+        "LK",
+        "SD",
+        "SR",
+        "SJ",
+        "SZ",
+        "SE",
+        "CH",
+        "SY",
+        "TW",
+        "TJ",
+        "TZ",
+        "TH",
+        "TL",
+        "TG",
+        "TK",
+        "TO",
+        "TT",
+        "TN",
+        "TR",
+        "TM",
+        "TC",
+        "TV",
+        "UG",
+        "UA",
+        "AE",
+        "GB",
+        "US",
+        "UM",
+        "UY",
+        "UZ",
+        "VU",
+        "VE",
+        "VN",
+        "VG",
+        "VI",
+        "WF",
+        "EH",
+        "YE",
+        "ZM",
+        "ZW"
+      ]
+    },
+    "SegmentCurrency": {
+      "type": "string",
+      "enum": [
+        "AED",
+        "AFN",
+        "ALL",
+        "AMD",
+        "ANG",
+        "AOA",
+        "ARS",
+        "AUD",
+        "AWG",
+        "AZN",
+        "BAM",
+        "BBD",
+        "BDT",
+        "BGN",
+        "BHD",
+        "BIF",
+        "BMD",
+        "BND",
+        "BOB",
+        "BRL",
+        "BSD",
+        "BTN",
+        "BWP",
+        "BYR",
+        "BZD",
+        "CAD",
+        "CDF",
+        "CHF",
+        "CLP",
+        "CNY",
+        "COP",
+        "CRC",
+        "CUC",
+        "CUP",
+        "CVE",
+        "CZK",
+        "DJF",
+        "DKK",
+        "DOP",
+        "DZD",
+        "EGP",
+        "ERN",
+        "ETB",
+        "EUR",
+        "FJD",
+        "FKP",
+        "GBP",
+        "GEL",
+        "GGP",
+        "GHS",
+        "GIP",
+        "GMD",
+        "GNF",
+        "GTQ",
+        "GYD",
+        "HKD",
+        "HNL",
+        "HRK",
+        "HTG",
+        "HUF",
+        "IDR",
+        "ILS",
+        "IMP",
+        "INR",
+        "IQD",
+        "IRR",
+        "ISK",
+        "JEP",
+        "JMD",
+        "JOD",
+        "JPY",
+        "KES",
+        "KGS",
+        "KHR",
+        "KMF",
+        "KPW",
+        "KRW",
+        "KWD",
+        "KYD",
+        "KZT",
+        "LAK",
+        "LBP",
+        "LKR",
+        "LRD",
+        "LSL",
+        "LYD",
+        "MAD",
+        "MDL",
+        "MGA",
+        "MKD",
+        "MMK",
+        "MNT",
+        "MOP",
+        "MRO",
+        "MUR",
+        "MVR",
+        "MWK",
+        "MXN",
+        "MYR",
+        "MZN",
+        "NAD",
+        "NGN",
+        "NIO",
+        "NOK",
+        "NPR",
+        "NZD",
+        "OMR",
+        "PAB",
+        "PEN",
+        "PGK",
+        "PHP",
+        "PKR",
+        "PLN",
+        "PYG",
+        "QAR",
+        "RON",
+        "RSD",
+        "RUB",
+        "RWF",
+        "SAR",
+        "SBD",
+        "SCR",
+        "SDG",
+        "SEK",
+        "SGD",
+        "SHP",
+        "SLL",
+        "SOS",
+        "SPL",
+        "SRD",
+        "STD",
+        "SVC",
+        "SYP",
+        "SZL",
+        "THB",
+        "TJS",
+        "TMT",
+        "TND",
+        "TOP",
+        "TRY",
+        "TTD",
+        "TVD",
+        "TWD",
+        "TZS",
+        "UAH",
+        "UGX",
+        "USD",
+        "UYU",
+        "UZS",
+        "VEF",
+        "VND",
+        "VUV",
+        "WST",
+        "XAF",
+        "XCD",
+        "XDR",
+        "XOF",
+        "XPF",
+        "YER",
+        "ZAR",
+        "ZMW",
+        "ZWD"
+      ]
+    },
+    "SegmentFilterComparison": {
+      "type": "string",
+      "enum": [
+        "GreaterThan",
+        "LessThan",
+        "EqualTo",
+        "NotEqualTo",
+        "GreaterThanOrEqual",
+        "LessThanOrEqual",
+        "Exists",
+        "Contains",
+        "NotContains"
+      ]
+    },
+    "SegmentLoginIdentityProvider": {
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "PlayFab",
+        "Custom",
+        "GameCenter",
+        "GooglePlay",
+        "Steam",
+        "XBoxLive",
+        "PSN",
+        "Kongregate",
+        "Facebook",
+        "IOSDevice",
+        "AndroidDevice",
+        "Twitch",
+        "WindowsHello",
+        "GameServer",
+        "CustomServer",
+        "NintendoSwitch",
+        "FacebookInstantGames",
+        "OpenIdConnect",
+        "Apple",
+        "NintendoSwitchAccount"
+      ]
+    },
+    "SegmentModel": {
+      "type": "object",
+      "properties": {
+        "Description": {
+          "description": "Segment description.",
+          "type": "string"
+        },
+        "EnteredSegmentActions": {
+          "description": "Segment actions for current entered segment players.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SegmentTrigger"
+          },
+          "x-isclass": true
+        },
+        "LastUpdateTime": {
+          "description": "Segment last updated date time.",
+          "type": "string"
+        },
+        "LeftSegmentActions": {
+          "description": "Segment actions for current left segment players.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SegmentTrigger"
+          },
+          "x-isclass": true
+        },
+        "Name": {
+          "description": "Segment name.",
+          "type": "string"
+        },
+        "SegmentId": {
+          "description": "Segment id in hex.",
+          "type": "string"
+        },
+        "SegmentOrDefinitions": {
+          "description": "Segment or definitions. This includes segment and definitions and filters.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SegmentOrDefinition"
+          },
+          "x-isclass": true
+        }
+      },
+      "required": [
+        "LastUpdateTime"
+      ]
+    },
+    "SegmentOrDefinition": {
+      "type": "object",
+      "properties": {
+        "SegmentAndDefinitions": {
+          "description": "List of segment and definitions.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SegmentAndDefinition"
+          },
+          "x-isclass": true
+        }
+      }
+    },
+    "SegmentPushNotificationDevicePlatform": {
+      "type": "string",
+      "enum": [
+        "ApplePushNotificationService",
+        "GoogleCloudMessaging"
+      ]
+    },
+    "SegmentTrigger": {
+      "type": "object",
+      "properties": {
+        "BanPlayerAction": {
+          "$ref": "#/definitions/BanPlayerSegmentAction",
+          "description": "Ban player segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "DeletePlayerAction": {
+          "$ref": "#/definitions/DeletePlayerSegmentAction",
+          "description": "Delete player segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "DeletePlayerStatisticAction": {
+          "$ref": "#/definitions/DeletePlayerStatisticSegmentAction",
+          "description": "Delete player statistic segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "EmailNotificationAction": {
+          "$ref": "#/definitions/EmailNotificationSegmentAction",
+          "description": "Email notification segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "ExecuteAzureFunctionAction": {
+          "$ref": "#/definitions/ExecuteAzureFunctionSegmentAction",
+          "description": "Execute azure function segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "ExecuteCloudScriptAction": {
+          "$ref": "#/definitions/ExecuteCloudScriptSegmentAction",
+          "description": "Execute cloud script segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "GrantItemAction": {
+          "$ref": "#/definitions/GrantItemSegmentAction",
+          "description": "Grant item segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "GrantVirtualCurrencyAction": {
+          "$ref": "#/definitions/GrantVirtualCurrencySegmentAction",
+          "description": "Grant virtual currency segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "IncrementPlayerStatisticAction": {
+          "$ref": "#/definitions/IncrementPlayerStatisticSegmentAction",
+          "description": "Increment player statistic segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        },
+        "PushNotificationAction": {
+          "$ref": "#/definitions/PushNotificationSegmentAction",
+          "description": "Push notification segment trigger action.",
+          "type": "object",
+          "x-isclass": true
+        }
+      }
+    },
+    "StatisticAggregationMethod": {
+      "type": "string",
+      "enum": [
+        "Last",
+        "Min",
+        "Max",
+        "Sum"
+      ]
+    },
+    "StatisticModel": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "description": "Statistic name",
+          "type": "string"
+        },
+        "Value": {
+          "description": "Statistic value",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "Version": {
+          "description": "Statistic version (0 if not a versioned statistic)",
+          "type": "number",
+          "x-actualtype": "int32"
+        }
+      },
+      "required": [
+        "Version",
+        "Value"
+      ]
+    },
+    "StatisticResetIntervalOption": {
+      "type": "string",
+      "enum": [
+        "Never",
+        "Hour",
+        "Day",
+        "Week",
+        "Month"
+      ]
+    },
+    "StatisticSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Statistic filter comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "FilterValue": {
+          "description": "Statistic filter value.",
+          "type": "string"
+        },
+        "Name": {
+          "description": "Statistic name.",
+          "type": "string"
+        },
+        "UseCurrentVersion": {
+          "description": "Use current version of statistic?",
+          "type": "boolean"
+        },
+        "Version": {
+          "description": "Statistic version.",
+          "type": "number",
+          "x-actualtype": "int32"
+        }
+      }
+    },
+    "StatisticVersionStatus": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "SnapshotPending",
+        "Snapshot",
+        "ArchivalPending",
+        "Archived"
+      ]
+    },
+    "TagModel": {
+      "type": "object",
+      "properties": {
+        "TagValue": {
+          "description": "Full value of the tag, including namespace",
+          "type": "string"
+        }
+      }
+    },
+    "TagSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Tag comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "TagValue": {
+          "description": "Tag value.",
+          "type": "string"
+        }
+      }
+    },
+    "TotalValueToDateInUSDSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Amount": {
+          "description": "Total value to date USD amount.",
+          "type": "string"
+        },
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Total value to date USD comparison.",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "UserOrigination": {
+      "type": "string",
+      "enum": [
+        "Organic",
+        "Steam",
+        "Google",
+        "Amazon",
+        "Facebook",
+        "Kongregate",
+        "GamersFirst",
+        "Unknown",
+        "IOS",
+        "LoadTest",
+        "Android",
+        "PSN",
+        "GameCenter",
+        "CustomId",
+        "XboxLive",
+        "Parse",
+        "Twitch",
+        "ServerCustomId",
+        "NintendoSwitchDeviceId",
+        "FacebookInstantGamesId",
+        "OpenIdConnect",
+        "Apple",
+        "NintendoSwitchAccount",
+        "GooglePlayGames"
+      ]
+    },
+    "UserOriginationSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "LoginProvider": {
+          "$ref": "#/definitions/SegmentLoginIdentityProvider",
+          "description": "User login provider.",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "ValueToDateModel": {
+      "type": "object",
+      "properties": {
+        "Currency": {
+          "description": "ISO 4217 code of the currency used in the purchases",
+          "type": "string"
+        },
+        "TotalValue": {
+          "description": "Total value of the purchases in a whole number of 1/100 monetary units. For example, 999 indicates nine dollars and ninety-nine cents when Currency is 'USD')",
+          "type": "number",
+          "x-actualtype": "uint32"
+        },
+        "TotalValueAsDecimal": {
+          "description": "Total value of the purchases in a string representation of decimal monetary units. For example, '9.99' indicates nine dollars and ninety-nine cents when Currency is 'USD'.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "TotalValue"
+      ]
+    },
+    "ValueToDateSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Amount": {
+          "description": "Value to date amount.",
+          "type": "string"
+        },
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Value to date comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "Currency": {
+          "$ref": "#/definitions/SegmentCurrency",
+          "description": "Currency using for filter.",
+          "type": "string",
+          "x-isenum": true
+        }
+      }
+    },
+    "VirtualCurrencyBalanceSegmentFilter": {
+      "type": "object",
+      "properties": {
+        "Amount": {
+          "description": "Total amount.",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "Comparison": {
+          "$ref": "#/definitions/SegmentFilterComparison",
+          "description": "Amount comparison.",
+          "type": "string",
+          "x-isenum": true
+        },
+        "CurrencyCode": {
+          "description": "Currency code.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "Amount"
+      ]
+    },
+    "VirtualCurrencyData": {
+      "type": "object",
+      "properties": {
+        "CurrencyCode": {
+          "description": "unique two-character identifier for this currency type (e.g.: \"CC\")",
+          "type": "string"
+        },
+        "DisplayName": {
+          "description": "friendly name to show in the developer portal, reports, etc.",
+          "type": "string"
+        },
+        "InitialDeposit": {
+          "description": "amount to automatically grant users upon first login to the title",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "RechargeMax": {
+          "description": "maximum amount to which the currency will recharge (cannot exceed MaxAmount, but can be less)",
+          "type": "number",
+          "x-actualtype": "int32"
+        },
+        "RechargeRate": {
+          "description": "rate at which the currency automatically be added to over time, in units per day (24 hours)",
+          "type": "number",
+          "x-actualtype": "int32"
+        }
+      },
+      "required": [
+        "CurrencyCode"
+      ],
+      "example": {
+        "CurrencyCode": "GO",
+        "DisplayName": "Gold",
+        "InitialDeposit": 0
+      }
+    }
+  },
+  "parameters": {
+    "CreateSegmentRequest": {
+      "name": "CreateSegmentRequest",
+      "in": "body",
+      "description": "Send all the segment details part of CreateSegmentRequest",
+      "schema": {
+        "$ref": "#/definitions/CreateSegmentRequest"
+      }
+    },
+    "DeleteSegmentRequest": {
+      "name": "DeleteSegmentRequest",
+      "in": "body",
+      "description": "Send segment id planning to delete part of DeleteSegmentRequest object",
+      "schema": {
+        "$ref": "#/definitions/DeleteSegmentRequest"
+      }
+    },
+    "GetDataReportRequest": {
+      "name": "GetDataReportRequest",
+      "in": "body",
+      "description": "Gets the download URL for the requested report data (in CSV form). The reports available through this API call are those available in the Game Manager, in the Analytics->Reports tab.",
+      "schema": {
+        "$ref": "#/definitions/GetDataReportRequest"
+      }
+    },
+    "GetPlayerStatisticDefinitionsRequest": {
+      "name": "GetPlayerStatisticDefinitionsRequest",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/GetPlayerStatisticDefinitionsRequest"
+      }
+    },
+    "GetPlayerStatisticVersionsRequest": {
+      "name": "GetPlayerStatisticVersionsRequest",
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/GetPlayerStatisticVersionsRequest"
+      }
+    },
+    "GetSegmentsRequest": {
+      "name": "GetSegmentsRequest",
+      "in": "body",
+      "description": "Given input segment ids, return list of segments.",
+      "schema": {
+        "$ref": "#/definitions/GetSegmentsRequest"
+      }
+    },
+  },
+  "responses": {
+    "ApiErrorWrapper": {
+      "description": "This is the outer wrapper for all responses with errors",
+      "schema": {
+        "$ref": "#/definitions/ApiErrorWrapper"
+      }
+    },
+    "CreateSegmentResponse": {
+      "description": "",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The Http status code. If X-ReportErrorAsSuccess header is set to true, this will report the actual http error code."
+          },
+          "status": {
+            "type": "string",
+            "description": "The Http status code as a string."
+          },
+          "data": {
+            "$ref": "#/definitions/CreateSegmentResponse"
+          }
+        }
+      }
+    },
+    "DeleteSegmentsResponse": {
+      "description": "",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The Http status code. If X-ReportErrorAsSuccess header is set to true, this will report the actual http error code."
+          },
+          "status": {
+            "type": "string",
+            "description": "The Http status code as a string."
+          },
+          "data": {
+            "$ref": "#/definitions/DeleteSegmentsResponse"
+          }
+        }
+      }
+    },
+    "EmptyResponse": {
+      "description": "",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The Http status code. If X-ReportErrorAsSuccess header is set to true, this will report the actual http error code."
+          },
+          "status": {
+            "type": "string",
+            "description": "The Http status code as a string."
+          },
+          "data": {
+            "$ref": "#/definitions/EmptyResponse"
+          }
+        }
+      }
+    },
+    "GetDataReportResult": {
+      "description": "",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The Http status code. If X-ReportErrorAsSuccess header is set to true, this will report the actual http error code."
+          },
+          "status": {
+            "type": "string",
+            "description": "The Http status code as a string."
+          },
+          "data": {
+            "$ref": "#/definitions/GetDataReportResult"
+          }
+        },
+        "example": {
+          "code": 200,
+          "status": "OK",
+          "data": {
+            "DownloadUrl": "https://data-reports-dev.s3-us-west-1.amazonaws.com/2730/PurchaseDataReport/2014/12/5/data.json?AWSAccessKeyId=AKIAJB5VEITH4PHABPAA&Expires=1418151409&Signature=1cF0Xre4FETLW%2BIu5BCW0TL8ShQ%3D"
+          }
+        }
+      }
+    },
+    "GetPlayerStatisticDefinitionsResult": {
+      "description": "Statistics are numeric values, with each statistic in the title also generating a leaderboard. The ResetInterval defines the period of time at which the leaderboard for the statistic will automatically reset. Upon reset, the statistic updates to a new version with no values (effectively removing all players from the leaderboard). The previous version's statistic values are also archived for retrieval, if needed (see GetPlayerStatisticVersions). Statistics not created via a call to CreatePlayerStatisticDefinition by default have a VersionChangeInterval of Never, meaning they do not reset on a schedule, but they can be set to do so via a call to UpdatePlayerStatisticDefinition. Once a statistic has been reset (sometimes referred to as versioned or incremented), the previous version can still be written to for up a short, pre-defined period (currently 10 seconds), to prevent issues with levels completing around the time of the reset. Also, once reset, the historical statistics for players in the title may be retrieved using the URL specified in the version information (GetPlayerStatisticVersions). The AggregationMethod defines what action is taken when a new statistic value is submitted - always update with the new value (Last), use the highest of the old and new values (Max), use the smallest (Min), or add them together (Sum).",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The Http status code. If X-ReportErrorAsSuccess header is set to true, this will report the actual http error code."
+          },
+          "status": {
+            "type": "string",
+            "description": "The Http status code as a string."
+          },
+          "data": {
+            "$ref": "#/definitions/GetPlayerStatisticDefinitionsResult"
+          }
+        },
+        "example": {
+          "code": 200,
+          "status": "OK",
+          "data": {
+            "Statistics": [
+              {
+                "StatisticName": "headshots",
+                "CurrentVersion": 2,
+                "VersionChangeInterval": "Day"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "GetPlayerStatisticVersionsResult": {
+      "description": "Statistics are numeric values, with each statistic in the title also generating a leaderboard. The information returned in the results defines the state of a specific version of a statistic, including when it was or will become the currently active version, when it will (or did) become a previous version, and its archival state if it is no longer the active version. For a statistic which has been reset, once the archival status is Complete, the full set of statistics for all players in the leaderboard for that version may be retrieved via the ArchiveDownloadUrl. Statistics which have not been reset (incremented/versioned) will only have a single version which is not scheduled to reset.",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The Http status code. If X-ReportErrorAsSuccess header is set to true, this will report the actual http error code."
+          },
+          "status": {
+            "type": "string",
+            "description": "The Http status code as a string."
+          },
+          "data": {
+            "$ref": "#/definitions/GetPlayerStatisticVersionsResult"
+          }
+        },
+        "example": {
+          "code": 200,
+          "status": "OK",
+          "data": {
+            "StatisticVersions": [
+              {
+                "StatisticName": "headshots",
+                "Version": 2,
+                "ActivationTime": "2016-12-05T10:02:01",
+                "Status": "Archived",
+                "ArchiveDownloadUrl": "https://Someurl"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "GetSegmentsResponse": {
+      "description": "",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The Http status code. If X-ReportErrorAsSuccess header is set to true, this will report the actual http error code."
+          },
+          "status": {
+            "type": "string",
+            "description": "The Http status code as a string."
+          },
+          "data": {
+            "$ref": "#/definitions/GetSegmentsResponse"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Player Data Management",
+      "description": "Player Data Management APIs"
+    },
+    {
+      "name": "Segments",
+      "description": "Segment management APIs"
+    }
+  ],
+  "securityDefinitions": {
+    "None": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "None",
+      "description": "This API requires no authentication headers (usually provides one to other calls)."
+    },
+    "SessionTicket": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-Authorization",
+      "description": "This API requires a client session ticket, available from any Client Login function."
+    },
+    "SecretKey": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-SecretKey",
+      "description": "This API requires a title secret key, available to title admins, from PlayFab Game Manager."
+    },
+    "EntityToken": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-EntityToken",
+      "description": "This API requires an Entity Session Token, available from the Entity GetEntityToken method."
+    }
+  },
+  "x-ms-docs-errors-mapping": {
+    "Success": {
+      "name": "Success"
+    },
+    "UnkownError": {
+      "id": 500,
+      "name": "UnkownError"
+    },
+    "InvalidParams": {
+      "id": 1000,
+      "name": "InvalidParams"
+    },
+    "UnknownError": {
+      "id": 1039,
+      "name": "UnknownError"
+    },
+    "InvalidSegment": {
+      "id": 1242,
+      "name": "InvalidSegment"
+    },
+    "TitleNotOnUpdatedPricingPlan": {
+      "id": 9000,
+      "name": "TitleNotOnUpdatedPricingPlan"
+    },
+    "SegmentManagementTitleNotInFlight": {
+      "id": 10000,
+      "name": "SegmentManagementTitleNotInFlight"
+    },
+    "SegmentManagementNoExpressionTree": {
+      "id": 10001,
+      "name": "SegmentManagementNoExpressionTree"
+    },
+    "SegmentManagementTriggerActionCountOverLimit": {
+      "id": 10002,
+      "name": "SegmentManagementTriggerActionCountOverLimit"
+    },
+    "SegmentManagementSegmentCountOverLimit": {
+      "id": 10003,
+      "name": "SegmentManagementSegmentCountOverLimit"
+    },
+    "SegmentManagementInvalidSegmentId": {
+      "id": 10004,
+      "name": "SegmentManagementInvalidSegmentId"
+    },
+    "SegmentManagementInvalidInput": {
+      "id": 10005,
+      "name": "SegmentManagementInvalidInput"
+    },
+    "SegmentManagementInvalidSegmentName": {
+      "id": 10006,
+      "name": "SegmentManagementInvalidSegmentName"
+    },
+    "DeleteSegmentRateLimitExceeded": {
+      "id": 10007,
+      "name": "DeleteSegmentRateLimitExceeded"
+    },
+    "CreateSegmentRateLimitExceeded": {
+      "id": 10008,
+      "name": "CreateSegmentRateLimitExceeded"
+    },
+    "GetSegmentsRateLimitExceeded": {
+      "id": 10010,
+      "name": "GetSegmentsRateLimitExceeded"
+    },
+    "AnalyticsSegmentCountOverLimit": {
+      "id": 10014,
+      "name": "AnalyticsSegmentCountOverLimit"
+    },
+    "OperationCanceled": {
+      "id": 16000,
+      "name": "OperationCanceled"
+    }
+  }
+}

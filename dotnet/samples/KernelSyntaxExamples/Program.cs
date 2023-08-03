@@ -22,7 +22,7 @@ public static class Program
         // Run PlayFab Examples
         await Example00_01_PlayFabDataQnA.RunAsync().SafeWaitAsync(cancelToken);
         await Example00_02_PlayFabGenerative.RunAsync().SafeWaitAsync(cancelToken);
-
+        await Example_00_03_OpenApiSkill_PlayFab.RunAsync().SafeWaitAsync(cancelToken);
 
         // Run examples
         await Example01_NativeFunctions.RunAsync().SafeWaitAsync(cancelToken);
