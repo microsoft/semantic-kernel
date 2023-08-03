@@ -12,17 +12,10 @@ is an SDK that integrates Large Language Models (LLMs) like
 [OpenAI](https://platform.openai.com/docs/introduction),
 [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service),
 and [Hugging Face](https://huggingface.co/)
-with conventional programming languages like C# and Python. By doing so, you can
-create AI apps that combine the best of both worlds.
-
-## Seamlessly integrate LLMs into your existing code ⚡
-
-With [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins), you can define
-[semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions) (functions powered by LLMs)
-or [native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions) (functions powered by C# or Python)
-so that you can seamlessly combine them together with Semantic Kernel. Once you've finished defining your plugins, Semantic Kernel makes it easy to
-[mix-and-match functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
-into a single pipeline with only a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Csharp#using-the-runasync-method-to-simplify-your-code).
+with conventional programming languages like C# and Python. Semantic Kernel achieves this
+by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins),
+that can be [chained together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
+in just a few lines of code.
 
 What makes Semantic Kernel _special_, however, is its ability to _automatically_ orchestrate
 [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins) with AI.
@@ -32,7 +25,7 @@ Semantic Kernel will execute the plan.
 
 ![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
 
-## Getting started with Semantic Kernel ⚡
+## ▶️ Getting started with Semantic Kernel
 
 Semantic Kernel is available in a variety of languages and platforms. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
 feature parity between our currently supported languages.
@@ -44,7 +37,6 @@ feature parity between our currently supported languages.
         <img align="left" width=52px src="https://user-images.githubusercontent.com/371009/230673036-fad1e8e6-5d48-49b1-a9c1-6f9834e0d165.png">
         <div>
           <a href="dotnet/README.md">Using Semantic Kernel in C#</a> &nbsp<br/>
-          <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet">C# reference documentation</a> &nbsp
         </div>
       </td>
       <td>
@@ -88,16 +80,13 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 2. Switch to `semantic-kernel` directory and then checkout experimental Java branch: `git checkout experimental-java`
 3. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md)
 
-## Learning how to use Semantic Kernel ⚡
+## 🤔 Learning how to use Semantic Kernel
 
 For a quick guide, you can check out the C# and Python Jupyter notebooks. These notebooks
 demonstrate how to use Semantic Kernel with code snippets that you can easily run inline.
 
 - [Getting Started with C# notebook](samples/notebooks/dotnet/00-getting-started.ipynb)
 - [Getting Started with Python notebook](samples/notebooks/python/00-getting-started.ipynb)
-
-**Requirements:** C# notebooks require [.NET 7](https://dotnet.microsoft.com/download)
-and the VS Code [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
 
 Once you've finished the getting started notebooks, you can check out the main walkthroughs
 on our Learn site:
@@ -110,7 +99,7 @@ on our Learn site:
 1. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
 1. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
 
-## Chat Copilot: see what's possible with Semantic Kernel ⚡
+## 💬 Chat Copilot: see what's possible with Semantic Kernel
 
 If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
 our [Chat Copilot](https://github.com/microsoft/chat-copilot) reference application. Chat Copilot
@@ -122,7 +111,7 @@ AI plugins, Chat Copilot can have a conversation with you about any topic and au
 You can find it's repo by navigating to [github.com/microsoft/chat-copilot](https://github.com/microsoft/chat-copilot).
 You can also learn more about Chat Copilot in our [documentation](https://learn.microsoft.com/en-us/semantic-kernel/chat-copilot/).
 
-## Check out our other repos! ⚡
+## 👀 Check out our other repos!
 
 If you like Semantic Kernel, you may also be interested in other repos the Semantic Kernel team supports:
 
@@ -133,7 +122,7 @@ If you like Semantic Kernel, you may also be interested in other repos the Seman
 | [Semantic Kernel Starters](https://github.com/microsoft/semantic-kernel-starters) | Starter projects for Semantic Kernel to make it easier to get started.                        |
 | [Semantic Memory](https://github.com/microsoft/semantic-memory)                   | A service that allows you to create pipelines for ingesting, storing, and querying knowledge. |
 
-## Joining the community
+## 🏘️ Join the community
 
 We welcome your contributions and suggestions to SK community! One of the easiest
 ways to participate is to engage in discussions in the GitHub repository.
