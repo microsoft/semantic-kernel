@@ -30,7 +30,8 @@ public abstract class OpenAIClientBase : ClientBase
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(logger)
+        ILogger? logger = null)
+        : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -63,6 +64,7 @@ public abstract class OpenAIClientBase : ClientBase
         string modelId,
         OpenAIClient openAIClient,
         ILogger? logger = null)
+        : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);

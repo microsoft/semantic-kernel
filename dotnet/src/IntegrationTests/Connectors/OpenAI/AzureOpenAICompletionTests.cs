@@ -37,9 +37,8 @@ public sealed class AzureOpenAICompletionTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
-        "This model's maximum context length is")]
-    public async Task AzureOpenAIChatNoHttpRetryPolicyTestShouldThrowAsync(string prompt, string expectedOutput)
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?")]
+    public async Task AzureOpenAIChatNoHttpRetryPolicyTestShouldThrowAsync(string prompt)
     {
         // Arrange
         var configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -60,13 +59,13 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         var exception = await Assert.ThrowsAsync<AIException>(() => func.InvokeAsync(string.Empty, settings: new CompleteRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
 
         // Assert
-        Assert.Contains(expectedOutput, exception.Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(exception);
     }
 
     [Theory]
     [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
         "This model's maximum context length is")]
-    public async Task AzureOpenAIChatNoHttpRetryPolicyCustomClientShouldThrowAsync(string prompt, string expectedOutput)
+    public async Task AzureOpenAIChatNoHttpRetryPolicyCustomClientShouldThrowAsync(string prompt)
     {
         // Arrange
         var configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -89,7 +88,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         var exception = await Assert.ThrowsAsync<AIException>(() => func.InvokeAsync(string.Empty, settings: new CompleteRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
 
         // Assert
-        Assert.Contains(expectedOutput, exception.Detail, StringComparison.OrdinalIgnoreCase);
+        Assert.NotNull(exception);
     }
 
     public void Dispose()

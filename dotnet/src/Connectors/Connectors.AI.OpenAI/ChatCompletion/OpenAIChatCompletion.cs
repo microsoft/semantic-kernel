@@ -31,8 +31,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         string apiKey,
         string? organization = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null
-    ) : base(modelId, apiKey, organization, httpClient, logger)
+        ILogger? logger = null) : base(modelId, apiKey, organization, httpClient, logger)
     {
     }
 
@@ -45,8 +44,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     public OpenAIChatCompletion(
     string modelId,
     OpenAIClient openAIClient,
-    ILogger? logger = null
-) : base(modelId, openAIClient, logger)
+    ILogger? logger = null) : base(modelId, openAIClient, logger)
     {
     }
 
