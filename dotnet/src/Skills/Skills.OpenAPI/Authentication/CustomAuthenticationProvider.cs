@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 /// <summary>
 /// Retrieves authentication content (scheme and value) via the provided delegate and applies it to HTTP requests.
 /// </summary>
-public class CustomAuthenticationProvider
+public sealed class CustomAuthenticationProvider
 {
     private readonly Func<Task<string>> _header;
     private readonly Func<Task<string>> _value;
