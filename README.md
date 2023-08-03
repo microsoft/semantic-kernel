@@ -37,7 +37,7 @@ With [planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestrati
 can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards, you can ask
 Semantic Kernel to execute the plan.
 
-![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/writer-plugin-example.png)
+![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/writer-plugin-with-plan.png)
 
 ## Getting started with Semantic Kernel ⚡
 
