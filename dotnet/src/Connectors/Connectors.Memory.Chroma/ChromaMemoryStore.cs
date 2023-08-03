@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -71,7 +72,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (SKException e) when (e.Message.Contains(string.Format(CultureInfo.InvariantCulture, CollectionDoesNotExistErrorFormat, collectionName)))
+        catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
             throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
@@ -226,7 +227,6 @@ public class ChromaMemoryStore : IMemoryStore
     private const string IncludeMetadatas = "metadatas";
     private const string IncludeEmbeddings = "embeddings";
     private const string IncludeDistances = "distances";
-    private const string CollectionDoesNotExistErrorFormat = "Collection {0} does not exist";
 
     private readonly ILogger _logger;
     private readonly IChromaClient _chromaClient;
@@ -250,7 +250,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             return await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (SKException e) when (e.Message.Contains(string.Format(CultureInfo.InvariantCulture, CollectionDoesNotExistErrorFormat, collectionName)))
+        catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
         {
             this._logger.LogError("Collection {0} does not exist", collectionName);
 
@@ -329,6 +329,16 @@ public class ChromaMemoryStore : IMemoryStore
         }
 
         return similarityScore;
+    }
+
+    /// <summary>
+    /// Checks if Chroma API error means that collection does not exist.
+    /// </summary>
+    /// <param name="exception">Chroma exception.</param>
+    /// <param name="collectionName">Collection name.</param>
+    private static bool CollectionDoesNotExistException(Exception exception, string collectionName)
+    {
+        return exception?.Message?.Contains(string.Format(CultureInfo.InvariantCulture, "Collection {0} does not exist", collectionName)) ?? false;
     }
 
     #endregion
