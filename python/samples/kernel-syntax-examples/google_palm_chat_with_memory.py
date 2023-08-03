@@ -4,7 +4,6 @@ import semantic_kernel as sk
 import asyncio
 import semantic_kernel.connectors.ai.google_palm as sk_gp
 from typing import Tuple
-from semantic_kernel.connectors.ai.open_ai import OpenAITextEmbedding
 
 
 kernel = sk.Kernel()
