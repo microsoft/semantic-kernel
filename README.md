@@ -15,27 +15,27 @@ and [Hugging Face](https://huggingface.co/)
 with conventional programming languages like C# and Python. By doing so, you can
 create AI apps that combine the best of both worlds.
 
-## Seamlessly integrate LLMs into your existing code
+## Seamlessly integrate LLMs into your existing code ⚡
 
-With Semantic Kernel, you can define
+With [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins), you can define
 [semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions) (functions powered by LLMs)
 or [native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions) (functions powered by C# or Python)
-inside of [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins) so
-you can seamlessly orchestrate AI and conventional code together. Once you've finished defining your plugins, Semantic Kernel makes it easy to
+so that you can seamlessly combine them together with Semantic Kernel. Once you've finished defining your plugins, Semantic Kernel makes it easy to
 [mix-and-match functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
 into a single pipeline with only a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Csharp#using-the-runasync-method-to-simplify-your-code).
 
 What makes Semantic Kernel _special_, however, is its ability to _automatically_ orchestrate
 [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins) with AI.
 With [planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner), you
-can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards, you can ask
-Semantic Kernel to execute the plan.
+can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards,
+Semantic Kernel will execute the plan.
 
-![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/writer-plugin-with-plan.png)
+![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
 
 ## Getting started with Semantic Kernel ⚡
 
-Semantic Kernel is available in a variety of languages and platforms. To get started, choose your preferred language below:
+Semantic Kernel is available in a variety of languages and platforms. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
+feature parity between our currently supported languages.
 
 <table width=100%>
   <tbody>
@@ -43,7 +43,8 @@ Semantic Kernel is available in a variety of languages and platforms. To get sta
       <td>
         <img align="left" width=52px src="https://user-images.githubusercontent.com/371009/230673036-fad1e8e6-5d48-49b1-a9c1-6f9834e0d165.png">
         <div>
-          <a href="dotnet/README.md">Using Semantic Kernel in C#</a> &nbsp
+          <a href="dotnet/README.md">Using Semantic Kernel in C#</a> &nbsp<br/>
+          <a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet">C# reference documentation</a> &nbsp
         </div>
       </td>
       <td>
@@ -62,11 +63,8 @@ Semantic Kernel is available in a variety of languages and platforms. To get sta
   </tbody>
 </table>
 
-See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
-feature parity between our currently supported languages.
-
 The quickest way to get started with the basics is to get an API key
-(OpenAI or Azure OpenAI) and to run one of the C#, Python, and Java console applications/scripts:
+from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java console applications/scripts below.
 
 ### For C#:
 
@@ -104,15 +102,15 @@ and the VS Code [Polyglot extension](https://marketplace.visualstudio.com/items?
 Once you've finished the getting started notebooks, you can check out the main walkthroughs
 on our Learn site:
 
-1. [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
-1. [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
-1. [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
-1. [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions)
-1. [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
-1. [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
-1. [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
+1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
+1. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
+1. 👄 [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
+1. 💽 [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions)
+1. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
+1. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
+1. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
 
-## Chat Copilot: seeing what's possible with Semantic Kernel ⚡
+## Chat Copilot: see what's possible with Semantic Kernel ⚡
 
 If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
 our [Chat Copilot](https://github.com/microsoft/chat-copilot) reference application. Chat Copilot
@@ -123,6 +121,17 @@ AI plugins, Chat Copilot can have a conversation with you about any topic and au
 
 You can find it's repo by navigating to [github.com/microsoft/chat-copilot](https://github.com/microsoft/chat-copilot).
 You can also learn more about Chat Copilot in our [documentation](https://learn.microsoft.com/en-us/semantic-kernel/chat-copilot/).
+
+## Check out our other repos! ⚡
+
+If you like Semantic Kernel, you may also be interested in other repos the Semantic Kernel team supports:
+
+| Repo                                                                              | Description                                                                                   |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [Chat Copilot](https://github.com/microsoft/chat-copilot)                         | A reference application that demonstrates how to build a chatbot with Semantic Kernel.        |
+| [Semantic Kernel Docs](https://github.com/MicrosoftDocs/semantic-kernel-docs)     | The home for Semantic Kernel documentation that appears on the Microsoft learn site.          |
+| [Semantic Kernel Starters](https://github.com/microsoft/semantic-kernel-starters) | Starter projects for Semantic Kernel to make it easier to get started.                        |
+| [Semantic Memory](https://github.com/microsoft/semantic-memory)                   | A service that allows you to create pipelines for ingesting, storing, and querying knowledge. |
 
 ## Joining the community
 
