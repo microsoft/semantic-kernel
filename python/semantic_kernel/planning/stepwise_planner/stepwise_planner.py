@@ -204,8 +204,9 @@ class StepwisePlanner:
                 # sleep 3 seconds
                 await asyncio.sleep(self.config.min_iteration_time_ms / 1000)
 
+            steps_taken_str = json.dumps([s.__dict__ for s in steps_taken], indent=4)
             context.variables.update(
-                f"Result not found, review _steps_taken to see what happened.\n{json.dumps(steps_taken, indent=4)}"
+                f"Result not found, review _steps_taken to see what happened.\n{steps_taken_str}"
             )
         else:
             context.variables.update("Question not found.")
@@ -296,8 +297,9 @@ class StepwisePlanner:
         scratch_pad_lines: List[str] = []
 
         # Add the original first thought
+        # joowon-dm-snu: does prompt really need SCRATCH_PAD_PREFIX? it looks like it breaks thought process pattern
         scratch_pad_lines.append(SCRATCH_PAD_PREFIX)
-        scratch_pad_lines.append(f"{THOUGHT}, {steps_taken[0].thought}")
+        scratch_pad_lines.append(f"{THOUGHT}\n{steps_taken[0].thought}")
 
         # Keep track of where to insert the next step
         insert_point = len(scratch_pad_lines)
@@ -312,16 +314,18 @@ class StepwisePlanner:
             s = steps_taken[i]
 
             if not is_null_or_empty(s.observation):
-                scratch_pad_lines.insert(insert_point, f"{OBSERVATION} {s.observation}")
+                scratch_pad_lines.insert(
+                    insert_point, f"{OBSERVATION}\n{s.observation}"
+                )
 
             if not is_null_or_empty(s.action):
                 scratch_pad_lines.insert(
                     insert_point,
-                    f'{ACTION} {{"action": "{s.action}", "action_variables": {json.dumps(s.action_variables)}}}',
+                    f'{ACTION}\n{{"action": "{s.action}", "action_variables": {json.dumps(s.action_variables)}}}',
                 )
 
             if i != 0:
-                scratch_pad_lines.insert(insert_point, f"{THOUGHT} {s.thought}")
+                scratch_pad_lines.insert(insert_point, f"{THOUGHT}\n{s.thought}")
 
         scratch_pad = "\n".join(scratch_pad_lines).strip()
 
