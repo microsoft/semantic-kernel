@@ -4,6 +4,7 @@ from logging import Logger
 from typing import Any, List, Optional, Tuple, Union
 
 import openai
+
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
