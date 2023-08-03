@@ -21,8 +21,8 @@ IMPORTANT: Use only the available functions listed in the [AVAILABLE FUNCTIONS] 
 
 Here is an example of a valid $JSON_BLOB:
 {
-  "action": "FUNCTION.NAME",
-  "action_variables": {"INPUT": "some input", "PARAMETER_NAME": "some value", "PARAMETER_NAME_2": "42"}
+  "action": "functionName",
+  "action_variables": {"parameterName": "some value", ...}
 }
 [END USAGE INSTRUCTIONS]
 [END INSTRUCTION]
@@ -33,7 +33,10 @@ the input question I must answer
 [THOUGHT]
 To solve this problem, I should carefully analyze the given question and identify the necessary steps. Any facts I discover earlier in my thought process should be repeated here to keep them readily available.
 [ACTION]
-$JSON_BLOB
+{
+  "action": "functionName",
+  "action_variables": {"parameterName": "some value", ...}
+}
 [OBSERVATION]
 The result of the action will be provided here.
 ... (These Thought/Action/Observation can repeat until the final answer is reached.)
