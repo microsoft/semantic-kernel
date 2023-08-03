@@ -7,51 +7,27 @@
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
-> ℹ️ **NOTE**: This project is evolving quickly.
-> We invite you to join us in developing the Semantic Kernel together!
-> Please contribute by
-> using GitHub [Discussions](https://github.com/microsoft/semantic-kernel/discussions),
-> opening GitHub [Issues](https://github.com/microsoft/semantic-kernel/issues/new/choose),
-> sending us [PRs](https://github.com/microsoft/semantic-kernel/pulls),
-> joining our [Discord community](https://aka.ms/SKDiscord).
-
 [Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/overview/)
-is a lightweight SDK that integrates Large Language Models (LLMs) like
+is an SDK that integrates Large Language Models (LLMs) like
 [OpenAI](https://platform.openai.com/docs/introduction),
 [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service),
 and [Hugging Face](https://huggingface.co/)
 with conventional programming languages like C# and Python. By doing so, you can
 create AI apps that combine the best of both worlds.
 
-## Semantic Kernel orchestrates native and semantic functions
+## Getting the best of both worlds
 
-With [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins), you as a developer can
-define [semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions) (functions powered by LLMs)
+With Semantic Kernel, you can define
+[semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions) (functions powered by LLMs)
 or [native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions) (functions powered by C# or Python)
-that can then be orchestrated together by Semantic Kernel.
+inside of [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins) so
+you can seamlessly orchestrate AI and conventional code together.
 
-Once you've defined your plugins, Semantic Kernel makes it easy to
+Once you've finished defining your plugins, Semantic Kernel makes it easy to
 [mix-and-match functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
-from your plugins into a single pipeline with only a few lines of code:
+into a single pipeline with only a few lines of code.
 
-```csharp
-var output = await kernel.RunAsync(
-    "What is the sum of 2 and 3?",
-    GetNumbers,         // Use a semantic function to extract numbers from the question
-    AddNumbers          // Use a native function to add the numbers together
-);
-```
-
-```python
-output = await self._kernel.run_async(
-    get_numbers,        # Use a semantic function to extract numbers from the question
-    add_numbers,        # Use a native function to add the numbers together
-    input_str="What is the sum of 2 and 3?",
-)
-```
-
-Behind the scenes, Semantic Kernel will call your plugins in the order you specified,
-and pass the output of one plugin as the input to the next plugin.
+// TODO: Add a diagram here
 
 ## Automatically orchestrate your plugins with planners
 
@@ -61,38 +37,7 @@ With [planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestrati
 can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards, you can ask
 Semantic Kernel to execute the plan.
 
-In the [planner example from our docs](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner),
-we demonstrate just how easy it is to import a plugin, generate a plan, and then execute a plan:
-
-```csharp
-// Add a plugin to the kernel and create a planner
-kernel.ImportSkill(new MathPlugin(), "MathPlugin");
-var planner = new SequentialPlanner(kernel);
-
-// Ask the planner to create a plan
-var ask = "If my investment of 2130.23 dollars increased by 23%, how much would I have after I spent $5 on a latte?";
-var plan = await planner.CreatePlanAsync(ask);
-
-// Execute the plan
-var result = await plan.InvokeAsync();
-```
-
-```python
-# Add a plugin to the kernel and create a planner
-kernel.import_skill(MathPlugin(), skill_name="math_plugin")
-planner = BasicPlanner()
-
-# Ask the planner to create a plan
-ask = "If my investment of 2130.23 dollars increased by 23%, how much would I have after I spent $5 on a latte?"
-plan = await planner.create_plan_async(ask, kernel)
-
-# Execute the plan
-result = await planner.execute_plan_async(plan, kernel)
-```
-
-With this code, Semantic Kernel is "smart" enough to know that it should use the provided
-`MathPlugin` to multiply `2130.23` by `1.23` and then subtract `5` from the result before
-finally returning the answer to the user (`2615.1829`).
+// TODO: Add a diagram here
 
 ## Getting started with Semantic Kernel ⚡
 
@@ -127,8 +72,7 @@ See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-s
 feature parity between our currently supported languages.
 
 The quickest way to get started with the basics is to get an API key
-(OpenAI or Azure OpenAI)
-and to run one of the C#, Python, and Java console applications/scripts:
+(OpenAI or Azure OpenAI) and to run one of the C#, Python, and Java console applications/scripts:
 
 ### For C#:
 
@@ -154,8 +98,8 @@ and to run one of the C#, Python, and Java console applications/scripts:
 
 ## Learning how to use Semantic Kernel ⚡
 
-For a more hands-on overview, you can also check out the C# and Python Jupyter notebooks, starting
-from here:
+For a quick guide, you can check out the C# and Python Jupyter notebooks. These notebooks
+demonstrate how to use Semantic Kernel with code snippets that you can easily run inline.
 
 - [Getting Started with C# notebook](samples/notebooks/dotnet/00-getting-started.ipynb)
 - [Getting Started with Python notebook](samples/notebooks/python/00-getting-started.ipynb)
@@ -163,31 +107,28 @@ from here:
 **Requirements:** C# notebooks require [.NET 7](https://dotnet.microsoft.com/download)
 and the VS Code [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
 
-## Chat Copilot
+Once you've finished the getting started notebooks, you can check out the main walkthroughs
+in our documentation:
 
-The repository includes some sample applications, with a React frontend and
-a backend web service using Semantic Kernel.
+1. [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
+1. [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
+1. [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions)
+1. [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions)
+1. [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
+1. [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
+1. [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
 
-Follow the links for more information and instructions about running these apps.
+## Chat Copilot: seeing what's possible with Semantic Kernel ⚡
 
-|                                                                         |                                                                                                                                   |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [Simple chat summary](samples/apps/chat-summary-webapp-react/README.md) | Use ready-to-use plugins and get plugins into your app easily.                                                                    |
-| [Book creator](samples/apps/book-creator-webapp-react/README.md)        | Use planner to deconstruct a complex goal and envision using the planner in your app.                                             |
-| [Authentication and APIs](samples/apps/auth-api-webapp-react/README.md) | Use a basic connector pattern to authenticate and connect to an API and imagine integrating external data into your app's LLM AI. |
-| [GitHub repository Q&A](samples/apps/github-qna-webapp-react/README.md) | Use embeddings and memory to store recent data and allow you to query against it.                                                 |
-| [Copilot Chat Sample App](samples/apps/copilot-chat-app/README.md)      | Build your own chat experience based on Semantic Kernel.                                                                          |
+If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
+our [Chat Copilot](https://github.com/microsoft/chat-copilot) reference application. Chat Copilot
+is a chatbot that demonstrates the power of Semantic Kernel. By combining memory, planning, and
+AI plugins, Chat Copilot can have a conversation with you about any topic and autocomplete tasks.
 
-**Requirements:**
+![Chat Copilot answering a question](https://learn.microsoft.com/en-us/semantic-kernel/media/chat-copilot-in-action.gif)
 
-- You will need an
-  [Open AI API Key](https://openai.com/api/) or
-  [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
-  to get started.
-- [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local)
-  are required to run the kernel as a local web service, used by the sample web apps.
-- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) or [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
-- [Yarn](https://yarnpkg.com/getting-started/install) is used for installing web apps' dependencies.
+You can find it's repo by navigating to [github.com/microsoft/chat-copilot](https://github.com/microsoft/chat-copilot).
+You can also learn more about Chat Copilot in our [documentation](https://learn.microsoft.com/en-us/semantic-kernel/chat-copilot/).
 
 ## Contributing and Community
 
@@ -202,7 +143,7 @@ in a different direction, but also to consider the impact on the larger ecosyste
 To learn more and get started:
 
 - Read the [documentation](https://aka.ms/sk/learn)
-- Learn how to [contribute](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md) to the project
+- Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/get-started/contributing) to the project
 - Join the [Discord community](https://aka.ms/SKDiscord)
 - Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
