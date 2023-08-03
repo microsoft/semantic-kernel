@@ -111,9 +111,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         if (result?.Value == null)
         {
-            throw new AzureCognitiveSearchMemoryException(
-                AzureCognitiveSearchMemoryException.ErrorCodes.ReadFailure,
-                "Memory read returned null");
+            throw new SKException("Memory read returned null");
         }
 
         return result.Value.ToMemoryRecord();
@@ -244,9 +242,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         if (embeddingSize < 1)
         {
-            throw new AzureCognitiveSearchMemoryException(
-                AzureCognitiveSearchMemoryException.ErrorCodes.InvalidEmbeddingSize,
-                "Invalid embedding size: the value must be greater than zero.");
+            throw new SKException("Invalid embedding size: the value must be greater than zero.");
         }
 
         var configName = "searchConfig";
@@ -334,9 +330,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         if (result == null || result.Value.Results.Count == 0)
         {
-            throw new AzureCognitiveSearchMemoryException(
-                AzureCognitiveSearchMemoryException.ErrorCodes.WriteFailure,
-                "Memory write returned null or an empty set");
+            throw new SKException("Memory write returned null or an empty set");
         }
 
         return result.Value.Results.Select(x => x.Key).ToList();
@@ -353,9 +347,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         if (indexName.Length > 128)
         {
-            throw new AzureCognitiveSearchMemoryException(
-                AzureCognitiveSearchMemoryException.ErrorCodes.InvalidIndexName,
-                "The collection name is too long, it cannot exceed 128 chars.");
+            throw new SKException("The collection name is too long, it cannot exceed 128 chars.");
         }
 
 #pragma warning disable CA1308 // The service expects a lowercase string
