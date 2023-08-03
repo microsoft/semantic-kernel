@@ -18,7 +18,7 @@ internal sealed class ChatResult : IChatResult, ITextResult
     {
         Verify.NotNull(choice);
         this._choice = choice;
-        this.ModelResult = new ModelResult(resultData);
+        this.ModelResult = new(new ChatModelResult(resultData, choice));
     }
 
     public ModelResult ModelResult { get; }

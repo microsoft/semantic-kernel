@@ -15,15 +15,13 @@ using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
 public class AzureCognitiveSearchMemoryStore : IMemoryStore
 {
-    // Note: Azure max length 24 chars
-    private const string UserAgent = "Semantic-Kernel";
-
     /// <summary>
     /// Create a new instance of memory storage using Azure Cognitive Search.
     /// </summary>
@@ -32,7 +30,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     public AzureCognitiveSearchMemoryStore(string endpoint, string apiKey)
     {
         AzureKeyCredential credentials = new(apiKey);
-        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, ClientOptions());
+        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
     }
 
     /// <summary>
@@ -42,7 +40,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     /// <param name="credentials">Azure service</param>
     public AzureCognitiveSearchMemoryStore(string endpoint, TokenCredential credentials)
     {
-        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, ClientOptions());
+        this._adminClient = new SearchIndexClient(new Uri(endpoint), credentials, GetClientOptions());
     }
 
     /// <inheritdoc />
@@ -113,9 +111,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         if (result?.Value == null)
         {
-            throw new AzureCognitiveSearchMemoryException(
-                AzureCognitiveSearchMemoryException.ErrorCodes.ReadFailure,
-                "Memory read returned null");
+            throw new SKException("Memory read returned null");
         }
 
         return result.Value.ToMemoryRecord();
@@ -246,9 +242,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         if (embeddingSize < 1)
         {
-            throw new AzureCognitiveSearchMemoryException(
-                AzureCognitiveSearchMemoryException.ErrorCodes.InvalidEmbeddingSize,
-                "Invalid embedding size: the value must be greater than zero.");
+            throw new SKException("Invalid embedding size: the value must be greater than zero.");
         }
 
         var configName = "searchConfig";
@@ -336,9 +330,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         if (result == null || result.Value.Results.Count == 0)
         {
-            throw new AzureCognitiveSearchMemoryException(
-                AzureCognitiveSearchMemoryException.ErrorCodes.WriteFailure,
-                "Memory write returned null or an empty set");
+            throw new SKException("Memory write returned null or an empty set");
         }
 
         return result.Value.Results.Select(x => x.Key).ToList();
@@ -355,9 +347,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         if (indexName.Length > 128)
         {
-            throw new AzureCognitiveSearchMemoryException(
-                AzureCognitiveSearchMemoryException.ErrorCodes.InvalidIndexName,
-                "The collection name is too long, it cannot exceed 128 chars.");
+            throw new SKException("The collection name is too long, it cannot exceed 128 chars.");
         }
 
 #pragma warning disable CA1308 // The service expects a lowercase string
@@ -389,44 +379,16 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     /// Options used by the Azure Cognitive Search client, e.g. User Agent.
     /// See also https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
     /// </summary>
-    private static SearchClientOptions ClientOptions()
+    private static SearchClientOptions GetClientOptions()
     {
         return new SearchClientOptions
         {
             Diagnostics =
             {
-                IsTelemetryEnabled = IsTelemetryEnabled(),
-                ApplicationId = UserAgent,
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
             },
         };
-    }
-
-    /// <summary>
-    /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
-    /// </summary>
-    private static bool IsTelemetryEnabled()
-    {
-        return !EnvironmentVariableToBool(Environment.GetEnvironmentVariable("AZURE_TELEMETRY_DISABLED")) ?? true;
-    }
-
-    /// <summary>
-    /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
-    /// </summary>
-    private static bool? EnvironmentVariableToBool(string? value)
-    {
-        if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals("1", value, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        if (string.Equals(bool.FalseString, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals("0", value, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        return null;
     }
 
     #endregion
