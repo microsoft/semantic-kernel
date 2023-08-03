@@ -63,17 +63,6 @@ public sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        return await this.InvokeWithInstrumentationAsync(() =>
-            this._plan.InvokeAsync(input, settings, logger ?? this._logger, cancellationToken)).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings) =>
         this._plan.SetAIConfiguration(settings);
 
