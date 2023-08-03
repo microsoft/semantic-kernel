@@ -81,9 +81,7 @@ public class VolatileMemoryStoreTests
         string? collection = null;
 
         // Assert
-#pragma warning disable CS8604 // Possible null reference argument for parameter
-        await Assert.ThrowsAsync<MemoryException>(async () => await this._db.CreateCollectionAsync(collection));
-#pragma warning restore CS8604 // Possible null reference argument for parameter
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await this._db.CreateCollectionAsync(collection!));
     }
 
     [Fact]
