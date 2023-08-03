@@ -10,13 +10,41 @@ from semantic_kernel.connectors.search_engine import BingConnector
 from semantic_kernel.core_skills.math_skill import MathSkill
 from semantic_kernel.core_skills.time_skill import TimeSkill
 from semantic_kernel.kernel import Kernel
+from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.planning import StepwisePlanner
 from semantic_kernel.planning.stepwise_planner.stepwise_planner_config import (
     StepwisePlannerConfig,
 )
-from tests.integration.planning.stepwise_planner.web_search_native_skill import (
-    WebSearchEngineSkill,
-)
+from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+
+
+class TempWebSearchEngineSkill:
+    """
+    TODO: replace this class with semantic_kernel.core_skills.web_search_engine_skill.WebSearchEngineSkill
+
+    SKFunction.describe() does not contains info for arguments.
+
+    so that `query: str` is not shown in the function description,
+    BUT this argument must be passed to planner to work appropriately.
+
+    This function temporarily add `query` as parameter by using @sk_function_context_parameter.
+    original file is here: semantic-kernel/python/semantic_kernel/core_skills/web_search_engine_skill.py
+    """
+
+    def __init__(self, connector) -> None:
+        self._connector = connector
+
+    @sk_function(
+        description="Performs a web search for a given query", name="searchAsync"
+    )
+    @sk_function_context_parameter(
+        name="query",
+        description="The search query",
+    )
+    async def search_async(self, query: str, context: SKContext) -> str:
+        query = query or context.variables.get("query")[1]
+        result = await self._connector.search_async(query, num_results=1, offset=0)
+        return str(result)
 
 
 @pytest.fixture(scope="session")
@@ -83,11 +111,13 @@ async def test_can_create_stepwise_plan(
     use_embeddings = False
     kernel = initialize_kernel(get_aoai_config, use_embeddings, use_chat_model)
     bing_connector = BingConnector(api_key=get_bing_config)
-    web_search_engine_skill = WebSearchEngineSkill(bing_connector)
+    web_search_engine_skill = TempWebSearchEngineSkill(bing_connector)
     kernel.import_skill(web_search_engine_skill, "WebSearch")
     kernel.import_skill(TimeSkill(), "time")
 
-    planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10))
+    planner = StepwisePlanner(
+        kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000)
+    )
 
     # Act
     plan = planner.create_plan(prompt)
@@ -104,7 +134,7 @@ async def test_can_create_stepwise_plan(
     [
         (
             False,
-            "Who is the current president of the United States? What is his current age divided by 2",
+            "Who is the current president of the United States? What is his current age added by 2",
         )
     ],
 )
@@ -119,12 +149,14 @@ async def test_can_execute_stepwise_plan(
     use_embeddings = False
     kernel = initialize_kernel(get_aoai_config, use_embeddings, use_chat_model)
     bing_connector = BingConnector(api_key=get_bing_config)
-    web_search_engine_skill = WebSearchEngineSkill(bing_connector)
+    web_search_engine_skill = TempWebSearchEngineSkill(bing_connector)
     kernel.import_skill(web_search_engine_skill, "WebSearch")
     kernel.import_skill(TimeSkill(), "time")
     kernel.import_skill(MathSkill(), "math")
 
-    planner = StepwisePlanner(kernel, StepwisePlannerConfig(max_iterations=10))
+    planner = StepwisePlanner(
+        kernel, StepwisePlannerConfig(max_iterations=10, min_iteration_time_ms=1000)
+    )
 
     # Act
     plan = planner.create_plan(prompt)
