@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,30 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// </summary>
 public class MultiCompletionAnalysisSettings
 {
+    /// <summary>
+    /// This is the default vetting prompt used for connectors evaluation
+    /// </summary>
+    public const string DefaultVettingPromptTemplate = @"Following are an LLM prompt and the corresponding response from an LLM model to be evaluated. Please indicate whether the response is valid or not. Answer with true or false.
+PROMPT:
+-------
+{prompt}
+RESPONSE:
+---------
+{reponse}
+RESPONSE IS VALID? (true/false):
+--------------------------------
+";
+
+    /// <summary>
+    /// Those are the default settings used for connectors evaluation
+    /// </summary>
+    public static readonly CompleteRequestSettings DefaultVettingRequestSettings = new()
+    {
+        MaxTokens = 1,
+        Temperature = 0.0,
+        ResultsPerPrompt = 1,
+    };
+
     // Lock for thread-safe file operations
     private object _analysisFileLock = new();
 
@@ -64,21 +89,12 @@ public class MultiCompletionAnalysisSettings
     /// <summary>
     /// The vetting prompt used in evaluation
     /// </summary>
-    public string VettingPrompt { get; set; } = @"Following are an LLM prompt and a corresponding response from the LLM model. Please indicate whether the response is correct or not. Answer with true or false.
-PROMPT:
--------
-{prompt}
-RESPONSE:
----------
-{reponse}
-RESPONSE IS VALID?
----------------
-";
+    public string VettingPromptTemplate { get; set; } = DefaultVettingPromptTemplate;
 
     /// <summary>
     /// Request settings for the vetting process
     /// </summary>
-    public CompleteRequestSettings VettingRequestSettings { get; set; } = new();
+    public CompleteRequestSettings VettingRequestSettings { get; set; } = DefaultVettingRequestSettings;
 
     /// <summary>
     /// Asynchronously evaluates a connector test, writes the evaluation to a file, and updates settings if necessary.
@@ -111,14 +127,7 @@ RESPONSE IS VALID?
                 var duration = stopWatch.Elapsed;
 
                 // For the management task
-                var connectorTest = new ConnectorTest
-                {
-                    Prompt = originalTest.Prompt,
-                    RequestSettings = originalTest.RequestSettings,
-                    ConnectorName = namedTextCompletion.Name,
-                    Result = result,
-                    Duration = duration,
-                };
+                var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
                 tests.Add(connectorTest);
             }
         }
@@ -233,6 +242,7 @@ RESPONSE IS VALID?
 
                 promptConnectorSettings.Evaluations = connectorEvaluations.ToList();
                 promptConnectorSettings.AverageDuration = TimeSpan.FromMilliseconds(connectorEvaluations.Average(e => e.Test.Duration.TotalMilliseconds));
+                promptConnectorSettings.AverageCost = connectorEvaluations.Average(e => e.Test.Cost);
                 var evaluationsByMainConnector = connectorEvaluations.GroupBy(e => e.VettingConnector).OrderByDescending(grouping => grouping.Count()).First();
                 promptConnectorSettings.VettingConnector = evaluationsByMainConnector.Key;
                 var vetted = evaluationsByMainConnector.All(e => e.IsVetted);
@@ -249,7 +259,7 @@ RESPONSE IS VALID?
     /// </summary>
     public async Task<ConnectorPromptEvaluation> EvaluateConnectorTestWithCompletionAsync(NamedTextCompletion completion, ConnectorTest connectorTest, MultiTextCompletionSettings settings, CancellationToken cancellationToken = default)
     {
-        var prompt = this.VettingPrompt.Replace("{prompt}", connectorTest.Prompt).Replace("{response}", connectorTest.Result);
+        var prompt = this.VettingPromptTemplate.Replace("{prompt}", connectorTest.Prompt).Replace("{response}", connectorTest.Result);
         var stopWatch = Stopwatch.StartNew();
         var completionResult = await completion.TextCompletion.CompleteAsync(prompt, this.VettingRequestSettings, cancellationToken).ConfigureAwait(false) ?? "false";
         stopWatch.Stop();
@@ -263,5 +273,36 @@ RESPONSE IS VALID?
             IsVetted = isVetted,
         };
         return toReturn;
+    }
+
+    /// <summary>
+    /// Gets the vetting prompt and vetting request settings to evaluate a given ConnectorTest.
+    /// </summary>
+    public (string vettingPrompt, CompleteRequestSettings vettingRequestSettings) GetVettingPrompt(string prompt, string result)
+    {
+        var vettingPrompt = this.VettingPromptTemplate.Replace("{prompt}", prompt).Replace("{response}", result);
+        var vettingRequestSettings = this.VettingRequestSettings;
+        return (vettingPrompt, vettingRequestSettings);
+    }
+
+    private Regex? _vettingCaptureRegex;
+
+    /// <summary>
+    /// Accounting for the <see cref="VettingPromptTemplate"/> template, this method uses custom regex to return the prompt and response components of a given vetting prompt.
+    /// </summary>
+    public (string prompt, string response) CaptureVettingPromptComponents(string vettingPrompt)
+    {
+        if (this._vettingCaptureRegex == null)
+        {
+            var vettingPattern = Regex.Escape(this.VettingPromptTemplate)
+                .Replace(@"\{prompt\}", "(?<prompt>.+?)")
+                .Replace(@"\{reponse\}", "(?<response>.+?)");
+
+            // RegexOptions.Singleline makes the '.' special character match any character (including \n)
+            this._vettingCaptureRegex = new Regex(vettingPattern, RegexOptions.Singleline);
+        }
+
+        var capture = this._vettingCaptureRegex.Match(vettingPrompt);
+        return (capture.Groups["prompt"].Value.Trim(), capture.Groups["response"].Value.Trim());
     }
 }

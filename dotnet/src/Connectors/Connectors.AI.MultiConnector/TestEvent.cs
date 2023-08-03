@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 

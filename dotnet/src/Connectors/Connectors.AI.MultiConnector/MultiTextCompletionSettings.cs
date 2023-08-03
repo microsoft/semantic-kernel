@@ -33,12 +33,12 @@ public class MultiTextCompletionSettings
     /// <summary>
     /// Holds the settings for completion analysis process.
     /// </summary>
-    public MultiCompletionAnalysisSettings AnalysisSettings { get; } = new();
+    public MultiCompletionAnalysisSettings AnalysisSettings { get; set; } = new();
 
     /// <summary>
     /// Represents the length to which prompts will be truncated for signature extraction.
     /// </summary>
-    public int PromptTruncationLength { get; set; } = 50;
+    public int PromptTruncationLength { get; set; } = 20;
 
     /// <summary>
     /// List of settings for multiple connectors associated with each prompt type.

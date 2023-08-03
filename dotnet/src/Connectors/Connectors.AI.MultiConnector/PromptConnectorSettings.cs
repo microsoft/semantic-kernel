@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
@@ -22,6 +24,11 @@ public class PromptConnectorSettings
     /// the average duration of the connector's response to the prompt type during evaluations
     /// </summary>
     public TimeSpan AverageDuration { get; set; }
+
+    /// <summary>
+    /// the average cost of the connector's calls with the prompt type during evaluations
+    /// </summary>
+    public decimal AverageCost { get; set; }
 
     /// <summary>
     /// the evaluations that were performed on the connector for the prompt type

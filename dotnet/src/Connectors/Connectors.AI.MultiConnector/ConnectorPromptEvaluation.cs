@@ -1,4 +1,6 @@
-﻿namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
 /// <summary>
 /// Represents the evaluation of a connector prompt test by a vetting connector, validating if the prompt's reponse is acceptable.

@@ -73,24 +73,17 @@ public class MultiTextCompletion : ITextCompletion
         var duration = stopWatch.Elapsed;
 
         // For the management task
-        var connectorTest = new ConnectorTest
-        {
-            Prompt = text,
-            RequestSettings = requestSettings,
-            ConnectorName = textCompletion.Name,
-            Result = result,
-            Duration = duration,
-        };
+        ConnectorTest connectorTest = ConnectorTest.Create(text, requestSettings, textCompletion, result, duration);
         this.AppendConnectorTest(connectorTest);
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletions(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         var promptSettings = this._settings.GetPromptSettings(text, requestSettings);
         var textCompletion = promptSettings.SelectAppropriateTextCompletion(this._textCompletions);
 
-        var result = textCompletion.TextCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
+        var result = textCompletion.TextCompletion.GetStreamingCompletions(text, requestSettings, cancellationToken);
 
         _ = this.CollectStreamingTestResultAsync(text, requestSettings, textCompletion, result, cancellationToken);
 
@@ -114,14 +107,8 @@ public class MultiTextCompletion : ITextCompletion
         stopWatch.Stop();
         var duration = stopWatch.Elapsed;
 
-        var connectorTest = new ConnectorTest
-        {
-            Prompt = text,
-            RequestSettings = requestSettings,
-            ConnectorName = textCompletion.Name,
-            Result = collectedResult.ToString(),
-            Duration = duration,
-        };
+        var connectorTest = ConnectorTest.Create(text, requestSettings, textCompletion, collectedResult.ToString(), duration);
+
         this.AppendConnectorTest(connectorTest);
     }
 

@@ -1,4 +1,7 @@
-﻿using Microsoft.SemanticKernel.AI.TextCompletion;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -26,4 +29,24 @@ public class ConnectorTest : TestEvent
     /// Gets or sets the result returned by the connector called with the test prompt.
     /// </summary>
     public string Result { get; set; } = "";
+
+    public decimal Cost { get; set; }
+
+    /// <summary>
+    /// Helper to create connector test from completion components
+    /// </summary>
+    public static ConnectorTest Create(string text, CompleteRequestSettings requestSettings, NamedTextCompletion textCompletion, string result, TimeSpan duration)
+    {
+        decimal textCompletionCost = textCompletion.GetCost(text, result);
+        var connectorTest = new ConnectorTest
+        {
+            Prompt = text,
+            RequestSettings = requestSettings,
+            ConnectorName = textCompletion.Name,
+            Result = result,
+            Duration = duration,
+            Cost = textCompletionCost,
+        };
+        return connectorTest;
+    }
 }
