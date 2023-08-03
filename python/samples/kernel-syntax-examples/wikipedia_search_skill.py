@@ -13,6 +13,10 @@ kernel.add_text_completion_service(
 wiki_connector = WikipediaConnector()
 web_skill = kernel.import_skill(WebSearchEngineSkill(wiki_connector), "WebSearch")
 
+context = kernel.create_new_context()
+context["num_results"] = "10"
+context["offset"] = "0"
+
 
 async def simple_search():
     # Returns a list of tuples that contain the title and a small snippet from a relevent Wikipedia article to the query
@@ -41,9 +45,6 @@ async def semantic_function():
     """
 
     qna = kernel.create_semantic_function(prompt, temperature=0.2)
-    context = kernel.create_new_context()
-    context["num_results"] = "5"
-    context["offset"] = "0"
     result = await qna.invoke_async(context=context)
     print(result)
 
@@ -67,8 +68,39 @@ async def semantic_function():
     """
 
 
+async def get_updated_info():
+    prompt = """
+    Answer the question using only the data that is provided in the data section.
+    Favor information that is more recent and discard outdated information.
+    Do not use any other information sources.
+    Cite sources with links in a labeled and numbered list after the answer.
+
+    Data: {{WebSearch.SearchAsync "NBA champion"}}
+    Question: "Who won the NBA?"
+    Answer:
+    """
+
+    qna = kernel.create_semantic_function(prompt, temperature=0.2)
+    result = await qna.invoke_async(context=context)
+    print(result)
+
+    """
+    Output:
+
+    The National Basketball Association (NBA) champion for the most recent season is the Denver Nuggets, 
+    who won the 2023 NBA Finals. 
+
+    Sources: 
+    1. https://en.wikipedia.org/wiki/List_of_NBA_champions
+    2. https://en.wikipedia.org/wiki/National_Basketball_Association
+    """
+
+
 if __name__ == "__main__":
     import asyncio
 
     asyncio.run(simple_search())
-    asyncio.run(semantic_function())  # Note: beware of high token usage
+
+    # Note: beware of high token usage
+    asyncio.run(semantic_function())
+    asyncio.run(get_updated_info())
