@@ -15,21 +15,15 @@ and [Hugging Face](https://huggingface.co/)
 with conventional programming languages like C# and Python. By doing so, you can
 create AI apps that combine the best of both worlds.
 
-## Getting the best of both worlds
+## Combine AI and conventional code
 
 With Semantic Kernel, you can define
 [semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions) (functions powered by LLMs)
 or [native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions) (functions powered by C# or Python)
 inside of [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins) so
-you can seamlessly orchestrate AI and conventional code together.
-
-Once you've finished defining your plugins, Semantic Kernel makes it easy to
+you can seamlessly orchestrate AI and conventional code together. Once you've finished defining your plugins, Semantic Kernel makes it easy to
 [mix-and-match functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
-into a single pipeline with only a few lines of code.
-
-![Chaining functions in Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/media/using-the-kernel-example.png)
-
-## Automatically orchestrate your plugins with planners
+into a single pipeline with only a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Csharp#using-the-runasync-method-to-simplify-your-code).
 
 What makes Semantic Kernel _special_, however, is its ability to _automatically_ orchestrate
 [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins) with AI.
