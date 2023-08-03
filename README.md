@@ -27,7 +27,7 @@ Once you've finished defining your plugins, Semantic Kernel makes it easy to
 [mix-and-match functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
 into a single pipeline with only a few lines of code.
 
-// TODO: Add a diagram here
+![Chaining functions in Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/media/using-the-kernel-example.png)
 
 ## Automatically orchestrate your plugins with planners
 
@@ -37,7 +37,7 @@ With [planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestrati
 can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards, you can ask
 Semantic Kernel to execute the plan.
 
-// TODO: Add a diagram here
+![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/writer-plugin-example.png)
 
 ## Getting started with Semantic Kernel ⚡
 
@@ -108,7 +108,7 @@ demonstrate how to use Semantic Kernel with code snippets that you can easily ru
 and the VS Code [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
 
 Once you've finished the getting started notebooks, you can check out the main walkthroughs
-in our documentation:
+on our Learn site:
 
 1. [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
 1. [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
@@ -130,7 +130,7 @@ AI plugins, Chat Copilot can have a conversation with you about any topic and au
 You can find it's repo by navigating to [github.com/microsoft/chat-copilot](https://github.com/microsoft/chat-copilot).
 You can also learn more about Chat Copilot in our [documentation](https://learn.microsoft.com/en-us/semantic-kernel/chat-copilot/).
 
-## Contributing and Community
+## Joining the community
 
 We welcome your contributions and suggestions to SK community! One of the easiest
 ways to participate is to engage in discussions in the GitHub repository.
