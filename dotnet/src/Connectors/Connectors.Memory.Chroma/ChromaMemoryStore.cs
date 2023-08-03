@@ -227,7 +227,6 @@ public class ChromaMemoryStore : IMemoryStore
     private const string IncludeEmbeddings = "embeddings";
     private const string IncludeDistances = "distances";
     private const string CollectionDoesNotExistErrorFormat = "Collection {0} does not exist";
-    private const string DeleteNonExistentCollectionErrorMessage = "list index out of range";
 
     private readonly ILogger _logger;
     private readonly IChromaClient _chromaClient;
@@ -312,7 +311,7 @@ public class ChromaMemoryStore : IMemoryStore
 
         return
             JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, this._jsonSerializerOptions) ??
-            throw new ChromaMemoryStoreException("Unable to deserialize memory record metadata.");
+            throw new SKException("Unable to deserialize memory record metadata.");
     }
 
     private Embedding<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
