@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 /** Interface for text embedding generation services */
-public interface EmbeddingGeneration<TValue, TEmbedding extends Number> extends AIService {
+public interface EmbeddingGeneration<TValue> extends AIService {
     /**
      * Generates a list of embeddings associated to the data
      *
@@ -18,7 +18,7 @@ public interface EmbeddingGeneration<TValue, TEmbedding extends Number> extends 
      */
     Mono<List<Embedding>> generateEmbeddingsAsync(List<TValue> data);
 
-    interface Builder<TValue, TEmbedding extends Number> {
-        EmbeddingGeneration<TValue, TEmbedding> build(OpenAIAsyncClient client, String modelId);
+    interface Builder<TValue> {
+        EmbeddingGeneration<TValue> build(OpenAIAsyncClient client, String modelId);
     }
 }

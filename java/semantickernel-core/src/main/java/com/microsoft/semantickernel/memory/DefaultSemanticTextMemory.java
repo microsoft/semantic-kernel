@@ -21,12 +21,12 @@ import javax.annotation.Nullable;
 /// </summary>
 public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
-    @Nonnull private final EmbeddingGeneration<String, ? extends Number> _embeddingGenerator;
+    @Nonnull private final EmbeddingGeneration<String> _embeddingGenerator;
     @Nonnull private /*final*/ MemoryStore _storage;
 
     public DefaultSemanticTextMemory(
             @Nonnull MemoryStore storage,
-            @Nonnull EmbeddingGeneration<String, ? extends Number> embeddingGenerator) {
+            @Nonnull EmbeddingGeneration<String> embeddingGenerator) {
         this._embeddingGenerator = embeddingGenerator;
         // TODO: this assignment raises EI_EXPOSE_REP2 in spotbugs (filtered out for now)
         this._storage = storage;
@@ -172,7 +172,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
     public static class Builder implements SemanticTextMemory.Builder {
 
         @Nullable MemoryStore storage = null;
-        @Nullable EmbeddingGeneration<String, ? extends Number> embeddingGenerator = null;
+        @Nullable EmbeddingGeneration<String> embeddingGenerator = null;
 
         @Override
         public Builder setStorage(@Nonnull MemoryStore storage) {
@@ -182,7 +182,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
         @Override
         public Builder setEmbeddingGenerator(
-                @Nonnull EmbeddingGeneration<String, ? extends Number> embeddingGenerator) {
+                @Nonnull EmbeddingGeneration<String> embeddingGenerator) {
             this.embeddingGenerator = embeddingGenerator;
             return this;
         }

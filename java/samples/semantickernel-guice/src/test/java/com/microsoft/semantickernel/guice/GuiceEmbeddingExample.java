@@ -12,7 +12,7 @@ import java.util.List;
 
 public class GuiceEmbeddingExample {
 
-    private final EmbeddingGeneration<String, Double> embeddingGeneration;
+    private final EmbeddingGeneration<String> embeddingGeneration;
 
     public static void main(String[] args) {
         Injector injector =
@@ -26,7 +26,7 @@ public class GuiceEmbeddingExample {
     }
 
     @Inject
-    public GuiceEmbeddingExample(EmbeddingGeneration<String, Double> embeddingGeneration) {
+    public GuiceEmbeddingExample(EmbeddingGeneration<String> embeddingGeneration) {
         this.embeddingGeneration = embeddingGeneration;
     }
 
