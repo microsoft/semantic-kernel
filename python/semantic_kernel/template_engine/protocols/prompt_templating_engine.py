@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List, Optional, Protocol
+from typing import List, Optional, Protocol, runtime_checkable
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.template_engine.blocks.block import Block
 
 
+@runtime_checkable
 class PromptTemplatingEngine(Protocol):
     """
     Prompt templating engine protocol.

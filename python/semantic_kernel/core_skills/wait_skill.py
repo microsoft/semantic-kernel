@@ -2,10 +2,11 @@
 
 import asyncio
 
+from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function
 
 
-class WaitSkill:
+class WaitSkill(PydanticField):
     """
     WaitSkill provides a set of functions to wait for a certain amount of time.
 

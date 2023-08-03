@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
 
-class TextMemorySkill:
+class TextMemorySkill(PydanticField):
     COLLECTION_PARAM = "collection"
     RELEVANCE_PARAM = "relevance"
     KEY_PARAM = "key"
