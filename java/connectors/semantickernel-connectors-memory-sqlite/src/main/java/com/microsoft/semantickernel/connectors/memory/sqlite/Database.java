@@ -1,30 +1,27 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.sqlite;
 
+import com.microsoft.semantickernel.memory.DataEntryBase;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.sql.*;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Database {
 
-    static class DatabaseEntry {
-        private final String key;
+    static class DatabaseEntry extends DataEntryBase {
         private final String metadata;
         private final String embedding;
-        private final String timestamp;
 
-        public DatabaseEntry(String key, String metadata, String embedding, String timestamp) {
-            this.key = key;
+        public DatabaseEntry(String key, String metadata, String embedding, ZonedDateTime timestamp) {
+            super(key, timestamp);
             this.metadata = metadata;
             this.embedding = embedding;
-            this.timestamp = timestamp;
-        }
-
-        public String getKey() {
-            return key;
         }
 
         public String getMetadata() {
@@ -35,9 +32,16 @@ public class Database {
             return embedding;
         }
 
-        public String getTimestamp() {
-            return timestamp;
-        }
+    }
+
+    // Convenience method to format a ZonedDateTime in a format acceptable to SQLite
+    private static String formatDatetime(ZonedDateTime datetime) {
+        return datetime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    // Convenience method to parse a SQLite datetime string into a ZonedDateTime
+    private static ZonedDateTime parseDatetime(String datetime) {
+        return ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     private static final String TABLE_NAME = "SKMemoryTable";
@@ -95,7 +99,7 @@ public class Database {
             String key,
             String metadata,
             String embedding,
-            String timestamp) {
+            ZonedDateTime timestamp) {
         return Mono.fromRunnable(
                         () -> {
                             String query =
@@ -106,7 +110,7 @@ public class Database {
                             try (PreparedStatement statement = connection.prepareStatement(query)) {
                                 statement.setString(1, metadata != null ? metadata : "");
                                 statement.setString(2, embedding != null ? embedding : "");
-                                statement.setString(3, timestamp != null ? timestamp : "");
+                                statement.setString(3, timestamp != null ? formatDatetime(timestamp) : "");
                                 statement.setString(4, collection);
                                 statement.setString(5, key);
                                 statement.executeUpdate();
@@ -124,7 +128,7 @@ public class Database {
             String key,
             String metadata,
             String embedding,
-            String timestamp) {
+            ZonedDateTime timestamp) {
         return Mono.fromRunnable(
                         () -> {
                             String query =
@@ -137,7 +141,7 @@ public class Database {
                                 statement.setString(2, key);
                                 statement.setString(3, metadata != null ? metadata : "");
                                 statement.setString(4, embedding != null ? embedding : "");
-                                statement.setString(5, timestamp != null ? timestamp : "");
+                                statement.setString(5, timestamp != null ? formatDatetime(timestamp) : "");
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException("\"INSERT OR IGNORE INTO\" failed", e);
@@ -199,8 +203,9 @@ public class Database {
                                     String metadata = resultSet.getString("metadata");
                                     String embedding = resultSet.getString("embedding");
                                     String timestamp = resultSet.getString("timestamp");
+                                    ZonedDateTime zonedDateTime = timestamp != null ? parseDatetime(timestamp) : null;
                                     entries.add(
-                                            new DatabaseEntry(key, metadata, embedding, timestamp));
+                                            new DatabaseEntry(key, metadata, embedding, zonedDateTime));
                                 }
                             } catch (SQLException e) {
                                 return Mono.error(new SQLConnectorException("\"SELECT * FROM\" failed", e));
@@ -225,8 +230,9 @@ public class Database {
                                     String metadata = resultSet.getString("metadata");
                                     String embedding = resultSet.getString("embedding");
                                     String timestamp = resultSet.getString("timestamp");
+                                    ZonedDateTime zonedDateTime = timestamp != null ? parseDatetime(timestamp) : null;
                                     return Mono.just(
-                                            new DatabaseEntry(key, metadata, embedding, timestamp));
+                                            new DatabaseEntry(key, metadata, embedding, zonedDateTime));
                                 }
                             } catch (SQLException e) {
                                 return Mono.error(new SQLConnectorException("\"SELECT * FROM\" failed", e));

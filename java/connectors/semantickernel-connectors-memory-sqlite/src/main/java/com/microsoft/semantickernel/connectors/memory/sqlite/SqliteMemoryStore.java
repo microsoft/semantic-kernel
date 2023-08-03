@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import java.sql.*;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -69,7 +68,7 @@ public class SqliteMemoryStore implements MemoryStore {
                             record.getKey(),
                             record.getSerializedMetadata(),
                             record.getSerializedEmbedding(),
-                            record.getTimestamp().toString());
+                            record.getTimestamp());
 
             Mono<Void> insert =
                     this.dbConnector.insertOrIgnoreAsync(
@@ -78,7 +77,7 @@ public class SqliteMemoryStore implements MemoryStore {
                             record.getKey(),
                             record.getSerializedMetadata(),
                             record.getSerializedEmbedding(),
-                            record.getTimestamp().toString());
+                            record.getTimestamp());
 
             return update.then(insert).then(Mono.just(record.getKey()));
         } catch (JsonProcessingException e) {
@@ -124,15 +123,13 @@ public class SqliteMemoryStore implements MemoryStore {
                                                                                 .getEmbedding(),
                                                                         Embedding.class),
                                                         databaseEntry.getKey(),
-                                                        ZonedDateTime.parse(
-                                                                databaseEntry.getTimestamp()));
+                                                        databaseEntry.getTimestamp());
                                             }
                                             return MemoryRecord.fromJsonMetadata(
                                                     databaseEntry.getMetadata(),
                                                     Embedding.empty(),
                                                     databaseEntry.getKey(),
-                                                    ZonedDateTime.parse(
-                                                            databaseEntry.getTimestamp()));
+                                                    databaseEntry.getTimestamp());
                                         } catch (JsonProcessingException e) {
                                             throw new RuntimeException(e);
                                         }
