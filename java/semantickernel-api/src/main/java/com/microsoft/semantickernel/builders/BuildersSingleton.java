@@ -139,7 +139,7 @@ public enum BuildersSingleton {
      *
      * @return a {@link EmbeddingGeneration.Builder}
      */
-    public EmbeddingGeneration.Builder<String, Float> getTextEmbeddingGenerationBuilder() {
+    public EmbeddingGeneration.Builder<String> getTextEmbeddingGenerationBuilder() {
         return getInstance(EmbeddingGeneration.Builder.class);
     }
 

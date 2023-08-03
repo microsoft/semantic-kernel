@@ -103,7 +103,7 @@ public interface SemanticTextMemory {
         Builder setStorage(MemoryStore storage);
 
         Builder setEmbeddingGenerator(
-                EmbeddingGeneration<String, ? extends Number> embeddingGenerator);
+                EmbeddingGeneration<String> embeddingGenerator);
 
         SemanticTextMemory build();
     }

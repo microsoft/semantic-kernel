@@ -11,27 +11,20 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-connectors-ai-openai</artifactId>
+    <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
 
-    <name>Semantic Kernel OpenAI Connectors</name>
-    <description>Defines OpenAI connectors to be used with the Semantic Kernel</description>
+    <name>Semantic Kernel Azure Cognitive Search Memory Connector</name>
+    <description>Defines connector for Azure Cognitive Search to be used with the Semantic Kernel</description>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>jakarta.inject</groupId>
-            <artifactId>jakarta.inject-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-search-documents</artifactId>
         </dependency>
     </dependencies>
 

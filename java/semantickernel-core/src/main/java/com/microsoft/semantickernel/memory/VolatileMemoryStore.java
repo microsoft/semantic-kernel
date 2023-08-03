@@ -163,11 +163,6 @@ public class VolatileMemoryStore implements MemoryStore {
         return Mono.empty();
     }
 
-    @SuppressWarnings("unchecked")
-    private static EmbeddingVector<Number> upcastEmbeddingVector(List<? extends Number> list) {
-        return new EmbeddingVector<Number>((List<Number>) list);
-    }
-
     @SuppressWarnings("UnnecessaryLambda")
     private static final ToDoubleFunction<Tuple2<MemoryRecord, ? extends Number>>
             extractSimilarity = tuple -> tuple.getT2().doubleValue();
@@ -175,7 +170,7 @@ public class VolatileMemoryStore implements MemoryStore {
     @Override
     public Mono<Collection<Tuple2<MemoryRecord, Number>>> getNearestMatchesAsync(
             @Nonnull String collectionName,
-            @Nonnull Embedding<? extends Number> embedding,
+            @Nonnull Embedding embedding,
             int limit,
             double minRelevanceScore,
             boolean withEmbeddings) {
@@ -189,18 +184,14 @@ public class VolatileMemoryStore implements MemoryStore {
             return Mono.just(Collections.emptyList());
         }
 
-        Collection<MemoryRecord> embeddingCollection = collection.values();
-
-        // Upcast the embedding vector to a Number to get around compiler complaining about type
-        // mismatches.
-        EmbeddingVector<Number> embeddingVector = upcastEmbeddingVector(embedding.getVector());
+        final EmbeddingVector embeddingVector = new EmbeddingVector(embedding.getVector());
 
         Collection<Tuple2<MemoryRecord, Number>> nearestMatches = new ArrayList<>();
-        embeddingCollection.forEach(
+        collection.values().forEach(
                 record -> {
                     if (record != null) {
-                        EmbeddingVector<Number> recordVector =
-                                upcastEmbeddingVector(record.getEmbedding().getVector());
+                        EmbeddingVector recordVector =
+                                new EmbeddingVector(record.getEmbedding().getVector());
                         double similarity = embeddingVector.cosineSimilarity(recordVector);
                         if (similarity >= minRelevanceScore) {
                             if (withEmbeddings) {
@@ -222,7 +213,7 @@ public class VolatileMemoryStore implements MemoryStore {
         List<Tuple2<MemoryRecord, Number>> result =
                 nearestMatches.stream()
                         .sorted(Comparator.comparingDouble(extractSimilarity).reversed())
-                        .limit(Math.max(1, limit))
+                        .limit(limit)
                         .collect(Collectors.toList());
 
         return Mono.just(result);
@@ -231,7 +222,7 @@ public class VolatileMemoryStore implements MemoryStore {
     @Override
     public Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(
             @Nonnull String collectionName,
-            @Nonnull Embedding<? extends Number> embedding,
+            @Nonnull Embedding embedding,
             double minRelevanceScore,
             boolean withEmbedding) {
 

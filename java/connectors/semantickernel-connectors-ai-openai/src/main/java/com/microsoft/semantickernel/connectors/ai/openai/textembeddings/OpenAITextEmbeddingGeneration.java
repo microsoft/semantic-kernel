@@ -15,18 +15,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class OpenAITextEmbeddingGeneration extends ClientBase
-        implements EmbeddingGeneration<String, Float> {
+        implements EmbeddingGeneration<String> {
 
     public OpenAITextEmbeddingGeneration(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);
     }
 
     @Override
-    public Mono<List<Embedding<Float>>> generateEmbeddingsAsync(List<String> data) {
+    public Mono<List<Embedding>> generateEmbeddingsAsync(List<String> data) {
         return this.internalGenerateTextEmbeddingsAsync(data);
     }
 
-    protected Mono<List<Embedding<Float>>> internalGenerateTextEmbeddingsAsync(List<String> data) {
+    protected Mono<List<Embedding>> internalGenerateTextEmbeddingsAsync(List<String> data) {
         EmbeddingsOptions options =
                 new EmbeddingsOptions(data).setModel(getModelId()).setUser("default");
 
@@ -43,9 +43,9 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
                 .collectList();
     }
 
-    public static class Builder implements EmbeddingGeneration.Builder<String, Float> {
+    public static class Builder implements EmbeddingGeneration.Builder<String> {
         @Override
-        public EmbeddingGeneration<String, Float> build(OpenAIAsyncClient client, String modelId) {
+        public EmbeddingGeneration<String> build(OpenAIAsyncClient client, String modelId) {
             return new OpenAITextEmbeddingGeneration(client, modelId);
         }
     }
