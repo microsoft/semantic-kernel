@@ -58,7 +58,7 @@ public static class ImportSemanticSkillFromDirectoryExtension
     ///             |__ config.json
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/skills for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">Semantic Kernel instance</param>

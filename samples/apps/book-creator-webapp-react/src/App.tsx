@@ -67,23 +67,23 @@ const App: FC = () => {
                 },
                 {
                     title: 'Novel Outline',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterPlugin/NovelOutline',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/WriterPlugin/NovelOutline',
                 },
                 {
                     title: 'Create Book',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChildrensBookPlugin/CreateBook',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/ChildrensBookPlugin/CreateBook',
                 },
                 {
                     title: 'Summarize',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/SummarizePlugin/Summarize',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/SummarizePlugin/Summarize',
                 },
                 {
                     title: 'Translate',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterPlugin/Translate',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/WriterPlugin/Translate',
                 },
                 {
                     title: 'Rewrite',
-                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/WriterPlugin/Rewrite',
+                    uri: 'https://github.com/microsoft/semantic-kernel/tree/main/prompts/samples/WriterPlugin/Rewrite',
                 },
             ],
         },

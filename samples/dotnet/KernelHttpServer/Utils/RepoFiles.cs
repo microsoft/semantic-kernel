@@ -8,9 +8,9 @@ namespace KernelHttpServer.Utils;
 internal static class RepoFiles
 {
     /// <summary>
-    /// Scan the local folders from the repo, looking for "samples/skills" folder.
+    /// Scan the local folders from the repo, looking for "prompts/samples" folder.
     /// </summary>
-    /// <returns>The full path to samples/skills</returns>
+    /// <returns>The full path to prompts/samples</returns>
     internal static string SampleSkillsPath()
     {
         const string Parent = "prompts";
