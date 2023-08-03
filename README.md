@@ -99,6 +99,11 @@ on our Learn site:
 1. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
 1. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
 
+Finally, refer to our API references for more details on the C# and Python APIs:
+
+- [C# API reference](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet)
+- Python API reference (coming soon)
+
 ## Chat Copilot: see what's possible with Semantic Kernel
 
 If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
@@ -108,8 +113,7 @@ AI plugins, Chat Copilot can have a conversation with you about any topic and au
 
 ![Chat Copilot answering a question](https://learn.microsoft.com/en-us/semantic-kernel/media/chat-copilot-in-action.gif)
 
-You can find it's repo by navigating to [github.com/microsoft/chat-copilot](https://github.com/microsoft/chat-copilot).
-You can also learn more about Chat Copilot in our [documentation](https://learn.microsoft.com/en-us/semantic-kernel/chat-copilot/).
+You can find it's repo by navigating to its [GitHub repo](https://github.com/microsoft/chat-copilot).
 
 ## Check out our other repos!
 
