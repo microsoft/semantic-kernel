@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Connectors.Memory.Redis;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Moq;
@@ -745,7 +746,7 @@ public class RedisMemoryStoreTests
         }
 
         // Assert
-        RedisMemoryStoreException ex = await Assert.ThrowsAsync<RedisMemoryStoreException>(async () =>
+        var ex = await Assert.ThrowsAsync<SKException>(async () =>
         {
             // Act
             await store.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);

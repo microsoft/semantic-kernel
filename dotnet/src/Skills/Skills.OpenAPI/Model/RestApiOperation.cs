@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Web;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
@@ -162,12 +163,12 @@ public sealed class RestApiOperation
 
             //Getting metadata for the header
             var headerMetadata = this.Parameters.FirstOrDefault(p => p.Location == RestApiOperationParameterLocation.Header && p.Name == headerName)
-                                 ?? throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
+                                 ?? throw new SKException($"No value for the '{headerName} header is found.'");
 
             //If parameter is required it's value should always be provided.
             if (headerMetadata.IsRequired)
             {
-                throw new RestApiOperationException($"No value for the '{headerName} header is found.'");
+                throw new SKException($"No value for the '{headerName} header is found.'");
             }
 
             //Parameter is not required and no default value provided.
@@ -207,7 +208,7 @@ public sealed class RestApiOperation
             var parameterMetadata = this.Parameters.First(p => p.Location == RestApiOperationParameterLocation.Path && p.Name == parameterName);
             if (parameterMetadata?.DefaultValue == null)
             {
-                throw new RestApiOperationException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
+                throw new SKException($"No argument found for parameter - '{parameterName}' for operation - '{this.Id}'");
             }
 
             return parameterMetadata.DefaultValue;
@@ -246,7 +247,7 @@ public sealed class RestApiOperation
             //Throw an exception if the parameter is a required one but no value is provided.
             if (parameter.IsRequired)
             {
-                throw new RestApiOperationException($"No argument found for required query string parameter - '{parameter.Name}' for operation - '{this.Id}'");
+                throw new SKException($"No argument found for required query string parameter - '{parameter.Name}' for operation - '{this.Id}'");
             }
         }
 

@@ -7,9 +7,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Diagnostics;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Exceptions;
-
 namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 
 /// <summary>
@@ -108,7 +107,7 @@ public class OneDriveConnector : ICloudDriveConnector
         string? result = (await response.GetResponseObjectAsync().ConfigureAwait(false)).Link?.WebUrl;
         if (string.IsNullOrWhiteSpace(result))
         {
-            throw new MsGraphConnectorException("Shareable file link was null or whitespace.");
+            throw new SKException("Shareable file link was null or whitespace.");
         }
 
         return result!;
