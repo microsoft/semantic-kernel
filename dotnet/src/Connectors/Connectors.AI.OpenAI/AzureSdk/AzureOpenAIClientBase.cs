@@ -89,7 +89,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     private protected AzureOpenAIClientBase(
         string modelId,
         OpenAIClient openAIClient,
-        ILogger? logger = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
