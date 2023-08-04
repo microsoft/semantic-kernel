@@ -17,19 +17,40 @@ context = kernel.create_new_context()
 context["num_results"] = "10"
 context["offset"] = "0"
 
+search_async = web_skill["searchAsync"]
+
 
 async def simple_search():
     # Returns a list of tuples that contain the title and a small snippet from a relevent Wikipedia article to the query
     prompt = "Where is the Golden Gate Bridge?"
-    search_async = web_skill["searchAsync"]
+    result = await search_async.invoke_async(prompt)
+    print(result)
+
+    prompt = "One small step for man..."
     result = await search_async.invoke_async(prompt)
     print(result)
 
     # Will attempt to remedy typos or unclear queries
     prompt = "pyfth0n profgaming"
-    search_async = web_skill["searchAsync"]
     result = await search_async.invoke_async(prompt)
     print(result)
+
+    """
+    Output:
+
+    Where is the Golden Gate Bridge?
+    [('Golden Gate Bridge', 'The Golden Gate Bridge is a suspension bridge spanning the Golden Gate, the 
+    one-mile-wide (1.6\xa0km) strait connecting San Francisco Bay and the Pacific')]
+
+    One small step for man...
+    [('Neil Armstrong', " When Armstrong first stepped onto the lunar surface, he famously said: &quot;That's 
+    one small step for [a] man, one giant leap for mankind.&quot; It was broadcast")]
+
+    pyfth0n profgaming
+    [('Python (programming language)', 'Python is a high-level, general-purpose programming language. Its design 
+    philosophy emphasizes code readability with the use of significant indentation')]
+
+    """
 
 
 async def semantic_function():
