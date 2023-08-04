@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
-using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
 
@@ -21,7 +20,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example14_SemanticMemory
 {
-    private const string MemoryCollectionName = "SK GitHub";
+    private const string MemoryCollectionName = "SKGitHub";
 
     public static async Task RunAsync()
     {
@@ -37,8 +36,8 @@ public static class Example14_SemanticMemory
 
         var kernelWithACS = Kernel.Builder
             .WithLogger(ConsoleLogger.Logger)
-            .WithAzureTextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
-            .WithMemoryStorage(new KustoMemoryStore(new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication(), "Testing"))
+            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+            .WithMemoryStorage(new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey))
             .Build();
 
         await RunExampleAsync(kernelWithACS);

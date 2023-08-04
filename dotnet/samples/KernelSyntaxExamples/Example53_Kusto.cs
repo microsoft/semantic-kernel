@@ -15,18 +15,16 @@ public static class Example53_Kusto
     public static async Task RunAsync()
     {
         var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
-        KustoMemoryStore memoryStore = new(connectionString, "Testing");
+        KustoMemoryStore memoryStore = new(connectionString, "MyDatabase");
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Logger)
-            .WithAzureTextCompletionService(
-                "text-davinci-003",
-                TestConfiguration.AzureOpenAI.Endpoint,
-                apiKey: TestConfiguration.AzureOpenAI.ApiKey)
-            .WithAzureTextEmbeddingGenerationService(
-                "text-embedding-ada-002",
-                TestConfiguration.AzureOpenAI.Endpoint,
-                apiKey: TestConfiguration.AzureOpenAI.ApiKey)
+            .WithOpenAITextCompletionService(
+                modelId: TestConfiguration.OpenAI.ModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAITextEmbeddingGenerationService(
+                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)
             //.WithMemoryStorage(new KustoMemoryStore(new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication(), "MyDatabase"))
             .Build();
