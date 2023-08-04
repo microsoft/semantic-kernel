@@ -181,8 +181,7 @@ class SequentialPlannerSKContextExtension:
             )
             if function is not None:
                 context.log.debug(
-                    "Found relevant function. Relevance Score: {0}, Function: {1}"
-                    .format(
+                    "Found relevant function. Relevance Score: {0}, Function: {1}".format(
                         memory_entry.relevance,
                         SequentialPlannerFunctionViewExtension.to_fully_qualified_name(
                             function
