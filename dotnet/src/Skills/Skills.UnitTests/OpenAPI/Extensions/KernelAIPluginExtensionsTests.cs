@@ -6,14 +6,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using SemanticKernel.Skills.UnitTests.OpenAPI.TestSkills;
 using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.OpenAPI.Extensions;
 
-public sealed class KernelOpenApiExtensionsTests : IDisposable
+public sealed class KernelAIPluginExtensionsTests : IDisposable
 {
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
@@ -31,9 +31,9 @@ public sealed class KernelOpenApiExtensionsTests : IDisposable
     private IKernel kernel;
 
     /// <summary>
-    /// Creates an instance of a <see cref="KernelOpenApiExtensionsTests"/> class.
+    /// Creates an instance of a <see cref="KernelAIPluginExtensionsTests"/> class.
     /// </summary>
-    public KernelOpenApiExtensionsTests()
+    public KernelAIPluginExtensionsTests()
     {
         this.kernel = KernelBuilder.Create();
 
