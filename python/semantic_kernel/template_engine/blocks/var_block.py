@@ -4,28 +4,39 @@ from logging import Logger
 from re import match as re_match
 from typing import Optional, Tuple
 
+import pydantic as pdt
+
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
-from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
 
-class VarBlock(Block, TextRenderer):
+class VarBlock(Block):
+    _name: str = pdt.PrivateAttr()
+
     def __init__(self, content: Optional[str] = None, log: Optional[Logger] = None):
         super().__init__(content=content and content.strip(), log=log)
 
         if len(self.content) < 2:
             err = "The variable name is empty"
             self.log.error(err)
-            self.name = ""
+            self._name = ""
             return
 
-        self.name = self.content[1:]
+        self._name = self.content[1:]
 
     @property
     def type(self) -> BlockTypes:
         return BlockTypes.VARIABLE
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._name = value
 
     def is_valid(self) -> Tuple[bool, str]:
         if not self.content:

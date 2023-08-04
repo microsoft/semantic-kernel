@@ -5,19 +5,17 @@ from typing import List, Optional
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.text_block import TextBlock
 from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
-from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
-    PromptTemplatingEngine,
-)
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class PromptTemplateEngine(PromptTemplatingEngine):
+class PromptTemplateEngine(PydanticField):
     def __init__(self, logger: Optional[Logger] = None) -> None:
         self._logger = logger or NullLogger()
         self._tokenizer = TemplateTokenizer(self._logger)
@@ -107,7 +105,9 @@ class PromptTemplateEngine(PromptTemplatingEngine):
                 continue
             if not isinstance(block, TextRenderer):
                 raise ValueError("TextBlock must implement TextRenderer protocol")
-            rendered_blocks.append(TextBlock(block.render(variables), log=self._logger))
+            rendered_blocks.append(
+                TextBlock.from_text(block.render(variables), log=self._logger)
+            )
 
         return rendered_blocks
 
@@ -133,7 +133,7 @@ class PromptTemplateEngine(PromptTemplatingEngine):
             if not isinstance(block, CodeRenderer):
                 raise ValueError("CodeBlock must implement CodeRenderer protocol")
             rendered_blocks.append(
-                TextBlock(
+                TextBlock.from_text(
                     await block.render_code_async(execution_context), log=self._logger
                 )
             )
