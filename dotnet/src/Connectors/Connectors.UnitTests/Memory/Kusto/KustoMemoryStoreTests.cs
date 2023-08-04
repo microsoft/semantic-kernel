@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,8 +13,6 @@ using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
-using Newtonsoft.Json;
-using NRedisStack.Graph;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Kusto;
