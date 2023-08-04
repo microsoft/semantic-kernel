@@ -35,14 +35,14 @@ public class RedisMemoryStoreTests
     public void ConnectionCanBeInitialized()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
     }
 
     [Fact]
     public async Task ItCanCreateAndGetCollectionAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string collection = "test_collection";
         this.MockCreateIndex(collection);
 
@@ -59,7 +59,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanCheckIfCollectionExistsAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string collection = "my_collection";
         this.MockCreateIndex(collection);
 
@@ -75,7 +75,7 @@ public class RedisMemoryStoreTests
     public async Task CollectionsCanBeDeletedAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string collection = "test_collection";
         this.MockCreateIndex(collection, () =>
         {
@@ -101,7 +101,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanInsertIntoNonExistentCollectionAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -152,7 +152,7 @@ public class RedisMemoryStoreTests
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -185,7 +185,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -219,7 +219,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -253,7 +253,7 @@ public class RedisMemoryStoreTests
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string commonId = "test";
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: commonId,
@@ -292,7 +292,7 @@ public class RedisMemoryStoreTests
     public async Task ExistingRecordCanBeRemovedAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -321,7 +321,7 @@ public class RedisMemoryStoreTests
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string collection = "test_collection";
         this.MockCreateIndex(collection, () =>
         {
@@ -341,7 +341,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanListAllDatabaseCollectionsAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         string[] testCollections = { "random_collection1", "random_collection2", "random_collection3" };
         foreach (var collection in testCollections)
         {
@@ -378,7 +378,7 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection";
         int topN = 4;
@@ -436,7 +436,7 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection";
         int topN = 1;
@@ -496,7 +496,7 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection";
         int topN = 1;
@@ -554,7 +554,7 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         int topN = 4;
         double threshold = 0.75;
@@ -610,7 +610,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanBatchUpsertRecordsAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
@@ -637,7 +637,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanBatchGetRecordsAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
@@ -664,7 +664,7 @@ public class RedisMemoryStoreTests
     public async Task ItCanBatchRemoveRecordsAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         int numRecords = 10;
         string collection = "test_collection";
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
@@ -699,7 +699,7 @@ public class RedisMemoryStoreTests
     public async Task GetNearestMatchAsyncThrowsExceptionOnInvalidVectorScoreAsync()
     {
         // Arrange
-        RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
+        using RedisMemoryStore store = new(this._mockDatabase.Object, vectorSize: 3);
         var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
         string collection = "test_collection";
         int topN = 1;
