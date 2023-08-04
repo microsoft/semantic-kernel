@@ -7,13 +7,10 @@ name: dotnet-build-and-test
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron:  '0 7 * * *'
   pull_request:
     branches: [ "main", "feature*" ]
-    paths:
-      - 'dotnet/**'
-      - 'samples/dotnet/**'
+  merge_group:
+    branches: ["main"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -23,40 +20,57 @@ permissions:
   contents: read
 
 jobs:
-  build-and-test:
+  dotnet-build-and-test:
     strategy:
         fail-fast: false
         matrix:
           include:
-          - { os: 'ubuntu', dotnet: '6.0-jammy', configuration: Debug }
-          - { os: 'ubuntu', dotnet: '7.0-jammy', configuration: Release }
-          - { os: 'ubuntu', dotnet: '8.0-preview-jammy', configuration: Release }
-          - { os: 'windows', dotnet: '6.0', configuration: Release }
-          - { os: 'windows', dotnet: '7.0', configuration: Debug }
-          - { os: 'windows', dotnet: '8.0-preview', configuration: Release }
+          - { dotnet: '6.0-jammy', os: 'ubuntu', configuration: Debug, integration-tests: true }
+          - { dotnet: '7.0-jammy', os: 'ubuntu', configuration: Release }
+          - { dotnet: '8.0-preview-jammy', os: 'ubuntu', configuration: Release }
+          - { dotnet: '6.0', os: 'windows', configuration: Release }
+          - { dotnet: '7.0', os: 'windows', configuration: Debug }
+          - { dotnet: '8.0-preview', os: 'windows', configuration: Release }
           
     runs-on: ubuntu-latest
-    env:
-      NUGET_CERT_REVOCATION_MODE: offline
-      DOTNET_DOCKER_IMG: mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+      env:
+        NUGET_CERT_REVOCATION_MODE: offline
+        GITHUB_ACTIONS: 'true'
+
     steps:
     - uses: actions/checkout@v3
-      with:
-        clean: true
-
-    - name: Pull container dotnet/sdk:${{ matrix.dotnet }}
-      run: docker pull mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
-
+    
     - name: Build dotnet solutions
       run: |
         export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
         for solution in $SOLUTIONS; do
-          docker run --rm -v $(pwd):/app -w /app -e GITHUB_ACTIONS='true' $DOTNET_DOCKER_IMG /bin/sh -c "dotnet build -c ${{ matrix.configuration }} /warnaserror /app/$solution"
+          dotnet build -c ${{ matrix.configuration }} /warnaserror $solution
         done
       
     - name: Run Unit Tests
       run: |
         export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
         for project in $UT_PROJECTS; do
-          docker run --rm -v $(pwd):/app -w /app $DOTNET_DOCKER_IMG /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+          dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
         done
+
+    - name: Run Integration Tests
+      if: github.event_name != 'pull_request' && matrix.integration-tests
+      run: |
+        export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
+        for project in $INTEGRATION_TEST_PROJECTS; do
+          dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+        done
+      env:
+        AzureOpenAI__Label: azure-text-davinci-003
+        AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+        AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+        AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+        AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+        OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
