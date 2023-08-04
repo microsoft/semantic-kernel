@@ -20,8 +20,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Kusto database.
 /// </summary>
-/// <remarks>The embedded data is saved to the Kusto database specified in the constructor.
-/// Similarity search capability is provided through a cosine similarity function (added on first collection creation). Use Kusto's "Table" to implement "Collection".
+/// <remarks>
+/// The embedded data is saved to the Kusto database specified in the constructor.
+/// Similarity search capability is provided through a cosine similarity function (added on first search operation). Use Kusto's "Table" to implement "Collection".
 /// </remarks>
 public class KustoMemoryStore : IMemoryStore, IDisposable
 {
@@ -29,7 +30,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// Initializes a new instance of the <see cref="KustoMemoryStore"/> class.
     /// </summary>
     /// <param name="cslAdminProvider">Kusto Admin Client.</param>
-    /// /// <param name="cslQueryProvider">Kusto Query Client.</param>
+    /// <param name="cslQueryProvider">Kusto Query Client.</param>
     /// <param name="database">The database used for the tables.</param>
     public KustoMemoryStore(ICslAdminProvider cslAdminProvider, ICslQueryProvider cslQueryProvider, string database)
     {
@@ -37,7 +38,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         this._queryClient = cslQueryProvider;
         this._adminClient = cslAdminProvider;
 
-        this._initialized = false;
+        this._searchInitialized = false;
         this._disposer = new Disposer(nameof(KustoMemoryStore), nameof(KustoMemoryStore));
     }
 
@@ -46,9 +47,10 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// </summary>
     /// <param name="builder">Kusto Connection String Builder.</param>
     /// <param name="database">The database used for the tables.</param>
-    public KustoMemoryStore(KustoConnectionStringBuilder builder, string database) : this(KustoClientFactory.CreateCslAdminProvider(builder), KustoClientFactory.CreateCslQueryProvider(builder), database)
+    public KustoMemoryStore(KustoConnectionStringBuilder builder, string database)
+        : this(KustoClientFactory.CreateCslAdminProvider(builder), KustoClientFactory.CreateCslQueryProvider(builder), database)
     {
-        // We created them, we dispose them
+        // Dispose resources provided by this class
         this._disposer.Add(this._queryClient);
         this._disposer.Add(this._adminClient);
     }
@@ -128,15 +130,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            DateTime? timestamp = null;
-            try
-            {
-                reader.GetDateTime(2);
-            }
-            catch (InvalidCastException)
-            {
-                // timestamp is null or wrong format
-            }
+            var timestamp = reader.GetString(2);
             var embedding = withEmbeddings ? reader.GetString(3) : default;
 
             var kustoRecord = new KustoMemoryRecord(key, metadata, embedding, timestamp);
@@ -181,17 +175,14 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
 
         similarityQuery += $" | top {limit} by similarity desc";
+
         // reorder to make it easier to ignore the embedding (key, metadata, timestamp, similarity, embedding
         // Using tostring to make it easier to parse the result. There are probably better ways we should explore
         similarityQuery += "| project " +
-            // Key
             $"{KeyColumn.Name}, " +
-            // Metadata
             $"{MetadataColumn.Name}=tostring({MetadataColumn.Name}), " +
-            // Timestamp
             $"{TimestampColumn.Name}, " +
             "similarity, " +
-            // Embedding
             $"{EmbeddingColumn.Name}=tostring({EmbeddingColumn.Name})";
 
         if (!withEmbeddings)
@@ -211,20 +202,11 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            DateTime? timestamp = null;
-            try
-            {
-                timestamp = reader.GetDateTime(2);
-            }
-            catch (InvalidCastException)
-            {
-                // timestamp is null or wrong format
-            }
-
+            var timestamp = reader.GetString(2);
             var similarity = reader.GetDouble(3);
-            var _embedding = withEmbeddings ? reader.GetString(4) : default;
+            var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
 
-            var kustoRecord = new KustoMemoryRecord(key, metadata, _embedding, timestamp);
+            var kustoRecord = new KustoMemoryRecord(key, metadata, recordEmbedding, timestamp);
 
             yield return (kustoRecord.ToMemoryRecord(), similarity);
         }
@@ -273,6 +255,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
         var keys = new List<string>();
         var recordsAsList = records.ToList();
+
         for (var i = 0; i < recordsAsList.Count; i++)
         {
             var record = recordsAsList[i];
@@ -280,6 +263,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
             keys.Add(record.Key);
             new KustoMemoryRecord(record).WriteToCsvStream(csvWriter);
         }
+
         csvWriter.Flush();
         stream.Seek(0, SeekOrigin.Begin);
 
@@ -327,9 +311,11 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         Application = Telemetry.HttpUserAgent,
     };
 
+    private bool _searchInitialized;
+
     private readonly ICslQueryProvider _queryClient;
     private readonly ICslAdminProvider _adminClient;
-    private bool _initialized;
+
     private static ColumnSchema KeyColumn = new("Key", typeof(string).FullName);
     private static ColumnSchema MetadataColumn = new("Metadata", typeof(object).FullName);
     private static ColumnSchema EmbeddingColumn = new("Embedding", typeof(object).FullName);
@@ -357,15 +343,20 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         return $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {KeyColumn.Name} ";
     }
 
+    /// <summary>
+    /// Initializes vector cosine similarity function for given database.
+    /// </summary>
+    /// <remarks>
+    /// Cosine similarity function is created only once for better performance.
+    /// It's possible to run function creation multiple times, since .create-or-alter command is idempotent.
+    /// </remarks>
     private void InitializeVectorFunctions()
     {
-        if (!this._initialized)
+        if (!this._searchInitialized)
         {
-            // We want to be nice and only initialize the functions once.
-            // It won't hurt to run this code twice (.create-or-alter is basiccly "create if not exists"), but it's a waste of resources.
             lock (this._lock)
             {
-                if (!this._initialized)
+                if (!this._searchInitialized)
                 {
                     var resp = this._adminClient
                         .ExecuteControlCommand<FunctionShowCommandResult>(
@@ -378,7 +369,8 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
                             "}",
                             GetClientRequestProperties()
                         );
-                    this._initialized = true;
+
+                    this._searchInitialized = true;
                 }
             }
         }

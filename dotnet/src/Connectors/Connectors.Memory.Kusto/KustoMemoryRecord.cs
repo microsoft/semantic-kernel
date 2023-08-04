@@ -30,13 +30,13 @@ public sealed class KustoMemoryRecord
     /// <summary>
     /// Optional timestamp.
     /// </summary>
-    public DateTime? Timestamp { get; set; }
+    public DateTimeOffset? Timestamp { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
     /// </summary>
     /// <param name="record">Instance of <see cref="MemoryRecord"/>.</param>
-    public KustoMemoryRecord(MemoryRecord record) : this(record.Key, record.Metadata, record.Embedding, record.Timestamp?.UtcDateTime) { }
+    public KustoMemoryRecord(MemoryRecord record) : this(record.Key, record.Metadata, record.Embedding, record.Timestamp) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
@@ -45,7 +45,7 @@ public sealed class KustoMemoryRecord
     /// <param name="metadata">Metadata associated with memory entity.</param>
     /// <param name="embedding">Source content embedding.</param>
     /// <param name="timestamp">Optional timestamp.</param>
-    public KustoMemoryRecord(string key, MemoryRecordMetadata metadata, Embedding<float> embedding, DateTime? timestamp = null)
+    public KustoMemoryRecord(string key, MemoryRecordMetadata metadata, Embedding<float> embedding, DateTimeOffset? timestamp = null)
     {
         this.Key = key;
         this.Metadata = metadata;
@@ -60,12 +60,12 @@ public sealed class KustoMemoryRecord
     /// <param name="metadata">Serialized metadata associated with memory entity.</param>
     /// <param name="embedding">Source content embedding.</param>
     /// <param name="timestamp">Optional timestamp.</param>
-    public KustoMemoryRecord(string key, string metadata, string? embedding, DateTime? timestamp = null)
+    public KustoMemoryRecord(string key, string metadata, string? embedding, string? timestamp = null)
     {
         this.Key = key;
         this.Metadata = KustoSerializer.DeserializeMetadata(metadata);
         this.Embedding = KustoSerializer.DeserializeEmbedding(embedding);
-        this.Timestamp = timestamp;
+        this.Timestamp = KustoSerializer.DeserializeDateTimeOffset(timestamp);
     }
 
     /// <summary>

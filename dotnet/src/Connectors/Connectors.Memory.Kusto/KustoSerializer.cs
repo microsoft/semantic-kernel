@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
@@ -76,6 +77,31 @@ public static class KustoSerializer
             return string.Empty;
         }
 
-        return dateTimeOffset.Value.DateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
+        return dateTimeOffset.Value.DateTime.ToString(TimestampFormat, CultureInfo.InvariantCulture);
     }
+
+    /// <summary>
+    /// Returns deserialized instance of <see cref="DateTimeOffset"/> from serialized timestamp.
+    /// </summary>
+    /// <param name="dateTimeOffset">Serialized timestamp.</param>
+    public static DateTimeOffset? DeserializeDateTimeOffset(string? dateTimeOffset)
+    {
+        if (string.IsNullOrWhiteSpace(dateTimeOffset))
+        {
+            return null;
+        }
+
+        if (DateTimeOffset.TryParseExact(dateTimeOffset, TimestampFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset result))
+        {
+            return result;
+        }
+
+        throw new InvalidCastException("Timestamp format cannot be parsed");
+    }
+
+    #region private ================================================================================
+
+    private const string TimestampFormat = "yyyy-MM-ddTHH:mm:ssZ";
+
+    #endregion
 }

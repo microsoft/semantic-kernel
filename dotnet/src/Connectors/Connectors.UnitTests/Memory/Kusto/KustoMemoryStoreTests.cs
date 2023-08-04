@@ -338,6 +338,7 @@ public class KustoMemoryStoreTests
     private void AssertMemoryRecordEqual(MemoryRecord expectedRecord, MemoryRecord actualRecord)
     {
         Assert.Equal(expectedRecord.Key, actualRecord.Key);
+        Assert.Equal(expectedRecord.Timestamp, actualRecord.Timestamp);
         Assert.Equal(expectedRecord.Embedding.Vector, actualRecord.Embedding.Vector);
         Assert.Equal(expectedRecord.Metadata.Id, actualRecord.Metadata.Id);
         Assert.Equal(expectedRecord.Metadata.Text, actualRecord.Metadata.Text);
@@ -359,7 +360,7 @@ public class KustoMemoryStoreTests
             embedding: memoryEmbedding,
             additionalMetadata: "metadata-" + Guid.NewGuid().ToString(),
             key: id,
-            timestamp: DateTimeOffset.Now);
+            timestamp: new DateTimeOffset(2023, 8, 4, 23, 59, 59, TimeSpan.Zero));
     }
 
     private static DataTableReader FakeEmptyResult() => Array.Empty<string[]>().ToDataTable().CreateDataReader();
