@@ -119,8 +119,8 @@ class BasicPlanner:
         string for the prompt.
         """
         # Get a dictionary of skill names to all native and semantic functions
-        native_functions = kernel.skills.get_functions_view()._native_functions
-        semantic_functions = kernel.skills.get_functions_view()._semantic_functions
+        native_functions = kernel.skills.get_functions_view().native_functions
+        semantic_functions = kernel.skills.get_functions_view().semantic_functions
         native_functions.update(semantic_functions)
 
         # Create a mapping between all function names and their descriptions

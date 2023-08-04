@@ -5,6 +5,7 @@ import pydantic as pdt
 import pytest
 import typing_extensions as te
 
+from semantic_kernel import SKFunctionBase
 from semantic_kernel.core_skills.conversation_summary_skill import (
     ConversationSummarySkill,
 )
@@ -17,6 +18,17 @@ from semantic_kernel.core_skills.time_skill import TimeSkill
 from semantic_kernel.core_skills.wait_skill import WaitSkill
 from semantic_kernel.core_skills.web_search_engine_skill import WebSearchEngineSkill
 from semantic_kernel.sk_pydantic import PydanticField, SKBaseModel
+from semantic_kernel.skill_definition.function_view import FunctionView
+from semantic_kernel.skill_definition.functions_view import FunctionsView
+from semantic_kernel.skill_definition.parameter_view import ParameterView
+from semantic_kernel.skill_definition.read_only_skill_collection import (
+    ReadOnlySkillCollection,
+)
+from semantic_kernel.skill_definition.read_only_skill_collection_base import (
+    ReadOnlySkillCollectionBase,
+)
+from semantic_kernel.skill_definition.skill_collection import SkillCollection
+from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.code_block import CodeBlock
@@ -52,6 +64,37 @@ class _Serializable(t.Protocol):
 @pytest.fixture()
 def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
     """Return a factory for various objects in semantic-kernel."""
+
+    def create_functions_view() -> FunctionsView:
+        """Return a functions view."""
+        result = FunctionsView()
+        result.add_function(
+            FunctionView(
+                name="function1",
+                skill_name="skill1",
+                description="Native function",
+                parameters=[],
+                is_semantic=False,
+                is_asynchronous=True,
+            )
+        )
+        result.add_function(
+            FunctionView(
+                name="function1",
+                skill_name="skill1",
+                description="Semantic function",
+                parameters=[],
+                is_semantic=True,
+                is_asynchronous=True,
+            )
+        )
+        return result
+
+    def create_skill_collection() -> SkillCollection:
+        """Return a skill collection."""
+        # TODO: Add a few skills to this collection.
+        return SkillCollection()
+
     cls_obj_map = {
         Block: Block("foo"),
         CodeBlock: CodeBlock("foo"),
@@ -62,6 +105,17 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         CodeTokenizer: CodeTokenizer(log=logging.getLogger("test")),
         PromptTemplateEngine: PromptTemplateEngine(logger=logging.getLogger("test")),
         TemplateTokenizer: TemplateTokenizer(log=logging.getLogger("test")),
+        ParameterView: ParameterView("foo", "bar", default_value="baz"),
+        FunctionView: FunctionView(
+            "foo",
+            "bar",
+            "baz",
+            [ParameterView("qux", "bar", "baz")],
+            True,
+            False,
+        ),
+        FunctionsView: create_functions_view(),
+        SkillCollection: create_skill_collection(),
     }
 
     def constructor(cls: t.Type[_Serializable]) -> _Serializable:
@@ -88,6 +142,17 @@ PROTOCOLS = [
     TextRenderer,
 ]
 
+BASE_CLASSES = [
+    ReadOnlySkillCollectionBase,
+    SkillCollectionBase,
+    SKFunctionBase,
+]
+
+# Classes that don't need serialization
+UNSERIALIZED_CLASSES = [
+    ReadOnlySkillCollection,
+]
+
 STATELESS_CLASSES = [
     CodeTokenizer,
     PromptTemplateEngine,
@@ -103,12 +168,22 @@ PYDANTIC_MODELS = [
     TextBlock,
     ValBlock,
     VarBlock,
+    ParameterView,
+    FunctionView,
+    FunctionsView,
+    SkillCollection,
 ]
 
 
 class TestUsageInPydanticFields:
     @pytest.mark.parametrize(
-        "sk_type", PROTOCOLS + ENUMS + PYDANTIC_MODELS + STATELESS_CLASSES
+        "sk_type",
+        BASE_CLASSES
+        + PROTOCOLS
+        + ENUMS
+        + PYDANTIC_MODELS
+        + STATELESS_CLASSES
+        + UNSERIALIZED_CLASSES,
     )
     def test_usage_as_optional_field(
         self,

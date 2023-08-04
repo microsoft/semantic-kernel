@@ -1,10 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Optional
-
 
 def sk_function_context_parameter(
-    *, name: str, description: str, default_value: Optional[str] = None
+    *, name: str, description: str, default_value: str = ""
 ):
     """
     Decorator for SK function context parameters.
