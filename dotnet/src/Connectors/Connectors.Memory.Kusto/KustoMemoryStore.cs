@@ -299,8 +299,21 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     public void Dispose()
     {
-        this._disposer.Dispose();
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
     }
+
+    #region protected ================================================================================
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._disposer.Dispose();
+        }
+    }
+
+    #endregion protected ================================================================================
 
     #region private ================================================================================
 
