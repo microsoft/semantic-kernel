@@ -58,8 +58,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        this.InitializeVectorFunctions();
-
         using var resp = await this._adminClient
             .ExecuteControlCommandAsync(
                 this._database,
@@ -101,7 +99,11 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
+        string collectionName,
+        IEnumerable<string> keys,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var inClauseValue = string.Join(",", keys.Select(k => $"'{k}'"));
         var query = $"{this.GetBaseQuery(collectionName)} " +
@@ -156,14 +158,25 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
+        string collectionName,
+        Embedding<float> embedding,
+        double minRelevanceScore = 0,
+        bool withEmbedding = false,
+        CancellationToken cancellationToken = default)
     {
         var result = this.GetNearestMatchesAsync(collectionName, embedding, 1, minRelevanceScore, withEmbedding, cancellationToken);
         return await result.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
+        string collectionName,
+        Embedding<float> embedding,
+        int limit,
+        double minRelevanceScore = 0,
+        bool withEmbeddings = false,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.InitializeVectorFunctions();
 
@@ -176,8 +189,8 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
         similarityQuery += $" | top {limit} by similarity desc";
 
-        // reorder to make it easier to ignore the embedding (key, metadata, timestamp, similarity, embedding
-        // Using tostring to make it easier to parse the result. There are probably better ways we should explore
+        // reorder to make it easier to ignore the embedding (key, metadata, timestamp, similarity, embedding)
+        // Using tostring to make it easier to parse the result. There are probably better ways we should explore.
         similarityQuery += "| project " +
             $"{KeyColumn.Name}, " +
             $"{MetadataColumn.Name}=tostring({MetadataColumn.Name}), " +
@@ -213,7 +226,8 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default) => this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
+    public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
+        => this.RemoveBatchAsync(collectionName, new[] { key }, cancellationToken);
 
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
@@ -238,7 +252,10 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<string> UpsertBatchAsync(string collectionName, IEnumerable<MemoryRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> UpsertBatchAsync(
+        string collectionName,
+        IEnumerable<MemoryRecord> records,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // In Kusto, upserts don't exist because it operates as an append-only store.
         // Nevertheless, given that we have a straightforward primary key (PK), we can simply insert a new record.
@@ -287,8 +304,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    #region protected ================================================================================
-
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
@@ -296,8 +311,6 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
             this._disposer.Dispose();
         }
     }
-
-    #endregion protected ================================================================================
 
     #region private ================================================================================
 
@@ -329,19 +342,39 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         TimestampColumn
     };
 
-    // Kusto escaping rules for table names: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/schema-entities/entity-names#identifier-quoting
-    private static string GetTableName(string collectionName, bool normalized = true) => normalized ? CslSyntaxGenerator.NormalizeTableName(collectionName) : collectionName;
-    // Kusto escaping rules for table names: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/schema-entities/entity-names#identifier-quoting
-    private static string GetCollectionName(string tableName) => tableName.Replace("['", "").Replace("']", "");
+    /// <summary>
+    /// Converts collection name to Kusto table name.
+    /// </summary>
+    /// <remarks>
+    /// Kusto escaping rules for table names: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/schema-entities/entity-names#identifier-quoting
+    /// </remarks>
+    /// <param name="collectionName">Kusto table name.</param>
+    /// <param name="normalized">Boolean flag that indicates if table name normalization is needed.</param>
+    private static string GetTableName(string collectionName, bool normalized = true)
+        => normalized ? CslSyntaxGenerator.NormalizeTableName(collectionName) : collectionName;
 
+    /// <summary>
+    /// Converts Kusto table name to collection name.
+    /// </summary>
+    /// <remarks>
+    /// Kusto escaping rules for table names: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/schema-entities/entity-names#identifier-quoting
+    /// </remarks>
+    /// <param name="tableName">Kusto table name.</param>
+    private static string GetCollectionName(string tableName)
+        => tableName.Replace("['", "").Replace("']", "");
+
+    /// <summary>
+    /// Returns base Kusto query.
+    /// </summary>
+    /// <remarks>
+    /// Kusto is an append-only store. Although deletions are possible, they are highly discourged,
+    /// and should only be used in rare cases (see: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/concepts/data-soft-delete#use-cases).
+    /// As such, the recommended approach for dealing with row updates is versioning.
+    /// An easy way to achieve this is by using the ingestion time of the record (insertion time).
+    /// </remarks>
+    /// <param name="collection">Collection name.</param>
     private string GetBaseQuery(string collection)
-    {
-        // Kusto is an append-only store. Although deletions are possible, they are highly discourged,
-        // and should only be used in rare cases (see: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/concepts/data-soft-delete#use-cases).
-        // As such, the recommended approach for dealing with row updates is versioning.
-        // An easy way to achieve this is by using the ingestion time of the record (insertion time).
-        return $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {KeyColumn.Name} ";
-    }
+        => $"{GetTableName(collection)} | summarize arg_max(ingestion_time(), *) by {KeyColumn.Name} ";
 
     /// <summary>
     /// Initializes vector cosine similarity function for given database.
