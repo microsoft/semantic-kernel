@@ -7,8 +7,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Diagnostics;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Exceptions;
 using Microsoft.SemanticKernel.Skills.MsGraph.Models;
 using TaskStatus = Microsoft.Graph.TaskStatus;
 
@@ -50,7 +50,7 @@ public class MicrosoftToDoConnector : ITaskManagementConnector
 
         if (result == null)
         {
-            throw new MsGraphConnectorException("Could not find default task list.");
+            throw new SKException("Could not find default task list.");
         }
 
         return new TaskManagementTaskList(result.Id, result.DisplayName);
