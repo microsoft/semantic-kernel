@@ -53,7 +53,7 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
         self._log = log if log is not None else NullLogger()
 
     async def generate_embeddings_async(
-        self, texts: List[str], batch_size: int = 0
+        self, texts: List[str], batch_size: Optional[int] = None
     ) -> ndarray:
         model_args = {}
         if self._api_type in ["azure", "azure_ad"]:
