@@ -25,7 +25,7 @@
       "pattern": "^https://localhost"
     },
     {
-      "pattern": "^https://platform.openai.com/docs/"
+      "pattern": "^https://platform.openai.com"
     }
   ],
   "timeout": "20s",
