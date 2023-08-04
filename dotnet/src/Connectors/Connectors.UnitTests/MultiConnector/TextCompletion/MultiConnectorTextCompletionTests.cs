@@ -259,10 +259,10 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
     {
         var toReturn = new List<NamedTextCompletion>();
 
-        var engine = new ArithmeticEngine();
+        //Build primary connectors with default multi-operation engine
         var primaryConnector = new ArithmeticCompletionService(settings,
             new List<ArithmeticOperation>() { ArithmeticOperation.Add, ArithmeticOperation.Divide, ArithmeticOperation.Multiply, ArithmeticOperation.Subtract },
-            engine,
+            new(),
             primaryCallDuration,
             primaryCostPerRequest, creditor);
         var primaryCompletion = new NamedTextCompletion("Primary", primaryConnector)
@@ -273,16 +273,15 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
 
         toReturn.Add(primaryCompletion);
 
+        //Build secondary specialized connectors, specialized single-operation engine
         foreach (var operation in primaryConnector.SupportedOperations)
         {
-            //Build secondary specialized connectors
-            engine = new ArithmeticEngine()
-            {
-                ComputeFunc = (arithmeticOperation, operand1, operand2) => ArithmeticEngine.Compute(operation, operand1, operand2)
-            };
             var secondaryConnector = new ArithmeticCompletionService(settings,
                 new List<ArithmeticOperation>() { operation },
-                engine,
+                new ArithmeticEngine()
+                {
+                    ComputeFunc = (arithmeticOperation, operand1, operand2) => ArithmeticEngine.Compute(operation, operand1, operand2)
+                },
                 secondaryCallDuration,
                 secondaryCostPerRequest, creditor);
             var secondaryCompletion = new NamedTextCompletion($"Secondary - {operation}", secondaryConnector)
