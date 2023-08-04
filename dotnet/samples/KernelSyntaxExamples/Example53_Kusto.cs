@@ -15,7 +15,7 @@ public static class Example53_Kusto
     public static async Task RunAsync()
     {
         var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
-        KustoMemoryStore memoryStore = new(connectionString, "MyDatabase");
+        using KustoMemoryStore memoryStore = new(connectionString, "MyDatabase");
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Logger)
