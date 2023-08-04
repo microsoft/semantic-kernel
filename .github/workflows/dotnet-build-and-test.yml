@@ -20,17 +20,17 @@ permissions:
   contents: read
 
 jobs:
-  build-and-test:
+  dotnet-build-and-test:
     strategy:
         fail-fast: false
         matrix:
           include:
-          - { os: 'ubuntu', dotnet: '6.0-jammy', configuration: Debug, integration-tests: true }
-          - { os: 'ubuntu', dotnet: '7.0-jammy', configuration: Release }
-          - { os: 'ubuntu', dotnet: '8.0-preview-jammy', configuration: Release }
-          - { os: 'windows', dotnet: '6.0', configuration: Release }
-          - { os: 'windows', dotnet: '7.0', configuration: Debug }
-          - { os: 'windows', dotnet: '8.0-preview', configuration: Release }
+          - { dotnet: '6.0-jammy', os: 'ubuntu', configuration: Debug, integration-tests: true }
+          - { dotnet: '7.0-jammy', os: 'ubuntu', configuration: Release }
+          - { dotnet: '8.0-preview-jammy', os: 'ubuntu', configuration: Release }
+          - { dotnet: '6.0', os: 'windows', configuration: Release }
+          - { dotnet: '7.0', os: 'windows', configuration: Debug }
+          - { dotnet: '8.0-preview', os: 'windows', configuration: Release }
           
     runs-on: ubuntu-latest
     container:
