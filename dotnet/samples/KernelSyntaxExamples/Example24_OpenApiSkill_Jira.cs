@@ -43,12 +43,12 @@ public static class Example24_OpenApiSkill_Jira
         if (useLocalFile)
         {
             var apiSkillFile = "./../../../Skills/JiraSkill/openapi.json";
-            jiraSkills = await kernel.ImportOpenApiSkillFromFileAsync("jiraSkills", apiSkillFile, new OpenApiSkillExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillFile, new OpenApiSkillExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
         }
         else
         {
             var apiSkillRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
-            jiraSkills = await kernel.ImportOpenApiSkillFromUrlAsync("jiraSkills", apiSkillRawFileURL, new OpenApiSkillExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillRawFileURL, new OpenApiSkillExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
         }
 
         // GetIssue Skill
