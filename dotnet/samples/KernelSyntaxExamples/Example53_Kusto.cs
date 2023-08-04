@@ -26,7 +26,6 @@ public static class Example53_Kusto
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)
-            //.WithMemoryStorage(new KustoMemoryStore(new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication(), "MyDatabase"))
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");
