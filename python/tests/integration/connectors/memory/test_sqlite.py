@@ -179,3 +179,111 @@ async def test_upsert_batch_async_and_get_batch_async(
         assert len(results) == 2
         assert results[0]._id in [memory_record1._id, memory_record2._id]
         assert results[1]._id in [memory_record1._id, memory_record2._id]
+
+
+@pytest.mark.asyncio
+async def test_remove_async(sqlite_db_file, memory_record1):
+    collection = "test_remove_async_collection"
+    async with SQLiteMemoryStore(sqlite_db_file, logger) as store:
+        await store.create_collection_async(collection)
+        await store.upsert_async(collection, memory_record1)
+
+        result = await store.get_async(
+            collection, memory_record1._id, with_embedding=True
+        )
+        assert result is not None
+
+        await store.remove_async(collection, memory_record1._id)
+        with pytest.raises(KeyError):
+            _ = await store.get_async(
+                collection, memory_record1._id, with_embedding=True
+            )
+
+
+@pytest.mark.asyncio
+async def test_remove_batch_async(sqlite_db_file, memory_record1, memory_record2):
+    collection = "test_remove_batch_async_collection"
+
+    async with SQLiteMemoryStore(sqlite_db_file, logger) as store:
+        await store.create_collection_async(collection)
+        await store.upsert_batch_async(collection, [memory_record1, memory_record2])
+        await store.remove_batch_async(
+            collection, [memory_record1._id, memory_record2._id]
+        )
+        with pytest.raises(KeyError):
+            _ = await store.get_async(
+                collection, memory_record1._id, with_embedding=True
+            )
+
+        with pytest.raises(KeyError):
+            _ = await store.get_async(
+                collection, memory_record2._id, with_embedding=True
+            )
+
+
+@pytest.mark.asyncio
+async def test_get_nearest_match_async(sqlite_db_file, memory_record1, memory_record2):
+    collection = "test_get_nearest_match_async_collection"
+
+    async with SQLiteMemoryStore(sqlite_db_file, logger) as store:
+        await store.create_collection_async(collection)
+        await store.upsert_batch_async(collection, [memory_record1, memory_record2])
+        test_embedding = memory_record1.embedding.copy()
+        test_embedding[0] = test_embedding[0] + 0.01
+
+        result = await store.get_nearest_match_async(
+            collection,
+            test_embedding,
+            min_relevance_score=0.0,
+            with_embedding=True,
+        )
+        assert result is not None
+        assert result[0]._id == memory_record1._id
+        assert result[0]._text == memory_record1._text
+        assert result[0]._timestamp == memory_record1._timestamp
+        assert np.equal(result[0]._embedding, memory_record1._embedding).all()
+
+        with pytest.raises(Exception):
+            # couldn't find a single match because min_relevance_score is too high
+            result = await store.get_nearest_match_async(
+                collection,
+                test_embedding,
+                min_relevance_score=100.0,
+                with_embedding=True,
+            )
+
+
+@pytest.mark.asyncio
+async def test_get_nearest_matches_async(
+    sqlite_db_file, memory_record1, memory_record2, memory_record3
+):
+    collection = "test_get_nearest_matches_async_collection"
+
+    async with SQLiteMemoryStore(sqlite_db_file, logger) as store:
+        await store.create_collection_async(collection)
+        await store.upsert_batch_async(
+            collection, [memory_record1, memory_record2, memory_record3]
+        )
+        test_embedding = memory_record2.embedding.copy()
+        test_embedding[0] = test_embedding[0] + 0.05
+
+        result = await store.get_nearest_matches_async(
+            collection,
+            test_embedding,
+            limit=2,
+            min_relevance_score=0.0,
+            with_embeddings=True,
+        )
+        assert len(result) == 2
+        assert result[0][0]._id == memory_record3._id
+        assert result[1][0]._id == memory_record2._id
+
+        result = await store.get_nearest_matches_async(
+            collection,
+            test_embedding,
+            limit=2,
+            min_relevance_score=100.0,
+            with_embeddings=True,
+        )
+        # couldn't find a single match because min_relevance_score is too high
+        assert len(result) == 0

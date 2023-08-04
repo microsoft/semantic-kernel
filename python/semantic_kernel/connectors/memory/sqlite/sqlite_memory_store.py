@@ -210,9 +210,7 @@ class SQLiteMemoryStore(MemoryStoreBase):
         ) as cursor:
             record = await cursor.fetchone()
             if not record:
-                raise Exception(
-                    f"Collection[{collection_name}] or Key[{key}] not found"
-                )
+                raise KeyError(f"Collection[{collection_name}] or Key[{key}] not found")
 
             metadata = Metadata.from_json(record[0])
 
@@ -288,36 +286,38 @@ class SQLiteMemoryStore(MemoryStoreBase):
             f"""
                 SELECT key, metadata, embedding, timestamp FROM {TABLE_NAME} WHERE collection=?
             """,
-            (collection_name),
+            [collection_name],
         ) as rows:
             min_heap = []
             for row in rows:
-                vector = deserialize_embedding(row["embedding"])
+                if row[2] is None:
+                    continue
+                vector = deserialize_embedding(row[2])
                 revelance = np.dot(vector, embedding)
                 if revelance < min_relevance_score:
                     continue
-                if with_embeddings:
-                    row["embedding"] = vector
                 if len(min_heap) == limit:
-                    heapq.heappushpop(min_heap, (revelance, row))
+                    heapq.heappushpop(
+                        min_heap, (revelance, row, vector if with_embeddings else None)
+                    )
                 else:
-                    heapq.heappush(min_heap, (revelance, row))
+                    heapq.heappush(
+                        min_heap, (revelance, row, vector if with_embeddings else None)
+                    )
 
             result = []
-            for relevance, row in min_heap:
-                metadata = Metadata.from_json(row["metadata"])
-                row["timestamp"] = deserialize_timestamp(row["timestamp"])
+            for relevance, row, vector in min_heap:
+                metadata = Metadata.from_json(row[1])
+                timestamp = deserialize_timestamp(row[3])
                 result.append(
                     (
                         MemoryRecord.local_record(
-                            id=row["key"],
-                            text=metadata.text or "",
-                            description=metadata["description"],
-                            additional_metadata=row["additional_metadata"],
-                            embedding=row["embedding"]  # we already deserialized it
-                            if with_embeddings
-                            else np.array([]),
-                            timestamp=row["timestamp"],
+                            id=row[0] or metadata.id,
+                            text=metadata.text,
+                            description=metadata.description,
+                            additional_metadata=metadata.additional_metadata,
+                            embedding=vector if with_embeddings else np.array([]),
+                            timestamp=timestamp,
                         ),
                         relevance,
                     )
