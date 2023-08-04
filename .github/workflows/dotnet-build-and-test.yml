@@ -25,7 +25,7 @@ jobs:
         fail-fast: false
         matrix:
           include:
-          - { os: 'ubuntu', dotnet: '6.0-jammy', configuration: Debug }
+          - { os: 'ubuntu', dotnet: '6.0-jammy', configuration: Debug, integration-tests: true }
           - { os: 'ubuntu', dotnet: '7.0-jammy', configuration: Release }
           - { os: 'ubuntu', dotnet: '8.0-preview-jammy', configuration: Release }
           - { os: 'windows', dotnet: '6.0', configuration: Release }
@@ -38,17 +38,7 @@ jobs:
       env:
         NUGET_CERT_REVOCATION_MODE: offline
         GITHUB_ACTIONS: 'true'
-        AzureOpenAI__Label: azure-text-davinci-003
-        AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-        AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-        AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
-        AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-        AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-        AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-        AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-        Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-        OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
-        
+
     steps:
     - uses: actions/checkout@v3
     
@@ -73,3 +63,14 @@ jobs:
         for project in $INTEGRATION_TEST_PROJECTS; do
           dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
         done
+      env:
+        AzureOpenAI__Label: azure-text-davinci-003
+        AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+        AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+        AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+        AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+        OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
