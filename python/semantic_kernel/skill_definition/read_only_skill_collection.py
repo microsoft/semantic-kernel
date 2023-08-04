@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from logging import Logger
 from typing import TYPE_CHECKING, Dict, Generic, Literal, Optional, Tuple, TypeVar
+
+import pydantic as pdt
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.sk_pydantic import SKGenericModel
@@ -8,6 +11,7 @@ from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
+from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.static_property import static_property
 
 if TYPE_CHECKING:
@@ -21,12 +25,16 @@ class ReadOnlySkillCollection(
     SKGenericModel, ReadOnlySkillCollectionBase, Generic[SKFunctionT]
 ):
     data: Dict[str, Dict[str, SKFunctionT]]
+    _log: Logger = pdt.PrivateAttr()
 
     class Config:
         allow_mutation = False
 
-    def __init__(self, data: Dict[str, Dict[str, SKFunctionT]]) -> None:
+    def __init__(
+        self, data: Dict[str, Dict[str, SKFunctionT]], log: Optional[Logger] = None
+    ) -> None:
         super().__init__(data=data)
+        self._log = log or NullLogger()
 
     def has_function(self, skill_name: Optional[str], function_name: str) -> bool:
         s_name, f_name = self._normalize_names(skill_name, function_name, True)
