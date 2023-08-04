@@ -52,6 +52,26 @@ public abstract class OpenAIClientBase : ClientBase
     }
 
     /// <summary>
+    /// Creates a new OpenAI client instance using the specified OpenAIClient
+    /// Note: instances created this way might not have the default diagnostics settings,
+    /// it's up to the caller to configure the client.
+    /// </summary>
+    /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
+    /// <param name="logger">Application logger</param>
+    private protected OpenAIClientBase(
+        string modelId,
+        OpenAIClient openAIClient,
+        ILogger? logger = null) : base(logger)
+    {
+        Verify.NotNullOrWhiteSpace(modelId);
+        Verify.NotNull(openAIClient);
+
+        this.ModelId = modelId;
+        this.Client = openAIClient;
+    }
+
+    /// <summary>
     /// Logs OpenAI action details.
     /// </summary>
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
