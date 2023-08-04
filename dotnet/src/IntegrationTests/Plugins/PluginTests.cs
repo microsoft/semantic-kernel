@@ -113,7 +113,7 @@ public class PluginTests
     }
 
     [Theory]
-    [InlineData(".\\Plugins\\instacart-ai-plugin.json",
+    [InlineData("Plugins/instacart-ai-plugin.json",
         "Instacart",
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
