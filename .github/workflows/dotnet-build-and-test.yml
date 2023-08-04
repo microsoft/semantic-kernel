@@ -63,14 +63,14 @@ jobs:
       run: |
         export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
         for project in $INTEGRATION_TEST_PROJECTS; do
-          docker run --rm -v $(pwd):/app -w /app $DOTNET_DOCKER_IMG \
-            -e OpenAI__ApiKey=${{ secrets.OPENAI__APIKEY }} \
-            -e AzureOpenAI__ApiKey=${{ secrets.AZUREOPENAI__APIKEY }} \
-            -e AzureOpenAI__DeploymentName=${{ vars.AZUREOPENAI__DEPLOYMENTNAME }} \
-            -e AzureOpenAI__Endpoint=${{ secrets.AZUREOPENAI__ENDPOINT }} \
-            -e AzureOpenAIEmbeddings__ApiKey=${{ secrets.AZUREOPENAI__APIKEY }} \
-            -e AzureOpenAIEmbeddings__DeploymentName=${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }} \
-            -e AzureOpenAIEmbeddings__Endpoint=${{ secrets.AZUREOPENAI__ENDPOINT }} \
-            -e Bing__ApiKey=${{ secrets.BING__APIKEY }} \
-            /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+          docker run --rm -v $(pwd):/app -w /app \
+            -env OpenAI__ApiKey='${{ secrets.OPENAI__APIKEY }}' \
+            -env AzureOpenAI__ApiKey='${{ secrets.AZUREOPENAI__APIKEY }}' \
+            -env AzureOpenAI__DeploymentName='${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}' \
+            -env AzureOpenAI__Endpoint='${{ secrets.AZUREOPENAI__ENDPOINT }}' \
+            -env AzureOpenAIEmbeddings__ApiKey='${{ secrets.AZUREOPENAI__APIKEY }}' \
+            -env AzureOpenAIEmbeddings__DeploymentName='${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}' \
+            -env AzureOpenAIEmbeddings__Endpoint='${{ secrets.AZUREOPENAI__ENDPOINT }}' \
+            -env Bing__ApiKey='${{ secrets.BING__APIKEY }}' \
+            $DOTNET_DOCKER_IMG /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
         done
