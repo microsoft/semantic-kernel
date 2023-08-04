@@ -7,13 +7,10 @@ name: dotnet-build-and-test
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron:  '0 7 * * *'
   pull_request:
     branches: [ "main", "feature*" ]
-    paths:
-      - 'dotnet/**'
-      - 'samples/dotnet/**'
+  merge_group:
+    branches: ["main"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -29,7 +26,7 @@ jobs:
         matrix:
           include:
           - { os: 'ubuntu', dotnet: '6.0-jammy', configuration: Debug }
-          - { os: 'ubuntu', dotnet: '7.0-jammy', configuration: Release }
+          - { os: 'ubuntu', dotnet: '7.0-jammy', configuration: Release, integration-tests: true }
           - { os: 'ubuntu', dotnet: '8.0-preview-jammy', configuration: Release }
           - { os: 'windows', dotnet: '6.0', configuration: Release }
           - { os: 'windows', dotnet: '7.0', configuration: Debug }
@@ -59,4 +56,21 @@ jobs:
         export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
         for project in $UT_PROJECTS; do
           docker run --rm -v $(pwd):/app -w /app $DOTNET_DOCKER_IMG /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+        done
+
+    - name: Run Integration Tests
+      if: github.event_name != 'pull_request' && matrix.integration-tests
+      run: |
+        export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
+        for project in $INTEGRATION_TEST_PROJECTS; do
+          docker run --rm -v $(pwd):/app -w /app $DOTNET_DOCKER_IMG \
+            -e OpenAI__ApiKey=${{ secrets.OPENAI__APIKEY }} \
+            -e AzureOpenAI__ApiKey=${{ secrets.AZUREOPENAI__APIKEY }} \
+            -e AzureOpenAI__DeploymentName=${{ vars.AZUREOPENAI__DEPLOYMENTNAME }} \
+            -e AzureOpenAI__Endpoint=${{ secrets.AZUREOPENAI__ENDPOINT }} \
+            -e AzureOpenAIEmbeddings__ApiKey=${{ secrets.AZUREOPENAI__APIKEY }} \
+            -e AzureOpenAIEmbeddings__DeploymentName=${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }} \
+            -e AzureOpenAIEmbeddings__Endpoint=${{ secrets.AZUREOPENAI__ENDPOINT }} \
+            -e Bing__ApiKey=${{ secrets.BING__APIKEY }} \
+            /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
         done
