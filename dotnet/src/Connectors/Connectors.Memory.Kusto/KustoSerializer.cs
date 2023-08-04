@@ -1,20 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Kusto.Cloud.Platform.Utils;
+using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
-using Newtonsoft.Json;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 
+/// <summary>
+/// Contains serialization/deserialization logic for memory record properties in Kusto.
+/// </summary>
 public static class KustoSerializer
 {
+    /// <summary>
+    /// Returns serialized string from <see cref="Embedding{TEmbedding}"/> instance.
+    /// </summary>
+    /// <param name="embedding">Instance of <see cref="Embedding{TEmbedding}"/> for serialization.</param>
     public static string SerializeEmbedding(Embedding<float> embedding)
     {
-        return JsonConvert.SerializeObject(embedding.Vector);
+        return JsonSerializer.Serialize(embedding.Vector);
     }
 
+    /// <summary>
+    /// Returns deserialized instance of <see cref="Embedding{TEmbedding}"/> from serialized embedding.
+    /// </summary>
+    /// <param name="embedding">Serialized embedding.</param>
     public static Embedding<float> DeserializeEmbedding(string? embedding)
     {
         if (string.IsNullOrEmpty(embedding))
@@ -22,7 +32,7 @@ public static class KustoSerializer
             return default;
         }
 
-        float[]? floatArray = JsonConvert.DeserializeObject<float[]>(embedding!);
+        float[]? floatArray = JsonSerializer.Deserialize<float[]>(embedding!);
 
         if (floatArray == null)
         {
@@ -32,6 +42,10 @@ public static class KustoSerializer
         return new Embedding<float>(floatArray);
     }
 
+    /// <summary>
+    /// Returns serialized string from <see cref="MemoryRecordMetadata"/> instance.
+    /// </summary>
+    /// <param name="metadata">Instance of <see cref="MemoryRecordMetadata"/> for serialization.</param>
     public static string SerializeMetadata(MemoryRecordMetadata metadata)
     {
         if (metadata == null)
@@ -39,31 +53,29 @@ public static class KustoSerializer
             return string.Empty;
         }
 
-        return JsonConvert.SerializeObject(metadata);
+        return JsonSerializer.Serialize(metadata);
     }
 
+    /// <summary>
+    /// Returns deserialized instance of <see cref="MemoryRecordMetadata"/> from serialized metadata.
+    /// </summary>
+    /// <param name="metadata">Serialized metadata.</param>
     public static MemoryRecordMetadata DeserializeMetadata(string metadata)
     {
-        return JsonConvert.DeserializeObject<MemoryRecordMetadata>(metadata)!;
+        return JsonSerializer.Deserialize<MemoryRecordMetadata>(metadata)!;
     }
 
-    public static string SerializeDateTime(DateTime? dt)
+    /// <summary>
+    /// Returns serialized string from <see cref="DateTimeOffset"/> instance.
+    /// </summary>
+    /// <param name="dateTimeOffset">Instance of <see cref="DateTimeOffset"/> for serialization.</param>
+    public static string SerializeDateTimeOffset(DateTimeOffset? dateTimeOffset)
     {
-        if (dt == null)
+        if (dateTimeOffset == null)
         {
             return string.Empty;
         }
 
-        return dt.Value.ToUtc().ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
-    }
-
-    public static string SerializeDateTimeOffset(DateTimeOffset? dto)
-    {
-        if (dto == null)
-        {
-            return string.Empty;
-        }
-
-        return dto.Value.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
+        return dateTimeOffset.Value.DateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
     }
 }

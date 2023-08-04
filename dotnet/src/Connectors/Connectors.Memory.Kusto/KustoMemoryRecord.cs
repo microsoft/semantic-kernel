@@ -7,15 +7,44 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 
-sealed public class KustoMemoryRecord
+/// <summary>
+/// Kusto memory record entity.
+/// </summary>
+public sealed class KustoMemoryRecord
 {
+    /// <summary>
+    /// Entity key.
+    /// </summary>
     public string Key { get; set; }
+
+    /// <summary>
+    /// Metadata associated with memory entity.
+    /// </summary>
     public MemoryRecordMetadata Metadata { get; set; }
+
+    /// <summary>
+    /// Source content embedding.
+    /// </summary>
     public Embedding<float> Embedding { get; set; }
+
+    /// <summary>
+    /// Optional timestamp.
+    /// </summary>
     public DateTime? Timestamp { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
+    /// </summary>
+    /// <param name="record">Instance of <see cref="MemoryRecord"/>.</param>
     public KustoMemoryRecord(MemoryRecord record) : this(record.Key, record.Metadata, record.Embedding, record.Timestamp?.UtcDateTime) { }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
+    /// </summary>
+    /// <param name="key">Entity key.</param>
+    /// <param name="metadata">Metadata associated with memory entity.</param>
+    /// <param name="embedding">Source content embedding.</param>
+    /// <param name="timestamp">Optional timestamp.</param>
     public KustoMemoryRecord(string key, MemoryRecordMetadata metadata, Embedding<float> embedding, DateTime? timestamp = null)
     {
         this.Key = key;
@@ -24,6 +53,13 @@ sealed public class KustoMemoryRecord
         this.Timestamp = timestamp;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
+    /// </summary>
+    /// <param name="key">Entity key.</param>
+    /// <param name="metadata">Serialized metadata associated with memory entity.</param>
+    /// <param name="embedding">Source content embedding.</param>
+    /// <param name="timestamp">Optional timestamp.</param>
     public KustoMemoryRecord(string key, string metadata, string? embedding, DateTime? timestamp = null)
     {
         this.Key = key;
@@ -32,11 +68,18 @@ sealed public class KustoMemoryRecord
         this.Timestamp = timestamp;
     }
 
+    /// <summary>
+    /// Returns instance of mapped <see cref="MemoryRecord"/>.
+    /// </summary>
     public MemoryRecord ToMemoryRecord()
     {
         return new MemoryRecord(this.Metadata, this.Embedding, this.Key, this.Timestamp);
     }
 
+    /// <summary>
+    /// Writes properties of <see cref="KustoMemoryRecord"/> instance to stream using <see cref="CsvWriter"/>.
+    /// </summary>
+    /// <param name="streamWriter">Instance of <see cref="CsvWriter"/> to write properties to stream.</param>
     public void WriteToCsvStream(CsvWriter streamWriter)
     {
         var jsonifiedMetadata = KustoSerializer.SerializeMetadata(this.Metadata);
