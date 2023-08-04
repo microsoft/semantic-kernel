@@ -122,7 +122,7 @@ async def test_azure_text_embedding_calls_with_parameters() -> None:
         api_type = "azure"
         api_version = "2023-03-15-preview"
         logger = Logger("test_logger")
-        texts = ["hello world"]
+        texts = ["hello world", "goodbye world"]
 
         azure_text_embedding = AzureTextEmbedding(
             deployment_name=deployment_name,
