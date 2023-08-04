@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using SemanticKernel.Skills.UnitTests.OpenAPI.TestSkills;
 using Xunit;
@@ -53,13 +54,13 @@ public sealed class KernelOpenApiExtensionsTests : IDisposable
         Assert.NotNull(functionView);
 
         var secretNameParameter = functionView.Parameters.First(p => p.Name == "secret_name");
-        Assert.Equal("string", secretNameParameter.Type);
+        Assert.Equal(ParameterViewType.String, secretNameParameter.Type);
 
         var apiVersionParameter = functionView.Parameters.First(p => p.Name == "api_version");
-        Assert.Equal("string", apiVersionParameter.Type);
+        Assert.Equal("string", apiVersionParameter?.Type?.ToString());
 
         var payloadParameter = functionView.Parameters.First(p => p.Name == "payload");
-        Assert.Equal("object", payloadParameter.Type);
+        Assert.Equal(ParameterViewType.Object, payloadParameter.Type);
     }
 
     public void Dispose()

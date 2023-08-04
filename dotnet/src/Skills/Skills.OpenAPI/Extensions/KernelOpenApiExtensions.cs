@@ -292,7 +292,7 @@ public static class KernelOpenApiExtensions
                 Name = p.AlternativeName ?? p.Name,
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue,
-                Type = p.Type,
+                Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
             })
             .ToList();
 

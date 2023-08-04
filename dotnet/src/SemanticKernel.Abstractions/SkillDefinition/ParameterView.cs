@@ -40,7 +40,7 @@ public sealed class ParameterView
     /// <summary>
     /// Parameter type.
     /// </summary>
-    public string? Type { get; set; }
+    public ParameterViewType? Type { get; set; }
 
     /// <summary>
     /// Constructor
@@ -60,7 +60,7 @@ public sealed class ParameterView
         string name,
         string? description = null,
         string? defaultValue = null,
-        string? type = null)
+        ParameterViewType? type = null)
     {
         this.Name = name;
         this.Description = description;
