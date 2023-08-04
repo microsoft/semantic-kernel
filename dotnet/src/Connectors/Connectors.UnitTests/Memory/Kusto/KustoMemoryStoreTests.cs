@@ -204,7 +204,7 @@ public class KustoMemoryStoreTests
                 new string[] {
                     expectedMemoryRecord.Key,
                     KustoSerializer.SerializeMetadata(expectedMemoryRecord.Metadata),
-                    KustoSerializer.SerializeDateTimeOffest(expectedMemoryRecord.Timestamp),
+                    KustoSerializer.SerializeDateTimeOffset(expectedMemoryRecord.Timestamp),
                     KustoSerializer.SerializeEmbedding(expectedMemoryRecord.Embedding),
                 }}));
 
@@ -256,7 +256,7 @@ public class KustoMemoryStoreTests
             .ReturnsAsync(CollectionToDataReader(batchUpsertMemoryRecords.Select(r => new string[] {
                     r.Key,
                     KustoSerializer.SerializeMetadata(r.Metadata),
-                    KustoSerializer.SerializeDateTimeOffest(r.Timestamp),
+                    KustoSerializer.SerializeDateTimeOffset(r.Timestamp),
                     KustoSerializer.SerializeEmbedding(r.Embedding),
                 }).ToArray()));
 

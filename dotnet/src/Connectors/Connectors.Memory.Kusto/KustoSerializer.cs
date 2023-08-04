@@ -57,7 +57,7 @@ public static class KustoSerializer
         return dt.Value.ToUtc().ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    public static string SerializeDateTimeOffest(DateTimeOffset? dto)
+    public static string SerializeDateTimeOffset(DateTimeOffset? dto)
     {
         if (dto == null)
         {

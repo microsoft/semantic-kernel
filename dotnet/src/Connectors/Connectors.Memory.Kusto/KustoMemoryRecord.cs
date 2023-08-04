@@ -42,7 +42,7 @@ sealed public class KustoMemoryRecord
     {
         var jsonifiedMetadata = KustoSerializer.SerializeMetadata(this.Metadata);
         var jsonifiedEmbedding = KustoSerializer.SerializeEmbedding(this.Embedding);
-        var isoFormattedDate = KustoSerializer.SerializeDateTimeOffest(this.Timestamp);
+        var isoFormattedDate = KustoSerializer.SerializeDateTimeOffset(this.Timestamp);
 
         streamWriter.WriteField(this.Key);
         streamWriter.WriteField(jsonifiedMetadata);
