@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using SemanticKernel.Skills.UnitTests.OpenAPI.TestSkills;
 using Xunit;
 
@@ -45,7 +46,7 @@ public sealed class KernelOpenApiExtensionsTests : IDisposable
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
     {
         //Act
-        var skill = await this.kernel.RegisterOpenApiSkillAsync(this._openApiDocument, "fakeSkill");
+        var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", this._openApiDocument);
 
         //Assert
         var setSecretFunction = skill["SetSecret"];
