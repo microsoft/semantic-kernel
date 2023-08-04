@@ -159,3 +159,23 @@ async def test_upsert_async_and_get_async(sqlite_db_file, memory_record1):
         assert result._text == memory_record1._text
         assert np.equal(result._embedding, memory_record1._embedding).all()
         assert result._timestamp == memory_record1._timestamp
+
+
+@pytest.mark.asyncio
+async def test_upsert_batch_async_and_get_batch_async(
+    sqlite_db_file, memory_record1, memory_record2
+):
+    collection = "test_upsert_batch_and_get_batch_collection"
+    async with SQLiteMemoryStore(sqlite_db_file, logger) as store:
+        await store.create_collection_async(collection)
+        await store.upsert_batch_async(collection, [memory_record1, memory_record2])
+
+        results = await store.get_batch_async(
+            collection,
+            [memory_record1._id, memory_record2._id],
+            with_embeddings=True,
+        )
+
+        assert len(results) == 2
+        assert results[0]._id in [memory_record1._id, memory_record2._id]
+        assert results[1]._id in [memory_record1._id, memory_record2._id]

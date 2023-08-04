@@ -245,19 +245,23 @@ class SQLiteMemoryStore(MemoryStoreBase):
             % ", ".join("?" * len(keys)),
             (collection_name, *keys),
         ) as rows:
-            return [
-                MemoryRecord.local_record(
-                    id=row["key"],
-                    text=metadata["text"] or "",
-                    description=metadata["description"],
-                    additional_metadata=metadata["additional_metadata"],
-                    embedding=deserialize_embedding(row["embedding"])
-                    if with_embeddings
-                    else None,
+            result: List[MemoryRecord] = []
+            for row in rows:
+                metadata = Metadata.from_json(row[1])
+                result.append(
+                    MemoryRecord.local_record(
+                        id=row[0],
+                        text=metadata.text,
+                        description=metadata.description,
+                        additional_metadata=metadata.additional_metadata,
+                        embedding=deserialize_embedding(row[2])
+                        if with_embeddings
+                        else None,
+                        timestamp=deserialize_timestamp(row[3]),
+                    )
                 )
-                for row in rows
-                if (metadata := deserialize_metadata(row["metadata"]) is not None)
-            ]
+
+            return result
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
         async with self._conn.execute(
