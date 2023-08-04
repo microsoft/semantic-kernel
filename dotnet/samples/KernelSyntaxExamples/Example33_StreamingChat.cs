@@ -22,7 +22,7 @@ public static class Example33_StreamingChat
     {
         Console.WriteLine("======== Open AI - ChatGPT Streaming ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         await StartStreamingChatAsync(openAIChatCompletion);
     }

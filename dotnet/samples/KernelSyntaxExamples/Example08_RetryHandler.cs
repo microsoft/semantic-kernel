@@ -76,7 +76,7 @@ public static class Example08_RetryHandler
         var kernel = Kernel.Builder.WithLogger(InfoLogger.Logger)
             .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
             // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", "BAD_KEY")
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY")
             .Build();
 
         await ImportAndExecuteSkillAsync(kernel);

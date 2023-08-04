@@ -72,7 +72,7 @@ public static class Example40_DIContainer
 
         //Registering AI services Kernel is going to use
         var aiServicesCollection = new AIServiceCollection();
-        aiServicesCollection.SetService<IChatCompletion>(() => new AzureChatCompletion("gpt-35-turbo",
+        aiServicesCollection.SetService<IChatCompletion>(() => new AzureChatCompletion(TestConfiguration.OpenAI.ChatModelId,
                         TestConfiguration.AzureOpenAI.Endpoint,
                         TestConfiguration.AzureOpenAI.ApiKey));
 
