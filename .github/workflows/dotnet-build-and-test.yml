@@ -29,7 +29,7 @@ jobs:
         matrix:
           include:
           - { os: 'ubuntu', dotnet: '6.0-jammy', configuration: Debug }
-          - { os: 'ubuntu', dotnet: '7.0-jammy', configuration: Release }
+          - { os: 'ubuntu', dotnet: '7.0-jammy', configuration: Release, integration-tests: true }
           - { os: 'ubuntu', dotnet: '8.0-preview-jammy', configuration: Release }
           - { os: 'windows', dotnet: '6.0', configuration: Release }
           - { os: 'windows', dotnet: '7.0', configuration: Debug }
@@ -59,4 +59,29 @@ jobs:
         export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
         for project in $UT_PROJECTS; do
           docker run --rm -v $(pwd):/app -w /app $DOTNET_DOCKER_IMG /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+        done
+
+    - name: Run Integration Tests
+      if: github.event_name != 'pull_request' && matrix.integration-tests
+      env: # Set Azure credentials secret as an input
+        OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+        AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+        AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+        AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+      run: |
+        export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
+        for project in $INTEGRATION_TEST_PROJECTS; do
+          docker run --rm -v $(pwd):/app -w /app $DOTNET_DOCKER_IMG /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx" \
+            -e OpenAI__ApiKey \
+            -e AzureOpenAI__ApiKey \
+            -e AzureOpenAI__DeploymentName \
+            -e AzureOpenAI__Endpoint \
+            -e AzureOpenAIEmbeddings__ApiKey \
+            -e AzureOpenAIEmbeddings__DeploymentName \
+            -e AzureOpenAIEmbeddings__Endpoint \
+            -e Bing__ApiKey
         done
