@@ -71,6 +71,5 @@ jobs:
             -env AzureOpenAIEmbeddings__ApiKey='${{ secrets.AZUREOPENAI__APIKEY }}' \
             -env AzureOpenAIEmbeddings__DeploymentName='${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}' \
             -env AzureOpenAIEmbeddings__Endpoint='${{ secrets.AZUREOPENAI__ENDPOINT }}' \
-            -env Bing__ApiKey='${{ secrets.BING__APIKEY }}' \
-            $DOTNET_DOCKER_IMG /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
+            -env Bing__ApiKey='${{ secrets.BING__APIKEY }}' $DOTNET_DOCKER_IMG /bin/sh -c "dotnet test -c ${{ matrix.configuration }} /app/$project --no-build -v Normal --logger trx"
         done
