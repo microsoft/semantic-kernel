@@ -63,8 +63,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?",
-        "This model's maximum context length is")]
+    [InlineData("Where is the most famous fish market in Seattle, Washington, USA?")]
     public async Task AzureOpenAIChatNoHttpRetryPolicyCustomClientShouldThrowAsync(string prompt)
     {
         // Arrange
