@@ -23,6 +23,9 @@
     },
     {
       "pattern": "^https://localhost"
+    },
+    {
+      "pattern": "^https://platform.openai.com/docs/"
     }
   ],
   "timeout": "20s",
