@@ -25,29 +25,15 @@ public static class Example51_StepwisePlanner
         {
             "Who is the current president of the United States? What is his current age divided by 2",
             // "Who is Leo DiCaprio's girlfriend? What is her current age raised to the (his current age)/100 power?",
-            // "What is the capital of France? Who is that cities current mayor? What percentage of their life has been in the 21st century as of today?",
+            // "What is the capital of France? Who is that city's current mayor? What percentage of their life has been in the 21st century as of today?",
             // "What is the current day of the calendar year? Using that as an angle in degrees, what is the area of a unit circle with that angle?"
         };
 
         foreach (var question in questions)
         {
-            await RunTextCompletion(question);
-            await RunChatCompletion(question);
+            var kernel = GetKernel();
+            await RunWithQuestion(kernel, question);
         }
-    }
-
-    private static async Task RunTextCompletion(string question)
-    {
-        Console.WriteLine("RunTextCompletion");
-        var kernel = GetKernel();
-        await RunWithQuestion(kernel, question);
-    }
-
-    private static async Task RunChatCompletion(string question)
-    {
-        Console.WriteLine("RunChatCompletion");
-        var kernel = GetKernel(true);
-        await RunWithQuestion(kernel, question);
     }
 
     private static async Task RunWithQuestion(IKernel kernel, string question)
@@ -57,7 +43,6 @@ public static class Example51_StepwisePlanner
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
         kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "advancedCalculator");
-        // kernel.ImportSkill(new SimpleCalculatorSkill(kernel), "basicCalculator");
         kernel.ImportSkill(new TimeSkill(), "time");
 
         Console.WriteLine("*****************************************************");
@@ -89,25 +74,16 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("*****************************************************");
     }
 
-    private static IKernel GetKernel(bool useChat = false)
+    private static IKernel GetKernel()
     {
         var builder = new KernelBuilder();
-        if (useChat)
-        {
-            builder.WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey,
-                alsoAsTextCompletion: true,
-                setAsDefault: true);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                TestConfiguration.AzureOpenAI.DeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey);
-        }
+
+        builder.WithAzureChatCompletionService(
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey,
+            alsoAsTextCompletion: true,
+            setAsDefault: true);
 
         var kernel = builder
             .WithLogger(ConsoleLogger.Logger)
@@ -123,15 +99,6 @@ public static class Example51_StepwisePlanner
     }
 }
 
-// RunTextCompletion
-// *****************************************************
-// Question: Who is the current president of the United States? What is his current age divided by 2
-// Result: The current president of the United States is Joe Biden. His current age divided by 2 is 40.
-// Steps Taken: 10
-// Skills Used: 4 (WebSearch.Search(2), time.Date(1), advancedCalculator.Calculator(1))
-// Time Taken: 00:00:53.6331324
-// *****************************************************
-// RunChatCompletion
 // *****************************************************
 // Question: Who is the current president of the United States? What is his current age divided by 2
 // Result: The current president of the United States is Joe Biden. His current age divided by 2 is 40.5.
@@ -139,15 +106,6 @@ public static class Example51_StepwisePlanner
 // Skills Used: 7 (WebSearch.Search(4), time.Year(1), time.Date(1), advancedCalculator.Calculator(1))
 // Time Taken: 00:01:13.3766860
 // *****************************************************
-// RunTextCompletion
-// *****************************************************
-// Question: Who is Leo DiCaprio's girlfriend? What is her current age raised to the (his current age)/100 power?
-// Result: Leo DiCaprio's girlfriend is Camila Morrone. Her current age raised to the (his current age)/100 power is 4.935565735151678.
-// Steps Taken: 6
-// Skills Used: 5 (WebSearch.Search(3), time.Year(1), advancedCalculator.Calculator(1))
-// Time Taken: 00:00:37.8941510
-// *****************************************************
-// RunChatCompletion
 // *****************************************************
 // Question: Who is Leo DiCaprio's girlfriend? What is her current age raised to the (his current age)/100 power?
 // Result: Leo DiCaprio's girlfriend is Camila Morrone. Her current age raised to the power of (his current age)/100 is approximately 4.94.
@@ -155,15 +113,6 @@ public static class Example51_StepwisePlanner
 // Skills Used: 5 (WebSearch.Search(3), time.Year(1), advancedCalculator.Calculator(1))
 // Time Taken: 00:01:17.6742136
 // *****************************************************
-// RunTextCompletion
-// *****************************************************
-// Question: What is the capital of France? Who is that cities current mayor? What percentage of their life has been in the 21st century as of today?
-// Result: The capital of France is Paris. The current mayor of Paris is Anne Hidalgo. She has spent 36.51% of her life in the 21st century as of 2023.
-// Steps Taken: 7
-// Skills Used: 4 (WebSearch.Search(3), advancedCalculator.Calculator(1))
-// Time Taken: 00:00:41.6837628
-// *****************************************************
-// RunChatCompletion
 // *****************************************************
 // Question: What is the capital of France? Who is that cities current mayor? What percentage of their life has been in the 21st century as of today?
 // Result: The capital of France is Paris. The current mayor of Paris is Anne Hidalgo, who was born on June 19, 1959. As of today, she has lived for 64 years, with 23 of those years in the 21st century. Therefore, 35.94% of her life has been spent in the 21st century.
@@ -171,15 +120,6 @@ public static class Example51_StepwisePlanner
 // Skills Used: 12 (WebSearch.Search(8), time.Year(1), advancedCalculator.Calculator(3))
 // Time Taken: 00:02:06.6682909
 // *****************************************************
-// RunTextCompletion
-// *****************************************************
-// Question: What is the current day of the calendar year? Using that as an angle in degrees, what is the area of a unit circle with that angle?
-// Result: The current day of the calendar year is 177. The angle in degrees corresponding to this day is 174.6. The area of a unit circle with that angle is 0.764 * pi.
-// Steps Taken: 16
-// Skills Used: 2 (time.DayOfYear(1), time.Date(1))
-// Time Taken: 00:01:29.9931039
-// *****************************************************
-// RunChatCompletion
 // *****************************************************
 // Question: What is the current day of the calendar year? Using that as an angle in degrees, what is the area of a unit circle with that angle?
 // Result: The current day of the year is 177. Using that as an angle in degrees (approximately 174.58), the area of a unit circle with that angle is approximately 1.523 square units.

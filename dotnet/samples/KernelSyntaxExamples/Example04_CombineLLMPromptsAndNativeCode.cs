@@ -24,8 +24,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService("text-davinci-002", openAIApiKey, serviceId: "text-davinci-002")
-            .WithOpenAITextCompletionService("text-davinci-003", openAIApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, openAIApiKey)
             .Build();
 
         // Load native skill
@@ -44,9 +43,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
 
-        var sumSkill = kernel.ImportSemanticSkillFromDirectory(
-            folder,
-            "SummarizeSkill");
+        var sumSkill = kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
 
         // Run
         var ask = "What's the tallest building in South America";

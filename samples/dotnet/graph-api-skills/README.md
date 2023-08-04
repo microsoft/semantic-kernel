@@ -29,12 +29,12 @@ Example `appsettings.Development.json`:
   },
   "OneDrivePathToFile": "Documents/MyFile.txt",
   "OpenAI": {
-    "ServiceId": "oaidavinci",
+    "ServiceId": "gpt-3.5-turbo",
     "ApiKey": "YOUR_OPENAPI_KEY"
   },
   "AzureOpenAI": {
-    "ServiceId": "azuredavinci",
-    "DeploymentName": "azure-text-davinci-003",
+    "ServiceId": "gpt-35-turbo",
+    "DeploymentName": "gpt-35-turbo",
     "Endpoint": "YOUR_AZURE_OPENAI_ENDPOINT (e.g. https://contoso.openai.azure.com/",
     "ApiKey": "YOUR_AZURE_OPENAPI_KEY"
   }

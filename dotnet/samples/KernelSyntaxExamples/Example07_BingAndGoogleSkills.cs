@@ -20,7 +20,7 @@ public static class Example07_BingAndGoogleSkills
 {
     public static async Task RunAsync()
     {
-        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
@@ -31,7 +31,7 @@ public static class Example07_BingAndGoogleSkills
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService(
+            .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();

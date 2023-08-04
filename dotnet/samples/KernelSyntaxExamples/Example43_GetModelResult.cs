@@ -21,8 +21,8 @@ public static class Example43_GetModelResult
         Console.WriteLine("======== Inline Function Definition + Result ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithOpenAITextCompletionService(
-                modelId: TestConfiguration.OpenAI.ModelId,
+            .WithOpenAIChatCompletionService(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
@@ -58,7 +58,7 @@ public static class Example43_GetModelResult
 
         // Getting the error details
         kernel = new KernelBuilder()
-            .WithOpenAITextCompletionService("text-davinci-003", "Invalid Key")
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
         var failedContext = await kernel.RunAsync("sorry I forgot your birthday", errorFunction);

@@ -43,7 +43,7 @@ public static class Example26_AADAuth
             .WithLogger(ConsoleLogger.Logger)
             // Add Azure chat completion service using DefaultAzureCredential AAD auth
             .WithAzureChatCompletionService(
-                "gpt-35-turbo",
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 "https://....openai.azure.com/",
                 new DefaultAzureCredential(authOptions))
             .Build();

@@ -25,14 +25,14 @@ using Microsoft.SemanticKernel;
 
 var builder = new KernelBuilder();
 
-builder.WithAzureTextCompletionService(
-         "text-davinci-003",                  // Azure OpenAI Deployment Name
+builder.WithAzureChatCompletionService(
+         "gpt-35-turbo",                  // Azure OpenAI Deployment Name
          "https://contoso.openai.azure.com/", // Azure OpenAI Endpoint
          "...your Azure OpenAI Key...");      // Azure OpenAI Key
 
 // Alternative using OpenAI
-//builder.WithOpenAITextCompletionService(
-//         "text-davinci-003",               // OpenAI Model name
+//builder.WithOpenAIChatCompletionService(
+//         "gpt-3.5-turbo",               // OpenAI Model name
 //         "...your OpenAI API Key...");     // OpenAI API Key
 
 var kernel = builder.Build();
