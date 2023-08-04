@@ -132,7 +132,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = reader.GetString(2);
+            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
             var embedding = withEmbeddings ? reader.GetString(3) : default;
 
             var kustoRecord = new KustoMemoryRecord(key, metadata, embedding, timestamp);
@@ -215,7 +215,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = reader.GetString(2);
+            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
             var similarity = reader.GetDouble(3);
             var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
 
