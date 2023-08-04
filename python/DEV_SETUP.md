@@ -112,7 +112,7 @@ You can also run all the tests together under the [tests](tests/) folder.
 # Tools and scripts
 
 ## Pydantic and Serialization
-
+[Pydantic Documentation](https://docs.pydantic.dev/1.10/)
 ### Overview
 
 This section describes how one can enable serialization for their class using Pydantic.
