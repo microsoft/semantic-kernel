@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -45,19 +46,26 @@ public class PromptMultiConnectorSettings
     /// Selects the appropriate text completion to use based on the vetting evaluations analyzed.
     /// </summary>
     /// <param name="namedTextCompletions">The list of available text completions.</param>
+    /// <param name="settingsConnectorComparer"></param>
     /// <returns>The selected <see cref="NamedTextCompletion"/>.</returns>
-    public NamedTextCompletion SelectAppropriateTextCompletion(IReadOnlyList<NamedTextCompletion> namedTextCompletions)
+    public NamedTextCompletion SelectAppropriateTextCompletion(IReadOnlyList<NamedTextCompletion> namedTextCompletions, Func<PromptConnectorSettings, PromptConnectorSettings, int> settingsConnectorComparer)
     {
-        // connectors are tested in reverse order of their registration, secondary connectors being prioritized over primary ones
-        foreach (var namedTextCompletion in namedTextCompletions.Reverse())
+        var filteredConnectors = new List<(NamedTextCompletion, PromptConnectorSettings)>();
+        foreach (var namedTextCompletion in namedTextCompletions)
         {
             if (this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings? value))
             {
                 if (value?.VettingLevel > 0)
                 {
-                    return namedTextCompletion;
+                    filteredConnectors.Add((namedTextCompletion, value));
                 }
             }
+        }
+
+        filteredConnectors.Sort((c1, c2) => settingsConnectorComparer(c1.Item2, c2.Item2));
+        if (filteredConnectors.Count > 0)
+        {
+            return filteredConnectors[0].Item1;
         }
 
         // if no vetted connector is found, return the first primary one

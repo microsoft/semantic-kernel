@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// </summary>
 public class MultiTextCompletionSettings
 {
+
     /// <summary>
     /// Loads suggested settings from an analysis.
     /// If the file doesn't exist, it returns the current settings.
@@ -46,6 +48,11 @@ public class MultiTextCompletionSettings
     public List<PromptMultiConnectorSettings> PromptMultiConnectorSettings { get; } = new();
 
     /// <summary>
+    /// Comparer used to choose among vetted connectors.
+    /// </summary>
+    public Func<PromptConnectorSettings, PromptConnectorSettings, int> ConnectorComparer { get; set; } = GetConnectorComparer(1, 1);
+
+    /// <summary>
     /// Returns settings for a given prompt.
     /// If settings for the prompt do not exist, new settings are created, added to the list, and returned.
     /// </summary>
@@ -73,4 +80,32 @@ public class MultiTextCompletionSettings
 
         return toReturn;
     }
+
+    /// <summary>
+    /// Builds a comparer to compare two connectors given the respective weight attached to to their average duration and average cost fractions.
+    /// </summary>
+    /// <param name="durationWeight">the weight of the duration gains in proportion</param>
+    /// <param name="costWeight">the weight of the cost gains in proportion</param>
+    public static Func<PromptConnectorSettings, PromptConnectorSettings, int> GetConnectorComparer(double durationWeight, double costWeight)
+    {
+        return (a, b) =>
+        {
+            double? durationCoefficient = null;
+            if (a.AverageDuration > TimeSpan.Zero && b.AverageDuration > TimeSpan.Zero)
+            {
+                durationCoefficient = b.AverageDuration.Ticks / (double)a.AverageDuration.Ticks;
+            }
+
+            double? costCoefficient = null;
+            if (a.AverageCost > 0 && b.AverageCost > 0)
+            {
+                costCoefficient = (double)b.AverageCost / (double)a.AverageCost;
+            }
+
+            var doubledResult = (costWeight * costCoefficient ?? 1 + durationWeight * durationCoefficient ?? 1) / (costWeight + durationWeight);
+            var intResult = doubledResult <= 1 ? Math.Abs(doubledResult - 1) < 0.01 ? 0 : 1 : -1;
+            return intResult;
+        };
+    }
+
 }

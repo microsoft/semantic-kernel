@@ -45,7 +45,7 @@ public class MultiTextCompletion : ITextCompletion
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         var promptSettings = this._settings.GetPromptSettings(text, requestSettings);
-        var textCompletion = promptSettings.SelectAppropriateTextCompletion(this._textCompletions);
+        var textCompletion = promptSettings.SelectAppropriateTextCompletion(this._textCompletions, this._settings.ConnectorComparer);
 
         var stopWatch = Stopwatch.StartNew();
 
@@ -81,7 +81,7 @@ public class MultiTextCompletion : ITextCompletion
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         var promptSettings = this._settings.GetPromptSettings(text, requestSettings);
-        var textCompletion = promptSettings.SelectAppropriateTextCompletion(this._textCompletions);
+        var textCompletion = promptSettings.SelectAppropriateTextCompletion(this._textCompletions, this._settings.ConnectorComparer);
 
         var result = textCompletion.TextCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
 

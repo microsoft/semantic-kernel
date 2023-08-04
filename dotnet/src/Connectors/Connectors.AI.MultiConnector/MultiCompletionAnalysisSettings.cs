@@ -111,8 +111,6 @@ RESPONSE IS VALID? (true/false):
     /// </summary>
     public async Task EvaluatePromptConnectorsAsync(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
-        
-
         var promptSettings = settings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings);
 
         promptSettings.IsTesting = true;
@@ -264,11 +262,13 @@ RESPONSE IS VALID? (true/false):
 
         foreach (var promptEvaluations in evaluationsByPromptSettings)
         {
+            PromptMultiConnectorSettings promptMultiConnectorSettings = promptEvaluations.Key;
             var evaluationsByConnector = promptEvaluations.Value.GroupBy(e => e.Test.ConnectorName);
             foreach (var connectorEvaluations in evaluationsByConnector)
             {
                 var connectorName = connectorEvaluations.Key;
-                var promptConnectorSettings = promptEvaluations.Key.GetConnectorSettings(connectorName);
+
+                var promptConnectorSettings = promptMultiConnectorSettings.GetConnectorSettings(connectorName);
 
                 //promptConnectorSettings.Evaluations = connectorEvaluations.ToList();
                 promptConnectorSettings.AverageDuration = TimeSpan.FromMilliseconds(connectorEvaluations.Average(e => e.Test.Duration.TotalMilliseconds));

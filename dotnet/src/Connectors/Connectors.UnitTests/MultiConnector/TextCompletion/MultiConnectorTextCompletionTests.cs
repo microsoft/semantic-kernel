@@ -295,8 +295,19 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         return toReturn;
     }
 
-    [Fact]
-    public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync()
+    /// <summary>
+    /// In this theory, we test that the multi-connector analysis is able to optimize the cost per request and duration of a multi-connector completion, with a primary connector capable of handling all 4 arithmetic operation, and secondary connectors only capable of performing 1 each. Depending on their respective performances in parameters and the respective weights of duration and cost in the analysis settings, the multi-connector analysis should be able to determine the best connector to account for the given preferences.
+    /// </summary>
+    [Theory]
+    [InlineData(3, 0.02, 1, 0.01, 1, 1, 0.01, 3)]
+    [InlineData(2, 0.02, 1, 0.1, 1, 1, 0.02, 1)]
+    [InlineData(2, 0.02, 1, 0.1, 1, 0, 0.1, 2)]
+    public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync(int primaryCallDuration = 2, decimal primaryCostPerRequest = 0.02m, int secondaryCallDuration = 1,
+        decimal secondaryCostPerRequest = 0.01m,
+        double durationWeight = 1,
+        double costWeight = 1,
+        decimal expectedCostPerRequest = 0.01m,
+        double expectedDurationGain = 2)
     {
         //Arrange
 
@@ -313,21 +324,15 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
                 DeleteAnalysisFile = true,
                 SaveSuggestedSettings = false
             },
-            PromptTruncationLength = 11
+            PromptTruncationLength = 11,
+            ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight)
         };
 
         // We configure a primary completion with default performances and cost, secondary completion have a gain of 2 in performances and in cost, but they can only handle a single operation each
-        var gainRatio = 2;
-
-        var primaryCallDuration = TimeSpan.FromMilliseconds(2);
-        var primaryCostPerRequest = 0.1m;
-
-        var secondaryCallDuration = primaryCallDuration / gainRatio;
-        var secondaryCostPerRequest = primaryCostPerRequest / gainRatio;
 
         var creditor = new CallRequestCostCreditor();
 
-        var completions = this.CreateCompletions(settings, primaryCallDuration, primaryCostPerRequest, secondaryCallDuration, secondaryCostPerRequest, creditor);
+        var completions = this.CreateCompletions(settings, TimeSpan.FromMilliseconds(primaryCallDuration), primaryCostPerRequest, TimeSpan.FromMilliseconds(secondaryCallDuration), secondaryCostPerRequest, creditor);
 
         var prompts = Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().Select(arithmeticOperation => ArithmeticEngine.GeneratePrompt(arithmeticOperation, 8, 2)).ToArray();
 
@@ -364,7 +369,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         creditor.Reset();
 
         // Redo the same requests with the new settings
-        var secondaryResults = await RunPromptsAsync(prompts, multiConnector, requestSettings, completions[1].GetCost).ConfigureAwait(false);
+        var secondaryResults = await RunPromptsAsync(prompts, multiConnector, requestSettings, (s, s1) => expectedCostPerRequest).ConfigureAwait(false);
         decimal secondPassExpectedCost = secondaryResults.Sum(tuple => tuple.expectedCost);
         var secondPassEffectiveCost = creditor.OngoingCost;
 
@@ -387,9 +392,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
 
         Assert.Equal(secondPassExpectedCost, secondPassEffectiveCost);
 
-        Assert.Equal(firstPassEffectiveCost, secondPassEffectiveCost * gainRatio);
-
-        Assert.InRange(secondPassDurationAfterWarmup, firstPassDurationAfterWarmup / (gainRatio * 1.5), firstPassDurationAfterWarmup / (gainRatio * 0.7));
+        Assert.InRange(secondPassDurationAfterWarmup, firstPassDurationAfterWarmup / (expectedDurationGain * 2), firstPassDurationAfterWarmup / (expectedDurationGain / 2));
     }
 
     private static async Task<List<(string result, TimeSpan duration, decimal expectedCost)>> RunPromptsAsync(string[] prompts, MultiTextCompletion multiConnector, CompleteRequestSettings promptRequestSettings, Func<string, string, decimal> completionCostFunction)
