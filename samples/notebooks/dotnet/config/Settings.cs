@@ -59,7 +59,7 @@ public static class Settings
             else
             {
                 // Use the best model by default, and reduce the setup friction, particularly in VS Studio.
-                model = "text-davinci-003";
+                model = "gpt-3.5-turbo";
             }
         }
 
