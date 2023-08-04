@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
-import com.microsoft.semantickernel.ai.EmbeddingVector;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 
 import reactor.core.publisher.Mono;
@@ -163,12 +162,8 @@ public class VolatileMemoryStore implements MemoryStore {
         return Mono.empty();
     }
 
-    @SuppressWarnings("UnnecessaryLambda")
-    private static final ToDoubleFunction<Tuple2<MemoryRecord, ? extends Number>>
-            extractSimilarity = tuple -> tuple.getT2().doubleValue();
-
     @Override
-    public Mono<Collection<Tuple2<MemoryRecord, Number>>> getNearestMatchesAsync(
+    public Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             int limit,
@@ -184,15 +179,11 @@ public class VolatileMemoryStore implements MemoryStore {
             return Mono.just(Collections.emptyList());
         }
 
-        final EmbeddingVector embeddingVector = new EmbeddingVector(embedding.getVector());
-
-        Collection<Tuple2<MemoryRecord, Number>> nearestMatches = new ArrayList<>();
+        Collection<Tuple2<MemoryRecord, Float>> nearestMatches = new ArrayList<>();
         collection.values().forEach(
                 record -> {
                     if (record != null) {
-                        EmbeddingVector recordVector =
-                                new EmbeddingVector(record.getEmbedding().getVector());
-                        double similarity = embeddingVector.cosineSimilarity(recordVector);
+                        float similarity = embedding.cosineSimilarity(record.getEmbedding());
                         if (similarity >= minRelevanceScore) {
                             if (withEmbeddings) {
                                 nearestMatches.add(Tuples.of(record, similarity));
@@ -210,17 +201,17 @@ public class VolatileMemoryStore implements MemoryStore {
                     }
                 });
 
-        List<Tuple2<MemoryRecord, Number>> result =
+        List<Tuple2<MemoryRecord, Float>> result =
                 nearestMatches.stream()
-                        .sorted(Comparator.comparingDouble(extractSimilarity).reversed())
-                        .limit(limit)
-                        .collect(Collectors.toList());
+                    .sorted(Comparator.comparing(Tuple2::getT2, (a,b) -> Float.compare(b, a)))
+                    .limit(limit)
+                    .collect(Collectors.toList());
 
         return Mono.just(result);
     }
 
     @Override
-    public Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(
+    public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             double minRelevanceScore,

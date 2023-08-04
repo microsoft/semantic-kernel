@@ -83,7 +83,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
     }
 
     private static final Function<
-                    Collection<Tuple2<MemoryRecord, Number>>, Mono<List<MemoryQueryResult>>>
+                    Collection<Tuple2<MemoryRecord, Float>>, Mono<List<MemoryQueryResult>>>
             transformMatchesToResults =
                     records -> {
                         if (records.isEmpty()) {
@@ -93,7 +93,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                 records.stream()
                                         .map(
                                                 record -> {
-                                                    Tuple2<MemoryRecord, ? extends Number> tuple =
+                                                    Tuple2<MemoryRecord, Float> tuple =
                                                             record;
                                                     MemoryRecord memoryRecord = tuple.getT1();
                                                     Number relevanceScore = tuple.getT2();

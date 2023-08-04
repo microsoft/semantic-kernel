@@ -389,7 +389,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
                                 collection, compareEmbedding, topN, threshold, false)
@@ -477,7 +477,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
                                 collection, compareEmbedding, i / 2, threshold, false)
@@ -557,7 +557,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
@@ -577,7 +577,7 @@ class VolatileMemoryStoreTests {
 
         // Act
         double threshold = -1;
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
                                 collection, compareEmbedding, Integer.MAX_VALUE, threshold, false)
@@ -802,7 +802,7 @@ class VolatileMemoryStoreTests {
         }
 
         // Act
-        Collection<Tuple2<MemoryRecord, Number>> topNResults =
+        Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true)
                         .block();
@@ -815,9 +815,9 @@ class VolatileMemoryStoreTests {
         // Assert
         assertEquals(topN, topNResults.size());
         assertEquals(topN, topNKeys.size());
-        for (Iterator<Tuple2<MemoryRecord, Number>> iterator = topNResults.iterator();
+        for (Iterator<Tuple2<MemoryRecord, Float>> iterator = topNResults.iterator();
                 iterator.hasNext(); ) {
-            Tuple2<MemoryRecord, Number> tuple = iterator.next();
+            Tuple2<MemoryRecord, Float> tuple = iterator.next();
             int compare = Double.compare(tuple.getT2().doubleValue(), 0.75);
             assertTrue(topNKeys.contains(tuple.getT1().getKey()));
             assertTrue(compare >= 0);
