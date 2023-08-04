@@ -76,17 +76,13 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public async Task ItCannotCreateDuplicateCollectionAsync()
+    public async Task ItHandlesExceptionsWhenCreatingCollectionAsync()
     {
         // Arrange
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-
-        // Act
-        await this._db.CreateCollectionAsync(collection);
+        string? collection = null;
 
         // Assert
-        await Assert.ThrowsAsync<SKException>(async () => await this._db.CreateCollectionAsync(collection));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await this._db.CreateCollectionAsync(collection!));
     }
 
     [Fact]
