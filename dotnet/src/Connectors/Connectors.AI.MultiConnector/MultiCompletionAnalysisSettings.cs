@@ -28,7 +28,7 @@ PROMPT:
 {prompt}
 RESPONSE:
 ---------
-{reponse}
+{response}
 RESPONSE IS VALID? (true/false):
 --------------------------------
 ";
@@ -214,7 +214,7 @@ RESPONSE IS VALID? (true/false):
         // Load evaluation results
         lock (this._analysisFileLock)
         {
-            if (!File.Exists(this.AnalysisFilePath))
+            if (File.Exists(this.AnalysisFilePath))
             {
                 var json = File.ReadAllText(this.AnalysisFilePath);
                 completionAnalysis = JsonSerializer.Deserialize<MultiCompletionAnalysis>(json) ?? new MultiCompletionAnalysis();
@@ -254,7 +254,7 @@ RESPONSE IS VALID? (true/false):
                 promptConnectorSettings.VettingConnector = evaluationsByMainConnector.Key;
                 var vetted = evaluationsByMainConnector.All(e => e.IsVetted);
                 var vettedVaried = !evaluationsByMainConnector.GroupBy(evaluation => evaluation.Test.Prompt).Any(grouping => grouping.Count() > 1);
-                promptConnectorSettings.VettingLevel = vetted ? vettedVaried ? VettingLevel.Oracle : VettingLevel.OracleVaried : VettingLevel.Invalid;
+                promptConnectorSettings.VettingLevel = vetted ? vettedVaried ? VettingLevel.OracleVaried : VettingLevel.Oracle : VettingLevel.Invalid;
             }
         }
 
@@ -302,8 +302,10 @@ RESPONSE IS VALID? (true/false):
         if (this._vettingCaptureRegex == null)
         {
             var vettingPattern = Regex.Escape(this.VettingPromptTemplate)
-                .Replace(@"\{prompt\}", "(?<prompt>.+?)")
-                .Replace(@"\{reponse\}", "(?<response>.+?)");
+                                     .Replace(Regex.Escape("{prompt}"), "(?<prompt>[\\s\\S]+?)")
+                                     .Replace(Regex.Escape("{response}"), "(?<response>[\\s\\S]+?)")
+                                 // Append a pattern to account for the rest of the text
+                                 + "[\\s\\S]*";
 
             // RegexOptions.Singleline makes the '.' special character match any character (including \n)
             this._vettingCaptureRegex = new Regex(vettingPattern, RegexOptions.Singleline);
@@ -312,4 +314,7 @@ RESPONSE IS VALID? (true/false):
         var capture = this._vettingCaptureRegex.Match(vettingPrompt);
         return (capture.Groups["prompt"].Value.Trim(), capture.Groups["response"].Value.Trim());
     }
+
+
+
 }

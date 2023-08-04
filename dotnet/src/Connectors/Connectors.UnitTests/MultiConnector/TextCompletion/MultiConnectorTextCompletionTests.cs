@@ -163,12 +163,6 @@ public class ArithmeticCompletionService : ITextCompletion
 public abstract class ArithmeticStreamingResultBase : ITextStreamingResult
 {
     private ModelResult? _modelResult;
-    private readonly TimeSpan _callTime;
-
-    protected ArithmeticStreamingResultBase(TimeSpan callTime)
-    {
-        this._callTime = callTime;
-    }
 
     public ModelResult ModelResult => this._modelResult ?? this.GenerateModelResult();
 
@@ -176,7 +170,6 @@ public abstract class ArithmeticStreamingResultBase : ITextStreamingResult
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
-        await Task.Delay(this._callTime, cancellationToken);
         this._modelResult = this.GenerateModelResult();
         return this.ModelResult?.GetResult<string>() ?? string.Empty;
     }
@@ -188,11 +181,8 @@ public abstract class ArithmeticStreamingResultBase : ITextStreamingResult
         string resultText = this.ModelResult.GetResult<string>();
         // Your model logic here
         var streamedOutput = resultText.Split(' ');
-        var streamDelay = this._callTime.TotalMilliseconds / streamedOutput.Length;
-        var streamDelayTimeSpan = TimeSpan.FromMilliseconds(streamDelay);
         foreach (string word in streamedOutput)
         {
-            await Task.Delay(streamDelayTimeSpan, cancellationToken);
             yield return $"{word} ";
         }
     }
@@ -204,7 +194,7 @@ public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
     private ArithmeticEngine _engine;
     private readonly MultiCompletionAnalysisSettings _analysisSettings;
 
-    public ArithmeticVettingStreamingResult(MultiCompletionAnalysisSettings analysisSettings, string prompt, ArithmeticEngine engine, TimeSpan callTime) : base(callTime)
+    public ArithmeticVettingStreamingResult(MultiCompletionAnalysisSettings analysisSettings, string prompt, ArithmeticEngine engine, TimeSpan callTime) : base()
     {
         this._analysisSettings = analysisSettings;
         this._prompt = prompt;
@@ -213,15 +203,23 @@ public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
 
     protected override ModelResult GenerateModelResult()
     {
-        var analysisComponents = this._analysisSettings.CaptureVettingPromptComponents(this._prompt);
+        try
+        {
+            var analysisComponents = this._analysisSettings.CaptureVettingPromptComponents(this._prompt);
 
-        var operation = ArithmeticEngine.ParsePrompt(analysisComponents.prompt);
-        var correctResult = ArithmeticEngine.Compute(operation.operation, operation.operand1, operation.operand2);
-        var connectorResult = int.Parse(analysisComponents.response, CultureInfo.InvariantCulture);
+            var operation = ArithmeticEngine.ParsePrompt(analysisComponents.prompt);
+            var correctResult = ArithmeticEngine.Compute(operation.operation, operation.operand1, operation.operand2);
+            var connectorResult = int.Parse(analysisComponents.response, CultureInfo.InvariantCulture);
 
-        var result = (correctResult == connectorResult).ToString(CultureInfo.InvariantCulture);
+            var result = (correctResult == connectorResult).ToString(CultureInfo.InvariantCulture);
 
-        return new ModelResult(result);
+            return new ModelResult(result);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }
 
@@ -230,7 +228,7 @@ public class ArithmeticComputingStreamingResult : ArithmeticStreamingResultBase
     private readonly string _prompt;
     private readonly ArithmeticEngine _engine;
 
-    public ArithmeticComputingStreamingResult(string prompt, ArithmeticEngine engine, TimeSpan callTime) : base(callTime)
+    public ArithmeticComputingStreamingResult(string prompt, ArithmeticEngine engine, TimeSpan callTime) : base()
     {
         this._prompt = prompt;
         this._engine = engine;
@@ -315,8 +313,8 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
             PromptTruncationLength = 11
         };
 
-        var gainRatio = 2;
-        var primaryCallDuration = TimeSpan.FromMilliseconds(100);
+        var gainRatio = 4;
+        var primaryCallDuration = TimeSpan.FromMilliseconds(1);
         var primaryCostPerRequest = 0.1m;
         var secondaryCallDuration = primaryCallDuration / gainRatio;
         var secondaryCostPerRequest = primaryCostPerRequest / gainRatio;
@@ -340,23 +338,34 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
 
         var promptResultsPrimary = new List<(string result, TimeSpan duration, decimal cost)>();
 
+        // Create a task completion source to signal the completion of the optimization
+        var optimizationCompletedTaskSource = new TaskCompletionSource<bool>();
+
+        // Subscribe to the OptimizationCompleted event
+        multiConnector.OptimizationCompleted += (sender, args) =>
+        {
+            // Signal the completion of the optimization
+            optimizationCompletedTaskSource.SetResult(true);
+        };
+
         var primaryResults = await RunPromptsAsync(prompts, stopWatch, multiConnector, requestSettings, completions[0].GetCost);
 
         stopWatch.Stop();
         var elapsed = stopWatch.Elapsed;
 
         var primaryCreditorOngoingCost = creditor.OngoingCost;
-        creditor.Reset();
 
-        //Wait for analysis to complete
-        await Task.Delay(50, cancellationToken);
+        // Wait for the optimization to complete
+        await optimizationCompletedTaskSource.Task;
+
+        creditor.Reset();
 
         // Redo the same requests with the new settings
         var secondaryResults = await RunPromptsAsync(prompts, stopWatch, multiConnector, requestSettings, completions[1].GetCost);
 
         var secondCreditorOngoingCost = creditor.OngoingCost;
 
-        //Assert
+        // Assert
 
         for (int index = 0; index < prompts.Length; index++)
         {
