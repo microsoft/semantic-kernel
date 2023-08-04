@@ -67,6 +67,11 @@ RESPONSE IS VALID? (true/false):
     public TimeSpan AnalysisPeriod { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
+    /// Duration before analysis is started when a new event is recorded
+    /// </summary>
+    public TimeSpan AnalysisDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
     /// Indicates whether to update suggested settings after analysis
     /// </summary>
     public bool UpdateSuggestedSettings { get; set; } = true;
@@ -75,6 +80,11 @@ RESPONSE IS VALID? (true/false):
     /// Indicates whether to save suggested settings after analysis
     /// </summary>
     public bool SaveSuggestedSettings { get; set; } = true;
+
+    /// <summary>
+    /// Indicates whether to Analysis file with evaluations can be deleted after new suggested settings are saved or applied
+    /// </summary>
+    public bool DeleteAnalysisFile { get; set; } = true;
 
     /// <summary>
     ///  Path to save the MultiTextCompletion settings
@@ -101,6 +111,8 @@ RESPONSE IS VALID? (true/false):
     /// </summary>
     public async Task EvaluatePromptConnectorsAsync(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
+        
+
         var promptSettings = settings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings);
 
         promptSettings.IsTesting = true;
@@ -132,9 +144,9 @@ RESPONSE IS VALID? (true/false):
                     var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
                     tests.Add(connectorTest);
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    logger?.LogError("Failed to test prompt with connector.\nPrompt:\n {0}\nConnector: {1} ", originalTest.Prompt, namedTextCompletion.Name);
+                    logger?.LogError(exception, "Failed to test prompt with connector.\nPrompt:\n {0}\nConnector: {1} ", originalTest.Prompt, namedTextCompletion.Name);
                 }
             }
         }
@@ -193,6 +205,17 @@ RESPONSE IS VALID? (true/false):
                 var settingsJson = JsonSerializer.Serialize(newSettings, new JsonSerializerOptions() { WriteIndented = true });
                 File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
             }
+
+            if (this.DeleteAnalysisFile)
+            {
+                lock (this._analysisFileLock)
+                {
+                    if (File.Exists(this.AnalysisFilePath))
+                    {
+                        File.Delete(this.AnalysisFilePath);
+                    }
+                }
+            }
         }
 
         promptSettings.IsTesting = false;
@@ -247,7 +270,7 @@ RESPONSE IS VALID? (true/false):
                 var connectorName = connectorEvaluations.Key;
                 var promptConnectorSettings = promptEvaluations.Key.GetConnectorSettings(connectorName);
 
-                promptConnectorSettings.Evaluations = connectorEvaluations.ToList();
+                //promptConnectorSettings.Evaluations = connectorEvaluations.ToList();
                 promptConnectorSettings.AverageDuration = TimeSpan.FromMilliseconds(connectorEvaluations.Average(e => e.Test.Duration.TotalMilliseconds));
                 promptConnectorSettings.AverageCost = connectorEvaluations.Average(e => e.Test.Cost);
                 var evaluationsByMainConnector = connectorEvaluations.GroupBy(e => e.VettingConnector).OrderByDescending(grouping => grouping.Count()).First();
@@ -314,7 +337,4 @@ RESPONSE IS VALID? (true/false):
         var capture = this._vettingCaptureRegex.Match(vettingPrompt);
         return (capture.Groups["prompt"].Value.Trim(), capture.Groups["response"].Value.Trim());
     }
-
-
-
 }

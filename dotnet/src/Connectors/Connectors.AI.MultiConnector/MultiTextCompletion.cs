@@ -143,12 +143,14 @@ public class MultiTextCompletion : ITextCompletion
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        await Task.Delay(this._settings.AnalysisSettings.AnalysisDelay, cancellationToken).ConfigureAwait(false);
                         // Evaluate the test
                         await this._settings.AnalysisSettings.EvaluatePromptConnectorsAsync(connectorTest, this._textCompletions, this._settings, this._logger, cancellationToken).ConfigureAwait(false);
-                        // Raise the event after optimization is done
-                        this.OnOptimizationCompleted();
                     }
                 }
+
+                // Raise the event after optimization is done
+                this.OnOptimizationCompleted();
             }
         }
         catch (OperationCanceledException exception)
@@ -162,7 +164,7 @@ public class MultiTextCompletion : ITextCompletion
     }
 
     // Define the event
-    public event EventHandler OptimizationCompleted;
+    public event EventHandler? OptimizationCompleted;
 
     // Method to raise the event
     protected virtual void OnOptimizationCompleted()

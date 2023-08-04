@@ -30,8 +30,8 @@ public class PromptConnectorSettings
     /// </summary>
     public decimal AverageCost { get; set; }
 
-    /// <summary>
-    /// the evaluations that were performed on the connector for the prompt type
-    /// </summary>
-    public List<ConnectorPromptEvaluation> Evaluations { get; set; } = new();
+    ///// <summary>
+    ///// the evaluations that were performed on the connector for the prompt type
+    ///// </summary>
+    //public List<ConnectorPromptEvaluation> Evaluations { get; set; } = new();
 }

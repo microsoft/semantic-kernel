@@ -127,7 +127,6 @@ public class ArithmeticCompletionService : ITextCompletion
 
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        this.Creditor.Credit(this.CostPerRequest);
         ArithmeticStreamingResultBase streamingResult = await this.ComputeResultAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
         return new List<ITextResult>
         {
@@ -137,14 +136,13 @@ public class ArithmeticCompletionService : ITextCompletion
 
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.Creditor.Credit(this.CostPerRequest);
         ArithmeticStreamingResultBase streamingResult = await this.ComputeResultAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
         yield return streamingResult;
     }
 
     private async Task<ArithmeticStreamingResultBase> ComputeResultAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        await Task.Delay(this.CallTime, cancellationToken);
+        await Task.Delay(this.CallTime, cancellationToken).ConfigureAwait(false);
         var isVetting = this.VettingPromptSettings.PromptType.Signature.Matches(text, requestSettings);
         ArithmeticStreamingResultBase streamingResult;
         if (isVetting)
@@ -153,6 +151,7 @@ public class ArithmeticCompletionService : ITextCompletion
         }
         else
         {
+            this.Creditor.Credit(this.CostPerRequest);
             streamingResult = new ArithmeticComputingStreamingResult(text, this.Engine, this.CallTime);
         }
 
@@ -164,19 +163,19 @@ public abstract class ArithmeticStreamingResultBase : ITextStreamingResult
 {
     private ModelResult? _modelResult;
 
-    public ModelResult ModelResult => this._modelResult ?? this.GenerateModelResult();
+    public ModelResult ModelResult => this._modelResult ?? this.GenerateModelResult().Result;
 
-    protected abstract ModelResult GenerateModelResult();
+    protected abstract Task<ModelResult> GenerateModelResult();
 
     public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
-        this._modelResult = this.GenerateModelResult();
+        this._modelResult = await this.GenerateModelResult();
         return this.ModelResult?.GetResult<string>() ?? string.Empty;
     }
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this._modelResult = this.GenerateModelResult();
+        this._modelResult = await this.GenerateModelResult();
 
         string resultText = this.ModelResult.GetResult<string>();
         // Your model logic here
@@ -201,7 +200,7 @@ public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
         this._engine = engine;
     }
 
-    protected override ModelResult GenerateModelResult()
+    protected async override Task<ModelResult> GenerateModelResult()
     {
         try
         {
@@ -234,7 +233,7 @@ public class ArithmeticComputingStreamingResult : ArithmeticStreamingResultBase
         this._engine = engine;
     }
 
-    protected override ModelResult GenerateModelResult()
+    protected async override Task<ModelResult> GenerateModelResult()
     {
         var result = this._engine.Run(this._prompt);
         return new ModelResult(result);
@@ -299,26 +298,35 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
     [Fact]
     public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync()
     {
-        CancellationToken cancellationToken = default;
+        //Arrange
 
+        //We configure settings to enable analysis, and let the connector discover the best settings, updating on the fly and deleting analysis file 
         var settings = new MultiTextCompletionSettings()
         {
             AnalysisSettings = new MultiCompletionAnalysisSettings()
             {
                 EnableAnalysis = true,
-                AnalysisPeriod = TimeSpan.FromTicks(1),
+                NbPromptTests = 3,
+                AnalysisPeriod = TimeSpan.FromMilliseconds(10),
+                AnalysisDelay = TimeSpan.FromMilliseconds(10),
                 UpdateSuggestedSettings = true,
+                DeleteAnalysisFile = true,
+                SaveSuggestedSettings = false
             },
             PromptTruncationLength = 11
         };
 
-        var gainRatio = 4;
-        var primaryCallDuration = TimeSpan.FromMilliseconds(1);
+        // We configure a primary completion with default performances and cost, secondary completion have a gain of 2 in performances and in cost, but they can only handle a single operation each
+        var gainRatio = 2;
+
+        var primaryCallDuration = TimeSpan.FromMilliseconds(2);
         var primaryCostPerRequest = 0.1m;
+
         var secondaryCallDuration = primaryCallDuration / gainRatio;
         var secondaryCostPerRequest = primaryCostPerRequest / gainRatio;
+
         var creditor = new CallRequestCostCreditor();
-        //Arrange
+
         var completions = this.CreateCompletions(settings, primaryCallDuration, primaryCostPerRequest, secondaryCallDuration, secondaryCostPerRequest, creditor);
 
         var prompts = Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().Select(arithmeticOperation => ArithmeticEngine.GeneratePrompt(arithmeticOperation, 8, 2)).ToArray();
@@ -329,13 +337,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
             MaxTokens = 10
         };
 
-        //Act
-
         var multiConnector = new MultiTextCompletion(settings, completions[0], CancellationToken.None, this._logger, completions.Skip(1).ToArray());
-
-        var stopWatch = new Stopwatch();
-
-        var promptResultsPrimary = new List<(string result, TimeSpan duration, decimal cost)>();
 
         // Create a task completion source to signal the completion of the optimization
         var optimizationCompletedTaskSource = new TaskCompletionSource<bool>();
@@ -347,12 +349,14 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
             optimizationCompletedTaskSource.SetResult(true);
         };
 
-        var primaryResults = await RunPromptsAsync(prompts, stopWatch, multiConnector, requestSettings, completions[0].GetCost);
+        //Act
 
-        stopWatch.Stop();
-        var elapsed = stopWatch.Elapsed;
+        var primaryResults = await RunPromptsAsync(prompts, multiConnector, requestSettings, completions[0].GetCost).ConfigureAwait(false);
 
-        var primaryCreditorOngoingCost = creditor.OngoingCost;
+        var firstPassEffectiveCost = creditor.OngoingCost;
+        decimal firstPassExpectedCost = primaryResults.Sum(tuple => tuple.expectedCost);
+        //We remove the first prompt in time measurement because it is longer on first pass due to warmup
+        var firstPassDurationAfterWarmup = TimeSpan.FromTicks(primaryResults.Skip(1).Sum(tuple => tuple.duration.Ticks));
 
         // Wait for the optimization to complete
         await optimizationCompletedTaskSource.Task;
@@ -360,9 +364,13 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         creditor.Reset();
 
         // Redo the same requests with the new settings
-        var secondaryResults = await RunPromptsAsync(prompts, stopWatch, multiConnector, requestSettings, completions[1].GetCost);
+        var secondaryResults = await RunPromptsAsync(prompts, multiConnector, requestSettings, completions[1].GetCost).ConfigureAwait(false);
+        decimal secondPassExpectedCost = secondaryResults.Sum(tuple => tuple.expectedCost);
+        var secondPassEffectiveCost = creditor.OngoingCost;
 
-        var secondCreditorOngoingCost = creditor.OngoingCost;
+        //We also remove the first prompt in time measurement on second pass to align comparison
+
+        var secondPassDurationAfterWarmup = TimeSpan.FromTicks(secondaryResults.Skip(1).Sum(tuple => tuple.duration.Ticks));
 
         // Assert
 
@@ -375,18 +383,22 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
             Assert.Equal(realResult, secondaryResults[index].result);
         }
 
-        Assert.Equal(primaryResults.Sum(tuple => tuple.expectedCost), primaryCreditorOngoingCost);
-        Assert.Equal(secondaryResults.Sum(tuple => tuple.expectedCost), secondCreditorOngoingCost);
+        Assert.Equal(firstPassExpectedCost, firstPassEffectiveCost);
+
+        Assert.Equal(secondPassExpectedCost, secondPassEffectiveCost);
+
+        Assert.Equal(firstPassEffectiveCost, secondPassEffectiveCost * gainRatio);
+
+        Assert.InRange(secondPassDurationAfterWarmup, firstPassDurationAfterWarmup / (gainRatio * 1.5), firstPassDurationAfterWarmup / (gainRatio * 0.7));
     }
 
-    private static async Task<List<(string result, TimeSpan duration, decimal expectedCost)>> RunPromptsAsync(string[] prompts, Stopwatch stopWatch, MultiTextCompletion multiConnector, CompleteRequestSettings promptRequestSettings, Func<string, string, decimal> completionCostFunction)
+    private static async Task<List<(string result, TimeSpan duration, decimal expectedCost)>> RunPromptsAsync(string[] prompts, MultiTextCompletion multiConnector, CompleteRequestSettings promptRequestSettings, Func<string, string, decimal> completionCostFunction)
     {
         List<(string result, TimeSpan duration, decimal expectedCost)> toReturn = new();
         foreach (var prompt in prompts)
         {
-            stopWatch.Reset();
-            stopWatch.Start();
-            var result = await multiConnector.CompleteAsync(prompt, promptRequestSettings);
+            var stopWatch = Stopwatch.StartNew();
+            var result = await multiConnector.CompleteAsync(prompt, promptRequestSettings).ConfigureAwait(false);
             stopWatch.Stop();
             var duration = stopWatch.Elapsed;
             var cost = completionCostFunction(prompt, result);
