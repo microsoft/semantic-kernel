@@ -178,6 +178,6 @@ public class SqliteMemoryStoreTest {
 
         Assertions.assertNotNull(matches);
         Assertions.assertEquals(1, matches.size());
-        Assertions.assertEquals(embedding, matches.iterator().next().getT1().getEmbedding());
+        Assertions.assertEquals(embedding.getVector(), matches.iterator().next().getT1().getEmbedding().getVector());
     }
 }

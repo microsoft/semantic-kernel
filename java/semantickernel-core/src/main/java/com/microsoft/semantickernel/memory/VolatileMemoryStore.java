@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
-import com.microsoft.semantickernel.ai.embeddings.EmbeddingVector;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 
 import reactor.core.publisher.Mono;
@@ -201,15 +200,12 @@ public class VolatileMemoryStore implements MemoryStore {
             return Collections.emptyList();
         }
 
-        final EmbeddingVector embeddingVector = embedding.getVector();
-
         Collection<Tuple2<MemoryRecord, Float>> nearestMatches = new ArrayList<>();
         collection.values().forEach(
                 record -> {
                     if (record != null) {
-                        EmbeddingVector recordVector =
-                                record.getEmbedding().getVector();
-                        float similarity = embeddingVector.cosineSimilarity(recordVector);
+
+                        float similarity = embedding.cosineSimilarity(record.getEmbedding());
                         if (Float.compare(similarity,(float)minRelevanceScore) >= 0) {
                             if (withEmbeddings) {
                                 nearestMatches.add(Tuples.of(record, similarity));

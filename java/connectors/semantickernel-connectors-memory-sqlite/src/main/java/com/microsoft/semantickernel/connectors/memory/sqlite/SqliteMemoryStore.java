@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.connectors.memory.sqlite;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-import com.microsoft.semantickernel.ai.embeddings.EmbeddingVector;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
 
@@ -176,7 +175,6 @@ public class SqliteMemoryStore implements MemoryStore {
 
         return entries.flatMap(
                 databaseEntries -> {
-                    EmbeddingVector embeddingVector = embedding.getVector();
                     List<Tuple2<MemoryRecord, Float>> results = new ArrayList<>();
                     for (Database.DatabaseEntry entry : databaseEntries) {
                         if (entry.getEmbedding() == null || entry.getEmbedding().isEmpty()) {
@@ -186,15 +184,15 @@ public class SqliteMemoryStore implements MemoryStore {
                             Embedding recordEmbedding =
                                     new ObjectMapper()
                                             .readValue(entry.getEmbedding(), Embedding.class);
-                            float relevanceScore = embeddingVector.cosineSimilarity(recordEmbedding.getVector());
-                            if (relevanceScore >= minRelevanceScore) {
+                            float similarity = embedding.cosineSimilarity(recordEmbedding);
+                            if (Float.compare(similarity,(float)minRelevanceScore) >= 0) {
                                 MemoryRecord record =
                                         MemoryRecord.fromJsonMetadata(
                                                 entry.getMetadata(),
                                                 recordEmbedding,
                                                 entry.getKey(),
                                                 entry.getTimestamp());
-                                results.add(Tuples.of(record, relevanceScore));
+                                results.add(Tuples.of(record, similarity));
                             }
                         } catch (JsonProcessingException e) {
                             throw new RuntimeException(e);
@@ -210,7 +208,15 @@ public class SqliteMemoryStore implements MemoryStore {
             @Nonnull Embedding embedding,
             double minRelevanceScore,
             boolean withEmbedding) {
-        return null;
+      return getNearestMatchesAsync(
+          collectionName, embedding, 1, minRelevanceScore, withEmbedding)
+          .flatMap(
+              nearestMatches -> {
+                if (nearestMatches.isEmpty()) {
+                  return Mono.empty();
+                }
+                return Mono.just(nearestMatches.iterator().next());
+              });
     }
 
     public static class Builder implements MemoryStore.Builder {

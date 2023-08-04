@@ -39,7 +39,7 @@ public class GuiceEmbeddingExample {
                 .block()
                 .forEach(
                         doubleEmbedding -> {
-                            doubleEmbedding.getRawVector().forEach(System.out::println);
+                            doubleEmbedding.getVector().forEach(System.out::println);
                         });
     }
 }

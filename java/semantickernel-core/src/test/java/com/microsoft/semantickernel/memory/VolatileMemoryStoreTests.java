@@ -152,11 +152,11 @@ class VolatileMemoryStoreTests {
         assertNotNull(actualDefault);
         assertNotNull(actualDefault.getEmbedding());
         assertNotNull(actualDefault.getEmbedding().getVector());
-        assertTrue(actualDefault.getEmbedding().getRawVector().isEmpty());
+        assertTrue(actualDefault.getEmbedding().getVector().isEmpty());
         assertNotNull(actualWithEmbedding);
         assertNotNull(actualWithEmbedding.getEmbedding());
         assertNotNull(actualWithEmbedding.getEmbedding().getVector());
-        assertFalse(actualWithEmbedding.getEmbedding().getRawVector().isEmpty());
+        assertFalse(actualWithEmbedding.getEmbedding().getVector().isEmpty());
         assertNotEquals(testRecord, actualDefault);
         assertEquals(testRecord, actualWithEmbedding);
     }
@@ -668,10 +668,10 @@ class VolatileMemoryStoreTests {
         assertNotNull(topNResultWithEmbedding);
         assertNotNull(topNResultDefault.getT1().getEmbedding());
         assertNotNull(topNResultDefault.getT1().getEmbedding().getVector());
-        assertTrue(topNResultDefault.getT1().getEmbedding().getRawVector().isEmpty());
+        assertTrue(topNResultDefault.getT1().getEmbedding().getVector().isEmpty());
         assertNotNull(topNResultWithEmbedding.getT1().getEmbedding());
         assertNotNull(topNResultWithEmbedding.getT1().getEmbedding().getVector());
-        assertFalse(topNResultWithEmbedding.getT1().getEmbedding().getRawVector().isEmpty());
+        assertFalse(topNResultWithEmbedding.getT1().getEmbedding().getVector().isEmpty());
     }
 
     @Test
