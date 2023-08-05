@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -151,7 +151,7 @@ public class QdrantMemoryStoreTests
         var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
 
         // Assert
-        await Assert.ThrowsAsync<QdrantMemoryException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
+        await Assert.ThrowsAsync<SKException>(() => vectorStore.UpsertAsync("test_collection", memoryRecord));
     }
 
     [Fact]

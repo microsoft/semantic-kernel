@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -258,9 +259,7 @@ public sealed class PineconeClient : IPineconeClient
     {
         if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                "Must provide at least one of ids, filter, or deleteAll");
+            throw new SKException("Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
@@ -583,16 +582,12 @@ public sealed class PineconeClient : IPineconeClient
 
         if (pineconeIndex == null)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.IndexNotFound,
-                "Index not found in Pinecone. Create index to perform operations with vectors.");
+            throw new SKException("Index not found in Pinecone. Create index to perform operations with vectors.");
         }
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.UnknownIndexHost,
-                $"Host of index {indexName} is unknown.");
+            throw new SKException($"Host of index {indexName} is unknown.");
         }
 
         this._logger.LogDebug("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);

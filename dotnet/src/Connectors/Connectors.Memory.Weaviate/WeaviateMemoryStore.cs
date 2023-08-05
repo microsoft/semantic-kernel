@@ -17,7 +17,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -116,16 +115,14 @@ public class WeaviateMemoryStore : IMemoryStore
 
             if (result == null || result.Description != description)
             {
-                throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.CollectionNameConflict,
-                    $"Name conflict for collection: {collectionName} with class name: {className}");
+                throw new SKException($"Name conflict for collection: {collectionName} with class name: {className}");
             }
 
             this._logger.LogDebug("Created collection: {0}, with class name: {1}", collectionName, className);
         }
         catch (HttpRequestException e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToCreateCollection,
-                $"Unable to create collection: {collectionName}, with class name: {className}", e);
+            throw new SKException($"Unable to create collection: {collectionName}, with class name: {className}", e);
         }
     }
 
@@ -160,7 +157,7 @@ public class WeaviateMemoryStore : IMemoryStore
                     // For example a collectionName of '__this_collection' and 'this_collection' are
                     // both transformed to the class name of <classNamePrefix>thiscollection - even though the external
                     // system could consider them as unique collection names.
-                    throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.CollectionNameConflict, $"Unable to verify existing collection: {collectionName} with class name: {className}");
+                    throw new SKException($"Unable to verify existing collection: {collectionName} with class name: {className}");
                 }
             }
 
@@ -168,7 +165,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (Exception e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToGetClass, "Unable to get class from Weaviate", e);
+            throw new SKException("Unable to get class from Weaviate", e);
         }
     }
 
@@ -186,13 +183,13 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (Exception e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToListCollections, "Unable to list collections", e);
+            throw new SKException("Unable to list collections", e);
         }
 
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
         if (getSchemaResponse == null)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToListCollections, "Unable to deserialize list collections response");
+            throw new SKException("Unable to deserialize list collections response");
         }
 
         foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
@@ -220,7 +217,7 @@ public class WeaviateMemoryStore : IMemoryStore
             }
             catch (Exception e)
             {
-                throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToDeleteCollection, "Collection deletion failed", e);
+                throw new SKException("Collection deletion failed", e);
             }
         }
     }
@@ -258,14 +255,14 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (HttpRequestException e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToUpsertVectors, e);
+            throw new SKException("Failed to upsert vectors", e);
         }
 
         BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions);
 
         if (result == null)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToUpsertVectors, "Unable to deserialize batch response");
+            throw new SKException("Unable to deserialize batch response");
         }
 
         foreach (BatchResponse batchResponse in result)
@@ -367,7 +364,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (HttpRequestException e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToRemoveVectorData, "Vector delete request failed", e);
+            throw new SKException("Vector delete request failed", e);
         }
     }
 
@@ -426,7 +423,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (Exception e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToGetVectorData, "Unable to deserialize Weaviate object", e);
+            throw new SKException("Unable to deserialize Weaviate object", e);
         }
 
         foreach ((MemoryRecord, double) kv in result)
