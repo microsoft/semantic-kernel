@@ -325,16 +325,16 @@ class SQLiteMemoryStore(MemoryStoreBase):
                 if row[2] is None:
                     continue
                 vector = deserialize_embedding(row[2])
-                revelance = np.dot(vector, embedding)
-                if revelance < min_relevance_score:
+                relevance = np.dot(vector, embedding)
+                if relevance < min_relevance_score:
                     continue
                 if len(min_heap) == limit:
                     heapq.heappushpop(
-                        min_heap, (revelance, row, vector if with_embeddings else None)
+                        min_heap, (relevance, row, vector if with_embeddings else None)
                     )
                 else:
                     heapq.heappush(
-                        min_heap, (revelance, row, vector if with_embeddings else None)
+                        min_heap, (relevance, row, vector if with_embeddings else None)
                     )
 
             result = []
