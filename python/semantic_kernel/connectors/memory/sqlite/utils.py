@@ -75,7 +75,7 @@ def serialize_embedding(embedding: np.ndarray) -> str:
 
 
 # C# implementation uses `timestamp?.ToString("u", CultureInfo.InvariantCulture);` to serialize timestamps.
-# which is the below format accoridng to https://stackoverflow.com/questions/46778141/datetime-formats-used-in-invariantculture
+# which is the below format accordng to https://stackoverflow.com/questions/46778141/datetime-formats-used-in-invariantculture
 TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%fZ"
 
 

@@ -262,7 +262,7 @@ class SQLiteMemoryStore(MemoryStoreBase):
             return result
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
-        """Remove a batch of records idendified by collection name and keys
+        """Remove a batch of records identified by collection name and keys
 
         Arguments:
             collection_name {str} -- The name of the collection to delete.
@@ -281,7 +281,7 @@ class SQLiteMemoryStore(MemoryStoreBase):
             await self._conn.commit()
 
     async def remove_async(self, collection_name: str, key: str) -> None:
-        """Remove a record idendified by collection name and key
+        """Remove a record identified by collection name and key
 
         Arguments:
             collection_name {str} -- The name of the collection to delete.
