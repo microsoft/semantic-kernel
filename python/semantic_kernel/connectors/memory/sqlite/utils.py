@@ -1,12 +1,12 @@
 import json
-from datetime import datetime
 from collections import defaultdict
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from typing import Optional
-from semantic_kernel.memory.memory_record import MemoryRecord
-
-from dataclasses import dataclass, asdict
 
 import numpy as np
+
+from semantic_kernel.memory.memory_record import MemoryRecord
 
 
 @dataclass

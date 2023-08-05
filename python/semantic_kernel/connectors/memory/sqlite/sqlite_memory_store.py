@@ -1,22 +1,20 @@
-import aiosqlite as sqlite
-
+import heapq
 from logging import Logger
 from typing import List, Optional, Tuple
-import heapq
 
+import aiosqlite as sqlite
 import numpy as np
 
+from semantic_kernel.connectors.memory.sqlite.utils import (
+    Metadata,
+    deserialize_embedding,
+    deserialize_timestamp,
+    serialize_embedding,
+    serialize_timestamp,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
-from semantic_kernel.connectors.memory.sqlite.utils import (
-    deserialize_metadata,
-    deserialize_embedding,
-    deserialize_timestamp,
-    serialize_timestamp,
-    serialize_embedding,
-    Metadata,
-)
 
 TABLE_NAME = "SKMemoryTable"
 
@@ -29,7 +27,8 @@ class SQLiteMemoryStore(MemoryStoreBase):
     _logger: Logger
 
     def __init__(self, filepath: str, logger: Optional[Logger] = None) -> None:
-        """Initializes a new instance of the SQLiteMemoryStore class. DB connection is not established until connect() is called.
+        """Initializes a new instance of the SQLiteMemoryStore class. DB connection is not established until 
+        connect() is called.
 
         Arguments:
             filepath {str}: The path to the SQLite database file.
@@ -156,7 +155,8 @@ class SQLiteMemoryStore(MemoryStoreBase):
             f"""
                 INSERT INTO {TABLE_NAME}(collection, key, metadata, embedding, timestamp)
                 VALUES(?, ?, ?, ?, ?)
-                ON CONFLICT(collection, key) DO UPDATE SET metadata = excluded.metadata, embedding = excluded.embedding, timestamp = excluded.timestamp;
+                ON CONFLICT(collection, key) DO UPDATE SET metadata = excluded.metadata, 
+                embedding = excluded.embedding, timestamp = excluded.timestamp;
             """,
             map(
                 lambda r: (

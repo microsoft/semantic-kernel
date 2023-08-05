@@ -1,6 +1,6 @@
+import logging
 import os
 from datetime import datetime
-import logging
 
 import numpy as np
 import pytest
@@ -10,7 +10,7 @@ from semantic_kernel.connectors.memory.sqlite import SQLiteMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
-    import aiosqlite
+    import aiosqlite  # noqa: F401
 
     aiosqlite_installed = True
 except ImportError:
