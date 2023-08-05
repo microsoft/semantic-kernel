@@ -27,7 +27,7 @@ class SQLiteMemoryStore(MemoryStoreBase):
     _logger: Logger
 
     def __init__(self, filepath: str, logger: Optional[Logger] = None) -> None:
-        """Initializes a new instance of the SQLiteMemoryStore class. DB connection is not established until 
+        """Initializes a new instance of the SQLiteMemoryStore class. DB connection is not established until
         connect() is called.
 
         Arguments:
