@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -15,9 +17,9 @@ public class ArithmeticComputingStreamingResult : ArithmeticStreamingResultBase
         this._engine = engine;
     }
 
-    protected async override Task<ModelResult> GenerateModelResult()
+    protected override Task<ModelResult> GenerateModelResult()
     {
         var result = this._engine.Run(this._prompt);
-        return new ModelResult(result);
+        return Task.FromResult(new ModelResult(result));
     }
 }

@@ -160,6 +160,7 @@ public class MultiTextCompletion : ITextCompletion
         catch (Exception exception)
         {
             this._logger?.LogError(message: "OptimizeCompletionsAsync Optimize task failed with exception", exception: exception);
+            throw;
         }
     }
 

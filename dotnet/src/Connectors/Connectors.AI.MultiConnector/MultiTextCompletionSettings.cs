@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// </summary>
 public class MultiTextCompletionSettings
 {
-
     /// <summary>
     /// Loads suggested settings from an analysis.
     /// If the file doesn't exist, it returns the current settings.
@@ -107,5 +106,4 @@ public class MultiTextCompletionSettings
             return intResult;
         };
     }
-
 }

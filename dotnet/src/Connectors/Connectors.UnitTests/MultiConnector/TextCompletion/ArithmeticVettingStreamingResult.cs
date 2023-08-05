@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
@@ -19,7 +21,7 @@ public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
         this._engine = engine;
     }
 
-    protected async override Task<ModelResult> GenerateModelResult()
+    protected override Task<ModelResult> GenerateModelResult()
     {
         try
         {
@@ -31,7 +33,7 @@ public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
 
             var result = (correctResult == connectorResult).ToString(CultureInfo.InvariantCulture);
 
-            return new ModelResult(result);
+            return Task.FromResult(new ModelResult(result));
         }
         catch (Exception e)
         {

@@ -145,6 +145,7 @@ RESPONSE IS VALID? (true/false):
                 catch (Exception exception)
                 {
                     logger?.LogError(exception, "Failed to test prompt with connector.\nPrompt:\n {0}\nConnector: {1} ", originalTest.Prompt, namedTextCompletion.Name);
+                    throw;
                 }
             }
         }
