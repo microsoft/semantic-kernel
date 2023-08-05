@@ -20,8 +20,8 @@ public static class Example50_Chroma
 
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService(
-                modelId: TestConfiguration.OpenAI.ModelId,
+            .WithOpenAIChatCompletionService(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,

@@ -6,17 +6,19 @@ from typing import Optional, Tuple
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
 
-class TextBlock(Block, TextRenderer):
-    def __init__(
-        self,
+class TextBlock(Block):
+    @classmethod
+    def from_text(
+        cls,
         text: Optional[str] = None,
         start_index: Optional[int] = None,
         stop_index: Optional[int] = None,
         log: Optional[Logger] = None,
     ):
+        if text is None:
+            return cls(content="", log=log)
         if start_index is not None and stop_index is not None:
             if start_index > stop_index:
                 raise ValueError(
@@ -33,7 +35,7 @@ class TextBlock(Block, TextRenderer):
         elif stop_index is not None:
             text = text[:stop_index]
 
-        super().__init__(content=text, log=log)
+        return cls(content=text, log=log)
 
     @property
     def type(self) -> BlockTypes:
