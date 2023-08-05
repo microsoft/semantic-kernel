@@ -180,6 +180,7 @@ RESPONSE IS VALID? (true/false):
         //Save evaluations to file
 
         var completionAnalysis = new MultiCompletionAnalysis();
+        bool needAnalysis;
         lock (this._analysisFileLock)
         {
             if (File.Exists(this.AnalysisFilePath))
@@ -188,14 +189,19 @@ RESPONSE IS VALID? (true/false):
                 completionAnalysis = JsonSerializer.Deserialize<MultiCompletionAnalysis>(json) ?? completionAnalysis;
             }
 
-            completionAnalysis.Timestamp = DateTime.Now;
+            needAnalysis = (this.UpdateSuggestedSettings || this.SaveSuggestedSettings) && (DateTime.Now - completionAnalysis.Timestamp) > this.AnalysisPeriod;
+            if (needAnalysis)
+            {
+                completionAnalysis.Timestamp = DateTime.Now;
+            }
+
             completionAnalysis.Evaluations.AddRange(currentEvaluations);
             var jsonString = JsonSerializer.Serialize(completionAnalysis, new JsonSerializerOptions() { WriteIndented = true });
             File.WriteAllText(this.AnalysisFilePath, jsonString);
         }
 
         // If update or save suggested settings are enabled, suggest new settings from analysis and save them if needed
-        if (this.UpdateSuggestedSettings || this.SaveSuggestedSettings && (DateTime.Now - completionAnalysis.Timestamp) > this.AnalysisPeriod)
+        if (needAnalysis)
         {
             var newSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, cancellationToken);
             if (this.SaveSuggestedSettings)
