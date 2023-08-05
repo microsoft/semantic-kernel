@@ -262,6 +262,15 @@ class SQLiteMemoryStore(MemoryStoreBase):
             return result
 
     async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+        """Remove a batch of records idendified by collection name and keys
+
+        Arguments:
+            collection_name {str} -- The name of the collection to delete.
+            keys {List[str]} -- The keys of the records to delete.
+
+        Returns:
+            None
+        """
         async with self._conn.execute(
             f"""
                 DELETE FROM {TABLE_NAME} WHERE collection=? and key in (%s)
@@ -272,6 +281,15 @@ class SQLiteMemoryStore(MemoryStoreBase):
             await self._conn.commit()
 
     async def remove_async(self, collection_name: str, key: str) -> None:
+        """Remove a record idendified by collection name and key
+
+        Arguments:
+            collection_name {str} -- The name of the collection to delete.
+            keys {str} -- The key of the record to delete.
+
+        Returns:
+            None
+        """
         await self.remove_batch_async(collection_name, [key])
 
     async def get_nearest_matches_async(
@@ -282,6 +300,20 @@ class SQLiteMemoryStore(MemoryStoreBase):
         min_relevance_score: float,
         with_embeddings: bool,
     ) -> List[Tuple[MemoryRecord, float]]:
+        """Gets the nearest matches to an embedding vector using cosine similarity.
+        Because SQLite doesn't have built-in support for vector search, this is done by fetching all the embeddings
+        of the given collection. There is an extension sqlite-vss that supports vector search, but it's not stable yet.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the nearest matches from.
+            embedding {ndarray} -- The embedding to find the nearest matches to.
+            limit {int} -- The maximum number of matches to return.
+            min_relevance_score {float} -- The minimum relevance score of the matches.
+            with_embeddings {bool} -- Whether to include the embeddings in the results.
+
+        Returns:
+            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores in descending order.
+        """
         async with self._conn.execute_fetchall(
             f"""
                 SELECT key, metadata, embedding, timestamp FROM {TABLE_NAME} WHERE collection=?
@@ -333,6 +365,21 @@ class SQLiteMemoryStore(MemoryStoreBase):
         min_relevance_score: float,
         with_embedding: bool,
     ) -> Tuple[MemoryRecord, float]:
+        """Gets the nearest match to an embedding vector using cosine similarity.
+        Because SQLite doesn't have built-in support for vector search, this is done by fetching all the embeddings
+        of the given collection. There is an extension sqlite-vss that supports vector search, but it's not stable yet.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to get the nearest matches from.
+            embedding {ndarray} -- The embedding to find the nearest matches to.
+            limit {int} -- The maximum number of matches to return.
+            min_relevance_score {float} -- The minimum relevance score of the matches.
+            with_embeddings {bool} -- Whether to include the embeddings in the results.
+
+        Returns:
+            Tuple[MemoryRecord, float] -- The record and its relevance score.
+        """
+
         result = await self.get_nearest_matches_async(
             collection_name,
             embedding,
