@@ -76,6 +76,13 @@ class RedisMemoryStore(MemoryStoreBase):
         self._vector_type = np.float32 if vector_type == "FLOAT32" else np.float64
         self._vector_size = vector_size
 
+    async def close_async(self):
+        """
+        Closes the Redis database connection
+        """
+        self._logger.info("Closing Redis connection")
+        self._database.close()
+
     async def create_collection_async(self, collection_name: str) -> None:
         """
         Creates a collection, implemented as a Redis index containing hashes
