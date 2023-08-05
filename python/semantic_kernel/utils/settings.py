@@ -79,3 +79,21 @@ def pinecone_settings_from_dot_env() -> Tuple[str, str]:
     assert environment, "Pinecone environment not found in .env file"
 
     return api_key, environment
+
+
+def jinaai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+    """
+    Reads the OpenAI API key and organization ID from the .env file.
+
+    Returns:
+        Tuple[str, str]: The OpenAI API key, the OpenAI organization ID
+    """
+
+    config = dotenv_values(".env")
+    api_key = config.get("JINAAI_API_KEY", None)
+    org_id = config.get("JINAAI_ORG_ID", None)
+
+    assert api_key, "JinaAI API key not found in .env file"
+
+    # It's okay if the org ID is not found (not required)
+    return api_key, org_id
