@@ -301,8 +301,8 @@ public sealed class Kernel : IKernel, IDisposable
     private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger logger)
     {
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-        logger.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
-
+        logger.LogTrace($"Importing skill name: {skillName}. Potential methods found: {methods.Length}");
+    
         // Filter out non-SKFunctions and fail if two functions have the same name
         Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
         foreach (MethodInfo method in methods)
@@ -310,19 +310,21 @@ public sealed class Kernel : IKernel, IDisposable
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
                 ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, logger);
-                if (result.ContainsKey(function.Name))
+                try
+                {
+                    result.Add(function.Name, function);
+                }
+                catch (ArgumentException)
                 {
                     throw new KernelException(
                         KernelException.ErrorCodes.FunctionOverloadNotSupported,
                         "Function overloads are not supported, please differentiate function names");
                 }
-
-                result.Add(function.Name, function);
             }
         }
-
-        logger.LogTrace("Methods imported {0}", result.Count);
-
+    
+        logger.LogTrace($"Methods imported {result.Count}");
+    
         return result;
     }
 
