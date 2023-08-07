@@ -204,7 +204,6 @@ public class VolatileMemoryStore implements MemoryStore {
         collection.values().forEach(
                 record -> {
                     if (record != null) {
-
                         float similarity = embedding.cosineSimilarity(record.getEmbedding());
                         if (Float.compare(similarity,(float)minRelevanceScore) >= 0) {
                             if (withEmbeddings) {
