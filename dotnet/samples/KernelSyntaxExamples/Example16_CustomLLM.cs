@@ -20,6 +20,10 @@ using RepoUtils;
  * - You are not using OpenAI or Azure OpenAI models
  * - You are using OpenAI/Azure OpenAI models but the models are behind a web service with a different API schema
  * - You want to use a local model
+ *
+ * Note that all text completion models are deprecated by OpenAI and will be removed in a future release.
+ *
+ * Refer to example 33 for streaming chat completion.
  */
 public class MyTextCompletionService : ITextCompletion
 {
