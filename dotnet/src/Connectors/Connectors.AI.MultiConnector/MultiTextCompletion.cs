@@ -4,14 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -37,6 +35,7 @@ public class MultiTextCompletion : ITextCompletion
     /// <param name="settings">An instance of the <see cref="MultiTextCompletionSettings"/> to configure the multi Text completion.</param>
     /// <param name="mainTextCompletion">The primary text completion to used by default for completion calls and vetting other completion providers.</param>
     /// <param name="analysisTaskCancellationToken">The cancellation token to use for the completion manager.</param>
+    /// <param name="creditor">an optional cost counter that will compute the compound costs from settings and connector usage</param>
     /// <param name="logger">An optional logger for instrumentation.</param>
     /// <param name="otherCompletions">The secondary text completions that need vetting to be used for completion calls.</param>
     public MultiTextCompletion(MultiTextCompletionSettings settings, NamedTextCompletion mainTextCompletion, CancellationToken? analysisTaskCancellationToken, CallRequestCostCreditor? creditor = null, ILogger? logger = null, params NamedTextCompletion[] otherCompletions)
@@ -50,7 +49,7 @@ public class MultiTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc />
-   internal sealed class AsyncLazy<T> : Lazy<Task<T>>
+    private sealed class AsyncLazy<T> : Lazy<Task<T>>
     {
         public AsyncLazy(T value)
             : base(() => Task.FromResult(value))
@@ -63,7 +62,7 @@ public class MultiTextCompletion : ITextCompletion
         }
 
         public AsyncLazy(Func<Task<T>> taskFactory, CancellationToken cancellationToken)
-            : base(() => Task.Factory.StartNew( taskFactory, cancellationToken, TaskCreationOptions.None, TaskScheduler.Current).Unwrap()) 
+            : base(() => Task.Factory.StartNew(taskFactory, cancellationToken, TaskCreationOptions.None, TaskScheduler.Current).Unwrap())
         {
         }
     }

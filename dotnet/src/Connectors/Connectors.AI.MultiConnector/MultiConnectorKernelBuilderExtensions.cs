@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
 using System.Threading;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
@@ -36,7 +35,7 @@ public static class MultiConnectorKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (parameters) => new MultiTextCompletion(settings, mainTextCompletion, analysisTaskCancellationToken, logger: parameters.Logger,otherCompletions: otherCompletions), setAsDefault);
+        builder.WithAIService<ITextCompletion>(serviceId, (parameters) => new MultiTextCompletion(settings, mainTextCompletion, analysisTaskCancellationToken, logger: parameters.Logger, otherCompletions: otherCompletions), setAsDefault);
         return builder;
     }
 
