@@ -310,7 +310,11 @@ public sealed class SKFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, ITextCompletion? textCompletion = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null,
+        ITextCompletion? textCompletion = null,
+        CancellationToken cancellationToken = default)
     {
         if (this.IsSemantic)
         {
@@ -330,22 +334,6 @@ public sealed class SKFunction : ISKFunction, IDisposable
             context.LastException = e;
             return context;
         }
-    }
-
-    /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ITextCompletion? textCompletion = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        SKContext context = new(
-            new ContextVariables(input),
-            skills: this._skillCollection,
-            logger: logger);
-
-        return this.InvokeAsync(context, settings, textCompletion, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>

@@ -39,8 +39,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        var options = new OpenAIClientOptions();
-
+        var options = GetClientOptions();
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
@@ -69,7 +68,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        var options = new OpenAIClientOptions();
+        var options = GetClientOptions();
         if (httpClient != null)
         {
             options.Transport = new HttpClientTransport(httpClient);
@@ -81,6 +80,8 @@ public abstract class AzureOpenAIClientBase : ClientBase
 
     /// <summary>
     /// Creates a new Azure OpenAI client instance using the specified OpenAIClient
+    /// Note: instances created this way might not have the  default diagnostics settings,
+    /// it's up to the caller to configure the client.
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
@@ -88,13 +89,28 @@ public abstract class AzureOpenAIClientBase : ClientBase
     private protected AzureOpenAIClientBase(
         string modelId,
         OpenAIClient openAIClient,
-        ILogger? logger = null)
+        ILogger? logger = null) : base(logger)
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNull(openAIClient);
 
         this.ModelId = modelId;
         this.Client = openAIClient;
+    }
+
+    /// <summary>
+    /// Options used by the Azure OpenAI client, e.g. User Agent.
+    /// </summary>
+    private static OpenAIClientOptions GetClientOptions()
+    {
+        return new OpenAIClientOptions
+        {
+            Diagnostics =
+            {
+                IsTelemetryEnabled = Telemetry.IsTelemetryEnabled,
+                ApplicationId = Telemetry.HttpUserAgent,
+            }
+        };
     }
 
     /// <summary>

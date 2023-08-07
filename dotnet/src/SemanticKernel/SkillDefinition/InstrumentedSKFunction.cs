@@ -78,18 +78,6 @@ public sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ITextCompletion? textCompletion = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        return await this.InvokeWithInstrumentationAsync(() =>
-            this._function.InvokeAsync(input, settings, textCompletion, logger ?? this._logger, cancellationToken)).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings) =>
         this._function.SetAIConfiguration(settings);
 

@@ -41,6 +41,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
         this IKernel kernel,
         string skillName,
@@ -56,10 +57,9 @@ public static class KernelOpenApiExtensions
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
-        if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
-        {
-            requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
-        }
+        requestMessage.Headers.UserAgent.Add(!string.IsNullOrEmpty(executionParameters?.UserAgent)
+            ? ProductInfoHeaderValue.Parse(executionParameters!.UserAgent)
+            : ProductInfoHeaderValue.Parse(Telemetry.HttpUserAgent));
 
         using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -81,6 +81,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(
         this IKernel kernel,
         string skillName,
@@ -111,6 +112,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
@@ -149,6 +151,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(
         this IKernel kernel,
         string skillName,
@@ -177,6 +180,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(
         this IKernel kernel,
         Stream documentStream,
@@ -194,7 +198,8 @@ public static class KernelOpenApiExtensions
 
         var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 
-        var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
+        var userAgent = executionParameters?.UserAgent ?? Telemetry.HttpUserAgent;
+        var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, userAgent);
 
         var skill = new Dictionary<string, ISKFunction>();
 

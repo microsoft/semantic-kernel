@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.Skills.Web.Google;
@@ -21,7 +20,7 @@ public static class Example07_BingAndGoogleSkills
 {
     public static async Task RunAsync()
     {
-        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
@@ -32,7 +31,7 @@ public static class Example07_BingAndGoogleSkills
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService(
+            .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -139,9 +138,10 @@ Answer: ";
 
         var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
 
-        var context = kernel.CreateNewContext();
-        context.Variables["externalInformation"] = "";
-        var answer = await oracle.InvokeAsync(questions, context);
+        var answer = await kernel.RunAsync(oracle, new(questions)
+        {
+            ["externalInformation"] = string.Empty
+        });
 
         // If the answer contains commands, execute them using the prompt renderer.
         if (answer.Result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
@@ -149,16 +149,17 @@ Answer: ";
             var promptRenderer = new PromptTemplateEngine();
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptRenderer.RenderAsync(answer.Result, context);
+            var information = await promptRenderer.RenderAsync(answer.Result, kernel.CreateNewContext());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
 
-            // The rendered prompt contains the information retrieved from search engines
-            context.Variables["externalInformation"] = information;
-
             // Run the semantic function again, now including information from Bing
-            answer = await oracle.InvokeAsync(questions, context);
+            answer = await kernel.RunAsync(oracle, new(questions)
+            {
+                // The rendered prompt contains the information retrieved from search engines
+                ["externalInformation"] = information
+            });
         }
         else
         {
