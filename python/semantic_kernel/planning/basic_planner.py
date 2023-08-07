@@ -8,6 +8,7 @@ import regex
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
 
+
 class Plan:
     """A simple plan object for the Semantic Kernel"""
 
@@ -21,6 +22,7 @@ class Plan:
 
     def __repr__(self):
         return str(self)
+
 
 PROMPT = """
 You are a planner for the Semantic Kernel.
