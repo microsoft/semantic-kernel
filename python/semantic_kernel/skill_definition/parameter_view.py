@@ -18,6 +18,7 @@ class ParameterView(SKBaseModel):
             name=name, description=description, default_value=default_value
         )
 
-    def describe_function_call(self) -> Dict[str, str]:
+    @property
+    def function_call_dict(self) -> Dict[str, str]:
         """Return the parameter, ready for a function call setup."""
-        return {self.name: {"description": self.description, "type": self.type}}
+        return {"description": self.description, "type": self.type}

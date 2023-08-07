@@ -27,6 +27,9 @@ from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
+from semantic_kernel.semantic_functions.function_call_response_template import (
+    FunctionCallDefinitionTemplate,
+)
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -315,15 +318,9 @@ class SKFunction(SKFunctionBase):
         if not self._is_function_call:
             self._log.warning("using describe_function_call on a non-function call")
             return None
-        return {
-            "name": self.name,
-            "description": self.description,
-            "parameters": {
-                "type": object,
-                "properties": [p.describe_function_call() for p in self._parameters],
-            },
-            "required": [p.name for p in self._parameters if p.required],
-        }
+        return FunctionCallDefinitionTemplate(
+            self.name, self.description, self.parameters
+        )
 
     def __call__(
         self,

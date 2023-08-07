@@ -3,8 +3,8 @@
 from logging import Logger
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
-from semantic_kernel.semantic_functions.function_call_template import (
-    FunctionCallTemplate,
+from semantic_kernel.semantic_functions.function_call_response_template import (
+    FunctionCallResponseTemplate,
 )
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -64,7 +64,7 @@ class ChatPromptTemplate(PromptTemplate):
             (
                 role,
                 PromptTemplate(message, self._template_engine, self._prompt_config),
-                FunctionCallTemplate(
+                FunctionCallResponseTemplate(
                     function_call.get("name"), function_call.get("arguments")
                 ),
             )
