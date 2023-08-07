@@ -1,7 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
+<<<<<<< HEAD
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+=======
+from typing import Any, Dict, List, Optional, Tuple, Union
+>>>>>>> 1ae94110 (first iteration of function calling)
 
 import openai
 
@@ -187,7 +191,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
     async def _send_chat_request(
         self,
-        messages: List[Dict[str, str]],
+        messages: List[Tuple[str, str]],
         request_settings: ChatRequestSettings,
         stream: bool,
         functions: Optional[List[Dict[str, Any]]] = None,
@@ -267,6 +271,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 ]
             else:
                 model_args["functions"] = functions
+
+        if functions and not request_settings.function_call:
+            request_settings.function_call = 'auto'
 
         try:
             response: Any = await openai.ChatCompletion.acreate(**model_args)

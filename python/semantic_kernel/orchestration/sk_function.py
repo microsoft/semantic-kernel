@@ -172,9 +172,7 @@ class SKFunction(SKFunctionBase):
                 return context
 
             if function_call is not None:
-                if context.skill_collection.has_function(
-                    *function_call.split_name()
-                ):
+                if context.skill_collection.has_function(*function_call.split_name()):
                     func = context.skill_collection.get_function(
                         *function_call.split_name()
                     )
@@ -492,7 +490,7 @@ class SKFunction(SKFunctionBase):
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(self, context: 'SKContext', settings):
+    async def _invoke_semantic_async(self, context: "SKContext", settings):
         self._verify_is_semantic()
 
         self._ensure_context_has_skills(context)
