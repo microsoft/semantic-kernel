@@ -17,6 +17,7 @@ openapi_core = "^0.18.0"
 prance = "^23.6.21.0"
 pydantic = "<2"
 google-generativeai = "v0.1.0rc2"
+grpcio-status = "1.53.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.3.3"
