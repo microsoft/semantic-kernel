@@ -30,5 +30,8 @@
   },
   "Postgres": {
     "ConnectionString": ""
+  },
+  "SqlServer": {
+    "ConnectionString": ""
   }
 }
