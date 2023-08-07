@@ -56,8 +56,10 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         for PaLM to generate the response. This function simulates streaming
         behavior. Delay controls the seconds to wait between each yield.
         output_words controls the amount of words to yield each time if the 
-        number of responses is one. The user needs to print the results using 
-        an async for loop with flush=True.
+        number of responses is one, otherwise if the number of responses is 
+        greater than one, output_words controls the number of responses to 
+        yield each time. The user needs to print the results using an async for 
+        loop with flush=True.
         """
         response = await self._send_completion_request(prompt, request_settings)
       
