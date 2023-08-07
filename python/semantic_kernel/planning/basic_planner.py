@@ -7,7 +7,22 @@ import regex
 
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.planning.plan import Plan
+
+
+class Plan:
+    """A simple plan object for the Semantic Kernel"""
+
+    def __init__(self, prompt: str, goal: str, plan: str):
+        self.prompt = prompt
+        self.goal = goal
+        self.generated_plan = plan
+
+    def __str__(self):
+        return f"Prompt: {self.prompt}\nGoal: {self.goal}\nPlan: {self.plan}"
+
+    def __repr__(self):
+        return str(self)
+
 
 PROMPT = """
 You are a planner for the Semantic Kernel.
