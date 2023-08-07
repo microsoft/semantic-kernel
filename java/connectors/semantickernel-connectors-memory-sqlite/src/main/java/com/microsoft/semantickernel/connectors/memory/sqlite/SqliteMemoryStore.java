@@ -165,7 +165,7 @@ public class SqliteMemoryStore implements MemoryStore {
     }
 
     @Override
-    public Mono<Collection<Tuple2<MemoryRecord, Number>>> getNearestMatchesAsync(
+    public Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             int limit,
@@ -175,7 +175,7 @@ public class SqliteMemoryStore implements MemoryStore {
     }
 
     @Override
-    public Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(
+    public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             double minRelevanceScore,
