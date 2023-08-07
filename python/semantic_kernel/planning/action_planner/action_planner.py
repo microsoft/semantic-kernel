@@ -142,7 +142,8 @@ class ActionPlanner:
             skill, fun = generated_plan["plan"]["function"].split(".")
             function_ref = self._context.skills.get_function(skill, fun)
             self._logger.info(
-                f"ActionPlanner has picked {skill}.{fun}. Reference to this function found in context: {function_ref}"
+                f"ActionPlanner has picked {skill}.{fun}. Reference to this function"
+                f" found in context: {function_ref}"
             )
             plan = Plan(description=goal, function=function_ref)
         else:
@@ -150,8 +151,9 @@ class ActionPlanner:
                 generated_plan["plan"]["function"]
             )
             self._logger.info(
-                f"ActionPlanner has picked {generated_plan['plan']['function']}. \
-                    Reference to this function found in context: {function_ref}"
+                f"ActionPlanner has picked {generated_plan['plan']['function']}.       "
+                "              Reference to this function found in context:"
+                f" {function_ref}"
             )
             plan = Plan(description=goal, function=function_ref)
 
@@ -253,13 +255,13 @@ class ActionPlanner:
         functions_view = context.skills.get_functions_view()
         available_functions = []
 
-        for functions in functions_view._native_functions.values():
+        for functions in functions_view.native_functions.values():
             for func in functions:
                 if func.skill_name.lower() == self._skill_name.lower():
                     continue
                 available_functions.append(self._create_function_string(func))
 
-        for functions in functions_view._semantic_functions.values():
+        for functions in functions_view.semantic_functions.values():
             for func in functions:
                 if func.skill_name.lower() == self._skill_name.lower():
                     continue
