@@ -109,77 +109,86 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// Asynchronously evaluates a connector test, writes the evaluation to a file, and updates settings if necessary.
     /// </summary>
-    public async Task EvaluatePromptConnectorsAsync(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public async Task EvaluatePromptConnectorsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
-        var promptSettings = settings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings);
-
-        promptSettings.IsTesting = true;
-
-        // Generate tests
-
-        var tests = new List<ConnectorTest>();
-
-        var connectorsToTest = promptSettings.GetCompletionsToTest(namedTextCompletions);
-
-        foreach (NamedTextCompletion namedTextCompletion in connectorsToTest)
-        {
-            for (int i = 0; i < this.NbPromptTests; i++)
-            {
-                var stopWatch = Stopwatch.StartNew();
-                string result = "";
-                try
-                {
-                    var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, originalTest.RequestSettings, cancellationToken).ConfigureAwait(false);
-
-                    var firstResult = completions[0];
-
-                    result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-
-                    stopWatch.Stop();
-                    var duration = stopWatch.Elapsed;
-
-                    // For the management task
-                    var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
-                    tests.Add(connectorTest);
-                }
-                catch (Exception exception)
-                {
-                    logger?.LogError(exception, "Failed to test prompt with connector.\nPrompt:\n {0}\nConnector: {1} ", originalTest.Prompt, namedTextCompletion.Name);
-                    throw;
-                }
-            }
-        }
-
-        // Generate evaluations
-
+        List<PromptMultiConnectorSettings> targetPromptSettings = new();
         var currentEvaluations = new List<ConnectorPromptEvaluation>();
-        foreach (ConnectorTest connectorTest in tests)
+
+        foreach (ConnectorTest originalTest in originalTests)
         {
-            NamedTextCompletion? vettingConnector = null;
-            if (this.UseSelfVetting)
+            var promptSettings = settings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings);
+
+            targetPromptSettings.Add(promptSettings);
+
+            promptSettings.IsTesting = true;
+
+            // Generate tests
+
+            var tests = new List<ConnectorTest>();
+
+            var connectorsToTest = promptSettings.GetCompletionsToTest(namedTextCompletions);
+
+            foreach (NamedTextCompletion namedTextCompletion in connectorsToTest)
             {
-                vettingConnector = namedTextCompletions.FirstOrDefault(c => c.Name == connectorTest.ConnectorName);
+                for (int i = 0; i < this.NbPromptTests; i++)
+                {
+                    var stopWatch = Stopwatch.StartNew();
+                    string result = "";
+                    try
+                    {
+                        var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, originalTest.RequestSettings, cancellationToken).ConfigureAwait(false);
+
+                        var firstResult = completions[0];
+
+                        result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
+
+                        stopWatch.Stop();
+                        var duration = stopWatch.Elapsed;
+
+                        // For the management task
+                        var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
+                        tests.Add(connectorTest);
+                    }
+                    catch (Exception exception)
+                    {
+                        logger?.LogError(exception, "Failed to test prompt with connector.\nPrompt:\n {0}\nConnector: {1} ", originalTest.Prompt, namedTextCompletion.Name);
+                        throw;
+                    }
+                }
             }
 
-            // Use primary connector for vetting by default
-            vettingConnector ??= namedTextCompletions[0];
-
-            for (int i = 0; i < this.NbPromptTests; i++)
+            // Generate evaluations
+            foreach (ConnectorTest connectorTest in tests)
             {
-                var evaluation = await this.EvaluateConnectorTestWithCompletionAsync(vettingConnector, connectorTest, settings, cancellationToken).ConfigureAwait(false);
-                if (evaluation == null)
+                NamedTextCompletion? vettingConnector = null;
+                if (this.UseSelfVetting)
                 {
-                    logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
-                    break;
+                    vettingConnector = namedTextCompletions.FirstOrDefault(c => c.Name == connectorTest.ConnectorName);
                 }
 
-                currentEvaluations.Add(evaluation);
+                // Use primary connector for vetting by default
+                vettingConnector ??= namedTextCompletions[0];
+
+                for (int i = 0; i < this.NbPromptTests; i++)
+                {
+                    var evaluation = await this.EvaluateConnectorTestWithCompletionAsync(vettingConnector, connectorTest, settings, cancellationToken).ConfigureAwait(false);
+                    if (evaluation == null)
+                    {
+                        logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
+                        break;
+                    }
+
+                    currentEvaluations.Add(evaluation);
+                }
             }
         }
 
         //Save evaluations to file
 
-        var completionAnalysis = new MultiCompletionAnalysis();
+        var completionAnalysis = new MultiCompletionAnalysis()
+        {
+            Timestamp = DateTime.MinValue
+        };
         bool needAnalysis;
         lock (this._analysisFileLock)
         {
@@ -203,6 +212,7 @@ RESPONSE IS VALID? (true/false):
         // If update or save suggested settings are enabled, suggest new settings from analysis and save them if needed
         if (needAnalysis)
         {
+            logger?.LogDebug("Analysis period reached. New settings suggested.");
             var newSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, cancellationToken);
             if (this.SaveSuggestedSettings)
             {
@@ -222,8 +232,15 @@ RESPONSE IS VALID? (true/false):
                 }
             }
         }
+        else
+        {
+            logger?.LogDebug("Analysis period not reached. No new settings suggested.");
+        }
 
-        promptSettings.IsTesting = false;
+        foreach (var promptSettings in targetPromptSettings)
+        {
+            promptSettings.IsTesting = false;
+        }
     }
 
     /// <summary>

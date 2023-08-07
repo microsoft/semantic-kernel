@@ -171,15 +171,22 @@ public class MultiTextCompletion : ITextCompletion
         {
             while (await this._connectorTestChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
             {
+                var testSeries = new List<ConnectorTest>();
+
                 while (this._connectorTestChannel.Reader.TryRead(out var connectorTest))
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        this._logger?.LogTrace(message: "OptimizeCompletionsAsync received a new ConnectorTest", connectorTest);
+                        testSeries.Add(connectorTest);
                         await Task.Delay(this._settings.AnalysisSettings.AnalysisDelay, cancellationToken).ConfigureAwait(false);
-                        // Evaluate the test
-                        await this._settings.AnalysisSettings.EvaluatePromptConnectorsAsync(connectorTest, this._textCompletions, this._settings, this._logger, cancellationToken).ConfigureAwait(false);
+                        this._logger?.LogTrace(message: "OptimizeCompletionsAsync waited analysis delay for new ConnectorTest", connectorTest);
                     }
                 }
+
+                this._logger?.LogTrace(message: "OptimizeCompletionsAsync collected a new ConnectorTest series to analyze", testSeries);
+                // Evaluate the test
+                await this._settings.AnalysisSettings.EvaluatePromptConnectorsAsync(testSeries, this._textCompletions, this._settings, this._logger, cancellationToken).ConfigureAwait(false);
 
                 // Raise the event after optimization is done
                 this.OnOptimizationCompleted();
@@ -202,6 +209,7 @@ public class MultiTextCompletion : ITextCompletion
     // Method to raise the event
     protected virtual void OnOptimizationCompleted()
     {
+        this._logger?.LogTrace(message: "OptimizationCompleted event raised");
         this.OptimizationCompleted?.Invoke(this, EventArgs.Empty);
     }
 
