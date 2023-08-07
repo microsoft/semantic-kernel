@@ -60,6 +60,16 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings,
         delay=0.1, output_words=1, context: Optional[str] = None
     ):
+        """
+        Google PaLM does not support streaming, so the user still needs to wait
+        for PaLM to generate the response. This function simulates streaming
+        behavior. Delay controls the seconds to wait between each yield.
+        output_words controls the amount of words to yield each time if the 
+        number of responses is one, otherwise if the number of responses is 
+        greater than one, output_words controls the number of responses to 
+        yield each time. The user needs to print the results using an async for 
+        loop with flush=True.
+        """
         response = await self._send_chat_request(messages, request_settings, context)
 
         if request_settings.number_of_responses > 1:
