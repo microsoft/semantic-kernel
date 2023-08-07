@@ -30,7 +30,7 @@ def sk_function_context_parameter(
                 "name": name,
                 "description": description,
                 "default_value": default_value,
-                "type": type,
+                "type": type_,
                 "required": required,
             }
         )

@@ -291,6 +291,10 @@ class SKFunction(SKFunctionBase):
     #     return self._function_calling_enabled
 
     @property
+    def is_function_call(self) -> bool:
+        return self._is_function_call
+
+    @property
     def request_settings(self) -> CompleteRequestSettings:
         return self._ai_request_settings
 

@@ -34,6 +34,12 @@ class ReadOnlySkillCollectionBase(PydanticField, ABC):
     #     pass
 
     @abstractmethod
+    def has_function_call_function(
+        self, skill_name: Optional[str], function_name: str
+    ) -> bool:
+        pass
+
+    @abstractmethod
     def get_semantic_function(
         self, skill_name: Optional[str], function_name: str
     ) -> "SKFunctionBase":
@@ -50,6 +56,12 @@ class ReadOnlySkillCollectionBase(PydanticField, ABC):
     #     self, skill_name: Optional[str], function_name: str
     # ) -> "SKFunctionBase":
     #     pass
+
+    @abstractmethod
+    def get_function_call_function(
+        self, skill_name: Optional[str], function_name: str
+    ) -> "SKFunctionBase":
+        pass
 
     @abstractmethod
     def get_functions_view(
