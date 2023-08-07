@@ -54,11 +54,6 @@ public class PromptConfig
     public class PromptRequestSettings
     {
         /// <summary>
-        /// Order for this model.
-        /// </summary>
-        public int? order { get; set; }
-
-        /// <summary>
         /// Identifier for an AI model.
         /// </summary>
         public string? ModelId { get; set; }
