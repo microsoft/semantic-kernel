@@ -1,4 +1,4 @@
-﻿namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion;
+﻿namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
 public class CallRequestCostCreditor
 {

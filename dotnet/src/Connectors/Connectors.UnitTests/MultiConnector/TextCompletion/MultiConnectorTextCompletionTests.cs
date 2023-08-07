@@ -117,7 +117,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
             MaxTokens = 10
         };
 
-        var multiConnector = new MultiTextCompletion(settings, completions[0], CancellationToken.None, this._logger, completions.Skip(1).ToArray());
+        var multiConnector = new MultiTextCompletion(settings, completions[0], CancellationToken.None, logger: this._logger, otherCompletions: completions.Skip(1).ToArray());
 
         // Create a task completion source to signal the completion of the optimization
         var optimizationCompletedTaskSource = new TaskCompletionSource<bool>();

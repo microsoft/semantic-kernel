@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -25,23 +27,47 @@ public class MultiTextCompletion : ITextCompletion
     private readonly Channel<ConnectorTest> _connectorTestChannel;
 
     /// <summary>
+    /// An optional creditor that will compute compound costs from the connectors settings and usage.
+    /// </summary>
+    public CallRequestCostCreditor? Creditor { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the MultiTextCompletion class.
     /// </summary>
-    /// <param name="settings">The settings to use for the multi Text completion.</param>
+    /// <param name="settings">An instance of the <see cref="MultiTextCompletionSettings"/> to configure the multi Text completion.</param>
     /// <param name="mainTextCompletion">The primary text completion to used by default for completion calls and vetting other completion providers.</param>
-    /// <param name="completionsManagerCancellationToken">The cancellation token to use for the completion manager.</param>
+    /// <param name="analysisTaskCancellationToken">The cancellation token to use for the completion manager.</param>
     /// <param name="logger">An optional logger for instrumentation.</param>
     /// <param name="otherCompletions">The secondary text completions that need vetting to be used for completion calls.</param>
-    public MultiTextCompletion(MultiTextCompletionSettings settings, NamedTextCompletion mainTextCompletion, CancellationToken? completionsManagerCancellationToken, ILogger? logger = null, params NamedTextCompletion[] otherCompletions)
+    public MultiTextCompletion(MultiTextCompletionSettings settings, NamedTextCompletion mainTextCompletion, CancellationToken? analysisTaskCancellationToken, CallRequestCostCreditor? creditor = null, ILogger? logger = null, params NamedTextCompletion[] otherCompletions)
     {
         this._settings = settings;
         this._logger = logger;
+        this.Creditor = creditor;
         this._textCompletions = new[] { mainTextCompletion }.Concat(otherCompletions).ToArray();
         this._connectorTestChannel = Channel.CreateUnbounded<ConnectorTest>();
-        this.StartManagementTask(completionsManagerCancellationToken ?? CancellationToken.None);
+        this.StartManagementTask(analysisTaskCancellationToken ?? CancellationToken.None);
     }
 
     /// <inheritdoc />
+   internal sealed class AsyncLazy<T> : Lazy<Task<T>>
+    {
+        public AsyncLazy(T value)
+            : base(() => Task.FromResult(value))
+        {
+        }
+
+        public AsyncLazy(Func<T> valueFactory, CancellationToken cancellationToken)
+            : base(() => Task.Factory.StartNew<T>(valueFactory, cancellationToken, TaskCreationOptions.None, TaskScheduler.Current))
+        {
+        }
+
+        public AsyncLazy(Func<Task<T>> taskFactory, CancellationToken cancellationToken)
+            : base(() => Task.Factory.StartNew( taskFactory, cancellationToken, TaskCreationOptions.None, TaskScheduler.Current).Unwrap()) 
+        {
+        }
+    }
+
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         var promptSettings = this._settings.GetPromptSettings(text, requestSettings);
@@ -51,10 +77,19 @@ public class MultiTextCompletion : ITextCompletion
 
         var completions = await textCompletion.TextCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
 
+        var resultLazy = new AsyncLazy<string>(() => completions[0].GetCompletionAsync(cancellationToken), cancellationToken);
+
+        if (this.Creditor != null)
+        {
+            var result = await resultLazy.Value.ConfigureAwait(false);
+            var cost = textCompletion.GetCost(text, result);
+            this.Creditor.Credit(cost);
+        }
+
         if (promptSettings.IsTestingNeeded(this._textCompletions))
         {
             promptSettings.IsTesting = true;
-            await this.CollectResultForTestAsync(text, requestSettings, completions, stopWatch, textCompletion, cancellationToken).ConfigureAwait(false);
+            await this.CollectResultForTestAsync(text, requestSettings, completions, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
         }
 
         return completions;
@@ -63,11 +98,9 @@ public class MultiTextCompletion : ITextCompletion
     /// <summary>
     /// Asynchronously collects results from a prompt call to evaluate connectors against the same prompt.
     /// </summary>
-    private async Task CollectResultForTestAsync(string text, CompleteRequestSettings requestSettings, IReadOnlyList<ITextResult> completions, Stopwatch stopWatch, NamedTextCompletion textCompletion, CancellationToken cancellationToken)
+    private async Task CollectResultForTestAsync(string text, CompleteRequestSettings requestSettings, IReadOnlyList<ITextResult> completions, Stopwatch stopWatch, NamedTextCompletion textCompletion, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
     {
-        var firstResult = completions[0];
-
-        string result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
+        var result = await resultLazy.Value.ConfigureAwait(false);
 
         stopWatch.Stop();
         var duration = stopWatch.Elapsed;
