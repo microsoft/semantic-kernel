@@ -100,6 +100,13 @@ class SkillCollection(SKGenericModel, SkillCollectionBase):
             skill_name, function_name
         )
 
+    def has_function_call_function(
+        self, skill_name: Optional[str], function_name: str
+    ) -> bool:
+        return self.read_only_skill_collection_.has_function_call_function(
+            skill_name, function_name
+        )
+
     def get_semantic_function(
         self, skill_name: Optional[str], function_name: str
     ) -> "SKFunctionBase":
@@ -111,6 +118,13 @@ class SkillCollection(SKGenericModel, SkillCollectionBase):
         self, skill_name: Optional[str], function_name: str
     ) -> "SKFunctionBase":
         return self.read_only_skill_collection_.get_native_function(
+            skill_name, function_name
+        )
+
+    def get_function_call_function(
+        self, skill_name: Optional[str], function_name: str
+    ) -> "SKFunctionBase":
+        return self.read_only_skill_collection_.get_function_call_function(
             skill_name, function_name
         )
 

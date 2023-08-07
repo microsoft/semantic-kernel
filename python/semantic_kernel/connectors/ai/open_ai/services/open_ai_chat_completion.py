@@ -67,21 +67,34 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         messages: List[Tuple[str, str]],
         request_settings: ChatRequestSettings,
         logger: Optional[Logger] = None,
-    ) -> Union[str, List[str]]:
-        response = await self._send_chat_request(messages, request_settings, False)
+        functions: Optional[List[Dict[str, Any]]] = None,
+    ) -> Union[Tuple[str, Dict], List[Tuple[str, Dict]]]:
+        # TODO: tracking on token counts/etc.
+        response = await self._send_chat_request(
+            messages, request_settings, False, functions
+        )
 
         if len(response.choices) == 1:
-            return response.choices[0].message.content
+            return (
+                response.choices[0].message.content,
+                response.choices[0].message.function_call,
+            )
         else:
-            return [choice.message.content for choice in response.choices]
+            return [
+                (choice.message.content, choice.message.function_call)
+                for choice in response.choices
+            ]
 
     async def complete_chat_stream_async(
         self,
         messages: List[Tuple[str, str]],
         request_settings: ChatRequestSettings,
         logger: Optional[Logger] = None,
+        functions: Optional[List[Dict[str, Any]]] = None,
     ):
-        response = await self._send_chat_request(messages, request_settings, True)
+        response = await self._send_chat_request(
+            messages, request_settings, True, functions
+        )
 
         # parse the completion text(s) and yield them
         async for chunk in response:
@@ -157,15 +170,16 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     async def _send_chat_request(
         self,
         messages: List[Tuple[str, str]],
-        functions: List[Dict[str, Any]],
         request_settings: ChatRequestSettings,
         stream: bool,
+        functions: Optional[List[Dict[str, Any]]] = None,
     ):
         """
         Completes the given user message with an asynchronous stream.
 
         Arguments:
             user_message {str} -- The message (from a user) to respond to.
+            functions {List[Dict[str, Any]]} -- The functions available to the api.
             request_settings {ChatRequestSettings} -- The request settings.
 
         Returns:
@@ -204,7 +218,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         ]
 
         if functions and not request_settings.function_call:
-            request_settings.function_call = 'auto'
+            request_settings.function_call = "auto"
+
+        if not functions and request_settings.function_call:
+            request_settings.function_call = None
 
         try:
             response: Any = await openai.ChatCompletion.acreate(

@@ -6,7 +6,7 @@ def sk_function_context_parameter(
     name: str,
     description: str,
     default_value: str = "",
-    type: str = "string",
+    type_: str = "string",
     required: bool = False
 ):
     """
@@ -30,7 +30,7 @@ def sk_function_context_parameter(
                 "name": name,
                 "description": description,
                 "default_value": default_value,
-                "type": type,
+                "type": type_,
                 "required": required,
             }
         )

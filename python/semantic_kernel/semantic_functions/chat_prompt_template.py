@@ -49,7 +49,9 @@ class ChatPromptTemplate(PromptTemplate):
         self.add_message("assistant", message)
 
     def add_assistant_message_with_function_call(
-        self, message: str | None = None, function_call: dict[str, str] | None = None
+        self,
+        message: Optional[str] = None,
+        function_call: Optional[Dict[str, str]] = None,
     ) -> None:
         if not message and not function_call:
             raise ValueError(
@@ -58,7 +60,10 @@ class ChatPromptTemplate(PromptTemplate):
         self.add_message("assistant", message, function_call)
 
     def add_message(
-        self, role: str, message: str, function_call: dict[str, str] | None = None
+        self,
+        role: str,
+        message: Optional[str] = None,
+        function_call: Optional[Dict[str, str]] = None,
     ) -> None:
         self._messages.append(
             (

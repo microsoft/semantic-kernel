@@ -27,9 +27,6 @@ from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
-from semantic_kernel.semantic_functions.function_call_response_template import (
-    FunctionCallDefinitionTemplate,
-)
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
@@ -80,7 +77,11 @@ class SKFunction(SKFunctionBase):
 
                 parameters.append(
                     ParameterView(
-                        param["name"], param["description"], param["default_value"]
+                        param["name"],
+                        param["description"],
+                        param["default_value"],
+                        param.get("type"),
+                        param.get("required"),
                     )
                 )
 
@@ -93,6 +94,8 @@ class SKFunction(SKFunctionBase):
                 "input",
                 method.__sk_function_input_description__,
                 method.__sk_function_input_default_value__,
+                "string",
+                True,
             )
             parameters = [input_param] + parameters
 
@@ -105,6 +108,7 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=method.__sk_function_name__,
             is_semantic=False,
+            is_function_call=method.__sk_function_is_function_call__,
             log=log,
         )
 
@@ -234,6 +238,10 @@ class SKFunction(SKFunctionBase):
         return not self._is_semantic
 
     @property
+    def is_function_call(self) -> bool:
+        return self._is_function_call
+
+    @property
     def request_settings(self) -> CompleteRequestSettings:
         return self._ai_request_settings
 
@@ -310,17 +318,12 @@ class SKFunction(SKFunctionBase):
             skill_name=self.skill_name,
             description=self.description,
             is_semantic=self.is_semantic,
+            is_function_call=self.is_function_call,
             parameters=self._parameters,
         )
 
-    def describe_function_call(self) -> Dict[str, Any] | None:
-        """Return the dict that describes the function call."""
-        if not self._is_function_call:
-            self._log.warning("using describe_function_call on a non-function call")
-            return None
-        return FunctionCallDefinitionTemplate(
-            self.name, self.description, self.parameters
-        )
+    def describe_function_call(self) -> Dict[str, Any]:
+        return self.describe().function_call_repr
 
     def __call__(
         self,

@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List
+from typing import Any, Dict, List
 
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.parameter_view import ParameterView
@@ -13,6 +13,7 @@ class FunctionView(SKBaseModel):
     description: str
     is_semantic: bool
     parameters: List[ParameterView]
+    is_function_call: bool = False
     is_asynchronous: bool = True
 
     def __init__(
@@ -22,6 +23,7 @@ class FunctionView(SKBaseModel):
         description: str,
         parameters: List[ParameterView],
         is_semantic: bool,
+        is_function_call: bool = False,
         is_asynchronous: bool = True,
     ) -> None:
         validate_function_name(name)
@@ -31,5 +33,20 @@ class FunctionView(SKBaseModel):
             description=description,
             parameters=parameters,
             is_semantic=is_semantic,
+            is_function_call=is_function_call,
             is_asynchronous=is_asynchronous,
         )
+
+    @property
+    def function_call_repr(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    param.name: param.function_call_repr for param in self.parameters
+                },
+                "required": [p.name for p in self.parameters if p.required],
+            },
+        }
