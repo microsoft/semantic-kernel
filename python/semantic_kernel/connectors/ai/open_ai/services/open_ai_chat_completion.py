@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import openai
 
@@ -157,6 +157,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     async def _send_chat_request(
         self,
         messages: List[Tuple[str, str]],
+        functions: List[Dict[str, Any]],
         request_settings: ChatRequestSettings,
         stream: bool,
     ):
@@ -202,6 +203,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             {"role": role, "content": message} for role, message in messages
         ]
 
+        if functions and not request_settings.function_call:
+            request_settings.function_call = 'auto'
+
         try:
             response: Any = await openai.ChatCompletion.acreate(
                 **model_args,
@@ -211,6 +215,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 api_version=self._api_version,
                 organization=self._org_id,
                 messages=formatted_messages,
+                function=functions,
+                function_call=request_settings.function_call,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
                 n=request_settings.number_of_responses,
@@ -266,6 +272,8 @@ def _parse_choices(chunk):
         message += chunk.choices[0].delta.role + ": "
     if "content" in chunk.choices[0].delta:
         message += chunk.choices[0].delta.content
+    if "function_call" in chunk.choices[0].delta:
+        message += chunk.choices[0].delta.function_call
 
     index = chunk.choices[0].index
     return message, index

@@ -3,6 +3,9 @@
 from logging import Logger
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
+from semantic_kernel.semantic_functions.function_call_template import (
+    FunctionCallTemplate,
+)
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -45,22 +48,41 @@ class ChatPromptTemplate(PromptTemplate):
     def add_assistant_message(self, message: str) -> None:
         self.add_message("assistant", message)
 
-    def add_message(self, role: str, message: str) -> None:
+    def add_assistant_message_with_function_call(
+        self, message: str | None = None, function_call: dict[str, str] | None = None
+    ) -> None:
+        if not message and not function_call:
+            raise ValueError(
+                "Either message or function_call must be provided to add_assistant_message_with_function_call"
+            )
+        self.add_message("assistant", message, function_call)
+
+    def add_message(
+        self, role: str, message: str, function_call: dict[str, str] | None = None
+    ) -> None:
         self._messages.append(
-            (role, PromptTemplate(message, self._template_engine, self._prompt_config))
+            (
+                role,
+                PromptTemplate(message, self._template_engine, self._prompt_config),
+                FunctionCallTemplate(
+                    function_call.get("name"), function_call.get("arguments")
+                ),
+            )
         )
 
     async def render_messages_async(
         self, context: "SKContext"
     ) -> List[Tuple[str, str]]:
         rendered_messages = []
-        for role, message in self._messages:
-            rendered_messages.append((role, await message.render_async(context)))
+        for role, message, function_call in self._messages:
+            rendered_messages.append(
+                (role, await message.render_async(context), function_call or None)
+            )
 
         latest_user_message = await self._template_engine.render_async(
             self._template, context
         )
-        rendered_messages.append(("user", latest_user_message))
+        rendered_messages.append(("user", latest_user_message, None))
 
         return rendered_messages
 

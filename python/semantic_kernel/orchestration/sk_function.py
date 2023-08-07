@@ -6,7 +6,7 @@ import sys
 import threading
 from enum import Enum
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, cast
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -243,6 +243,7 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         is_semantic: bool,
+        is_function_call: bool = False,
         log: Optional[Logger] = None,
         delegate_stream_function: Optional[Callable[..., Any]] = None,
     ) -> None:
@@ -253,6 +254,7 @@ class SKFunction(SKFunctionBase):
         self._skill_name = skill_name
         self._name = function_name
         self._is_semantic = is_semantic
+        self._is_function_call = is_function_call
         self._log = log if log is not None else NullLogger()
         self._stream_function = delegate_stream_function
         self._skill_collection = None
@@ -307,6 +309,21 @@ class SKFunction(SKFunctionBase):
             is_semantic=self.is_semantic,
             parameters=self._parameters,
         )
+
+    def describe_function_call(self) -> Dict[str, Any] | None:
+        """Return the dict that describes the function call."""
+        if not self._is_function_call:
+            self._log.warning("using describe_function_call on a non-function call")
+            return None
+        return {
+            "name": self.name,
+            "description": self.description,
+            "parameters": {
+                "type": object,
+                "properties": [p.describe_function_call() for p in self._parameters],
+            },
+            "required": [p.name for p in self._parameters if p.required],
+        }
 
     def __call__(
         self,
