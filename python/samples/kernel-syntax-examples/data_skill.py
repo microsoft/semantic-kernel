@@ -25,6 +25,20 @@ async def main() -> None:
     context = sk.ContextVariables()
     context["data_summary"] = data_skill.get_row_column_names()
     print(context["data_summary"])
+    """
+    prompt = "How old is Bob and where does Eve live?"
+    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
+        max_tokens=2000, temperature=0.7, top_p=0.8
+    )
+    prompt_template = sk.ChatPromptTemplate(  # Create the chat prompt template
+        "{{$user_input}}", kernel.prompt_template_engine, prompt_config
+    )
+    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
+
+    query_func = kernel.register_semantic_function(None, "Data", function_config)
+    result = await kernel.run_async(query_func, input_vars=context)
+    print(result)
+    """
 
 
 if __name__ == "__main__":
