@@ -66,35 +66,27 @@ class DataSkill:
                 else:
                     self.data.append(pd.read_csv(file))
 
-        self._prefix = """You are working with a pandas dataframe in Python. You 
-        may be working with one or more dataframe. You were given the row and 
-        column names of the pandas dataframes earlier. Do not make up row or
-        column names, you need to choose from the ones you were given. Infer
-        the appropriate row and column names from the question, because the user
-        might not know the row and column names. """
-        self._suffix = """You need to answer with Python code only, with no
-        explanation or other text. Make sure the code is contained in a function
-        called "process" that returns a value, and that the code contains the 
-        necessary imports. The variable name of the dataframe is "df". If it 
-        does not seem like you can write code to answer the question, then return 
-        "I don't know" as the answer. Here is the user's question: """
-        
+        self._prefix = """You were given the first five rows of each pandas 
+        dataframe earlier. There may be more rows. """
+        self._suffix = """Write a Python function `process(df)` where df is a
+        pandas dataframe.
+        This is the function's purpose: {goal}
+        Write the function in a Python code block with all necessary imports. 
+        Do not include any example usage. Do not include any explanation nor 
+        decoration."""
+                
 
-    def get_row_column_names(self) -> str:
+    def get_df_data(self) -> str:
         """
-        Returns the row and column names of pandas dataframes.
+        Returns the first 5 rows of pandas dataframes in JSON format.
 
         Returns:
             The row and column names of the data tables contained in a prompt.
         """
         if isinstance(self.data, pd.DataFrame):
-            prompt = """You are working with one pandas dataframe in Python. The
-            names of the columns are, in this order: \n"""
-            column_names = ', '.join(map(str, self.data.columns.tolist()))
-            row_names = ', '.join(map(str, self.data.index.tolist()))
-            prompt += column_names + "\n"
-            prompt += "The names of the rows are, in this order: \n"
-            prompt += row_names + "\n"
+            prompt = """You are working with one pandas dataframe in Python. 
+            These are the first 5 rows, in JSON format: \n"""
+            prompt += self.data.head().to_json(orient="records") + "\n"
         else:
             count = 1
             num = len(self.data)
@@ -116,24 +108,27 @@ class DataSkill:
         name="queryAsync",
         input_description="The question to ask the LLM",
     )
-    async def query_async(self, ask: str, context: SKContext) -> SKContext:
+    async def query_async(self, ask: str) -> str:
         """
         Answer a query about the data.
 
         Args:
             ask -- The question to ask the LLM
         """
-        prompt = self._prefix + """You need to write python code that the user can 
-        run on their dataframes to answer the question.""" + self._suffix + ask
+        formatted_suffix = self._suffix.format(goal=ask)
+        prompt = self._prefix + """You need to write plain Python code that the 
+        user can run on their dataframes.""" + formatted_suffix 
         result = await self._service.complete_chat_async(
             [("user", prompt)], self._chat_settings
         )
+        print("check code", result)
         df=self.data
         local_vars = {'df': df}
         exec(result, local_vars)
         result = local_vars['process'](local_vars['df'])
+        print("check ans", result)
         
-        return result
+        return str(result)
     
     """
     @sk_function(
