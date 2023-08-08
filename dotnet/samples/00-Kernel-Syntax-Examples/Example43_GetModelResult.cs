@@ -22,7 +22,7 @@ public static class Example43_GetModelResult
 
         IKernel kernel = new KernelBuilder()
             .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
+                modelId: TestConfiguration.OpenAI.ChatCompletionModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
@@ -46,7 +46,7 @@ public static class Example43_GetModelResult
 
         // Using Chat Completion directly
         var chatCompletion = new OpenAIChatCompletion(
-            modelId: TestConfiguration.OpenAI.ChatModelId,
+            modelId: TestConfiguration.OpenAI.ChatCompletionModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
@@ -58,7 +58,7 @@ public static class Example43_GetModelResult
 
         // Getting the error details
         kernel = new KernelBuilder()
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatCompletionModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
         var failedContext = await kernel.RunAsync("sorry I forgot your birthday", errorFunction);

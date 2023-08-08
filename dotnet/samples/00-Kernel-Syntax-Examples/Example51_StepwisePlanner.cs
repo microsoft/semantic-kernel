@@ -79,7 +79,7 @@ public static class Example51_StepwisePlanner
         var builder = new KernelBuilder();
 
         builder.WithAzureChatCompletionService(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey,
             alsoAsTextCompletion: true,

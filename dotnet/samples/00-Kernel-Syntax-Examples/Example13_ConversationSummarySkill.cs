@@ -181,7 +181,7 @@ Jane: Goodbye!
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Logger)
             .WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
         .Build();

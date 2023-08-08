@@ -29,8 +29,8 @@ public static class Example18_DallE
             .WithLogger(ConsoleLogger.Logger)
             // Add your image generation service
             .WithOpenAIImageGenerationService(TestConfiguration.OpenAI.ApiKey)
-            // Add your chat completion service 
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            // Add your chat completion service
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatCompletionModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();
@@ -99,7 +99,7 @@ public static class Example18_DallE
             // Add your image generation service
             .WithAzureOpenAIImageGenerationService(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service
-            .WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();

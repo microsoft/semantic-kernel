@@ -24,7 +24,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
 
         var kernel = Kernel.Builder
             .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
+                modelId: TestConfiguration.OpenAI.ChatCompletionModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 

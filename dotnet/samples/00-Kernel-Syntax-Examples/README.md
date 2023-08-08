@@ -28,7 +28,6 @@ dotnet user-secrets set "OpenAI:OrgId" "..."
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 
 dotnet user-secrets set "AzureOpenAI:DeploymentType" "..." (text-completion or chat-completion)
-dotnet user-secrets set "AzureOpenAI:ServiceId" "..."
 dotnet user-secrets set "AzureOpenAI:TextCompletionDeploymentName" "..."
 dotnet user-secrets set "AzureOpenAI:ChatCompletionDeploymentName" "..."
 dotnet user-secrets set "AzureOpenAI:EmbeddingDeploymentName" "..."
@@ -88,12 +87,9 @@ OpenAI__ApiKey
 AzureOpenAI__DeploymentType
 AzureOpenAI__TextCompletionDeploymentName
 AzureOpenAI__ChatCompletionDeploymentName
+AzureOpenAI__EmbeddingDeploymentName
 AzureOpenAI__Endpoint
 AzureOpenAI__ApiKey
-
-AzureOpenAIEmbeddings__DeploymentName
-AzureOpenAIEmbeddings__Endpoint
-AzureOpenAIEmbeddings__ApiKey
 
 # Azure Cognitive Search
 ACS__Endpoint

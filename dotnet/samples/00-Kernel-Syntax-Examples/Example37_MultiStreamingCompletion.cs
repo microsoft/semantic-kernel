@@ -22,7 +22,7 @@ public static class Example37_MultiStreamingCompletion
         Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion - Raw Streaming ========");
 
         var chatCompletion = new AzureChatCompletion(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
@@ -34,7 +34,7 @@ public static class Example37_MultiStreamingCompletion
         Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
 
         IChatCompletion chatCompletion = new OpenAIChatCompletion(
-            TestConfiguration.OpenAI.ChatModelId,
+            TestConfiguration.OpenAI.ChatCompletionModelId,
             TestConfiguration.OpenAI.ApiKey);
 
         await ChatCompletionStreamAsync(chatCompletion);

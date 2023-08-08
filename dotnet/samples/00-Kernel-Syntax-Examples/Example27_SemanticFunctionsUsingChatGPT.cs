@@ -18,7 +18,7 @@ public static class Example27_SemanticFunctionsUsingChatGPT
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, "https://....openai.azure.com/", "...API KEY...")
+            .WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName, "https://....openai.azure.com/", "...API KEY...")
             .Build();
 
         var func = kernel.CreateSemanticFunction(

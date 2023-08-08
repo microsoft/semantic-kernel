@@ -24,7 +24,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, openAIApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatCompletionModelId, openAIApiKey)
             .Build();
 
         // Load native skill

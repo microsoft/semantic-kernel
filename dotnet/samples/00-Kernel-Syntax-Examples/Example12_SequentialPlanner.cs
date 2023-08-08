@@ -70,7 +70,7 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
             .WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -182,13 +182,13 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
             .WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .WithAzureTextEmbeddingGenerationService(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                TestConfiguration.AzureOpenAIEmbeddings.ApiKey)
+                TestConfiguration.AzureOpenAI.EmbeddingDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -226,7 +226,7 @@ internal static class Example12_SequentialPlanner
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
             .WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();

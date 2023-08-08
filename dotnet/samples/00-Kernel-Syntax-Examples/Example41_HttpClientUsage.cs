@@ -34,7 +34,7 @@ public static class Example41_HttpClientUsage
     {
         var kernel = Kernel.Builder
             .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
+                modelId: TestConfiguration.OpenAI.ChatCompletionModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey) // If you need to use the default HttpClient from the SK SDK, simply omit the argument for the httpMessageInvoker parameter.
             .Build();
     }
@@ -49,7 +49,7 @@ public static class Example41_HttpClientUsage
         // If you need to use a custom HttpClient, simply pass it as an argument for the httpClient parameter.
         var kernel = Kernel.Builder
             .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ModelId,
+                modelId: TestConfiguration.OpenAI.ChatCompletionModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
                 httpClient: httpClient)
             .Build();
@@ -70,7 +70,7 @@ public static class Example41_HttpClientUsage
 
             var kernel = Kernel.Builder
             .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
+                modelId: TestConfiguration.OpenAI.ChatCompletionModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
                 httpClient: factory.CreateClient())
             .Build();
@@ -101,7 +101,7 @@ public static class Example41_HttpClientUsage
 
             var kernel = Kernel.Builder
             .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
+                modelId: TestConfiguration.OpenAI.ChatCompletionModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey,
                 httpClient: factory.CreateClient("test-client"))
             .Build();

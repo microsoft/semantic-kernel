@@ -17,7 +17,7 @@ public static class Example19_Qdrant
         QdrantMemoryStore memoryStore = new(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.Logger);
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatCompletionModelId, TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)
             //.WithQdrantMemoryStore(TestConfiguration.Qdrant.Endpoint, 1536) // This method offers an alternative approach to registering Qdrant memory store.

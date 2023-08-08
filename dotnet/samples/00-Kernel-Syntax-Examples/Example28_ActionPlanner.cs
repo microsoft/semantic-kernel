@@ -15,7 +15,7 @@ public static class Example28_ActionPlanner
         Console.WriteLine("======== Action Planner ========");
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatCompletionModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();

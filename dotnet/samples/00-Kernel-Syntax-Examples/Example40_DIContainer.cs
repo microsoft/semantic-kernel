@@ -43,7 +43,7 @@ public static class Example40_DIContainer
         {
             return Kernel.Builder
             .WithLogger(serviceProvider.GetRequiredService<ILogger>())
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatCompletionModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
         });
 
@@ -72,7 +72,7 @@ public static class Example40_DIContainer
 
         //Registering AI services Kernel is going to use
         var aiServicesCollection = new AIServiceCollection();
-        aiServicesCollection.SetService<IChatCompletion>(() => new AzureChatCompletion(TestConfiguration.OpenAI.ChatModelId,
+        aiServicesCollection.SetService<IChatCompletion>(() => new AzureChatCompletion(TestConfiguration.OpenAI.ChatCompletionModelId,
                         TestConfiguration.AzureOpenAI.Endpoint,
                         TestConfiguration.AzureOpenAI.ApiKey));
 

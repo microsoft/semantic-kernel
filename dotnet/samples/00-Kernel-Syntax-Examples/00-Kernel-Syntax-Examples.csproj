@@ -47,7 +47,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.Web\Skills.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\NCalcSkills\NCalcSkills.csproj" />
+    <ProjectReference Include="..\07-NCalc-Skills\07-NCalc-Skills.csproj" />
 
     <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
     <PackageReference Include="System.Text.Json" />

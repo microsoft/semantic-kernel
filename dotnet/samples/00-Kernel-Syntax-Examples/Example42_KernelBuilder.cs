@@ -32,8 +32,8 @@ public static class Example42_KernelBuilder
     {
         string azureOpenAIKey = TestConfiguration.AzureOpenAI.ApiKey;
         string azureOpenAIEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string azureOpenAIChatCompletionDeployment = TestConfiguration.AzureOpenAI.ChatDeploymentName;
-        string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
+        string azureOpenAIChatCompletionDeployment = TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName;
+        string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAI.EmbeddingDeploymentName;
 
 #pragma warning disable CA1852 // Seal internal types
         IKernel kernel1 = Kernel.Builder.Build();

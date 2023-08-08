@@ -129,11 +129,11 @@ internal static class Example31_CustomPlanner
         return new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
             .WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .WithAzureTextEmbeddingGenerationService(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAI.EmbeddingDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())

@@ -61,8 +61,8 @@ public static class Example52_ApimAuth
 
         var kernel = Kernel.Builder
             .WithLogger(loggerFactory.CreateLogger<IKernel>())
-            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (parameters) =>
-                new AzureChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, parameters.Logger))
+            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName, (parameters) =>
+                new AzureChatCompletion(TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName, openAIClient, parameters.Logger))
             .Build();
 
         // Load semantic skill defined with prompt templates

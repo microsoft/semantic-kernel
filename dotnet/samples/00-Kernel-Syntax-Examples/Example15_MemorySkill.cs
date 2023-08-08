@@ -18,7 +18,7 @@ public static class Example15_MemorySkill
 
         var kernel = Kernel.Builder
             .WithLogger(logger)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatCompletionModelId, TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();

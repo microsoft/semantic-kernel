@@ -64,7 +64,7 @@ public static class Example30_ChatWithPrompts
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatCompletionModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // As an example, we import the time skill, which is used in system prompt to read the current date.

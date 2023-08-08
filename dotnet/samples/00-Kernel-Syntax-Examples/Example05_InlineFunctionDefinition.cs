@@ -12,7 +12,7 @@ public static class Example05_InlineFunctionDefinition
     {
         Console.WriteLine("======== Inline Function Definition ========");
 
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
+        string openAIModelId = TestConfiguration.OpenAI.ChatCompletionModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)

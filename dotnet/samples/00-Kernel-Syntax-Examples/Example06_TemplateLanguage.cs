@@ -18,7 +18,7 @@ public static class Example06_TemplateLanguage
     {
         Console.WriteLine("======== TemplateLanguage ========");
 
-        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
+        string openAIModelId = TestConfiguration.OpenAI.ChatCompletionModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)

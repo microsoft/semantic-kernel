@@ -20,7 +20,7 @@ public static class Example46_Weaviate
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Logger)
             .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
+                modelId: TestConfiguration.OpenAI.ChatCompletionModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,

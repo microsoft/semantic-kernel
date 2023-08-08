@@ -50,7 +50,7 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Open AI - ChatGPT ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatCompletionModelId, TestConfiguration.OpenAI.ApiKey);
 
         await StartChatAsync(openAIChatCompletion);
     }
@@ -60,7 +60,7 @@ public static class Example17_ChatGPT
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
         AzureChatCompletion azureChatCompletion = new(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.ChatCompletionDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
