@@ -1,8 +1,0 @@
-{
-  "endpointType": "text-completion",
-  "serviceType": "OpenAI",
-  "serviceId": "text-davinci-003",
-  "deploymentOrModelId": "text-davinci-003",
-  "apiKey": "... your OpenAI key ...",
-  "orgId": ""
-}
