@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import re
-from typing import Union
+from typing import Any, Dict, Union
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -14,6 +14,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
 CODE_BLOCK_PATTERN = r"```(?:.*\n)?([\s\S]*?)(?:```*)"
+DEFAULT_PROMPT = "Generate plain Python code with no extra explanation nor decoration: "
 
 
 class CodeSkill:
@@ -59,18 +60,9 @@ class CodeSkill:
         :param query: code query
         :return: string result of the query
         """
-        prompt = f"Generate plain Python code with no extra explanation nor decoration: {query}"
 
-        result = await self._service.complete_chat_async(
-            [("user", prompt)], self._chat_settings
-        )
-
-        # Parse if there is Markdown syntax
-        code_block = re.findall(pattern=CODE_BLOCK_PATTERN, string=result)
-        if code_block and len(code_block[0]):
-            return str(code_block[0])
-        else:
-            return result
+        full_prompt = f"{DEFAULT_PROMPT}{query}"
+        return await self.custom_code_async(full_prompt)
 
     @sk_function(
         description="Executes generated Python code from a query. WARNING: can be unsafe.",
@@ -89,11 +81,7 @@ class CodeSkill:
         :return: None
         """
         code = await self.code_async(query)
-        try:
-            exec(code)
-            return "SUCCESS"
-        except Exception:
-            raise Exception(f"Error with executing attempted query: '{query}'")
+        return await self.custom_execute_async(code)
 
     @sk_function(
         description="Executes given Python code as a string. WARNING: can be unsafe.",
@@ -106,11 +94,48 @@ class CodeSkill:
         """
         Executes generated Python code from a query
 
-        :param query: code query
+        :param code: Python code to execute
         :return: None
         """
+
+        return await self.custom_execute_async(code)
+
+    async def custom_code_async(self, prompt: str) -> str:
+        """
+        Returns generated Python code from a prompt
+
+        :param prompt: Prompt to request
+        :return: string result of the query
+        """
+
+        result = await self._service.complete_chat_async(
+            [("user", prompt)], self._chat_settings
+        )
+
+        # Parse if there is Markdown syntax
+        code_block = re.findall(pattern=CODE_BLOCK_PATTERN, string=result)
+        if code_block and len(code_block[0]):
+            return str(code_block[0]).lstrip("python\n")
+        else:
+            return result
+
+    async def custom_execute_async(
+        self,
+        code: str,
+        global_vars: Dict[str, Any] = None,
+        local_vars: Dict[str, Any] = None,
+    ) -> str:
+        """
+        Executes code using scoped variables
+
+        :param code: Python code to execute
+        :param global_vars: Dictionary of global variable names and values
+        :param local_vars: Dictionary of local variable names and values
+        :return: None
+        """
+
         try:
-            exec(code)
+            exec(code, global_vars, local_vars)
             return "SUCCESS"
         except Exception as e:
-            raise Exception(f"Error with executing code: {e}")
+            raise Exception(f"Error with attempting code execution: '{e}'")
