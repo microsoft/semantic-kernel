@@ -151,7 +151,7 @@ RESPONSE IS VALID? (true/false):
         {
             // Saving Original Tests
 
-           var needTest = this.SaveOriginalTestsReturnNeedRunningTest(originalTests, logger, ref toReturn);
+            var needTest = this.SaveOriginalTestsReturnNeedRunningTest(originalTests, logger, ref toReturn);
 
             List<ConnectorTest>? tests = null;
 
@@ -229,86 +229,30 @@ RESPONSE IS VALID? (true/false):
         return toReturn;
     }
 
-    private bool SaveEvaluationsReturnNeedSuggestion(ILogger? logger, List<ConnectorPromptEvaluation> currentEvaluations, ref OptimizationCompletedEventArgs toReturn)
+    private bool SaveOriginalTestsReturnNeedRunningTest(List<ConnectorTest> originalTests, ILogger? logger, ref OptimizationCompletedEventArgs toReturn)
     {
-        bool UpdateEvaluationsAndProbeSuggestion(MultiCompletionAnalysis multiCompletionAnalysis)
+        bool needTest;
+
+        bool UpdateOriginalTestsAndProbeTests(MultiCompletionAnalysis multiCompletionAnalysis)
         {
-            var testTimestampsToRemove = currentEvaluations.Select(evaluation => evaluation.Test.Timestamp);
-            multiCompletionAnalysis.Tests.RemoveAll(test => testTimestampsToRemove.Contains(test.Timestamp));
-            logger?.LogTrace("Found {0} evaluations", multiCompletionAnalysis.Evaluations.Count);
-            multiCompletionAnalysis.Evaluations.AddRange(currentEvaluations);
-            bool needSuggestion = (this.EnableSuggestion && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings)) && (DateTime.Now - multiCompletionAnalysis.SuggestionTimestamp) > this.SuggestionPeriod;
-            if (needSuggestion)
+            logger?.LogTrace("Found {0} original tests", multiCompletionAnalysis.OriginalTests.Count);
+            var uniqueOriginalTests = originalTests.GroupBy(test => test.Prompt).Select(grouping => grouping.First());
+            multiCompletionAnalysis.OriginalTests.AddRange(originalTests);
+            bool needRunningTests = (this.EnableConnectorTests) && (DateTime.Now - multiCompletionAnalysis.TestTimestamp) > this.TestsPeriod;
+            if (needRunningTests)
             {
-                multiCompletionAnalysis.SuggestionTimestamp = DateTime.Now;
+                multiCompletionAnalysis.TestTimestamp = DateTime.Now;
             }
 
-            return needSuggestion;
+            return needRunningTests;
         }
 
-        logger?.LogTrace("Loading Analysis file from {0} to save evaluations", this.AnalysisFilePath);
+        logger?.LogTrace("Loading Analysis file from {0} to update original tests", this.AnalysisFilePath);
 
-        bool needSuggestion = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateEvaluationsAndProbeSuggestion);
+        needTest = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateOriginalTestsAndProbeTests);
 
-        logger?.LogTrace("Saved {0} evaluations to {1}", currentEvaluations.Count, this.AnalysisFilePath);
-        return needSuggestion;
-    }
-
-    private async Task<List<ConnectorPromptEvaluation>> RunConnectorTestsEvaluationsAsync(List<ConnectorTest> tests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
-    {
-        List<ConnectorPromptEvaluation> currentEvaluations;
-        currentEvaluations = new List<ConnectorPromptEvaluation>();
-        logger?.LogTrace("Generating Evaluations from prompt test results");
-        foreach (ConnectorTest connectorTest in tests)
-        {
-            NamedTextCompletion? vettingConnector = null;
-            if (this.UseSelfVetting)
-            {
-                vettingConnector = namedTextCompletions.FirstOrDefault(c => c.Name == connectorTest.ConnectorName);
-            }
-
-            // Use primary connector for vetting by default
-            vettingConnector ??= namedTextCompletions[0];
-
-            var evaluation = await this.EvaluateConnectorTestWithCompletionAsync(vettingConnector, connectorTest, settings, logger, cancellationToken).ConfigureAwait(false);
-            if (evaluation == null)
-            {
-                logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
-                break;
-            }
-
-            currentEvaluations.Add(evaluation);
-
-            logger?.LogTrace("Evaluated connector {0}, Vetted:{1} from Prompt:{2}\nResult:{3}", evaluation.Test.ConnectorName, evaluation.IsVetted, evaluation.Test.Prompt, evaluation.Test.Result);
-        }
-
-        return currentEvaluations;
-    }
-
-    private bool SaveConnectorTestsReturnNeedEvaluate(ILogger? logger, List<ConnectorTest> tests, ref OptimizationCompletedEventArgs toReturn)
-    {
-        bool UpdateTestsAndProbeEvaluate(MultiCompletionAnalysis multiCompletionAnalysis)
-        {
-            var originalTestPromptsToRemove = tests.Select(test => test.Prompt).Distinct();
-            multiCompletionAnalysis.OriginalTests.RemoveAll(test => originalTestPromptsToRemove.Contains(test.Prompt));
-
-            logger?.LogTrace("Found {0} tests", multiCompletionAnalysis.Tests.Count);
-            multiCompletionAnalysis.Tests.AddRange(tests);
-            bool needEvaluate = (this.EnableTestEvaluations) && (DateTime.Now - multiCompletionAnalysis.EvaluationTimestamp) > this.EvaluationPeriod;
-            if (needEvaluate)
-            {
-                multiCompletionAnalysis.EvaluationTimestamp = DateTime.Now;
-            }
-
-            return needEvaluate;
-        }
-
-        logger?.LogTrace("Loading Analysis file from {0} to update tests", this.AnalysisFilePath);
-
-        bool needEvaluate = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateTestsAndProbeEvaluate);
-
-        logger?.LogTrace("Saved {0} new test results to {1}", tests.Count, this.AnalysisFilePath);
-        return needEvaluate;
+        logger?.LogTrace("Saved {0} original tests to {1}", originalTests.Count, this.AnalysisFilePath);
+        return needTest;
     }
 
     private async Task<List<ConnectorTest>> RunConnectorTestsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
@@ -364,30 +308,61 @@ RESPONSE IS VALID? (true/false):
         return tests;
     }
 
-    private bool SaveOriginalTestsReturnNeedRunningTest(List<ConnectorTest> originalTests, ILogger? logger, ref OptimizationCompletedEventArgs toReturn)
+    private bool SaveConnectorTestsReturnNeedEvaluate(ILogger? logger, List<ConnectorTest> tests, ref OptimizationCompletedEventArgs toReturn)
     {
-        bool needTest;
-
-        bool UpdateOriginalTestsAndProbeTests(MultiCompletionAnalysis multiCompletionAnalysis)
+        bool UpdateTestsAndProbeEvaluate(MultiCompletionAnalysis multiCompletionAnalysis)
         {
-            logger?.LogTrace("Found {0} original tests", multiCompletionAnalysis.OriginalTests.Count);
-            var uniqueOriginalTests = originalTests.GroupBy(test => test.Prompt).Select(grouping => grouping.First());
-            multiCompletionAnalysis.OriginalTests.AddRange(originalTests);
-            bool needRunningTests = (this.EnableConnectorTests) && (DateTime.Now - multiCompletionAnalysis.TestTimestamp) > this.TestsPeriod;
-            if (needRunningTests)
+            var originalTestPromptsToRemove = tests.Select(test => test.Prompt).Distinct();
+            multiCompletionAnalysis.OriginalTests.RemoveAll(test => originalTestPromptsToRemove.Contains(test.Prompt));
+
+            logger?.LogTrace("Found {0} tests", multiCompletionAnalysis.Tests.Count);
+            multiCompletionAnalysis.Tests.AddRange(tests);
+            bool needEvaluate = (this.EnableTestEvaluations) && (DateTime.Now - multiCompletionAnalysis.EvaluationTimestamp) > this.EvaluationPeriod;
+            if (needEvaluate)
             {
-                multiCompletionAnalysis.TestTimestamp = DateTime.Now;
+                multiCompletionAnalysis.EvaluationTimestamp = DateTime.Now;
             }
 
-            return needRunningTests;
+            return needEvaluate;
         }
 
-        logger?.LogTrace("Loading Analysis file from {0} to update original tests", this.AnalysisFilePath);
+        logger?.LogTrace("Loading Analysis file from {0} to update tests", this.AnalysisFilePath);
 
-        needTest = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateOriginalTestsAndProbeTests);
+        bool needEvaluate = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateTestsAndProbeEvaluate);
 
-        logger?.LogTrace("Saved {0} original tests to {1}", originalTests.Count, this.AnalysisFilePath);
-        return needTest;
+        logger?.LogTrace("Saved {0} new test results to {1}", tests.Count, this.AnalysisFilePath);
+        return needEvaluate;
+    }
+
+    private async Task<List<ConnectorPromptEvaluation>> RunConnectorTestsEvaluationsAsync(List<ConnectorTest> tests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
+    {
+        List<ConnectorPromptEvaluation> currentEvaluations;
+        currentEvaluations = new List<ConnectorPromptEvaluation>();
+        logger?.LogTrace("Generating Evaluations from prompt test results");
+        foreach (ConnectorTest connectorTest in tests)
+        {
+            NamedTextCompletion? vettingConnector = null;
+            if (this.UseSelfVetting)
+            {
+                vettingConnector = namedTextCompletions.FirstOrDefault(c => c.Name == connectorTest.ConnectorName);
+            }
+
+            // Use primary connector for vetting by default
+            vettingConnector ??= namedTextCompletions[0];
+
+            var evaluation = await this.EvaluateConnectorTestWithCompletionAsync(vettingConnector, connectorTest, settings, logger, cancellationToken).ConfigureAwait(false);
+            if (evaluation == null)
+            {
+                logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
+                break;
+            }
+
+            currentEvaluations.Add(evaluation);
+
+            logger?.LogTrace("Evaluated connector {0}, Vetted:{1} from Prompt:{2}\nResult:{3}", evaluation.Test.ConnectorName, evaluation.IsVetted, evaluation.Test.Prompt, evaluation.Test.Result);
+        }
+
+        return currentEvaluations;
     }
 
     private bool LockLoadApplySaveProbeNext(ILogger? logger, ref OptimizationCompletedEventArgs analysisAndSettings, Func<MultiCompletionAnalysis, bool> updateAndProbeTimespan)
@@ -409,6 +384,31 @@ RESPONSE IS VALID? (true/false):
         }
 
         return runNextStep;
+    }
+
+    private bool SaveEvaluationsReturnNeedSuggestion(ILogger? logger, List<ConnectorPromptEvaluation> currentEvaluations, ref OptimizationCompletedEventArgs toReturn)
+    {
+        bool UpdateEvaluationsAndProbeSuggestion(MultiCompletionAnalysis multiCompletionAnalysis)
+        {
+            var testTimestampsToRemove = currentEvaluations.Select(evaluation => evaluation.Test.Timestamp);
+            multiCompletionAnalysis.Tests.RemoveAll(test => testTimestampsToRemove.Contains(test.Timestamp));
+            logger?.LogTrace("Found {0} evaluations", multiCompletionAnalysis.Evaluations.Count);
+            multiCompletionAnalysis.Evaluations.AddRange(currentEvaluations);
+            bool needSuggestion = (this.EnableSuggestion && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings)) && (DateTime.Now - multiCompletionAnalysis.SuggestionTimestamp) > this.SuggestionPeriod;
+            if (needSuggestion)
+            {
+                multiCompletionAnalysis.SuggestionTimestamp = DateTime.Now;
+            }
+
+            return needSuggestion;
+        }
+
+        logger?.LogTrace("Loading Analysis file from {0} to save evaluations", this.AnalysisFilePath);
+
+        bool needSuggestion = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateEvaluationsAndProbeSuggestion);
+
+        logger?.LogTrace("Saved {0} evaluations to {1}", currentEvaluations.Count, this.AnalysisFilePath);
+        return needSuggestion;
     }
 
     /// <summary>

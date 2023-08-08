@@ -41,7 +41,6 @@ public class MultiTextCompletionSettings
     /// </summary>
     public int PromptTruncationLength { get; set; } = 20;
 
-
     /// <summary>
     /// By default, connectors instrumentation server side and client side avoids to trigger result evaluation for display. This is mostly harmless and this outputs the corresponding log for more comfort.
     /// </summary>
