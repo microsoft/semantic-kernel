@@ -121,12 +121,12 @@ class DataSkill:
         result = await self._service.complete_chat_async(
             [("user", prompt)], self._chat_settings
         )
-        print("check code", result)
+
         df=self.data
         local_vars = {'df': df}
         exec(result, local_vars)
         result = local_vars['process'](local_vars['df'])
-        print("check ans", result)
+      
         
         return str(result)
     
