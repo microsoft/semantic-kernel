@@ -27,7 +27,7 @@ Semantic Kernel will execute the plan for the user.
 
 ## Getting started with Semantic Kernel
 
-Semantic Kernel is available in a variety of languages and platforms. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
+The Semantic Kernel SDK is available in C#, Python, and Java. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
 feature parity between our currently supported languages.
 
 <table width=100%>
@@ -76,9 +76,8 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 
 ### For Java:
 
-1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
-2. Switch to `semantic-kernel` directory and then checkout experimental Java branch: `git checkout experimental-java`
-3. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md)
+1. Clone and checkout the experimental Java branch: `git clone -b experimental-java https://github.com/microsoft/semantic-kernel.git`
+2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md)
 
 ## Learning how to use Semantic Kernel
 
@@ -115,6 +114,22 @@ also leveraging plugins to integrate with other services.
 ![Chat Copilot answering a question](https://learn.microsoft.com/en-us/semantic-kernel/media/chat-copilot-in-action.gif)
 
 You can run the app yourself by downloading it from its [GitHub repo](https://github.com/microsoft/chat-copilot).
+
+## Visual Studio Code extension: design semantic functions with ease
+
+The [Semantic Kernel extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=semantic-kernel.semantic-kernel)
+makes it easy to design and test semantic functions. The extension provides an interface for
+designing semantic functions and allows you to test them with a push of a button with your
+existing models and data.
+
+![Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/media/vs-code-extension.png)
+
+In the above screenshot, you can see the extension in action:
+
+- Syntax highlighting for semantic functions
+- Code completion for semantic functions
+- LLM model picker
+- Run button to test the semantic function with your input data
 
 ## Check out our other repos!
 
