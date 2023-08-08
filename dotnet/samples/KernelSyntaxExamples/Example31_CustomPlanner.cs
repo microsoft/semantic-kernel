@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -30,7 +30,7 @@ internal static class Example31_CustomPlanner
         SKContext context = CreateContextQueryContext(kernel);
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
-        kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
+        kernel.ImportSkill(new TextMemoryPlugin(kernel.Memory));
 
         // Setup defined memories for recall
         await RememberFactsAsync(kernel);
@@ -87,7 +87,7 @@ internal static class Example31_CustomPlanner
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
+        kernel.ImportSkill(new TextMemoryPlugin(kernel.Memory));
 
         List<string> memoriesToSave = new()
         {

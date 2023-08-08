@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.SemanticKernel.Memory.Collections;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory.Collections;
+namespace SemanticKernel.Plugins.Memory.UnitTests.Collections;
 
 /// <summary>
 /// Contains tests for the <see cref="MinHeap{T}"/> class.

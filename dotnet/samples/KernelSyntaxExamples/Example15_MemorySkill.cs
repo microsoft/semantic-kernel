@@ -3,8 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -33,7 +32,7 @@ public static class Example15_MemorySkill
         // ========= Store memories using semantic function =========
 
         // Add Memory as a skill for other functions
-        var memorySkill = new TextMemorySkill(kernel.Memory);
+        var memorySkill = new TextMemoryPlugin(kernel.Memory);
         kernel.ImportSkill(memorySkill);
 
         // Build a semantic function that saves info to memory
@@ -42,8 +41,8 @@ public static class Example15_MemorySkill
 
         await kernel.RunAsync(memorySaver, new()
         {
-            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-            [TextMemorySkill.KeyParam] = "info5",
+            [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.KeyParam] = "info5",
             ["info"] = "My family is from New York"
         });
 
@@ -99,8 +98,8 @@ Answer:
 
         var result = await kernel.RunAsync(aboutMeOracle, new("Do I live in the same town where I grew up?")
         {
-            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-            [TextMemorySkill.RelevanceParam] = "0.8"
+            [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.RelevanceParam] = "0.8"
         });
 
         Console.WriteLine("Do I live in the same town where I grew up?\n");
@@ -121,7 +120,7 @@ Answer:
         {
             ["fact1"] = "What is my name?",
             ["fact2"] = "What do I do for a living?",
-            [TextMemorySkill.RelevanceParam] = ".75"
+            [TextMemoryPlugin.RelevanceParam] = ".75"
         });
 
         Console.WriteLine("Tell me a bit about myself\n");

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,7 +12,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Memory;
 
 /// <summary>
 /// TextMemorySkill provides a skill to save or recall information from the long or short term memory.
@@ -24,8 +23,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// SKContext.Variables["input"] = "what is the capital of France?"
 /// {{memory.recall $input }} => "Paris"
 /// </example>
-[Obsolete("Use Microsoft.SemanticKernel.Plugins.Memory instead. This will be removed in a future release.")]
-public sealed class TextMemorySkill
+public sealed class TextMemoryPlugin
 {
     /// <summary>
     /// Name of the context variable used to specify which memory collection to use.
@@ -56,7 +54,7 @@ public sealed class TextMemorySkill
     /// <summary>
     /// Creates a new instance of the TextMemorySkill
     /// </summary>
-    public TextMemorySkill(ISemanticTextMemory memory)
+    public TextMemoryPlugin(ISemanticTextMemory memory)
     {
         this._memory = memory;
     }
