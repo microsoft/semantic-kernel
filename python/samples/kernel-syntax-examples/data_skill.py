@@ -19,7 +19,6 @@ async def main() -> None:
         "Salary": [60000, 75000, 52000, 48000, 67000],
     }
     df = pd.DataFrame(data)
-    print(df)
 
     data_skill = DataSkill(data=df)
     kernel.import_skill(data_skill, skill_name="data")

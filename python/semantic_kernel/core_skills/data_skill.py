@@ -56,13 +56,14 @@ class DataSkill:
             count = 1
             num = len(self.data)
             prompt = f"""You are working with {num} pandas dataframes in Python,
-            named df1, df2, df3, and so on."""
+            named df1, df2, and so on. """
             for table in self.data:
-                prompt += "The names of the columns of df{count} are, in this order: \n"
-                column_names = ', '.join(map(str, table.columns.tolist()))
+                prompt += f"The names of the columns of df{count} are, in this order: \n"
+                column_names = ', '.join(map(str,table.columns.tolist()))
                 prompt += column_names + "\n"
-                prompt += "The names of the rows of df{count} are, in this order: \n"
-                row_names = ', '.join(map,(str,table.index.tolist())) + "\n"
+                prompt += f"The names of the rows of df{count} are, in this order: \n"
+                row_names = ', '.join(map(str,table.index.tolist())) + "\n"
+                prompt += row_names + "\n"
                 count +=1
         return prompt
 
