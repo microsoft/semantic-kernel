@@ -20,9 +20,7 @@ namespace Microsoft.SemanticKernel.SemanticFunctions;
 #pragma warning disable format
 
 /// <summary>
-/// Standard Semantic Kernel callable function.
-/// SKFunction is used to extend one C# <see cref="Delegate"/>, <see cref="Func{T, TResult}"/>, <see cref="Action"/>,
-/// with additional methods required by the kernel.
+/// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal sealed class PromptFunction : ISKFunction, IDisposable

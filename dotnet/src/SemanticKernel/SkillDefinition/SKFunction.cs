@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -13,11 +12,8 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 #pragma warning disable format
 
 /// <summary>
-/// Standard Semantic Kernel callable function.
-/// SKFunction is used to extend one C# <see cref="Delegate"/>, <see cref="Func{T, TResult}"/>, <see cref="Action"/>,
-/// with additional methods required by the kernel.
+/// Static helpers to create <seealso cref="ISKFunction"/> instances.
 /// </summary>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public static class SKFunction
 {
     /// <summary>
