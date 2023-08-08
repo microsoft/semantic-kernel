@@ -30,7 +30,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// with additional methods required by the kernel.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class DotNetNativeFunction : ISKFunction, IDisposable
+internal sealed class NativeFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -78,7 +78,7 @@ internal sealed class DotNetNativeFunction : ISKFunction, IDisposable
 
         MethodDetails methodDetails = GetMethodDetails(method, target, logger);
 
-        return new DotNetNativeFunction(
+        return new NativeFunction(
             delegateFunction: methodDetails.Function,
             parameters: methodDetails.Parameters,
             skillName: skillName!,
@@ -115,7 +115,7 @@ internal sealed class DotNetNativeFunction : ISKFunction, IDisposable
             skillName = SkillCollection.GlobalSkill;
         }
 
-        return new DotNetNativeFunction(
+        return new NativeFunction(
             delegateFunction: methodDetails.Function,
             parameters: parameters is not null ? parameters.ToList() : (IList<ParameterView>)Array.Empty<ParameterView>(),
             description: description,
@@ -139,7 +139,7 @@ internal sealed class DotNetNativeFunction : ISKFunction, IDisposable
         SemanticFunctionConfig functionConfig,
         ILogger? logger = null,
         CancellationToken cancellationToken = default) =>
-            PromptFunction.FromSemanticConfig(skillName, functionName, functionConfig, logger, cancellationToken);
+            SemanticFunction.FromSemanticConfig(skillName, functionName, functionConfig, logger, cancellationToken);
 
     /// <inheritdoc/>
     public FunctionView Describe()
@@ -235,7 +235,7 @@ internal sealed class DotNetNativeFunction : ISKFunction, IDisposable
         return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    internal DotNetNativeFunction(
+    internal NativeFunction(
         Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
         IList<ParameterView> parameters,
         string skillName,

@@ -272,7 +272,7 @@ public sealed class Kernel : IKernel, IDisposable
                 $"Function type not supported: {functionConfig.PromptTemplateConfig}");
         }
 
-        ISKFunction func = PromptFunction.FromSemanticConfig(
+        ISKFunction func = SemanticFunction.FromSemanticConfig(
             skillName,
             functionName,
             functionConfig,

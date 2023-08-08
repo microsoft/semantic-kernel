@@ -13,9 +13,9 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.SemanticFunctions;
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
+namespace Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable format
 
@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.SemanticFunctions;
 /// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class PromptFunction : ISKFunction, IDisposable
+internal sealed class SemanticFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -63,7 +63,7 @@ internal sealed class PromptFunction : ISKFunction, IDisposable
     {
         Verify.NotNull(functionConfig);
 
-        var func = new PromptFunction(
+        var func = new SemanticFunction(
             template: functionConfig.PromptTemplate,
             description: functionConfig.PromptTemplateConfig.Description,
             skillName: skillName,
@@ -144,7 +144,7 @@ internal sealed class PromptFunction : ISKFunction, IDisposable
     public string ToString(bool writeIndented)
         => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
 
-    internal PromptFunction(
+    internal SemanticFunction(
         IPromptTemplate template,
         string skillName,
         string functionName,

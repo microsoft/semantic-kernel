@@ -29,7 +29,7 @@ public static class SKFunction
         object? target = null,
         string? skillName = null,
         ILogger? logger = null)
-            => DotNetNativeFunction.FromNativeMethod(method, target, skillName, logger);
+            => NativeFunction.FromNativeMethod(method, target, skillName, logger);
 
     /// <summary>
     /// Create a native function instance, wrapping a delegate function
@@ -48,7 +48,7 @@ public static class SKFunction
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
         ILogger? logger = null)
-            => DotNetNativeFunction.FromNativeFunction(nativeFunction, skillName, functionName, description, parameters, logger);
+            => NativeFunction.FromNativeFunction(nativeFunction, skillName, functionName, description, parameters, logger);
 
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
@@ -65,5 +65,5 @@ public static class SKFunction
         SemanticFunctionConfig functionConfig,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
-            => PromptFunction.FromSemanticConfig(skillName, functionName, functionConfig, logger, cancellationToken);
+            => SemanticFunction.FromSemanticConfig(skillName, functionName, functionConfig, logger, cancellationToken);
 }
