@@ -31,7 +31,10 @@ class SequentialPlannerFunctionViewExtension:
             function
         )
 
-        return f"{qualified_name}:\n  description: {function.description}\n  inputs:\n  {inputs}"
+        return (
+            f"{qualified_name}:\n  description: {function.description}\n  inputs:\n "
+            f" {inputs}"
+        )
 
     @staticmethod
     def to_fully_qualified_name(function: FunctionView):
@@ -45,7 +48,10 @@ class SequentialPlannerFunctionViewExtension:
                 for parameter in function.parameters
             ]
         )
-        return f"{function.name}:\n  description: {function.description}\n  inputs:\n{inputs}"
+        return (
+            f"{function.name}:\n  description: {function.description}\n "
+            f" inputs:\n{inputs}"
+        )
 
 
 class SequentialPlannerSKContextExtension:
@@ -97,8 +103,8 @@ class SequentialPlannerSKContextExtension:
         functions_view = context.skills.get_functions_view()
 
         available_functions: List[FunctionView] = [
-            *functions_view._semantic_functions.values(),
-            *functions_view._native_functions.values(),
+            *functions_view.semantic_functions.values(),
+            *functions_view.native_functions.values(),
         ]
         available_functions = itertools.chain.from_iterable(available_functions)
 
