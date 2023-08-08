@@ -3,7 +3,9 @@
 using System;
 using System.Globalization;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Memory.Collections;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Structure for storing score value.
