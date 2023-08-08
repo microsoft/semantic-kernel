@@ -67,7 +67,7 @@ public abstract class ClientBase
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
             () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null)
+        if (response is null)
         {
             throw new SKException("Text completions null response");
         }
