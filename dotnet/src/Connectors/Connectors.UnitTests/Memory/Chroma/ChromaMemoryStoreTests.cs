@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -113,7 +114,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this._chromaClientMock
             .Setup(client => client.DeleteCollectionAsync(collectionName, CancellationToken.None))
-            .Throws(new ChromaClientException(collectionDoesNotExistErrorMessage));
+            .Throws(new SKException(collectionDoesNotExistErrorMessage));
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -121,7 +122,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var exception = await Record.ExceptionAsync(() => store.DeleteCollectionAsync(collectionName));
 
         // Assert
-        Assert.IsType<ChromaMemoryStoreException>(exception);
+        Assert.IsType<SKException>(exception);
         Assert.Equal(expectedExceptionMessage, exception.Message);
     }
 
@@ -147,7 +148,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this._chromaClientMock
             .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
-            .Throws(new ChromaClientException(collectionDoesNotExistErrorMessage));
+            .Throws(new SKException(collectionDoesNotExistErrorMessage));
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -208,7 +209,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
         this._chromaClientMock
             .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
-            .Throws(new ChromaClientException(collectionDoesNotExistErrorMessage));
+            .Throws(new SKException(collectionDoesNotExistErrorMessage));
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
@@ -216,7 +217,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var exception = await Record.ExceptionAsync(() => store.GetAsync(collectionName, memoryRecordKey, withEmbedding: true));
 
         // Assert
-        Assert.IsType<ChromaMemoryStoreException>(exception);
+        Assert.IsType<SKException>(exception);
         Assert.Equal(collectionDoesNotExistErrorMessage, exception.Message);
     }
 
