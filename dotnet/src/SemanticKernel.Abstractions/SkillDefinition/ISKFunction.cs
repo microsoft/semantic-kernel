@@ -87,7 +87,7 @@ public interface ISKFunction
     /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid overriding when possible.</remarks>
     /// <param name="preHook">Pre-hook delegate</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetPreExecutionHook(PreExecutionHook? preHook);
+    HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook);
 
     /// <summary>
     /// Used for setting a post-execution hook to a function.
@@ -95,5 +95,5 @@ public interface ISKFunction
     /// <remarks>Using more than once in the same function will override the previous post-execution hook, avoid overriding when possible.</remarks>
     /// <param name="postHook">Post-hook delegate</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetPostExecutionHook(PostExecutionHook? postHook);
+    HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook);
 }

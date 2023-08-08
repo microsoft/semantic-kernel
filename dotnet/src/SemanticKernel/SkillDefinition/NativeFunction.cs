@@ -162,7 +162,31 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         try
         {
-            return await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
+            // If there is a pre execution hook, call it
+            if (this._preExecutionHookRequest is not null)
+            {
+                var preExecutionContext = new PreExecutionContext(context);
+
+                await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
+
+                // Allow the pre execution hook to update the context variables if needed
+                context.Variables.Update(preExecutionContext.SKContext.Variables, true);
+            }
+
+            var result = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
+
+            // Post execution hooks will be called only if the function was executed successfully
+            if (this._postExecutionHookRequest is not null)
+            {
+                var postExecutionContext = new PostExecutionContext(context);
+
+                await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
+
+                // Allow the post execution hook to update the context variables if needed
+                context.Variables.Update(postExecutionContext.SKContext.Variables, true);
+            }
+
+            return result;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
@@ -193,6 +217,24 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         this.ThrowNotSemantic();
         return this;
+    }
+
+    /// <inheritdoc/>
+    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook)
+    {
+        // Any new registration will be called before the existing one
+        this._preExecutionHookRequest = new HookRequest<PreExecutionContext>(preHook, this._preExecutionHookRequest);
+
+        return this._preExecutionHookRequest;
+    }
+
+    /// <inheritdoc/>
+    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook)
+    {
+        // Any new registration will be called before the existing one
+        this._postExecutionHookRequest = new HookRequest<PostExecutionContext>(postHook, this._postExecutionHookRequest);
+
+        return this._postExecutionHookRequest;
     }
 
     /// <summary>
@@ -856,6 +898,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+
+    private HookRequest<PreExecutionContext>? _preExecutionHookRequest;
+    private HookRequest<PostExecutionContext>? _postExecutionHookRequest;
 
     #endregion
 }
