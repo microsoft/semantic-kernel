@@ -72,7 +72,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
         this._logger.Dispose();
     }
 
-    private class RedirectTextCompletion : ITextCompletion
+    private sealed class RedirectTextCompletion : ITextCompletion
     {
         Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
         {
