@@ -48,13 +48,28 @@ An ISKFunction Caller needs:
 
 ## Considered Options
 
-- Callback (Kernel and Function) **(Preferred)**
+- Callback Request + Recursive (Kernel, Plan and Function) **(Preferred)**
+- Single Callback (Kernel, Plan and Function)
 - Event Based Registration (Kernel and Function)
 - Middleware (Kernel Only)
 
 ## Pros and Cons of the Options
 
-### Callback Delegate (Kernel, Plan, Function)
+### Callback Request Recursive Delegate (Kernel, Plan, Function)
+
+- Specified on plan and function level as a configuration be able to specify what are the callback hooks that will be triggered.
+
+Pros:
+
+- Common pattern for observing and also changing data exposed as parameter into the delegate signature for (Get/Set) scenarios
+- Registering a callback gives back the request object that can be used to cancel the execution of the function in the future.
+- Recursive approach, allows to register multiple callbacks for the same event, and also allows to register callbacks on top of pre existing callbacks.
+
+Cons:
+
+- Registrations may use more memory and might not be garbage collected in the recursive approach, only when the function or the plan is disposed.
+
+### Single Callback Delegate (Kernel, Plan, Function)
 
 - Specified on kernel level as a configuration be able to specify what are the callback hooks that will be triggered.
   - Specified on function creation: As part of the function constructor be able to specify what are the callback hooks that will be triggered.
@@ -63,7 +78,9 @@ An ISKFunction Caller needs:
 Pros:
 
 - Common pattern for observing and also changing data exposed as parameter into the delegate signature for (Get/Set) scenarios
-  Cons:
+
+Cons:
+
 - Limited to only one method observing a specific event (Pre Post and InExecution). - Function When used as parameter, three new parameters would be needed as part of the function. (Specified on function invocation) - Extra Cons on
 
 ### Event Base Registration
@@ -95,13 +112,17 @@ Cons:
 
 ## Open Questions
 
-- Post Execution Hooks should execute right after the LLM result or before the end of the function execution itself?
+- Q: Post Execution Hooks should execute right after the LLM result or before the end of the function execution itself?
+  A: Currently post execution hooks are executed after the LLM result, but before the end of the function execution itself.
 
-- Should Pre/Post Hooks be many (pub/sub) allowing registration/deregistration?
+- Q: Should Pre/Post Hooks be many (pub/sub) allowing registration/deregistration?
+  A: Currently the approach used is a bit similar with HttpFeatures, OnCreation() regarding it's recursive capability (to executo multiple registrations) with an additional concept of HookRequest class where the caller will have a reference to the registration and can decide when to cancel it to avoid further execution.
 
-- Setting hooks on top of pre existing hooks should be allowed or throw an error?
+- Q: Setting hooks on top of pre existing hooks should be allowed or throw an error?
+  A: Currently with the recursive approach is possible to add multiple hooks so the latest will be called first. (Last in, First call)
 
-- Setting hooks on Plans should automatically cascade this hooks for all the inner steps + overriding existing ones in the process?
+- Q: Setting hooks on Plans should automatically cascade this hooks for all the inner steps + overriding existing ones in the process?
+  A: Plans with hooks will manage the execution of those before/after each step is executed
 
 ## Decision Outcome
 
