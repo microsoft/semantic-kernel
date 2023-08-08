@@ -24,8 +24,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         IKernel kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService("text-davinci-002", openAIApiKey, serviceId: "text-davinci-002")
-            .WithOpenAITextCompletionService("text-davinci-003", openAIApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, openAIApiKey)
             .Build();
 
         // Load native skill

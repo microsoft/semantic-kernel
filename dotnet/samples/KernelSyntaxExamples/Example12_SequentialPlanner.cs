@@ -69,8 +69,8 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithAzureTextCompletionService(
-                TestConfiguration.AzureOpenAI.DeploymentName,
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
