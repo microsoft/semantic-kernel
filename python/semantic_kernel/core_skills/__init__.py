@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from semantic_kernel.core_skills.code_skill import CodeSkill
 from semantic_kernel.core_skills.conversation_summary_skill import (
     ConversationSummarySkill,
 )
+from semantic_kernel.core_skills.data_skill import DataSkill
 from semantic_kernel.core_skills.file_io_skill import FileIOSkill
 from semantic_kernel.core_skills.http_skill import HttpSkill
 from semantic_kernel.core_skills.math_skill import MathSkill
