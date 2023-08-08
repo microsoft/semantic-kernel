@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -94,7 +94,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
             this._completion = completion;
         }
 
-        public ModelResult ModelResult => new ModelResult(this._completion);
+        public ModelResult ModelResult => new(this._completion);
 
         public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
         {
