@@ -2,7 +2,10 @@
 
 import pytest
 import semantic_kernel as sk
+import os
 
+pytestmark = pytest.mark.skipif( "Python_Integration_Tests" in os.environ, 
+reason="Google Palm integration tests are only set up to run locally", )
 
 @pytest.mark.asyncio
 async def test_text2text_generation_input_str(setup_gp_text_completion_function):
