@@ -14,6 +14,8 @@ class DataSkill:
 
     Usage:
         kernel.import_skill(DataSkill(), skill_name="DataSkill")
+        context = sk.ContextVariables()
+        context["data_summary"] = data_skill.get_row_column_names()
     """
     path: Union[str, List[str]]
     data: Union[pd.DataFrame, List[pd.DataFrame]]
@@ -25,9 +27,17 @@ class DataSkill:
             if not self.path.endswith(".csv"):
                 raise ValueError("File path must be to a CSV file")
             else:
-                self.data = pd.read_csv(self.path)
+                if self.data is None: self.data = pd.read_csv(self.path)
+                elif isinstance(self.data, pd.DataFrame): self.data = [self.data, pd.read_csv(self.path)]
+                elif isinstance(self.data, List[pd.DataFrame]): self.data.append(pd.read_csv(self.path))
+                else:
+                    raise ValueError("Data must be a pandas dataframe or a list of pandas dataframes")
         if isinstance(self.path, List):
             if self.data is None: self.data = []
+            elif isinstance(self.data, pd.DataFrame): self.data = [self.data]
+            elif isinstance(self.data, List[pd.DataFrame]): pass
+            else:
+                raise ValueError("Data must be a pandas dataframe or a list of pandas dataframes")
             for file in self.path:
                 if not file.endswith(".csv"):
                     raise ValueError("File path must be to a CSV file")
@@ -36,13 +46,10 @@ class DataSkill:
 
     def get_row_column_names(self) -> str:
         """
-        Returns the column names of the data table.
-
-        Args:
-            context: Contains the data table
+        Returns the row and column names of pandas dataframes.
 
         Returns:
-            The column names of the data table
+            The row and column names of the data tables contained in a prompt.
         """
         if isinstance(self.data, pd.DataFrame):
             prompt = """You are working with one pandas dataframe in Python. The
