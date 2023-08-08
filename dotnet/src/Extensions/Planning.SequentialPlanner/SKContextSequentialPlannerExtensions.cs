@@ -130,7 +130,7 @@ public static class SKContextSequentialPlannerExtensions
     /// Saves all available functions to memory.
     /// </summary>
     /// <param name="context">The SKContext to save the functions to.</param>
-    /// <param name="memory">The memory provide to store the functions to..</param>
+    /// <param name="memory">The memory provided to store the functions to.</param>
     /// <param name="availableFunctions">The available functions to save.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     internal static async Task RememberFunctionsAsync(

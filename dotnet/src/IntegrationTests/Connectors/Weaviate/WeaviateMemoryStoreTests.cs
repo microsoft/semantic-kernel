@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Diagnostics;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
@@ -42,7 +42,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
-        await Assert.ThrowsAsync<WeaviateMemoryException>(async () =>
+        await Assert.ThrowsAsync<SKException>(async () =>
             await this.weaviateMemoryStore.CreateCollectionAsync(conflictingCollectionName));
     }
 
@@ -55,7 +55,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
-        await Assert.ThrowsAsync<WeaviateMemoryException>(async () =>
+        await Assert.ThrowsAsync<SKException>(async () =>
             await this.weaviateMemoryStore.DoesCollectionExistAsync(conflictingCollectionName));
     }
 
@@ -68,7 +68,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
-        await Assert.ThrowsAsync<WeaviateMemoryException>(async () =>
+        await Assert.ThrowsAsync<SKException>(async () =>
             await this.weaviateMemoryStore.DeleteCollectionAsync(conflictingCollectionName));
     }
 

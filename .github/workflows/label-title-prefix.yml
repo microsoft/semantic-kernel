@@ -1,9 +1,9 @@
 name: Label title prefix
 on:
   issues:
-    types: [ labeled ]
+    types: [labeled]
   pull_request_target:
-    types: [ labeled ]
+    types: [labeled]
 
 jobs:
   add_title_prefix:
@@ -13,7 +13,7 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
-      
+
     steps:
       - uses: actions/github-script@v6
         name: "Issue/PR: update title"
@@ -23,10 +23,9 @@ jobs:
             let prefixLabels = {
               "python": "Python",
               "java": "Java",
-              ".NET": ".Net",
-              "copilot chat": "Copilot Chat"
+              ".NET": ".Net"
             };
-            
+
             function addTitlePrefix(title, prefix)
             {
               // Update the title based on the label and prefix
@@ -41,12 +40,12 @@ jobs:
                   title = prefix + ": " + title;
                 }
               }
-              
+
               return title;
             }
-            
+
             labelAdded = context.payload.label.name
-            
+
             // Check if the issue or PR has the label
             if (labelAdded in prefixLabels) {
               let prefix = prefixLabels[labelAdded];
@@ -59,7 +58,7 @@ jobs:
                     title: addTitlePrefix(context.payload.issue.title, prefix)
                   });
                   break
-                  
+
                 case 'pull_request_target':
                   github.rest.pulls.update({
                     pull_number: context.issue.number,

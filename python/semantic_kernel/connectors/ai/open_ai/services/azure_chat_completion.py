@@ -2,7 +2,7 @@
 
 
 from logging import Logger
-from typing import Optional, Union, List, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.open_ai.services.azure_credentials_mixin import (
@@ -13,7 +13,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion impo
 )
 
 if TYPE_CHECKING:
-    from azure.core.credentials import TokenCredential
+    pass
 
 
 class AzureChatCompletion(OpenAIChatCompletion, AzureCredentialMixin):

@@ -2,7 +2,7 @@
 
 
 from logging import Logger
-from typing import Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -15,7 +15,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion impo
 )
 
 if TYPE_CHECKING:
-    from azure.core.credentials import TokenCredential
+    pass
 
 
 class AzureTextCompletion(OpenAITextCompletion, AzureCredentialMixin):

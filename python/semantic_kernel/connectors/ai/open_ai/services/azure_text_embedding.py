@@ -2,7 +2,7 @@
 
 
 from logging import Logger
-from typing import Optional, Union, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from numpy import ndarray
 
@@ -14,7 +14,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
 )
 
 if TYPE_CHECKING:
-    from azure.core.credentials import TokenCredential
+    pass
 
 
 class AzureTextEmbedding(OpenAITextEmbedding, AzureCredentialMixin):
