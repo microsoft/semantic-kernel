@@ -4,6 +4,9 @@ import pytest
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.google_palm as sk_gp
 
+pytestmark = pytest.mark.skipif( "Python_Integration_Tests" in os.environ, 
+reason="Google Palm integration tests are only set up to run locally", )
+
 @pytest.mark.asyncio
 async def test_gp_embedding_service(create_kernel, get_gp_config):
     kernel = create_kernel
