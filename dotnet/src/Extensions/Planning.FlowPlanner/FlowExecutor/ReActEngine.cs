@@ -12,8 +12,8 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -99,7 +99,7 @@ internal sealed class ReActEngine
         {
             promptConfig = new PromptTemplateConfig();
 
-            string promptConfigString = EmbeddedResource.Read(config.ReActModel == FlowPlannerConfig.ModelName.TEXT_DAVINCI_003? "Skills.ReActEngine.gpt3.config.json" : "Skills.ReActEngine.config.json");
+            string promptConfigString = EmbeddedResource.Read(config.ReActModel == FlowPlannerConfig.ModelName.TEXT_DAVINCI_003 ? "Skills.ReActEngine.gpt3.config.json" : "Skills.ReActEngine.config.json");
 
             if (!string.IsNullOrEmpty(promptConfigString))
             {

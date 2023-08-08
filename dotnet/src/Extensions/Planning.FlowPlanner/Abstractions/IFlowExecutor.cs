@@ -6,8 +6,8 @@ namespace Microsoft.SemanticKernel.Planning.Flow;
 
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
-using Microsoft.SemanticKernel.Orchestration;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
 /// Flow executor interface

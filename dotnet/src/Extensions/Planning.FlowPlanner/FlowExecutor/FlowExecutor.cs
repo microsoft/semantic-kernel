@@ -202,7 +202,7 @@ internal class FlowExecutor : IFlowExecutor
             if (!string.IsNullOrEmpty(actionStep.Action!))
             {
                 var actionContext = kernel.CreateNewContext();
-                context.Variables.Where(p => step.Requires.Contains(p.Key)).ToList().ForEach(p => actionContext.Variables[p.Key] =p.Value);
+                context.Variables.Where(p => step.Requires.Contains(p.Key)).ToList().ForEach(p => actionContext.Variables[p.Key] = p.Value);
                 // get chat history
                 var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, stepId).ConfigureAwait(false);
                 if (chatHistory == null)
@@ -301,7 +301,7 @@ internal class FlowExecutor : IFlowExecutor
             // continue to next iteration
             await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
         }
-        
+
         throw new SKException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 }
