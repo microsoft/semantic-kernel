@@ -48,7 +48,7 @@ class TextMemorySkill(PydanticField):
             ask -- The question to ask the memory
             context -- Contains the 'collection' to search for information
                 , the 'relevance' score to use when searching
-                and the 'limit' to retrieve.
+                and the 'limit' of relevant memories to retrieve.
 
         Returns:
             The nearest item from the memory store as a string or empty string if not found.
