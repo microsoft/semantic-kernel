@@ -186,7 +186,6 @@ internal sealed class DotNetNativeFunction : ISKFunction, IDisposable
     {
         this.ThrowNotSemantic();
         return this;
-
     }
 
     /// <inheritdoc/>
