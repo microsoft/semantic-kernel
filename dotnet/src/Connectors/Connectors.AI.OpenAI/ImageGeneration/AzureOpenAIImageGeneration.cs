@@ -107,7 +107,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
         var operationId = await this.StartImageGenerationAsync(description, width, height, cancellationToken).ConfigureAwait(false);
         var result = await this.GetImageGenerationResultAsync(operationId, cancellationToken).ConfigureAwait(false);
 
-        if (result.Result == null)
+        if (result.Result is null)
         {
             throw new SKException("Azure Image Generation null response");
         }
