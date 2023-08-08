@@ -17,6 +17,7 @@ class PromptTemplateConfig:
         stop_sequences: List[str] = field(default_factory=list)
         token_selection_biases: Dict[int, int] = field(default_factory=dict)
         chat_system_prompt: str = None
+        function_call: str = ""
 
     @dataclass
     class InputParameter:
@@ -123,6 +124,7 @@ class PromptTemplateConfig:
         stop_sequences: List[str] = [],
         token_selection_biases: Dict[int, int] = {},
         chat_system_prompt: str = None,
+        function_call: str = "",
     ) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature
@@ -134,4 +136,5 @@ class PromptTemplateConfig:
         config.completion.stop_sequences = stop_sequences
         config.completion.token_selection_biases = token_selection_biases
         config.completion.chat_system_prompt = chat_system_prompt
+        config.completion.function_call = function_call
         return config

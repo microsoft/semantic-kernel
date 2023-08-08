@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import json
 from logging import Logger
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import openai
+
+if TYPE_CHECKING:
+    from openai.openai_object import OpenAIObject
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -16,6 +20,7 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.semantic_functions.chat_prompt_template import ChatMessage
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -63,31 +68,38 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._messages = []
 
     async def complete_chat_async(
+        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+    ) -> Union[str, List[str]]:
+        # TODO: tracking on token counts/etc.
+        response = await self._send_chat_request(messages, request_settings, False)
+
+        if len(response.choices) == 1:
+            return response.choices[0].message.content
+        else:
+            return [choice.message.content for choice in response.choices]
+
+    async def complete_chat_with_functions_async(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[ChatMessage],
+        functions: List[Dict[str, Any]],
         request_settings: ChatRequestSettings,
         logger: Optional[Logger] = None,
-        functions: Optional[List[Dict[str, Any]]] = None,
-    ) -> Union[Tuple[str, Dict], List[Tuple[str, Dict]]]:
+    ) -> Union[
+        Tuple[Optional[str], Optional[Dict]], List[Tuple[Optional[str], Optional[Dict]]]
+    ]:
         # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(
             messages, request_settings, False, functions
         )
 
         if len(response.choices) == 1:
-            return (
-                response.choices[0].message.content,
-                response.choices[0].message.function_call,
-            )
+            return _parse_message(response.choices[0].message)
         else:
-            return [
-                (choice.message.content, choice.message.function_call)
-                for choice in response.choices
-            ]
+            return [_parse_message(choice.message) for choice in response.choices]
 
     async def complete_chat_stream_async(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[ChatMessage],
         request_settings: ChatRequestSettings,
         logger: Optional[Logger] = None,
         functions: Optional[List[Dict[str, Any]]] = None,
@@ -169,7 +181,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
     async def _send_chat_request(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[ChatMessage],
         request_settings: ChatRequestSettings,
         stream: bool,
         functions: Optional[List[Dict[str, Any]]] = None,
@@ -201,10 +213,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 "To complete a chat you need at least one message",
             )
 
-        if messages[-1][0] != "user":
+        if messages[-1]["role"] in ["assistant", "system"]:
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
-                "The last message must be from the user",
+                "The last message must be from the user or a function output",
             )
 
         model_args = {}
@@ -213,9 +225,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         else:
             model_args["model"] = self._model_id
 
-        formatted_messages = [
-            {"role": role, "content": message} for role, message in messages
-        ]
+        # formatted_messages = [message.json(exclude_none=True) for message in messages]
 
         if functions and not request_settings.function_call:
             request_settings.function_call = "auto"
@@ -224,42 +234,60 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             request_settings.function_call = None
 
         try:
-            response: Any = await openai.ChatCompletion.acreate(
-                **model_args,
-                api_key=self._api_key,
-                api_type=self._api_type,
-                api_base=self._endpoint,
-                api_version=self._api_version,
-                organization=self._org_id,
-                messages=formatted_messages,
-                function=functions,
-                function_call=request_settings.function_call,
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                n=request_settings.number_of_responses,
-                stream=stream,
-                stop=(
-                    request_settings.stop_sequences
-                    if request_settings.stop_sequences is not None
-                    and len(request_settings.stop_sequences) > 0
-                    else None
-                ),
-                max_tokens=request_settings.max_tokens,
-                presence_penalty=request_settings.presence_penalty,
-                frequency_penalty=request_settings.frequency_penalty,
-                logit_bias=(
-                    request_settings.token_selection_biases
-                    if request_settings.token_selection_biases is not None
-                    and len(request_settings.token_selection_biases) > 0
-                    else {}
-                ),
-            )
+            if functions:
+                response: Any = await openai.ChatCompletion.acreate(
+                    **model_args,
+                    api_key=self._api_key,
+                    api_type=self._api_type,
+                    api_base=self._endpoint,
+                    api_version=self._api_version,
+                    organization=self._org_id,
+                    messages=messages,
+                    functions=functions,
+                    function_call=request_settings.function_call,
+                    temperature=request_settings.temperature,
+                    top_p=request_settings.top_p,
+                    presence_penalty=request_settings.presence_penalty,
+                    frequency_penalty=request_settings.frequency_penalty,
+                    max_tokens=request_settings.max_tokens,
+                    n=request_settings.number_of_responses,
+                    stream=stream,
+                    logit_bias=(
+                        request_settings.token_selection_biases
+                        if request_settings.token_selection_biases is not None
+                        and len(request_settings.token_selection_biases) > 0
+                        else {}
+                    ),
+                )
+            else:
+                response: Any = await openai.ChatCompletion.acreate(
+                    **model_args,
+                    api_key=self._api_key,
+                    api_type=self._api_type,
+                    api_base=self._endpoint,
+                    api_version=self._api_version,
+                    organization=self._org_id,
+                    messages=messages,
+                    temperature=request_settings.temperature,
+                    top_p=request_settings.top_p,
+                    presence_penalty=request_settings.presence_penalty,
+                    frequency_penalty=request_settings.frequency_penalty,
+                    max_tokens=request_settings.max_tokens,
+                    n=request_settings.number_of_responses,
+                    stream=stream,
+                    logit_bias=(
+                        request_settings.token_selection_biases
+                        if request_settings.token_selection_biases is not None
+                        and len(request_settings.token_selection_biases) > 0
+                        else {}
+                    ),
+                )
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
                 "OpenAI service failed to complete the chat",
                 ex,
-            )
+            ) from ex
 
         # streaming does not have usage info, therefore checking the type of the response
         if not stream and "usage" in response:
@@ -294,3 +322,30 @@ def _parse_choices(chunk):
 
     index = chunk.choices[0].index
     return message, index
+
+
+def _parse_message(message: "OpenAIObject") -> Tuple[Optional[str], Optional[Dict]]:
+    """
+    Parses the message.
+
+    Arguments:
+        message {OpenAIObject} -- The message to parse.
+
+    Returns:
+        Tuple[Optional[str], Optional[Dict]] -- The parsed message.
+    """
+    content = message.content if hasattr(message, "content") else None
+    function_call = message.function_call if hasattr(message, "function_call") else None
+    try:
+        if function_call:
+            function_call = {
+                "name": function_call.name,
+                "arguments": json.loads(function_call.arguments),
+            }
+    except json.JSONDecodeError as ex:
+        raise AIException(
+            AIException.ErrorCodes.InvalidResponseContent,
+            "The function call was not valid JSON",
+        ) from ex
+
+    return (content, function_call)

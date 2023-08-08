@@ -25,6 +25,10 @@ def _is_annotation_of_type(annotation, type_to_match) -> bool:
     )
 
 
+def _is_function_call_function(signature: signature) -> bool:
+    return signature.is_function_call
+
+
 def _has_no_params(signature: Signature) -> bool:
     return len(signature.parameters) == 0
 

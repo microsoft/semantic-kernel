@@ -1,15 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from semantic_kernel.semantic_functions.function_call_response_template import (
-    FunctionCallResponseTemplate,
-)
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
+from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
@@ -18,8 +16,29 @@ if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
 
+class ChatMessage(SKBaseModel):
+    role: str
+    name: Optional[str] = None
+    content: Optional[str] = None
+    message: Optional[str] = None
+
+    # def __dict__(self) -> Dict[str, Any]:
+    #     if self.message:
+    #         if self.content:
+    #             combined_content = f"{self.message} {self.content}"
+    #         else:
+    #             combined_content = self.message
+    #     else:
+    #         combined_content = self.content
+    #     return {
+    #         "role": self.role,
+    #         "name": self.name,
+    #         "content": combined_content,
+    #     }
+
+
 class ChatPromptTemplate(PromptTemplate):
-    _messages: List[Tuple[str, PromptTemplate]]
+    _messages: List[ChatMessage]
 
     def __init__(
         self,
@@ -40,54 +59,66 @@ class ChatPromptTemplate(PromptTemplate):
         )
 
     def add_system_message(self, message: str) -> None:
-        self.add_message("system", message)
+        self.add_message(ChatMessage(role="system", message=message))
 
     def add_user_message(self, message: str) -> None:
-        self.add_message("user", message)
+        self.add_message(
+            ChatMessage(
+                role="user",
+                message=message,
+            )
+        )
 
     def add_assistant_message(self, message: str) -> None:
-        self.add_message("assistant", message)
+        self.add_message(
+            ChatMessage(
+                role="assistant",
+                message=message,
+            )
+        )
+
+    def add_function_response_message(self, name: str, content: Any) -> None:
+        self.add_message(ChatMessage(role="function", name=name, content=str(content)))
 
     def add_assistant_message_with_function_call(
         self,
         message: Optional[str] = None,
         function_call: Optional[Dict[str, str]] = None,
     ) -> None:
-        if not message and not function_call:
-            raise ValueError(
-                "Either message or function_call must be provided to add_assistant_message_with_function_call"
-            )
-        self.add_message("assistant", message, function_call)
+        if function_call:
+            name = function_call.get("name")
+            content = str(function_call.get("arguments"))
+        self.add_message(
+            ChatMessage(role="assistant", name=name, message=message, content=content)
+        )
 
     def add_message(
         self,
-        role: str,
-        message: Optional[str] = None,
-        function_call: Optional[Dict[str, str]] = None,
+        message: ChatMessage,
     ) -> None:
-        self._messages.append(
-            (
-                role,
-                PromptTemplate(message, self._template_engine, self._prompt_config),
-                FunctionCallResponseTemplate(
-                    function_call.get("name"), function_call.get("arguments")
-                ),
-            )
-        )
+        self._messages.append(message)
 
-    async def render_messages_async(
-        self, context: "SKContext"
-    ) -> List[Tuple[str, str]]:
-        rendered_messages = []
-        for role, message, function_call in self._messages:
-            rendered_messages.append(
-                (role, await message.render_async(context), function_call or None)
-            )
+    async def render_messages_async(self, context: "SKContext") -> List[Dict[str, str]]:
+        rendered_messages: List[Dict[str, str]] = []
+        for mess in self._messages:
+            new_message = {"role": mess.role}
+            if mess.message:
+                new_message["content"] = await PromptTemplate(
+                    mess.message, self._template_engine, self._prompt_config
+                ).render_async(context)
+            if mess.name:
+                new_message["name"] = mess.name
+            if mess.content:
+                if "content" in new_message:
+                    new_message["content"] += f" {mess.content}"
+                else:
+                    new_message["content"] = mess.content
+            rendered_messages.append(new_message)
 
         latest_user_message = await self._template_engine.render_async(
             self._template, context
         )
-        rendered_messages.append(("user", latest_user_message, None))
+        rendered_messages.append({"role": "user", "content": latest_user_message})
 
         return rendered_messages
 

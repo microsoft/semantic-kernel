@@ -40,7 +40,7 @@ class FunctionView(SKBaseModel):
     @property
     def function_call_repr(self) -> Dict[str, Any]:
         return {
-            "name": self.name,
+            "name": f"{self.skill_name}-{self.name}",
             "description": self.description,
             "parameters": {
                 "type": "object",

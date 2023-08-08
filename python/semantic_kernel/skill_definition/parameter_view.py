@@ -32,4 +32,4 @@ class ParameterView(SKBaseModel):
     @property
     def function_call_repr(self) -> Dict[str, str]:
         """Return the parameter, ready for a function call setup."""
-        return {"description": self.description, "type": self.type}
+        return {"description": self.description, "type": self.type_}
