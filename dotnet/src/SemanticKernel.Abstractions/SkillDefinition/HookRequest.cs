@@ -14,7 +14,7 @@ public sealed class HookRequest<TExecutionContext>
     /// <summary>
     /// Previous execution hook.
     /// </summary>
-    private readonly ExecutionHook<TExecutionContext>? _priorExecutionHook = null;
+    private readonly HookRequest<TExecutionContext>? _priorExecutionHook = null;
 
     /// <summary>
     /// Gets a value indicating whether the request has been canceled.
@@ -38,7 +38,7 @@ public sealed class HookRequest<TExecutionContext>
 
         if (priorHookRequest is not null)
         {
-            this._priorExecutionHook = priorHookRequest.ExecutionHook;
+            this._priorExecutionHook = priorHookRequest;
         }
     }
 
@@ -60,7 +60,7 @@ public sealed class HookRequest<TExecutionContext>
         {
             if (this._priorExecutionHook is not null)
             {
-                await this._priorExecutionHook.Invoke(context).ConfigureAwait(false);
+                await this._priorExecutionHook.InvokeAsync(context).ConfigureAwait(false);
             }
         }
     }

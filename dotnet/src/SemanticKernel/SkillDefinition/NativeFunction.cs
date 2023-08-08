@@ -179,7 +179,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
-    private async Task CallPreExecutionHook(SKContext context)
+    private async Task<SKContext> CallPreExecutionHook(SKContext context)
     {
         if (this._preExecutionHookRequest is not null)
         {
@@ -190,9 +190,11 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             // Allow the pre execution hook to update the context variables if needed
             context.Variables.Update(preExecutionContext.SKContext.Variables, true);
         }
+
+        return context;
     }
 
-    private async Task CallPostExecutionHook(SKContext context)
+    private async Task<SKContext> CallPostExecutionHook(SKContext context)
     {
         // Post execution hooks will be called only if the function was executed successfully
         if (this._postExecutionHookRequest is not null)
@@ -204,6 +206,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             // Allow the post execution hook to update the context variables if needed
             context.Variables.Update(postExecutionContext.SKContext.Variables, true);
         }
+
+        return context;
     }
 
     /// <inheritdoc/>

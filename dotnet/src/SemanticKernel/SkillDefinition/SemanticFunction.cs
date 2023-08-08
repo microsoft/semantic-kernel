@@ -229,7 +229,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
 
-            await this.CallPreExecutionHook(context, renderedPrompt).ConfigureAwait(false);
+            context = await this.CallPreExecutionHook(context, renderedPrompt).ConfigureAwait(false);
 
             var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
@@ -238,7 +238,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             context.Variables.Update(completion);
             context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            await this.CallPostExecutionHook(context).ConfigureAwait(false);
+            context = await this.CallPostExecutionHook(context).ConfigureAwait(false);
         }
         catch (AIException ex)
         {
@@ -258,7 +258,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return context;
     }
 
-    private async Task CallPreExecutionHook(SKContext context, string renderedPrompt)
+    private async Task<SKContext> CallPreExecutionHook(SKContext context, string renderedPrompt)
     {
         if (this._preExecutionHookRequest is not null)
         {
@@ -269,9 +269,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             // Allow the pre execution hook to update the context variables if needed
             context.Variables.Update(preExecutionContext.SKContext.Variables, true);
         }
+
+        return context;
     }
 
-    private async Task CallPostExecutionHook(SKContext context)
+    private async Task<SKContext> CallPostExecutionHook(SKContext context)
     {
         if (this._postExecutionHookRequest is not null)
         {
@@ -282,6 +284,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             // Allow the post execution hook to update the context variables if needed
             context.Variables.Update(postExecutionContext.SKContext.Variables, true);
         }
+
+        return context;
     }
 
     #endregion

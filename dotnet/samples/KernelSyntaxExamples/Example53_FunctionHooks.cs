@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
@@ -42,6 +42,20 @@ public static class Example53_FunctionHooks
             return Task.CompletedTask;
         }
 
+        Task MyCancelledPreHook(PreExecutionContext executionContext)
+        {
+            Console.WriteLine($"Pre Hook - Should not trigger");
+
+            return Task.CompletedTask;
+        }
+
+        Task MyPreHook2(PreExecutionContext executionContext)
+        {
+            Console.WriteLine($"Pre Hook 2 - Prompt Token: {GPT3Tokenizer.Encode(executionContext.Prompt!).Count}");
+
+            return Task.CompletedTask;
+        }
+
         Task MyPostHook(PostExecutionContext executionContext)
         {
             Console.WriteLine($"Post Hook - Total Tokens: {executionContext.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
@@ -49,7 +63,12 @@ public static class Example53_FunctionHooks
         }
 
         excuseFunction.SetPreExecutionHook(MyPreHook);
+        excuseFunction.SetPreExecutionHook(MyPreHook2);
+        var hookToCancel = excuseFunction.SetPreExecutionHook(MyCancelledPreHook);
+
         excuseFunction.SetPostExecutionHook(MyPostHook);
+
+        hookToCancel.Cancel();
 
         var result = await excuseFunction.InvokeAsync("I missed the F1 final race");
 

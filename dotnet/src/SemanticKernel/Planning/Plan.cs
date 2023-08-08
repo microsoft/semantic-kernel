@@ -245,20 +245,31 @@ public sealed class Plan : IPlan
         if (this.HasNextStep)
         {
             var step = this.Steps[this.NextStepIndex];
-
             // Merge the state with the current context variables for step execution
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Skills, context.Logger);
+
+            string? renderedPrompt = null;
+            if (step.Function is not null && step.Function is SemanticFunction semanticFunction)
+            {
+                renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(functionContext, cancellationToken).ConfigureAwait(false);
+            }
+
+            functionContext = await this.CallPreExecutionHook(functionContext, renderedPrompt).ConfigureAwait(false);
+
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
-            var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)
             {
                 throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
                     $"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
             }
+
+            result = await this.CallPostExecutionHook(result).ConfigureAwait(false);
+
+            var resultValue = result.Result.Trim();
 
             #region Update State
 
@@ -293,6 +304,32 @@ public sealed class Plan : IPlan
         return this;
     }
 
+    private async Task<SKContext> CallPostExecutionHook(SKContext context)
+    {
+        if (this._postExecutionHookRequest is not null)
+        {
+            var postExecutionContext = new PostExecutionContext(context);
+            await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
+
+            context.Variables.Update(postExecutionContext.SKContext.Variables);
+        }
+
+        return context;
+    }
+
+    private async Task<SKContext> CallPreExecutionHook(SKContext context, string? renderedPrompt)
+    {
+        if (this._preExecutionHookRequest is not null)
+        {
+            var preExecutionContext = new PreExecutionContext(context, renderedPrompt);
+            await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
+
+            context.Variables.Update(preExecutionContext.SKContext.Variables);
+        }
+
+        return context;
+    }
+
     #region ISKFunction implementation
 
     /// <inheritdoc/>
@@ -309,14 +346,6 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
-            if (this._preExecutionHookRequest is not null)
-            {
-                var preExecutionContext = new PreExecutionContext(context);
-                await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
-
-                context.Variables.Update(preExecutionContext.SKContext.Variables);
-            }
-
             AddVariablesToContext(this.State, context);
             var result = await this.Function
                 .WithInstrumentation(context.Logger)
@@ -329,14 +358,6 @@ public sealed class Plan : IPlan
             }
 
             context.Variables.Update(result.Result);
-
-            if (this._postExecutionHookRequest is not null)
-            {
-                var postExecutionContext = new PostExecutionContext(result);
-                await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
-
-                context.Variables.Update(postExecutionContext.SKContext.Variables);
-            }
         }
         else
         {
