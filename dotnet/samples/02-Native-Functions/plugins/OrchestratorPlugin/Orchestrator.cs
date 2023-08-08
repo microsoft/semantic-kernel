@@ -22,17 +22,19 @@ public class Orchestrator
         // Save the original user request
         string request = context.Variables["input"];
 
-        // Add the list of available functions to the context
-        context.Variables["options"] = "Sqrt, Add";
-
         // Retrieve the intent from the user request
         var GetIntent = this._kernel.Skills.GetFunction("OrchestratorPlugin", "GetIntent");
-        await GetIntent.InvokeAsync(context);
-        string intent = context.Variables["input"].Trim();
+        var getIntentVariables = new ContextVariables
+        {
+            ["input"] = context.Variables["input"],
+            ["options"] = "Sqrt, Add"
+        };
+        string intent = (await this._kernel.RunAsync(getIntentVariables, GetIntent)).Result.Trim();
 
+        // Retrieve the numbers from the user request
         var GetNumbers = this._kernel.Skills.GetFunction("OrchestratorPlugin", "GetNumbers");
-        SKContext getNumberContext = await GetNumbers.InvokeAsync(request);
-        JsonObject numbers = JsonObject.Parse(getNumberContext.Variables["input"]).AsObject();
+        string numbersJson = (await this._kernel.RunAsync(request, GetNumbers)).Result;
+        JsonObject numbers = JsonObject.Parse(numbersJson).AsObject();
 
         // Call the appropriate function
         switch (intent)
@@ -40,17 +42,16 @@ public class Orchestrator
             case "Sqrt":
                 // Call the Sqrt function with the first number
                 var Sqrt = this._kernel.Skills.GetFunction("MathPlugin", "Sqrt");
-                SKContext sqrtResults = await Sqrt.InvokeAsync(numbers["number1"]!.ToString());
-
-                return sqrtResults.Variables["input"];
+                return (await this._kernel.RunAsync(numbers["number1"]!.ToString(), Sqrt)).Result;
             case "Add":
                 // Call the Add function with both numbers
                 var Add = this._kernel.Skills.GetFunction("MathPlugin", "Add");
-                context.Variables["input"] = numbers["number1"]!.ToString();
-                context.Variables["number2"] = numbers["number2"]!.ToString();
-                SKContext addResults = await Add.InvokeAsync(context);
-
-                return addResults.Variables["input"];
+                var addVariables = new ContextVariables
+                {
+                    ["input"] = numbers["number1"]!.ToString(),
+                    ["number2"] = numbers["number2"]!.ToString()
+                };
+                return (await this._kernel.RunAsync(addVariables, Add)).Result;
             default:
                 return "I'm sorry, I don't understand.";
         }

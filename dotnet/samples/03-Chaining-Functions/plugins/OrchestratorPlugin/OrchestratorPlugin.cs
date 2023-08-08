@@ -28,15 +28,15 @@ public class Orchestrator
 
         // Retrieve the intent from the user request
         var GetIntent = this._kernel.Skills.GetFunction("OrchestratorPlugin", "GetIntent");
-        var CreateResponse = this._kernel.Skills.GetFunction("OrchestratorPlugin", "CreateResponse");
-        await GetIntent.InvokeAsync(context);
-        string intent = context.Variables["input"].Trim();
-
-        var GetNumbers = this._kernel.Skills.GetFunction("OrchestratorPlugin", "GetNumbers");
-        var ExtractNumbersFromJson = this._kernel.Skills.GetFunction("OrchestratorPlugin", "ExtractNumbersFromJson");
-        ISKFunction MathFunction;
+        var getIntentVariables = new ContextVariables
+        {
+            ["input"] = context.Variables["input"],
+            ["options"] = "Sqrt, Add"
+        };
+        string intent = (await this._kernel.RunAsync(getIntentVariables, GetIntent)).Result.Trim();
 
         // Call the appropriate function
+        ISKFunction MathFunction;
         switch (intent)
         {
             case "Sqrt":
@@ -49,9 +49,16 @@ public class Orchestrator
                 return "I'm sorry, I don't understand.";
         }
 
+        // Get remaining functions
+        var CreateResponse = this._kernel.Skills.GetFunction("OrchestratorPlugin", "CreateResponse");
+        var GetNumbers = this._kernel.Skills.GetFunction("OrchestratorPlugin", "GetNumbers");
+        var ExtractNumbersFromJson = this._kernel.Skills.GetFunction("OrchestratorPlugin", "ExtractNumbersFromJson");
+
+        // Create a new context with the original request
         var pipelineContext = new ContextVariables(request);
         pipelineContext["original_request"] = request;
 
+        // Run the pipeline
         var output = await this._kernel.RunAsync(
             pipelineContext,
             GetNumbers,

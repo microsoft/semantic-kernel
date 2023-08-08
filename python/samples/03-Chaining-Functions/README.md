@@ -16,6 +16,19 @@ Make sure you have an
 [Open AI API Key](https://openai.com/api/) or
 [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
+This sample has been tested with the following models:
+
+| Service      | Model type      | Model            | Model version | Supported |
+| ------------ | --------------- | ---------------- | ------------- | --------- |
+| OpenAI       | Text Completion | text-davinci-003 | 1             | ✅        |
+| OpenAI       | Chat Completion | gpt-3.5-turbo    | 1             | ✅        |
+| OpenAI       | Chat Completion | gpt-3.5-turbo    | 0301          | ✅        |
+| OpenAI       | Chat Completion | gpt-4            | 1             | ✅        |
+| OpenAI       | Chat Completion | gpt-4            | 0314          | ✅        |
+| Azure OpenAI | Text Completion | text-davinci-003 | 1             | ✅        |
+| Azure OpenAI | Chat Completion | gpt-3.5-turbo    | 0301          | ✅        |
+| Azure OpenAI | Chat Completion | gpt-4-0314       | 0314          | ✅        |
+
 Copy the `.env.example` file to a new file named `.env`. Then, copy those keys into the `.env` file:
 
 ```
