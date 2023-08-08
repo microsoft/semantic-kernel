@@ -162,29 +162,11 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         try
         {
-            // If there is a pre execution hook, call it
-            if (this._preExecutionHookRequest is not null)
-            {
-                var preExecutionContext = new PreExecutionContext(context);
-
-                await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
-
-                // Allow the pre execution hook to update the context variables if needed
-                context.Variables.Update(preExecutionContext.SKContext.Variables, true);
-            }
+            await this.CallPreExecutionHook(context).ConfigureAwait(false);
 
             var result = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
 
-            // Post execution hooks will be called only if the function was executed successfully
-            if (this._postExecutionHookRequest is not null)
-            {
-                var postExecutionContext = new PostExecutionContext(context);
-
-                await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
-
-                // Allow the post execution hook to update the context variables if needed
-                context.Variables.Update(postExecutionContext.SKContext.Variables, true);
-            }
+            await this.CallPostExecutionHook(context).ConfigureAwait(false);
 
             return result;
         }
@@ -194,6 +176,33 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
             context.LastException = e;
             return context;
+        }
+    }
+
+    private async Task CallPreExecutionHook(SKContext context)
+    {
+        if (this._preExecutionHookRequest is not null)
+        {
+            var preExecutionContext = new PreExecutionContext(context);
+
+            await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
+
+            // Allow the pre execution hook to update the context variables if needed
+            context.Variables.Update(preExecutionContext.SKContext.Variables, true);
+        }
+    }
+
+    private async Task CallPostExecutionHook(SKContext context)
+    {
+        // Post execution hooks will be called only if the function was executed successfully
+        if (this._postExecutionHookRequest is not null)
+        {
+            var postExecutionContext = new PostExecutionContext(context);
+
+            await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
+
+            // Allow the post execution hook to update the context variables if needed
+            context.Variables.Update(postExecutionContext.SKContext.Variables, true);
         }
     }
 

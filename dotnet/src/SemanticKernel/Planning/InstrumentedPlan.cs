@@ -77,19 +77,17 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Used for setting a pre-execution hook to a plan and its children.
     /// </summary>
-    /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid overriding when possible.</remarks>
     /// <param name="preHook">Pre-hook delegate</param>
-    /// <returns>Self instance</returns>
-    public ISKFunction SetPreExecutionHook(PreExecutionHook? preHook) =>
+    /// <returns>Hook request</returns>
+    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook) =>
         this._plan.SetPreExecutionHook(preHook);
 
     /// <summary>
     /// Used for setting a post-execution hook to a plan and its children.
     /// </summary>
-    /// <remarks>Using more than once in the same plan will override the previous post-execution hook, avoid overriding when possible.</remarks>
     /// <param name="postHook">Post-hook delegate</param>
-    /// <returns>Self instance</returns>
-    public ISKFunction SetPostExecutionHook(PostExecutionHook? postHook) =>
+    /// <returns>Hook request</returns>
+    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook) =>
         this._plan.SetPostExecutionHook(postHook);
 
     #region private ================================================================================

@@ -309,6 +309,14 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
+            if (this._preExecutionHookRequest is not null)
+            {
+                var preExecutionContext = new PreExecutionContext(context);
+                await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
+
+                context.Variables.Update(preExecutionContext.SKContext.Variables);
+            }
+
             AddVariablesToContext(this.State, context);
             var result = await this.Function
                 .WithInstrumentation(context.Logger)
@@ -321,6 +329,14 @@ public sealed class Plan : IPlan
             }
 
             context.Variables.Update(result.Result);
+
+            if (this._postExecutionHookRequest is not null)
+            {
+                var postExecutionContext = new PostExecutionContext(result);
+                await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
+
+                context.Variables.Update(postExecutionContext.SKContext.Variables);
+            }
         }
         else
         {
@@ -363,43 +379,27 @@ public sealed class Plan : IPlan
     /// <summary>
     /// Used for setting a pre-execution hook to a plan and its children.
     /// </summary>
-    /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid overriding when possible.</remarks>
     /// <param name="preHook">Pre-hook delegate</param>
-    /// <returns>Self instance</returns>
-    public ISKFunction SetPreExecutionHook(PreExecutionHook? preHook)
+    /// <returns>Hook request</returns>
+    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook)
     {
-        if (this.Function is not null)
-        {
-            this.Function.SetPreExecutionHook(preHook);
-        }
+        // Any new registration will be called before the existing one
+        this._preExecutionHookRequest = new HookRequest<PreExecutionContext>(preHook, this._preExecutionHookRequest);
 
-        foreach (Plan step in this.Steps)
-        {
-            step.SetPreExecutionHook(preHook);
-        }
-
-        return this;
+        return this._preExecutionHookRequest;
     }
 
     /// <summary>
     /// Used for setting a post-execution hook to a plan and its children.
     /// </summary>
-    /// <remarks>Using more than once in the same plan will override the previous post-execution hook, avoid overriding when possible.</remarks>
     /// <param name="postHook">Post-hook delegate</param>
-    /// <returns>Self instance</returns>
-    public ISKFunction SetPostExecutionHook(PostExecutionHook? postHook)
+    /// <returns>Hook request</returns>
+    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook)
     {
-        if (this.Function is not null)
-        {
-            this.Function.SetPostExecutionHook(postHook);
-        }
+        // Any new registration will be called before the existing one
+        this._postExecutionHookRequest = new HookRequest<PostExecutionContext>(postHook, this._postExecutionHookRequest);
 
-        foreach (Plan step in this.Steps)
-        {
-            step.SetPostExecutionHook(postHook);
-        }
-
-        return this;
+        return this._postExecutionHookRequest;
     }
 
     #endregion ISKFunction implementation
@@ -624,6 +624,9 @@ public sealed class Plan : IPlan
     private static readonly Regex s_variablesRegex = new(@"\$(?<var>\w+)");
 
     private const string DefaultResultKey = "PLAN.RESULT";
+
+    private HookRequest<PreExecutionContext>? _preExecutionHookRequest;
+    private HookRequest<PostExecutionContext>? _postExecutionHookRequest;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

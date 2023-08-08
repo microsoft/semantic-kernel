@@ -121,6 +121,24 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return this;
     }
 
+    /// <inheritdoc/>
+    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook)
+    {
+        // Any new registration will be called before the existing one
+        this._preExecutionHookRequest = new HookRequest<PreExecutionContext>(preHook, this._preExecutionHookRequest);
+
+        return this._preExecutionHookRequest;
+    }
+
+    /// <inheritdoc/>
+    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook)
+    {
+        // Any new registration will be called before the existing one
+        this._postExecutionHookRequest = new HookRequest<PostExecutionContext>(postHook, this._postExecutionHookRequest);
+
+        return this._postExecutionHookRequest;
+    }
+
     /// <summary>
     /// Dispose of resources.
     /// </summary>
@@ -168,6 +186,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     #region private
 
+    private HookRequest<PreExecutionContext>? _preExecutionHookRequest;
+    private HookRequest<PostExecutionContext>? _postExecutionHookRequest;
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
@@ -208,13 +228,17 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+
+            await this.CallPreExecutionHook(context, renderedPrompt).ConfigureAwait(false);
+
             var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
             context.Variables.Update(completion);
-
             context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
+
+            await this.CallPostExecutionHook(context).ConfigureAwait(false);
         }
         catch (AIException ex)
         {
@@ -232,6 +256,32 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
 
         return context;
+    }
+
+    private async Task CallPreExecutionHook(SKContext context, string renderedPrompt)
+    {
+        if (this._preExecutionHookRequest is not null)
+        {
+            var preExecutionContext = new PreExecutionContext(context, renderedPrompt);
+
+            await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
+
+            // Allow the pre execution hook to update the context variables if needed
+            context.Variables.Update(preExecutionContext.SKContext.Variables, true);
+        }
+    }
+
+    private async Task CallPostExecutionHook(SKContext context)
+    {
+        if (this._postExecutionHookRequest is not null)
+        {
+            var postExecutionContext = new PostExecutionContext(context);
+
+            await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
+
+            // Allow the post execution hook to update the context variables if needed
+            context.Variables.Update(postExecutionContext.SKContext.Variables, true);
+        }
     }
 
     #endregion

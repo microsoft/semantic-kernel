@@ -4,8 +4,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -42,16 +42,18 @@ public static class Example54_PlanHooks
         Console.WriteLine("Result:");
         Console.WriteLine(result.Result);
 
-        SKContext MyPreHook(SKContext context, string generatedPrompt)
+        Task MyPreHook(PreExecutionContext executionContext)
         {
-            Console.WriteLine($"Pre Hook - Prompt: {generatedPrompt}");
-            return context;
+            Console.WriteLine($"Pre Hook - Prompt: {executionContext.Prompt}");
+
+            return Task.CompletedTask;
         }
 
-        SKContext MyPostHook(SKContext context)
+        Task MyPostHook(PostExecutionContext executionContext)
         {
-            Console.WriteLine($"Post Hook - Total Tokens: {context.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
-            return context;
+            Console.WriteLine($"Post Hook - Total Tokens: {executionContext.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
+
+            return Task.CompletedTask;
         }
     }
 }
