@@ -2,6 +2,7 @@
   "OpenAI": {
     "ServiceId": "text-davinci-003",
     "ModelId": "text-davinci-003",
+    "ChatModelId": "gpt-3.5-turbo",
     "ApiKey": ""
   },
   "AzureOpenAI": {
@@ -30,5 +31,40 @@
   },
   "Postgres": {
     "ConnectionString": ""
+  },
+  "MultiConnector": {
+    "OobaboogaEndPoint": "http://localhost",
+    "OobaboogaCompletions": [
+      {
+        "Name": "TheBloke_orca_mini_3B-GGML",
+        "BlockingPort": 5000,
+        "StreamingPort": 5010,
+        "MaxTokens": 2048,
+        "CostPer1000Token": 0.0004
+      },
+      //{
+      //  "Name": "togethercomputer_RedPajama-INCITE-Chat-3B-v1",
+      //  "BlockingPort": 5001,
+      //  "StreamingPort": 5011,
+      //  "MaxTokens": 2048,
+      //  "CostPer1000Token": 0.0006
+      //},
+      {
+        "Name": "TheBloke_StableBeluga-7B-GGML",
+        "BlockingPort": 5002,
+        "StreamingPort": 5012,
+        "MaxTokens": 4096,
+        "CostPer1000Token": 0.0006
+      }
+      //{
+      //  "Name": "TheBloke_StableBeluga-13B-GGML",
+      //  "BlockingPort": 5003,
+      //  "StreamingPort": 5013,
+      //  "MaxTokens": 4096,
+      //  "CostPer1000Token": 0.001
+      //}
+
+    ]
+
   }
 }

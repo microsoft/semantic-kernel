@@ -34,6 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Connectors\Connectors.AI.MultiConnector\Connectors.AI.MultiConnector.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AI.Oobabooga\Connectors.AI.Oobabooga.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
@@ -50,6 +51,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Connectors\MultiConnector\VettingSequentialPlan_SummarizeSkill.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="testsettings.development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="testsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

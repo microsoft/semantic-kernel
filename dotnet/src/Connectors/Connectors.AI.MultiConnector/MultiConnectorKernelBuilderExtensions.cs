@@ -22,20 +22,28 @@ public static class MultiConnectorKernelBuilderExtensions
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="settings">An instance of the <see cref="MultiTextCompletionSettings"/> to configure the multi Text completion.</param>
     /// <param name="mainTextCompletion">The primary text completion to used by default for completion calls and vetting other completion providers.</param>
+    /// <param name="creditor">an optional cost counter that will compute the compound costs from settings and connector usage</param>
     /// <param name="analysisTaskCancellationToken">The cancellation token to use for the completion manager.</param>
-    /// <param name="otherCompletions">The secondary text completions that need vetting to be used for completion calls.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <param name="otherCompletions">The secondary text completions that need vetting to be used for completion calls.</param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithMultiConnectorCompletionService(this KernelBuilder builder,
         MultiTextCompletionSettings settings,
         NamedTextCompletion mainTextCompletion,
-        CancellationToken? analysisTaskCancellationToken,
-        NamedTextCompletion[] otherCompletions,
+        CallRequestCostCreditor? creditor = null,
+        CancellationToken? analysisTaskCancellationToken = null,
         string? serviceId = null,
-        bool setAsDefault = false)
+        bool setAsDefault = false,
+        params NamedTextCompletion[]? otherCompletions)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (parameters) => new MultiTextCompletion(settings, mainTextCompletion, analysisTaskCancellationToken, logger: parameters.Logger, otherCompletions: otherCompletions), setAsDefault);
+        builder.WithAIService<ITextCompletion>(serviceId, (parameters) => new MultiTextCompletion(
+            settings,
+            mainTextCompletion,
+            analysisTaskCancellationToken,
+            creditor: creditor,
+            logger: parameters.Logger,
+            otherCompletions: otherCompletions), setAsDefault);
         return builder;
     }
 

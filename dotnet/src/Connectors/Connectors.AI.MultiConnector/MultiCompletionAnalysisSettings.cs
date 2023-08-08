@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
@@ -52,24 +53,49 @@ RESPONSE IS VALID? (true/false):
     public bool EnableAnalysis { get; set; } = false;
 
     /// <summary>
-    /// Determine if self-vetting should be used
-    /// </summary>
-    public bool UseSelfVetting { get; set; } = false;
-
-    /// <summary>
     /// The path to store analysis results
     /// </summary>
     public string AnalysisFilePath { get; set; } = ".\\MultiTextCompletion-analysis.json";
 
     /// <summary>
-    /// Time period to conduct analysis
-    /// </summary>
-    public TimeSpan AnalysisPeriod { get; set; } = TimeSpan.FromMinutes(1);
-
-    /// <summary>
     /// Duration before analysis is started when a new event is recorded
     /// </summary>
     public TimeSpan AnalysisDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Enable or disable the analysis
+    /// </summary>
+    public bool EnableConnectorTests { get; set; } = true;
+
+    /// <summary>
+    /// Time period to conduct Tests
+    /// </summary>
+    public TimeSpan TestsPeriod { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// Enable or disable the evaluation of test prompts
+    /// </summary>
+    public bool EnableTestEvaluations { get; set; } = true;
+
+    /// <summary>
+    /// Time period to conduct evaluations
+    /// </summary>
+    public TimeSpan EvaluationPeriod { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// Determine if self-vetting should be used
+    /// </summary>
+    public bool UseSelfVetting { get; set; } = false;
+
+    /// <summary>
+    /// Enable or disable the suggestion of new settings from evaluation
+    /// </summary>
+    public bool EnableSuggestion { get; set; } = true;
+
+    /// <summary>
+    /// Time period to conduct suggestion analysis
+    /// </summary>
+    public TimeSpan SuggestionPeriod { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Indicates whether to update suggested settings after analysis
@@ -92,9 +118,14 @@ RESPONSE IS VALID? (true/false):
     public string MultiCompletionSettingsFilePath { get; set; } = ".\\MultiTextCompletionSettings.json";
 
     /// <summary>
-    /// Number of prompt tests to be run
+    /// The number of sample to collect for each prompt type
     /// </summary>
-    public int NbPromptTests { get; set; } = 10;
+    public int MaxInstanceNb { get; set; } = 10;
+
+    /// <summary>
+    /// Number of prompt tests to be run for each prompt type for each connector to test
+    /// </summary>
+    public int NbPromptTests { get; set; } = 3;
 
     /// <summary>
     /// The vetting prompt used in evaluation
@@ -109,34 +140,205 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// Asynchronously evaluates a connector test, writes the evaluation to a file, and updates settings if necessary.
     /// </summary>
-    public async Task EvaluatePromptConnectorsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public async Task<OptimizationCompletedEventArgs> EvaluatePromptConnectorsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
-        List<PromptMultiConnectorSettings> targetPromptSettings = new();
-        var currentEvaluations = new List<ConnectorPromptEvaluation>();
+        var completionAnalysis = new MultiCompletionAnalysis()
+        {
+            Timestamp = DateTime.MinValue
+        };
+        var toReturn = new OptimizationCompletedEventArgs(completionAnalysis, settings);
+        try
+        {
+            // Saving Original Tests
 
+           var needTest = this.SaveOriginalTestsReturnNeedRunningTest(originalTests, logger, ref toReturn);
+
+            List<ConnectorTest>? tests = null;
+
+            if (needTest)
+            {
+                tests = await this.RunConnectorTestsAsync(originalTests, namedTextCompletions, settings, logger, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                logger?.LogDebug("Test period not reached. No new Test triggered.");
+            }
+
+            if (tests == null)
+            {
+                return toReturn;
+            }
+
+            bool needEvaluate = this.SaveConnectorTestsReturnNeedEvaluate(logger, tests, ref toReturn);
+
+            // Generate evaluations
+
+            List<ConnectorPromptEvaluation>? currentEvaluations = null;
+
+            if (needEvaluate)
+            {
+                currentEvaluations = await this.RunConnectorTestsEvaluationsAsync(tests, namedTextCompletions, settings, logger, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                logger?.LogDebug("Evaluation period not reached. No new Evaluation triggered.");
+            }
+
+            if (currentEvaluations == null)
+            {
+                return toReturn;
+            }
+
+            //Save evaluations to file
+
+            bool needSuggestion = this.SaveEvaluationsReturnNeedSuggestion(logger, currentEvaluations, ref toReturn);
+
+            // If update or save suggested settings are enabled, suggest new settings from analysis and save them if needed
+            if (needSuggestion)
+            {
+                logger?.LogDebug("Analysis period reached. New settings suggested.");
+                toReturn.SuggestedSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, cancellationToken);
+                if (this.SaveSuggestedSettings)
+                {
+                    // Save the new settings
+                    var settingsJson = JsonSerializer.Serialize(toReturn.SuggestedSettings, new JsonSerializerOptions() { WriteIndented = true });
+                    File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
+                }
+
+                if (this.DeleteAnalysisFile)
+                {
+                    logger?.LogTrace("Deleting evaluation file {0}", this.AnalysisFilePath);
+                    lock (this._analysisFileLock)
+                    {
+                        if (File.Exists(this.AnalysisFilePath))
+                        {
+                            File.Delete(this.AnalysisFilePath);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                logger?.LogDebug("Suggestion period not reached. No new settings suggested.");
+            }
+        }
+        finally
+        {
+        }
+
+        return toReturn;
+    }
+
+    private bool SaveEvaluationsReturnNeedSuggestion(ILogger? logger, List<ConnectorPromptEvaluation> currentEvaluations, ref OptimizationCompletedEventArgs toReturn)
+    {
+        bool UpdateEvaluationsAndProbeSuggestion(MultiCompletionAnalysis multiCompletionAnalysis)
+        {
+            var testTimestampsToRemove = currentEvaluations.Select(evaluation => evaluation.Test.Timestamp);
+            multiCompletionAnalysis.Tests.RemoveAll(test => testTimestampsToRemove.Contains(test.Timestamp));
+            logger?.LogTrace("Found {0} evaluations", multiCompletionAnalysis.Evaluations.Count);
+            multiCompletionAnalysis.Evaluations.AddRange(currentEvaluations);
+            bool needSuggestion = (this.EnableSuggestion && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings)) && (DateTime.Now - multiCompletionAnalysis.SuggestionTimestamp) > this.SuggestionPeriod;
+            if (needSuggestion)
+            {
+                multiCompletionAnalysis.SuggestionTimestamp = DateTime.Now;
+            }
+
+            return needSuggestion;
+        }
+
+        logger?.LogTrace("Loading Analysis file from {0} to save evaluations", this.AnalysisFilePath);
+
+        bool needSuggestion = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateEvaluationsAndProbeSuggestion);
+
+        logger?.LogTrace("Saved {0} evaluations to {1}", currentEvaluations.Count, this.AnalysisFilePath);
+        return needSuggestion;
+    }
+
+    private async Task<List<ConnectorPromptEvaluation>> RunConnectorTestsEvaluationsAsync(List<ConnectorTest> tests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
+    {
+        List<ConnectorPromptEvaluation> currentEvaluations;
+        currentEvaluations = new List<ConnectorPromptEvaluation>();
+        logger?.LogTrace("Generating Evaluations from prompt test results");
+        foreach (ConnectorTest connectorTest in tests)
+        {
+            NamedTextCompletion? vettingConnector = null;
+            if (this.UseSelfVetting)
+            {
+                vettingConnector = namedTextCompletions.FirstOrDefault(c => c.Name == connectorTest.ConnectorName);
+            }
+
+            // Use primary connector for vetting by default
+            vettingConnector ??= namedTextCompletions[0];
+
+            var evaluation = await this.EvaluateConnectorTestWithCompletionAsync(vettingConnector, connectorTest, settings, logger, cancellationToken).ConfigureAwait(false);
+            if (evaluation == null)
+            {
+                logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
+                break;
+            }
+
+            currentEvaluations.Add(evaluation);
+
+            logger?.LogTrace("Evaluated connector {0}, Vetted:{1} from Prompt:{2}\nResult:{3}", evaluation.Test.ConnectorName, evaluation.IsVetted, evaluation.Test.Prompt, evaluation.Test.Result);
+        }
+
+        return currentEvaluations;
+    }
+
+    private bool SaveConnectorTestsReturnNeedEvaluate(ILogger? logger, List<ConnectorTest> tests, ref OptimizationCompletedEventArgs toReturn)
+    {
+        bool UpdateTestsAndProbeEvaluate(MultiCompletionAnalysis multiCompletionAnalysis)
+        {
+            var originalTestPromptsToRemove = tests.Select(test => test.Prompt).Distinct();
+            multiCompletionAnalysis.OriginalTests.RemoveAll(test => originalTestPromptsToRemove.Contains(test.Prompt));
+
+            logger?.LogTrace("Found {0} tests", multiCompletionAnalysis.Tests.Count);
+            multiCompletionAnalysis.Tests.AddRange(tests);
+            bool needEvaluate = (this.EnableTestEvaluations) && (DateTime.Now - multiCompletionAnalysis.EvaluationTimestamp) > this.EvaluationPeriod;
+            if (needEvaluate)
+            {
+                multiCompletionAnalysis.EvaluationTimestamp = DateTime.Now;
+            }
+
+            return needEvaluate;
+        }
+
+        logger?.LogTrace("Loading Analysis file from {0} to update tests", this.AnalysisFilePath);
+
+        bool needEvaluate = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateTestsAndProbeEvaluate);
+
+        logger?.LogTrace("Saved {0} new test results to {1}", tests.Count, this.AnalysisFilePath);
+        return needEvaluate;
+    }
+
+    private async Task<List<ConnectorTest>> RunConnectorTestsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
+    {
+        List<ConnectorTest> tests;
+        logger?.LogTrace("Starting running connector tests from {0} original prompts", originalTests.Count);
+
+        tests = new List<ConnectorTest>();
         foreach (ConnectorTest originalTest in originalTests)
         {
-            var promptSettings = settings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings);
+            logger?.LogTrace("Starting running tests for prompt:\n {0} ", originalTest.Prompt);
 
-            targetPromptSettings.Add(promptSettings);
-
-            promptSettings.IsTesting = true;
+            var promptSettings = settings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings, out var isNew);
 
             // Generate tests
-
-            var tests = new List<ConnectorTest>();
 
             var connectorsToTest = promptSettings.GetCompletionsToTest(namedTextCompletions);
 
             foreach (NamedTextCompletion namedTextCompletion in connectorsToTest)
             {
+                logger?.LogTrace("Running Tests for connector {0} ", namedTextCompletion.Name);
+
                 for (int i = 0; i < this.NbPromptTests; i++)
                 {
                     var stopWatch = Stopwatch.StartNew();
                     string result = "";
                     try
                     {
-                        var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, originalTest.RequestSettings, cancellationToken).ConfigureAwait(false);
+                        var newRequestSettings = namedTextCompletion.AdjustRequestSettings(originalTest.Prompt, originalTest.RequestSettings, logger);
+                        var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, newRequestSettings, cancellationToken).ConfigureAwait(false);
 
                         var firstResult = completions[0];
 
@@ -146,101 +348,67 @@ RESPONSE IS VALID? (true/false):
                         var duration = stopWatch.Elapsed;
 
                         // For the management task
-                        var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
+                        var connectorTest = ConnectorTest.Create(originalTest.Prompt, newRequestSettings, namedTextCompletion, result, duration);
                         tests.Add(connectorTest);
+
+                        logger?.LogTrace("Generated Test results for connector {0}, duration: {1}\nprompt:{2}\nresult:{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
                     }
-                    catch (Exception exception)
+                    catch (AIException exception)
                     {
-                        logger?.LogError(exception, "Failed to test prompt with connector.\nPrompt:\n {0}\nConnector: {1} ", originalTest.Prompt, namedTextCompletion.Name);
-                        throw;
+                        logger?.LogError(exception, "Failed to run test prompt with connector {2}\nException:{0}Prompt:\n{1} ", exception, exception.ToString(), originalTest.Prompt, namedTextCompletion.Name);
                     }
-                }
-            }
-
-            // Generate evaluations
-            foreach (ConnectorTest connectorTest in tests)
-            {
-                NamedTextCompletion? vettingConnector = null;
-                if (this.UseSelfVetting)
-                {
-                    vettingConnector = namedTextCompletions.FirstOrDefault(c => c.Name == connectorTest.ConnectorName);
-                }
-
-                // Use primary connector for vetting by default
-                vettingConnector ??= namedTextCompletions[0];
-
-                for (int i = 0; i < this.NbPromptTests; i++)
-                {
-                    var evaluation = await this.EvaluateConnectorTestWithCompletionAsync(vettingConnector, connectorTest, settings, cancellationToken).ConfigureAwait(false);
-                    if (evaluation == null)
-                    {
-                        logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
-                        break;
-                    }
-
-                    currentEvaluations.Add(evaluation);
                 }
             }
         }
 
-        //Save evaluations to file
+        return tests;
+    }
 
-        var completionAnalysis = new MultiCompletionAnalysis()
+    private bool SaveOriginalTestsReturnNeedRunningTest(List<ConnectorTest> originalTests, ILogger? logger, ref OptimizationCompletedEventArgs toReturn)
+    {
+        bool needTest;
+
+        bool UpdateOriginalTestsAndProbeTests(MultiCompletionAnalysis multiCompletionAnalysis)
         {
-            Timestamp = DateTime.MinValue
-        };
-        bool needAnalysis;
+            logger?.LogTrace("Found {0} original tests", multiCompletionAnalysis.OriginalTests.Count);
+            var uniqueOriginalTests = originalTests.GroupBy(test => test.Prompt).Select(grouping => grouping.First());
+            multiCompletionAnalysis.OriginalTests.AddRange(originalTests);
+            bool needRunningTests = (this.EnableConnectorTests) && (DateTime.Now - multiCompletionAnalysis.TestTimestamp) > this.TestsPeriod;
+            if (needRunningTests)
+            {
+                multiCompletionAnalysis.TestTimestamp = DateTime.Now;
+            }
+
+            return needRunningTests;
+        }
+
+        logger?.LogTrace("Loading Analysis file from {0} to update original tests", this.AnalysisFilePath);
+
+        needTest = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateOriginalTestsAndProbeTests);
+
+        logger?.LogTrace("Saved {0} original tests to {1}", originalTests.Count, this.AnalysisFilePath);
+        return needTest;
+    }
+
+    private bool LockLoadApplySaveProbeNext(ILogger? logger, ref OptimizationCompletedEventArgs analysisAndSettings, Func<MultiCompletionAnalysis, bool> updateAndProbeTimespan)
+    {
+        bool runNextStep;
         lock (this._analysisFileLock)
         {
+            var currentAnalysis = analysisAndSettings.Analysis;
             if (File.Exists(this.AnalysisFilePath))
             {
                 var json = File.ReadAllText(this.AnalysisFilePath);
-                completionAnalysis = JsonSerializer.Deserialize<MultiCompletionAnalysis>(json) ?? completionAnalysis;
+                currentAnalysis = JsonSerializer.Deserialize<MultiCompletionAnalysis>(json) ?? currentAnalysis;
             }
 
-            needAnalysis = (this.UpdateSuggestedSettings || this.SaveSuggestedSettings) && (DateTime.Now - completionAnalysis.Timestamp) > this.AnalysisPeriod;
-            if (needAnalysis)
-            {
-                completionAnalysis.Timestamp = DateTime.Now;
-            }
-
-            completionAnalysis.Evaluations.AddRange(currentEvaluations);
-            var jsonString = JsonSerializer.Serialize(completionAnalysis, new JsonSerializerOptions() { WriteIndented = true });
+            runNextStep = updateAndProbeTimespan(currentAnalysis);
+            var jsonString = JsonSerializer.Serialize(currentAnalysis, new JsonSerializerOptions() { WriteIndented = true });
             File.WriteAllText(this.AnalysisFilePath, jsonString);
+            analysisAndSettings.Analysis = currentAnalysis;
         }
 
-        // If update or save suggested settings are enabled, suggest new settings from analysis and save them if needed
-        if (needAnalysis)
-        {
-            logger?.LogDebug("Analysis period reached. New settings suggested.");
-            var newSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, cancellationToken);
-            if (this.SaveSuggestedSettings)
-            {
-                // Save the new settings
-                var settingsJson = JsonSerializer.Serialize(newSettings, new JsonSerializerOptions() { WriteIndented = true });
-                File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
-            }
-
-            if (this.DeleteAnalysisFile)
-            {
-                lock (this._analysisFileLock)
-                {
-                    if (File.Exists(this.AnalysisFilePath))
-                    {
-                        File.Delete(this.AnalysisFilePath);
-                    }
-                }
-            }
-        }
-        else
-        {
-            logger?.LogDebug("Analysis period not reached. No new settings suggested.");
-        }
-
-        foreach (var promptSettings in targetPromptSettings)
-        {
-            promptSettings.IsTesting = false;
-        }
+        return runNextStep;
     }
 
     /// <summary>
@@ -269,8 +437,8 @@ RESPONSE IS VALID? (true/false):
         var evaluationsByPromptSettings = new Dictionary<PromptMultiConnectorSettings, List<ConnectorPromptEvaluation>>();
         foreach (var evaluation in completionAnalysis.Evaluations)
         {
-            var promptSettings = settingsToReturn!.GetPromptSettings(evaluation.Test.Prompt, evaluation.Test.RequestSettings);
-            if (promptSettings.PromptType.Instances.Count < this.NbPromptTests && !promptSettings.PromptType.Instances.Contains(evaluation.Test.Prompt))
+            var promptSettings = settingsToReturn!.GetPromptSettings(evaluation.Test.Prompt, evaluation.Test.RequestSettings, out _);
+            if (promptSettings.PromptType.Instances.Count < this.MaxInstanceNb && !promptSettings.PromptType.Instances.Contains(evaluation.Test.Prompt))
             {
                 promptSettings.PromptType.Instances.Add(evaluation.Test.Prompt);
             }
@@ -311,18 +479,29 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// Evaluates a ConnectorTest with a NamedTextCompletion instance and returns the evaluation.
     /// </summary>
-    public async Task<ConnectorPromptEvaluation> EvaluateConnectorTestWithCompletionAsync(NamedTextCompletion completion, ConnectorTest connectorTest, MultiTextCompletionSettings settings, CancellationToken cancellationToken = default)
+    public async Task<ConnectorPromptEvaluation?> EvaluateConnectorTestWithCompletionAsync(NamedTextCompletion vettingCompletion, ConnectorTest connectorTest, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken = default)
     {
         var prompt = this.VettingPromptTemplate.Replace("{prompt}", connectorTest.Prompt).Replace("{response}", connectorTest.Result);
         var stopWatch = Stopwatch.StartNew();
-        var completionResult = await completion.TextCompletion.CompleteAsync(prompt, this.VettingRequestSettings, cancellationToken).ConfigureAwait(false) ?? "false";
-        stopWatch.Stop();
+        var newRequestSettings = vettingCompletion.AdjustRequestSettings(prompt, this.VettingRequestSettings, logger);
+        string completionResult;
+        try
+        {
+            completionResult = await vettingCompletion.TextCompletion.CompleteAsync(prompt, this.VettingRequestSettings, cancellationToken).ConfigureAwait(false) ?? "false";
+            stopWatch.Stop();
+        }
+        catch (AIException exception)
+        {
+            logger?.LogError(exception, "Failed to evaluate test prompt with vetting connector {2}\nException:{0}Vetting Prompt:\n{1} ", exception, exception.ToString(), prompt, vettingCompletion.Name);
+            return null;
+        }
+
         var elapsed = stopWatch.Elapsed;
         var isVetted = completionResult.Equals("true", StringComparison.OrdinalIgnoreCase);
         var toReturn = new ConnectorPromptEvaluation
         {
             Test = connectorTest,
-            VettingConnector = completion.Name,
+            VettingConnector = vettingCompletion.Name,
             Duration = elapsed,
             IsVetted = isVetted,
         };

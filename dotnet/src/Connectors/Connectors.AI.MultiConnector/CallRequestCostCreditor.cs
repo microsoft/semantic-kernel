@@ -27,7 +27,7 @@ public class CallRequestCostCreditor
     private long TicksFromDecimal(decimal value)
     {
         // Convert the decimal value to an equivalent long value (e.g., by scaling)
-        return (long)(value * 1_000_000); // Assuming 6 decimal places of precision
+        return (long)(value * 1_000_000_000); // Assuming 6 decimal places of precision
     }
 
     private decimal DecimalFromTicks(long ticks)

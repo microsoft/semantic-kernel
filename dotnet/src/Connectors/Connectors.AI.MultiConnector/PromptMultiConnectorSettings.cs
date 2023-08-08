@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,11 +21,6 @@ public class PromptMultiConnectorSettings
     /// Gets a dictionary mapping connector names to their associated settings for this prompt type.
     /// </summary>
     public Dictionary<string, PromptConnectorSettings> ConnectorSettingsDictionary { get; } = new();
-
-    /// <summary>
-    /// A flag to keep track of when the prompt type is being tested to prevent multiple executions.
-    /// </summary>
-    internal bool IsTesting;
 
     /// <summary>
     /// Retrieves the settings associated with a specific connector for the prompt type.
@@ -72,9 +68,22 @@ public class PromptMultiConnectorSettings
         return namedTextCompletions[0];
     }
 
-    internal bool IsTestingNeeded(IReadOnlyList<NamedTextCompletion> namedTextCompletions)
+    public void AddSessionPrompt(string prompt)
     {
-        return !this.IsTesting && namedTextCompletions.Any(namedTextCompletion => !this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings? value) || value?.VettingLevel == 0);
+        this._currentSessionPrompts[prompt] = true;
+    }
+
+    private readonly ConcurrentDictionary<string, bool> _currentSessionPrompts = new();
+
+    internal bool IsTestingNeeded(string prompt, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool isNewPrompt)
+    {
+        return (isNewPrompt
+                || (this.PromptType.Instances.Count < this.PromptType.MaxInstanceNb
+                    && !this.PromptType.Instances.Contains(prompt)))
+               && !this._currentSessionPrompts.ContainsKey(prompt)
+               && namedTextCompletions.Any(namedTextCompletion =>
+                   !this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings? value)
+                   || value?.VettingLevel == 0);
     }
 
     internal IEnumerable<NamedTextCompletion> GetCompletionsToTest(IReadOnlyList<NamedTextCompletion> namedTextCompletions)

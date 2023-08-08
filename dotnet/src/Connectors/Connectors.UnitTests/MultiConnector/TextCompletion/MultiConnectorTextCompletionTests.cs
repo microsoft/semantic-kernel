@@ -93,8 +93,8 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
             {
                 EnableAnalysis = true,
                 NbPromptTests = 3,
-                AnalysisPeriod = TimeSpan.FromMilliseconds(1),
-                AnalysisDelay = TimeSpan.FromMilliseconds(100),
+                SuggestionPeriod = TimeSpan.FromMilliseconds(1),
+                AnalysisDelay = TimeSpan.FromMilliseconds(10),
                 UpdateSuggestedSettings = true,
                 DeleteAnalysisFile = true,
                 SaveSuggestedSettings = false

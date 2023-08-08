@@ -41,6 +41,12 @@ public class MultiTextCompletionSettings
     /// </summary>
     public int PromptTruncationLength { get; set; } = 20;
 
+
+    /// <summary>
+    /// By default, connectors instrumentation server side and client side avoids to trigger result evaluation for display. This is mostly harmless and this outputs the corresponding log for more comfort.
+    /// </summary>
+    public bool LogResult { get; set; } = false;
+
     /// <summary>
     /// List of settings for multiple connectors associated with each prompt type.
     /// </summary>
@@ -55,8 +61,9 @@ public class MultiTextCompletionSettings
     /// Returns settings for a given prompt.
     /// If settings for the prompt do not exist, new settings are created, added to the list, and returned.
     /// </summary>
-    public PromptMultiConnectorSettings GetPromptSettings(string prompt, CompleteRequestSettings promptSettings)
+    public PromptMultiConnectorSettings GetPromptSettings(string prompt, CompleteRequestSettings promptSettings, out bool isNew)
     {
+        isNew = false;
         var toReturn = this.PromptMultiConnectorSettings.FirstOrDefault(s => s.PromptType.Signature.Matches(prompt, promptSettings));
         if (toReturn == null)
         {
@@ -68,16 +75,34 @@ public class MultiTextCompletionSettings
                     PromptType = new PromptType()
                     {
                         Instances = { prompt },
+                        MaxInstanceNb = this.AnalysisSettings.NbPromptTests,
                         Signature = newSignature,
                         PromptName = newSignature.TextBeginning.Replace(" ", "_")
                     },
                 };
 
                 this.PromptMultiConnectorSettings.Add(toReturn);
+                isNew = true;
             }
         }
 
         return toReturn;
+    }
+
+    /// <summary>
+    /// this will reset the vetting level of all connectors for all prompt types, and empty recorded instances, such that test collection and vetting analysis will be triggered if enabled.
+    /// </summary>
+    public void ResetPromptVetting()
+    {
+        foreach (var promptMultiConnectorSetting in this.PromptMultiConnectorSettings)
+        {
+            promptMultiConnectorSetting.PromptType.Instances.Clear();
+            foreach (var pairConnectorSetting
+                     in promptMultiConnectorSetting.ConnectorSettingsDictionary)
+            {
+                pairConnectorSetting.Value.VettingLevel = VettingLevel.None;
+            }
+        }
     }
 
     /// <summary>
