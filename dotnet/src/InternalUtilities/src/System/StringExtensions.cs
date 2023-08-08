@@ -2,7 +2,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Text;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+// ReSharper disable once CheckNamespace
+namespace System;
+#pragma warning restore IDE0130
 
 internal static class StringExtensions
 {

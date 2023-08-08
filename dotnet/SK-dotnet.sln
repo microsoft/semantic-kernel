@@ -126,7 +126,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{DB950192-30F1-48B1-88D7-F43FECCA1A1C}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\Text\Json.cs = src\InternalUtilities\src\Text\Json.cs
-		src\InternalUtilities\src\Text\StringExtensions.cs = src\InternalUtilities\src\Text\StringExtensions.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{1C19D805-3573-4477-BF07-40180FCDE1BD}"
@@ -138,6 +137,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144}"
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\System\EnvExtensions.cs = src\InternalUtilities\src\System\EnvExtensions.cs
+		src\InternalUtilities\src\System\StringExtensions.cs = src\InternalUtilities\src\System\StringExtensions.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Core", "src\Skills\Skills.Core\Skills.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"

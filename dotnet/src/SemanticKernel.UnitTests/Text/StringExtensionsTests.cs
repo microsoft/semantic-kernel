@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Text;
+using System;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Text;
