@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
 
@@ -60,8 +59,8 @@ after this event Caroline became his wife.""";
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithAzureTextCompletionService(
-                TestConfiguration.AzureOpenAI.DeploymentName,
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -125,8 +124,8 @@ which are not grounded in the original.
 
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithAzureTextCompletionService(
-                TestConfiguration.AzureOpenAI.DeploymentName,
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -138,8 +137,7 @@ which are not grounded in the original.
 
         kernel.ImportSkill(new TextSkill());
 
-        var plannerConfig = new SequentialPlannerConfig { };
-        var planner = new SequentialPlanner(kernel, plannerConfig);
+        var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 

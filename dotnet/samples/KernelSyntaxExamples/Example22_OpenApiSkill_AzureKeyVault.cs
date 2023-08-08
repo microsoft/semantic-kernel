@@ -39,13 +39,16 @@ public static class Example22_OpenApiSkill_AzureKeyVault
             .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
             .Build();
 
-        // Import a OpenApi skill using one of the following Kernel extension methods
-        // kernel.ImportOpenApiSkillFromResource
-        // kernel.ImportOpenApiSkillFromDirectory
-        // kernel.ImportOpenApiSkillFromFile
-        // kernel.ImportOpenApiSkillFromUrlAsync
-        // kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+        var type = typeof(SkillResourceNames);
+        var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";
+
+        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
+
+        // Import AI Plugin
+        var skill = await kernel.ImportAIPluginAsync(
+            SkillResourceNames.AzureKeyVault,
+            stream!,
+            new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -63,13 +66,16 @@ public static class Example22_OpenApiSkill_AzureKeyVault
     {
         var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 
-        // Import a OpenApi skill using one of the following Kernel extension methods
-        // kernel.ImportOpenApiSkillFromResource
-        // kernel.ImportOpenApiSkillFromDirectory
-        // kernel.ImportOpenApiSkillFromFile
-        // kernel.ImportOpenApiSkillFromUrlAsync
-        // kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+        var type = typeof(SkillResourceNames);
+        var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";
+
+        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
+
+        // Import AI Plugin
+        var skill = await kernel.ImportAIPluginAsync(
+            SkillResourceNames.AzureKeyVault,
+            stream!,
+            new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

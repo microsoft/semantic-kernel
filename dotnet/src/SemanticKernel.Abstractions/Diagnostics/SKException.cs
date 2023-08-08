@@ -5,31 +5,31 @@ using System;
 namespace Microsoft.SemanticKernel.Diagnostics;
 
 /// <summary>
-/// Provides the base exception from which all Semantic Kernel exceptions derive.
+/// Represents the base exception from which all Semantic Kernel exceptions derive.
 /// </summary>
-public abstract class SKException : Exception
+public class SKException : Exception
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SKException"/> class with a default message.
+    /// Initializes a new instance of the <see cref="SKException"/> class.
     /// </summary>
-    protected SKException()
+    public SKException()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SKException"/> class with its message set to <paramref name="message"/>.
+    /// Initializes a new instance of the <see cref="SKException"/> class with a specified error message.
     /// </summary>
-    /// <param name="message">A string that describes the error.</param>
-    protected SKException(string? message) : base(message)
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    public SKException(string? message) : base(message)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SKException"/> class with its message set to <paramref name="message"/>.
+    /// Initializes a new instance of the <see cref="SKException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
     /// </summary>
-    /// <param name="message">A string that describes the error.</param>
-    /// <param name="innerException">The exception that is the cause of the current exception.</param>
-    protected SKException(string? message, Exception? innerException) : base(message, innerException)
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
+    public SKException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
 }

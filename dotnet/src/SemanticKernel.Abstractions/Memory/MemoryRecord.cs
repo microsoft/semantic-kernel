@@ -4,6 +4,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -120,7 +121,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="key">Optional existing database key.</param>
     /// <param name="timestamp">optional timestamp.</param>
     /// <returns>Memory record</returns>
-    /// <exception cref="MemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public static MemoryRecord FromJsonMetadata(
         string json,
         Embedding<float>? embedding,
@@ -130,9 +131,7 @@ public class MemoryRecord : DataEntryBase
         var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
         return metadata != null
             ? new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp)
-            : throw new MemoryException(
-                MemoryException.ErrorCodes.UnableToDeserializeMetadata,
-                "Unable to create memory record from serialized metadata");
+            : throw new SKException("Unable to create memory record from serialized metadata");
     }
 
     /// <summary>
