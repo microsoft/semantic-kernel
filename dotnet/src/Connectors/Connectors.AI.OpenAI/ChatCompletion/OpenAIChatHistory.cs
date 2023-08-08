@@ -17,9 +17,9 @@ public class OpenAIChatHistory : ChatHistory
     /// <param name="assistantInstructions">Optional instructions for the assistant</param>
     public OpenAIChatHistory(string? assistantInstructions = null)
     {
-        if (!assistantInstructions.IsNullOrWhitespace())
+        if (!string.IsNullOrWhiteSpace(assistantInstructions))
         {
-            this.AddSystemMessage(assistantInstructions);
+            this.AddSystemMessage(assistantInstructions!);
         }
     }
 }

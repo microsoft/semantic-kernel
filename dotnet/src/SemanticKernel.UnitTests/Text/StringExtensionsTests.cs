@@ -18,7 +18,7 @@ public class StringExtensionsTests
     public void ItNormalizesLineEndingsCorrectly(string input, string expectedString)
     {
         // Act
-        input = input.NormalizeLineEndings();
+        input = input.ReplaceLineEndingsWithLineFeed();
 
         // Assert
         Assert.Equal(expectedString, input);

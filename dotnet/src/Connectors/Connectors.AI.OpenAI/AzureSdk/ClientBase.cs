@@ -274,7 +274,7 @@ public abstract class ClientBase
 
         var options = new CompletionsOptions
         {
-            Prompts = { text.NormalizeLineEndings() },
+            Prompts = { text.ReplaceLineEndingsWithLineFeed() },
             MaxTokens = requestSettings.MaxTokens,
             Temperature = (float?)requestSettings.Temperature,
             NucleusSamplingFactor = (float?)requestSettings.TopP,

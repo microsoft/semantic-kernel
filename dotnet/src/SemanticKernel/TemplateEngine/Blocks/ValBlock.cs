@@ -69,7 +69,7 @@ internal sealed class ValBlock : Block, ITextRendering
 
     public static bool HasValPrefix(string? text)
     {
-        return !text.IsNullOrEmpty()
+        return !string.IsNullOrEmpty(text)
                && text.Length > 0
                && (text[0] is Symbols.DblQuote or Symbols.SglQuote);
     }

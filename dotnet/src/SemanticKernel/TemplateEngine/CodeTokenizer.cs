@@ -61,7 +61,7 @@ internal sealed class CodeTokenizer
         text = text?.Trim();
 
         // Render NULL to ""
-        if (text.IsNullOrEmpty()) { return new List<Block>(); }
+        if (string.IsNullOrEmpty(text)) { return new List<Block>(); }
 
         // Track what type of token we're reading
         TokenTypes currentTokenType = TokenTypes.None;
@@ -72,7 +72,7 @@ internal sealed class CodeTokenizer
         char textValueDelimiter = '\0';
 
         var blocks = new List<Block>();
-        char nextChar = text[0];
+        char nextChar = text![0];
 
         // Tokens must be separated by spaces, track their presence
         bool spaceSeparatorFound = false;
