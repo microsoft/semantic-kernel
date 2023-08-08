@@ -16,22 +16,22 @@ The sample can be configured by using the command line with .NET [Secret Manager
 This sample has been tested with the following models:
 
 | Service      | Model type      | Model            | Model version | Supported |
-| ------------ | --------------- | ---------------- | ------------- | --------- |
-| OpenAI       | Text Completion | text-davinci-003 | 1             | ❌        |
-| OpenAI       | Chat Completion | gpt-3.5-turbo    | 1             | ❌        |
-| OpenAI       | Chat Completion | gpt-3.5-turbo    | 0301          | ✅        |
-| OpenAI       | Chat Completion | gpt-4            | 1             | ✅        |
-| OpenAI       | Chat Completion | gpt-4            | 0314          | ✅        |
-| Azure OpenAI | Text Completion | text-davinci-003 | 1             | ❌        |
-| Azure OpenAI | Chat Completion | gpt-3.5-turbo    | 0301          | ✅        |
-| Azure OpenAI | Chat Completion | gpt-4-0314       | 0314          | ✅        |
+| ------------ | --------------- | ---------------- | ------------: | --------- |
+| OpenAI       | Text Completion | text-davinci-003 |             1 | ❌        |
+| OpenAI       | Chat Completion | gpt-3.5-turbo    |             1 | ❌        |
+| OpenAI       | Chat Completion | gpt-3.5-turbo    |          0301 | ✅        |
+| OpenAI       | Chat Completion | gpt-4            |             1 | ✅        |
+| OpenAI       | Chat Completion | gpt-4            |          0314 | ✅        |
+| Azure OpenAI | Text Completion | text-davinci-003 |             1 | ❌        |
+| Azure OpenAI | Chat Completion | gpt-3.5-turbo    |          0301 | ✅        |
+| Azure OpenAI | Chat Completion | gpt-4-0314       |          0314 | ✅        |
 
 ### Using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 
 Configure an OpenAI endpoint
 
 ```powershell
-cd 01-Semantic-Functions
+cd 04-Planner
 
 dotnet user-secrets set "Global:LlmService" "OpenAI"
 
@@ -43,7 +43,7 @@ dotnet user-secrets set "OpenAI:ApiKey" "... your OpenAI key ..."
 Configure an Azure OpenAI endpoint
 
 ```powershell
-cd 01-Semantic-Functions
+cd 04-Planner
 
 dotnet user-secrets set "Global:LlmService" "OpenAI"
 
