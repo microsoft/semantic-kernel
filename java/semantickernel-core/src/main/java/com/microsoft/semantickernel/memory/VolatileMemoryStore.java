@@ -14,9 +14,9 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -31,94 +31,104 @@ public class VolatileMemoryStore implements MemoryStore {
 
     @Override
     public Mono<Void> createCollectionAsync(@Nonnull String collectionName) {
-        if (this._store.containsKey(collectionName)) {
-            throw new MemoryException(
-                    MemoryException.ErrorCodes.FAILED_TO_CREATE_COLLECTION, collectionName);
-        }
-        this._store.putIfAbsent(collectionName, new ConcurrentHashMap<>());
-        return Mono.empty();
+        Objects.requireNonNull(collectionName);
+        return Mono.fromRunnable(() -> this._store.putIfAbsent(collectionName, new ConcurrentHashMap<>()));
     }
 
     @Override
     public Mono<Boolean> doesCollectionExistAsync(@Nonnull String collectionName) {
+        Objects.requireNonNull(collectionName);
         return Mono.just(this._store.containsKey(collectionName));
     }
 
     @Override
     public Mono<List<String>> getCollectionsAsync() {
-        List<String> keys = new ArrayList<>(this._store.keySet());
-        return Mono.just(Collections.unmodifiableList(keys));
+        return Mono.just(Collections.unmodifiableList(new ArrayList<>(this._store.keySet())));
     }
 
     @Override
     public Mono<Void> deleteCollectionAsync(@Nonnull String collectionName) {
-        if (!this._store.containsKey(collectionName)) {
-            throw new MemoryException(
-                    MemoryException.ErrorCodes.FAILED_TO_DELETE_COLLECTION, collectionName);
-        }
-        this._store.remove(collectionName);
-        return Mono.empty();
+        Objects.requireNonNull(collectionName);
+        return Mono.fromRunnable(() -> {
+            if (this._store.containsKey(collectionName)) {
+                this._store.remove(collectionName);
+            } else {
+                throw new MemoryException(MemoryException.ErrorCodes.ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION, collectionName);
+            }
+        });
     }
 
     @Override
     public Mono<String> upsertAsync(@Nonnull String collectionName, @Nonnull MemoryRecord record) {
-        // Contract:
-        //    Does not guarantee that the collection exists.
-        Map<String, MemoryRecord> collection = null;
-        try {
-            // getCollection throws MemoryException if the collection does not exist.
-            collection = getCollection(collectionName);
-        } catch (MemoryException e) {
-            return Mono.error(e);
-        }
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(record);
 
-        String key = record.getMetadata().getId();
-        // Assumption is that MemoryRecord will always have a non-null id.
-        assert key != null;
-        // Contract:
-        //     If the record already exists, it will be updated.
-        //     If the record does not exist, it will be created.
-        collection.put(key, record);
-        return Mono.just(key);
+        return Mono.fromCallable(() -> {
+            // Contract:
+            //    Does not guarantee that the collection exists.
+
+            // getCollection throws MemoryException if the collection does not exist.
+            Map<String, MemoryRecord> collection = getCollection(collectionName);
+
+            String key = record.getMetadata().getId();
+            // Assumption is that MemoryRecord will always have a non-null id.
+            assert key != null;
+
+            // Contract:
+            //     If the record already exists, it will be updated.
+            //     If the record does not exist, it will be created.
+            collection.put(key, record);
+            return key;
+        });
     }
 
     @Override
     public Mono<Collection<String>> upsertBatchAsync(
             @Nonnull String collectionName, @Nonnull Collection<MemoryRecord> records) {
-        Map<String, MemoryRecord> collection = getCollection(collectionName);
-        Set<String> keys = new HashSet<>();
-        records.forEach(
-                record -> {
-                    String key = record.getMetadata().getId();
-                    // Assumption is that MemoryRecord will always have a non-null id.
-                    assert key != null;
-                    // Contract:
-                    //     If the record already exists, it will be updated.
-                    //     If the record does not exist, it will be created.
-                    collection.put(key, record);
-                    keys.add(key);
-                });
-        return Mono.just(keys);
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(records);
+
+        return Mono.fromCallable(() -> {
+            Map<String, MemoryRecord> collection = getCollection(collectionName);
+            Set<String> keys = new HashSet<>();
+            records.forEach(
+                    record -> {
+                        String key = record.getMetadata().getId();
+                        // Assumption is that MemoryRecord will always have a non-null id.
+                        assert key != null;
+                        // Contract:
+                        //     If the record already exists, it will be updated.
+                        //     If the record does not exist, it will be created.
+                        collection.put(key, record);
+                        keys.add(key);
+                    });
+            return keys;
+        });
     }
 
     @Override
     public Mono<MemoryRecord> getAsync(
             @Nonnull String collectionName, @Nonnull String key, boolean withEmbedding) {
-        Map<String, MemoryRecord> collection = this._store.get(collectionName);
-        MemoryRecord record = collection != null ? collection.get(key) : null;
-        if (record != null) {
-            if (withEmbedding) {
-                return Mono.just(record);
-            } else {
-                return Mono.just(
-                        MemoryRecord.fromMetadata(
-                                record.getMetadata(),
-                                null,
-                                record.getMetadata().getId(),
-                                record.getTimestamp()));
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(key);
+
+        return Mono.fromCallable(() -> {
+            Map<String, MemoryRecord> collection = this._store.get(collectionName);
+            MemoryRecord record = collection != null ? collection.get(key) : null;
+            if (record != null) {
+                if (withEmbedding) {
+                    return record;
+                } else {
+                    return
+                            MemoryRecord.fromMetadata(
+                                    record.getMetadata(),
+                                    null,
+                                    record.getMetadata().getId(),
+                                    record.getTimestamp());
+                }
             }
-        }
-        return Mono.empty();
+            return null;
+        });
     }
 
     @Override
@@ -126,40 +136,47 @@ public class VolatileMemoryStore implements MemoryStore {
             @Nonnull String collectionName,
             @Nonnull Collection<String> keys,
             boolean withEmbeddings) {
-        Map<String, MemoryRecord> collection = getCollection(collectionName);
-        Set<MemoryRecord> records = new HashSet<>();
-        keys.forEach(
-                key -> {
-                    MemoryRecord record = collection.get(key);
-                    if (record != null) {
-                        if (withEmbeddings) {
-                            records.add(record);
-                        } else {
-                            records.add(
-                                    MemoryRecord.fromMetadata(
-                                            record.getMetadata(),
-                                            null,
-                                            record.getMetadata().getId(),
-                                            record.getTimestamp()));
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(keys);
+
+        return Mono.fromCallable(() -> {
+            Map<String, MemoryRecord> collection = getCollection(collectionName);
+            Set<MemoryRecord> records = new HashSet<>();
+            keys.forEach(
+                    key -> {
+                        MemoryRecord record = collection.get(key);
+                        if (record != null) {
+                            if (withEmbeddings) {
+                                records.add(record);
+                            } else {
+                                records.add(
+                                        MemoryRecord.fromMetadata(
+                                                record.getMetadata(),
+                                                null,
+                                                record.getMetadata().getId(),
+                                                record.getTimestamp()));
+                            }
                         }
-                    }
-                });
-        return Mono.just(records);
+                    });
+            return records;
+        });
     }
 
     @Override
     public Mono<Void> removeAsync(@Nonnull String collectionName, @Nonnull String key) {
-        Map<String, MemoryRecord> collection = this._store.get(collectionName);
-        if (collection != null) collection.remove(key);
-        return Mono.empty();
+        return Mono.fromRunnable(() -> {
+            Map<String, MemoryRecord> collection = this._store.get(collectionName);
+            if (collection != null) collection.remove(key);
+        });
     }
 
     @Override
     public Mono<Void> removeBatchAsync(
             @Nonnull String collectionName, @Nonnull Collection<String> keys) {
-        Map<String, MemoryRecord> collection = this._store.get(collectionName);
-        keys.forEach(collection::remove);
-        return Mono.empty();
+        return Mono.fromRunnable(() -> {
+            Map<String, MemoryRecord> collection = this._store.get(collectionName);
+            keys.forEach(collection::remove);
+        });
     }
 
     @Override
@@ -169,14 +186,18 @@ public class VolatileMemoryStore implements MemoryStore {
             int limit,
             double minRelevanceScore,
             boolean withEmbeddings) {
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(embedding);
 
         if (limit <= 0) {
             return Mono.just(Collections.emptyList());
         }
 
+        return Mono.fromCallable(() -> {
+
         Map<String, MemoryRecord> collection = getCollection(collectionName);
         if (collection == null || collection.isEmpty()) {
-            return Mono.just(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         Collection<Tuple2<MemoryRecord, Float>> nearestMatches = new ArrayList<>();
@@ -201,13 +222,16 @@ public class VolatileMemoryStore implements MemoryStore {
                     }
                 });
 
-        List<Tuple2<MemoryRecord, Float>> result =
+          List<Tuple2<MemoryRecord, Float>> result =
                 nearestMatches.stream()
+                    // sort by similarity score, descending
                     .sorted(Comparator.comparing(Tuple2::getT2, (a,b) -> Float.compare(b, a)))
                     .limit(limit)
                     .collect(Collectors.toList());
 
-        return Mono.just(result);
+          return result;
+        });
+
     }
 
     @Override
@@ -216,6 +240,8 @@ public class VolatileMemoryStore implements MemoryStore {
             @Nonnull Embedding embedding,
             double minRelevanceScore,
             boolean withEmbedding) {
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(embedding);
 
         return getNearestMatchesAsync(
                         collectionName, embedding, 1, minRelevanceScore, withEmbedding)
@@ -229,6 +255,7 @@ public class VolatileMemoryStore implements MemoryStore {
     }
 
     protected Map<String, MemoryRecord> getCollection(@Nonnull String collectionName) {
+        Objects.requireNonNull(collectionName);
         Map<String, MemoryRecord> collection = this._store.get(collectionName);
         if (collection == null) {
             throw new MemoryException(

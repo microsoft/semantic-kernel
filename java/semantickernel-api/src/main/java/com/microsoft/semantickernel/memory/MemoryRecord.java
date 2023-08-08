@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-
 import java.time.ZonedDateTime;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -27,11 +27,12 @@ public class MemoryRecord extends DataEntryBase {
      * @param key The key of the data.
      * @param timestamp The timestamp of the data.
      */
+    @JsonCreator
     public MemoryRecord(
-            @Nonnull MemoryRecordMetadata metadata,
-            @Nonnull Embedding embedding,
-            @Nullable String key,
-            @Nullable ZonedDateTime timestamp) {
+            @JsonProperty("additional_metadata") @Nonnull MemoryRecordMetadata metadata,
+            @JsonProperty("embedding") @Nonnull Embedding embedding,
+            @JsonProperty("key") @Nullable String key,
+            @JsonProperty("timestamp") @Nullable ZonedDateTime timestamp) {
         super(key, timestamp);
         this.metadata = metadata;
         this.embedding = embedding;
