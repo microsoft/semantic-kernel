@@ -115,6 +115,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
             False,
         ),
         FunctionsView: create_functions_view(),
+        ReadOnlySkillCollection: create_skill_collection().read_only_skill_collection,
         SkillCollection: create_skill_collection(),
     }
 
@@ -171,6 +172,7 @@ PYDANTIC_MODELS = [
     ParameterView,
     FunctionView,
     FunctionsView,
+    ReadOnlySkillCollection,
     SkillCollection,
 ]
 

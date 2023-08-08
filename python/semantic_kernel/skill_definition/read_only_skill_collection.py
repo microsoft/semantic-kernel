@@ -1,39 +1,38 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, Dict, Generic, Literal, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Dict, Optional, Tuple
 
 import pydantic as pdt
 
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.sk_pydantic import SKGenericModel
+from semantic_kernel.orchestration.sk_function import SKFunction
+from semantic_kernel.sk_pydantic import SKBaseModel
+from semantic_kernel.skill_definition import constants
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 from semantic_kernel.utils.null_logger import NullLogger
-from semantic_kernel.utils.static_property import static_property
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
 
-SKFunctionT = TypeVar("SKFunctionT", bound="SKFunctionBase")
-
-
-class ReadOnlySkillCollection(
-    SKGenericModel, ReadOnlySkillCollectionBase, Generic[SKFunctionT]
-):
-    data: Dict[str, Dict[str, SKFunctionT]]
+class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
+    GLOBAL_SKILL: ClassVar[str] = constants.GLOBAL_SKILL
+    data: Dict[str, Dict[str, SKFunction]] = pdt.Field(default_factory=dict)
     _log: Logger = pdt.PrivateAttr()
 
     class Config:
         allow_mutation = False
 
     def __init__(
-        self, data: Dict[str, Dict[str, SKFunctionT]], log: Optional[Logger] = None
+        self,
+        data: Dict[str, Dict[str, SKFunction]] = None,
+        log: Optional[Logger] = None,
     ) -> None:
-        super().__init__(data=data)
+        super().__init__(data=data or {})
         self._log = log or NullLogger()
 
     def has_function(self, skill_name: Optional[str], function_name: str) -> bool:
@@ -126,7 +125,3 @@ class ReadOnlySkillCollection(
 
         s_name, f_name = s_name.lower(), f_name.lower()
         return s_name, f_name
-
-    @static_property
-    def GLOBAL_SKILL() -> Literal["_GLOBAL_FUNCTIONS_"]:
-        return "_GLOBAL_FUNCTIONS_"

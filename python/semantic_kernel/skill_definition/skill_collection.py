@@ -3,16 +3,17 @@
 from logging import Logger
 from typing import (
     TYPE_CHECKING,
+    ClassVar,
     Dict,
-    Generic,
     Optional,
-    TypeVar,
     Union,
 )
 
 import pydantic as pdt
 
+from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.sk_pydantic import SKGenericModel
+from semantic_kernel.skill_definition import constants
 from semantic_kernel.skill_definition.functions_view import FunctionsView
 from semantic_kernel.skill_definition.read_only_skill_collection import (
     ReadOnlySkillCollection,
@@ -22,15 +23,13 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
 )
 from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.utils.null_logger import NullLogger
-from semantic_kernel.utils.static_property import static_property
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
-SKFunctionT = TypeVar("SKFunctionT", bound="SKFunctionBase")
 
-
-class SkillCollection(SKGenericModel, SkillCollectionBase, Generic[SKFunctionT]):
+class SkillCollection(SKGenericModel, SkillCollectionBase):
+    GLOBAL_SKILL: ClassVar[str] = constants.GLOBAL_SKILL
     read_only_skill_collection_: ReadOnlySkillCollection = pdt.Field(
         alias="read_only_skill_collection"
     )
@@ -39,7 +38,7 @@ class SkillCollection(SKGenericModel, SkillCollectionBase, Generic[SKFunctionT])
     def __init__(
         self,
         log: Optional[Logger] = None,
-        skill_collection: Union[Dict[str, Dict[str, SKFunctionT]], None] = None,
+        skill_collection: Union[Dict[str, Dict[str, SKFunction]], None] = None,
         read_only_skill_collection_: Optional[ReadOnlySkillCollection] = None,
     ) -> None:
         if skill_collection and read_only_skill_collection_:
@@ -71,10 +70,7 @@ class SkillCollection(SKGenericModel, SkillCollectionBase, Generic[SKFunctionT])
         s_name, f_name = function.skill_name, function.name
         s_name, f_name = s_name.lower(), f_name.lower()
 
-        if s_name not in self.skill_collection:
-            self.skill_collection[s_name] = {}
-
-        self.skill_collection[s_name][f_name] = function
+        self.skill_collection.setdefault(s_name, {})[f_name] = function
 
     def add_native_function(self, function: "SKFunctionBase") -> None:
         if function is None:
@@ -84,10 +80,8 @@ class SkillCollection(SKGenericModel, SkillCollectionBase, Generic[SKFunctionT])
         s_name, f_name = self.read_only_skill_collection_._normalize_names(
             s_name, f_name, True
         )
-        if s_name not in self.skill_collection:
-            self.skill_collection[s_name] = {}
 
-        self.skill_collection[s_name][f_name] = function
+        self.skill_collection.setdefault(s_name, {})[f_name] = function
 
     def has_function(self, skill_name: Optional[str], function_name: str) -> bool:
         return self.read_only_skill_collection_.has_function(skill_name, function_name)
@@ -131,7 +125,3 @@ class SkillCollection(SKGenericModel, SkillCollectionBase, Generic[SKFunctionT])
         self, skill_name: Optional[str], function_name: str
     ) -> "SKFunctionBase":
         return self.read_only_skill_collection_.get_function(skill_name, function_name)
-
-    @static_property
-    def GLOBAL_SKILL():
-        return ReadOnlySkillCollection.GLOBAL_SKILL
