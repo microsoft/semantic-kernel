@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -73,6 +74,11 @@ RESPONSE IS VALID? (true/false):
     public TimeSpan TestsPeriod { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
+    /// Max number of connectors to test in parallel
+    /// </summary>
+    public int MaxDegreeOfParallelismConnectorTests { get; set; } = 3;
+
+    /// <summary>
     /// Enable or disable the evaluation of test prompts
     /// </summary>
     public bool EnableTestEvaluations { get; set; } = true;
@@ -81,6 +87,11 @@ RESPONSE IS VALID? (true/false):
     /// Time period to conduct evaluations
     /// </summary>
     public TimeSpan EvaluationPeriod { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// Max number of evaluations to run in parallel
+    /// </summary>
+    public int MaxDegreeOfParallelismEvaluations { get; set; } = 5;
 
     /// <summary>
     /// Determine if self-vetting should be used
@@ -257,10 +268,10 @@ RESPONSE IS VALID? (true/false):
 
     private async Task<List<ConnectorTest>> RunConnectorTestsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
     {
-        List<ConnectorTest> tests;
+        ConcurrentBag<ConnectorTest> tests;
         logger?.LogTrace("Starting running connector tests from {0} original prompts", originalTests.Count);
 
-        tests = new List<ConnectorTest>();
+        tests = new ConcurrentBag<ConnectorTest>();
         foreach (ConnectorTest originalTest in originalTests)
         {
             logger?.LogTrace("Starting running tests for prompt:\n {0} ", originalTest.Prompt);
@@ -268,10 +279,9 @@ RESPONSE IS VALID? (true/false):
             var promptSettings = settings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings, out var isNew);
 
             // Generate tests
+            var connectorsToTest = promptSettings.GetCompletionsToTest(originalTest, namedTextCompletions);
 
-            var connectorsToTest = promptSettings.GetCompletionsToTest(namedTextCompletions);
-
-            foreach (NamedTextCompletion namedTextCompletion in connectorsToTest)
+            connectorsToTest.AsParallel().WithDegreeOfParallelism(this.MaxDegreeOfParallelismConnectorTests).ForAll(async namedTextCompletion =>
             {
                 logger?.LogTrace("Running Tests for connector {0} ", namedTextCompletion.Name);
 
@@ -295,17 +305,50 @@ RESPONSE IS VALID? (true/false):
                         var connectorTest = ConnectorTest.Create(originalTest.Prompt, newRequestSettings, namedTextCompletion, result, duration);
                         tests.Add(connectorTest);
 
-                        logger?.LogTrace("Generated Test results for connector {0}, duration: {1}\nprompt:{2}\nresult:{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
+                        logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
                     }
                     catch (AIException exception)
                     {
                         logger?.LogError(exception, "Failed to run test prompt with connector {2}\nException:{0}Prompt:\n{1} ", exception, exception.ToString(), originalTest.Prompt, namedTextCompletion.Name);
                     }
                 }
-            }
+            });
+
+            //foreach (NamedTextCompletion namedTextCompletion in connectorsToTest)
+            //{
+            //    logger?.LogTrace("Running Tests for connector {0} ", namedTextCompletion.Name);
+
+            //    for (int i = 0; i < this.NbPromptTests; i++)
+            //    {
+            //        var stopWatch = Stopwatch.StartNew();
+            //        string result = "";
+            //        try
+            //        {
+            //            var newRequestSettings = namedTextCompletion.AdjustRequestSettings(originalTest.Prompt, originalTest.RequestSettings, logger);
+            //            var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, newRequestSettings, cancellationToken).ConfigureAwait(false);
+
+            //            var firstResult = completions[0];
+
+            //            result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
+
+            //            stopWatch.Stop();
+            //            var duration = stopWatch.Elapsed;
+
+            //            // For the management task
+            //            var connectorTest = ConnectorTest.Create(originalTest.Prompt, newRequestSettings, namedTextCompletion, result, duration);
+            //            tests.Add(connectorTest);
+
+            //            logger?.LogTrace("Generated Test results for connector {0}, duration: {1}\nprompt:{2}\nresult:{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
+            //        }
+            //        catch (AIException exception)
+            //        {
+            //            logger?.LogError(exception, "Failed to run test prompt with connector {2}\nException:{0}Prompt:\n{1} ", exception, exception.ToString(), originalTest.Prompt, namedTextCompletion.Name);
+            //        }
+            //    }
+            //}
         }
 
-        return tests;
+        return tests.ToList();
     }
 
     private bool SaveConnectorTestsReturnNeedEvaluate(ILogger? logger, List<ConnectorTest> tests, ref OptimizationCompletedEventArgs toReturn)
@@ -359,7 +402,7 @@ RESPONSE IS VALID? (true/false):
 
             currentEvaluations.Add(evaluation);
 
-            logger?.LogTrace("Evaluated connector {0}, Vetted:{1} from Prompt:{2}\nResult:{3}", evaluation.Test.ConnectorName, evaluation.IsVetted, evaluation.Test.Prompt, evaluation.Test.Result);
+            logger?.LogDebug("Evaluated connector {0}, Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}", evaluation.Test.ConnectorName, evaluation.IsVetted, evaluation.Test.Prompt, evaluation.Test.Result);
         }
 
         return currentEvaluations;
@@ -492,7 +535,7 @@ RESPONSE IS VALID? (true/false):
         }
         catch (AIException exception)
         {
-            logger?.LogError(exception, "Failed to evaluate test prompt with vetting connector {2}\nException:{0}Vetting Prompt:\n{1} ", exception, exception.ToString(), prompt, vettingCompletion.Name);
+            logger?.LogError(exception, "Failed to evaluate test prompt with vetting connector {2}\nException:{0}\nVetting Prompt:\n{1} ", exception, exception.ToString(), prompt, vettingCompletion.Name);
             return null;
         }
 

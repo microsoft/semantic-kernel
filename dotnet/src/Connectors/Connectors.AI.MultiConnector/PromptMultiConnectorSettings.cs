@@ -86,8 +86,10 @@ public class PromptMultiConnectorSettings
                    || value?.VettingLevel == 0);
     }
 
-    internal IEnumerable<NamedTextCompletion> GetCompletionsToTest(IReadOnlyList<NamedTextCompletion> namedTextCompletions)
+    internal IEnumerable<NamedTextCompletion> GetCompletionsToTest(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions)
     {
-        return namedTextCompletions.Where(namedTextCompletion => !this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings? value) || value?.VettingLevel == 0);
+        return namedTextCompletions.Where(namedTextCompletion => namedTextCompletion.Name != originalTest.ConnectorName
+                                                                 && (!this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings value)
+                                                                     || value.VettingLevel == 0));
     }
 }

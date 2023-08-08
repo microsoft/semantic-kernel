@@ -106,7 +106,8 @@ public sealed class MultiConnectorTests : IDisposable
 
         // Create a plan
         //var plan = await planner.CreatePlanAsync(StartGoal, cleanupToken.Token);
-        var planPath = System.IO.Path.Combine(Environment.CurrentDirectory, ".\\Connectors\\MultiConnector\\VettingSequentialPlan_SummarizeSkill.json");
+        //var planPath = System.IO.Path.Combine(Environment.CurrentDirectory, ".\\Connectors\\MultiConnector\\VettingSequentialPlan_SummarizeSkill.json");
+        var planPath = System.IO.Path.Combine(Environment.CurrentDirectory, ".\\Connectors\\MultiConnector\\VettingSequentialPlan_SummarizeSkill_Summarize.json");
         var planJson = await System.IO.File.ReadAllTextAsync(planPath, cleanupToken.Token);
         var ctx = kernel.CreateNewContext();
         var plan = Plan.FromJson(planJson, ctx, true);

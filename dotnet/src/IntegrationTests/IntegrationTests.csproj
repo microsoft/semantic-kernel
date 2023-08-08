@@ -51,6 +51,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Connectors\MultiConnector\VettingSequentialPlan_SummarizeSkill_Summarize.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Connectors\MultiConnector\VettingSequentialPlan_SummarizeSkill.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

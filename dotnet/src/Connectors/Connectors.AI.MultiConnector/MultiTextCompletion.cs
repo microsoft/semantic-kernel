@@ -57,18 +57,20 @@ public class MultiTextCompletion : ITextCompletion
 
         var resultLazy = new AsyncLazy<string>(() => completions[0].GetCompletionAsync(cancellationToken), cancellationToken);
 
-        await this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
+        //await this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
 
-        if (textCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis && promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
-        {
-            promptSettings.AddSessionPrompt(text);
-            await this.CollectResultForTestAsync(text, requestSettings, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
-        }
+        //if (textCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis && promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
+        //{
+        //    promptSettings.AddSessionPrompt(text);
+        //    await this.CollectResultForTestAsync(text, requestSettings, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
+        //}
 
-        if (this._settings.LogResult)
-        {
-            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync: {0}\n=>\n {1}", text, resultLazy.Value.ConfigureAwait(false));
-        }
+        //if (this._settings.LogResult)
+        //{
+        //    this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync:\nPROMPT:\n{0}\nRESULT:\n{1}", text, resultLazy.Value.ConfigureAwait(false));
+        //}
+
+        await this.ProcessTextCompletionResultsAsync(text, requestSettings, promptSettings, isNewPrompt, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
 
         return completions;
     }
@@ -96,18 +98,20 @@ public class MultiTextCompletion : ITextCompletion
             return sb.ToString();
         }, cancellationToken);
 
-        this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
+        this.ProcessTextCompletionResultsAsync(text, requestSettings, promptSettings, isNewPrompt, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
 
-        if (textCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis && promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
-        {
-            promptSettings.AddSessionPrompt(text);
-            this.CollectResultForTestAsync(text, requestSettings, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
-        }
+        //this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
 
-        if (this._settings.LogResult)
-        {
-            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync: {0}\n=>\n {1}", text, resultLazy.Value.ConfigureAwait(false));
-        }
+        //if (textCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis && promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
+        //{
+        //    promptSettings.AddSessionPrompt(text);
+        //    this.CollectResultForTestAsync(text, requestSettings, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
+        //}
+
+        //if (this._settings.LogResult)
+        //{
+        //    this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync:\nPROMPT:\n{0}\nRESULT:\n{1}", text, resultLazy.Value.ConfigureAwait(false));
+        //}
 
         return result;
     }
@@ -119,6 +123,25 @@ public class MultiTextCompletion : ITextCompletion
         requestSettings = textCompletion.AdjustRequestSettings(text, requestSettings, this._logger);
         stopWatch = Stopwatch.StartNew();
         return promptSettings;
+    }
+
+    private async Task ProcessTextCompletionResultsAsync(string text, CompleteRequestSettings requestSettings, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, Stopwatch stopWatch, NamedTextCompletion textCompletion, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
+    {
+        await this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
+
+        if (textCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis)
+        {
+            if (promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
+            {
+                promptSettings.AddSessionPrompt(text);
+                await this.CollectResultForTestAsync(text, requestSettings, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        if (this._settings.LogResult)
+        {
+            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync:\nPROMPT:\n{0}\nRESULT:\n{1}", text, await resultLazy.Value.ConfigureAwait(false));
+        }
     }
 
     private async Task ApplyCreditorCostsAsync(string text, AsyncLazy<string> resultLazy, NamedTextCompletion textCompletion)
@@ -221,7 +244,7 @@ public class MultiTextCompletion : ITextCompletion
     /// </summary>
     private void AppendConnectorTest(ConnectorTest connectorTest)
     {
-        this._logger?.LogTrace("Collecting new test with duration {0}, prompt {1}\nand result {2}", connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
+        this._logger?.LogTrace("Collecting new test with duration {0},\nORIGINAL_PROMPT:\n{1}\nORIGINAL_RESULT:\n{2}", connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
         this._connectorTestChannel.Writer.TryWrite(connectorTest);
     }
 
