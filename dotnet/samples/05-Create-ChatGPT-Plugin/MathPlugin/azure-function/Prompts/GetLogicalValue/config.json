@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Do not make up any values or you'll get a wrong value; use this action instead to get the correct value of a missing parameter in a word problem.",
+  "description": "If the request does not provide an explicit number for a parameter, use this function to make up a logical value; do not make up a value yourself.",
   "type": "completion",
   "completion": {
     "max_tokens": 1000,
