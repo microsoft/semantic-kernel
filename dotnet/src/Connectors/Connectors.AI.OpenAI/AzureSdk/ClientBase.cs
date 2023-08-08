@@ -127,7 +127,7 @@ public abstract class ClientBase
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
                 () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-            if (response == null)
+            if (response is null)
             {
                 throw new SKException("Text embedding null response");
             }
