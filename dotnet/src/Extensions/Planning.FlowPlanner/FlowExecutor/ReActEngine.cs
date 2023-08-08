@@ -12,8 +12,8 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -99,10 +99,15 @@ internal sealed class ReActEngine
         {
             promptConfig = new PromptTemplateConfig();
 
-            string promptConfigString = EmbeddedResource.Read("Skills.ReActEngine.config.json");
+            string promptConfigString = EmbeddedResource.Read(config.ReActModel == FlowPlannerConfig.ModelName.TEXT_DAVINCI_003? "Skills.ReActEngine.gpt3.config.json" : "Skills.ReActEngine.config.json");
+
             if (!string.IsNullOrEmpty(promptConfigString))
             {
                 promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
+            }
+            else
+            {
+                promptConfig.Completion.MaxTokens = config.MaxTokens;
             }
 
             promptConfig.Completion.MaxTokens = config.MaxTokens;
@@ -111,7 +116,7 @@ internal sealed class ReActEngine
         var promptTemplate = config.ReActPromptTemplate;
         if (string.IsNullOrEmpty(promptTemplate))
         {
-            promptTemplate = EmbeddedResource.Read("Skills.ReActEngine.skprompt.txt");
+            promptTemplate = EmbeddedResource.Read(config.ReActModel == FlowPlannerConfig.ModelName.TEXT_DAVINCI_003 ? "Skills.ReActEngine.gpt3.skprompt.txt" : "Skills.ReActEngine.skprompt.txt");
         }
 
         this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate!, promptConfig);
@@ -123,15 +128,15 @@ internal sealed class ReActEngine
         var scratchPad = this.CreateScratchPad(question, previousSteps);
         context.Variables.Set("agentScratchPad", scratchPad);
         context.Variables.Set("functionDescriptions", this.GetFunctionDescriptions(context));
+
+        this._logger?.LogDebug("question: {Question}", question);
         this._logger?.LogDebug("Scratchpad: {ScratchPad}", scratchPad);
 
         var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
         if (llmResponse.ErrorOccurred)
         {
-            string message = $"Error occurred while executing action step: {llmResponse.LastErrorDescription}";
-            var exception = new PlanningException(PlanningException.ErrorCodes.UnknownError, message, llmResponse.LastException);
-            context.Fail(exception.Message, exception);
-            return null;
+            string message = $"Error occurred while executing action step: {llmResponse.LastException?.Message}";
+            throw new PlanningException(PlanningException.ErrorCodes.UnknownError, message, llmResponse.LastException);
         }
 
         string llmResponseText = llmResponse.Result.Trim();
@@ -147,7 +152,6 @@ internal sealed class ReActEngine
         actionStep.Observation = "Failed to parse valid action step, missing action or final answer.";
         this._logger?.LogWarning("Failed to parse valid action step from llm response={LLMResponseText}", llmResponseText);
         this._logger?.LogWarning("Scratchpad={ScratchPad}", scratchPad);
-
         return actionStep;
     }
 
@@ -169,7 +173,7 @@ internal sealed class ReActEngine
         try
         {
             var function = kernel.Func(targetFunction.SkillName, targetFunction.Name);
-            var actionContext = this.CreateActionContext(variables, kernel);
+            var actionContext = this.CreateActionContext(variables, kernel, context);
 
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
 
@@ -195,9 +199,10 @@ internal sealed class ReActEngine
         }
     }
 
-    private SKContext CreateActionContext(Dictionary<string, string> actionVariables, IKernel kernel)
+    private SKContext CreateActionContext(Dictionary<string, string> actionVariables, IKernel kernel, SKContext context)
     {
         var actionContext = kernel.CreateNewContext();
+        actionContext.Variables.Update(context.Variables);
         foreach (var kvp in actionVariables)
         {
             actionContext.Variables.Set(kvp.Key, kvp.Value);

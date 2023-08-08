@@ -11,7 +11,7 @@ public class ChatHistorySerializerTest
     [Fact]
     public void CanDeserializeChatHistory()
     {
-        string input = "[{\"Role\":\"assistant\",\"Content\":\"To configure the product name, product ID, and product description for Azure Marketplace, please provide the following information:\\n\\n1. Product Name: (Enter the name of your product)\\n2. Product ID: (Enter a unique identifier for your product)\\n3. Product Description: (Enter a brief description of your product)\\n\\nOnce you have provided this information, please type \\u0022confirmed\\u0022 to confirm the details.\"}]\r\n";
+        string input = "[{\"Role\":\"assistant\",\"Content\":\"To configure the email notification, please provide the following information:\\n\\n1. Email address: (Enter the valid email address)\\n2. Notification time: (Enter the schedule of notification)\\n3. Email Content: (Enter the content expected from email notification)\\n\\nOnce you have provided this information, please type \\u0022confirmed\\u0022 to confirm the details.\"}]\r\n";
         var history = ChatHistorySerializer.Deserialize(input);
 
         Assert.NotNull(history);

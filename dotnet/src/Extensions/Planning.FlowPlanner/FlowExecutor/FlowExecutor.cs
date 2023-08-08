@@ -69,7 +69,7 @@ internal class FlowExecutor : IFlowExecutor
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
 
-        this._logger = this._systemKernel.Log;
+        this._logger = this._systemKernel.Logger;
         this._config = config ?? new FlowPlannerConfig();
 
         this._flowStatusProvider = statusProvider;
@@ -77,7 +77,7 @@ internal class FlowExecutor : IFlowExecutor
         this._reActEngine = new ReActEngine(this._systemKernel, this._logger, this._config);
     }
 
-    public async Task<SKContext> ExecuteAsync(Flow flow, string sessionId, string input)
+    public async Task<SKContext> ExecuteAsync(Flow flow, string sessionId, string input, ContextVariables contextVariables)
     {
         Verify.NotNull(flow, nameof(flow));
 
@@ -86,6 +86,7 @@ internal class FlowExecutor : IFlowExecutor
         var sortedSteps = flow.SortSteps();
 
         SKContext rootContext = this._systemKernel.CreateNewContext();
+        rootContext.Variables.Update(contextVariables);
         var variables = await this._flowStatusProvider.GetVariables(sessionId).ConfigureAwait(false);
         foreach (var kv in variables)
         {
@@ -131,11 +132,6 @@ internal class FlowExecutor : IFlowExecutor
             }
 
             var stepResult = await this.ExecuteStepAsync(step, sessionId, $"{stepIndex}_{step.Goal}", input, stepKernel, stepContext).ConfigureAwait(false);
-            if (stepResult.ErrorOccurred)
-            {
-                rootContext.Fail(stepResult.LastErrorDescription);
-            }
-
             if (!string.IsNullOrEmpty(stepResult.Result) && stepResult.Variables.ContainsKey(Constants.ChatSkillVariables.PromptInputName))
             {
                 outputs.Add(stepResult.Result);
@@ -184,7 +180,10 @@ internal class FlowExecutor : IFlowExecutor
         var question = step.Goal;
         foreach (var variable in step.Requires)
         {
-            question += $"\n{variable}: {context.Variables[variable]}";
+            if (context.Variables[variable].Length <= this._config.MaxVariableLength)
+            {
+                question += $"\n{variable}: {context.Variables[variable]}";
+            }
         }
 
         for (int i = stepsTaken.Count; i < this._config.MaxStepIterations; i++)
@@ -203,7 +202,7 @@ internal class FlowExecutor : IFlowExecutor
             if (!string.IsNullOrEmpty(actionStep.Action!))
             {
                 var actionContext = kernel.CreateNewContext();
-
+                context.Variables.Where(p => step.Requires.Contains(p.Key)).ToList().ForEach(p => actionContext.Variables[p.Key] =p.Value);
                 // get chat history
                 var chatHistory = await this._flowStatusProvider.GetChatHistoryAsync(sessionId, stepId).ConfigureAwait(false);
                 if (chatHistory == null)
@@ -302,8 +301,7 @@ internal class FlowExecutor : IFlowExecutor
             // continue to next iteration
             await Task.Delay(this._config.MinIterationTimeMs).ConfigureAwait(false);
         }
-
-        context.Fail($"Failed to complete step {stepId} for session {sessionId}.");
-        return context;
+        
+        throw new SKException($"Failed to complete step {stepId} for session {sessionId}.");
     }
 }

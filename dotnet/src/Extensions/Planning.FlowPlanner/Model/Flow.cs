@@ -36,19 +36,33 @@ public sealed class Flow : FlowStep
     {
     }
 
+    /// <summary>
+    /// Steps of the flow
+    /// </summary>
     public List<FlowStep> Steps
     {
         get => this._steps;
         set => this._steps = value;
     }
 
+    /// <summary>
+    /// Friendly name of the flow
+    /// </summary>
     public string Name { get; set; }
 
+    /// <summary>
+    /// Adds a step to the flow
+    /// </summary>
+    /// <param name="step">the <see cref="FlowStep"/> instance</param>
     public void AddStep(FlowStep step)
     {
         this._steps.Add(step);
     }
 
+    /// <summary>
+    /// Adds steps to the flow
+    /// </summary>
+    /// <param name="steps">the array of <see cref="FlowStep"/> instance to be add</param>
     public void AddSteps(params FlowStep[] steps)
     {
         this._steps.AddRange(steps);
