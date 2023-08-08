@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.SemanticKernel.Diagnostics;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel.Memory.Collections;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Implements the classic 'heap' data structure. By default, the item with the lowest value is at the top of the heap.

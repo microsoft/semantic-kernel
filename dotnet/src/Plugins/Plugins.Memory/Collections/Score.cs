@@ -3,7 +3,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.SemanticKernel.Memory.Collections;
+namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
 
 /// <summary>
 /// Structure for storing score value.
