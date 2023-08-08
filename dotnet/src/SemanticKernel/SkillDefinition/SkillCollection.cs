@@ -105,7 +105,7 @@ public class SkillCollection : ISkillCollection
     [DoesNotReturn]
     private void ThrowFunctionNotAvailable(string skillName, string functionName)
     {
-        this._log.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
+        this._logger.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
         throw new SKException($"Function not available {skillName}.{functionName}");
     }
 

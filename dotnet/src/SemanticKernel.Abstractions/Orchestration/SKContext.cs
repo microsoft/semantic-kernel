@@ -57,23 +57,6 @@ public sealed class SKContext
     public IReadOnlySkillCollection Skills { get; }
 
     /// <summary>
-    /// Access registered functions by skill + name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    public ISKFunction Func(string skillName, string functionName)
-    {
-        if (this.Skills is null)
-        {
-            throw new SKException("Skill collection not found in the context");
-        }
-
-        return this.Skills.GetFunction(skillName, functionName);
-    }
-
-    /// <summary>
     /// App logger
     /// </summary>
     public ILogger Logger { get; }
@@ -217,7 +200,7 @@ public sealed class SKContext
     public SKContext Fail(string errorDescription, Exception? exception = null)
     {
         // Temporary workaround: if no exception is provided, create a new one.
-        this.LastException = exception ?? new KernelException(KernelException.ErrorCodes.UnknownError, errorDescription);
+        this.LastException = exception ?? new SKException(errorDescription);
         return this;
     }
 
