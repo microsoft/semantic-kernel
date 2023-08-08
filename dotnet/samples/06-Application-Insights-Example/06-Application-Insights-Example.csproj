@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
@@ -26,7 +26,7 @@
     <ProjectReference Include="..\..\src\SemanticKernel\SemanticKernel.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.Core\Skills.Core.csproj" />
     <ProjectReference Include="..\..\src\Skills\Skills.Web\Skills.Web.csproj" />
-    <ProjectReference Include="..\NCalcSkills\NCalcSkills.csproj" />
+    <ProjectReference Include="..\07-NCalc-Skills\07-NCalc-Skills.csproj" />
   </ItemGroup>
 
 </Project>
