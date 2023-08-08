@@ -23,7 +23,7 @@ public static class TextEmbeddingServiceExtensions
         this IAIServiceProvider services,
         string? serviceId = null)
             => services.GetService<ITextEmbeddingGeneration>(serviceId)
-                ?? throw new SKException("Text embedding service not available");
+                ?? throw new SKException("Text embedding service not found");
 
     /// <summary>
     /// Returns true if a <see cref="ITextEmbeddingGeneration"/> exist with the specified ID.
