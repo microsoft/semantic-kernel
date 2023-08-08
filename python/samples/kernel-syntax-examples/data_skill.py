@@ -19,27 +19,18 @@ async def main() -> None:
         "Salary": [60000, 75000, 52000, 48000, 67000],
     }
     df = pd.DataFrame(data)
-
-    data_skill = DataSkill(data=df)
-    kernel.import_skill(data_skill, skill_name="data")
+    
+    data_skill = DataSkill(data=df,service=openai_chat_completion)
     context = sk.ContextVariables()
-    context["data_summary"] = data_skill.get_row_column_names()
-    print(context["data_summary"])
-    """
-    prompt = "How old is Bob and where does Eve live?"
-    prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-        max_tokens=2000, temperature=0.7, top_p=0.8
-    )
-    prompt_template = sk.ChatPromptTemplate(  # Create the chat prompt template
-        "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-    )
-    function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
-
-    query_func = kernel.register_semantic_function(None, "Data", function_config)
-    result = await kernel.run_async(query_func, input_vars=context)
+    context["user_input"] = data_skill.get_df_data()
+    print(context._variables)
+    data_skill = kernel.import_skill(data_skill, skill_name="data")
+    
+    #prompt = "How old is Bob and where does Eve live?"
+    prompt = "How old is Bob and what city does Eve live in?"
+    query_async = data_skill["queryAsync"]
+    result = await query_async.invoke_async(prompt)
     print(result)
-    """
-
 
 if __name__ == "__main__":
     asyncio.run(main())

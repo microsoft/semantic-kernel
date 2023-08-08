@@ -6,11 +6,19 @@ from typing import Union, List
 from . import CodeSkill
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function
-
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
+)
+from semantic_kernel.connectors.ai.open_ai import (
+    AzureChatCompletion,
+    OpenAIChatCompletion,
+)
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 
 class DataSkill:
     """
-    Description: A skill that allows the user to query structured data.
+    Description: A skill that allows the user to query CSV files and pandas 
+    dataframes.
 
     Usage:
         kernel.import_skill(DataSkill(), skill_name="DataSkill")
@@ -23,13 +31,19 @@ class DataSkill:
     verbose: bool
     _prefix: str
     _suffix: str
+    _service: ChatCompletionClientBase
+    _chat_settings: ChatRequestSettings
 
-    def __init__(self, path: Union[str, List[str]]=None, data: Union[pd.DataFrame, 
-        List[pd.DataFrame]]=None, mutable: bool=False, verbose: bool=True):
+    def __init__(self, service: Union[AzureChatCompletion, OpenAIChatCompletion],
+        path: Union[str, List[str]]=None, data: Union[pd.DataFrame, List[pd.DataFrame]]=None, 
+        mutable: bool=False, verbose: bool=True,
+        ):
         self.data = data
         self.path = path
         self.mutable = mutable
         self.verbose = verbose
+        self._service = service
+        self._chat_settings = ChatRequestSettings(temperature=0.0)
 
         if isinstance(self.path, str):
             if not self.path.endswith(".csv"):
@@ -51,30 +65,28 @@ class DataSkill:
                     raise ValueError("File path must be to a CSV file")
                 else:
                     self.data.append(pd.read_csv(file))
-                    
-        self._prefix = """You are working with a pandas dataframe in Python. You 
-        may be working with one or more dataframe. You were given the row and 
-        column names of the pandas dataframes earlier. """
-        self._suffix = """Answer the question with code only, do not provide any 
-        explanation or other text. If it does not seem like you can write code 
-        to answer the question, then return "I don't know" as the answer."""
-        
 
-    def get_row_column_names(self) -> str:
+        self._prefix = """You were given the first five rows of each pandas 
+        dataframe earlier. There may be more rows. """
+        self._suffix = """Write a Python function `process(df)` where df is a
+        pandas dataframe.
+        This is the function's purpose: {goal}
+        Write the function in a Python code block with all necessary imports. 
+        Do not include any example usage. Do not include any explanation nor 
+        decoration."""
+                
+
+    def get_df_data(self) -> str:
         """
-        Returns the row and column names of pandas dataframes.
+        Returns the first 5 rows of pandas dataframes in JSON format.
 
         Returns:
             The row and column names of the data tables contained in a prompt.
         """
         if isinstance(self.data, pd.DataFrame):
-            prompt = """You are working with one pandas dataframe in Python. The
-            names of the columns are, in this order: \n"""
-            column_names = ', '.join(map(str, self.data.columns.tolist()))
-            row_names = ', '.join(map(str, self.data.index.tolist()))
-            prompt += column_names + "\n"
-            prompt += "The names of the rows are, in this order: \n"
-            prompt += row_names + "\n"
+            prompt = """You are working with one pandas dataframe in Python. 
+            These are the first 5 rows, in JSON format: \n"""
+            prompt += self.data.head().to_json(orient="records") + "\n"
         else:
             count = 1
             num = len(self.data)
@@ -93,7 +105,7 @@ class DataSkill:
     @sk_function(
         description="""Answer a query about the data that does not require 
         data transformation or plotting.""",
-        name="query",
+        name="queryAsync",
         input_description="The question to ask the LLM",
     )
     async def query_async(self, ask: str) -> str:
@@ -103,32 +115,44 @@ class DataSkill:
         Args:
             ask -- The question to ask the LLM
         """
-        prompt = self._prefix + """You need to write python code that the user can 
-        run on their dataframes to answer the question.""" + self._suffix
-        pass
+        formatted_suffix = self._suffix.format(goal=ask)
+        prompt = self._prefix + """You need to write plain Python code that the 
+        user can run on their dataframes.""" + formatted_suffix 
+        result = await self._service.complete_chat_async(
+            [("user", prompt)], self._chat_settings
+        )
 
+        df=self.data
+        local_vars = {'df': df}
+        exec(result, local_vars)
+        result = local_vars['process'](local_vars['df'])
+      
+        
+        return str(result)
+    
+    """
     @sk_function(
         description="Transform the data in the pandas dataframe",
         name="transform",
         input_description="The transformation to apply to the data",
     )
-    async def transform_async(self, ask: str) -> pd.DataFrame:
-        """
+    async def transform_async(self, ask: str, context: SKContext) -> pd.DataFrame:
+        
         Transform the data in the pandas dataframe.
 
         Args:
             ask -- The transformation to apply to the data
-        """
-        prompt = self._prefix + """You need to write python code that will 
-        transform the dataframe as the user asked. """ + self._suffix
+        
+        prompt = self._prefix + You need to write python code that will 
+        transform the dataframe as the user asked.  + self._suffix
         pass
-
+    """
     @sk_function(
         description="Plot the data in the pandas dataframe",
-        name="plot",
+        name="plotAsync",
         input_description="The description of the plot to generate",
     )
-    async def plot_async(self, ask: str):
+    async def plot_async(self, ask: str, context: SKContext) -> str:
         """
         Plot the data in the pandas dataframe.
 
@@ -139,6 +163,7 @@ class DataSkill:
         the data as the user asked. You need to import matplotlib and use nothing
         else for plotting. """ + self._suffix
         pass
+    
 
     
 
