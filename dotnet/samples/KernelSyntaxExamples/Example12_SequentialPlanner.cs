@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Diagnostics;
@@ -17,7 +17,7 @@ internal static class Example12_SequentialPlanner
     public static async Task RunAsync()
     {
         await PoetrySamplesAsync();
-        await EmailSamplesAsync();
+        await EmailSamplesWithRecallAsync();
         await BookSamplesAsync();
         await MemorySampleAsync();
         await PlanNotPossibleSampleAsync();
@@ -100,7 +100,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine(result.Result);
     }
 
-    private static async Task EmailSamplesAsync()
+    private static async Task EmailSamplesWithRecallAsync()
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Email Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner, 512);
@@ -126,6 +126,9 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanWithGoalString());
 
+        // Serialize plan before execution for saving to memory on success.
+        var originalPlan = plan.ToJson();
+
         var input =
             "Once upon a time, in a faraway kingdom, there lived a kind and just king named Arjun. " +
             "He ruled over his kingdom with fairness and compassion, earning him the love and admiration of his people. " +
@@ -139,6 +142,51 @@ internal static class Example12_SequentialPlanner
             "They ruled the kingdom together, ruling with fairness and compassion, just as Arjun had done before. They lived " +
             "happily ever after, with the people of the kingdom remembering Mira as the brave young woman who saved them from the dragon.";
         await ExecutePlanAsync(kernel, plan, input, 5);
+
+        Console.WriteLine("======== Sequential Planner - Find and Execute Saved Plan ========");
+
+        // Save the plan for future use
+        var memoryStore = GetMemory();
+        await memoryStore.SaveInformationAsync(
+            "plans",
+            id: Guid.NewGuid().ToString(),
+            text: plan.Description, // This is the goal used to create the plan
+            description: originalPlan);
+
+        var goal = "Write summary in french and e-mail John Doe";
+
+        Console.WriteLine($"Goal: {goal}");
+        Console.WriteLine("Searching for saved plan...");
+
+        Plan? restoredPlan = null;
+        var memories = memoryStore.SearchAsync("plans", goal, limit: 1, minRelevanceScore: 0.5);
+        await foreach (MemoryQueryResult memory in memories)
+        {
+            Console.WriteLine($"Restored plan (relevance={memory.Relevance}):");
+
+            // Deseriliaze the plan from the description
+            restoredPlan = Plan.FromJson(memory.Metadata.Description, kernel.CreateNewContext());
+
+            Console.WriteLine(restoredPlan.ToPlanWithGoalString());
+            Console.WriteLine();
+
+            break;
+        }
+
+        if (restoredPlan is not null)
+        {
+            var newInput =
+            "Far in the future, on a planet lightyears away, 15 year old Remy lives a normal life. He goes to school, " +
+            "hangs out with his friends, and tries to avoid trouble. But when he stumbles across a secret that threatens to destroy " +
+            "everything he knows, he's forced to go on the run. With the help of a mysterious girl named Eve, he must evade the ruthless " +
+            "agents of the Galactic Federation, and uncover the truth about his past. But the more he learns, the more he realizes that " +
+            "he's not just an ordinary boy.";
+
+            var result = await kernel.RunAsync(newInput, restoredPlan);
+
+            Console.WriteLine("Result:");
+            Console.WriteLine(result.Result);
+        }
     }
 
     private static async Task BookSamplesAsync()
@@ -177,20 +225,7 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Plan using Memory ========");
 
-        // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
-        // use these to generate and store embeddings for the function descriptions.
-        var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
-            .WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .WithAzureTextEmbeddingGenerationService(
-                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                TestConfiguration.AzureOpenAIEmbeddings.ApiKey)
-            .WithMemoryStorage(new VolatileMemoryStore())
-            .Build();
+        var kernel = InitializeKernelWithMemory();
 
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSemanticSkillFromDirectory(folder,
@@ -219,6 +254,31 @@ internal static class Example12_SequentialPlanner
 
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanWithGoalString());
+    }
+
+    private static IKernel InitializeKernelWithMemory()
+    {
+        // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
+        // use these to generate and store embeddings for the function descriptions.
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Logger)
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
+            .WithAzureTextEmbeddingGenerationService(
+                TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                TestConfiguration.AzureOpenAIEmbeddings.ApiKey)
+            .WithMemoryStorage(new VolatileMemoryStore())
+            .Build();
+
+        return kernel;
+    }
+
+    private static ISemanticTextMemory GetMemory()
+    {
+        return InitializeKernelWithMemory().Memory;
     }
 
     private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
