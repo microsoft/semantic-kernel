@@ -12,7 +12,7 @@ using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.TemplateLanguage;
+namespace SemanticKernel.IntegrationTests.SkillDefinition;
 
 public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
 {
