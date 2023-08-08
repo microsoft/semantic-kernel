@@ -16,6 +16,16 @@
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
+  <!--
+    To run this sample using Semantic Kernel's nuget package, uncomment the following lines and
+    comment the ProjectReference lines for Connectors.AI.OpenAI and SemanticKernel
+  -->
+
+  <!-- <ItemGroup>
+    <PackageReference Include="Microsoft.SemanticKernel" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="0.19.230804.2-preview" />
+  </ItemGroup> -->
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel\SemanticKernel.csproj" />

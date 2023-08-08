@@ -14,71 +14,51 @@ You must also have the Azure Function located [here](../MathPlugin/) running loc
 
 ## Configuring the sample
 
-The sample can be configured by using either:
+The sample can be configured by using the command line with .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to avoid the risk of leaking secrets into the repository, branches and pull requests.
 
-- Enter secrets at the command line with [.NET Secret Manager](#using-net-secret-manager)
-- Enter secrets in [appsettings.json](#using-appsettingsjson)
+This sample has been tested with the following models:
 
-For Debugging the console application alone, we suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to avoid the risk of leaking secrets into the repository, branches and pull requests.
+| Service      | Model type      | Model              | Model version | Supported |
+| ------------ | --------------- | ------------------ | ------------- | --------- |
+| OpenAI       | Text Completion | text-davinci-003   | 1             | ✅        |
+| OpenAI       | Chat Completion | gpt-3.5-turbo      | 1             | ❌        |
+| OpenAI       | Chat Completion | gpt-3.5-turbo      | 0301          | ❌        |
+| OpenAI       | Chat Completion | gpt-4              | 1             | ✅        |
+| OpenAI       | Chat Completion | gpt-4              | 0314          | ✅        |
+| Azure OpenAI | Text Completion | text-davinci-003   | 1             | ❌        |
+| Azure OpenAI | Chat Completion | gpt-3.5-turbo-0301 | 0301          | ❌        |
+| Azure OpenAI | Chat Completion | gpt-4-0314         | 0314          | ✅        |
 
 ### Using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 
 Configure an OpenAI endpoint
 
 ```powershell
-cd 05-Create-ChatGPT-Plugin/Solution
-dotnet user-secrets set "endpointType" "text-completion"
-dotnet user-secrets set "serviceType" "OpenAI"
-dotnet user-secrets set "serviceId" "text-davinci-003"
-dotnet user-secrets set "deploymentOrModelId" "text-davinci-003"
-dotnet user-secrets set "apiKey" "... your OpenAI key ..."
+cd 01-Semantic-Functions
+
+dotnet user-secrets set "Global:LlmService" "OpenAI"
+
+dotnet user-secrets set "OpenAI:ModelType" "chat-completion"
+dotnet user-secrets set "OpenAI:ChatCompletionModelId" "gpt-4"
+dotnet user-secrets set "OpenAI:ApiKey" "... your OpenAI key ..."
 ```
 
 Configure an Azure OpenAI endpoint
 
 ```powershell
-cd 05-Create-ChatGPT-Plugin/Solution
-dotnet user-secrets set "endpointType" "text-completion"
-dotnet user-secrets set "serviceType" "AzureOpenAI"
-dotnet user-secrets set "serviceId" "text-davinci-003"
-dotnet user-secrets set "deploymentOrModelId" "text-davinci-003"
-dotnet user-secrets set "endpoint" "https:// ... your endpoint ... .openai.azure.com/"
-dotnet user-secrets set "apiKey" "... your Azure OpenAI key ..."
+cd 01-Semantic-Functions
+
+dotnet user-secrets set "Global:LlmService" "OpenAI"
+
+dotnet user-secrets set "AzureOpenAI:DeploymentType" "chat-completion"
+dotnet user-secrets set "AzureOpenAI:ChatCompletionDeploymentName" "gpt-4"
+dotnet user-secrets set "AzureOpenAI:Endpoint" "... your Azure OpenAI endpoint ..."
+dotnet user-secrets set "AzureOpenAI:ApiKey" "... your Azure OpenAI key ..."
 ```
-
-Configure the Semantic Kernel logging level
-
-```powershell
-dotnet user-secrets set "LogLevel" 0
-```
-
-Log levels:
-
-- 0 = Trace
-- 1 = Debug
-- 2 = Information
-- 3 = Warning
-- 4 = Error
-- 5 = Critical
-- 6 = None
-
-### Using appsettings.json
-
-Configure an OpenAI endpoint
-
-1. Copy [settings.json.openai-example](./config/appsettings.json.openai-example) to `./Config/appsettings.json`
-1. Edit the file to add your OpenAI endpoint configuration
-
-Configure an Azure OpenAI endpoint
-
-1. Copy [settings.json.azure-example](./config/appsettings.json.azure-example) to `./Config/appsettings.json`
-1. Edit the file to add your Azure OpenAI endpoint configuration
 
 ## Running the sample
 
-Before running the sample, make sure you have the [Math Plugin](../MathPlugin/) running locally.
-
-To run the console application just hit `F5`.
+After configuring the sample, to build and run the console application just hit `F5`.
 
 To build and run the console application from the terminal use the following commands:
 

@@ -33,15 +33,19 @@
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="2.0.0-preview2" TreatAsUsed="true" />
   </ItemGroup>
 
+  <!--
+    To run this sample using Semantic Kernel's nuget package, uncomment the following lines and
+    comment the ProjectReference lines for Connectors.AI.OpenAI and SemanticKernel
+  -->
+
   <!-- <ItemGroup>
-    <PackageReference Include="Microsoft.SemanticKernel" Version="0.17.230704.3-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.OpenAPI" Version="0.17.230704.3-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Planning.StepwisePlanner" Version="0.17.230704.3-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="0.19.230804.2-preview" />
   </ItemGroup> -->
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\..\src\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

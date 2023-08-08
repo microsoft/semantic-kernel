@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Plugins.OrchestratorPlugin;
 
@@ -32,7 +32,7 @@ public class Orchestrator
 
         var GetNumbers = this._kernel.Skills.GetFunction("OrchestratorPlugin", "GetNumbers");
         SKContext getNumberContext = await GetNumbers.InvokeAsync(request);
-        JObject numbers = JObject.Parse(getNumberContext.Variables["input"]);
+        JsonObject numbers = JsonObject.Parse(getNumberContext.Variables["input"]).AsObject();
 
         // Call the appropriate function
         switch (intent)
