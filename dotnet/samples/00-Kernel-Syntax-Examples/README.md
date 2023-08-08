@@ -1,36 +1,39 @@
 # Semantic Kernel syntax examples
 
 This project contains a collection of semi-random examples about various scenarios
-using SK components. 
+using SK components.
 
 The examples are ordered by number, starting with very basic examples.
 
 Most of the examples will require secrets and credentials, to access OpenAI, Azure OpenAI,
-Bing and other resources. We suggest using .NET 
+Bing and other resources. We suggest using .NET
 [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
 to avoid the risk of leaking secrets into the repository, branches and pull requests.
 You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
+
 ```
-cd dotnet/samples/KernelSyntaxExamples
+cd dotnet/samples/00-Kernel-Syntax-Examples
 
 dotnet user-secrets init
 
-dotnet user-secrets set "OpenAI:ModelId" "..."
-dotnet user-secrets set "OpenAI:ChatModelId" "..."
+dotnet user-secrets set "Global:LlmService" "..." (OpenAI, AzureOpenAI, Apim, HuggingFace, etc.)
+
+dotnet user-secrets set "OpenAI:ModelType" "..." (text-completion or chat-completion)
+dotnet user-secrets set "OpenAI:TextCompletionModelId" "..."
+dotnet user-secrets set "OpenAI:ChatCompletionModelId" "..."
 dotnet user-secrets set "OpenAI:EmbeddingModelId" "..."
+dotnet user-secrets set "OpenAI:OrgId" "..."
 dotnet user-secrets set "OpenAI:ApiKey" "..."
 
+dotnet user-secrets set "AzureOpenAI:DeploymentType" "..." (text-completion or chat-completion)
 dotnet user-secrets set "AzureOpenAI:ServiceId" "..."
-dotnet user-secrets set "AzureOpenAI:DeploymentName" "..."
-dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "..."
+dotnet user-secrets set "AzureOpenAI:TextCompletionDeploymentName" "..."
+dotnet user-secrets set "AzureOpenAI:ChatCompletionDeploymentName" "..."
+dotnet user-secrets set "AzureOpenAI:EmbeddingDeploymentName" "..."
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://... .openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
-
-dotnet user-secrets set "AzureOpenAIEmbeddings:DeploymentName" "..."
-dotnet user-secrets set "AzureOpenAIEmbeddings:Endpoint" "https://... .openai.azure.com/"
-dotnet user-secrets set "AzureOpenAIEmbeddings:ApiKey" "..."
 
 dotnet user-secrets set "ACS:Endpoint" "https://... .search.windows.net"
 dotnet user-secrets set "ACS:ApiKey" "..."
@@ -72,17 +75,19 @@ dotnet user-secrets set "Redis:Configuration" "..."
 ```
 
 To set your secrets with environment variables, use these names:
+
 ```
 # OpenAI
-OpenAI__ModelId
-OpenAI__ChatModelId
+OpenAI__ModelType
+OpenAI__TextCompletionModelId
+OpenAI__ChatCompletionModelId
 OpenAI__EmbeddingModelId
 OpenAI__ApiKey
 
 # Azure OpenAI
-AzureOpenAI__ServiceId
-AzureOpenAI__DeploymentName
-AzureOpenAI__ChatDeploymentName
+AzureOpenAI__DeploymentType
+AzureOpenAI__TextCompletionDeploymentName
+AzureOpenAI__ChatCompletionDeploymentName
 AzureOpenAI__Endpoint
 AzureOpenAI__ApiKey
 
