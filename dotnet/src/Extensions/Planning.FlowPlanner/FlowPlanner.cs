@@ -5,14 +5,14 @@
 namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Flow;
 using Microsoft.SemanticKernel.SkillDefinition;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Threading.Tasks;
 
 /// <summary>
 /// A planner that execute plan in iterative way
@@ -60,6 +60,7 @@ public class FlowPlanner
     /// <param name="flow">goal to achieve</param>
     /// <param name="sessionId">execution session id</param>
     /// <param name="input">current input</param>
+    /// <param name="contextVariables">execution context variables</param>
     /// <returns>SKContext, which includes a json array of strings as output. The flow result is also exposed through the context when completes.</returns>
     [SKFunction]
     [SKName("ExecuteFlow")]
@@ -67,7 +68,9 @@ public class FlowPlanner
     public async Task<SKContext> ExecuteFlowAsync(
         [Description("The flow to execute")] Flow.Flow flow,
         [Description("Execution session id")] string sessionId,
-        [Description("Current input")] string input)
+        [Description("Current input")] string input,
+        [Description("Execution context variables")]
+        ContextVariables? contextVariables = null)
     {
         try
         {
@@ -79,6 +82,6 @@ public class FlowPlanner
         }
 
         FlowExecutor executor = new(this._kernelBuilder, this._flowStatusProvider, this._globalSkillCollection, this._config);
-        return await executor.ExecuteAsync(flow, sessionId, input).ConfigureAwait(false);
+        return await executor.ExecuteAsync(flow, sessionId, input, contextVariables ?? new ContextVariables(null)).ConfigureAwait(false);
     }
 }

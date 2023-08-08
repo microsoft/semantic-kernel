@@ -84,7 +84,7 @@ steps:
         var result = await planner.ExecuteFlowAsync(flow, sessionId, "Who is the current president of the United States? What is his current age divided by 2");
 
         // Assert
-        Assert.False(result.ErrorOccurred, result.LastErrorDescription);
+        Assert.False(result.ErrorOccurred, result.LastException?.Message);
         // Loose assertion -- make sure that the plan was executed and pause when it needs interact with user to get more input
         Assert.Contains("email", result.Result, StringComparison.InvariantCultureIgnoreCase);
 
@@ -92,7 +92,7 @@ steps:
         result = await planner.ExecuteFlowAsync(flow, sessionId, $"my email is {email}");
 
         // Assert
-        Assert.False(result.ErrorOccurred, result.LastErrorDescription);
+        Assert.False(result.ErrorOccurred, result.LastException?.Message);
         var emailPayload = result.Variables["email"];
         Assert.Contains(email, emailPayload, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("biden", emailPayload, StringComparison.InvariantCultureIgnoreCase);

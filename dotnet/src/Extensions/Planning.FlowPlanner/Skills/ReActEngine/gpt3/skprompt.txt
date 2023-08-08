@@ -11,9 +11,9 @@ The function definitions below are in the following format:
 [END AVAILABLE FUNCTIONS]
 
 [USAGE INSTRUCTIONS]
-To use the functions, specify a JSON blob representing an action. The JSON blob should contain an "action" key with the name of the function to use, and an "action_variables" key with a JSON object of string values to use when calling the function.
+To use the functions, specify a JSON blob representing an action. The JSON blob should contain fully qualified name of the function to use, and an "action_variables" key with a JSON object of string values to use when calling the function.
 Do not call functions directly; they must be invoked through an action.
-The "action_variables" value should always include an "input" key, even if the input value is empty. Additional keys in the "action_variables" value should match the defined [PARAMETERS] of the named "action" in [AVAILABLE FUNCTIONS].
+The "action_variables" values should match the defined [PARAMETERS] of the named "action" in [AVAILABLE FUNCTIONS].
 Dictionary values in "action_variables" must be strings and represent the actual values to be passed to the function.
 Ensure that the $JSON_BLOB contains only a SINGLE action; do NOT return multiple actions.
 IMPORTANT: Use only the available functions listed in the [AVAILABLE FUNCTIONS] section. Do not attempt to use any other functions that are not specified.
@@ -21,10 +21,12 @@ The value of parameters should either by empty if the expectation is for the use
 You are not allowed to ask user directly for more information.
 
 Here is an example of a valid $JSON_BLOB:
+```
 {
-  "action": "FUNCTION.NAME",
-  "action_variables": {"INPUT": "some input", "PARAMETER_NAME": "some value", "PARAMETER_NAME_2": "42"}
+  "action": "_Namespace_.FUNCTION.NAME",
+  "action_variables": {"PARAMETER_NAME_1": "some value", "PARAMETER_NAME_2": "42"}
 }
+```
 [END USAGE INSTRUCTIONS]
 [END INSTRUCTION]
 
@@ -45,7 +47,21 @@ Once I have gathered all the necessary observations and performed any required a
 If there is not a fitting function available to validate the result, I can provide the final answer in a clear and human-readable format.
 [END THOUGHT PROCESS]
 
-IMOPRTANT REMINDER: your each response should contain only one next step and only single one $JSON_BLOB. Do not provide more than one step.  
+Example:
+[Question]
+Get the half of 80.
+[THOUGHT]
+I should use Calculator.Divide function to calculate the result.
+[ACTION]
+{
+    "action": "Calculator.Divide",
+    "action_variables": {
+        "param1": "80",
+        "param2": "20"
+    }
+}
+
+IMOPRTANT REMINDER: your each response should contain only one next step and only single one [ACTION] part. Do not provide more than one step.  
 Let's break down the problem step by step and think about the best approach.
 
 Begin!
@@ -53,3 +69,4 @@ Begin!
 [Question]
 {{$question}}
 {{$agentScratchPad}}
+[THOUGHT]

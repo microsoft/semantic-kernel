@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+/// <summary>
+/// Step within a <see cref="Flow"/> which defines the step goal, available skills, required and provided variables.
+/// </summary>
 public class FlowStep
 {
     private List<string> _requires = new();
@@ -33,20 +36,32 @@ public class FlowStep
     {
     }
 
+    /// <summary>
+    /// Goal of the step
+    /// </summary>
     public string Goal { get; set; }
 
+    /// <summary>
+    /// Parameters required for executing the step
+    /// </summary>
     public List<string> Requires
     {
         get => this._requires;
         set => this._requires = value;
     }
 
+    /// <summary>
+    /// Variables to be provided by the step
+    /// </summary>
     public List<string> Provides
     {
         get => this._provides;
         set => this._provides = value;
     }
 
+    /// <summary>
+    /// Gets or sets the skill available for the current step
+    /// </summary>
     public List<string>? Skills
     {
         get => this._skillTypes.Keys.ToList();
@@ -116,18 +131,32 @@ public class FlowStep
         }
     }
 
+    /// <summary>
+    /// Register the required arguments for the step
+    /// </summary>
+    /// <param name="requiredArguments">Array of required arguments</param>
     public void AddRequires(params string[] requiredArguments)
     {
         this.ValidateArguments(requiredArguments);
         this._requires.AddRange(requiredArguments);
     }
 
+    /// <summary>
+    /// Register the arguments provided by the step
+    /// </summary>
+    /// <param name="providedArguments">Array of provided arguments</param>
     public void AddProvides(params string[] providedArguments)
     {
         this.ValidateArguments(providedArguments);
         this._provides.AddRange(providedArguments);
     }
 
+    /// <summary>
+    /// Get the skill instances registered with the step
+    /// </summary>
+    /// <param name="kernel">The semantic kernel</param>
+    /// <param name="globalSkills">The global skills available</param>
+    /// <returns></returns>
     public IEnumerable<object> GetSKills(IKernel kernel, Dictionary<object, string?> globalSkills)
     {
         if (this._skillsFactory != null)
@@ -138,6 +167,11 @@ public class FlowStep
         return Enumerable.Empty<object>();
     }
 
+    /// <summary>
+    /// Check if the step depends on another step
+    /// </summary>
+    /// <param name="otherStep">The other step</param>
+    /// <returns>true if the step depends on the other step, false otherwise</returns>
     public bool DependsOn(FlowStep otherStep)
     {
         return this.Requires.Intersect(otherStep.Provides).Any();
