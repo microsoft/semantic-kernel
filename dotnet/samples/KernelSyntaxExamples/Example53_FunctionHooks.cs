@@ -8,6 +8,8 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
+#pragma warning disable RCS1214 // Unnecessary interpolated string.
+
 // ReSharper disable once InconsistentNaming
 public static class Example53_FunctionHooks
 {
@@ -44,7 +46,7 @@ public static class Example53_FunctionHooks
 
         Task MyCancelledPreHook(PreExecutionContext executionContext)
         {
-            Console.WriteLine($"Pre Hook - Should not trigger");
+            Console.WriteLine("Pre Hook - Should not trigger");
 
             return Task.CompletedTask;
         }
