@@ -232,7 +232,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/dotnet/samples/00-Kernel-Syntax-Examples/00-Kernel-Syntax-Examples.csproj",
+        "${workspaceFolder}/dotnet/samples/00-kernel-syntax-examples/00-kernel-syntax-examples.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
         "/property:DebugType=portable"
@@ -248,7 +248,7 @@
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/00-Kernel-Syntax-Examples/00-Kernel-Syntax-Examples.csproj"
+        "${workspaceFolder}/dotnet/samples/00-kernel-syntax-examples/00-kernel-syntax-examples.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "build"
@@ -260,7 +260,7 @@
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/00-Kernel-Syntax-Examples/00-Kernel-Syntax-Examples.csproj"
+        "${workspaceFolder}/dotnet/samples/00-kernel-syntax-examples/00-kernel-syntax-examples.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",

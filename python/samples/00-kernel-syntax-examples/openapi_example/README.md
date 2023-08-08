@@ -1,6 +1,6 @@
 ### Running the OpenApi syntax example
 
-1. In a terminal, navigate to `semantic_kernel/python/samples/00-Kernel-Syntax-Examples/openapi_example`.
+1. In a terminal, navigate to `semantic_kernel/python/samples/00-kernel-syntax-examples/openapi_example`.
 
 2. Run `poetry install` followed by `poetry shell` to enter poetry's virtual environment.
 
