@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using System.Text.Json.Nodes;
 
 namespace Plugins.OrchestratorPlugin;
 

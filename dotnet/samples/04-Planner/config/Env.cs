@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.Configuration;
 
 #pragma warning disable CA1812 // instantiated by AddUserSecrets
