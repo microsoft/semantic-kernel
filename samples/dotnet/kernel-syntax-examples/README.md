@@ -1,3 +1,3 @@
 # Semantic Kernel dotnet syntax examples
 
-*This project has moved to the [dotnet/samples/KernelSyntaxExamples](../../../dotnet/samples/KernelSyntaxExamples/) folder.*
+_This project has moved to the [dotnet/samples/00-Kernel-Syntax-Examples](../../../dotnet/samples/00-Kernel-Syntax-Examples/) folder._
