@@ -1,6 +1,6 @@
 # Using planner
 
-The `03-Chaining-Functions` console application shows the final solution to the [Planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner) doc article.
+The `04-Planner` console application shows the final solution to the [Planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner) doc article.
 
 ## Prerequisites
 

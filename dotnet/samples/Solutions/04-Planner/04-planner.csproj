@@ -16,10 +16,6 @@
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
-  <!-- <ItemGroup>
-    <PackageReference Include="Microsoft.SemanticKernel" />
-  </ItemGroup> -->
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />

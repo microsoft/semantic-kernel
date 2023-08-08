@@ -35,7 +35,7 @@ internal class KernelSettings
     public LogLevel? LogLevel { get; set; }
 
     /// <summary>
-    /// Load the kernel settings from settings.json if the file exists and if not attempt to use user secrets.
+    /// Load the kernel settings from appsettings.json if the file exists and if not attempt to use user secrets.
     /// </summary>
     internal static KernelSettings LoadSettings()
     {
