@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FA37
 		..\samples\dotnet\Directory.Packages.props = ..\samples\dotnet\Directory.Packages.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntaxExamples", "samples\00-kernel-syntax-examples\00-kernel-syntax-examples.csproj", "{47C6F821-5103-431F-B3B8-A2868A68BB78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntaxExamples", "samples\00-Kernel-Syntax-Examples\00-Kernel-Syntax-Examples.csproj", "{47C6F821-5103-431F-B3B8-A2868A68BB78}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphSkillsExample", "..\samples\dotnet\graph-api-skills\MsGraphSkillsExample.csproj", "{3EB61E99-C39B-4620-9482-F8DA18E48525}"
 EndProject

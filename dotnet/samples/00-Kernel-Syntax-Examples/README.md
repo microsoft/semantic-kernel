@@ -14,7 +14,7 @@ You can also use environment variables if you prefer.
 To set your secrets with Secret Manager:
 
 ```
-cd dotnet/samples/00-kernel-syntax-examples
+cd dotnet/samples/00-Kernel-Syntax-Examples
 
 dotnet user-secrets init
 
