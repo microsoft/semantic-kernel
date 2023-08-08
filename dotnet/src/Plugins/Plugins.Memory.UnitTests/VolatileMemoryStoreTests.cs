@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using Xunit;
@@ -76,17 +77,13 @@ public class VolatileMemoryStoreTests
     }
 
     [Fact]
-    public async Task ItCannotCreateDuplicateCollectionAsync()
+    public async Task ItHandlesExceptionsWhenCreatingCollectionAsync()
     {
         // Arrange
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-
-        // Act
-        await this._db.CreateCollectionAsync(collection);
+        string? collection = null;
 
         // Assert
-        await Assert.ThrowsAsync<MemoryException>(async () => await this._db.CreateCollectionAsync(collection));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await this._db.CreateCollectionAsync(collection!));
     }
 
     [Fact]
@@ -104,7 +101,7 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
 
         // Assert
-        await Assert.ThrowsAsync<MemoryException>(async () => await this._db.UpsertAsync(collection, testRecord));
+        await Assert.ThrowsAsync<SKException>(async () => await this._db.UpsertAsync(collection, testRecord));
     }
 
     [Fact]
@@ -591,6 +588,6 @@ public class VolatileMemoryStoreTests
         this._collectionNum++;
 
         // Act
-        await Assert.ThrowsAsync<MemoryException>(() => this._db.DeleteCollectionAsync(collection));
+        await Assert.ThrowsAsync<SKException>(() => this._db.DeleteCollectionAsync(collection));
     }
 }
