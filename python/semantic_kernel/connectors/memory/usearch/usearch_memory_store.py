@@ -604,12 +604,9 @@ class USearchMemoryStore(MemoryStoreBase):
             file_path.unlink()
 
         for collection_name, ucollection in self._collections.items():
-            # str cast can be omitted after https://github.com/unum-cloud/usearch/issues/174
             ucollection.embeddings_index.save(
-                str(
-                    self._get_collection_path(
-                        collection_name, file_type=_CollectionFileType.USEARCH
-                    )
+                self._get_collection_path(
+                    collection_name, file_type=_CollectionFileType.USEARCH
                 )
             )
             pq.write_table(
@@ -632,3 +629,9 @@ class USearchMemoryStore(MemoryStoreBase):
         """
         if self._persist_directory:
             self._dump_collection()
+
+        for _, ucollection in self._collections.items():
+            ucollection.embeddings_index.reset()
+            del ucollection.embeddings_data_table
+            del ucollection.embeddings_id_to_label
+        del self._collections
