@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -70,7 +69,7 @@ internal sealed class ValBlock : Block, ITextRendering
     public static bool HasValPrefix(string? text)
     {
         return !string.IsNullOrEmpty(text)
-               && text.Length > 0
+               && text!.Length > 0
                && (text[0] is Symbols.DblQuote or Symbols.SglQuote);
     }
 }
