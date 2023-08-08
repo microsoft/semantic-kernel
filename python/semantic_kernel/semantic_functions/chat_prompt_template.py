@@ -22,20 +22,6 @@ class ChatMessage(SKBaseModel):
     content: Optional[str] = None
     message: Optional[str] = None
 
-    # def __dict__(self) -> Dict[str, Any]:
-    #     if self.message:
-    #         if self.content:
-    #             combined_content = f"{self.message} {self.content}"
-    #         else:
-    #             combined_content = self.message
-    #     else:
-    #         combined_content = self.content
-    #     return {
-    #         "role": self.role,
-    #         "name": self.name,
-    #         "content": combined_content,
-    #     }
-
 
 class ChatPromptTemplate(PromptTemplate):
     _messages: List[ChatMessage]
