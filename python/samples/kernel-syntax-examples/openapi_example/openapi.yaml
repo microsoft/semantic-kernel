@@ -1,0 +1,44 @@
+openapi: 3.0.0
+info:
+  title: Test API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /{name}:
+    post:
+      summary: Hello World
+      operationId: helloWorld
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                input:
+                  type: string
+                  description: The inpt=ut of the request
+                  example: Howdy
+      responses:
+        '200':
+          description: OK
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Your name
+        - name: Header
+          in: header
+          required: false
+          schema:
+            type: string
+            description: The header
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            description: The query parameter
