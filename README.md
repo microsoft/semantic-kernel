@@ -117,7 +117,7 @@ You can run the app yourself by downloading it from its [GitHub repo](https://gi
 
 ## Visual Studio Code extension: design semantic functions with ease
 
-The [Semantic Kernel extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=semantic-kernel.semantic-kernel)
+The [Semantic Kernel extension for Visual Studio Code](https://learn.microsoft.com/en-us/semantic-kernel/vs-code-tools/)
 makes it easy to design and test semantic functions. The extension provides an interface for
 designing semantic functions and allows you to test them with a push of a button with your
 existing models and data.
