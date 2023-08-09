@@ -2,11 +2,11 @@
 
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Reliability;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A http retry handler that does not retry.
 /// </summary>
-public class NullHttpHandler : DelegatingHandler
+public sealed class NullHttpHandler : DelegatingHandler
 {
 }

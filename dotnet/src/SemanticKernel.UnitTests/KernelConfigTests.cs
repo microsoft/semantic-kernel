@@ -2,7 +2,6 @@
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Reliability;
 using Moq;
 using Xunit;
 

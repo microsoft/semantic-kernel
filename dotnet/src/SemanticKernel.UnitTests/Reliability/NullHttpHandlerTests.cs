@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel;
 using Moq;
 using Moq.Protected;
 using Xunit;

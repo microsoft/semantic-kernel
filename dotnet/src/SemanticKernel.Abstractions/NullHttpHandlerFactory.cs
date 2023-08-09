@@ -3,9 +3,9 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Reliability;
+namespace Microsoft.SemanticKernel;
 
-public class NullHttpHandlerFactory : IDelegatingHandlerFactory
+public sealed class NullHttpHandlerFactory : IDelegatingHandlerFactory
 {
     public DelegatingHandler Create(ILogger? logger)
     {
