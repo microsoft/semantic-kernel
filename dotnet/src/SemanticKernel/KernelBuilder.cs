@@ -134,7 +134,6 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
     /// <returns>Updated kernel builder including the retry handler factory.</returns>
-
     [Obsolete("This method is deprecated, use WithHandlerFactory instead")]
     public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
     {

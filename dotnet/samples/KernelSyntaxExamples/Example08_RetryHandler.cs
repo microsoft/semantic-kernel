@@ -45,7 +45,7 @@ public static class Example08_RetryHandler
     private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
     {
         var kernel = Kernel.Builder.WithLogger(InfoLogger.Logger)
-            .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
+            .WithHttpHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
             // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY")
             .Build();
