@@ -21,7 +21,7 @@ AZURE_OPENAI_API_KEY=""
 We suggest adding a copy of the `.env` file under these folders:
 
 - [python/tests](tests)
-- [samples/notebooks/python](../samples/notebooks/python).
+- [./notebooks](./notebooks).
 
 # System setup
 
@@ -112,7 +112,9 @@ You can also run all the tests together under the [tests](tests/) folder.
 # Tools and scripts
 
 ## Pydantic and Serialization
+
 [Pydantic Documentation](https://docs.pydantic.dev/1.10/)
+
 ### Overview
 
 This section describes how one can enable serialization for their class using Pydantic.
@@ -167,16 +169,16 @@ class B(ABC, PydanticField): ... # ERROR: Python cannot find a valid super class
 class C(PydanticField): ... # No other changes needed
 ```
 
-The classes B and C can now be used as valid Pydantic Field annotations. 
+The classes B and C can now be used as valid Pydantic Field annotations.
 
-```python
+````python
 from pydantic import BaseModel
 
 class MyModel(BaseModel):
     b: B
     c: C
 
-Class A can only be used as a Pydantic Field annotation for a Pydantic BaseModel subclass 
+Class A can only be used as a Pydantic Field annotation for a Pydantic BaseModel subclass
 which is configured to allow arbitrary field types like so:
 
 ```python
@@ -188,7 +190,7 @@ class CorrectModel(BaseModel):
     a: A  # Okay
     class Config:  # Configuration that tells Pydantic to allow field types that it can't serialize
         arbitrary_types_allowed = True
-```
+````
 
 #### Classes with data, but no Generic types that need to be serialized
 
@@ -256,7 +258,6 @@ class A(SKGenericModel, Generic[T1, T2]):
     b: T1
     c: T2
 ```
-    
 
 ## Pipeline checks
 

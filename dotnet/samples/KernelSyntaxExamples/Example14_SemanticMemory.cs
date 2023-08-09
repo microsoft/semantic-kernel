@@ -156,9 +156,9 @@ public static class Example14_SemanticMemory
         {
             ["https://github.com/microsoft/semantic-kernel/blob/main/README.md"]
                 = "README: Installation, getting started, and how to contribute",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/02-running-prompts-from-file.ipynb"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks/02-running-prompts-from-file.ipynb"]
                 = "Jupyter notebook describing how to pass prompts from a file to a semantic skill or function",
-            ["https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/00-getting-started.ipynb"]
+            ["https://github.com/microsoft/semantic-kernel/blob/main/dotnet/notebooks//00-getting-started.ipynb"]
                 = "Jupyter notebook describing how to get started with the Semantic Kernel",
             ["https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChatSkill/ChatGPT"]
                 = "Sample demonstrating how to create a chat skill interfacing with ChatGPT",
