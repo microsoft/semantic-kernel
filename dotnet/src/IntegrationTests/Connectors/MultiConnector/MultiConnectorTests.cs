@@ -17,6 +17,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
+using Microsoft.SemanticKernel.Text;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,6 +31,7 @@ public sealed class MultiConnectorTests : IDisposable
 {
     private const string StartGoal =
         "The goal of this plan is to evaluate the capabilities of a smaller LLM model. Start by writing a text of about 100 words on a given topic, as the input parameter of the plan. Then use distinct functions from the available skills on the input text and/or the previous functions results, choosing parameters in such a way that you know you will succeed at running each function but a smaller model might not. Try to propose steps of distinct difficulties so that models of distinct capabilities might succeed on some functions and fail on others. In a second phase, you will be asked to evaluate the function answers from smaller models. Please beware of correct Xml tags, attributes, and parameter names when defined and when reused.";
+
     private const string PlanParentDir = ".\\Connectors\\MultiConnector\\";
 
     private readonly ILogger _logger;
@@ -65,12 +67,11 @@ public sealed class MultiConnectorTests : IDisposable
     /// <summary>
     /// This test method uses a plan loaded from a file
     /// </summary>
-    [Theory(Skip = "This test is for manual verification.")]
+    //[Theory(Skip = "This test is for manual verification.")]
+    [Theory]
     [InlineData(1, 1, 1, "VettingSequentialPlan_SummarizeSkill_Summarize.json", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFilePath, params string[] skillNames)
     {
-        // ... (The rest of your setup code)
-
         // Load the plan from the provided file path
         var planDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, PlanParentDir);
         var planPath = System.IO.Path.Combine(planDirectory, planFilePath);
@@ -90,8 +91,6 @@ public sealed class MultiConnectorTests : IDisposable
     [InlineData(1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(double durationWeight, double costWeight, int nbPromptTests, string difficulty, params string[] skillNames)
     {
-        // ... (The rest of your setup code)
-
         // Create a plan using SequentialPlanner based on difficulty
         var modifiedStartGoal = StartGoal.Replace("distinct difficulties", $"{difficulty} difficulties", StringComparison.OrdinalIgnoreCase);
 
@@ -146,22 +145,17 @@ public sealed class MultiConnectorTests : IDisposable
 
         var kernel = this.InitializeKernel(settings, durationWeight: durationWeight, costWeight: costWeight, cancellationToken: cleanupToken.Token);
 
-        //var multiConnector = (MultiTextCompletion)kernel.GetService<ITextCompletion>();
-
-        // Import all sample skills available for demonstration purposes.
-        //TestHelpers.ImportSampleSkills(kernel);
-
         var prepareKernelTimeElapsed = sw.Elapsed;
 
         var skills = TestHelpers.GetSkills(kernel, skillNames);
-        var planner = new SequentialPlanner(kernel,
-            new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
 
         // Act
 
         // Create a plan
         var plan = await planFactory(kernel, cleanupToken.Token);
         var planJson = plan.ToJson();
+
+        this._logger.LogInformation("Plan used for multi-connector evaluation: {0}", planJson);
 
         settings.AnalysisSettings.EnableAnalysis = true;
 
@@ -189,12 +183,18 @@ public sealed class MultiConnectorTests : IDisposable
 
         var firstPassEffectiveCost = settings.Creditor.OngoingCost;
 
+        var firstPassDuration = planRunOnceTimeElapsed - planBuildingTimeElapsed;
+
+        this._logger.LogInformation("Result from primary connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}", firstPassDuration, firstPassEffectiveCost, firstResult);
+
         //await optimizationCompletedTaskSource.Task.WaitAsync(cleanupToken.Token);
 
         // Get the optimization results
         var optimizationResults = await optimizationCompletedTaskSource.Task.ConfigureAwait(false);
 
         var optimizationDoneElapsed = sw.Elapsed;
+
+        this._logger.LogInformation("Optimized with suggested settings: {0}", Json.Serialize(optimizationResults.SuggestedSettings));
 
         //Re execute plan with suggested settings
 
@@ -209,6 +209,10 @@ public sealed class MultiConnectorTests : IDisposable
         var secondPassEffectiveCost = settings.Creditor.OngoingCost;
 
         var planRunTwiceElapsed = sw.Elapsed;
+
+        var secondPassDuration = planRunTwiceElapsed - optimizationDoneElapsed;
+
+        this._logger.LogInformation("Result from vetted connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}", secondPassDuration, secondPassEffectiveCost, secondResult);
 
         // Assert
 

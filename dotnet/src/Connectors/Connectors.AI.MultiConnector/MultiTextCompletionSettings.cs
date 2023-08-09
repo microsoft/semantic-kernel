@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
@@ -55,6 +56,7 @@ public class MultiTextCompletionSettings
     /// <summary>
     /// Comparer used to choose among vetted connectors.
     /// </summary>
+    [JsonIgnore]
     public Func<PromptConnectorSettings, PromptConnectorSettings, int> ConnectorComparer { get; set; } = GetConnectorComparer(1, 1);
 
     /// <summary>

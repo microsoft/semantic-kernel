@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -81,6 +82,7 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// In order to better assess model capabilities, one might want to increase temperature just for testing. This might enable the use of fewer prompts
     /// </summary>
+    [JsonIgnore]
     public Func<double, double>? TestsTemperatureTransform { get; set; }
 
     /// <summary>

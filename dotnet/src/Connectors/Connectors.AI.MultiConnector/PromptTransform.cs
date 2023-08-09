@@ -2,6 +2,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -18,6 +19,7 @@ public class PromptTransform
 
     public string Template { get; set; }
 
+    [JsonIgnore]
     public Func<string, string> TransformFunction { get; set; }
 
     public string Transform(string input)

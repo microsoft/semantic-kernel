@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
@@ -36,11 +37,13 @@ public class NamedTextCompletion
     /// <summary>
     /// The model might support a different range of temperature than SK (is 0 legal?) This optional function can help keep the temperature in the model's range.
     /// </summary>
+    [JsonIgnore]
     public Func<double, double>? TemperatureTransform { get; set; }
 
     /// <summary>
     /// The model might support a different range of settings than SK. This optional function can help keep the settings in the model's range.
     /// </summary>
+    [JsonIgnore]
     public Func<CompleteRequestSettings, CompleteRequestSettings>? RequestSettingsTransform { get; set; }
 
     /// <summary>
@@ -63,6 +66,7 @@ public class NamedTextCompletion
     /// </summary>
     public decimal? CostPer1000Token { get; set; }
 
+    [JsonIgnore]
     public Func<string, int>? TokenCountFunc { get; set; }
 
     /// <summary>
