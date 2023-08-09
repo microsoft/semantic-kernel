@@ -28,11 +28,9 @@ var mathPlugin = kernel.ImportSkill(new Plugins.MathPlugin.Math(), "MathPlugin")
 var orchestratorPlugin = kernel.ImportSkill(new Orchestrator(kernel), "OrchestratorPlugin");
 
 // Make a request that runs the Sqrt function
-var result1 = await orchestratorPlugin["RouteRequest"]
-    .InvokeAsync("What is the square root of 524?");
+var result1 = await kernel.RunAsync("What is the square root of 524?", orchestratorPlugin["RouteRequest"]);
 Console.WriteLine(result1);
 
 // Make a request that runs the Add function
-var result2 = await orchestratorPlugin["RouteRequest"]
-    .InvokeAsync("How many sheep would I have if I started with 3 and then got 7 more?");
+var result2 = await kernel.RunAsync("How many sheep would I have if I started with 3 and then got 7 more?", orchestratorPlugin["RouteRequest"]);
 Console.WriteLine(result2);

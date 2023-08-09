@@ -27,7 +27,7 @@ var mathPlugin = await kernel.ImportChatGptPluginFromUrlAsync("MathPlugin", new 
 var planner = new StepwisePlanner(kernel);
 var question = "I have $2130.23. How much money would I have if it grew by 5.25% and after I bought a $10 latte from Starbucks?";
 var plan = planner.CreatePlan(question);
-var result = await plan.InvokeAsync();
+var result = (await kernel.RunAsync(plan)).Result;
 
 // Print the results
 Console.WriteLine("Result: " + result);

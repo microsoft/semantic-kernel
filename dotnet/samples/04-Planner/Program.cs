@@ -30,7 +30,7 @@ var plan = await planner.CreatePlanAsync(ask);
 Console.WriteLine("Plan:\n");
 Console.WriteLine(JsonSerializer.Serialize(plan, new JsonSerializerOptions { WriteIndented = true }));
 
-var result = await plan.InvokeAsync();
+var result = (await kernel.RunAsync(plan)).Result;
 
 Console.WriteLine("Plan results:");
-Console.WriteLine(result.Result.Trim());
+Console.WriteLine(result.Trim());
