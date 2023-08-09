@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.ai.EmbeddingVector;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
@@ -131,51 +130,49 @@ public class Example25_ReadOnlyMemoryStore
         }
 
         @Override
-        public Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(String collectionName, Embedding embedding, double minRelevanceScore,
+        public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, double minRelevanceScore,
                                                                         boolean withEmbedding)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            final EmbeddingVector embeddingVector = new EmbeddingVector(embedding.getVector());
             return Mono.justOrEmpty(
             Arrays.stream(this._memoryRecords)
                     .map(it -> {
-                        EmbeddingVector memoryRecordEmbeddingVector =
-                                new EmbeddingVector(it.getEmbedding().getVector());
-                        double cosineSimilarity = -1d;
+                        Embedding memoryRecordEmbedding =
+                                it.getEmbedding();
+                        float cosineSimilarity = -1f;
                         try {
-                            cosineSimilarity = memoryRecordEmbeddingVector.cosineSimilarity(embeddingVector);
+                            cosineSimilarity = embedding.cosineSimilarity(memoryRecordEmbedding);
                         } catch (IllegalArgumentException e) {
                             // Vectors cannot have zero norm
                         }
                         return Tuples.of(it, cosineSimilarity);
                     })
                     .filter(it -> it.getT2() >= minRelevanceScore)
-                    .max(Comparator.comparing(Tuple2::getT2, Double::compare))
+                    .max(Comparator.comparing(Tuple2::getT2, Float::compare))
             );
         }
 
         @Override
-        public Mono<Collection<Tuple2<MemoryRecord, Number>>> getNearestMatchesAsync(String collectionName, Embedding embedding, int limit,
+        public Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(String collectionName, Embedding embedding, int limit,
             double minRelevanceScore, boolean withEmbeddings)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
-            final EmbeddingVector embeddingVector = new EmbeddingVector(embedding.getVector());
             return Mono.justOrEmpty(
                     Arrays.stream(this._memoryRecords)
                             .map(it -> {
-                                EmbeddingVector memoryRecordEmbeddingVector =
-                                        new EmbeddingVector(it.getEmbedding().getVector());
-                                double cosineSimilarity = -1d;
+                                Embedding memoryRecordEmbedding =
+                                        it.getEmbedding();
+                                float cosineSimilarity = -1f;
                                 try {
-                                    cosineSimilarity = memoryRecordEmbeddingVector.cosineSimilarity(embeddingVector);
+                                    cosineSimilarity = embedding.cosineSimilarity(memoryRecordEmbedding);
                                 } catch (IllegalArgumentException e) {
                                     // Vectors cannot have zero norm
                                 }
-                                return Tuples.of(it, (Number)cosineSimilarity);
+                                return Tuples.of(it, cosineSimilarity);
                             })
-                            .filter(it -> it.getT2().doubleValue() >= minRelevanceScore)
+                            .filter(it -> it.getT2() >= (float)minRelevanceScore)
                             // sort by similarity score, descending
-                            .sorted(Comparator.comparing(it -> it.getT2().doubleValue(), (a,b) -> Double.compare(b, a)))
+                            .sorted(Comparator.comparing(Tuple2::getT2, (a,b) -> Float.compare(b, a)))
                             .limit(limit)
                             .collect(Collectors.toList())
             );

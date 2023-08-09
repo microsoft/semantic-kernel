@@ -93,7 +93,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                 records.stream()
                                         .map(
                                                 record -> {
-                                                    Tuple2<MemoryRecord, ? extends Number> tuple =
+                                                    Tuple2<MemoryRecord, Float> tuple =
                                                             record;
                                                     MemoryRecord memoryRecord = tuple.getT1();
                                                     Number relevanceScore = tuple.getT2();

@@ -814,7 +814,7 @@ class VolatileMemoryStoreTests {
         for (Iterator<Tuple2<MemoryRecord, Float>> iterator = topNResults.iterator();
                 iterator.hasNext(); ) {
             Tuple2<MemoryRecord, Float> tuple = iterator.next();
-            int compare = Double.compare(tuple.getT2(), 0.75);
+            int compare = Float.compare(tuple.getT2(), 0.75f);
             assertTrue(topNKeys.contains(tuple.getT1().getKey()));
             assertTrue(compare >= 0);
         }

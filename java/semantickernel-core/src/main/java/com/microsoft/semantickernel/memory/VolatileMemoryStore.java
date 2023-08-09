@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
-import com.microsoft.semantickernel.ai.EmbeddingVector;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 
 import reactor.core.publisher.Mono;
@@ -201,16 +200,12 @@ public class VolatileMemoryStore implements MemoryStore {
             return Collections.emptyList();
         }
 
-        final EmbeddingVector embeddingVector = new EmbeddingVector(embedding.getVector());
-
         Collection<Tuple2<MemoryRecord, Float>> nearestMatches = new ArrayList<>();
         collection.values().forEach(
                 record -> {
                     if (record != null) {
-                        EmbeddingVector recordVector =
-                                new EmbeddingVector(record.getEmbedding().getVector());
-                        float similarity = embeddingVector.cosineSimilarity(recordVector);
-                        if (Float.compare(similarity,(float)minRelevanceScore) >= 0) {
+                        float similarity = embedding.cosineSimilarity(record.getEmbedding());
+                        if (similarity >= minRelevanceScore) {
                             if (withEmbeddings) {
                                 nearestMatches.add(Tuples.of(record, similarity));
                             } else {
@@ -227,13 +222,14 @@ public class VolatileMemoryStore implements MemoryStore {
                     }
                 });
 
-        List<Tuple2<MemoryRecord, Float>> result =
+          List<Tuple2<MemoryRecord, Float>> result =
                 nearestMatches.stream()
-                        // sort by similarity score, descending
-                        .sorted(Comparator.comparing(it -> it.getT2().doubleValue(), (a,b) -> Double.compare(b, a)))
-                        .limit(limit)
-                        .collect(Collectors.toList());
-        return result;
+                    // sort by similarity score, descending
+                    .sorted(Comparator.comparing(Tuple2::getT2, (a,b) -> Float.compare(b, a)))
+                    .limit(limit)
+                    .collect(Collectors.toList());
+
+          return result;
         });
 
     }
