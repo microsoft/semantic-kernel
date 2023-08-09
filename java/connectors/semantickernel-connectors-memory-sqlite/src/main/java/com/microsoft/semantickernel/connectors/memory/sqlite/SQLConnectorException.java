@@ -1,14 +1,14 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.sqlite;
 
 import com.microsoft.semantickernel.SKException;
 
-/**
- * Exception thrown by the SQLite connector.
- */
+/** Exception thrown by the SQLite connector. */
 public class SQLConnectorException extends SKException {
 
     /**
      * Create an exception with a message
+     *
      * @param message a description of the cause of the exception
      */
     public SQLConnectorException(String message) {
@@ -17,6 +17,7 @@ public class SQLConnectorException extends SKException {
 
     /**
      * Create an exception with a message and a cause
+     *
      * @param message a description of the cause of the exception
      * @param cause the cause of the exception
      */

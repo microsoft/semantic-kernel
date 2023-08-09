@@ -8,12 +8,6 @@ import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,15 +15,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
-public class SqliteMemoryStore implements MemoryStore {
+public class SQLiteMemoryStore implements MemoryStore {
 
     private final Database dbConnector;
     private Connection dbConnection;
 
-    public SqliteMemoryStore() {
+    public SQLiteMemoryStore() {
         this.dbConnector = new Database();
     }
 
@@ -52,38 +49,41 @@ public class SqliteMemoryStore implements MemoryStore {
 
     @Override
     public Mono<Boolean> doesCollectionExistAsync(@Nonnull String collectionName) {
-      Objects.requireNonNull(collectionName);
-      return this.dbConnector.doesCollectionExistsAsync(this.dbConnection, collectionName);
+        Objects.requireNonNull(collectionName);
+        return this.dbConnector.doesCollectionExistsAsync(this.dbConnection, collectionName);
     }
 
     @Override
     public Mono<Void> deleteCollectionAsync(@Nonnull String collectionName) {
-      Objects.requireNonNull(collectionName);
-      return this.dbConnector.deleteCollectionAsync(this.dbConnection, collectionName);
+        Objects.requireNonNull(collectionName);
+        return this.dbConnector.deleteCollectionAsync(this.dbConnection, collectionName);
     }
 
     @Override
     public Mono<String> upsertAsync(@Nonnull String collectionName, @Nonnull MemoryRecord record) {
-      Objects.requireNonNull(collectionName);
-      Objects.requireNonNull(record);
-      return doesCollectionExistAsync(collectionName)
-          .handle((exists, sink) -> {
-            if (!exists) {
-              sink.error(new MemoryException(
-                  ErrorCodes.ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION,
-                  collectionName));
-              return;
-            }
-            sink.next(exists);
-          })
-          .then(internalUpsertAsync(collectionName, record));
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(record);
+        return doesCollectionExistAsync(collectionName)
+                .handle(
+                        (exists, sink) -> {
+                            if (!exists) {
+                                sink.error(
+                                        new MemoryException(
+                                                ErrorCodes
+                                                        .ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION,
+                                                collectionName));
+                                return;
+                            }
+                            sink.next(exists);
+                        })
+                .then(internalUpsertAsync(collectionName, record));
     }
 
     private Mono<String> internalUpsertAsync(
             @Nonnull String collectionName, @Nonnull MemoryRecord record) {
-      Objects.requireNonNull(collectionName);
-      Objects.requireNonNull(record);
-      try {
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(record);
+        try {
             Mono<Void> update =
                     this.dbConnector.updateAsync(
                             this.dbConnection,
@@ -97,7 +97,7 @@ public class SqliteMemoryStore implements MemoryStore {
                     this.dbConnector.insertOrIgnoreAsync(
                             this.dbConnection,
                             collectionName,
-                        record.getMetadata().getId(),
+                            record.getMetadata().getId(),
                             record.getSerializedMetadata(),
                             record.getSerializedEmbedding(),
                             record.getTimestamp());
@@ -111,22 +111,25 @@ public class SqliteMemoryStore implements MemoryStore {
     @Override
     public Mono<Collection<String>> upsertBatchAsync(
             @Nonnull String collectionName, @Nonnull Collection<MemoryRecord> records) {
-      Objects.requireNonNull(collectionName);
-      Objects.requireNonNull(records);
-      return doesCollectionExistAsync(collectionName)
-          .handle((exists, sink) -> {
-            if (!exists) {
-              sink.error(new MemoryException(
-                  ErrorCodes.ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION,
-                  collectionName));
-              return;
-            }
-            sink.next(exists);
-          })
-          .then(Flux.fromIterable(records)
-                  .flatMap(record -> internalUpsertAsync(collectionName, record))
-                  .collect(Collectors.toCollection(ArrayList::new))
-          );
+        Objects.requireNonNull(collectionName);
+        Objects.requireNonNull(records);
+        return doesCollectionExistAsync(collectionName)
+                .handle(
+                        (exists, sink) -> {
+                            if (!exists) {
+                                sink.error(
+                                        new MemoryException(
+                                                ErrorCodes
+                                                        .ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION,
+                                                collectionName));
+                                return;
+                            }
+                            sink.next(exists);
+                        })
+                .then(
+                        Flux.fromIterable(records)
+                                .flatMap(record -> internalUpsertAsync(collectionName, record))
+                                .collect(Collectors.toCollection(ArrayList::new)));
     }
 
     @Override
@@ -231,28 +234,28 @@ public class SqliteMemoryStore implements MemoryStore {
                                     new ObjectMapper()
                                             .readValue(entry.getEmbedding(), Embedding.class);
                             float similarity = embedding.cosineSimilarity(recordEmbedding);
-                            if (similarity >= (float)minRelevanceScore) {
+                            if (similarity >= (float) minRelevanceScore) {
                                 MemoryRecord record =
                                         MemoryRecord.fromJsonMetadata(
                                                 entry.getMetadata(),
                                                 withEmbeddings ? recordEmbedding : null,
                                                 entry.getKey(),
                                                 entry.getTimestamp());
-                              nearestMatches.add(Tuples.of(record, similarity));
+                                nearestMatches.add(Tuples.of(record, similarity));
                             }
                         } catch (JsonProcessingException e) {
                             throw new RuntimeException(e);
                         }
                     }
-                  List<Tuple2<MemoryRecord, Float>> results =
-                      nearestMatches.stream()
-                          .sorted(
-                              Comparator.comparing(
-                                  Tuple2::getT2, (a, b) -> Float.compare(b, a)))
-                          .limit(limit)
-                          .collect(Collectors.toList());
+                    List<Tuple2<MemoryRecord, Float>> results =
+                            nearestMatches.stream()
+                                    .sorted(
+                                            Comparator.comparing(
+                                                    Tuple2::getT2, (a, b) -> Float.compare(b, a)))
+                                    .limit(limit)
+                                    .collect(Collectors.toList());
 
-                  return Mono.just(results);
+                    return Mono.just(results);
                 });
     }
 
@@ -264,21 +267,21 @@ public class SqliteMemoryStore implements MemoryStore {
             boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
-      return getNearestMatchesAsync(
-          collectionName, embedding, 1, minRelevanceScore, withEmbedding)
-          .flatMap(
-              nearestMatches -> {
-                if (nearestMatches.isEmpty()) {
-                  return Mono.empty();
-                }
-                return Mono.just(nearestMatches.iterator().next());
-              });
+        return getNearestMatchesAsync(
+                        collectionName, embedding, 1, minRelevanceScore, withEmbedding)
+                .flatMap(
+                        nearestMatches -> {
+                            if (nearestMatches.isEmpty()) {
+                                return Mono.empty();
+                            }
+                            return Mono.just(nearestMatches.iterator().next());
+                        });
     }
 
     public static class Builder implements MemoryStore.Builder {
         @Override
         public MemoryStore build() {
-            return new SqliteMemoryStore();
+            return new SQLiteMemoryStore();
         }
     }
 }
