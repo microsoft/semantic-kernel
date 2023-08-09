@@ -45,6 +45,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         api_version: Optional[str] = None,
         endpoint: Optional[str] = None,
         log: Optional[Logger] = None,
+        function_calling_enabled: bool = False,
     ) -> None:
         """
         Initializes a new instance of the OpenAIChatCompletion class.
@@ -66,6 +67,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._endpoint = endpoint
         self._log = log if log is not None else NullLogger()
         self._messages = []
+        self._function_calling_enabled = function_calling_enabled
 
     async def complete_chat_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings

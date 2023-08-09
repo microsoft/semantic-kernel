@@ -22,6 +22,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
         api_version: str = "2023-03-15-preview",
         logger: Optional[Logger] = None,
         ad_auth=False,
+        function_calling_enabled=False,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -65,4 +66,5 @@ class AzureChatCompletion(OpenAIChatCompletion):
             endpoint=endpoint,
             org_id=None,
             log=logger,
+            function_calling_enabled=function_calling_enabled,
         )
