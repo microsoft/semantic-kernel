@@ -29,6 +29,11 @@ public class NamedTextCompletion
     public int? MaxTokens { get; set; }
 
     /// <summary>
+    /// Optionally transform the input prompt specifically for the model
+    /// </summary>
+    public PromptTransform? PromptTransform { get; set; }
+
+    /// <summary>
     /// The model might support a different range of temperature than SK (is 0 legal?) This optional function can help keep the temperature in the model's range.
     /// </summary>
     public Func<double, double>? TemperatureTransform { get; set; }
@@ -79,83 +84,94 @@ public class NamedTextCompletion
     /// <summary>
     /// Adjusts the request max tokens and temperature settings based on the completion max token supported.
     /// </summary>
-    public CompleteRequestSettings AdjustRequestSettings(string text, CompleteRequestSettings requestSettings, ILogger? logger)
+    public (string text, CompleteRequestSettings requestSettings) AdjustPromptAndRequestSettings(string text,
+        CompleteRequestSettings requestSettings,
+        PromptMultiConnectorSettings promptMultiConnectorSettings,
+        MultiTextCompletionSettings multiTextCompletionSettings,
+        ILogger? logger)
     {
-        var toReturn = requestSettings;
+        // Adjusting settings
 
-        CompleteRequestSettings CloneSettings(CompleteRequestSettings settings)
-        {
-            return new CompleteRequestSettings()
-            {
-                MaxTokens = requestSettings.MaxTokens,
-                ResultsPerPrompt = requestSettings.ResultsPerPrompt,
-                ChatSystemPrompt = requestSettings.ChatSystemPrompt,
-                FrequencyPenalty = requestSettings.FrequencyPenalty,
-                PresencePenalty = requestSettings.PresencePenalty,
-                StopSequences = requestSettings.StopSequences,
-                Temperature = requestSettings.Temperature,
-                TokenSelectionBiases = requestSettings.TokenSelectionBiases,
-                TopP = requestSettings.TopP,
-            };
-        }
+        var adjustedSettings = requestSettings;
+
+        var adjustedSettingsModifier = new SettingsUpdater<CompleteRequestSettings>(adjustedSettings, MultiTextCompletionSettings.CloneRequestSettings);
 
         bool valueChanged = false;
         if (this.MaxTokens != null && requestSettings.MaxTokens != null)
         {
-            var newMaxTokens = requestSettings.MaxTokens.Value;
-            switch (this.MaxTokensAdjustment)
+            int? ComputeMaxTokens(int? initialValue)
             {
-                case MaxTokensAdjustment.Percentage:
-                    newMaxTokens = Math.Min(newMaxTokens, this.MaxTokens.Value * this.MaxTokensReservePercentage / 100);
-                    break;
-                case MaxTokensAdjustment.CountInputTokens:
-                    if (this.TokenCountFunc != null)
-                    {
-                        newMaxTokens = Math.Min(newMaxTokens, this.MaxTokens.Value - this.TokenCountFunc(text));
-                    }
-                    else
-                    {
-                        logger?.LogWarning("Inconsistency found with named Completion {0}: Max Token adjustment is configured to account for input token number but no Token count function was defined. MaxToken settings will be left untouched", this.Name);
-                    }
-
-                    break;
-            }
-
-            if (requestSettings.MaxTokens != newMaxTokens)
-            {
-                if (!valueChanged)
+                var newMaxTokens = initialValue;
+                if (newMaxTokens != null)
                 {
-                    toReturn = CloneSettings(toReturn);
-                    valueChanged = true;
+                    switch (this.MaxTokensAdjustment)
+                    {
+                        case MaxTokensAdjustment.Percentage:
+                            newMaxTokens = Math.Min(newMaxTokens.Value, this.MaxTokens.Value * this.MaxTokensReservePercentage / 100);
+                            break;
+                        case MaxTokensAdjustment.CountInputTokens:
+                            if (this.TokenCountFunc != null)
+                            {
+                                newMaxTokens = Math.Min(newMaxTokens.Value, this.MaxTokens.Value - this.TokenCountFunc(text));
+                            }
+                            else
+                            {
+                                logger?.LogWarning("Inconsistency found with named Completion {0}: Max Token adjustment is configured to account for input token number but no Token count function was defined. MaxToken settings will be left untouched", this.Name);
+                            }
+
+                            break;
+                    }
                 }
 
-                toReturn.MaxTokens = newMaxTokens;
-                logger?.LogDebug("Changed request max token from {0} to {1}", requestSettings.MaxTokens.Value, newMaxTokens);
+                return newMaxTokens;
+            }
+
+            adjustedSettings = adjustedSettingsModifier.ModifyIfChanged(r => r.MaxTokens, ComputeMaxTokens, (setting, value) => setting.MaxTokens = value, out valueChanged);
+
+            if (valueChanged)
+            {
+                logger?.LogDebug("Changed request max token from {0} to {1}", requestSettings.MaxTokens.Value, adjustedSettings.MaxTokens);
             }
         }
 
         if (this.TemperatureTransform != null)
         {
-            var newTemperature = this.TemperatureTransform(requestSettings.Temperature);
-            if (Math.Abs(requestSettings.Temperature - newTemperature) > double.Epsilon)
-            {
-                if (!valueChanged)
-                {
-                    toReturn = CloneSettings(toReturn);
-                    valueChanged = true;
-                }
+            adjustedSettings = adjustedSettingsModifier.ModifyIfChanged(r => r.Temperature, this.TemperatureTransform, (setting, value) => setting.Temperature = value, out valueChanged);
 
-                toReturn.Temperature = newTemperature;
-                logger?.LogDebug("Changed temperature from {0} to {1}", requestSettings.Temperature, newTemperature);
+            if (valueChanged)
+            {
+                logger?.LogDebug("Changed temperature from {0} to {1}", requestSettings.Temperature, adjustedSettings.Temperature);
             }
         }
 
         if (this.RequestSettingsTransform != null)
         {
-            toReturn = this.RequestSettingsTransform(requestSettings);
-            logger?.LogDebug("Applied request settings transform");
+            adjustedSettings = this.RequestSettingsTransform(requestSettings);
+            logger?.LogTrace("Applied request settings transform");
         }
 
-        return toReturn;
+        //Adjusting prompt
+
+        var adjustedPrompt = text;
+
+        if (multiTextCompletionSettings.GlobalPromptTransform != null)
+        {
+            adjustedPrompt = multiTextCompletionSettings.GlobalPromptTransform.Transform(adjustedPrompt);
+            logger?.LogTrace("Applied global settings transform");
+        }
+
+        if (promptMultiConnectorSettings.PromptTypeTransform != null)
+        {
+            adjustedPrompt = promptMultiConnectorSettings.PromptTypeTransform.Transform(adjustedPrompt);
+            logger?.LogTrace("Applied prompt settings transform");
+        }
+
+        if (promptMultiConnectorSettings.ApplyModelTransform && this.PromptTransform != null)
+        {
+            adjustedPrompt = this.PromptTransform.Transform(adjustedPrompt);
+            logger?.LogTrace("Applied connector transform");
+        }
+
+        return (adjustedPrompt, adjustedSettings);
     }
 }

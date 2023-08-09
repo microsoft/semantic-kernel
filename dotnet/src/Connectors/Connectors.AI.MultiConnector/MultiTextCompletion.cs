@@ -51,31 +51,24 @@ public class MultiTextCompletion : ITextCompletion
     /// <inheritdoc />
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        var promptSettings = this.GetPromptAndConnectorSettings(text, ref requestSettings, out bool isNewPrompt, out NamedTextCompletion textCompletion, out Stopwatch stopWatch);
+        var multiCompletionSession = this.GetPromptAndConnectorSettings(text, requestSettings);
 
-        var completions = await textCompletion.TextCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        var completions = await multiCompletionSession.namedTextCompletionAndSettings.namedTextCompletion.TextCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
 
         var resultLazy = new AsyncLazy<string>(() =>
         {
             var toReturn = completions[0].GetCompletionAsync(cancellationToken);
-            stopWatch.Stop();
+            multiCompletionSession.stopWatch.Stop();
             return toReturn;
         }, cancellationToken);
 
-        //await this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
-
-        //if (textCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis && promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
-        //{
-        //    promptSettings.AddSessionPrompt(text);
-        //    await this.CollectResultForTestAsync(text, requestSettings, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
-        //}
-
-        //if (this._settings.LogResult)
-        //{
-        //    this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync:\nPROMPT:\n{0}\nRESULT:\n{1}", text, resultLazy.Value.ConfigureAwait(false));
-        //}
-
-        await this.ProcessTextCompletionResultsAsync(text, requestSettings, promptSettings, isNewPrompt, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
+        await this.ProcessTextCompletionResultsAsync(multiCompletionSession.adjustedPrompt.text,
+            multiCompletionSession.adjustedPrompt.requestSettings,
+            multiCompletionSession.promptSettings,
+            multiCompletionSession.isNewPrompt,
+            multiCompletionSession.stopWatch,
+            multiCompletionSession.namedTextCompletionAndSettings,
+            resultLazy, cancellationToken).ConfigureAwait(false);
 
         return completions;
     }
@@ -83,9 +76,9 @@ public class MultiTextCompletion : ITextCompletion
     /// <inheritdoc />
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        var promptSettings = this.GetPromptAndConnectorSettings(text, ref requestSettings, out bool isNewPrompt, out NamedTextCompletion textCompletion, out Stopwatch stopWatch);
+        var multiCompletionSession = this.GetPromptAndConnectorSettings(text, requestSettings);
 
-        var result = textCompletion.TextCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
+        var result = multiCompletionSession.namedTextCompletionAndSettings.namedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
 
         var resultLazy = new AsyncLazy<string>(async () =>
         {
@@ -100,53 +93,47 @@ public class MultiTextCompletion : ITextCompletion
                 break;
             }
 
-            stopWatch.Stop();
+            multiCompletionSession.stopWatch.Stop();
             return sb.ToString();
         }, cancellationToken);
 
-        this.ProcessTextCompletionResultsAsync(text, requestSettings, promptSettings, isNewPrompt, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
-
-        //this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
-
-        //if (textCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis && promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
-        //{
-        //    promptSettings.AddSessionPrompt(text);
-        //    this.CollectResultForTestAsync(text, requestSettings, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
-        //}
-
-        //if (this._settings.LogResult)
-        //{
-        //    this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync:\nPROMPT:\n{0}\nRESULT:\n{1}", text, resultLazy.Value.ConfigureAwait(false));
-        //}
+        this.ProcessTextCompletionResultsAsync(multiCompletionSession.adjustedPrompt.text,
+            multiCompletionSession.adjustedPrompt.requestSettings,
+            multiCompletionSession.promptSettings,
+            multiCompletionSession.isNewPrompt,
+            multiCompletionSession.stopWatch,
+            multiCompletionSession.namedTextCompletionAndSettings,
+            resultLazy, cancellationToken).ConfigureAwait(false);
 
         return result;
     }
 
-    private PromptMultiConnectorSettings GetPromptAndConnectorSettings(string text, ref CompleteRequestSettings requestSettings, out bool isNewPrompt, out NamedTextCompletion textCompletion, out Stopwatch stopWatch)
+    private (PromptMultiConnectorSettings promptSettings, (string text, CompleteRequestSettings requestSettings) adjustedPrompt, bool isNewPrompt, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, Stopwatch stopWatch) GetPromptAndConnectorSettings(string text, CompleteRequestSettings requestSettings)
     {
-        var promptSettings = this._settings.GetPromptSettings(text, requestSettings, out isNewPrompt);
-        textCompletion = promptSettings.SelectAppropriateTextCompletion(this._textCompletions, this._settings.ConnectorComparer);
-        requestSettings = textCompletion.AdjustRequestSettings(text, requestSettings, this._logger);
-        stopWatch = Stopwatch.StartNew();
-        return promptSettings;
+        var promptSettings = this._settings.GetPromptSettings(text, requestSettings, out var isNewPrompt);
+        ;
+        var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(this._textCompletions, this._settings.ConnectorComparer);
+        var adjustedPrompt = textCompletionAndSettings.namedTextCompletion.AdjustPromptAndRequestSettings(text, requestSettings, promptSettings, this._settings, this._logger);
+        var stopWatch = Stopwatch.StartNew();
+        return (promptSettings, adjustedPrompt, isNewPrompt, textCompletionAndSettings, stopWatch);
     }
 
-    private async Task ProcessTextCompletionResultsAsync(string text, CompleteRequestSettings requestSettings, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, Stopwatch stopWatch, NamedTextCompletion textCompletion, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
+    private async Task ProcessTextCompletionResultsAsync(string text, CompleteRequestSettings requestSettings, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, Stopwatch stopWatch, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
     {
-        await this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
+        await this.ApplyCreditorCostsAsync(text, resultLazy, namedTextCompletionAndSettings.namedTextCompletion).ConfigureAwait(false);
 
-        if (textCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis)
+        if (namedTextCompletionAndSettings.namedTextCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis)
         {
             if (promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
             {
                 promptSettings.AddSessionPrompt(text);
-                await this.CollectResultForTestAsync(text, requestSettings, stopWatch, textCompletion, resultLazy, cancellationToken).ConfigureAwait(false);
+                await this.CollectResultForTestAsync(text, requestSettings, stopWatch, namedTextCompletionAndSettings, resultLazy, cancellationToken).ConfigureAwait(false);
             }
         }
 
         if (this._settings.LogResult)
         {
-            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync: {0}: duration: \nPROMPT:\n{1}\nRESULT:\n{2}", textCompletion.Name, text, await resultLazy.Value.ConfigureAwait(false));
+            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync: {0}: duration: \nPROMPT:\n{1}\nRESULT:\n{2}", namedTextCompletionAndSettings.namedTextCompletion.Name, text, await resultLazy.Value.ConfigureAwait(false));
         }
     }
 
@@ -163,14 +150,14 @@ public class MultiTextCompletion : ITextCompletion
     /// <summary>
     /// Asynchronously collects results from a prompt call to evaluate connectors against the same prompt.
     /// </summary>
-    private async Task CollectResultForTestAsync(string text, CompleteRequestSettings requestSettings, Stopwatch stopWatch, NamedTextCompletion textCompletion, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
+    private async Task CollectResultForTestAsync(string text, CompleteRequestSettings requestSettings, Stopwatch stopWatch, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
     {
         var result = await resultLazy.Value.ConfigureAwait(false);
 
         var duration = stopWatch.Elapsed;
 
         // For the management task
-        ConnectorTest connectorTest = ConnectorTest.Create(text, requestSettings, textCompletion, result, duration);
+        ConnectorTest connectorTest = ConnectorTest.Create(text, requestSettings, namedTextCompletionAndSettings.namedTextCompletion, result, duration);
         this.AppendConnectorTest(connectorTest);
     }
 

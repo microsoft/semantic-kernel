@@ -57,6 +57,11 @@ public class MultiTextCompletionSettings
     public Func<PromptConnectorSettings, PromptConnectorSettings, int> ConnectorComparer { get; set; } = GetConnectorComparer(1, 1);
 
     /// <summary>
+    /// Optionally transform the input prompts globally
+    /// </summary>
+    public PromptTransform? GlobalPromptTransform { get; set; }
+
+    /// <summary>
     /// Returns settings for a given prompt.
     /// If settings for the prompt do not exist, new settings are created, added to the list, and returned.
     /// </summary>
@@ -130,4 +135,23 @@ public class MultiTextCompletionSettings
             return intResult;
         };
     }
+
+
+    public static CompleteRequestSettings CloneRequestSettings(CompleteRequestSettings requestSettings)
+    {
+        return new CompleteRequestSettings()
+        {
+            MaxTokens = requestSettings.MaxTokens,
+            ResultsPerPrompt = requestSettings.ResultsPerPrompt,
+            ChatSystemPrompt = requestSettings.ChatSystemPrompt,
+            FrequencyPenalty = requestSettings.FrequencyPenalty,
+            PresencePenalty = requestSettings.PresencePenalty,
+            StopSequences = requestSettings.StopSequences,
+            Temperature = requestSettings.Temperature,
+            TokenSelectionBiases = requestSettings.TokenSelectionBiases,
+            TopP = requestSettings.TopP,
+        };
+    }
+
+
 }

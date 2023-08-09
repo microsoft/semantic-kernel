@@ -18,6 +18,16 @@ public class PromptMultiConnectorSettings
     public PromptType PromptType { get; set; } = new();
 
     /// <summary>
+    /// Choose whether to apply the model specific transforms for this prompt type
+    /// </summary>
+    public bool ApplyModelTransform { get; set; }
+
+    /// <summary>
+    /// Optionally transform the input prompt specifically
+    /// </summary>
+    public PromptTransform? PromptTypeTransform { get; set; }
+
+    /// <summary>
     /// Gets a dictionary mapping connector names to their associated settings for this prompt type.
     /// </summary>
     public Dictionary<string, PromptConnectorSettings> ConnectorSettingsDictionary { get; } = new();
@@ -44,28 +54,27 @@ public class PromptMultiConnectorSettings
     /// <param name="namedTextCompletions">The list of available text completions.</param>
     /// <param name="settingsConnectorComparer"></param>
     /// <returns>The selected <see cref="NamedTextCompletion"/>.</returns>
-    public NamedTextCompletion SelectAppropriateTextCompletion(IReadOnlyList<NamedTextCompletion> namedTextCompletions, Func<PromptConnectorSettings, PromptConnectorSettings, int> settingsConnectorComparer)
+    public (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) SelectAppropriateTextCompletion(IReadOnlyList<NamedTextCompletion> namedTextCompletions, Func<PromptConnectorSettings, PromptConnectorSettings, int> settingsConnectorComparer)
     {
-        var filteredConnectors = new List<(NamedTextCompletion, PromptConnectorSettings)>();
+        var filteredConnectors = new List<(NamedTextCompletion textCompletion, PromptConnectorSettings promptConnectorSettings)>();
         foreach (var namedTextCompletion in namedTextCompletions)
         {
-            if (this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings? value))
+            var promptConnectorSettings = this.GetConnectorSettings(namedTextCompletion.Name);
+            if (promptConnectorSettings.VettingLevel > 0)
             {
-                if (value?.VettingLevel > 0)
-                {
-                    filteredConnectors.Add((namedTextCompletion, value));
-                }
+                filteredConnectors.Add((namedTextCompletion, promptConnectorSettings));
             }
         }
 
-        filteredConnectors.Sort((c1, c2) => settingsConnectorComparer(c1.Item2, c2.Item2));
         if (filteredConnectors.Count > 0)
         {
-            return filteredConnectors[0].Item1;
+            filteredConnectors.Sort((c1, c2) => settingsConnectorComparer(c1.Item2, c2.Item2));
+            return filteredConnectors[0];
         }
 
         // if no vetted connector is found, return the first primary one
-        return namedTextCompletions[0];
+        var primaryConnectorSettings = this.GetConnectorSettings(namedTextCompletions[0].Name);
+        return (namedTextCompletions[0], primaryConnectorSettings);
     }
 
     public void AddSessionPrompt(string prompt)

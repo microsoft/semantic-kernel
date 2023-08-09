@@ -79,6 +79,11 @@ RESPONSE IS VALID? (true/false):
     public int MaxDegreeOfParallelismConnectorTests { get; set; } = 3;
 
     /// <summary>
+    /// In order to better assess model capabilities, one might want to increase temperature just for testing. This might enable the use of fewer prompts
+    /// </summary>
+    public Func<double, double>? TestsTemperatureTransform { get; set; }
+
+    /// <summary>
     /// Enable or disable the evaluation of test prompts
     /// </summary>
     public bool EnableTestEvaluations { get; set; } = true;
@@ -208,7 +213,7 @@ RESPONSE IS VALID? (true/false):
             if (needSuggestion)
             {
                 logger?.LogDebug("Analysis period reached. New settings suggested.");
-                toReturn.SuggestedSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, cancellationToken);
+                toReturn.SuggestedSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, logger, cancellationToken);
                 if (this.SaveSuggestedSettings)
                 {
                     // Save the new settings
@@ -290,7 +295,7 @@ RESPONSE IS VALID? (true/false):
                     await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
-                        await this.RunTestForConnectorAsync(namedTextCompletion, originalTest, tests, logger, cancellationToken).ConfigureAwait(false);
+                        await this.RunTestForConnectorAsync(namedTextCompletion, originalTest, settings, tests, logger, cancellationToken).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -305,7 +310,7 @@ RESPONSE IS VALID? (true/false):
         return tests.ToList();
     }
 
-    private async Task RunTestForConnectorAsync(NamedTextCompletion namedTextCompletion, ConnectorTest originalTest, ConcurrentBag<ConnectorTest> tests, ILogger? logger, CancellationToken cancellationToken)
+    private async Task RunTestForConnectorAsync(NamedTextCompletion namedTextCompletion, ConnectorTest originalTest, MultiTextCompletionSettings multiTextCompletionSettings, ConcurrentBag<ConnectorTest> tests, ILogger? logger, CancellationToken cancellationToken)
     {
         logger?.LogTrace("Running Tests for connector {0} ", namedTextCompletion.Name);
 
@@ -314,8 +319,16 @@ RESPONSE IS VALID? (true/false):
             var stopWatch = Stopwatch.StartNew();
             try
             {
-                var newRequestSettings = namedTextCompletion.AdjustRequestSettings(originalTest.Prompt, originalTest.RequestSettings, logger);
-                var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, newRequestSettings, cancellationToken).ConfigureAwait(false);
+                PromptMultiConnectorSettings promptMultiConnectorSettings = multiTextCompletionSettings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings, out _);
+                var adjustedPromptAndSettings = namedTextCompletion.AdjustPromptAndRequestSettings(originalTest.Prompt, originalTest.RequestSettings, promptMultiConnectorSettings, multiTextCompletionSettings, logger);
+
+                if (this.TestsTemperatureTransform != null)
+                {
+                    var temperatureUpdater = new SettingsUpdater<CompleteRequestSettings>(adjustedPromptAndSettings.requestSettings, MultiTextCompletionSettings.CloneRequestSettings);
+                    adjustedPromptAndSettings.requestSettings = temperatureUpdater.ModifyIfChanged(settings => settings.Temperature, this.TestsTemperatureTransform, (settings, newTemp) => settings.Temperature = newTemp, out _);
+                }
+
+                var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(adjustedPromptAndSettings.text, adjustedPromptAndSettings.requestSettings, cancellationToken).ConfigureAwait(false);
 
                 var firstResult = completions[0];
                 string result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
@@ -323,8 +336,8 @@ RESPONSE IS VALID? (true/false):
                 stopWatch.Stop();
                 var duration = stopWatch.Elapsed;
 
-                // For the management task
-                var connectorTest = ConnectorTest.Create(originalTest.Prompt, newRequestSettings, namedTextCompletion, result, duration);
+                // For the evaluation task. We don't keep the adjusted settings since prompt type matching is based on the original prompt
+                var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
                 tests.Add(connectorTest);
 
                 logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
@@ -466,7 +479,7 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// Computes new MultiTextCompletionSettings with prompt connector settings based on analysis of their evaluation .
     /// </summary>
-    public MultiTextCompletionSettings ComputeNewSettingsFromAnalysis(IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, bool updateSettings, CancellationToken? cancellationToken = default)
+    public MultiTextCompletionSettings ComputeNewSettingsFromAnalysis(IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, bool updateSettings, ILogger? logger, CancellationToken? cancellationToken = default)
     {
         // If not updating settings in-place, create a new instance
         var settingsToReturn = settings;
@@ -519,9 +532,15 @@ RESPONSE IS VALID? (true/false):
                 promptConnectorSettings.AverageCost = connectorEvaluations.Average(e => e.Test.Cost);
                 var evaluationsByMainConnector = connectorEvaluations.GroupBy(e => e.VettingConnector).OrderByDescending(grouping => grouping.Count()).First();
                 promptConnectorSettings.VettingConnector = evaluationsByMainConnector.Key;
-                var vetted = evaluationsByMainConnector.All(e => e.IsVetted);
-                var vettedVaried = !evaluationsByMainConnector.GroupBy(evaluation => evaluation.Test.Prompt).Any(grouping => grouping.Count() > 1);
-                promptConnectorSettings.VettingLevel = vetted ? vettedVaried ? VettingLevel.OracleVaried : VettingLevel.Oracle : VettingLevel.Invalid;
+                // We first assess whether the connector is vetted by enough tests
+                if (evaluationsByMainConnector.Count() >= settings.AnalysisSettings.NbPromptTests)
+                {
+                    var vetted = evaluationsByMainConnector.All(e => e.IsVetted);
+                    // We then assess whether the connector is vetted by enough varied tests
+                    var vettedVaried = evaluationsByMainConnector.Count() > 1 && !evaluationsByMainConnector.GroupBy(evaluation => evaluation.Test.Prompt).Any(grouping => grouping.Count() > 1);
+                    promptConnectorSettings.VettingLevel = vetted ? vettedVaried ? VettingLevel.OracleVaried : VettingLevel.Oracle : VettingLevel.Invalid;
+                    logger?.LogDebug("Connector  {0}, configured according to evaluations with level:{1} for \nPrompt type with signature:\n{2}", connectorName, promptConnectorSettings.VettingLevel, promptMultiConnectorSettings.PromptType.Signature.TextBeginning);
+                }
             }
         }
 
@@ -535,7 +554,8 @@ RESPONSE IS VALID? (true/false):
     {
         var prompt = this.VettingPromptTemplate.Replace("{prompt}", connectorTest.Prompt).Replace("{response}", connectorTest.Result);
         var stopWatch = Stopwatch.StartNew();
-        var newRequestSettings = vettingCompletion.AdjustRequestSettings(prompt, this.VettingRequestSettings, logger);
+        var vettingPromptSettings = settings.GetPromptSettings(prompt, this.VettingRequestSettings, out _);
+        var newRequestSettings = vettingCompletion.AdjustPromptAndRequestSettings(prompt, this.VettingRequestSettings, vettingPromptSettings, settings, logger);
         string completionResult;
         try
         {

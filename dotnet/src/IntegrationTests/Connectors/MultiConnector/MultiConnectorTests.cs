@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -89,7 +90,11 @@ public sealed class MultiConnectorTests : IDisposable
             },
             PromptTruncationLength = 11,
             LogResult = true,
-            ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight)
+            ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight),
+            GlobalPromptTransform = new PromptTransform()
+            {
+                TransformFunction = s => s.EndsWith("\n", StringComparison.OrdinalIgnoreCase) ? s : s + "\n",
+            }
         };
 
         var kernel = this.InitializeKernel(settings, durationWeight: durationWeight, costWeight: costWeight, cancellationToken: cleanupToken.Token);
@@ -219,6 +224,7 @@ public sealed class MultiConnectorTests : IDisposable
                 CostPer1000Token = oobaboogaConnector.CostPer1000Token,
                 TokenCountFunc = tokeCountFunction,
                 TemperatureTransform = d => d == 0 ? 0.01 : d,
+                PromptTransform = oobaboogaConnector.PromptTransform
                 //RequestSettingsTransform = requestSettings =>
                 //{
                 //    var newRequestSettings = new CompleteRequestSettings()

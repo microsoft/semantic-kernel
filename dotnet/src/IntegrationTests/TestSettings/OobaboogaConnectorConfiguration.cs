@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+
 namespace SemanticKernel.IntegrationTests.TestSettings;
 
 /// <summary>
@@ -23,4 +25,6 @@ public class OobaboogaConnectorConfiguration
     public decimal CostPerRequest { get; set; }
 
     public decimal? CostPer1000Token { get; set; }
+
+    public PromptTransform? PromptTransform { get; set; }
 }
