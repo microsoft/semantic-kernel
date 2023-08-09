@@ -136,8 +136,6 @@ class DataSkill:
         Args:
             ask -- The question to ask the LLM
         """
-        context = self.get_df_data()
-        prompt = context + "\n" + self._prefix
         if isinstance(self.data, pd.DataFrame):  # If there is only one dataframe
             df = self.data
             local_vars = {"df": df}
@@ -154,7 +152,8 @@ class DataSkill:
                 count += 1
             arg = arg[:-2]
             description = "are pandas dataframes"
-
+        #Construct the prompt
+        context = self.get_df_data()
         formatted_suffix = self._suffix.format(
             goal=ask, arg_name=arg, description=description
         )
@@ -162,10 +161,11 @@ class DataSkill:
             context
             + "\n"
             + self._prefix
-            + """You need to write plain Python 
-        code that the user can run on their dataframes."""
+            + """You need to write plain Python code that the user can run on 
+            their dataframes."""
             + formatted_suffix
         )
+
         max_retry = 1
         for _ in range(max_retry):  # If generated code doesn't work, try again
             try:

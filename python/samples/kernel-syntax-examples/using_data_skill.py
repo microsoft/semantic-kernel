@@ -45,11 +45,11 @@ async def main() -> None:
     print(result)
     #Output: Emily's salary is $67,000.
     
-    prompt = "How is the average salary different between the two dataframes?"
+    prompt = "How is the average salary different between the two groups?"
     query_async = data_skill["queryAsync"]
     result = await query_async.invoke_async(prompt)
     print(result)
-    #Output: The average salary is $2400.0 lower in the second dataframe compared to the first dataframe.
+    #Output: The average salary is $2400.0 lower in the second group compared to the first group.
     
 
 if __name__ == "__main__":
