@@ -65,7 +65,7 @@ public sealed class MultiConnectorTests : IDisposable
     /// <summary>
     /// This test method uses a plan loaded from a file
     /// </summary>
-    [Theory]
+    [Theory(Skip = "This test is for manual verification.")]
     [InlineData(1, 1, 1, "VettingSequentialPlan_SummarizeSkill_Summarize.json", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFilePath, params string[] skillNames)
     {
@@ -86,7 +86,7 @@ public sealed class MultiConnectorTests : IDisposable
     }
 
     // This test method uses the SequentialPlanner to create a plan based on difficulty
-    [Theory]
+    [Theory(Skip = "This test is for manual verification.")]
     [InlineData(1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(double durationWeight, double costWeight, int nbPromptTests, string difficulty, params string[] skillNames)
     {
