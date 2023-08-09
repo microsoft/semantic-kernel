@@ -38,7 +38,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.10" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.8.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.8.1" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
