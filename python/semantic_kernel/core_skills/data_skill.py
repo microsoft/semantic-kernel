@@ -55,15 +55,21 @@ class DataSkill:
             if not self.path.endswith(".csv"):
                 raise ValueError("File path must be to a CSV file")
             else:
-                if self.data is None: self.data = pd.read_csv(self.path)
-                elif isinstance(self.data, pd.DataFrame): self.data = [self.data, pd.read_csv(self.path)]
-                elif all(isinstance(item, pd.DataFrame) for item in self.data): self.data.append(pd.read_csv(self.path))
+                if self.data is None: 
+                    self.data = pd.read_csv(self.path)
+                elif isinstance(self.data, pd.DataFrame): 
+                    self.data = [self.data, pd.read_csv(self.path)]
+                elif all(isinstance(item, pd.DataFrame) for item in self.data): 
+                    self.data.append(pd.read_csv(self.path))
                 else:
                     raise ValueError("Data must be a pandas dataframe or a list of pandas dataframes")
         if isinstance(self.path, List):
-            if self.data is None: self.data = []
-            elif isinstance(self.data, pd.DataFrame): self.data = [self.data]
-            elif all(isinstance(item, pd.DataFrame) for item in self.data): pass
+            if self.data is None: 
+                self.data = []
+            elif isinstance(self.data, pd.DataFrame): 
+                self.data = [self.data]
+            elif all(isinstance(item, pd.DataFrame) for item in self.data): 
+                pass
             else:
                 raise ValueError("Data must be a pandas dataframe or a list of pandas dataframes")
             for file in self.path:
@@ -205,14 +211,3 @@ class DataSkill:
         else for plotting. """ + self._suffix
         #TODO
         pass
-    
-
-    
-
-
-    
-
-
-    
-
-    

@@ -34,16 +34,19 @@ async def main() -> None:
     query_async = data_skill["queryAsync"]
     result = await query_async.invoke_async(prompt)
     print(result)
+    #Output: Bob is 32 years old and Eve lives in Miami.
 
     prompt = "What is Emily's salary?"
     query_async = data_skill["queryAsync"]
     result = await query_async.invoke_async(prompt)
     print(result)
+    #Output: Emily's salary is $67,000.
     
     prompt = "How is the average salary different between the two dataframes?"
     query_async = data_skill["queryAsync"]
     result = await query_async.invoke_async(prompt)
     print(result)
+    #Output: The average salary is $2400.0 lower in the second dataframe compared to the first dataframe.
     
 
 if __name__ == "__main__":
