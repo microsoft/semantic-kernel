@@ -18,14 +18,33 @@ async def main() -> None:
         "City": ["New York", "Los Angeles", "Chicago", "Houston", "Miami"],
         "Salary": [60000, 75000, 52000, 48000, 67000],
     }
+    data2 = {
+    "Name": ["Amanda", "Brian", "Catherine", "Daniel", "Emily"],
+    "Age": [27, 35, 31, 24, 30],
+    "City": ["San Francisco", "Seattle", "Boston", "Austin", "Denver"],
+    "Salary": [62000, 80000, 55000, 50000, 67000],
+}
     df = pd.DataFrame(data)
+    df2 = pd.DataFrame(data2)
     
-    data_skill = DataSkill(data=df,service=openai_chat_completion)
-    data_skill = kernel.import_skill(data_skill, skill_name="data")
+    data_skill = kernel.import_skill(
+        DataSkill(data=[df,df2],service=openai_chat_completion), skill_name="data"
+        )
     prompt = "How old is Bob and what city does Eve live in?"
     query_async = data_skill["queryAsync"]
     result = await query_async.invoke_async(prompt)
     print(result)
+
+    prompt = "What is Emily's salary?"
+    query_async = data_skill["queryAsync"]
+    result = await query_async.invoke_async(prompt)
+    print(result)
+    
+    prompt = "How is the average salary different between the two dataframes?"
+    query_async = data_skill["queryAsync"]
+    result = await query_async.invoke_async(prompt)
+    print(result)
+    
 
 if __name__ == "__main__":
     asyncio.run(main())
