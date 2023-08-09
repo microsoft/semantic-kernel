@@ -14,7 +14,9 @@ kernel.add_chat_service("chat_service", openai_chat_completion)
 
 async def main() -> None:
     # Setup and fetch functions to use
-    code_skill = kernel.import_skill(CodeSkill(openai_chat_completion), skill_name="code")
+    code_skill = kernel.import_skill(
+        CodeSkill(openai_chat_completion), skill_name="code"
+    )
     code_async = code_skill["codeAsync"]
     execute_async = code_skill["executeAsync"]
     execute_code_async = code_skill["executeCodeAsync"]
@@ -23,7 +25,7 @@ async def main() -> None:
     fizzbuzz_prompt = "Write a function to solve FizzBuzz with parameter n, and print output for n up to 10"
     fizzbuzz_code = await code_async.invoke_async(fizzbuzz_prompt)
     print(fizzbuzz_code)
-    
+
     # Pass into execution
     await execute_code_async.invoke_async(fizzbuzz_code)
     """Output
