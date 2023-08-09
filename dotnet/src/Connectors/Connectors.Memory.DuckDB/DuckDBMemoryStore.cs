@@ -174,7 +174,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
 
         foreach (var item in embeddings)
         {
-            yield return (item.Value, item.Score.Value);
+            yield return (item.Value, item.Score);
         }
     }
 

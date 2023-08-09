@@ -62,7 +62,7 @@ public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         this._heap.Add(value);
     }
 
-    public void Add(T value, Score score)
+    public void Add(T value, double score)
     {
         this.Add(new ScoredValue<T>(value, score));
     }

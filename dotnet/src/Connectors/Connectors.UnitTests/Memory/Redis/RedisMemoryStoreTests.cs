@@ -941,7 +941,7 @@ public class RedisMemoryStoreTests
                     RedisResult.Create("timestamp", ResultType.BulkString),
                     RedisResult.Create(timestamp, ResultType.BulkString),
                     RedisResult.Create("vector_score", ResultType.BulkString),
-                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score.Value}" : 1-item.Score.Value, ResultType.BulkString),
+                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score}" : 1-item.Score, ResultType.BulkString),
                 })
             );
         }

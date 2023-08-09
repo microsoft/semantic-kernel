@@ -153,7 +153,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
 
         foreach (var item in embeddings)
         {
-            yield return (item.Value, item.Score.Value);
+            yield return (item.Value, item.Score);
         }
     }
 
