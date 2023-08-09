@@ -249,6 +249,35 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     }
 
     /// <summary>
+    /// When no hard limit is placed on concurrent calls, the number of websocket clients created could grow unbounded. However pooling should still mitigate that by recycling the clients initially created.
+    /// Here, 1000 concurrent calls are made with a 1 ms delay before each call is made, to allow for initial requests to complete before recycling ramps up. Pooling should limit the number of clients to 50.
+    /// </summary>
+    [Fact]
+    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithoutSemaphoreAsync()
+    {
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 1000,
+            isPersistent: true,
+            keepAliveWebSocketsDuration: 100,
+            concurrentCallsTicksDelay: 10000,
+            maxExpectedNbClients: 50).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// When a hard limit is placed on concurrent calls, no warm up is needed since incoming calls in excess will wait for semaphore release, thus for pooling to recycle initial clients. Accordingly, the connector can be instantly hammered with 10000 concurrent calls, and the semaphore limit of 20 will dictate how many websocket clients will be initially created and then recycled to process all the subsequent calls.
+    /// </summary>
+    [Fact]
+    public async Task ShouldPoolEfficientlyConcurrentMultiPacketStreamingServiceWithSemaphoreAsync()
+    {
+        using SemaphoreSlim enforcedConcurrentCallSemaphore = new(20);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10000,
+            isPersistent: true,
+            keepAliveWebSocketsDuration: 100,
+            concurrentCallsTicksDelay: 0,
+            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
+            maxExpectedNbClients: 20).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// This test will assess concurrent enumeration of the same long multi message (500 websocket messages) streaming result.
     /// </summary>
     [Fact]
