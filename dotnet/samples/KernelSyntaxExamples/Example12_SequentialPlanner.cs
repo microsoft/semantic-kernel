@@ -146,8 +146,8 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("======== Sequential Planner - Find and Execute Saved Plan ========");
 
         // Save the plan for future use
-        var memoryStore = GetMemory();
-        await memoryStore.SaveInformationAsync(
+        var semanticMemory = GetMemory();
+        await semanticMemory.SaveInformationAsync(
             "plans",
             id: Guid.NewGuid().ToString(),
             text: plan.Description, // This is the goal used to create the plan
@@ -159,7 +159,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("Searching for saved plan...");
 
         Plan? restoredPlan = null;
-        var memories = memoryStore.SearchAsync("plans", goal, limit: 1, minRelevanceScore: 0.5);
+        var memories = semanticMemory.SearchAsync("plans", goal, limit: 1, minRelevanceScore: 0.5);
         await foreach (MemoryQueryResult memory in memories)
         {
             Console.WriteLine($"Restored plan (relevance={memory.Relevance}):");
@@ -256,6 +256,21 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine(plan.ToPlanWithGoalString());
     }
 
+    private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
+    {
+        var kernel = new KernelBuilder()
+            .WithLogger(ConsoleLogger.Logger)
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
+            .Build();
+
+        planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
+
+        return kernel;
+    }
+
     private static IKernel InitializeKernelWithMemory()
     {
         // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
@@ -276,24 +291,22 @@ internal static class Example12_SequentialPlanner
         return kernel;
     }
 
-    private static ISemanticTextMemory GetMemory()
+    private static ISemanticTextMemory GetMemory(IKernel? kernel = null)
     {
-        return InitializeKernelWithMemory().Memory;
-    }
-
-    private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
-    {
-        var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
-            .WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
-            .Build();
-
-        planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
-
-        return kernel;
+        if (kernel is not null)
+        {
+            return kernel.Memory;
+        }
+        else
+        {
+            var memoryStorage = new VolatileMemoryStore();
+            var textEmbeddingGenerator = new Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding.AzureTextEmbeddingGeneration(
+                modelId: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+                endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+                apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+            var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
+            return memory;
+        }
     }
 
     private static async Task<Plan> ExecutePlanAsync(
