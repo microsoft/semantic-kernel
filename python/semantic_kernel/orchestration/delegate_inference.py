@@ -5,7 +5,7 @@ from typing import NoReturn
 
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.sk_pydantic import PydanticField
 
 
 def _infers(delegate_type):
@@ -25,11 +25,22 @@ def _return_is_str(signature: Signature) -> bool:
 
 
 def _return_is_context(signature: Signature) -> bool:
+    from semantic_kernel.orchestration.sk_context import SKContext
+
     return signature.return_annotation is SKContext
 
 
 def _no_return(signature: Signature) -> bool:
     return signature.return_annotation is Signature.empty
+
+
+def _is_annotation_of_type(annotation, type_to_match) -> bool:
+    return (annotation is type_to_match) or (
+        # Handle cases where the annotation is provided as a string to avoid circular imports
+        # for example: `async def read_async(self, context: "SKContext"):` in file_io_skill.py
+        isinstance(annotation, str)
+        and annotation == type_to_match.__name__
+    )
 
 
 def _has_first_param_with_type(
@@ -41,14 +52,16 @@ def _has_first_param_with_type(
         return False
 
     first_param = list(signature.parameters.values())[0]
-    return first_param.annotation is annotation
+    return _is_annotation_of_type(first_param.annotation, annotation)
 
 
 def _has_two_params_second_is_context(signature: Signature) -> bool:
+    from semantic_kernel.orchestration.sk_context import SKContext
+
     if len(signature.parameters) < 2:
         return False
     second_param = list(signature.parameters.values())[1]
-    return second_param.annotation is SKContext
+    return _is_annotation_of_type(second_param.annotation, SKContext)
 
 
 def _first_param_is_str(signature: Signature, only: bool = True) -> bool:
@@ -56,10 +69,12 @@ def _first_param_is_str(signature: Signature, only: bool = True) -> bool:
 
 
 def _first_param_is_context(signature: Signature) -> bool:
+    from semantic_kernel.orchestration.sk_context import SKContext
+
     return _has_first_param_with_type(signature, SKContext)
 
 
-class DelegateInference:
+class DelegateInference(PydanticField):
     @staticmethod
     @_infers(DelegateTypes.Void)
     def infer_void(signature: Signature, awaitable: bool) -> bool:
@@ -226,7 +241,8 @@ class DelegateInference:
     def infer_unknown(signature: Signature, awaitable: bool) -> NoReturn:
         raise KernelException(
             KernelException.ErrorCodes.FunctionTypeNotSupported,
-            "Invalid function type detected, unable to infer DelegateType.",
+            "Invalid function type detected, unable to infer DelegateType."
+            + f" Function: {signature}",
         )
 
     @staticmethod

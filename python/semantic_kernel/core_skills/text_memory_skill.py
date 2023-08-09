@@ -1,8 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
+import typing as t
 
-from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+
+if t.TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 
 class TextMemorySkill(PydanticField):
@@ -28,7 +31,7 @@ class TextMemorySkill(PydanticField):
         description="The relevance score, from 0.0 to 1.0; 1.0 means perfect match",
         default_value=DEFAULT_RELEVANCE,
     )
-    async def recall_async(self, ask: str, context: SKContext) -> str:
+    async def recall_async(self, ask: str, context: "SKContext") -> str:
         """
         Recall a fact from the long term memory.
 
@@ -89,7 +92,7 @@ class TextMemorySkill(PydanticField):
         name=KEY_PARAM,
         description="The unique key to associate with the information",
     )
-    async def save_async(self, text: str, context: SKContext):
+    async def save_async(self, text: str, context: "SKContext"):
         """
         Save a fact to the long term memory.
 

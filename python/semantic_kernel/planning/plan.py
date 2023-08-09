@@ -12,11 +12,15 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
 from semantic_kernel.kernel_exception import KernelException
+from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition.function_view import FunctionView
+from semantic_kernel.skill_definition.read_only_skill_collection import (
+    ReadOnlySkillCollection,
+)
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
@@ -138,8 +142,8 @@ class Plan(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=self._state,
-                skill_collection=None,
-                memory=memory,
+                skill_collection=ReadOnlySkillCollection(),
+                memory=memory or NullMemory(),
                 logger=logger if logger is not None else NullLogger(),
             )
 
@@ -179,8 +183,8 @@ class Plan(SKFunctionBase):
         if context is None:
             context = SKContext(
                 variables=self._state,
-                skill_collection=None,
-                memory=memory,
+                skill_collection=ReadOnlySkillCollection(),
+                memory=memory or NullMemory(),
                 logger=logger,
             )
 
@@ -299,7 +303,7 @@ class Plan(SKFunctionBase):
             # Invoke the step
             func_context = SKContext(
                 variables=variables,
-                memory=context._memory,
+                memory=context.memory,
                 skill_collection=context.skills,
                 logger=context.log,
             )
@@ -320,7 +324,7 @@ class Plan(SKFunctionBase):
             # Update plan result in state with matching outputs (if any)
             if set(self._outputs).intersection(set(step._outputs)):
                 current_plan_result = ""
-                if Plan.DEFAULT_RESULT_KEY in self._state._variables:
+                if Plan.DEFAULT_RESULT_KEY in self._state.variables:
                     current_plan_result = self._state[Plan.DEFAULT_RESULT_KEY]
                 self._state.set(
                     Plan.DEFAULT_RESULT_KEY, current_plan_result.strip() + result_value
@@ -328,7 +332,7 @@ class Plan(SKFunctionBase):
 
             # Update state with outputs (if any)
             for output in step._outputs:
-                if output in result.variables._variables:
+                if output in result.variables.variables:
                     self._state.set(output, result.variables[output])
                 else:
                     self._state.set(output, result_value)
@@ -341,13 +345,13 @@ class Plan(SKFunctionBase):
     def add_variables_to_context(
         self, variables: ContextVariables, context: SKContext
     ) -> None:
-        for key in variables._variables:
+        for key in variables.variables:
             if not context.variables.contains_key(key):
                 context.variables.set(key, variables[key])
 
     def update_context_with_outputs(self, context: SKContext) -> None:
         result_string = ""
-        if Plan.DEFAULT_RESULT_KEY in self._state._variables:
+        if Plan.DEFAULT_RESULT_KEY in self._state.variables:
             result_string = self._state[Plan.DEFAULT_RESULT_KEY]
         else:
             result_string = str(self._state)
@@ -404,7 +408,7 @@ class Plan(SKFunctionBase):
             ):
                 step_variables.set(param.name, self._state[param.name])
 
-        for param_var in step.parameters._variables:
+        for param_var in step.parameters.variables:
             if step_variables.contains_key(param_var):
                 continue
 
@@ -418,7 +422,7 @@ class Plan(SKFunctionBase):
             else:
                 step_variables.set(param_var, expanded_value)
 
-        for item in variables._variables:
+        for item in variables.variables:
             if not step_variables.contains_key(item):
                 step_variables.set(item, variables[item])
 
