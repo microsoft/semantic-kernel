@@ -28,6 +28,10 @@ namespace SemanticKernel.IntegrationTests.Connectors.MultiConnector;
 /// </summary>
 public sealed class MultiConnectorTests : IDisposable
 {
+    private const string StartGoal =
+        "The goal of this plan is to evaluate the capabilities of a smaller LLM model. Start by writing a text of about 100 words on a given topic, as the input parameter of the plan. Then use distinct functions from the available skills on the input text and/or the previous functions results, choosing parameters in such a way that you know you will succeed at running each function but a smaller model might not. Try to propose steps of distinct difficulties so that models of distinct capabilities might succeed on some functions and fail on others. In a second phase, you will be asked to evaluate the function answers from smaller models. Please beware of correct Xml tags, attributes, and parameter names when defined and when reused.";
+    private const string PlanParentDir = ".\\Connectors\\MultiConnector\\";
+
     private readonly ILogger _logger;
     private readonly IConfigurationRoot _configuration;
     private List<ClientWebSocket> _webSockets = new();
@@ -58,12 +62,51 @@ public sealed class MultiConnectorTests : IDisposable
         };
     }
 
-    private const string StartGoal = "The goal of this plan is to evaluate the capabilities of a smaller LLM model. Start by writing a text of about 100 words on a given topic, as the input parameter of the plan. Then use distinct functions from the available skills on the input text and/or the previous functions results, choosing parameters in such a way that you know you will succeed at running each function but a smaller model might not. Try to propose steps of distinct difficulties so that models of distinct capabilities might succeed on some functions and fail on others. In a second phase, you will be asked to evaluate the function answers from smaller models. Please beware of correct Xml tags, attributes, and parameter names when defined and when reused.";
-
-    //[Theory(Skip = "This test is for manual verification.")]
+    /// <summary>
+    /// This test method uses a plan loaded from a file
+    /// </summary>
     [Theory]
-    [InlineData(1, 1, 1, "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToOobaboogaAsync(double durationWeight = 1, double costWeight = 1, int nbPromptTests = 1, params string[] skillNames)
+    [InlineData(1, 1, 1, "VettingSequentialPlan_SummarizeSkill_Summarize.json", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFilePath, params string[] skillNames)
+    {
+        // ... (The rest of your setup code)
+
+        // Load the plan from the provided file path
+        var planDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, PlanParentDir);
+        var planPath = System.IO.Path.Combine(planDirectory, planFilePath);
+
+        Func<IKernel, CancellationToken, Task<Plan>> planFactory = async (kernel, token) =>
+        {
+            var planJson = await System.IO.File.ReadAllTextAsync(planPath, token);
+            var ctx = kernel.CreateNewContext();
+            var plan = Plan.FromJson(planJson, ctx, true);
+            return plan;
+        };
+        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, durationWeight, costWeight, nbPromptTests, skillNames).ConfigureAwait(false);
+    }
+
+    // This test method uses the SequentialPlanner to create a plan based on difficulty
+    [Theory]
+    [InlineData(1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(double durationWeight, double costWeight, int nbPromptTests, string difficulty, params string[] skillNames)
+    {
+        // ... (The rest of your setup code)
+
+        // Create a plan using SequentialPlanner based on difficulty
+        var modifiedStartGoal = StartGoal.Replace("distinct difficulties", $"{difficulty} difficulties", StringComparison.OrdinalIgnoreCase);
+
+        Func<IKernel, CancellationToken, Task<Plan>> planFactory = async (kernel, token) =>
+        {
+            var planner = new SequentialPlanner(kernel,
+                new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
+
+            var plan = await planner.CreatePlanAsync(modifiedStartGoal, token);
+            return plan;
+        };
+        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, durationWeight, costWeight, nbPromptTests, skillNames).ConfigureAwait(false);
+    }
+
+    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, Task<Plan>> planFactory, double durationWeight = 1, double costWeight = 1, int nbPromptTests = 1, params string[] skillNames)
     {
         // Arrange
 
@@ -117,12 +160,8 @@ public sealed class MultiConnectorTests : IDisposable
         // Act
 
         // Create a plan
-        //var plan = await planner.CreatePlanAsync(StartGoal, cleanupToken.Token);
-        //var planPath = System.IO.Path.Combine(Environment.CurrentDirectory, ".\\Connectors\\MultiConnector\\VettingSequentialPlan_SummarizeSkill.json");
-        var planPath = System.IO.Path.Combine(Environment.CurrentDirectory, ".\\Connectors\\MultiConnector\\VettingSequentialPlan_SummarizeSkill_Summarize.json");
-        var planJson = await System.IO.File.ReadAllTextAsync(planPath, cleanupToken.Token);
-        var ctx = kernel.CreateNewContext();
-        var plan = Plan.FromJson(planJson, ctx, true);
+        var plan = await planFactory(kernel, cleanupToken.Token);
+        var planJson = plan.ToJson();
 
         settings.AnalysisSettings.EnableAnalysis = true;
 
@@ -142,6 +181,8 @@ public sealed class MultiConnectorTests : IDisposable
 
         // Execute the plan once with primary connector
 
+        var ctx = kernel.CreateNewContext();
+
         var firstResult = await kernel.RunAsync(ctx.Variables, cleanupToken.Token, plan).ConfigureAwait(false);
 
         var planRunOnceTimeElapsed = sw.Elapsed;
@@ -160,6 +201,7 @@ public sealed class MultiConnectorTests : IDisposable
         settings.Creditor!.Reset();
 
         ctx = kernel.CreateNewContext();
+
         plan = Plan.FromJson(planJson, ctx, true);
 
         var secondResult = await kernel.RunAsync(ctx.Variables, cleanupToken.Token, plan).ConfigureAwait(false);
@@ -171,12 +213,6 @@ public sealed class MultiConnectorTests : IDisposable
         // Assert
 
         Assert.True(firstPassEffectiveCost > secondPassEffectiveCost);
-
-        //Assert.Contains(
-        //    plan.Steps,
-        //    step =>
-        //        step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-        //        step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
