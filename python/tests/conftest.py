@@ -13,7 +13,6 @@ from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition.read_only_skill_collection import (
     ReadOnlySkillCollection,
 )
-from semantic_kernel.skill_definition.skill_collection import SkillCollection
 
 
 @pytest.fixture(autouse=True)
