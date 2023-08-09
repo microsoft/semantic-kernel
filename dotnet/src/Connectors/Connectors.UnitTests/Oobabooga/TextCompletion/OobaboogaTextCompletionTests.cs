@@ -65,7 +65,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var values = this._messageHandlerStub.RequestHeaders!.GetValues("User-Agent");
 
         var value = values.SingleOrDefault();
-        Assert.Equal(OobaboogaTextCompletion.HttpUserAgent, value);
+        Assert.Equal("Semantic-Kernel", value);
     }
 
     [Fact]
@@ -294,47 +294,6 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             concurrentCallsTicksDelay: 0,
             enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
             maxExpectedNbClients: 20).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// In this test, we are looking at a realistic processing time of 1000ms per request and then an additional 10ms per websocket message. 50 calls are made simultaneously with pooling enabled and 20 concurrent websockets enforced.
-    /// No more than 5 seconds should suffice processing all 50 requests of 1 second duration each.
-    /// </summary>
-    [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentMultiPacketSlowStreamingServiceWithSemaphoreAsync()
-    {
-        using SemaphoreSlim enforcedConcurrentCallSemaphore = new(30);
-        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 50,
-            isPersistent: true,
-            requestProcessingDuration: 1000,
-            segmentMessageDelay: 10,
-            keepAliveWebSocketsDuration: 100,
-            concurrentCallsTicksDelay: 5,
-            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
-            maxExpectedNbClients: 30,
-            maxTestDuration: 5000).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// This test wraps up all kinds of stress conditions to simulate real world difficulties: 50 concurrent calls are made to the connector, which each involving 30 web sockets response messages streamed back with initial delay of 500 ms and additional delay of 10 ms between each web socket message by the test server, each of the streamed is then observed concurrently by 3 consumers.
-    /// </summary>
-    [Fact]
-    public async Task ShouldPoolEfficientlyConcurrentEnumerationOfConcurrentMultiPacketSlowStreamingServiceWithSemaphoreAsync()
-    {
-        using SemaphoreSlim enforcedConcurrentCallSemaphore = new(30);
-        var expectedResponse = Enumerable.Range(0, 30).Select(i => i.ToString(CultureInfo.InvariantCulture)).ToList();
-        await this.RunWebSocketMultiPacketStreamingTestAsync(
-            expectedResponse: expectedResponse,
-            nbConcurrentCalls: 50,
-            nbConcurrentEnumeration: 3,
-            isPersistent: true,
-            requestProcessingDuration: 500,
-            segmentMessageDelay: 10,
-            keepAliveWebSocketsDuration: 100,
-            concurrentCallsTicksDelay: 0,
-            enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
-            maxExpectedNbClients: 30,
-            maxTestDuration: 10000).ConfigureAwait(false);
     }
 
     private async Task RunWebSocketMultiPacketStreamingTestAsync(

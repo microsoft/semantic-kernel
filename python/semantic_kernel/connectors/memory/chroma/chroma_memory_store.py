@@ -68,7 +68,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             self._client_settings = chromadb.config.Settings()
             if persist_directory is not None:
                 self._client_settings = chromadb.config.Settings(
-                    chroma_db_impl="duckdb+parquet", persist_directory=persist_directory
+                    is_persistent=True, persist_directory=persist_directory
                 )
         self._client = chromadb.Client(self._client_settings)
         self._persist_directory = persist_directory
@@ -127,8 +127,6 @@ class ChromaMemoryStore(MemoryStoreBase):
         """
         # Current version of ChromeDB reject camel case collection names.
         self._client.delete_collection(name=camel_to_snake(collection_name))
-        if self._persist_directory is not None:
-            self._client.persist()
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
@@ -161,7 +159,7 @@ class ChromaMemoryStore(MemoryStoreBase):
         record._key = record._id
         metadata = {
             "timestamp": record._timestamp or "",
-            "is_reference": record._is_reference,
+            "is_reference": str(record._is_reference),
             "external_source_name": record._external_source_name or "",
             "description": record._description or "",
             "additional_metadata": record._additional_metadata or "",
@@ -175,9 +173,6 @@ class ChromaMemoryStore(MemoryStoreBase):
             documents=record._text,
             ids=record._key,
         )
-
-        if self._persist_directory is not None:
-            self._client.persist()
         return record._key
 
     async def upsert_batch_async(

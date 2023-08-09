@@ -1,0 +1,76 @@
+#
+# This workflow will build and run all unit tests using dotnet docker containers,
+# each targeting a single version of the dotnet SDK.
+#
+
+name: dotnet-build-and-test
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main", "feature*" ]
+  merge_group:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet-build-and-test:
+    strategy:
+        fail-fast: false
+        matrix:
+          include:
+          - { dotnet: '6.0-jammy', os: 'ubuntu', configuration: Debug, integration-tests: true }
+          - { dotnet: '7.0-jammy', os: 'ubuntu', configuration: Release }
+          - { dotnet: '8.0-preview-jammy', os: 'ubuntu', configuration: Release }
+          - { dotnet: '6.0', os: 'windows', configuration: Release }
+          - { dotnet: '7.0', os: 'windows', configuration: Debug }
+          - { dotnet: '8.0-preview', os: 'windows', configuration: Release }
+          
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
+      env:
+        NUGET_CERT_REVOCATION_MODE: offline
+        GITHUB_ACTIONS: 'true'
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build dotnet solutions
+      run: |
+        export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
+        for solution in $SOLUTIONS; do
+          dotnet build -c ${{ matrix.configuration }} /warnaserror $solution
+        done
+      
+    - name: Run Unit Tests
+      run: |
+        export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
+        for project in $UT_PROJECTS; do
+          dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+        done
+
+    - name: Run Integration Tests
+      if: github.event_name != 'pull_request' && matrix.integration-tests
+      run: |
+        export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
+        for project in $INTEGRATION_TEST_PROJECTS; do
+          dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+        done
+      env:
+        AzureOpenAI__Label: azure-text-davinci-003
+        AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+        AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+        AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+        AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+        AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+        Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+        OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}

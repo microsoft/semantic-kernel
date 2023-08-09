@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 using SemanticKernel.Skills.UnitTests.OpenAPI.TestSkills;
@@ -225,7 +228,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         var nonComplaintOpenApiDocument = ResourceSkillsProvider.LoadFromResource("nonCompliant_documentV3_0.json");
 
         // Act and Assert
-        await Assert.ThrowsAsync<OpenApiDocumentParsingException>(async () => await this._sut.ParseAsync(nonComplaintOpenApiDocument));
+        await Assert.ThrowsAsync<SKException>(async () => await this._sut.ParseAsync(nonComplaintOpenApiDocument));
     }
 
     [Fact]
@@ -239,6 +242,53 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         // Assert
         // The absence of any thrown exceptions serves as evidence of the functionality's success.
+    }
+
+    [Fact]
+    public async Task ItCanWorkWithDocumentsWithoutServersAttributeAsync()
+    {
+        //Arrange
+        using var stream = ModifyOpenApiDocument(this._openApiDocument, (doc) =>
+        {
+            doc.Remove("servers");
+        });
+
+        //Act
+        var operations = await this._sut.ParseAsync(stream);
+
+        //Assert
+        Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
+    }
+
+    [Fact]
+    public async Task ItCanWorkWithDocumentsWithEmptyServersAttributeAsync()
+    {
+        //Arrange
+        using var stream = ModifyOpenApiDocument(this._openApiDocument, (doc) =>
+        {
+            doc["servers"] = new JsonArray();
+        });
+
+        //Act
+        var operations = await this._sut.ParseAsync(stream);
+
+        //Assert
+        Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
+    }
+
+    private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)
+    {
+        var json = JsonSerializer.Deserialize<JsonObject>(openApiDocument);
+
+        transformer(json!);
+
+        var stream = new MemoryStream();
+
+        JsonSerializer.Serialize(stream, json);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        return stream;
     }
 
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,

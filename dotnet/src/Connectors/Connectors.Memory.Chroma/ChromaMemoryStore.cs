@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -70,10 +72,10 @@ public class ChromaMemoryStore : IMemoryStore
         {
             await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (ChromaClientException e) when (e.DeleteNonExistentCollectionException())
+        catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
-            throw new ChromaMemoryStoreException($"Cannot delete non-existent collection {collectionName}", e);
+            throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
         }
     }
 
@@ -230,11 +232,16 @@ public class ChromaMemoryStore : IMemoryStore
     private readonly IChromaClient _chromaClient;
     private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
 
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        Converters = { new ChromaBooleanConverter() }
+    };
+
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
     {
         return
             await this.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false) ??
-            throw new ChromaMemoryStoreException($"Collection {collectionName} does not exist");
+            throw new SKException($"Collection {collectionName} does not exist");
     }
 
     private async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken)
@@ -243,7 +250,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             return await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (ChromaClientException e) when (e.CollectionDoesNotExistException(collectionName))
+        catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
         {
             this._logger.LogError("Collection {0} does not exist", collectionName);
 
@@ -292,15 +299,19 @@ public class ChromaMemoryStore : IMemoryStore
         var embeddingsVector = this.GetEmbeddingForMemoryRecord(embeddings, recordIndex);
         var key = ids?[recordIndex];
 
-        return MemoryRecord.FromJsonMetadata(
-            json: metadata,
+        return MemoryRecord.FromMetadata(
+            metadata: metadata,
             embedding: embeddingsVector,
             key: key);
     }
 
-    private string GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
+    private MemoryRecordMetadata GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
     {
-        return metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex]) : string.Empty;
+        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex]) : string.Empty;
+
+        return
+            JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, this._jsonSerializerOptions) ??
+            throw new SKException("Unable to deserialize memory record metadata.");
     }
 
     private Embedding<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
@@ -318,6 +329,16 @@ public class ChromaMemoryStore : IMemoryStore
         }
 
         return similarityScore;
+    }
+
+    /// <summary>
+    /// Checks if Chroma API error means that collection does not exist.
+    /// </summary>
+    /// <param name="exception">Chroma exception.</param>
+    /// <param name="collectionName">Collection name.</param>
+    private static bool CollectionDoesNotExistException(Exception exception, string collectionName)
+    {
+        return exception?.Message?.Contains(string.Format(CultureInfo.InvariantCulture, "Collection {0} does not exist", collectionName)) ?? false;
     }
 
     #endregion

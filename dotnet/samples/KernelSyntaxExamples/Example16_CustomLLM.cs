@@ -20,6 +20,10 @@ using RepoUtils;
  * - You are not using OpenAI or Azure OpenAI models
  * - You are using OpenAI/Azure OpenAI models but the models are behind a web service with a different API schema
  * - You want to use a local model
+ *
+ * Note that all text completion models are deprecated by OpenAI and will be removed in a future release.
+ *
+ * Refer to example 33 for streaming chat completion.
  */
 public class MyTextCompletionService : ITextCompletion
 {
@@ -95,7 +99,7 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             // Add your text completion service as a singleton instance
             .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
             // Add your text completion service as a factory method
@@ -130,7 +134,7 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
         ITextCompletion textCompletion = new MyTextCompletionService();
 
         var prompt = "Write one paragraph why AI is awesome";

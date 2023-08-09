@@ -22,17 +22,17 @@ public static class Example24_OpenApiSkill_Jira
 {
     public static async Task RunAsync()
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
         var contextVariables = new ContextVariables();
 
         // Change <your-domain> to a jira instance you have access to with your authentication credentials
-        string serverUrl = "https://<your-domain>.atlassian.net/rest/api/latest/";
+        string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
         contextVariables.Set("server-url", serverUrl);
 
         IDictionary<string, ISKFunction> jiraSkills;
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
-            string s = Env.Var("MY_EMAIL_ADDRESS") + ":" + Env.Var("JIRA_API_KEY");
+            string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
             return Task.FromResult(s);
         });
 
@@ -43,12 +43,12 @@ public static class Example24_OpenApiSkill_Jira
         if (useLocalFile)
         {
             var apiSkillFile = "./../../../Skills/JiraSkill/openapi.json";
-            jiraSkills = await kernel.ImportOpenApiSkillFromFileAsync("jiraSkills", apiSkillFile, new OpenApiSkillExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillFile, new OpenApiSkillExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
         }
         else
         {
             var apiSkillRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
-            jiraSkills = await kernel.ImportOpenApiSkillFromUrlAsync("jiraSkills", apiSkillRawFileURL, new OpenApiSkillExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillRawFileURL, new OpenApiSkillExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
         }
 
         // GetIssue Skill

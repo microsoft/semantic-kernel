@@ -47,13 +47,13 @@ public sealed class TextCompletionRequest
     /// Modulates the next token probabilities. A value of 0 implies deterministic output (only the most likely token is used). Higher values increase randomness.
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; } = 0.7;
+    public double Temperature { get; set; }
 
     /// <summary>
     /// If set to a value less than 1, only the most probable tokens with cumulative probability less than this value are kept for generation.
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double TopP { get; set; } = 0.1;
+    public double TopP { get; set; }
 
     /// <summary>
     /// Measures how similar the conditional probability of predicting a target token is to the expected conditional probability of predicting a random token, given the generated text.
@@ -62,6 +62,7 @@ public sealed class TextCompletionRequest
     public double TypicalP { get; set; } = 1;
 
     /// <summary>
+    /// Sets a probability floor below which tokens are excluded from being sampled.
     /// Sets a probability floor below which tokens are excluded from being sampled, In units of 1e-4.
     /// </summary>
     [JsonPropertyName("epsilon_cutoff")]
@@ -167,7 +168,7 @@ public sealed class TextCompletionRequest
     /// Random seed to control sampling, used when DoSample is True.
     /// </summary>
     [JsonPropertyName("seed")]
-    public double Seed { get; set; } = 0;//-1.0;
+    public int Seed { get; set; } = -1;
 
     /// <summary>
     /// Controls whether to add beginning of a sentence token

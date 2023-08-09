@@ -4,7 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
 
@@ -59,11 +58,11 @@ after this event Caroline became his wife.""";
     {
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_API_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -124,11 +123,11 @@ which are not grounded in the original.
         Console.WriteLine("======== Planning - Groundedness Checks ========");
 
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
@@ -138,10 +137,9 @@ which are not grounded in the original.
 
         kernel.ImportSkill(new TextSkill());
 
-        var config = new SequentialPlannerConfig { };
-        var planner = new SequentialPlanner(kernel, config);
+        var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
-        Console.WriteLine(plan.ToPlanString());
+        Console.WriteLine(plan.ToPlanWithGoalString());
 
         var results = await plan.InvokeAsync(s_groundingText);
         Console.WriteLine(results.Result);

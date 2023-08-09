@@ -211,7 +211,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
                 RequestUri = this._blockingUri.Uri,
                 Content = stringContent
             };
-            httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
+            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
             using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
@@ -222,7 +222,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             if (completionResponse is null)
             {
-                throw new OobaboogaInvalidResponseException<string>(body, "Unexpected response from Oobabooga API");
+                throw new SKException($"Unexpected response from Oobabooga API: {body}");
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
@@ -271,7 +271,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// </summary>
     private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
     {
-        clientWebSocket.Options.SetRequestHeader("User-Agent", HttpUserAgent);
+        clientWebSocket.Options.SetRequestHeader("User-Agent", Telemetry.HttpUserAgent);
     }
 
     /// <summary>
@@ -314,7 +314,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
                 if (responseObject is null)
                 {
-                    throw new OobaboogaInvalidResponseException<string>(messageText, "Unexpected response from Oobabooga API");
+                    throw new SKException($"Unexpected response from Oobabooga API: {messageText}");
                 }
 
                 switch (responseObject.Event)

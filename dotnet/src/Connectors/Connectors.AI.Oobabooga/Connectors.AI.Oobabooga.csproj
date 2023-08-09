@@ -13,8 +13,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Oobabooga connectors</Title>
-    <Description>Semantic Kernel connectors for the oobabooga text-generation-webui open source project. Contains a client for text completion.</Description>
+    <Title>Semantic Kernel - Oobabooga Connector</Title>
+    <Description>Semantic Kernel connector for the oobabooga text-generation-webui open source project. Contains a client for text completion.</Description>
   </PropertyGroup>
 
   <ItemGroup>

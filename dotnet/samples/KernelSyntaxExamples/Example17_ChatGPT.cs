@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with OpenAI ChatGPT API
@@ -51,7 +50,7 @@ public static class Example17_ChatGPT
     {
         Console.WriteLine("======== Open AI - ChatGPT ========");
 
-        OpenAIChatCompletion openAIChatCompletion = new("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"));
+        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
 
         await StartChatAsync(openAIChatCompletion);
     }
@@ -61,9 +60,9 @@ public static class Example17_ChatGPT
         Console.WriteLine("======== Azure Open AI - ChatGPT ========");
 
         AzureChatCompletion azureChatCompletion = new(
-            Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-            Env.Var("AZURE_OPENAI_ENDPOINT"),
-            Env.Var("AZURE_OPENAI_KEY"));
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey);
 
         await StartChatAsync(azureChatCompletion);
     }
@@ -85,7 +84,7 @@ public static class Example17_ChatGPT
         await MessageOutputAsync(chatHistory);
 
         // Second user message
-        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion?");
+        chatHistory.AddUserMessage("I love history and philosophy, I'd like to learn something new about Greece, any suggestion");
         await MessageOutputAsync(chatHistory);
 
         // Second bot assistant message

@@ -4,7 +4,6 @@ Install the latest package:
 
     python -m pip install --upgrade semantic-kernel
 
-
 # AI Services
 
 ## OpenAI / Azure OpenAI API keys
@@ -92,13 +91,18 @@ get started with the Semantic Kernel.
 
 Python notebooks:
 
-* [Getting started with Semantic Kernel](../samples/notebooks/python/00-getting-started.ipynb)
-* [Loading and configuring Semantic Kernel](../samples/notebooks/python/01-basic-loading-the-kernel.ipynb)
-* [Running AI prompts from file](../samples/notebooks/python/02-running-prompts-from-file.ipynb)
-* [Creating Semantic Functions at runtime (i.e. inline functions)](../samples/notebooks/python/03-semantic-function-inline.ipynb)
-* [Using Context Variables to Build a Chat Experience](../samples/notebooks/python/04-context-variables-chat.ipynb)
-* [Introduction to planners](../samples/notebooks/python/05-using-the-planner.ipynb)
-* [Building Memory with Embeddings](../samples/notebooks/python/06-memory-and-embeddings.ipynb)
+- [Getting started with Semantic Kernel](./notebooks/00-getting-started.ipynb)
+- [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
+- [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
+- [Creating Semantic Functions at runtime (i.e. inline functions)](./notebooks/03-semantic-function-inline.ipynb)
+- [Using Context Variables to Build a Chat Experience](./notebooks/04-context-variables-chat.ipynb)
+- [Introduction to planners](./notebooks/05-using-the-planner.ipynb)
+- [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
+- [Using Hugging Face for Skills](./notebooks/07-hugging-face-for-skills.ipynb)
+- [Combining native functions and semantic functions](./notebooks/08-native-function-inline.ipynb)
+- [Groundedness Checking with Semantic Kernel](./notebooks/09-groundedness-checking.ipynb)
+- [Returning multiple results per prompt](./notebooks/10-multiple-results-per-prompt.ipynb)
+- [Streaming completions with Semantic Kernel](./notebooks/11-streaming-completions.ipynb)
 
 # SK Frequently Asked Questions
 

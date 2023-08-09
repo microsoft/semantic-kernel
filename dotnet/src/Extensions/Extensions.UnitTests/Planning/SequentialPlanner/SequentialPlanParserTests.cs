@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
@@ -26,28 +25,24 @@ public class SequentialPlanParserTests
     }
 
     private Mock<IKernel> CreateKernelMock(
-        out Mock<ISemanticTextMemory> semanticMemoryMock,
         out Mock<IReadOnlySkillCollection> mockSkillCollection,
         out Mock<ILogger> mockLogger)
     {
-        semanticMemoryMock = new Mock<ISemanticTextMemory>();
         mockSkillCollection = new Mock<IReadOnlySkillCollection>();
         mockLogger = new Mock<ILogger>();
 
         var kernelMock = new Mock<IKernel>();
         kernelMock.SetupGet(k => k.Skills).Returns(mockSkillCollection.Object);
-        kernelMock.SetupGet(k => k.Log).Returns(mockLogger.Object);
-        kernelMock.SetupGet(k => k.Memory).Returns(semanticMemoryMock.Object);
+        kernelMock.SetupGet(k => k.Logger).Returns(mockLogger.Object);
 
         return kernelMock;
     }
 
     private SKContext CreateSKContext(
         IKernel kernel,
-        ContextVariables? variables = null,
-        CancellationToken cancellationToken = default)
+        ContextVariables? variables = null)
     {
-        return new SKContext(variables, kernel.Memory, kernel.Skills, kernel.Log, cancellationToken);
+        return new SKContext(variables, kernel.Skills, kernel.Logger);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -62,11 +57,11 @@ public class SequentialPlanParserTests
     private void CreateKernelAndFunctionCreateMocks(List<(string name, string skillName, string description, bool isSemantic, string result)> functions,
         out IKernel kernel)
     {
-        var kernelMock = this.CreateKernelMock(out _, out var skills, out _);
+        var kernelMock = this.CreateKernelMock(out var skills, out _);
         kernel = kernelMock.Object;
 
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<CancellationToken>())).Returns(this.CreateSKContext(kernel));
+        kernelMock.Setup(k => k.CreateNewContext()).Returns(this.CreateSKContext(kernel));
 
         var functionsView = new FunctionsView();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
@@ -77,7 +72,7 @@ public class SequentialPlanParserTests
 
             var result = this.CreateSKContext(kernel);
             result.Variables.Update(resultString);
-            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null))
+            mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(result);
 
             if (string.IsNullOrEmpty(name))

@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Skills.Web.Bing;
 /// <summary>
 /// Bing API connector.
 /// </summary>
-public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
+public sealed class BingConnector : IWebSearchEngineConnector
 {
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
@@ -47,6 +47,7 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         this._apiKey = apiKey;
         this._logger = logger ?? NullLogger<BingConnector>.Instance;
         this._httpClient = httpClient;
+        this._httpClient.DefaultRequestHeaders.Add("User-Agent", Telemetry.HttpUserAgent);
     }
 
     /// <inheritdoc/>
@@ -69,6 +70,8 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
         string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {0}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
@@ -94,19 +97,6 @@ public sealed class BingConnector : IWebSearchEngineConnector, IDisposable
         }
 
         return await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-    }
-
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
-    private void Dispose(bool disposing)
-    {
-    }
-
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions. There is no longer a need to invoke this method, and its call can be safely omitted.")]
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",

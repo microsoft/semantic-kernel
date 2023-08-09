@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
@@ -45,7 +46,7 @@ internal sealed class RestApiOperationRunner
     public RestApiOperationRunner(HttpClient httpClient, AuthenticateRequestAsyncCallback? authCallback = null, string? userAgent = null)
     {
         this._httpClient = httpClient;
-        this._userAgent = userAgent;
+        this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
 
         // If no auth callback provided, use empty function
         if (authCallback == null)
@@ -96,10 +97,9 @@ internal sealed class RestApiOperationRunner
             requestMessage.Content = payload;
         }
 
-        if (!string.IsNullOrWhiteSpace(this._userAgent))
-        {
-            requestMessage.Headers.Add("User-Agent", this._userAgent);
-        }
+        requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(this._userAgent)
+            ? this._userAgent
+            : Telemetry.HttpUserAgent);
 
         if (headers != null)
         {
@@ -143,13 +143,13 @@ internal sealed class RestApiOperationRunner
         {
             if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out mediaType))
             {
-                throw new RestApiOperationException($"No content type is provided for the {operation.Id} operation.");
+                throw new SKException($"No content type is provided for the {operation.Id} operation.");
             }
         }
 
         if (!s_payloadFactoryByMediaType.TryGetValue(mediaType!, out var payloadFactory))
         {
-            throw new RestApiOperationException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
+            throw new SKException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
         }
 
         return payloadFactory.Invoke(arguments);
@@ -164,7 +164,7 @@ internal sealed class RestApiOperationRunner
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var content))
         {
-            throw new RestApiOperationException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
+            throw new SKException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
         }
 
         return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
@@ -179,7 +179,7 @@ internal sealed class RestApiOperationRunner
     {
         if (!arguments.TryGetValue(RestApiOperation.PayloadArgumentName, out var propertyValue))
         {
-            throw new RestApiOperationException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
+            throw new SKException($"No argument is found for the '{RestApiOperation.PayloadArgumentName}' payload content.");
         }
 
         return new StringContent(propertyValue, Encoding.UTF8, MediaTypeTextPlain);

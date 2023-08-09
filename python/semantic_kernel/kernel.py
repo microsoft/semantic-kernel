@@ -133,6 +133,82 @@ class Kernel:
 
         return function
 
+    async def run_stream_async(
+        self,
+        *functions: Any,
+        input_context: Optional[SKContext] = None,
+        input_vars: Optional[ContextVariables] = None,
+        input_str: Optional[str] = None,
+    ):
+        if len(functions) > 1:
+            pipeline_functions = functions[:-1]
+            stream_function = functions[-1]
+
+            # run pipeline functions
+            context = await self.run_async(
+                pipeline_functions, input_context, input_vars, input_str
+            )
+
+        elif len(functions) == 1:
+            stream_function = functions[0]
+
+            # TODO: Preparing context for function invoke can be refactored as code below are same as run_async
+            # if the user passed in a context, prioritize it, but merge with any other inputs
+            if input_context is not None:
+                context = input_context
+                if input_vars is not None:
+                    context._variables = input_vars.merge_or_overwrite(
+                        new_vars=context._variables, overwrite=False
+                    )
+
+                if input_str is not None:
+                    context._variables = ContextVariables(input_str).merge_or_overwrite(
+                        new_vars=context._variables, overwrite=False
+                    )
+
+            # if the user did not pass in a context, prioritize an input string,
+            # and merge that with input context variables
+            else:
+                if input_str is not None and input_vars is None:
+                    variables = ContextVariables(input_str)
+                elif input_str is None and input_vars is not None:
+                    variables = input_vars
+                elif input_str is not None and input_vars is not None:
+                    variables = ContextVariables(input_str)
+                    variables = variables.merge_or_overwrite(
+                        new_vars=input_vars, overwrite=False
+                    )
+                else:
+                    variables = ContextVariables()
+                context = SKContext(
+                    variables,
+                    self._memory,
+                    self._skill_collection.read_only_skill_collection,
+                    self._log,
+                )
+        else:
+            raise ValueError("No functions passed to run")
+
+        try:
+            completion = ""
+            async for stream_message in stream_function.invoke_stream_async(
+                input=None, context=context
+            ):
+                completion += stream_message
+                yield stream_message
+
+        except Exception as ex:
+            # TODO: "critical exceptions"
+            self._log.error(
+                f"Something went wrong in stream function."
+                f"During function invocation: '{stream_function.skill_name}.{stream_function.name}'. "
+                f"Error description: '{str(ex)}'"
+            )
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionInvokeError,
+                "Error occurred while invoking stream function",
+            )
+
     async def run_async(
         self,
         *functions: Any,
@@ -153,7 +229,8 @@ class Kernel:
                     new_vars=context._variables, overwrite=False
                 )
 
-        # if the user did not pass in a context, prioritize an input string, and merge that with input context variables
+        # if the user did not pass in a context, prioritize an input string,
+        # and merge that with input context variables
         else:
             if input_str is not None and input_vars is None:
                 variables = ContextVariables(input_str)
@@ -263,8 +340,13 @@ class Kernel:
             self._log.debug(f"Importing skill {skill_name}")
 
         functions = []
+
+        if isinstance(skill_instance, dict):
+            candidates = skill_instance.items()
+        else:
+            candidates = inspect.getmembers(skill_instance, inspect.ismethod)
         # Read every method from the skill instance
-        for _, candidate in inspect.getmembers(skill_instance, inspect.ismethod):
+        for _, candidate in candidates:
             # If the method is a semantic function, register it
             if not hasattr(candidate, "__sk_function__"):
                 continue

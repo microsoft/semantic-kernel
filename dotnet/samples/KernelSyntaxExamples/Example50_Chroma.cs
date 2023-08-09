@@ -14,14 +14,18 @@ public static class Example50_Chroma
 
     public static async Task RunAsync()
     {
-        string endpoint = Env.Var("CHROMA_ENDPOINT");
+        string endpoint = TestConfiguration.Chroma.Endpoint;
 
         var memoryStore = new ChromaMemoryStore(endpoint);
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", Env.Var("OPENAI_API_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithOpenAIChatCompletionService(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAITextEmbeddingGenerationService(
+                modelId: TestConfiguration.OpenAI.EmbeddingModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)
             //.WithChromaMemoryStore(endpoint) // This method offers an alternative approach to registering Chroma memory store.
             .Build();

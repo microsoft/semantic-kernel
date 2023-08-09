@@ -18,9 +18,20 @@ public static class Example06_TemplateLanguage
     {
         Console.WriteLine("======== TemplateLanguage ========");
 
+        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
+
+        if (openAIModelId == null || openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
+
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithOpenAIChatCompletionService(
+                modelId: openAIModelId,
+                apiKey: openAIApiKey)
             .Build();
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
@@ -48,7 +59,7 @@ Is it weekend time (weekend/not weekend)?
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kindOfDay.InvokeAsync();
+        var result = await kernel.RunAsync(kindOfDay);
         Console.WriteLine(result);
 
         /* OUTPUT:

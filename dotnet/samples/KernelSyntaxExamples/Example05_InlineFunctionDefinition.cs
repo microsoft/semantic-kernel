@@ -12,6 +12,15 @@ public static class Example05_InlineFunctionDefinition
     {
         Console.WriteLine("======== Inline Function Definition ========");
 
+        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
+
+        if (openAIModelId == null || openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
+
         /*
          * Example: normally you would place prompt templates in a folder to separate
          *          C# code from natural language code, but you can also define a semantic
@@ -19,8 +28,10 @@ public static class Example05_InlineFunctionDefinition
          */
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithOpenAIChatCompletionService(
+                modelId: openAIModelId,
+                apiKey: openAIApiKey)
             .Build();
 
         // Function defined using few-shot design pattern

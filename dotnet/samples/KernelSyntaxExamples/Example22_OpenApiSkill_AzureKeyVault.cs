@@ -20,8 +20,8 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         // To run this example, you must register a client application with the Microsoft identity platform.
         // Instructions here: https://learn.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
         var authenticationProvider = new InteractiveMsalAuthenticationProvider(
-            Env.Var("AZURE_KEYVAULT_CLIENTID"),
-            Env.Var("AZURE_KEYVAULT_TENANTID"),
+            TestConfiguration.KeyVault.ClientId,
+            TestConfiguration.KeyVault.TenantId,
             new[] { "https://vault.azure.net/.default" },
             new Uri("http://localhost"));
 
@@ -35,21 +35,24 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         var retryConfig = new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true };
 
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
             .Build();
 
-        // Import a OpenApi skill using one of the following Kernel extension methods
-        // kernel.ImportOpenApiSkillFromResource
-        // kernel.ImportOpenApiSkillFromDirectory
-        // kernel.ImportOpenApiSkillFromFile
-        // kernel.ImportOpenApiSkillFromUrlAsync
-        // kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+        var type = typeof(SkillResourceNames);
+        var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";
+
+        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
+
+        // Import AI Plugin
+        var skill = await kernel.ImportAIPluginAsync(
+            SkillResourceNames.AzureKeyVault,
+            stream!,
+            new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
-        contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
+        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
         contextVariables.Set("secret-name", "<secret-name>");
         contextVariables.Set("api-version", "7.0");
 
@@ -61,19 +64,22 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
     public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 
-        // Import a OpenApi skill using one of the following Kernel extension methods
-        // kernel.ImportOpenApiSkillFromResource
-        // kernel.ImportOpenApiSkillFromDirectory
-        // kernel.ImportOpenApiSkillFromFile
-        // kernel.ImportOpenApiSkillFromUrlAsync
-        // kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+        var type = typeof(SkillResourceNames);
+        var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";
+
+        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
+
+        // Import AI Plugin
+        var skill = await kernel.ImportAIPluginAsync(
+            SkillResourceNames.AzureKeyVault,
+            stream!,
+            new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
-        contextVariables.Set("server-url", "https://<keyvault-name>.vault.azure.net");
+        contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
         contextVariables.Set("secret-name", "<secret-name>");
         contextVariables.Set("api-version", "7.0");
         contextVariables.Set("payload", JsonSerializer.Serialize(new { value = "<secret>", attributes = new { enabled = true } }));

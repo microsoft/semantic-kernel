@@ -14,26 +14,39 @@ public static class Example04_CombineLLMPromptsAndNativeCode
     {
         Console.WriteLine("======== LLMPrompts ========");
 
+        string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
+
+        if (openAIApiKey == null)
+        {
+            Console.WriteLine("OpenAI credentials not found. Skipping example.");
+            return;
+        }
+
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAITextCompletionService("text-davinci-002", Env.Var("OPENAI_API_KEY"), serviceId: "text-davinci-002")
-            .WithOpenAITextCompletionService("text-davinci-003", Env.Var("OPENAI_API_KEY"))
+            .WithLogger(ConsoleLogger.Logger)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, openAIApiKey)
             .Build();
 
         // Load native skill
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
+        string bingApiKey = TestConfiguration.Bing.ApiKey;
+
+        if (bingApiKey == null)
+        {
+            Console.WriteLine("Bing credentials not found. Skipping example.");
+            return;
+        }
+
+        var bingConnector = new BingConnector(bingApiKey);
         var bing = new WebSearchEngineSkill(bingConnector);
         var search = kernel.ImportSkill(bing, "bing");
 
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
 
-        var sumSkill = kernel.ImportSemanticSkillFromDirectory(
-            folder,
-            "SummarizeSkill");
+        var sumSkill = kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
 
         // Run
-        var ask = "What's the tallest building in South America?";
+        var ask = "What's the tallest building in South America";
 
         var result1 = await kernel.RunAsync(
             ask,

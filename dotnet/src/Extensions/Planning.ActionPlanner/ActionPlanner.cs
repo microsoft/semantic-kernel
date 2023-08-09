@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -29,10 +30,15 @@ namespace Microsoft.SemanticKernel.Planning;
 /// The rationale is currently available only in the prompt, we might include it in
 /// the Plan object in future.
 /// </summary>
-public sealed class ActionPlanner
+public sealed class ActionPlanner : IActionPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";
     private const string SkillName = "this";
+
+    /// <summary>
+    /// The regular expression for extracting serialized plan.
+    /// </summary>
+    private static readonly Regex PlanRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
 
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
@@ -72,7 +78,8 @@ public sealed class ActionPlanner
         this._context = kernel.CreateNewContext();
     }
 
-    public async Task<Plan> CreatePlanAsync(string goal)
+    /// <inheritdoc />
+    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(goal))
         {
@@ -81,7 +88,7 @@ public sealed class ActionPlanner
 
         this._context.Variables.Update(goal);
 
-        SKContext result = await this._plannerFunction.InvokeAsync(this._context).ConfigureAwait(false);
+        SKContext result = await this._plannerFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)
@@ -221,8 +228,7 @@ Goal: tell me a joke.
     /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
     private ActionPlanResponse? ParsePlannerResult(SKContext plannerResult)
     {
-        Regex planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline);
-        Match match = planRegex.Match(plannerResult.ToString());
+        Match match = PlanRegex.Match(plannerResult.ToString());
 
         if (match.Success && match.Groups["Close"].Length > 0)
         {
@@ -275,7 +281,7 @@ Goal: tell me a joke.
                 // Function parameters
                 foreach (var p in func.Parameters)
                 {
-                    var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description;
+                    var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description!;
                     var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
                     list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
                 }
