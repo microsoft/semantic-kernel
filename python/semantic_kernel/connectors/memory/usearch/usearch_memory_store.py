@@ -136,8 +136,8 @@ class USearchMemoryStore(MemoryStoreBase):
         When `close_async` is called, all collections are written to disk.
 
         Args:
-            persist_directory (Optional[os.PathLike], default=None): Directory where data will be saved. If None,
-                no persistence.
+            persist_directory (Optional[os.PathLike], default=None): Directory for loading and saving collections.
+            If None, collections are not loaded nor saved.
             logger (Optional[Logger], default=None): Logger for diagnostics. If None, a NullLogger is used.
         """
         self._logger = logger or NullLogger()
@@ -303,7 +303,9 @@ class USearchMemoryStore(MemoryStoreBase):
 
     async def delete_collection_async(self, collection_name: str) -> None:
         collection_name = collection_name.lower()
-        self._collections.pop(collection_name, None)
+        collection = self._collections.pop(collection_name, None)
+        if collection:
+            collection.embeddings_index.reset()
         return None
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
@@ -596,7 +598,7 @@ class USearchMemoryStore(MemoryStoreBase):
                     collection_storage_files[collection_name] = [path]
         return collection_storage_files
 
-    def _dump_collection(self) -> None:
+    def _dump_collections(self) -> None:
         collection_storage_files = self._get_all_storage_files()
         for file_path in itertools.chain.from_iterable(
             collection_storage_files.values()
@@ -619,19 +621,14 @@ class USearchMemoryStore(MemoryStoreBase):
         return None
 
     async def close_async(self) -> None:
-        """Close and persist the collections to the directory, if set.
-
-        The method ensures that each collection's data is saved appropriately.
-        If a persist directory is not defined, the method will simply return.
+        """Persist collection, clear.
 
         Returns:
             None
         """
         if self._persist_directory:
-            self._dump_collection()
+            self._dump_collections()
 
-        for _, ucollection in self._collections.items():
-            ucollection.embeddings_index.reset()
-            del ucollection.embeddings_data_table
-            del ucollection.embeddings_id_to_label
-        del self._collections
+        for collection_name in self._collections.values():
+            await self.delete_collection_async(collection_name)
+        self._collections = {}
