@@ -393,7 +393,7 @@ class Plan(SKFunctionBase):
         # - Step Parameters (pull from variables or state by a key value)
         # - All other variables. These are carried over in case the function wants access to the ambient content.
         function_params = step.describe()
-        for param in function_params._parameters:
+        for param in function_params.parameters:
             if param.name.lower() == variables._main_key.lower():
                 continue
 
