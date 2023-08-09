@@ -12,7 +12,7 @@ is an SDK that integrates Large Language Models (LLMs) like
 [OpenAI](https://platform.openai.com/docs/introduction),
 [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service),
 and [Hugging Face](https://huggingface.co/)
-with conventional programming languages like C# and Python. Semantic Kernel achieves this
+with conventional programming languages like C#, Python, and Java. Semantic Kernel achieves this
 by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
 that can be chained together
 in just a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Csharp#using-the-runasync-method-to-simplify-your-code).
@@ -107,7 +107,7 @@ Finally, refer to our API references for more details on the C# and Python APIs:
 
 If you're interested in seeing a full end-to-end example of how to use Semantic Kernel, check out
 our [Chat Copilot](https://github.com/microsoft/chat-copilot) reference application. Chat Copilot
-is a chatbot that demonstrates the power of Semantic Kernel. By combining plugins, planners, and persons,
+is a chatbot that demonstrates the power of Semantic Kernel. By combining plugins, planners, and personas,
 we demonstrate how you can build a chatbot that can maintain long-running conversations with users while
 also leveraging plugins to integrate with other services.
 
