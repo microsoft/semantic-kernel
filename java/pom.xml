@@ -597,6 +597,7 @@
             </properties>
         </profile>
         <profile>
+            <!-- IF YOU CHANGE THIS FROM 17 GO UPDATE JDK_COMPILER_VERSION ON THE sk-java MAVEN DEPLOY -->
             <id>compile-jdk17</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
