@@ -62,14 +62,14 @@ class _USearchCollection:
 # PyArrow Schema definition for the embeddings data from `MemoryRecord`.
 _embeddings_data_schema = pa.schema(
     [
-        pa.field("_key", pa.string()),
-        pa.field("_timestamp", pa.timestamp("us")),
-        pa.field("_is_reference", pa.bool_()),
-        pa.field("_external_source_name", pa.string()),
-        pa.field("_id", pa.string()),
-        pa.field("_description", pa.string()),
-        pa.field("_text", pa.string()),
-        pa.field("_additional_metadata", pa.string()),
+        pa.field("key", pa.string()),
+        pa.field("timestamp", pa.timestamp("us")),
+        pa.field("is_reference", pa.bool_()),
+        pa.field("external_source_name", pa.string()),
+        pa.field("id", pa.string()),
+        pa.field("description", pa.string()),
+        pa.field("text", pa.string()),
+        pa.field("additional_metadata", pa.string()),
     ]
 )
 
@@ -91,7 +91,7 @@ _collection_file_extensions: Dict[_CollectionFileType, str] = {
 def memoryrecords_to_pyarrow_table(records: List[MemoryRecord]) -> pa.Table:
     """Convert a list of `MemoryRecord` to a PyArrow Table"""
     records_pylist = [
-        {attr: getattr(record, attr) for attr in _embeddings_data_schema.names}
+        {attr: getattr(record, "_" + attr) for attr in _embeddings_data_schema.names}
         for record in records
     ]
     return pa.Table.from_pylist(records_pylist, schema=_embeddings_data_schema)
@@ -110,14 +110,11 @@ def pyarrow_table_to_memoryrecords(
     Returns:
         List[MemoryRecord]: List of MemoryRecords constructed from the table.
     """
-    table = table.rename_columns([name[1:] for name in table.schema.names])
-    df = table.to_pandas()
-
     result_memory_records = [
         MemoryRecord(
             **row.to_dict(), embedding=vectors[index] if vectors is not None else None
         )
-        for index, row in df.iterrows()
+        for index, row in table.to_pandas().iterrows()
     ]
 
     return result_memory_records
@@ -130,10 +127,15 @@ class USearchMemoryStore(MemoryStoreBase):
         logger: Optional[Logger] = None,
     ) -> None:
         """
-        Initialize a USearchMemoryStore instance.
+        Create a USearchMemoryStore instance.
 
-        This store facilitates searching embeddings using USearch. Collections are stored in-memory.
-        When `close_async` is called, all collections are written to disk.
+        This store helps searching embeddings with USearch, keeping collections in memory.
+        To save collections to disk, provide the `persist_directory` param.
+        Collections are saved when `close_async` is called.
+
+        To both save collections and free up memory, call `close_async`.
+        When `USearchMemoryStore` is used with a context manager, this will happen automatically.
+        Otherwise, it should be called explicitly.
 
         Args:
             persist_directory (Optional[os.PathLike], default=None): Directory for loading and saving collections.
@@ -246,13 +248,13 @@ class USearchMemoryStore(MemoryStoreBase):
         embeddings_table = pq.read_table(path, schema=_embeddings_data_schema)
         embeddings_id_to_label: Dict[str, int] = {
             record_id: idx
-            for idx, record_id in enumerate(embeddings_table.column("_id").to_pylist())
+            for idx, record_id in enumerate(embeddings_table.column("id").to_pylist())
         }
         return embeddings_table, embeddings_id_to_label
 
     def _read_embeddings_index(self, path: Path) -> Index:
         """Read embeddings index."""
-        # str cast can be omitted after https://github.com/unum-cloud/usearch/issues/174
+        # str cast is temporarily fix for https://github.com/unum-cloud/usearch/issues/196
         return Index.restore(str(path), view=False)
 
     def _read_collections_from_dir(self) -> Dict[str, _USearchCollection]:
@@ -629,6 +631,6 @@ class USearchMemoryStore(MemoryStoreBase):
         if self._persist_directory:
             self._dump_collections()
 
-        for collection_name in self._collections.values():
+        for collection_name in await self.get_collections_async():
             await self.delete_collection_async(collection_name)
         self._collections = {}
