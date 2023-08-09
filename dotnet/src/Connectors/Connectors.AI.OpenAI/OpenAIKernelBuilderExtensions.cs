@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -518,12 +517,6 @@ public static class OpenAIKernelBuilderExtensions
 #pragma warning disable CA2000 // Dispose objects before losing scope
         options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(config, httpClient, logger));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-
-        if (config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
-        {
-            options.Retry.MaxRetries = factory.Config.MaxRetryCount;
-            options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
-        }
 
         return options;
     }

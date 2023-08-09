@@ -10,6 +10,9 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.AI.OpenAI;
+using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
@@ -79,7 +82,6 @@ public static class Example42_KernelBuilder
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(logger);
         var kernelConfig = new KernelConfig();
-
         using var httpClient = new HttpClient();
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(
@@ -94,12 +96,40 @@ public static class Example42_KernelBuilder
         // Create kernel manually injecting all the dependencies
         using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, logger);
 
+        // Manually setup all the dependencies used internally by the kernel using custom OpenAI client options
+        var openAIOptions = new OpenAIClientOptions();
+        openAIOptions.Transport = new HttpClientTransport(httpClient);
+
+        // Removing the [REDACTED] from the header responses
+        foreach (var headerName in new[] { "ErrorSource", "ErrorReason", "ErrorMessage", "ErrorScope", "ErrorSection", "ErrorStatusCode" })
+        {
+            openAIOptions.Diagnostics.LoggedHeaderNames.Add(headerName);
+        }
+
+        // Adding a retry policy
+        openAIOptions.Retry.Mode = Azure.Core.RetryMode.Exponential;
+        openAIOptions.Retry.Delay = TimeSpan.FromSeconds(1);
+        openAIOptions.Retry.MaxDelay = TimeSpan.FromSeconds(10);
+        openAIOptions.Retry.MaxRetries = 3;
+
+        OpenAIClient openAIClient = new(new Uri(azureOpenAIEndpoint), new AzureKeyCredential(azureOpenAIKey), openAIOptions);
+
+        ITextCompletion OpenAIClientFactory() => new AzureTextCompletion(
+        modelId: azureOpenAIChatCompletionDeployment,
+        openAIClient,
+        logger);
+
+        aiServices = new AIServiceCollection();
+        aiServices.SetService("bar", OpenAIClientFactory);
+        aiServiceProvider = aiServices.Build();
+        using var kernel4 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, logger);
+
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies
         // are connected, still allowing to customize parts of the composition.
 
         // Example: how to use a custom memory and configure Azure OpenAI
-        var kernel4 = Kernel.Builder
+        var kernel5 = Kernel.Builder
             .WithLogger(NullLogger.Instance)
             .WithMemory(memory)
             .WithAzureChatCompletionService(

@@ -24,7 +24,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void HttpRetryHandlerFactoryIsSet()
+    public void HttpHandlerFactoryIsSet()
     {
         // Arrange
         var retry = new NullHttpHandlerFactory();
@@ -38,7 +38,7 @@ public class KernelConfigTests
     }
 
     [Fact]
-    public void HttpRetryHandlerFactoryIsSetWithCustomImplementation()
+    public void HttpHandlerFactoryIsSetWithCustomImplementation()
     {
         // Arrange
         var retry = new Mock<IDelegatingHandlerFactory>();
