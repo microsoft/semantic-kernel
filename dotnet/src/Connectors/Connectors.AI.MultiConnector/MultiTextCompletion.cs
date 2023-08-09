@@ -247,15 +247,3 @@ public class MultiTextCompletion : ITextCompletion
         }
     }
 }
-
-public class OptimizationCompletedEventArgs : EventArgs
-{
-    public MultiCompletionAnalysis Analysis { get; set; }
-    public MultiTextCompletionSettings SuggestedSettings { get; set; }
-
-    public OptimizationCompletedEventArgs(MultiCompletionAnalysis analysis, MultiTextCompletionSettings suggestedSettings)
-    {
-        this.Analysis = analysis;
-        this.SuggestedSettings = suggestedSettings;
-    }
-}
