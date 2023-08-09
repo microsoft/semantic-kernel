@@ -297,16 +297,13 @@ internal static class Example12_SequentialPlanner
         {
             return kernel.Memory;
         }
-        else
-        {
-            var memoryStorage = new VolatileMemoryStore();
-            var textEmbeddingGenerator = new Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding.AzureTextEmbeddingGeneration(
-                modelId: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-                endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-                apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
-            var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
-            return memory;
-        }
+        var memoryStorage = new VolatileMemoryStore();
+        var textEmbeddingGenerator = new Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding.AzureTextEmbeddingGeneration(
+            modelId: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+            endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+            apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+        var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
+        return memory;
     }
 
     private static async Task<Plan> ExecutePlanAsync(
