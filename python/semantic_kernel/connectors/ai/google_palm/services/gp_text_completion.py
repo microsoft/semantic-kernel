@@ -48,32 +48,9 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             return response.result
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings, delay=0.1, 
-        output_words=1
+        self, prompt: str, request_settings: CompleteRequestSettings
     ):
-        """
-        Google PaLM does not support streaming, so the user still needs to wait
-        for PaLM to generate the response. This function simulates streaming
-        behavior. Delay controls the seconds to wait between each yield.
-        output_words controls the amount of words to yield each time if the 
-        number of responses is one, otherwise if the number of responses is 
-        greater than one, output_words controls the number of responses to 
-        yield each time. The user needs to print the results using an async for 
-        loop with flush=True.
-        """
-        response = await self._send_completion_request(prompt, request_settings)
-      
-        if request_settings.number_of_responses > 1:
-            for choice in response.candidates:
-                await asyncio.sleep(delay)
-                yield choice['output']
-        else:
-            response = response.result.split()
-            for i in range(0, len(response), output_words):
-                chunk = response[i:i+output_words]
-                chunk = ' '.join(chunk)
-                await asyncio.sleep(delay)
-                yield chunk
+        raise NotImplementedError("Google Palm API does not currently support streaming")
         
     async def _send_completion_request(
         self, prompt: str, request_settings: CompleteRequestSettings

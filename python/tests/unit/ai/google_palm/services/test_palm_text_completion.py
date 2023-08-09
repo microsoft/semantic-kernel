@@ -68,35 +68,3 @@ async def test_google_palm_text_completion_complete_async_call_with_parameters()
             candidate_count=settings.number_of_responses,
             top_p=settings.top_p,
         )
-
-@pytest.mark.asyncio
-async def test_google_palm_text_completion_complete_stream_async_call_with_parameters() -> None:
-    mock_response = MagicMock()
-    mock_response.result = "Example response"
-    mock_gp = MagicMock()
-    mock_gp.generate_text.return_value = mock_response
-    with patch (
-        "semantic_kernel.connectors.ai.google_palm.services.gp_text_completion.palm",
-        new=mock_gp,
-    ):
-        model_id = "test_model_id"
-        api_key = "test_api_key"
-        prompt = "hello world"
-        gp_text_completion = GooglePalmTextCompletion(
-            model_id=model_id,
-            api_key=api_key,
-        )
-        settings = CompleteRequestSettings()
-     
-        async for response in gp_text_completion.complete_stream_async(prompt, settings):
-            assert isinstance(response, str) and len(response) > 0
-
-        mock_gp.generate_text.assert_called_once_with(
-            model=model_id, 
-            prompt=prompt,
-            temperature=settings.temperature,
-            max_output_tokens=settings.max_tokens,
-            stop_sequences=None,
-            candidate_count=settings.number_of_responses,
-            top_p=settings.top_p,
-        )
