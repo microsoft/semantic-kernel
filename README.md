@@ -132,8 +132,8 @@ Getting Semantic Kernel deployed to Azure as web app service is easy with one-cl
 For a more hands-on overview, you can also check out the C# and Python Jupyter notebooks, starting
 from here:
 
-- [Getting Started with C# notebook](samples/notebooks/dotnet/00-getting-started.ipynb)
-- [Getting Started with Python notebook](samples/notebooks/python/00-getting-started.ipynb)
+- [Getting Started with C# notebook](dotnet/notebooks/00-getting-started.ipynb)
+- [Getting Started with Python notebook](python/notebooks/00-getting-started.ipynb)
 
 **Requirements:** C# notebooks require [.NET 7](https://dotnet.microsoft.com/download)
 and the VS Code [Polyglot extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode).
