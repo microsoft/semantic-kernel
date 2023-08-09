@@ -38,7 +38,7 @@ For OpenAI:
 ```json
 {
   "type": "openai",
-  "model": "text-davinci-003", // OpenAI model name
+  "model": "gpt-3.5-turbo", // OpenAI model name
   "apikey": "...", // OpenAI API Key
   "org": "" // only for OpenAI accounts with multiple orgs
 }

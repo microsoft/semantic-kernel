@@ -32,7 +32,7 @@ public static class Example42_KernelBuilder
     {
         string azureOpenAIKey = TestConfiguration.AzureOpenAI.ApiKey;
         string azureOpenAIEndpoint = TestConfiguration.AzureOpenAI.Endpoint;
-        string azureOpenAITextCompletionDeployment = TestConfiguration.AzureOpenAI.DeploymentName;
+        string azureOpenAIChatCompletionDeployment = TestConfiguration.AzureOpenAI.ChatDeploymentName;
         string azureOpenAIEmbeddingDeployment = TestConfiguration.AzureOpenAIEmbeddings.DeploymentName;
 
 #pragma warning disable CA1852 // Seal internal types
@@ -83,7 +83,7 @@ public static class Example42_KernelBuilder
         using var httpClient = new HttpClient();
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(
-            modelId: azureOpenAITextCompletionDeployment,
+            modelId: azureOpenAIChatCompletionDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
             httpClient,
@@ -102,8 +102,8 @@ public static class Example42_KernelBuilder
         var kernel4 = Kernel.Builder
             .WithLogger(NullLogger.Instance)
             .WithMemory(memory)
-            .WithAzureTextCompletionService(
-                deploymentName: azureOpenAITextCompletionDeployment,
+            .WithAzureChatCompletionService(
+                deploymentName: azureOpenAIChatCompletionDeployment,
                 endpoint: azureOpenAIEndpoint,
                 apiKey: azureOpenAIKey)
             .Build();
@@ -112,8 +112,8 @@ public static class Example42_KernelBuilder
         var kernel6 = Kernel.Builder
             .WithLogger(NullLogger.Instance)
             .WithMemoryStorage(memoryStorage) // Custom memory storage
-            .WithAzureTextCompletionService(
-                deploymentName: azureOpenAITextCompletionDeployment,
+            .WithAzureChatCompletionService(
+                deploymentName: azureOpenAIChatCompletionDeployment,
                 endpoint: azureOpenAIEndpoint,
                 apiKey: azureOpenAIKey) // This will be used when using AI completions
             .WithAzureTextEmbeddingGenerationService(
@@ -126,8 +126,8 @@ public static class Example42_KernelBuilder
         // The AI services are defined with the builder
 
         var kernel7 = Kernel.Builder
-            .WithAzureTextCompletionService(
-                deploymentName: azureOpenAITextCompletionDeployment,
+            .WithAzureChatCompletionService(
+                deploymentName: azureOpenAIChatCompletionDeployment,
                 endpoint: azureOpenAIEndpoint,
                 apiKey: azureOpenAIKey,
                 setAsDefault: true)
