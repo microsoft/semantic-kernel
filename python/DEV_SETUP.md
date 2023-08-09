@@ -21,7 +21,7 @@ AZURE_OPENAI_API_KEY=""
 We suggest adding a copy of the `.env` file under these folders:
 
 - [python/tests](tests)
-- [./notebooks](./notebooks/python).
+- [./notebooks](./notebooks).
 
 # System setup
 
