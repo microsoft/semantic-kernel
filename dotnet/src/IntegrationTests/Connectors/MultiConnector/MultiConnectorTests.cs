@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +17,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.Reliability;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -68,14 +67,19 @@ public sealed class MultiConnectorTests : IDisposable
     {
         // Arrange
 
+        var sw = Stopwatch.StartNew();
+
         using var cleanupToken = new CancellationTokenSource();
 
-        HttpRetryConfig httpRetryConfig = new() { MaxRetryCount = 0 };
-        DefaultHttpRetryHandlerFactory defaultHttpRetryHandlerFactory = new(httpRetryConfig);
+        var creditor = new CallRequestCostCreditor();
+
+        //HttpRetryConfig httpRetryConfig = new() { MaxRetryCount = 0 };
+        //DefaultHttpRetryHandlerFactory defaultHttpRetryHandlerFactory = new(httpRetryConfig);
 
         //We configure settings to enable analysis, and let the connector discover the best settings, updating on the fly and deleting analysis file 
         var settings = new MultiTextCompletionSettings()
         {
+            Creditor = creditor,
             AnalysisSettings = new MultiCompletionAnalysisSettings()
             {
                 EnableAnalysis = false,
@@ -99,10 +103,12 @@ public sealed class MultiConnectorTests : IDisposable
 
         var kernel = this.InitializeKernel(settings, durationWeight: durationWeight, costWeight: costWeight, cancellationToken: cleanupToken.Token);
 
-        var multiConnector = (MultiTextCompletion)kernel.GetService<ITextCompletion>();
+        //var multiConnector = (MultiTextCompletion)kernel.GetService<ITextCompletion>();
 
         // Import all sample skills available for demonstration purposes.
         //TestHelpers.ImportSampleSkills(kernel);
+
+        var prepareKernelTimeElapsed = sw.Elapsed;
 
         var skills = TestHelpers.GetSkills(kernel, skillNames);
         var planner = new SequentialPlanner(kernel,
@@ -124,30 +130,43 @@ public sealed class MultiConnectorTests : IDisposable
         TaskCompletionSource<OptimizationCompletedEventArgs> optimizationCompletedTaskSource = new();
 
         // Subscribe to the OptimizationCompleted event
-        multiConnector.OptimizationCompleted += (sender, args) =>
+        settings.OptimizationCompleted += (sender, args) =>
         {
             // Signal the completion of the optimization
             optimizationCompletedTaskSource.SetResult(args);
         };
 
-        multiConnector.Creditor!.Reset();
+        settings.Creditor!.Reset();
+
+        var planBuildingTimeElapsed = sw.Elapsed;
+
+        // Execute the plan once with primary connector
 
         var firstResult = await kernel.RunAsync(ctx.Variables, cleanupToken.Token, plan).ConfigureAwait(false);
 
-        var firstPassEffectiveCost = multiConnector.Creditor.OngoingCost;
+        var planRunOnceTimeElapsed = sw.Elapsed;
 
-        await optimizationCompletedTaskSource.Task.WaitAsync(cleanupToken.Token);
+        var firstPassEffectiveCost = settings.Creditor.OngoingCost;
+
+        //await optimizationCompletedTaskSource.Task.WaitAsync(cleanupToken.Token);
 
         // Get the optimization results
         var optimizationResults = await optimizationCompletedTaskSource.Task.ConfigureAwait(false);
 
+        var optimizationDoneElapsed = sw.Elapsed;
+
         //Re execute plan with suggested settings
 
+        settings.Creditor!.Reset();
+
         ctx = kernel.CreateNewContext();
+        plan = Plan.FromJson(planJson, ctx, true);
 
         var secondResult = await kernel.RunAsync(ctx.Variables, cleanupToken.Token, plan).ConfigureAwait(false);
 
-        var secondPassEffectiveCost = multiConnector.Creditor.OngoingCost;
+        var secondPassEffectiveCost = settings.Creditor.OngoingCost;
+
+        var planRunTwiceElapsed = sw.Elapsed;
 
         // Assert
 
@@ -245,8 +264,6 @@ public sealed class MultiConnectorTests : IDisposable
             oobaboogaCompletions.Add(oobaboogaNamedCompletion);
         }
 
-        var creditor = new CallRequestCostCreditor();
-
         var builder = Kernel.Builder
             .WithLogger(this._logger);
         //.WithMemoryStorage(new VolatileMemoryStore());
@@ -257,7 +274,6 @@ public sealed class MultiConnectorTests : IDisposable
             mainTextCompletion: openAiNamedCompletion,
             setAsDefault: true,
             analysisTaskCancellationToken: cancellationToken,
-            creditor: creditor,
             otherCompletions: oobaboogaCompletions.ToArray());
 
         var kernel = builder.Build();

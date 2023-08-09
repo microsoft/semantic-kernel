@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
@@ -60,6 +61,20 @@ public class MultiTextCompletionSettings
     /// Optionally transform the input prompts globally
     /// </summary>
     public PromptTransform? GlobalPromptTransform { get; set; }
+
+    /// <summary>
+    /// An optional creditor that will compute compound costs from the connectors settings and usage.
+    /// </summary>
+    public CallRequestCostCreditor? Creditor { get; set; }
+
+    public event EventHandler<OptimizationCompletedEventArgs>? OptimizationCompleted;
+
+    // Method to raise the event
+    internal virtual void OnOptimizationCompleted(OptimizationCompletedEventArgs analysisResult, ILogger? logger)
+    {
+        logger?.LogTrace(message: "OptimizationCompleted event raised");
+        this.OptimizationCompleted?.Invoke(this, analysisResult);
+    }
 
     /// <summary>
     /// Returns settings for a given prompt.
@@ -136,7 +151,9 @@ public class MultiTextCompletionSettings
         };
     }
 
-
+    /// <summary>
+    /// Static function that clones a <see cref="CompleteRequestSettings"/> object.
+    /// </summary>
     public static CompleteRequestSettings CloneRequestSettings(CompleteRequestSettings requestSettings)
     {
         return new CompleteRequestSettings()
@@ -152,6 +169,4 @@ public class MultiTextCompletionSettings
             TopP = requestSettings.TopP,
         };
     }
-
-
 }

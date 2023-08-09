@@ -35,9 +35,8 @@ public class ConnectorTest : TestEvent
     /// <summary>
     /// Helper to create connector test from completion components
     /// </summary>
-    public static ConnectorTest Create(string text, CompleteRequestSettings requestSettings, NamedTextCompletion textCompletion, string result, TimeSpan duration)
+    public static ConnectorTest Create(string text, CompleteRequestSettings requestSettings, NamedTextCompletion textCompletion, string result, TimeSpan duration, decimal textCompletionCost)
     {
-        decimal textCompletionCost = textCompletion.GetCost(text, result);
         var connectorTest = new ConnectorTest
         {
             Prompt = text,

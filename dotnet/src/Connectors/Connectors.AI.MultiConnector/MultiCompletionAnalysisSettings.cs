@@ -335,9 +335,10 @@ RESPONSE IS VALID? (true/false):
 
                 stopWatch.Stop();
                 var duration = stopWatch.Elapsed;
+                decimal textCompletionCost = namedTextCompletion.GetCost(adjustedPromptAndSettings.text, result);
 
                 // For the evaluation task. We don't keep the adjusted settings since prompt type matching is based on the original prompt
-                var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration);
+                var connectorTest = ConnectorTest.Create(originalTest.Prompt, originalTest.RequestSettings, namedTextCompletion, result, duration, textCompletionCost);
                 tests.Add(connectorTest);
 
                 logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);

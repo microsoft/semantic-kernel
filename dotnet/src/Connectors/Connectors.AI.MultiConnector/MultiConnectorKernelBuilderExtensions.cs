@@ -22,7 +22,6 @@ public static class MultiConnectorKernelBuilderExtensions
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="settings">An instance of the <see cref="MultiTextCompletionSettings"/> to configure the multi Text completion.</param>
     /// <param name="mainTextCompletion">The primary text completion to used by default for completion calls and vetting other completion providers.</param>
-    /// <param name="creditor">an optional cost counter that will compute the compound costs from settings and connector usage</param>
     /// <param name="analysisTaskCancellationToken">The cancellation token to use for the completion manager.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
@@ -31,7 +30,6 @@ public static class MultiConnectorKernelBuilderExtensions
     public static KernelBuilder WithMultiConnectorCompletionService(this KernelBuilder builder,
         MultiTextCompletionSettings settings,
         NamedTextCompletion mainTextCompletion,
-        CallRequestCostCreditor? creditor = null,
         CancellationToken? analysisTaskCancellationToken = null,
         string? serviceId = null,
         bool setAsDefault = false,
@@ -41,7 +39,6 @@ public static class MultiConnectorKernelBuilderExtensions
             settings,
             mainTextCompletion,
             analysisTaskCancellationToken,
-            creditor: creditor,
             logger: parameters.Logger,
             otherCompletions: otherCompletions), setAsDefault);
         return builder;

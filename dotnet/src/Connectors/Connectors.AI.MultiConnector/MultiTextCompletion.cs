@@ -25,24 +25,17 @@ public class MultiTextCompletion : ITextCompletion
     private readonly Channel<ConnectorTest> _connectorTestChannel;
 
     /// <summary>
-    /// An optional creditor that will compute compound costs from the connectors settings and usage.
-    /// </summary>
-    public CallRequestCostCreditor? Creditor { get; set; }
-
-    /// <summary>
     /// Initializes a new instance of the MultiTextCompletion class.
     /// </summary>
     /// <param name="settings">An instance of the <see cref="MultiTextCompletionSettings"/> to configure the multi Text completion.</param>
     /// <param name="mainTextCompletion">The primary text completion to used by default for completion calls and vetting other completion providers.</param>
     /// <param name="analysisTaskCancellationToken">The cancellation token to use for the completion manager.</param>
-    /// <param name="creditor">an optional cost counter that will compute the compound costs from settings and connector usage</param>
     /// <param name="logger">An optional logger for instrumentation.</param>
     /// <param name="otherCompletions">The secondary text completions that need vetting to be used for completion calls.</param>
-    public MultiTextCompletion(MultiTextCompletionSettings settings, NamedTextCompletion mainTextCompletion, CancellationToken? analysisTaskCancellationToken, CallRequestCostCreditor? creditor = null, ILogger? logger = null, params NamedTextCompletion[]? otherCompletions)
+    public MultiTextCompletion(MultiTextCompletionSettings settings, NamedTextCompletion mainTextCompletion, CancellationToken? analysisTaskCancellationToken, ILogger? logger = null, params NamedTextCompletion[]? otherCompletions)
     {
         this._settings = settings;
         this._logger = logger;
-        this.Creditor = creditor;
         this._textCompletions = new[] { mainTextCompletion }.Concat(otherCompletions ?? Array.Empty<NamedTextCompletion>()).ToArray();
         this._connectorTestChannel = Channel.CreateUnbounded<ConnectorTest>();
         this.StartManagementTask(analysisTaskCancellationToken ?? CancellationToken.None);
@@ -120,14 +113,14 @@ public class MultiTextCompletion : ITextCompletion
 
     private async Task ProcessTextCompletionResultsAsync(string text, CompleteRequestSettings requestSettings, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, Stopwatch stopWatch, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
     {
-        await this.ApplyCreditorCostsAsync(text, resultLazy, namedTextCompletionAndSettings.namedTextCompletion).ConfigureAwait(false);
+        var costDebited = await this.ApplyCreditorCostsAsync(text, resultLazy, namedTextCompletionAndSettings.namedTextCompletion).ConfigureAwait(false);
 
         if (namedTextCompletionAndSettings.namedTextCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis)
         {
             if (promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
             {
                 promptSettings.AddSessionPrompt(text);
-                await this.CollectResultForTestAsync(text, requestSettings, stopWatch, namedTextCompletionAndSettings, resultLazy, cancellationToken).ConfigureAwait(false);
+                await this.CollectResultForTestAsync(text, requestSettings, stopWatch, namedTextCompletionAndSettings, resultLazy, costDebited, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -137,27 +130,30 @@ public class MultiTextCompletion : ITextCompletion
         }
     }
 
-    private async Task ApplyCreditorCostsAsync(string text, AsyncLazy<string> resultLazy, NamedTextCompletion textCompletion)
+    private async Task<decimal> ApplyCreditorCostsAsync(string text, AsyncLazy<string> resultLazy, NamedTextCompletion textCompletion)
     {
-        if (this.Creditor != null)
+        decimal cost = 0;
+        if (this._settings.Creditor != null)
         {
             var result = await resultLazy.Value.ConfigureAwait(false);
-            var cost = textCompletion.GetCost(text, result);
-            this.Creditor.Credit(cost);
+            cost = textCompletion.GetCost(text, result);
+            this._settings.Creditor.Credit(cost);
         }
+
+        return cost;
     }
 
     /// <summary>
     /// Asynchronously collects results from a prompt call to evaluate connectors against the same prompt.
     /// </summary>
-    private async Task CollectResultForTestAsync(string text, CompleteRequestSettings requestSettings, Stopwatch stopWatch, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
+    private async Task CollectResultForTestAsync(string text, CompleteRequestSettings requestSettings, Stopwatch stopWatch, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, AsyncLazy<string> resultLazy, decimal textCompletionCost, CancellationToken cancellationToken)
     {
         var result = await resultLazy.Value.ConfigureAwait(false);
 
         var duration = stopWatch.Elapsed;
 
         // For the management task
-        ConnectorTest connectorTest = ConnectorTest.Create(text, requestSettings, namedTextCompletionAndSettings.namedTextCompletion, result, duration);
+        ConnectorTest connectorTest = ConnectorTest.Create(text, requestSettings, namedTextCompletionAndSettings.namedTextCompletion, result, duration, textCompletionCost);
         this.AppendConnectorTest(connectorTest);
     }
 
@@ -207,7 +203,7 @@ public class MultiTextCompletion : ITextCompletion
                 var analysisResult = await this._settings.AnalysisSettings.EvaluatePromptConnectorsAsync(testSeries, this._textCompletions, this._settings, this._logger, cancellationToken).ConfigureAwait(false);
 
                 // Raise the event after optimization is done
-                this.OnOptimizationCompleted(analysisResult);
+                this._settings.OnOptimizationCompleted(analysisResult, this._logger);
             }
         }
         catch (OperationCanceledException exception)
@@ -222,14 +218,6 @@ public class MultiTextCompletion : ITextCompletion
     }
 
     // Define the event
-    public event EventHandler<OptimizationCompletedEventArgs>? OptimizationCompleted;
-
-    // Method to raise the event
-    protected virtual void OnOptimizationCompleted(OptimizationCompletedEventArgs analysisResult)
-    {
-        this._logger?.LogTrace(message: "OptimizationCompleted event raised");
-        this.OptimizationCompleted?.Invoke(this, analysisResult);
-    }
 
     /// <summary>
     /// Appends a connector test to the test channel listened to in the Optimization long running task.
