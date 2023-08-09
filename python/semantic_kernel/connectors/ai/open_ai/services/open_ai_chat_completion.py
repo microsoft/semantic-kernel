@@ -67,7 +67,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._endpoint = endpoint
         self._log = log if log is not None else NullLogger()
         self._messages = []
-        self._function_calling_enabled = function_calling_enabled
+        self.function_calling_enabled = function_calling_enabled
 
     async def complete_chat_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
@@ -90,6 +90,12 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Tuple[Optional[str], Optional[Dict]], List[Tuple[Optional[str], Optional[Dict]]]
     ]:
         # TODO: tracking on token counts/etc.
+        if not self.function_calling_enabled:
+            self._log.warning(
+                "Function calling is not enabled, using regular chat completion."
+            )
+            return await self.complete_chat_async(messages, request_settings)
+
         response = await self._send_chat_request(
             messages, request_settings, False, functions
         )

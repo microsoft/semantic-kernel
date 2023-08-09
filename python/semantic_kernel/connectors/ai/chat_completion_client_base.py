@@ -2,17 +2,18 @@
 
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+    from semantic_kernel.semantic_functions.chat_prompt_template import ChatMessage
 
 
 class ChatCompletionClientBase(ABC):
     @abstractmethod
     async def complete_chat_async(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List["ChatMessage"],
         settings: "ChatRequestSettings",
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
@@ -20,7 +21,7 @@ class ChatCompletionClientBase(ABC):
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is
+            messages {List[ChatMessage]} -- A list of tuples, where each tuple is
                 comprised of a speaker ID and a message.
             settings {ChatRequestSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging.
@@ -33,7 +34,7 @@ class ChatCompletionClientBase(ABC):
     @abstractmethod
     async def complete_chat_stream_async(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List["ChatMessage"],
         settings: "ChatRequestSettings",
         logger: Optional[Logger] = None,
     ):
@@ -48,5 +49,31 @@ class ChatCompletionClientBase(ABC):
 
         Yields:
             A stream representing the response(s) from the LLM.
+        """
+        pass
+
+    @abstractmethod
+    async def complete_chat_with_functions_async(
+        self,
+        messages: List["ChatMessage"],
+        functions: List[Dict[str, Any]],
+        request_settings: "ChatRequestSettings",
+    ) -> Union[
+        Tuple[Optional[str], Optional[Dict]], List[Tuple[Optional[str], Optional[Dict]]]
+    ]:
+        """
+        This is the method that is called from the kernel to get a response from a chat-optimized LLM.
+
+        Arguments:
+            messages {List[ChatMessage]} -- A list of tuples, where each tuple is
+                comprised of a speaker ID and a message.
+            functions {List[Dict[str, Any]]} -- A list of functions that the endpoint can refer to.
+            settings {ChatRequestSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging.
+
+        Returns:
+            Union[
+                Tuple[Optional[str], Optional[Dict]], List[Tuple[Optional[str], Optional[Dict]]]
+            ] -- A tuple or list of tuples consisting of the completion message and the function_call result.
         """
         pass

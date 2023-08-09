@@ -495,7 +495,10 @@ class SKFunction(SKFunctionBase):
         service = (
             self._ai_service if self._ai_service is not None else self._chat_service
         )
-        new_context = await self._function(service, settings, context, functions)
+        if service.function_calling_enabled and functions:
+            new_context = await self._function(service, settings, context, functions)
+        else:
+            new_context = await self._function(service, context, settings)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 
@@ -509,8 +512,6 @@ class SKFunction(SKFunctionBase):
         if not hasattr(delegate, "__call__"):
             delegate = delegate.__func__
         new_context = await delegate(self._function, context)
-
-        # TODO: parse new_context to check if function call in return value
 
         return new_context
 

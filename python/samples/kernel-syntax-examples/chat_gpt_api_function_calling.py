@@ -2,10 +2,9 @@
 
 import asyncio
 
-from core_skills_function_call.math_skill import MathSkill
-
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.core_skills import MathSkill
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -23,7 +22,11 @@ api_version = "2023-07-01-preview"
 kernel.add_chat_service(
     "chat-gpt",
     sk_oai.AzureChatCompletion(
-        deployment_name, endpoint, api_key, api_version=api_version
+        deployment_name,
+        endpoint,
+        api_key,
+        api_version=api_version,
+        function_calling_enabled=True,
     ),
 )
 
