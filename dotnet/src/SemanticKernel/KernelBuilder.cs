@@ -20,7 +20,6 @@ public sealed class KernelBuilder
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILogger _logger = NullLogger.Instance;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
-    private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
 
@@ -135,10 +134,23 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
     /// <returns>Updated kernel builder including the retry handler factory.</returns>
+
+    [Obsolete("This method is deprecated, use WithHandlerFactory instead")]
     public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
     {
+        return this.WithHttpHandlerFactory(httpHandlerFactory);
+    }
+
+    /// <summary>
+    /// Add a custom handler factory to the kernel to be built.
+    /// </summary>
+    /// <param name="httpHandlerFactory">Custom http handler factory to add.</param>
+    /// <returns>Updated kernel builder including the custom handler factory.</returns>
+    public KernelBuilder WithHttpHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
+    {
         Verify.NotNull(httpHandlerFactory);
-        this._httpHandlerFactory = httpHandlerFactory;
+
+        this._config.SetHttpHandlerFactory(httpHandlerFactory);
         return this;
     }
 
