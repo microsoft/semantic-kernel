@@ -11,6 +11,7 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     OpenAIChatCompletion,
 )
+from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 
 CODE_BLOCK_PATTERN = r"```(?:.*\n)?([\s\S]*?)(?:```*)"
@@ -97,6 +98,10 @@ class CodeSkill:
         :param code: Python code to execute
         :return: None
         """
+
+        # Get underlying result if from SKContext (occurs when using with code_async)
+        if type(code) == SKContext:
+            code = code.result
 
         return await self.custom_execute_async(code)
 
