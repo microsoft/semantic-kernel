@@ -268,10 +268,12 @@ RESPONSE IS VALID? (true/false):
 
     private async Task<List<ConnectorTest>> RunConnectorTestsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
     {
-        ConcurrentBag<ConnectorTest> tests;
+        ConcurrentBag<ConnectorTest> tests = new();
         logger?.LogTrace("Starting running connector tests from {0} original prompts", originalTests.Count);
 
-        tests = new ConcurrentBag<ConnectorTest>();
+        var tasks = new List<Task>();
+        using SemaphoreSlim semaphore = new(this.MaxDegreeOfParallelismConnectorTests);
+
         foreach (ConnectorTest originalTest in originalTests)
         {
             logger?.LogTrace("Starting running tests for prompt:\n {0} ", originalTest.Prompt);
@@ -281,74 +283,57 @@ RESPONSE IS VALID? (true/false):
             // Generate tests
             var connectorsToTest = promptSettings.GetCompletionsToTest(originalTest, namedTextCompletions);
 
-            connectorsToTest.AsParallel().WithDegreeOfParallelism(this.MaxDegreeOfParallelismConnectorTests).ForAll(async namedTextCompletion =>
+            foreach (var namedTextCompletion in connectorsToTest)
             {
-                logger?.LogTrace("Running Tests for connector {0} ", namedTextCompletion.Name);
-
-                for (int i = 0; i < this.NbPromptTests; i++)
+                tasks.Add(Task.Run(async () =>
                 {
-                    var stopWatch = Stopwatch.StartNew();
-                    string result = "";
+                    await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
-                        var newRequestSettings = namedTextCompletion.AdjustRequestSettings(originalTest.Prompt, originalTest.RequestSettings, logger);
-                        var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, newRequestSettings, cancellationToken).ConfigureAwait(false);
-
-                        var firstResult = completions[0];
-
-                        result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-
-                        stopWatch.Stop();
-                        var duration = stopWatch.Elapsed;
-
-                        // For the management task
-                        var connectorTest = ConnectorTest.Create(originalTest.Prompt, newRequestSettings, namedTextCompletion, result, duration);
-                        tests.Add(connectorTest);
-
-                        logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
+                        await this.RunTestForConnectorAsync(namedTextCompletion, originalTest, tests, logger, cancellationToken).ConfigureAwait(false);
                     }
-                    catch (AIException exception)
+                    finally
                     {
-                        logger?.LogError(exception, "Failed to run test prompt with connector {2}\nException:{0}Prompt:\n{1} ", exception, exception.ToString(), originalTest.Prompt, namedTextCompletion.Name);
+                        semaphore.Release();
                     }
-                }
-            });
-
-            //foreach (NamedTextCompletion namedTextCompletion in connectorsToTest)
-            //{
-            //    logger?.LogTrace("Running Tests for connector {0} ", namedTextCompletion.Name);
-
-            //    for (int i = 0; i < this.NbPromptTests; i++)
-            //    {
-            //        var stopWatch = Stopwatch.StartNew();
-            //        string result = "";
-            //        try
-            //        {
-            //            var newRequestSettings = namedTextCompletion.AdjustRequestSettings(originalTest.Prompt, originalTest.RequestSettings, logger);
-            //            var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, newRequestSettings, cancellationToken).ConfigureAwait(false);
-
-            //            var firstResult = completions[0];
-
-            //            result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
-
-            //            stopWatch.Stop();
-            //            var duration = stopWatch.Elapsed;
-
-            //            // For the management task
-            //            var connectorTest = ConnectorTest.Create(originalTest.Prompt, newRequestSettings, namedTextCompletion, result, duration);
-            //            tests.Add(connectorTest);
-
-            //            logger?.LogTrace("Generated Test results for connector {0}, duration: {1}\nprompt:{2}\nresult:{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
-            //        }
-            //        catch (AIException exception)
-            //        {
-            //            logger?.LogError(exception, "Failed to run test prompt with connector {2}\nException:{0}Prompt:\n{1} ", exception, exception.ToString(), originalTest.Prompt, namedTextCompletion.Name);
-            //        }
-            //    }
-            //}
+                }, cancellationToken));
+            }
         }
 
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+
         return tests.ToList();
+    }
+
+    private async Task RunTestForConnectorAsync(NamedTextCompletion namedTextCompletion, ConnectorTest originalTest, ConcurrentBag<ConnectorTest> tests, ILogger? logger, CancellationToken cancellationToken)
+    {
+        logger?.LogTrace("Running Tests for connector {0} ", namedTextCompletion.Name);
+
+        for (int i = 0; i < this.NbPromptTests; i++)
+        {
+            var stopWatch = Stopwatch.StartNew();
+            try
+            {
+                var newRequestSettings = namedTextCompletion.AdjustRequestSettings(originalTest.Prompt, originalTest.RequestSettings, logger);
+                var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(originalTest.Prompt, newRequestSettings, cancellationToken).ConfigureAwait(false);
+
+                var firstResult = completions[0];
+                string result = await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false) ?? string.Empty;
+
+                stopWatch.Stop();
+                var duration = stopWatch.Elapsed;
+
+                // For the management task
+                var connectorTest = ConnectorTest.Create(originalTest.Prompt, newRequestSettings, namedTextCompletion, result, duration);
+                tests.Add(connectorTest);
+
+                logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
+            }
+            catch (AIException exception)
+            {
+                logger?.LogError(exception, "Failed to run test prompt with connector {2}\nException:{0}Prompt:\n{1} ", exception, exception.ToString(), originalTest.Prompt, namedTextCompletion.Name);
+            }
+        }
     }
 
     private bool SaveConnectorTestsReturnNeedEvaluate(ILogger? logger, List<ConnectorTest> tests, ref OptimizationCompletedEventArgs toReturn)
@@ -379,33 +364,57 @@ RESPONSE IS VALID? (true/false):
 
     private async Task<List<ConnectorPromptEvaluation>> RunConnectorTestsEvaluationsAsync(List<ConnectorTest> tests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
     {
-        List<ConnectorPromptEvaluation> currentEvaluations;
-        currentEvaluations = new List<ConnectorPromptEvaluation>();
+        var currentEvaluations = new ConcurrentBag<ConnectorPromptEvaluation>();
         logger?.LogTrace("Generating Evaluations from prompt test results");
-        foreach (ConnectorTest connectorTest in tests)
+
+        var tasks = new List<Task>();
+        using SemaphoreSlim semaphore = new(this.MaxDegreeOfParallelismEvaluations);
+
+        foreach (var connectorTest in tests)
         {
-            NamedTextCompletion? vettingConnector = null;
-            if (this.UseSelfVetting)
+            tasks.Add(Task.Run(async () =>
             {
-                vettingConnector = namedTextCompletions.FirstOrDefault(c => c.Name == connectorTest.ConnectorName);
-            }
-
-            // Use primary connector for vetting by default
-            vettingConnector ??= namedTextCompletions[0];
-
-            var evaluation = await this.EvaluateConnectorTestWithCompletionAsync(vettingConnector, connectorTest, settings, logger, cancellationToken).ConfigureAwait(false);
-            if (evaluation == null)
-            {
-                logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
-                break;
-            }
-
-            currentEvaluations.Add(evaluation);
-
-            logger?.LogDebug("Evaluated connector {0}, Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}", evaluation.Test.ConnectorName, evaluation.IsVetted, evaluation.Test.Prompt, evaluation.Test.Result);
+                await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    var evaluation = await this.EvaluateConnectorTestAsync(connectorTest, namedTextCompletions, settings, logger, cancellationToken).ConfigureAwait(false);
+                    if (evaluation != null)
+                    {
+                        currentEvaluations.Add(evaluation);
+                    }
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }, cancellationToken));
         }
 
-        return currentEvaluations;
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        return currentEvaluations.ToList();
+    }
+
+    private async Task<ConnectorPromptEvaluation?> EvaluateConnectorTestAsync(ConnectorTest connectorTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
+    {
+        NamedTextCompletion? vettingConnector = null;
+        if (this.UseSelfVetting)
+        {
+            vettingConnector = namedTextCompletions.FirstOrDefault(c => c.Name == connectorTest.ConnectorName);
+        }
+
+        // Use primary connector for vetting by default
+        vettingConnector ??= namedTextCompletions[0];
+
+        var evaluation = await this.EvaluateConnectorTestWithCompletionAsync(vettingConnector, connectorTest, settings, logger, cancellationToken).ConfigureAwait(false);
+        if (evaluation == null)
+        {
+            logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
+        }
+
+        logger?.LogDebug("Evaluated connector {0}, Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}", evaluation?.Test.ConnectorName, evaluation?.IsVetted, evaluation?.Test.Prompt, evaluation?.Test.Result);
+
+        return evaluation;
     }
 
     private bool LockLoadApplySaveProbeNext(ILogger? logger, ref OptimizationCompletedEventArgs analysisAndSettings, Func<MultiCompletionAnalysis, bool> updateAndProbeTimespan)

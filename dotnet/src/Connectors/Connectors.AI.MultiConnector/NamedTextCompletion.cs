@@ -34,6 +34,11 @@ public class NamedTextCompletion
     public Func<double, double>? TemperatureTransform { get; set; }
 
     /// <summary>
+    /// The model might support a different range of settings than SK. This optional function can help keep the settings in the model's range.
+    /// </summary>
+    public Func<CompleteRequestSettings, CompleteRequestSettings>? RequestSettingsTransform { get; set; }
+
+    /// <summary>
     /// The strategy to ensure request settings max token don't exceed the model's total max token.
     /// </summary>
     public MaxTokensAdjustment MaxTokensAdjustment { get; set; } = MaxTokensAdjustment.Percentage;
@@ -143,6 +148,12 @@ public class NamedTextCompletion
                 toReturn.Temperature = newTemperature;
                 logger?.LogDebug("Changed temperature from {0} to {1}", requestSettings.Temperature, newTemperature);
             }
+        }
+
+        if (this.RequestSettingsTransform != null)
+        {
+            toReturn = this.RequestSettingsTransform(requestSettings);
+            logger?.LogDebug("Applied request settings transform");
         }
 
         return toReturn;

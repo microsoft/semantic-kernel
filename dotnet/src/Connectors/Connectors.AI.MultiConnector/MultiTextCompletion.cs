@@ -55,7 +55,12 @@ public class MultiTextCompletion : ITextCompletion
 
         var completions = await textCompletion.TextCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
 
-        var resultLazy = new AsyncLazy<string>(() => completions[0].GetCompletionAsync(cancellationToken), cancellationToken);
+        var resultLazy = new AsyncLazy<string>(() =>
+        {
+            var toReturn = completions[0].GetCompletionAsync(cancellationToken);
+            stopWatch.Stop();
+            return toReturn;
+        }, cancellationToken);
 
         //await this.ApplyCreditorCostsAsync(text, resultLazy, textCompletion).ConfigureAwait(false);
 
@@ -95,6 +100,7 @@ public class MultiTextCompletion : ITextCompletion
                 break;
             }
 
+            stopWatch.Stop();
             return sb.ToString();
         }, cancellationToken);
 
@@ -140,7 +146,7 @@ public class MultiTextCompletion : ITextCompletion
 
         if (this._settings.LogResult)
         {
-            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync:\nPROMPT:\n{0}\nRESULT:\n{1}", text, await resultLazy.Value.ConfigureAwait(false));
+            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync: {0}: duration: \nPROMPT:\n{1}\nRESULT:\n{2}", textCompletion.Name, text, await resultLazy.Value.ConfigureAwait(false));
         }
     }
 
@@ -161,7 +167,6 @@ public class MultiTextCompletion : ITextCompletion
     {
         var result = await resultLazy.Value.ConfigureAwait(false);
 
-        stopWatch.Stop();
         var duration = stopWatch.Elapsed;
 
         // For the management task

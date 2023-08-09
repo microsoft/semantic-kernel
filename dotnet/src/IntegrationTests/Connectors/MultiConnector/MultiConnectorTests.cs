@@ -82,6 +82,7 @@ public sealed class MultiConnectorTests : IDisposable
                 MaxInstanceNb = 1,
                 SuggestionPeriod = TimeSpan.FromMilliseconds(1),
                 AnalysisDelay = TimeSpan.FromMilliseconds(10),
+                MaxDegreeOfParallelismConnectorTests = 1,
                 UpdateSuggestedSettings = true,
                 DeleteAnalysisFile = true,
                 SaveSuggestedSettings = false
@@ -217,7 +218,23 @@ public sealed class MultiConnectorTests : IDisposable
                 CostPerRequest = oobaboogaConnector.CostPerRequest,
                 CostPer1000Token = oobaboogaConnector.CostPer1000Token,
                 TokenCountFunc = tokeCountFunction,
-                TemperatureTransform = d => d == 0 ? 0.00001 : d,
+                TemperatureTransform = d => d == 0 ? 0.01 : d,
+                //RequestSettingsTransform = requestSettings =>
+                //{
+                //    var newRequestSettings = new CompleteRequestSettings()
+                //    {
+                //        MaxTokens = requestSettings.MaxTokens,
+                //        ResultsPerPrompt = requestSettings.ResultsPerPrompt,
+                //        ChatSystemPrompt = requestSettings.ChatSystemPrompt,
+                //        FrequencyPenalty = requestSettings.FrequencyPenalty,
+                //        PresencePenalty = 0.3,
+                //        StopSequences = requestSettings.StopSequences,
+                //        Temperature = 0.7,
+                //        TokenSelectionBiases = requestSettings.TokenSelectionBiases,
+                //        TopP = 0.9,
+                //    };
+                //    return newRequestSettings;
+                //}
             };
             oobaboogaCompletions.Add(oobaboogaNamedCompletion);
         }

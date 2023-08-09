@@ -28,7 +28,7 @@ public class ArithmeticCompletionService : ITextCompletion
         var tempOperation = ArithmeticEngine.GeneratePrompt(ArithmeticOperation.Add, 1, 1);
         var tempResult = "2";
         var vettingParams = this.MultiTextCompletionSettings.AnalysisSettings.GetVettingPrompt(tempOperation, tempResult);
-        return this.MultiTextCompletionSettings.GetPromptSettings(vettingParams.vettingPrompt, vettingParams.vettingRequestSettings);
+        return this.MultiTextCompletionSettings.GetPromptSettings(vettingParams.vettingPrompt, vettingParams.vettingRequestSettings, out _);
     }
 
     public PromptMultiConnectorSettings VettingPromptSettings { get; set; }
