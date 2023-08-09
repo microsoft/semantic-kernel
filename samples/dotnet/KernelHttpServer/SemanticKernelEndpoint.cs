@@ -163,7 +163,6 @@ public class SemanticKernelEndpoint
         }
         catch (KernelException e)
         {
-            context.Fail(e.Message, e);
             return await ResponseErrorWithMessageAsync(req, context);
         }
 
@@ -174,6 +173,6 @@ public class SemanticKernelEndpoint
     {
         return result.LastException is AIException aiException && aiException.Detail is not null
             ? await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, string.Concat(aiException.Message, " - Detail: " + aiException.Detail))
-            : await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
+            : await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastException!.Message);
     }
 }
