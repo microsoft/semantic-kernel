@@ -58,34 +58,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
 
     async def complete_chat_stream_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings,
-        delay=0.1, output_words=1, context: Optional[str] = None
+        context: Optional[str] = None
     ):
-        """
-        Google PaLM does not support streaming, so the user still needs to wait
-        for PaLM to generate the response. This function simulates streaming
-        behavior. Delay controls the seconds to wait between each yield.
-        output_words controls the amount of words to yield each time if the 
-        number of responses is one, otherwise if the number of responses is 
-        greater than one, output_words controls the number of responses to 
-        yield each time. The user needs to print the results using an async for 
-        loop with flush=True.
-        """
-        response = await self._send_chat_request(messages, request_settings, context)
-
-        if request_settings.number_of_responses > 1:
-            for choice in response.candidates:
-                await asyncio.sleep(delay)
-                yield choice['output'] if choice['output'] is not None else "I don't know."
-        else:
-            if response.last is None:
-                response = "I don't know.".split() # PaLM returns None if it doesn't know
-            else:
-                response = response.last.split()
-            for i in range(0, len(response), output_words):
-                chunk = response[i:i+output_words]
-                chunk = " ".join(chunk)
-                await asyncio.sleep(delay)
-                yield chunk        
+        raise NotImplementedError("Google Palm API does not currently support streaming")      
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings
@@ -114,37 +89,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 return response.last
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings, delay=0.1,
-        output_words=1
+        self, prompt: str, request_settings: CompleteRequestSettings
     ):
-        prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases,
-        )
-        response = await self._send_chat_request(
-            prompt_to_message, chat_settings
-            )
-        
-        if request_settings.number_of_responses > 1:
-            for choice in response.candidates:
-                await asyncio.sleep(delay)
-                yield choice['output'] if choice['output'] is not None else "I don't know."
-        else:
-            if response.last is None:
-                response = "I don't know.".split() # PaLM returns None if it doesn't know
-            else:
-                response = response.last.split()
-            for i in range(0, len(response), output_words):
-                chunk = response[i:i+output_words]
-                chunk = " ".join(chunk)
-                await asyncio.sleep(delay)
-                yield chunk
+        raise NotImplementedError("Google Palm API does not currently support streaming")
 
     async def _send_chat_request(
         self,
@@ -159,7 +106,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         conversation has not been initiated yet, it is assumed that chat history
         is needed for context. All messages preceding the last message will be 
         utilized for context. This also enables Google PaLM to utilize memory 
-        and skills, which are stored in the messages parameter as system 
+        and skills, which should be stored in the messages parameter as system 
         messages.
 
         Arguments:
@@ -169,13 +116,12 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
             to ground the response. If a system message is provided, it will be
             used as context.
             examples {ExamplesOptions} -- 	Examples of what the model should 
-            generate.
-            This includes both the user input and the response that the model 
-            should emulate.
-            These examples are treated identically to conversation messages 
-            except that they take precedence over the history in messages: If 
-            the total input size exceeds the model's input_token_limit the input 
-            will be truncated. Items will be dropped from messages before examples
+            generate. This includes both the user input and the response that 
+            the model should emulate. These examples are treated identically to 
+            conversation messages except that they take precedence over the 
+            history in messages: If the total input size exceeds the model's 
+            input_token_limit the input will be truncated. Items will be dropped 
+            from messages before examples
             See: https://developers.generativeai.google/api/python/google/generativeai/types/ExampleOptions
             prompt {MessagePromptOptions} -- 	You may pass a 
             types.MessagePromptOptions instead of a setting context/examples/messages, 

@@ -67,35 +67,3 @@ async def test_google_palm_text_completion_complete_chat_async_call_with_paramet
             prompt=None,
             messages=prompt[-1][1],
         )
-
-@pytest.mark.asyncio
-async def test_google_palm_text_completion_complete_chat_stream_async_call_with_parameters() -> None:
-    mock_response = MagicMock()
-    mock_response.last = "Example response"
-    mock_gp = MagicMock()
-    mock_gp.chat.return_value = mock_response
-    with patch (
-        "semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion.palm",
-        new=mock_gp,
-    ):
-        model_id = "test_model_id"
-        api_key = "test_api_key"
-        prompt = [("user", "hello world")]
-        gp_chat_completion = GooglePalmChatCompletion(
-            model_id=model_id,
-            api_key=api_key,
-        )
-        settings = ChatRequestSettings()
-        async for response in gp_chat_completion.complete_chat_stream_async(prompt, settings):
-            assert isinstance(response, str) and len(response) > 0
-
-        mock_gp.chat.assert_called_once_with(
-            model=model_id,
-            context='',
-            examples=None,
-            temperature=settings.temperature,
-            candidate_count=settings.number_of_responses,
-            top_p=settings.top_p,
-            prompt=None,
-            messages=prompt[-1][1],
-        )
