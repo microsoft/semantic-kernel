@@ -98,7 +98,7 @@ class VolatileMemoryStoreTests {
         assertThrows(
                 NullPointerException.class,
                 () -> this._db.createCollectionAsync(collection).block(),
-                "Should not be able to create duplicate collection");
+                "Should not be able to create collection with null name");
     }
 
     @Test

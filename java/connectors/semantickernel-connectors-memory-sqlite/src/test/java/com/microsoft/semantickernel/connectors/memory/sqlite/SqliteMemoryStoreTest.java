@@ -2,182 +2,955 @@
 package com.microsoft.semantickernel.connectors.memory.sqlite;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
+import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
-
-import org.junit.jupiter.api.Assertions;
+import com.microsoft.semantickernel.memory.MemoryStore;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SqliteMemoryStoreTest {
 
-    private SqliteMemoryStore connect() throws SQLException {
-        SqliteMemoryStore memoryStore = (SqliteMemoryStore) new SqliteMemoryStore.Builder().build();
-        memoryStore.connectAsync(":memory:").block();
-        return memoryStore;
+  private MemoryStore _db; 
+  
+  private int _collectionNum = 0;
+
+  private static final String NULL_ADDITIONAL_METADATA = null;
+  private static final String NULL_KEY = null;
+  private static final ZonedDateTime NULL_TIMESTAMP = null;
+
+
+  @BeforeEach
+  void setUp() throws SQLException {
+    _db = new SqliteMemoryStore.Builder().build();
+    ((SqliteMemoryStore) _db).connectAsync(":memory:").block();
+  }
+
+  private Collection<MemoryRecord> createBatchRecords(int numRecords) {
+    assertTrue(numRecords % 2 == 0, "Number of records must be even");
+    assertTrue(numRecords > 0, "Number of records must be greater than 0");
+
+    List<MemoryRecord> records = new ArrayList<>(numRecords);
+    for (int i = 0; i < numRecords / 2; i++) {
+      MemoryRecord testRecord =
+          MemoryRecord.localRecord(
+              "test" + i,
+              "text" + i,
+              "description" + i,
+              new Embedding(Arrays.asList(1f, 1f, 1f)),
+              NULL_ADDITIONAL_METADATA,
+              NULL_KEY,
+              NULL_TIMESTAMP);
+      records.add(testRecord);
     }
 
-    private static int collectionNum = 0;
-
-    private String getNewCollectionName() {
-        collectionNum++;
-        return "test_collection_" + collectionNum;
+    for (int i = numRecords / 2; i < numRecords; i++) {
+      MemoryRecord testRecord =
+          MemoryRecord.referenceRecord(
+              "test" + i,
+              "sourceName" + i,
+              "description" + i,
+              new Embedding(Arrays.asList(1f, 2f, 3f)),
+              NULL_ADDITIONAL_METADATA,
+              NULL_KEY,
+              NULL_TIMESTAMP);
+      records.add(testRecord);
     }
 
-    @Test
-    public void testCreation() throws SQLException {
-        SqliteMemoryStore memory = connect();
+    return records;
+  }
+
+  @Test
+  void initializeDbConnectionSucceeds() {
+    assertNotNull(this._db);
+  }
+
+  @Test
+  void itCanCreateAndGetCollectionAsync() {
+    // Arrange
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+
+    // Act
+    this._db.createCollectionAsync(collection).block();
+    Collection<String> collections = this._db.getCollectionsAsync().block();
+
+    // Assert
+    assertNotNull(collections);
+    assertFalse(collections.isEmpty());
+    assertTrue(collections.contains(collection));
+  }
+
+  @Test
+  void itHandlesExceptionsWhenCreatingCollectionAsync() {
+    // Arrange
+    String collection = null;
+
+    // Assert
+    assertThrows(
+        NullPointerException.class,
+        () -> this._db.createCollectionAsync(collection).block(),
+        "Should not be able to create collection with null name");
+  }
+
+  @Test
+  void itCannotInsertIntoNonExistentCollectionAsync() {
+
+    // Arrange
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test",
+            "text",
+            "description",
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+
+    // Assert
+    assertThrows(
+        MemoryException.class,
+        () -> this._db.upsertAsync(collection, testRecord).block(),
+        "Should not be able to insert into a non-existent collection");
+  }
+
+  @Test
+  void getAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync() {
+    // Arrange
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test",
+            "text",
+            "description",
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+
+    // Act
+    this._db.createCollectionAsync(collection).block();
+    String key = this._db.upsertAsync(collection, testRecord).block();
+    MemoryRecord actualDefault = this._db.getAsync(collection, key, false).block();
+    MemoryRecord actualWithEmbedding = this._db.getAsync(collection, key, true).block();
+
+    // Assert
+    assertNotNull(actualDefault);
+    assertNotNull(actualDefault.getEmbedding());
+    assertNotNull(actualDefault.getEmbedding().getVector());
+    assertTrue(actualDefault.getEmbedding().getVector().isEmpty());
+    assertNotNull(actualWithEmbedding);
+    assertNotNull(actualWithEmbedding.getEmbedding());
+    assertNotNull(actualWithEmbedding.getEmbedding().getVector());
+    assertFalse(actualWithEmbedding.getEmbedding().getVector().isEmpty());
+    assertNotEquals(testRecord, actualDefault);
+    assertEquals(testRecord.getMetadata(), actualWithEmbedding.getMetadata());
+    assertEquals(testRecord.getEmbedding().getVector(), actualWithEmbedding.getEmbedding().getVector());
+  }
+
+  @Test
+  void itCanUpsertAndRetrieveARecordWithNoTimestampAsync() {
+    // Arrange
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test",
+            "text",
+            "description",
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+
+    // Act
+    this._db.createCollectionAsync(collection).block();
+    String key = this._db.upsertAsync(collection, testRecord).block();
+    MemoryRecord actual = this._db.getAsync(collection, key, true).block();
+
+    // Assert
+    assertNotNull(actual);
+    assertEquals(testRecord.getMetadata(), actual.getMetadata());
+    assertEquals(testRecord.getEmbedding().getVector(), actual.getEmbedding().getVector());
+  }
+
+  @Test
+  void itCanUpsertAndRetrieveARecordWithTimestampAsync() {
+    // Arrange
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test",
+            "text",
+            "description",
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            ZonedDateTime.now(ZoneId.of("UTC")));
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+
+    // Act
+    this._db.createCollectionAsync(collection).block();
+    String key = this._db.upsertAsync(collection, testRecord).block();
+    MemoryRecord actual = this._db.getAsync(collection, key, true).block();
+
+    // Assert
+    assertNotNull(actual);
+    assertEquals(testRecord.getMetadata(), actual.getMetadata());
+    assertEquals(testRecord.getEmbedding().getVector(), actual.getEmbedding().getVector());
+  }
+
+  @Test
+  void upsertReplacesExistingRecordWithSameIdAsync() {
+    // Arrange
+    String commonId = "test";
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            commonId,
+            "text",
+            "description",
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    MemoryRecord testRecord2 =
+        MemoryRecord.localRecord(
+            commonId,
+            "text2",
+            "description2",
+            new Embedding(Arrays.asList(1f, 2f, 4f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+
+    // Act
+    this._db.createCollectionAsync(collection).block();
+    String key = this._db.upsertAsync(collection, testRecord).block();
+    String key2 = this._db.upsertAsync(collection, testRecord2).block();
+    MemoryRecord actual = this._db.getAsync(collection, key, true).block();
+
+    // Assert
+    assertNotNull(actual);
+    assertNotEquals(testRecord2, actual);
+    assertEquals(key, key2);
+    assertEquals(testRecord2.getMetadata(), actual.getMetadata());
+    assertEquals(testRecord2.getEmbedding().getVector(), actual.getEmbedding().getVector());
+  }
+
+  @Test
+  void existingRecordCanBeRemovedAsync() {
+    // Arrange
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test",
+            "text",
+            "description",
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+
+    // Act
+    this._db.createCollectionAsync(collection).block();
+    String key = this._db.upsertAsync(collection, testRecord).block();
+    assertNotNull(key);
+    this._db.removeAsync(collection, key).block();
+    MemoryRecord actual = this._db.getAsync(collection, key, false).block();
+
+    // Assert
+    assertNull(actual);
+  }
+
+  @Test
+  void removingNonExistingRecordDoesNothingAsync() {
+    // Arrange
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+
+    // Act
+    this._db.removeAsync(collection, "key").block();
+    MemoryRecord actual = this._db.getAsync(collection, "key", false).block();
+
+    // Assert
+    assertNull(actual);
+  }
+
+  @Test
+  void itCanListAllDatabaseCollectionsAsync() {
+    // Arrange
+    int numCollections = 3;
+    String[] testCollections =
+        IntStream.range(this._collectionNum, this._collectionNum += numCollections)
+            .mapToObj(i -> "test_collection" + i)
+            .toArray(String[]::new);
+
+    Flux.fromArray(testCollections)
+        .concatMap(collection -> this._db.createCollectionAsync(collection))
+        .blockLast();
+
+    // Act
+    Collection<String> collections = this._db.getCollectionsAsync().block();
+
+    // Assert
+    assertNotNull(collections);
+    assertEquals(numCollections, collections.size());
+    for (String collection : testCollections) {
+      assertTrue(
+          collections.contains(collection),
+          "Collections does not contain the newly-created collection " + collection);
+    }
+  }
+
+  @Test
+  void getNearestMatchesReturnsAllResultsWithNoMinScoreAsync() {
+    // Arrange
+    Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+    int topN = 4;
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+    int i = 0;
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 1f, 1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -1f, -1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -2f, -3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, -1f, -2f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    // Act
+    double threshold = -1;
+    Collection<Tuple2<MemoryRecord, Float>> topNResults =
+        this._db
+            .getNearestMatchesAsync(
+                collection, compareEmbedding, topN, threshold, false)
+            .block();
+
+    // Assert
+    assertNotNull(topNResults);
+    assertEquals(topN, topNResults.size());
+    Tuple2<MemoryRecord, Float>[] topNResultsArray = topNResults.toArray(new Tuple2[0]);
+    for (int j = 0; j < topN - 1; j++) {
+      int compare =
+          Double.compare(topNResultsArray[j].getT2(), topNResultsArray[j + 1].getT2());
+      assertTrue(compare >= 0);
+    }
+  }
+
+  @Test
+  void getNearestMatchesReturnsLimit() {
+    // Arrange
+    Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+    int i = 0;
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 1f, 1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -1f, -1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -2f, -3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, -1f, -2f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    // Act
+    double threshold = -1;
+    Collection<Tuple2<MemoryRecord, Float>> topNResults =
+        this._db
+            .getNearestMatchesAsync(
+                collection, compareEmbedding, i / 2, threshold, false)
+            .block();
+
+    // Assert
+    assertNotNull(topNResults);
+    assertEquals(i / 2, topNResults.size());
+  }
+
+  @Test
+  void getNearestMatchesReturnsEmptyIfLimitZero() {
+    // Arrange
+    Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+    int i = 0;
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 1f, 1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -1f, -1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -2f, -3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, -1f, -2f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    // Act
+    double threshold = -1;
+    Collection<Tuple2<MemoryRecord, Float>> topNResults =
+        this._db
+            .getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
+            .block();
+
+    // Assert
+    assertNotNull(topNResults);
+    assertTrue(topNResults.isEmpty());
+  }
+
+  @Test
+  void getNearestMatchesReturnsEmptyIfCollectionEmpty() {
+    // Arrange
+    Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+
+    // Act
+    double threshold = -1;
+    Collection<Tuple2<MemoryRecord, Float>> topNResults =
+        this._db
+            .getNearestMatchesAsync(
+                collection, compareEmbedding, Integer.MAX_VALUE, threshold, false)
+            .block();
+
+    // Assert
+    assertNotNull(topNResults);
+    assertTrue(topNResults.isEmpty());
+  }
+
+  @Test
+  void getNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync() {
+    // Arrange
+    Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+    int topN = 4;
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+    int i = 0;
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 1f, 1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -1f, -1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -2f, -3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, -1f, -2f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    // Act
+    double threshold = 0.75;
+    Tuple2<MemoryRecord, Float> topNResultDefault =
+        this._db
+            .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
+            .block();
+    Tuple2<MemoryRecord, Float> topNResultWithEmbedding =
+        this._db
+            .getNearestMatchAsync(collection, compareEmbedding, threshold, true)
+            .block();
+
+    // Assert
+    assertNotNull(topNResultDefault);
+    assertNotNull(topNResultWithEmbedding);
+    assertNotNull(topNResultDefault.getT1().getEmbedding());
+    assertNotNull(topNResultDefault.getT1().getEmbedding().getVector());
+    assertTrue(topNResultDefault.getT1().getEmbedding().getVector().isEmpty());
+    assertNotNull(topNResultWithEmbedding.getT1().getEmbedding());
+    assertNotNull(topNResultWithEmbedding.getT1().getEmbedding().getVector());
+    assertFalse(topNResultWithEmbedding.getT1().getEmbedding().getVector().isEmpty());
+  }
+
+  @Test
+  void getNearestMatchAsyncReturnsExpectedAsync() {
+    // Arrange
+    Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+    int topN = 4;
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+    int i = 0;
+    MemoryRecord testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 1f, 1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -1f, -1f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, 2f, 3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(-1f, -2f, -3f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    i++;
+    testRecord =
+        MemoryRecord.localRecord(
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new Embedding(Arrays.asList(1f, -1f, -2f)),
+            NULL_ADDITIONAL_METADATA,
+            NULL_KEY,
+            NULL_TIMESTAMP);
+    this._db.upsertAsync(collection, testRecord).block();
+
+    // Act
+    double threshold = 0.75;
+    Tuple2<MemoryRecord, Float> topNResult =
+        this._db
+            .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
+            .block();
+
+    // Assert
+    assertNotNull(topNResult);
+    assertEquals("test0", topNResult.getT1().getMetadata().getId());
+    assertTrue(topNResult.getT2() >= threshold);
+  }
+
+  @Test
+  void getNearestMatcheReturnsEmptyIfCollectionEmpty() {
+    // Arrange
+    Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+    int topN = 4;
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+
+    // Act
+    double threshold = -1;
+    Tuple2<MemoryRecord, Float> topNResults =
+        this._db
+            .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
+            .block();
+
+    // Assert
+    assertNull(topNResults);
+  }
+
+  @Test
+  void getNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync() {
+    // Arrange
+    Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+    int topN = 4;
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+
+    for (int i = 0; i < 10; i++) {
+      MemoryRecord testRecord =
+          MemoryRecord.localRecord(
+              "test" + i,
+              "text" + i,
+              "description" + i,
+              new Embedding(Arrays.asList(1f, 1f, 1f)),
+              NULL_ADDITIONAL_METADATA,
+              NULL_KEY,
+              NULL_TIMESTAMP);
+      this._db.upsertAsync(collection, testRecord).block();
     }
 
-    @Test
-    public void testCreateAndGetCollections() throws SQLException {
-        SqliteMemoryStore memory = connect();
-        String name = getNewCollectionName();
+    // Act
+    Collection<Tuple2<MemoryRecord, Float>> topNResults =
+        this._db
+            .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true)
+            .block();
+    Collection<String> topNKeys =
+        topNResults.stream()
+            .map(tuple -> tuple.getT1().getKey())
+            .sorted()
+            .collect(Collectors.toList());
 
-        memory.createCollectionAsync(name).block();
-        List<String> collections = memory.getCollectionsAsync().block();
+    // Assert
+    assertEquals(topN, topNResults.size());
+    assertEquals(topN, topNKeys.size());
+    for (Iterator<Tuple2<MemoryRecord, Float>> iterator = topNResults.iterator();
+        iterator.hasNext(); ) {
+      Tuple2<MemoryRecord, Float> tuple = iterator.next();
+      int compare = Float.compare(tuple.getT2(), 0.75f);
+      assertTrue(topNKeys.contains(tuple.getT1().getKey()));
+      assertTrue(compare >= 0);
+    }
+  }
 
-        Assertions.assertNotNull(collections);
-        Assertions.assertTrue(collections.contains(name));
+  @Test
+  void itCanBatchUpsertRecordsAsync() {
+    // Arrange
+    int numRecords = 10;
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+    Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
+
+    // Act
+    Collection<String> keys = this._db.upsertBatchAsync(collection, records).block();
+    Collection<MemoryRecord> resultRecords =
+        this._db.getBatchAsync(collection, keys, false).block();
+
+    // Assert
+    assertNotNull(keys);
+    assertEquals(numRecords, keys.size());
+    assertEquals(numRecords, resultRecords.size());
+  }
+
+  @Test
+  void itCanBatchGetRecordsAsync() {
+    // Arrange
+    int numRecords = 10;
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+    Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
+    Collection<String> keys = this._db.upsertBatchAsync(collection, records).block();
+
+    // Act
+    Collection<MemoryRecord> results = this._db.getBatchAsync(collection, keys, false).block();
+
+    // Assert
+    assertNotNull(keys);
+    assertNotNull(results);
+    assertEquals(numRecords, results.size());
+  }
+
+  @Test
+  void itCanBatchRemoveRecordsAsync() {
+    // Arrange
+    int numRecords = 10;
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
+    Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
+
+    List<String> keys = new ArrayList<>();
+    for (String key : this._db.upsertBatchAsync(collection, records).block()) {
+      keys.add(key);
     }
 
-    @Test
-    public void testDoesCollectionExist() throws SQLException {
-        SqliteMemoryStore memory = connect();
-        String name = getNewCollectionName();
+    // Act
+    this._db.removeBatchAsync(collection, keys).block();
 
-        memory.createCollectionAsync(name).block();
-        Boolean collectionExists = memory.doesCollectionExistAsync(name).block();
+    // Assert
+    for (MemoryRecord result : this._db.getBatchAsync(collection, keys, true).block()) {
+      assertNull(result);
+    }
+  }
 
-        Assertions.assertEquals(Boolean.TRUE, collectionExists);
+  @Test
+  void collectionsCanBeDeletedAsync() {
+    // Arrange
+    int numCollections = 3;
+    String[] testCollections =
+        IntStream.range(this._collectionNum, this._collectionNum += numCollections)
+            .mapToObj(i -> "test_collection" + i)
+            .toArray(String[]::new);
+
+    Flux.fromArray(testCollections)
+        .concatMap(collection -> this._db.createCollectionAsync(collection))
+        .blockLast();
+
+    // Act
+    Collection<String> collections = this._db.getCollectionsAsync().block();
+    assertNotNull(collections);
+    assertEquals(numCollections, collections.size());
+
+    // Act
+    for (String collection : collections) {
+      this._db.deleteCollectionAsync(collection).block();
     }
 
-    @Test
-    public void testDuplicateCreateDoesNothing() throws SQLException {
-        SqliteMemoryStore memory = connect();
-        String name = getNewCollectionName();
+    // Assert
+    collections = this._db.getCollectionsAsync().block();
+    assertNotNull(collections);
+    assertEquals(0, collections.size());
+  }
 
-        memory.createCollectionAsync(name).block();
-        List<String> collectionsBefore = memory.getCollectionsAsync().block();
+  @Test
+  void itThrowsWhenDeletingNonExistentCollectionAsync() {
+    // Arrange
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
 
-        memory.createCollectionAsync(name).block();
-        List<String> collectionsAfter = memory.getCollectionsAsync().block();
+    // Act
+    assertThrows(
+        MemoryException.class, () -> this._db.deleteCollectionAsync(collection).block());
+  }
 
-        Assertions.assertNotNull(collectionsBefore);
-        Assertions.assertNotNull(collectionsAfter);
-        Assertions.assertEquals(collectionsBefore.size(), collectionsAfter.size());
-    }
+  @Test
+  void doesCollectionExistAsyncReturnTrueForExistingCollection() {
+    // Arrange
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
+    this._db.createCollectionAsync(collection).block();
 
-    @Test
-    public void testDeleteCollection() throws SQLException {
-        SqliteMemoryStore memory = connect();
-        String name = getNewCollectionName();
+    // Act
+    assertTrue(this._db.doesCollectionExistAsync(collection).block());
+  }
 
-        memory.createCollectionAsync(name).block();
-        List<String> collections = memory.getCollectionsAsync().block();
+  @Test
+  void doesCollectionExistAsyncReturnFalseForNonExistentCollection() {
+    // Arrange
+    String collection = "test_collection" + this._collectionNum;
+    this._collectionNum++;
 
-        Assertions.assertNotNull(collections);
-        Assertions.assertFalse(collections.isEmpty());
-
-        collections.forEach(collection -> memory.deleteCollectionAsync(collection).block());
-
-        collections = memory.getCollectionsAsync().block();
-        Assertions.assertNotNull(collections);
-        Assertions.assertTrue(collections.isEmpty());
-    }
-
-    @Test
-    public void testCollectionsAreAllListed() throws SQLException {
-        SqliteMemoryStore memory = connect();
-
-        int collectionsToTest = 5;
-        List<String> collectionNames = new ArrayList<>(collectionsToTest);
-        for (int i = 0; i < collectionsToTest; ++i) {
-            collectionNames.add(getNewCollectionName());
-        }
-
-        collectionNames.forEach(name -> memory.createCollectionAsync(name).block());
-        collectionNames.forEach(
-                name -> {
-                    Assertions.assertEquals(
-                            Boolean.TRUE, memory.doesCollectionExistAsync(name).block());
-                });
-
-        List<String> collections = memory.getCollectionsAsync().block();
-        Assertions.assertNotNull(collections);
-        collectionNames.forEach(name -> Assertions.assertTrue(collections.contains(name)));
-    }
-
-    @Test
-    public void testUpsertAndRetrieve() throws SQLException {
-        SqliteMemoryStore memory = connect();
-        String collectionName = getNewCollectionName();
-
-        memory.createCollectionAsync(collectionName).block();
-
-        MemoryRecord testRecord =
-                MemoryRecord.localRecord(
-                        "test",
-                        "test",
-                        "test",
-                        new Embedding(new ArrayList<>(Arrays.asList(1.23f, 4.56f, 7.89f))),
-                        null,
-                        "test",
-                        ZonedDateTime.now());
-
-        String key = memory.upsertAsync(collectionName, testRecord).block();
-        Assertions.assertNotNull(key);
-
-        MemoryRecord inserted = memory.getAsync(collectionName, key, true).block();
-        Assertions.assertNotNull(inserted);
-        Assertions.assertEquals(testRecord.getMetadata().getId(), key);
-        Assertions.assertEquals(testRecord.getMetadata().getId(), inserted.getKey());
-        // Assertions.assertIterableEquals(testRecord.getEmbedding().getVector(),
-        // inserted.getEmbedding().getVector());
-        Assertions.assertEquals(
-                testRecord.getMetadata().getText(), inserted.getMetadata().getText());
-        Assertions.assertEquals(
-                testRecord.getMetadata().getDescription(), inserted.getMetadata().getDescription());
-        Assertions.assertEquals(
-                testRecord.getMetadata().getExternalSourceName(),
-                inserted.getMetadata().getExternalSourceName());
-        Assertions.assertEquals(testRecord.getMetadata().getId(), inserted.getMetadata().getId());
-    }
-
-    @Test
-    public void testGetNearestMatchesAsync() throws SQLException {
-        SqliteMemoryStore memory = connect();
-        String collectionName = getNewCollectionName();
-        Embedding embedding = new Embedding(Arrays.asList(1.23f, 4.56f, 7.89f));
-        memory.createCollectionAsync(collectionName).block();
-
-        MemoryRecord testRecord =
-                MemoryRecord.localRecord(
-                        "test",
-                        "test",
-                        "test",
-                        embedding,
-                        null,
-                        "test",
-                        ZonedDateTime.now());
-
-        Collection<Tuple2<MemoryRecord,Float>> matches =
-                memory.upsertAsync(collectionName, testRecord)
-                .then(memory.getNearestMatchesAsync(
-                        collectionName,
-                        embedding,
-                        1,
-                        0,
-                        true)).block();
-
-        Assertions.assertNotNull(matches);
-        Assertions.assertEquals(1, matches.size());
-        Assertions.assertEquals(embedding.getVector(), matches.iterator().next().getT1().getEmbedding().getVector());
-    }
+    // Act
+    assertFalse(this._db.doesCollectionExistAsync(collection).block());
+  }
 }
