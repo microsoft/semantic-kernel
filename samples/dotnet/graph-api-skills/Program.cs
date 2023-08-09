@@ -164,7 +164,7 @@ public sealed class Program
             summarizeSkills["Summarize"]);
         if (fileContentResult.ErrorOccurred)
         {
-            throw new InvalidOperationException($"Failed to get file content.", fileContentResult.LastException!);
+            throw new InvalidOperationException("Failed to get file content.", fileContentResult.LastException!);
         }
 
         string fileSummary = fileContentResult.Result;
