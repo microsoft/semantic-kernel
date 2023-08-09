@@ -199,8 +199,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
 
-            using var stringContent = new StringContent(
-                JsonSerializer.Serialize(completionRequest),
+            var jsonRequest = JsonSerializer.Serialize(completionRequest);
+
+            using var stringContent = new StringContent(jsonRequest,
                 Encoding.UTF8,
                 "application/json");
 
