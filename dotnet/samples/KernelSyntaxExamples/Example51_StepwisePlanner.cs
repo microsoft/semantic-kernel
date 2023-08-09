@@ -36,23 +36,23 @@ public static class Example51_StepwisePlanner
         }
     }
 
-    public static async Task RunTextCompletion(string question)
+    private static async Task RunTextCompletion(string question)
     {
         Console.WriteLine("RunTextCompletion");
         var kernel = GetKernel();
         await RunWithQuestion(kernel, question);
     }
 
-    public static async Task RunChatCompletion(string question)
+    private static async Task RunChatCompletion(string question)
     {
         Console.WriteLine("RunChatCompletion");
         var kernel = GetKernel(true);
         await RunWithQuestion(kernel, question);
     }
 
-    public static async Task RunWithQuestion(IKernel kernel, string question)
+    private static async Task RunWithQuestion(IKernel kernel, string question)
     {
-        using var bingConnector = new BingConnector(Env.Var("BING_API_KEY"));
+        var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
@@ -64,12 +64,12 @@ public static class Example51_StepwisePlanner
         Stopwatch sw = new();
         Console.WriteLine("Question: " + question);
 
-        var config = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig();
-        config.ExcludedFunctions.Add("TranslateMathProblem");
-        config.MinIterationTimeMs = 1500;
-        config.MaxTokens = 4000;
+        var plannerConfig = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig();
+        plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
+        plannerConfig.MinIterationTimeMs = 1500;
+        plannerConfig.MaxTokens = 4000;
 
-        StepwisePlanner planner = new(kernel, config);
+        StepwisePlanner planner = new(kernel, plannerConfig);
         sw.Start();
         var plan = planner.CreatePlan(question);
 
@@ -95,22 +95,22 @@ public static class Example51_StepwisePlanner
         if (useChat)
         {
             builder.WithAzureChatCompletionService(
-                Env.Var("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"),
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey,
                 alsoAsTextCompletion: true,
                 setAsDefault: true);
         }
         else
         {
             builder.WithAzureTextCompletionService(
-                Env.Var("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                Env.Var("AZURE_OPENAI_ENDPOINT"),
-                Env.Var("AZURE_OPENAI_KEY"));
+                TestConfiguration.AzureOpenAI.DeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
         }
 
         var kernel = builder
-            .WithLogger(ConsoleLogger.Log)
+            .WithLogger(ConsoleLogger.Logger)
             .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
             {
                 MaxRetryCount = 3,

@@ -8,8 +8,6 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
 
-import java.util.Collections;
-
 import javax.annotation.CheckReturnValue;
 
 /** Semantic Kernel context */
@@ -29,7 +27,7 @@ public abstract class AbstractSKContext implements SKContext {
     /// </summary>
     @Override
     public ContextVariables getVariables() {
-        return SKBuilders.variables().build(Collections.unmodifiableMap(variables.asMap()));
+        return SKBuilders.variables().withVariables(variables.asMap()).build();
     }
 
     AbstractSKContext(ContextVariables variables) {

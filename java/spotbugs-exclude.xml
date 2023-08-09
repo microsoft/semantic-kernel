@@ -53,6 +53,12 @@
   </Match>
 
   <Match>
+    <Class name="com.microsoft.semantickernel.ai.embeddings.Embedding"/>
+    <Method name="getVector"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+
+  <Match>
     <Class name="com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder"/>
     <Method name="setStorage"/>
     <Bug pattern="EI_EXPOSE_REP2"/>

@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-import com.microsoft.semantickernel.exceptions.NotSupportedException;
 
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -22,12 +21,12 @@ import javax.annotation.Nullable;
 /// </summary>
 public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
-    @Nonnull private final EmbeddingGeneration<String, ? extends Number> _embeddingGenerator;
+    @Nonnull private final EmbeddingGeneration<String> _embeddingGenerator;
     @Nonnull private /*final*/ MemoryStore _storage;
 
     public DefaultSemanticTextMemory(
             @Nonnull MemoryStore storage,
-            @Nonnull EmbeddingGeneration<String, ? extends Number> embeddingGenerator) {
+            @Nonnull EmbeddingGeneration<String> embeddingGenerator) {
         this._embeddingGenerator = embeddingGenerator;
         // TODO: this assignment raises EI_EXPOSE_REP2 in spotbugs (filtered out for now)
         this._storage = storage;
@@ -59,8 +58,16 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                             true, id, text, description, "", additionalMetadata);
                             MemoryRecord memoryRecord =
                                     new MemoryRecord(
-                                            data, embeddings.iterator().next(), collection, null);
-                            return _storage.upsertAsync(collection, memoryRecord);
+                                            data, embeddings.iterator().next(), id, null);
+
+                            return _storage.upsertAsync(collection, memoryRecord)
+                                    .onErrorResume(
+                                            e -> {
+                                                return _storage.createCollectionAsync(collection)
+                                                        .then(
+                                                                _storage.upsertAsync(
+                                                                        collection, memoryRecord));
+                                            });
                         });
     }
 
@@ -72,12 +79,11 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
     @Override
     public Mono<Void> removeAsync(@Nonnull String collection, @Nonnull String key) {
-        return Mono.error(new NotSupportedException("Pending implementation"));
-        //        await this._storage.RemoveAsync(collection, key, cancel);
+        return _storage.removeAsync(collection, key);
     }
 
     private static final Function<
-                    Collection<Tuple2<MemoryRecord, Number>>, Mono<List<MemoryQueryResult>>>
+                    Collection<Tuple2<MemoryRecord, Float>>, Mono<List<MemoryQueryResult>>>
             transformMatchesToResults =
                     records -> {
                         if (records.isEmpty()) {
@@ -87,7 +93,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                 records.stream()
                                         .map(
                                                 record -> {
-                                                    Tuple2<MemoryRecord, ? extends Number> tuple =
+                                                    Tuple2<MemoryRecord, Float> tuple =
                                                             record;
                                                     MemoryRecord memoryRecord = tuple.getT1();
                                                     Number relevanceScore = tuple.getT2();
@@ -156,7 +162,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                         externalId,
                                         externalSourceName,
                                         description,
-                                        (Embedding<Float>) embeddings.iterator().next(),
+                                        (Embedding) embeddings.iterator().next(),
                                         additionalMetadata,
                                         null,
                                         null))
@@ -166,7 +172,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
     public static class Builder implements SemanticTextMemory.Builder {
 
         @Nullable MemoryStore storage = null;
-        @Nullable EmbeddingGeneration<String, ? extends Number> embeddingGenerator = null;
+        @Nullable EmbeddingGeneration<String> embeddingGenerator = null;
 
         @Override
         public Builder setStorage(@Nonnull MemoryStore storage) {
@@ -176,7 +182,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
 
         @Override
         public Builder setEmbeddingGenerator(
-                @Nonnull EmbeddingGeneration<String, ? extends Number> embeddingGenerator) {
+                @Nonnull EmbeddingGeneration<String> embeddingGenerator) {
             this.embeddingGenerator = embeddingGenerator;
             return this;
         }

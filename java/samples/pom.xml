@@ -4,7 +4,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>samples</artifactId>
-    <version>0.2.7-alpha-SNAPSHOT</version>
+    <version>0.2.8-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Semantic Kernel Samples Parent</name>
     <description>Parent pom for sample code for using the Semantic Kernel project</description>
@@ -38,16 +38,46 @@
     </dependencyManagement>
 
     <build>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler-plugin.version}</version>
                 <configuration>
                     <source>${maven.compiler.release}</source>
                     <target>${maven.compiler.release}</target>
                     <release>${maven.compiler.release}</release>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.9.3</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -58,8 +88,8 @@
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-            <artifactId>semantickernel-connectors</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-ai-openai</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
@@ -68,7 +98,7 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-core-skills</artifactId>
+            <artifactId>semantickernel-plugin-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -87,13 +117,8 @@
             <version>${log4j2.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>semantickernel-sequentialplanner-extension</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>semantickernel-actionplanner-extension</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-planners</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>

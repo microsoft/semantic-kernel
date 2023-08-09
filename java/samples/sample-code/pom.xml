@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>samples</artifactId>
-        <version>0.2.7-alpha-SNAPSHOT</version>
+        <version>0.2.8-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -19,8 +19,8 @@
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-            <artifactId>semantickernel-connectors</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-ai-openai</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
@@ -30,7 +30,11 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-core-skills</artifactId>
+            <artifactId>semantickernel-plugin-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
         </dependency>
 
         <dependency>
@@ -49,11 +53,27 @@
             <version>2.20.0</version>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-            <artifactId>semantickernel-sequentialplanner-extension</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-planners</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-gpt3-tokenizer</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -68,6 +88,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>run-sample</id>

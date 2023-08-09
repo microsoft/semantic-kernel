@@ -21,7 +21,7 @@ class MemoryRecordTests {
     private static final String _description = "description";
     private static final String _externalSourceName = "externalSourceName";
     private static final String _additionalMetadata = "value";
-    private static final Embedding<Float> _embedding = new Embedding<>(Arrays.asList(1f, 2f, 3f));
+    private static final Embedding _embedding =  new Embedding(Arrays.asList(1f, 2f, 3f));
 
     @Test
     void itCanBeConstructedFromMetadataAndVector() {

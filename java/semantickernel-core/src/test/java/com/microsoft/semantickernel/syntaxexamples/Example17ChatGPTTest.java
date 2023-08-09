@@ -8,7 +8,6 @@ import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatMessage;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
@@ -39,16 +38,11 @@ public class Example17ChatGPTTest {
         mockResponse(client, message, "1st response");
         mockResponse(client, secondMessage, "2nd response");
 
-        KernelConfig kernelConfig =
-                SKBuilders.kernelConfig()
-                        .addChatCompletionService(
-                                "gpt-3.5-turbo-0301",
-                                kernel ->
-                                        SKBuilders.chatCompletion()
-                                                .build(client, "gpt-3.5-turbo-0301"))
+        Kernel kernel =
+                SKBuilders.kernel()
+                        .withDefaultAIService(
+                                SKBuilders.chatCompletion().build(client, "gpt-3.5-turbo-0301"))
                         .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(kernelConfig).build();
 
         ChatCompletion<OpenAIChatHistory> chatGPT = kernel.getService(null, ChatCompletion.class);
 

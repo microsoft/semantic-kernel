@@ -5,7 +5,6 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 
@@ -34,16 +33,12 @@ public class Example05UsingThePlannerTest {
         OpenAIAsyncClient client =
                 mockCompletionOpenAIAsyncClientMatch(Tuples.of(matcher, "A-PLAN"));
 
-        KernelConfig config =
-                SKBuilders.kernelConfig()
-                        .addTextCompletionService(
-                                "davinci",
-                                kernel ->
-                                        SKBuilders.textCompletionService()
-                                                .build(client, "text-davinci-003"))
+        Kernel kernel =
+                SKBuilders.kernel()
+                        .withDefaultAIService(
+                                SKBuilders.textCompletionService()
+                                        .build(client, "text-davinci-003"))
                         .build();
-
-        Kernel kernel = SKBuilders.kernel().withKernelConfig(config).build();
 
         SequentialPlanner planner = getPlanner(kernel);
         System.out.println(

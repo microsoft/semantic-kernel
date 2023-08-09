@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-
 import java.time.ZonedDateTime;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -13,7 +15,7 @@ import javax.annotation.Nullable;
  * will invalidate existing metadata stored in persistent vector DBs.
  */
 public class MemoryRecord extends DataEntryBase {
-    @Nonnull private final Embedding<? extends Number> embedding;
+    @Nonnull private final Embedding embedding;
 
     @Nonnull private final MemoryRecordMetadata metadata;
 
@@ -25,11 +27,12 @@ public class MemoryRecord extends DataEntryBase {
      * @param key The key of the data.
      * @param timestamp The timestamp of the data.
      */
+    @JsonCreator
     public MemoryRecord(
-            @Nonnull MemoryRecordMetadata metadata,
-            @Nonnull Embedding<? extends Number> embedding,
-            @Nullable String key,
-            @Nullable ZonedDateTime timestamp) {
+            @JsonProperty("additional_metadata") @Nonnull MemoryRecordMetadata metadata,
+            @JsonProperty("embedding") @Nonnull Embedding embedding,
+            @JsonProperty("key") @Nullable String key,
+            @JsonProperty("timestamp") @Nullable ZonedDateTime timestamp) {
         super(key, timestamp);
         this.metadata = metadata;
         this.embedding = embedding;
@@ -40,7 +43,7 @@ public class MemoryRecord extends DataEntryBase {
      *
      * @return The source content embeddings.
      */
-    public Embedding<? extends Number> getEmbedding() {
+    public Embedding getEmbedding() {
         return embedding;
     }
 
@@ -71,7 +74,7 @@ public class MemoryRecord extends DataEntryBase {
             @Nonnull String externalId,
             @Nonnull String sourceName,
             @Nullable String description,
-            @Nonnull Embedding<Float> embedding,
+            @Nonnull Embedding embedding,
             @Nullable String additionalMetadata,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
@@ -104,7 +107,7 @@ public class MemoryRecord extends DataEntryBase {
             @Nonnull String id,
             @Nonnull String text,
             @Nullable String description,
-            @Nonnull Embedding<Float> embedding,
+            @Nonnull Embedding embedding,
             @Nullable String additionalMetadata,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
@@ -133,7 +136,7 @@ public class MemoryRecord extends DataEntryBase {
      */
     public static MemoryRecord fromMetadata(
             @Nonnull MemoryRecordMetadata metadata,
-            @Nullable Embedding<Float> embedding,
+            @Nullable Embedding embedding,
             @Nullable String key,
             @Nullable ZonedDateTime timestamp) {
         return new MemoryRecord(
@@ -163,40 +166,30 @@ public class MemoryRecord extends DataEntryBase {
         return "MemoryRecord{" + "embedding=" + embedding + ", metadata=" + metadata + '}';
     }
 
-    /*
-       /// <summary>
-       /// Create a memory record from a serialized metadata string.
-       /// </summary>
-       /// <param name="json">Json string representing a memory record's metadata.</param>
-       /// <param name="embedding">Optional embedding associated with a memory record.</param>
-       /// <param name="key">Optional existing database key.</param>
-       /// <param name="timestamp">optional timestamp.</param>
-       /// <returns></returns>
-       /// <exception cref="MemoryException"></exception>
-       public static MemoryRecord FromJsonMetadata(
-           string json,
-           Embedding<float>? embedding,
-           string? key = null,
-           DateTimeOffset? timestamp = null)
-       {
-           var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
-           if (metadata != null)
-           {
-               return new MemoryRecord(metadata, embedding ?? Embedding<float>.Empty, key, timestamp);
-           }
+    public String getSerializedMetadata() throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(this.metadata);
+    }
 
-           throw new MemoryException(
-               MemoryException.ErrorCodes.UnableToDeserializeMetadata,
-               "Unable to create memory record from serialized metadata");
-       }
+    public String getSerializedEmbedding() throws JsonProcessingException {
+        return new ObjectMapper().writeValueAsString(this.embedding);
+    }
 
-       /// <summary>
-       /// Serialize the metadata of a memory record.
-       /// </summary>
-       /// <returns>The memory record's metadata serialized to a json string.</returns>
-       public string GetSerializedMetadata()
-       {
-           return JsonSerializer.Serialize(this.Metadata);
-       }
-    */
+    public static MemoryRecord fromJsonMetadata(
+            String json,
+            @Nullable Embedding embedding,
+            @Nullable String key,
+            @Nullable ZonedDateTime timestamp)
+            throws JsonProcessingException {
+        MemoryRecordMetadata metadata =
+                new ObjectMapper().readValue(json, MemoryRecordMetadata.class);
+
+        if (metadata != null) {
+            return new MemoryRecord(
+                    metadata, embedding != null ? embedding : Embedding.empty(), key, timestamp);
+        }
+
+        throw new MemoryException(
+                MemoryException.ErrorCodes.UNABLE_TO_DESERIALIZE_METADATA,
+                "Unable to create memory record from serialized metadata");
+    }
 }

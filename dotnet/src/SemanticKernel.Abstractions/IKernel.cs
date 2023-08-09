@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +27,13 @@ public interface IKernel
     /// <summary>
     /// App logger
     /// </summary>
+    [Obsolete("Use Logger instead. This will be removed in a future release.")]
     ILogger Log { get; }
+
+    /// <summary>
+    /// App logger
+    /// </summary>
+    ILogger Logger { get; }
 
     /// <summary>
     /// Semantic memory instance
@@ -86,6 +93,16 @@ public interface IKernel
     /// </summary>
     /// <param name="memory">Semantic memory instance</param>
     void RegisterMemory(ISemanticTextMemory memory);
+
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
+    /// </summary>
+    /// <param name="skFunction">A Semantic Kernel function to run</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunAsync(
+        ISKFunction skFunction,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -161,9 +178,16 @@ public interface IKernel
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
+    /// <returns>SK context</returns>
+    SKContext CreateNewContext();
+
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
     /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     /// <returns>SK context</returns>
-    SKContext CreateNewContext(CancellationToken cancellationToken = default);
+    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
+    SKContext CreateNewContext(CancellationToken cancellationToken);
 
     /// <summary>
     /// Get one of the configured services. Currently limited to AI services.

@@ -35,7 +35,7 @@ using Resources;
  *
  * TLDR: how to render a prompt:
  *
- *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Log).Build();
+ *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
  *      ... import skills and functions ...
  *      var context = kernel.CreateNewContext();
  *      ... set variables ...
@@ -64,8 +64,8 @@ public static class Example30_ChatWithPrompts
 
         // Usual kernel initialization, with GPT 3.5 Turbo
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Log)
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", Env.Var("OPENAI_API_KEY"), serviceId: "chat")
+            .WithLogger(ConsoleLogger.Logger)
+            .WithOpenAIChatCompletionService("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // As an example, we import the time skill, which is used in system prompt to read the current date.
@@ -77,13 +77,13 @@ public static class Example30_ChatWithPrompts
         var context = kernel.CreateNewContext();
 
         // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
-        context["selectedText"] = selectedText;
+        context.Variables["selectedText"] = selectedText;
 
         // Demo another variable, e.g. when the chat started, used by the system prompt (see 28-system-prompt.txt).
-        context["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture);
+        context.Variables["startTime"] = DateTimeOffset.Now.ToString("hh:mm:ss tt zz", CultureInfo.CurrentCulture);
 
         // This is the user message, store it in the variable used by 28-user-prompt.txt
-        context["userMessage"] = "extract locations as a bullet point list";
+        context.Variables["userMessage"] = "extract locations as a bullet point list";
 
         // Instantiate the prompt renderer, which we will use to turn prompt templates
         // into strings, that we will store into a Chat history object, which is then sent

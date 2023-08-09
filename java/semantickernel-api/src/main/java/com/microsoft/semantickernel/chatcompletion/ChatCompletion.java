@@ -2,13 +2,17 @@
 package com.microsoft.semantickernel.chatcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.models.ChatCompletions;
 import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 
-public interface ChatCompletion<ChatHistoryType extends ChatHistory> extends AIService {
+public interface ChatCompletion<ChatHistoryType extends ChatHistory>
+        extends AIService, TextCompletion {
     /**
      * Generate a new chat message
      *
@@ -26,6 +30,12 @@ public interface ChatCompletion<ChatHistoryType extends ChatHistory> extends AIS
      * @return Chat object
      */
     ChatHistoryType createNewChat(@Nullable String instructions);
+
+    Flux<String> generateMessageStream(
+            ChatHistory chatHistory, @Nullable ChatRequestSettings requestSettings);
+
+    Flux<ChatCompletions> getStreamingChatCompletionsAsync(
+            ChatHistory chat, ChatRequestSettings requestSettings);
 
     interface Builder {
         ChatCompletion<? extends ChatHistory> build(OpenAIAsyncClient client, String modelId);

@@ -22,7 +22,16 @@ import reactor.core.scheduler.Schedulers;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -178,7 +187,11 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                                                 annotation.description(),
                                                 annotation.defaultValue());
                                     } else {
-                                        return new ParameterView("input");
+                                        SKFunctionInputAttribute annotation =
+                                                parameter.getAnnotation(
+                                                        SKFunctionInputAttribute.class);
+                                        return new ParameterView(
+                                                "input", annotation.description(), "");
                                     }
                                 })
                         .collect(Collectors.toList());
@@ -210,26 +223,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             try {
                 List<Object> args =
                         Arrays.stream(method.getParameters())
-                                .map(
-                                        parameter -> {
-                                            if (SKContext.class.isAssignableFrom(
-                                                    parameter.getType())) {
-                                                return context; // .copy();
-                                            } else {
-                                                String value =
-                                                        getArgumentValue(
-                                                                method, context, parameter,
-                                                                inputArgs);
-                                                if (value != null) {
-                                                    return value;
-                                                } else {
-                                                    throw new AIException(
-                                                            AIException.ErrorCodes
-                                                                    .InvalidConfiguration,
-                                                            "Unknown arg " + parameter.getName());
-                                                }
-                                            }
-                                        })
+                                .map(getParameters(method, context, inputArgs))
                                 .collect(Collectors.toList());
 
                 Mono mono;
@@ -240,30 +234,16 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                         return Mono.error(e);
                     }
                 } else {
-                    mono =
-                            Mono.defer(
-                                    () -> {
-                                        return Mono.fromCallable(
-                                                        () -> {
-                                                            try {
-                                                                Object result =
-                                                                        method.invoke(
-                                                                                instance,
-                                                                                args.toArray());
-
-                                                                return result;
-                                                            } catch (IllegalAccessException
-                                                                    | InvocationTargetException e) {
-                                                                throw new RuntimeException(
-                                                                        e.getCause());
-                                                            }
-                                                        })
-                                                .subscribeOn(Schedulers.boundedElastic());
-                                    });
+                    mono = invokeAsyncFunction(method, instance, args);
                 }
 
                 return mono.map(
                         it -> {
+                            if (it instanceof Iterable) {
+                                // Handle return from things like Mono<List<?>>
+                                // from {{function 'input'}} as part of the prompt.
+                                it = ((Iterable<?>) it).iterator().next();
+                            }
                             if (it instanceof SKContext) {
                                 return it;
                             } else {
@@ -276,7 +256,57 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         };
     }
 
-    private static String getArgumentValue(
+    private static Mono<Object> invokeAsyncFunction(
+            Method method, Object instance, List<Object> args) {
+        return Mono.defer(
+                () ->
+                        Mono.fromCallable(
+                                        () -> {
+                                            try {
+                                                Object result =
+                                                        method.invoke(instance, args.toArray());
+
+                                                return result;
+                                            } catch (IllegalAccessException
+                                                    | InvocationTargetException e) {
+                                                throw new RuntimeException(e.getCause());
+                                            }
+                                        })
+                                .subscribeOn(Schedulers.boundedElastic()));
+    }
+
+    private static Function<Parameter, Object> getParameters(
+            Method method, SKContext context, Set<Parameter> inputArgs) {
+        return parameter -> {
+            if (SKContext.class.isAssignableFrom(parameter.getType())) {
+                return context;
+            } else {
+                return getArgumentValue(method, context, parameter, inputArgs);
+            }
+        };
+    }
+
+    private static String formErrorMessage(Method method, Parameter parameter) {
+        Matcher matcher = Pattern.compile("arg(\\d)").matcher(parameter.getName());
+        matcher.find();
+        return "For the function "
+                + method.getDeclaringClass().getName()
+                + "."
+                + method.getName()
+                + ", the unknown parameter"
+                + " name was detected as \""
+                + parameter.getName()
+                + "\" this is argument"
+                + " number "
+                + matcher.group(1)
+                + " to the function, this indicates that the argument name for this function was"
+                + " removed during compilation and semantic-kernel is unable to determine the name"
+                + " of the parameter. To support this function the argument must be annotated with"
+                + " @SKFunctionParameters or @SKFunctionInputAttribute. Alternatively the function"
+                + " was invoked with a required context variable missing and no default value.";
+    }
+
+    private static Object getArgumentValue(
             Method method, SKContext context, Parameter parameter, Set<Parameter> inputArgs) {
         String variableName = getGetVariableName(parameter);
 
@@ -295,28 +325,90 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                         parameter.getAnnotation(SKFunctionParameters.class);
                 if (annotation != null) {
                     arg = annotation.defaultValue();
+
+                    if (NO_DEFAULT_VALUE.equals(arg)) {
+                        if (!annotation.required()) {
+                            return null;
+                        }
+
+                        throw new AIException(
+                                AIException.ErrorCodes.InvalidConfiguration,
+                                "Attempted to invoke function "
+                                        + method.getDeclaringClass().getName()
+                                        + "."
+                                        + method.getName()
+                                        + ". The context variable \""
+                                        + variableName
+                                        + "\" has not been set, and no default value is"
+                                        + " specified.");
+                    }
                 }
             }
         }
 
         if (arg == null && variableName.matches("arg\\d")) {
-            LOGGER.warn(
-                    "For the function "
-                            + method.getDeclaringClass().getName()
-                            + "."
-                            + method.getName()
-                            + ", the parameter argument name was detected as \""
-                            + variableName
-                            + "\" this indicates that the argument name for this function was"
-                            + " removed during compilation. To support this function its arguments"
-                            + " must be annotated with @SKFunctionParameters with the name defined,"
-                            + " or @SKFunctionInputAttribute.");
+            LOGGER.warn(formErrorMessage(method, parameter));
         }
 
         if (NO_DEFAULT_VALUE.equals(arg)) {
-            return null;
+            if (parameter.getName().matches("arg\\d")) {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        formErrorMessage(method, parameter));
+            } else {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        "Unknown arg " + parameter.getName());
+            }
         }
-        return arg;
+
+        SKFunctionParameters annotation = parameter.getAnnotation(SKFunctionParameters.class);
+        if (annotation == null || annotation.type() == null) {
+            return arg;
+        }
+        Class<?> type = annotation.type();
+        if (Number.class.isAssignableFrom(type)) {
+            arg = arg.replace(",", ".");
+        }
+
+        Object value = arg;
+        // Well-known types only
+        Function converter = converters.get(type);
+        if (converter != null) {
+            try {
+                value = converter.apply(arg);
+            } catch (NumberFormatException nfe) {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        "Invalid value for "
+                                + parameter.getName()
+                                + " expected "
+                                + type.getSimpleName()
+                                + " but got "
+                                + arg);
+            }
+        }
+        return value;
+    }
+
+    private static final Map<Class<?>, Function<String, ?>> converters = new HashMap<>();
+
+    static {
+        converters.put(Boolean.class, Boolean::valueOf);
+        converters.put(boolean.class, Boolean::valueOf);
+        converters.put(Byte.class, Byte::parseByte);
+        converters.put(byte.class, Byte::parseByte);
+        converters.put(Integer.class, Integer::parseInt);
+        converters.put(int.class, Integer::parseInt);
+        converters.put(Long.class, Long::parseLong);
+        converters.put(long.class, Long::parseLong);
+        converters.put(Double.class, Double::parseDouble);
+        converters.put(double.class, Double::parseDouble);
+        converters.put(Float.class, Float::parseFloat);
+        converters.put(float.class, Float::parseFloat);
+        converters.put(Short.class, Short::parseShort);
+        converters.put(short.class, Short::parseShort);
+        converters.put(String.class, it -> it);
     }
 
     private static String getGetVariableName(Parameter parameter) {

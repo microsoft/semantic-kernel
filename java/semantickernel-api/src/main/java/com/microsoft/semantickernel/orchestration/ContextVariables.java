@@ -55,7 +55,7 @@ public interface ContextVariables {
          * @param content Entry to place in the "input" slot
          * @return an instantiation of ContextVariables
          */
-        ContextVariables build(String content);
+        Builder withInput(String content);
 
         /**
          * Builds an instance with the given variables
@@ -63,7 +63,16 @@ public interface ContextVariables {
          * @param map Existing varibles
          * @return an instantiation of ContextVariables
          */
-        ContextVariables build(Map<String, String> map);
+        Builder withVariables(Map<String, String> map);
+
+        /**
+         * Set variable
+         *
+         * @param key variable name
+         * @param value variable value
+         * @return builder for fluent chaining
+         */
+        Builder withVariable(String key, String value);
     }
 
     /**

@@ -6,16 +6,12 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>samples</artifactId>
-        <version>0.2.7-alpha-SNAPSHOT</version>
+        <version>0.2.8-alpha-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>semantickernel-guice</artifactId>
     <packaging>jar</packaging>
-
-    <properties>
-        <semantickernel.java.version>0.2.1-beta-SNAPSHOT</semantickernel.java.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -23,12 +19,12 @@
             <artifactId>semantickernel-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-            <artifactId>semantickernel-connectors</artifactId>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-ai-openai</artifactId>
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-core-skills</artifactId>
+            <artifactId>semantickernel-plugin-core</artifactId>
         </dependency>
 
         <dependency>
@@ -45,7 +41,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.9.2</version>
+            <version>5.10.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

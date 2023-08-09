@@ -124,9 +124,9 @@ public interface MemoryStore {
      * @return A collection of tuples where item1 is a {@link MemoryRecord} and item2 is its
      *     similarity score as a {@code double}.
      */
-    Mono<Collection<Tuple2<MemoryRecord, Number>>> getNearestMatchesAsync(
+    Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(
             @Nonnull String collectionName,
-            @Nonnull Embedding<? extends Number> embedding,
+            @Nonnull Embedding embedding,
             int limit,
             double minRelevanceScore,
             boolean withEmbeddings);
@@ -140,11 +140,11 @@ public interface MemoryStore {
      * @param minRelevanceScore The minimum relevance threshold for returned results.
      * @param withEmbedding If true, the embedding will be returned in the memory record.
      * @return A tuple consisting of the {@link MemoryRecord} and item2 is its similarity score as a
-     *     {@code double}. Null if no nearest match found.
+     *     {@code float}. Null if no nearest match found.
      */
-    Mono<Tuple2<MemoryRecord, ? extends Number>> getNearestMatchAsync(
+    Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
             @Nonnull String collectionName,
-            @Nonnull Embedding<? extends Number> embedding,
+            @Nonnull Embedding embedding,
             double minRelevanceScore,
             boolean withEmbedding);
 

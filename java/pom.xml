@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>0.2.7-alpha-SNAPSHOT</version>
+    <version>0.2.8-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>https://www.github.com/microsoft/semantic-kernel</url>
     <name>Semantic Kernel Parent</name>
@@ -14,47 +15,47 @@
 
     <properties>
         <azure-ai-openai.version>1.0.0-beta.2</azure-ai-openai.version>
-        <checkstyle.version>10.11.0</checkstyle.version>
+        <checkstyle.version>10.12.2</checkstyle.version>
         <com.uber.nullaway.version>0.10.10</com.uber.nullaway.version>
         <google.errorprone.core.version>2.19.1</google.errorprone.core.version>
         <google.java.format.version>1.17.0</google.java.format.version>
         <jreleaser.plugin.version>1.6.0</jreleaser.plugin.version>
-        <junit5.version>5.9.3</junit5.version>
+        <junit5.version>5.10.0</junit5.version>
         <log4j2.version>2.20.0</log4j2.version>
         <maven.antrun-plugin.version>3.1.0</maven.antrun-plugin.version>
         <maven.changes-plugin.version>2.12.1</maven.changes-plugin.version>
-        <maven.checkstyle-plugin.version>3.2.1</maven.checkstyle-plugin.version>
-        <maven.clean-plugin.version>3.2.0</maven.clean-plugin.version>
+        <maven.checkstyle-plugin.version>3.3.0</maven.checkstyle-plugin.version>
+        <maven.clean-plugin.version>3.3.1</maven.clean-plugin.version>
         <maven.compiler-plugin.version>3.11.0</maven.compiler-plugin.version>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <maven.dependency-plugin.version>3.5.0</maven.dependency-plugin.version>
-        <maven.deploy-plugin.version>3.1.0</maven.deploy-plugin.version>
+        <maven.dependency-plugin.version>3.6.0</maven.dependency-plugin.version>
+        <maven.deploy-plugin.version>3.1.1</maven.deploy-plugin.version>
         <maven.directory-maven-plugin.version>1.0</maven.directory-maven-plugin.version>
-        <maven.enforcer-plugin.version>3.2.1</maven.enforcer-plugin.version>
+        <maven.enforcer-plugin.version>3.3.0</maven.enforcer-plugin.version>
         <maven.exec-plugin.version>3.1.0</maven.exec-plugin.version>
-        <maven.install-plugin.version>3.1.0</maven.install-plugin.version>
-        <maven.jacoco-plugin.version>0.8.8</maven.jacoco-plugin.version>
+        <maven.install-plugin.version>3.1.1</maven.install-plugin.version>
+        <maven.jacoco-plugin.version>0.8.10</maven.jacoco-plugin.version>
         <maven.jar-plugin.version>3.3.0</maven.jar-plugin.version>
         <maven.javadoc-plugin.version>3.5.0</maven.javadoc-plugin.version>
         <maven.jxr-plugin.version>3.3.0</maven.jxr-plugin.version>
-        <!-- TODO: 2.0.x https://github.com/mojohaus/license-maven-plugin/issues/358 fixed -->
-        <maven.license-plugin.version>1.20</maven.license-plugin.version>
-        <maven.pmd-plugin.version>3.20.0</maven.pmd-plugin.version>
-        <maven.project-info-reports-plugin.version>3.4.2</maven.project-info-reports-plugin.version>
+        <maven.license-plugin.version>2.2.0</maven.license-plugin.version>
+        <maven.pmd-plugin.version>3.21.0</maven.pmd-plugin.version>
+        <maven.project-info-reports-plugin.version>3.4.5</maven.project-info-reports-plugin.version>
         <maven.rat-plugin.version>0.15</maven.rat-plugin.version>
-        <maven.resources-plugin.version>3.3.0</maven.resources-plugin.version>
-        <maven.site-plugin.version>4.0.0-M5</maven.site-plugin.version>
-        <maven.shade-plugin.version>3.4.1</maven.shade-plugin.version>
-        <maven.source-plugin.version>3.2.1</maven.source-plugin.version>
-        <maven.spotbugs-plugin.version>4.7.3.4</maven.spotbugs-plugin.version>
-        <!-- TODO 2.30.0 is the last supported version for Java 8  -->
-        <maven.spotless-plugin.version>2.36.0</maven.spotless-plugin.version>
-        <maven.surefire-plugin.version>3.0.0</maven.surefire-plugin.version>
-        <maven.version>3.9.2</maven.version>
-        <maven.versions-plugin.version>2.15.0</maven.versions-plugin.version>
-        <mockito.version>5.3.1</mockito.version>
+        <maven.release-plugin.version>3.0.1</maven.release-plugin.version>
+        <maven.resources-plugin.version>3.3.1</maven.resources-plugin.version>
+        <maven.site-plugin.version>4.0.0-M9</maven.site-plugin.version>
+        <maven.shade-plugin.version>3.5.0</maven.shade-plugin.version>
+        <maven.source-plugin.version>3.3.0</maven.source-plugin.version>
+        <maven.spotbugs-plugin.version>4.7.3.5</maven.spotbugs-plugin.version>
+        <!-- TODO 2.30.0 is the last supported version for Java 8 Not sure how 2.38.0 is working... -->
+        <maven.spotless-plugin.version>2.38.0</maven.spotless-plugin.version>
+        <maven.surefire-plugin.version>3.1.2</maven.surefire-plugin.version>
+        <maven.version>3.9.3</maven.version>
+        <maven.versions-plugin.version>2.16.0</maven.versions-plugin.version>
+        <mockito.version>5.4.0</mockito.version>
         <mutability.detector.version>0.9.1</mutability.detector.version>
         <pmd.version>6.55.0</pmd.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -64,12 +65,18 @@
     </properties>
 
     <modules>
+        <module>connectors/semantickernel-connectors-ai-openai</module>
+        <module>connectors/semantickernel-connectors-memory-sqlite</module>
+        <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>
+
+        <module>extensions/semantickernel-planners</module>
+        <module>extensions/semantickernel-gpt3-tokenizer</module>
+
+        <module>plugins/semantickernel-plugin-core</module>
+
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
         <module>semantickernel-core</module>
-        <module>semantickernel-extensions-parent</module>
-        <module>semantickernel-connectors-parent</module>
-        <module>semantickernel-core-skills</module>
     </modules>
 
     <dependencyManagement>
@@ -123,8 +130,8 @@
                 <version>${azure-ai-openai.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-                <artifactId>semantickernel-connectors</artifactId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-ai-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -281,6 +288,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${maven.release-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>${maven.shade-plugin.version}</version>
                 </plugin>
@@ -426,10 +438,6 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <executions>
@@ -455,7 +463,6 @@
                 </executions>
             </plugin>
         </plugins>
-
     </build>
 
     <!-- 
@@ -579,16 +586,6 @@
             </snapshots>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
-        <repository>
-            <id>azure-sdk-for-java</id>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>https://pkgs.dev.azure.com/azure-sdk/public/_packaging/azure-sdk-for-java/maven/v1</url>
-        </repository>
     </repositories>
 
     <profiles>
@@ -684,7 +681,7 @@
                                 <licenseHeader>
                                     <content>// Copyright (c) Microsoft. All rights reserved.</content>
                                 </licenseHeader>
-                                <toggleOffOn />
+                                <toggleOffOn/>
                             </java>
                         </configuration>
                     </plugin>
@@ -807,6 +804,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.6-alpha</tag>
+        <tag>HEAD</tag>
     </scm>
 </project>

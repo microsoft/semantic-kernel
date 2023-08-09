@@ -39,8 +39,8 @@ public class MemoryConfiguration {
         Objects.requireNonNull(storage);
 
         @SuppressWarnings("unchecked")
-        EmbeddingGeneration<String, Float> embeddingGenerator =
-                (EmbeddingGeneration<String, Float>)
+        EmbeddingGeneration<String> embeddingGenerator =
+                (EmbeddingGeneration<String>)
                         kernel.getService(embeddingsServiceId, EmbeddingGeneration.class);
 
         useMemory(kernel, embeddingGenerator, storage);
@@ -63,7 +63,7 @@ public class MemoryConfiguration {
      */
     public static void useMemory(
             @Nonnull DefaultKernel kernel,
-            EmbeddingGeneration<String, Float> embeddingGenerator,
+            EmbeddingGeneration<String> embeddingGenerator,
             MemoryStore storage) {
         Objects.requireNonNull(kernel);
         Objects.requireNonNull(embeddingGenerator);

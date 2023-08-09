@@ -5,15 +5,41 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
-    <version>0.2.7-alpha-SNAPSHOT</version>
+    <version>0.2.8-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
     <description>Bill of Materials for all Semantic Kernel (Java) modules</description>
     <url>https://www.github.com/microsoft/semantic-kernel</url>
+
     <properties>
-        <com.fasterxml.jackson.core.version>2.15.1</com.fasterxml.jackson.core.version>
+        <com.fasterxml.jackson.core.version>2.15.2</com.fasterxml.jackson.core.version>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.9.3</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencyManagement>
         <dependencies>
@@ -28,26 +54,37 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.semantic-kernel.connectors</groupId>
-                <artifactId>semantickernel-connectors</artifactId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-ai-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>semantickernel-sequentialplanner-extension</artifactId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-planners</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-plugin-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-core-skills</artifactId>
+                <artifactId>semantickernel-gpt3-tokenizer</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>semantickernel-actionplanner-extension</artifactId>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-connectors-memory-azurecognitivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.azure</groupId>
@@ -71,9 +108,15 @@
                 <scope>runtime</scope>
             </dependency>
             <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${com.fasterxml.jackson.core.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-core</artifactId>
-                <version>3.5.6</version>
+                <version>3.5.8</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
@@ -85,6 +128,22 @@
                 <artifactId>azure-core-http-netty</artifactId>
                 <version>1.13.2</version>
                 <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-search-documents</artifactId>
+                <version>11.6.0-beta.6</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>2.0.1.MR</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>3.42.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -122,6 +181,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.6-alpha</tag>
+        <tag>HEAD</tag>
     </scm>
 </project>

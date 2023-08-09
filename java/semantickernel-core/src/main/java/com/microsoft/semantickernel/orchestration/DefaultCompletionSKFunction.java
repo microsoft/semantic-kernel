@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.azure.core.exception.HttpResponseException;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -129,20 +130,21 @@ public class DefaultCompletionSKFunction
                 (contextInput, input) ->
                         contextInput.concatMap(
                                 newContext -> {
-                                    SKContext updated = newContext.update(input);
+                                    SKContext updated = newContext.copy().update(input);
                                     return invokeAsync(updated, null);
                                 });
 
-        Mono<List<SKContext>> results =
+        Flux<SKContext> results =
                 Flux.fromIterable(partitionedInput)
-                        .reduceWith(() -> Flux.just(context), executeNextChunk)
-                        .flatMap(Flux::collectList);
+                        .scanWith(() -> Flux.just(context), executeNextChunk)
+                        .skip(1) // Skip the first element, which is the initial context
+                        .concatMap(it -> it);
 
         return results.map(
-                        list ->
-                                list.stream()
-                                        .map(SKContext::getResult)
-                                        .collect(Collectors.joining("\n")))
+                        result -> {
+                            return result.getResult();
+                        })
+                .collect(Collectors.joining("\n"))
                 .map(context::update);
     }
 
@@ -207,6 +209,30 @@ public class DefaultCompletionSKFunction
                                                 getSkillName(),
                                                 getName(),
                                                 ex.getMessage());
+
+                                        // Common message when you attempt to send text completion
+                                        // requests to a chat completion model:
+                                        //    "logprobs, best_of and echo parameters are not
+                                        // available on gpt-35-turbo model"
+                                        if (ex instanceof HttpResponseException
+                                                && ((HttpResponseException) ex)
+                                                                .getResponse()
+                                                                .getStatusCode()
+                                                        == 400
+                                                && ex.getMessage()
+                                                        .contains(
+                                                                "parameters are not available"
+                                                                        + " on")) {
+                                            LOGGER.warn(
+                                                    "This error indicates that you have attempted"
+                                                        + " to use a chat completion model in a"
+                                                        + " text completion service. Try using a"
+                                                        + " chat completion service instead when"
+                                                        + " building your kernel, for instance when"
+                                                        + " building your service use"
+                                                        + " SKBuilders.chatCompletion() rather than"
+                                                        + " SKBuilders.textCompletionService().");
+                                        }
                                     });
                 };
 

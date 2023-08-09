@@ -3,9 +3,10 @@ package com.microsoft.semantickernel.e2e;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
+import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
@@ -22,29 +23,21 @@ public class AbstractKernelTest {
     public static final String CONF_OPENAI_PROPERTIES = "conf.openai.properties";
     public static final String AZURE_CONF_PROPERTIES = "conf.properties";
 
-    public static Kernel buildTextCompletionKernel() throws IOException {
+    public static Kernel buildTextCompletionKernel() throws ConfigurationException {
         String model = "text-davinci-003";
         final OpenAIAsyncClient openAIClient = getOpenAIClient();
         TextCompletion textCompletion = new OpenAITextCompletion(openAIClient, model);
 
-        KernelConfig kernelConfig =
-                SKBuilders.kernelConfig()
-                        .addTextCompletionService(model, kernel -> textCompletion)
-                        .addTextEmbeddingsGenerationService(
-                                model,
-                                kernel ->
-                                        SKBuilders.textEmbeddingGenerationService()
-                                                .build(openAIClient, model))
-                        .build();
-
         return SKBuilders.kernel()
-                .withKernelConfig(kernelConfig)
-                .withMemoryStore(new VolatileMemoryStore())
+                .withDefaultAIService(textCompletion)
+                .withDefaultAIService(
+                        SKBuilders.textEmbeddingGenerationService().build(openAIClient, model))
+                .withMemoryStorage(new VolatileMemoryStore())
                 .build();
     }
 
-    public static OpenAIAsyncClient getOpenAIClient() throws IOException {
-        return com.microsoft.semantickernel.Config.getClient();
+    public static OpenAIAsyncClient getOpenAIClient() throws ConfigurationException {
+        return SamplesConfig.getClient();
     }
 
     public static String getOpenAIModel() throws IOException {

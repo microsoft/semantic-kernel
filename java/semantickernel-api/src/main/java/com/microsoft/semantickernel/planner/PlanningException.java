@@ -64,7 +64,8 @@ public class PlanningException extends SKException {
 
         InvalidPlan("Invalid plan"),
 
-        InvalidConfiguration("Invalid configuration");
+        InvalidConfiguration("Invalid configuration"),
+        PlanExecutionProducedNoResults("Plan execution produced no result values");
 
         private final String message;
 

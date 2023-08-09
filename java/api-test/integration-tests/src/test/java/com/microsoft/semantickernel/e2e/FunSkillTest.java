@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.e2e;
 
+import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 
@@ -11,14 +12,12 @@ import org.slf4j.LoggerFactory;
 
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-
 @EnabledIf("isAzureTestEnabled")
 public class FunSkillTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(FunSkillTest.class);
 
     @Test
-    public void tellAJoke() throws IOException {
+    public void tellAJoke() throws ConfigurationException {
         Mono<SKContext> result =
                 buildTextCompletionKernel()
                         .importSkillFromDirectory("FunSkill", "../../../samples/skills")
