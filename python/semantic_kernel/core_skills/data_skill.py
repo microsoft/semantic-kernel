@@ -33,6 +33,7 @@ class DataSkill:
     _suffix: str
     _service: ChatCompletionClientBase
     _chat_settings: ChatRequestSettings
+    _code_skill: CodeSkill
 
     def __init__(self, service: Union[AzureChatCompletion, OpenAIChatCompletion],
         path: Union[str, List[str]]=None, data: Union[pd.DataFrame, List[pd.DataFrame]]=None, 
@@ -44,6 +45,7 @@ class DataSkill:
         self.verbose = verbose
         self._service = service
         self._chat_settings = ChatRequestSettings(temperature=0.0)
+        self._code_skill = CodeSkill(self._service)
 
         if isinstance(self.path, str):
             if not self.path.endswith(".csv"):
@@ -93,13 +95,9 @@ class DataSkill:
             prompt = f"""You are working with {num} pandas dataframes in Python,
             named df1, df2, and so on. """
             for table in self.data:
-                prompt += f"The names of the columns of df{count} are, in this order: \n"
-                column_names = ', '.join(map(str,table.columns.tolist()))
-                prompt += column_names + "\n"
-                prompt += f"The names of the rows of df{count} are, in this order: \n"
-                row_names = ', '.join(map(str,table.index.tolist())) + "\n"
-                prompt += row_names + "\n"
-                count +=1
+                prompt += f"The first 5 rows of df{count} are, in this order: \n"
+                prompt += table.head().to_json(orient="records") + "\n"
+                count += 1
         return prompt
     
     @sk_function(
@@ -115,38 +113,38 @@ class DataSkill:
         Args:
             ask -- The question to ask the LLM
         """
+        context = self.get_df_data()
         formatted_suffix = self._suffix.format(goal=ask)
-        prompt = self._prefix + """You need to write plain Python code that the 
-        user can run on their dataframes.""" + formatted_suffix 
-        result = await self._service.complete_chat_async(
-            [("user", prompt)], self._chat_settings
-        )
-
+        prompt = context + "\n" + self._prefix + """You need to write plain Python 
+        code that the user can run on their dataframes.""" + formatted_suffix 
+        code = await self._code_skill.custom_code_async(prompt) #Get python code as a string
         df=self.data
         local_vars = {'df': df}
-        exec(result, local_vars)
+        await self._code_skill.custom_execute_async(code, local_vars=local_vars) #Dynamically execute the code on the dataframe
         result = local_vars['process'](local_vars['df'])
-      
-        
-        return str(result)
+        prompt = "The answer to the user's question is: " + str(result)
+        prompt += f"""You need to provide the answer back to the user with 
+        natural language.
+        User: {ask}
+        Bot:
+        """
+        answer = await self._service.complete_chat_async(
+            [("user", prompt)], self._chat_settings
+        )
+        return answer
     
-    """
-    @sk_function(
-        description="Transform the data in the pandas dataframe",
-        name="transform",
-        input_description="The transformation to apply to the data",
-    )
+   
     async def transform_async(self, ask: str, context: SKContext) -> pd.DataFrame:
-        
+        """
         Transform the data in the pandas dataframe.
 
         Args:
             ask -- The transformation to apply to the data
-        
-        prompt = self._prefix + You need to write python code that will 
-        transform the dataframe as the user asked.  + self._suffix
+        """
+        prompt = self._prefix + """You need to write python code that will 
+        transform the dataframe as the user asked."""  + self._suffix
         pass
-    """
+    
     @sk_function(
         description="Plot the data in the pandas dataframe",
         name="plotAsync",

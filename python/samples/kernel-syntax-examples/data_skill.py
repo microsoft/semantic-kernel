@@ -21,12 +21,7 @@ async def main() -> None:
     df = pd.DataFrame(data)
     
     data_skill = DataSkill(data=df,service=openai_chat_completion)
-    context = sk.ContextVariables()
-    context["user_input"] = data_skill.get_df_data()
-    print(context._variables)
     data_skill = kernel.import_skill(data_skill, skill_name="data")
-    
-    #prompt = "How old is Bob and where does Eve live?"
     prompt = "How old is Bob and what city does Eve live in?"
     query_async = data_skill["queryAsync"]
     result = await query_async.invoke_async(prompt)
