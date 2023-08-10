@@ -272,7 +272,7 @@ public class DefaultCompletionSKFunction
             if (kernel == null) {
                 throw new AIException(
                         AIException.ErrorCodes.InvalidConfiguration,
-                        "Called builder to create a function that");
+                        "Called builder to create a function without setting the kernel");
             }
 
             if (functionName == null) {

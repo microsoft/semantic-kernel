@@ -44,6 +44,7 @@ public class Example05_InlineFunctionDefinition {
         // Create function via builder
         var excuseFunction = SKBuilders
                 .completionFunctions()
+                .withKernel(kernel)
                 .setPromptTemplate(functionDefinition)
                 .setCompletionConfig(
                         new PromptTemplateConfig.CompletionConfigBuilder()

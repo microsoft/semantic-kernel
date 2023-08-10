@@ -11,7 +11,7 @@
 
     <modules>
         <module>sample-code</module>
-        <module>semantickernel-guice</module>
+        <module>semantickernel-samples-guice</module>
     </modules>
 
     <properties>
