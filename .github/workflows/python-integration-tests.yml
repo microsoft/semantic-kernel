@@ -149,10 +149,18 @@ jobs:
     needs: [python-merge-gate, python-integration-tests]
     steps:
       - name: Fail workflow if tests failed
+        id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failed')
         uses: actions/github-script@v6
         with:
           script: core.setFailed('Integration Tests Failed!')
+
+      - name: Fail workflow if tests cancelled
+        id: check_tests_cancelled
+        if: contains(join(needs.*.result, ','), 'cancelled')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Cancelled!')
 
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
@@ -162,4 +170,4 @@ jobs:
           dry_run: False
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} `}"
+          overwrite: "{title: ` ${{ github.event_name }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n${{ toJson(steps.run_tests.outputs) }}`}"
