@@ -50,7 +50,7 @@ public static class Example15_MemorySkill
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
-        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", logger: logger);
+        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info1", logger: logger);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:
