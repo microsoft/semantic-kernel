@@ -145,18 +145,18 @@ jobs:
     if: always()
     needs: [python-merge-gate, python-integration-tests]
     steps:
-     - name: Fail workflow if tests failed
-       if: contains(join(needs.*.result, ','), 'failed')
-       uses: actions/github-script@v6
-       with:
-         script: core.setFailed('Integration Tests Failed!')
-          
-      - name: Microsoft Teams Notification
-        uses: skitionek/notify-microsoft-teams@master
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+      - name: Fail workflow if tests failed
+        if: contains(join(needs.*.result, ','), 'failed')
+        uses: actions/github-script@v6
         with:
-          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
-          dry_run: False
-          job: ${{ toJson(job) }}
-          steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} }"
+          script: core.setFailed('Integration Tests Failed!')
+            
+        - name: Microsoft Teams Notification
+          uses: skitionek/notify-microsoft-teams@master
+          if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+          with:
+            webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
+            dry_run: False
+            job: ${{ toJson(job) }}
+            steps: ${{ toJson(steps) }}
+            overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} }"
