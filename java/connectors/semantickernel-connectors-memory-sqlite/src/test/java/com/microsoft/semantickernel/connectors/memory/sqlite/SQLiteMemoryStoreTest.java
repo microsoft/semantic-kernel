@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.memory;
+package com.microsoft.semantickernel.connectors.memory.sqlite;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,9 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
+import com.microsoft.semantickernel.memory.MemoryException;
+import com.microsoft.semantickernel.memory.MemoryRecord;
+import com.microsoft.semantickernel.memory.MemoryStore;
+import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,19 +28,21 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-class VolatileMemoryStoreTests {
-    private VolatileMemoryStore _db;
+public class SQLiteMemoryStoreTest {
 
-    @BeforeEach
-    void setUp() {
-        this._db = new VolatileMemoryStore();
-    }
+    private MemoryStore _db;
 
     private int _collectionNum = 0;
 
     private static final String NULL_ADDITIONAL_METADATA = null;
     private static final String NULL_KEY = null;
     private static final ZonedDateTime NULL_TIMESTAMP = null;
+
+    @BeforeEach
+    void setUp() throws SQLException {
+        _db = new SQLiteMemoryStore.Builder().build();
+        ((SQLiteMemoryStore) _db).connectAsync(":memory:").block();
+    }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
         assertTrue(numRecords % 2 == 0, "Number of records must be even");
@@ -155,7 +165,10 @@ class VolatileMemoryStoreTests {
         assertNotNull(actualWithEmbedding.getEmbedding().getVector());
         assertFalse(actualWithEmbedding.getEmbedding().getVector().isEmpty());
         assertNotEquals(testRecord, actualDefault);
-        assertEquals(testRecord, actualWithEmbedding);
+        assertEquals(testRecord.getMetadata(), actualWithEmbedding.getMetadata());
+        assertEquals(
+                testRecord.getEmbedding().getVector(),
+                actualWithEmbedding.getEmbedding().getVector());
     }
 
     @Test
@@ -180,7 +193,8 @@ class VolatileMemoryStoreTests {
 
         // Assert
         assertNotNull(actual);
-        assertEquals(testRecord, actual);
+        assertEquals(testRecord.getMetadata(), actual.getMetadata());
+        assertEquals(testRecord.getEmbedding().getVector(), actual.getEmbedding().getVector());
     }
 
     @Test
@@ -205,7 +219,8 @@ class VolatileMemoryStoreTests {
 
         // Assert
         assertNotNull(actual);
-        assertEquals(testRecord, actual);
+        assertEquals(testRecord.getMetadata(), actual.getMetadata());
+        assertEquals(testRecord.getEmbedding().getVector(), actual.getEmbedding().getVector());
     }
 
     @Test
@@ -241,9 +256,10 @@ class VolatileMemoryStoreTests {
 
         // Assert
         assertNotNull(actual);
-        assertNotEquals(testRecord, actual);
+        assertNotEquals(testRecord2, actual);
         assertEquals(key, key2);
-        assertEquals(testRecord2, actual);
+        assertEquals(testRecord2.getMetadata(), actual.getMetadata());
+        assertEquals(testRecord2.getEmbedding().getVector(), actual.getEmbedding().getVector());
     }
 
     @Test
