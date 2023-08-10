@@ -44,7 +44,6 @@ def test_register_with_none_skill_name():
     kernel = Kernel()
 
     registered_func = kernel.register_native_function(None, decorated_native_function)
-    # Assumption here is that the GLOBAL_SKILL constant is set to "global" or similar.
     assert registered_func.skill_name == SkillCollection.GLOBAL_SKILL
 
 
