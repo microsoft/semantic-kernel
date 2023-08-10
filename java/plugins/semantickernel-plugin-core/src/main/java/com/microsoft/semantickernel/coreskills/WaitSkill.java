@@ -2,10 +2,8 @@
 package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
-
-import reactor.core.publisher.Mono;
-
 import java.time.Duration;
+import reactor.core.publisher.Mono;
 
 /** WaitSkill provides a set of functions to wait before making the rest of operations. */
 public class WaitSkill {

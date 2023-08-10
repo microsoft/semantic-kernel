@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.e2e;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textembeddings.OpenAITextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
@@ -12,15 +12,13 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TextEmbeddingsTest extends AbstractKernelTest {
 
@@ -88,8 +86,10 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
         CompletionSKFunction chat =
                 kernel.getSemanticFunctionBuilder()
-                        .createFunction(
-                                skPrompt, "recall", "aboutMe", "TextEmbeddingTest#testMemory");
+                        .setPromptTemplate(skPrompt)
+                        .setFunctionName("recall")
+                        .setSkillName("aboutMe")
+                        .build();
 
         VolatileMemoryStore volatileMemoryStore = new VolatileMemoryStore();
         volatileMemoryStore.createCollectionAsync("aboutMe").block();
@@ -105,9 +105,9 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
         SKContext context =
                 SKBuilders.context()
-                        .with(SKBuilders.variables().build())
-                        .with(memory)
-                        .with(kernel.getSkills())
+                        .setVariables(SKBuilders.variables().build())
+                        .setMemory(memory)
+                        .setSkills(kernel.getSkills())
                         .build();
 
         context.getSemanticMemory()

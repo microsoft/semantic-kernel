@@ -10,18 +10,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
 
 class VolatileMemoryStoreTests {
     private VolatileMemoryStore _db;
@@ -93,7 +90,7 @@ class VolatileMemoryStoreTests {
     }
 
     @Test
-    void  itHandlesExceptionsWhenCreatingCollectionAsync() {
+    void itHandlesExceptionsWhenCreatingCollectionAsync() {
         // Arrange
         String collection = null;
 
@@ -101,7 +98,7 @@ class VolatileMemoryStoreTests {
         assertThrows(
                 NullPointerException.class,
                 () -> this._db.createCollectionAsync(collection).block(),
-                "Should not be able to create duplicate collection");
+                "Should not be able to create collection with null name");
     }
 
     @Test
@@ -318,7 +315,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesReturnsAllResultsWithNoMinScoreAsync() {
         // Arrange
-        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -397,9 +394,7 @@ class VolatileMemoryStoreTests {
         Tuple2<MemoryRecord, Float>[] topNResultsArray = topNResults.toArray(new Tuple2[0]);
         for (int j = 0; j < topN - 1; j++) {
             int compare =
-                    Double.compare(
-                            topNResultsArray[j].getT2(),
-                            topNResultsArray[j + 1].getT2());
+                    Double.compare(topNResultsArray[j].getT2(), topNResultsArray[j + 1].getT2());
             assertTrue(compare >= 0);
         }
     }
@@ -407,7 +402,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesReturnsLimit() {
         // Arrange
-        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         this._db.createCollectionAsync(collection).block();
@@ -487,7 +482,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesReturnsEmptyIfLimitZero() {
         // Arrange
-        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         this._db.createCollectionAsync(collection).block();
@@ -566,7 +561,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesReturnsEmptyIfCollectionEmpty() {
         // Arrange
-        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         this._db.createCollectionAsync(collection).block();
@@ -587,7 +582,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync() {
         // Arrange
-        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -677,7 +672,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchAsyncReturnsExpectedAsync() {
         // Arrange
-        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -758,7 +753,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatcheReturnsEmptyIfCollectionEmpty() {
         // Arrange
-        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -778,7 +773,7 @@ class VolatileMemoryStoreTests {
     @Test
     void getNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync() {
         // Arrange
-        Embedding compareEmbedding =  new Embedding(Arrays.asList(1f, 1f, 1f));
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
         String collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -790,7 +785,7 @@ class VolatileMemoryStoreTests {
                             "test" + i,
                             "text" + i,
                             "description" + i,
-                             new Embedding(Arrays.asList(1f, 1f, 1f)),
+                            new Embedding(Arrays.asList(1f, 1f, 1f)),
                             NULL_ADDITIONAL_METADATA,
                             NULL_KEY,
                             NULL_TIMESTAMP);

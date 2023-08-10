@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
-import org.junit.jupiter.api.Test;
-
-import reactor.test.StepVerifier;
-
 import java.time.Duration;
+import org.junit.jupiter.api.Test;
+import reactor.test.StepVerifier;
 
 class WaitSkillTest {
 

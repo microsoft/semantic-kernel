@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.skilldefinition;
 
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.SKFunction;
-
 import java.util.Map;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
@@ -13,7 +14,7 @@ import javax.annotation.Nullable;
  *
  * <p>This is read only
  */
-public interface ReadOnlySkillCollection {
+public interface ReadOnlySkillCollection extends Buildable {
 
     String GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
@@ -48,7 +49,11 @@ public interface ReadOnlySkillCollection {
 
     boolean hasFunction(String skillName, String functionName);
 
-    public interface Builder {
-        public ReadOnlySkillCollection build();
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(Builder.class);
+    }
+
+    interface Builder extends SemanticKernelBuilder<ReadOnlySkillCollection> {
+        ReadOnlySkillCollection build();
     }
 }

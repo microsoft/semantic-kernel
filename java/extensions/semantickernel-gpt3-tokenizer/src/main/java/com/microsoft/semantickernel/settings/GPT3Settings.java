@@ -4,13 +4,11 @@ package com.microsoft.semantickernel.settings;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.ai.AIException;
-
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 public class GPT3Settings {
 

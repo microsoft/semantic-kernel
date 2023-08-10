@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.memory;
 
 import java.time.ZonedDateTime;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 

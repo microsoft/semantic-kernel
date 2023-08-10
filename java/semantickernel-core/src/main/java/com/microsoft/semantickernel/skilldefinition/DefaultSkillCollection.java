@@ -2,12 +2,10 @@
 package com.microsoft.semantickernel.skilldefinition;
 
 import com.microsoft.semantickernel.orchestration.SKFunction;
-
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 

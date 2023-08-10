@@ -11,14 +11,13 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
+import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Enum singleton that service loads builder implementations */
 @SuppressWarnings("ImmutableEnumChecker")
@@ -26,8 +25,8 @@ public enum BuildersSingleton {
     INST;
 
     // Fallback classes in case the META-INF/services directory is missing
-    private static final String FALLBACK_FUNCTION_BUILDER_CLASS =
-            "com.microsoft.semantickernel.SkFunctionBuilders";
+    private static final String FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS =
+            "com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction$Builder";
     private static final String FALLBACK_KERNEL_BUILDER_CLASS =
             "com.microsoft.semantickernel.DefaultKernel$Builder";
     private static final String FALLBACK_TEXT_COMPLETION_BUILDER_CLASS =
@@ -51,28 +50,33 @@ public enum BuildersSingleton {
     private static final String FALLBACK_MEMORY_STORE_BUILDER_CLASS =
             "com.microsoft.semantickernel.memory.VolatileMemoryStore$Builder";
 
-    private final Map<Class, Supplier> builders = new HashMap<>();
+    private final Map<Class<? extends SemanticKernelBuilder>, Supplier<? extends Buildable>>
+            builders = new HashMap<>();
 
     BuildersSingleton() {
         try {
-            registerBuilder(FunctionBuilders.class, FALLBACK_FUNCTION_BUILDER_CLASS);
-            registerBuilder(Kernel.InternalBuilder.class, FALLBACK_KERNEL_BUILDER_CLASS);
+            registerBuilder(
+                    CompletionSKFunction.Builder.class, FALLBACK_COMPLETION_FUNCTION_BUILDER_CLASS);
+            registerBuilder(Kernel.Builder.class, FALLBACK_KERNEL_BUILDER_CLASS);
             registerBuilder(TextCompletion.Builder.class, FALLBACK_TEXT_COMPLETION_BUILDER_CLASS);
             registerBuilder(
                     EmbeddingGeneration.Builder.class,
                     FALLBACK_TEXT_EMBEDDING_GENERATION_BUILDER_CLASS);
             registerBuilder(
                     ReadOnlySkillCollection.Builder.class, FALLBACK_SKILL_COLLECTION_BUILDER_CLASS);
+
             registerBuilder(PromptTemplate.Builder.class, FALLBACK_PROMPT_TEMPLATE_BUILDER_CLASS);
             registerBuilder(ContextVariables.Builder.class, FALLBACK_VARIABLE_BUILDER_CLASS);
+
             registerBuilder(SemanticTextMemory.Builder.class, FALLBACK_SEMANTIC_TEXT_MEMORY_CLASS);
+
             registerBuilder(SKContext.Builder.class, FALLBACK_CONTEXT_BUILDER_CLASS);
             registerBuilder(
                     PromptTemplateEngine.Builder.class,
                     FALLBACK_PROMPT_TEMPLATE_ENGINE_BUILDER_CLASS);
+
             registerBuilder(ChatCompletion.Builder.class, FALLBACK_CHAT_COMPLETION_BUILDER_CLASS);
             registerBuilder(MemoryStore.Builder.class, FALLBACK_MEMORY_STORE_BUILDER_CLASS);
-
         } catch (Throwable e) {
             Logger LOGGER = LoggerFactory.getLogger(BuildersSingleton.class);
             LOGGER.error("Failed to discover Semantic Kernel Builders", e);
@@ -98,31 +102,16 @@ public enum BuildersSingleton {
         }
     }
 
-    private void registerBuilder(Class<?> clazz, String fallbackClassName) {
-        builders.put(clazz, ServiceLoadUtil.findServiceLoader(clazz, fallbackClassName));
+    private <U extends Buildable, T extends SemanticKernelBuilder<U>> void registerBuilder(
+            Class<T> clazz, String fallbackClassName) {
+        builders.put(
+                clazz,
+                (Supplier<? extends Buildable>)
+                        ServiceLoadUtil.findServiceLoader(clazz, fallbackClassName));
     }
 
-    private <T> T getInstance(Class<T> clazz) {
+    public <U extends Buildable, T extends SemanticKernelBuilder<U>> T getInstance(Class<T> clazz) {
         return (T) builders.get(clazz).get();
-    }
-
-    /**
-     * Builder for creating a {@link
-     * com.microsoft.semantickernel.textcompletion.CompletionSKFunction}
-     *
-     * @return a {@link FunctionBuilders}
-     */
-    public FunctionBuilders getFunctionBuilders() {
-        return getInstance(FunctionBuilders.class);
-    }
-
-    /**
-     * Builder for creating a {@link Kernel}
-     *
-     * @return a {@link Kernel.InternalBuilder}
-     */
-    public Kernel.InternalBuilder getKernelBuilder() {
-        return getInstance(Kernel.InternalBuilder.class);
     }
 
     /**

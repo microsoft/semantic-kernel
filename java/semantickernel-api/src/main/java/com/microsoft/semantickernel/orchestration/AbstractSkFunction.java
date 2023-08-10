@@ -1,22 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
-import reactor.core.publisher.Mono;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /** Abstract implementation of the SKFunction interface. */
 public abstract class AbstractSkFunction<RequestConfiguration>
@@ -91,8 +88,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
 
             context =
                     SKBuilders.context()
-                            .with(NullMemory.getInstance())
-                            .with(skillsSupplier == null ? null : skillsSupplier.get())
+                            .setMemory(NullMemory.getInstance())
+                            .setSkills(skillsSupplier == null ? null : skillsSupplier.get())
                             .build();
         } else {
             context = context.copy();
@@ -116,8 +113,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
         if (context == null) {
             context =
                     SKBuilders.context()
-                            .with(SKBuilders.variables().build())
-                            .with(NullMemory.getInstance())
+                            .setVariables(SKBuilders.variables().build())
+                            .setMemory(NullMemory.getInstance())
                             .build();
         } else {
             context = context.copy();
@@ -226,7 +223,11 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             @Nullable SemanticTextMemory semanticMemory,
             @Nullable ReadOnlySkillCollection skills) {
         SKContext tmpContext =
-                SKBuilders.context().with(variables).with(semanticMemory).with(skills).build();
+                SKBuilders.context()
+                        .setVariables(variables)
+                        .setMemory(semanticMemory)
+                        .setSkills(skills)
+                        .build();
         return invokeAsync(tmpContext, null);
     }
 

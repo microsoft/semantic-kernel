@@ -8,15 +8,12 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-
-import org.slf4j.Logger;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
 
 /**
  * Builds an OpenAI client instance, see {@link SettingsMap} documentation for details on how the

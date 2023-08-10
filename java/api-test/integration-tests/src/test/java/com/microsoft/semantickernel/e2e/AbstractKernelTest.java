@@ -3,19 +3,17 @@ package com.microsoft.semantickernel.e2e;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
-import org.junit.jupiter.api.condition.EnabledIf;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import org.junit.jupiter.api.condition.EnabledIf;
 
 @EnabledIf("isAzureTestEnabled")
 public class AbstractKernelTest {
@@ -31,7 +29,10 @@ public class AbstractKernelTest {
         return SKBuilders.kernel()
                 .withDefaultAIService(textCompletion)
                 .withDefaultAIService(
-                        SKBuilders.textEmbeddingGenerationService().build(openAIClient, model))
+                        SKBuilders.textEmbeddingGenerationService()
+                                .withOpenAIClient(openAIClient)
+                                .setModelId(model)
+                                .build())
                 .withMemoryStorage(new VolatileMemoryStore())
                 .build();
     }

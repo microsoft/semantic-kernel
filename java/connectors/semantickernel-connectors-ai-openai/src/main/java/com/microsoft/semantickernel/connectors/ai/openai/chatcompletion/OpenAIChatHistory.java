@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.connectors.ai.openai.chatcompletion;
 
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-
 import javax.annotation.Nullable;
 
 /** OpenAI Chat content */

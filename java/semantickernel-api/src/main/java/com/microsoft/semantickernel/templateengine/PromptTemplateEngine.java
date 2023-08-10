@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine;
 
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
-
+import java.util.List;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 /** Prompt template engine interface */
-public interface PromptTemplateEngine {
+public interface PromptTemplateEngine extends Buildable {
 
     /*
         /// <summary>
@@ -42,9 +43,9 @@ public interface PromptTemplateEngine {
      */
     List<Block> extractBlocks(String promptTemplate);
 
-    abstract class Builder {
-        protected Builder() {}
-
-        public abstract PromptTemplateEngine build();
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(Builder.class);
     }
+
+    interface Builder extends SemanticKernelBuilder<PromptTemplateEngine> {}
 }

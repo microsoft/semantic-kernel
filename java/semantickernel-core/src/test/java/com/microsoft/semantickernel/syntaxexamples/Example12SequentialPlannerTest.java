@@ -7,7 +7,7 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TextSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.PlanningException;
@@ -16,14 +16,11 @@ import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
+import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import reactor.util.function.Tuples;
-
-import java.io.IOException;
 
 public class Example12SequentialPlannerTest {
     @Test
@@ -82,7 +79,9 @@ public class Example12SequentialPlannerTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.textCompletionService()
-                                        .build(client, "text-davinci-002"))
+                                        .setModelId("text-davinci-002")
+                                        .withOpenAIClient(client)
+                                        .build())
                         .build();
 
         kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");

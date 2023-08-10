@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TextSkill;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
@@ -175,11 +175,16 @@ public class Example12_SequentialPlanner {
         OpenAIAsyncClient client = SamplesConfig.getClient();
         var kernel = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.chatCompletion()
-                        .build(client, "gpt-35-turbo"))
+                        .withOpenAIClient(client)
+                        .setModelId("gpt-35-turbo")
+                        .build())
                 .withMemory(SKBuilders
                         .semanticTextMemory()
                         .setEmbeddingGenerator(
-                                SKBuilders.textEmbeddingGenerationService().build(client, "text-davinci-003")
+                                SKBuilders.textEmbeddingGenerationService()
+                                        .withOpenAIClient(client)
+                                        .setModelId("gpt-35-turbo")
+                                        .build()
                         )
                         .setStorage(new VolatileMemoryStore())
                         .build())

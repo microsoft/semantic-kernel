@@ -4,9 +4,7 @@ package com.microsoft.semantickernel.memory;
 import com.microsoft.semantickernel.DefaultKernel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-
 import java.util.Objects;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 

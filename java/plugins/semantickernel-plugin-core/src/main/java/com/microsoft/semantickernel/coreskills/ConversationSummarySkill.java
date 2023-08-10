@@ -2,18 +2,15 @@
 package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.text.TextChunker;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /** Semantic skill that enables conversations summarization */
 public class ConversationSummarySkill {
@@ -33,46 +30,58 @@ public class ConversationSummarySkill {
     public ConversationSummarySkill(Kernel kernel) {
         this.kernel = kernel;
         this.summarizeConversationFunction =
-                SKBuilders.completionFunctions(kernel)
-                        .createFunction(
-                                SemanticFunctionConstants.SummarizeConversationDefinition,
-                                "summarize",
-                                "ConversationSummarySkill",
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .setPromptTemplate(
+                                SemanticFunctionConstants.SummarizeConversationDefinition)
+                        .setFunctionName("summarize")
+                        .setSkillName("ConversationSummarySkill")
+                        .setDescription(
                                 "Given a section of a conversation transcript, summarize the part"
-                                        + " of the conversation.",
+                                        + " of the conversation.")
+                        .setCompletionConfig(
                                 SKBuilders.completionConfig()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
                                         .topP(0.5)
-                                        .build());
+                                        .build())
+                        .build();
 
         this.conversationActionItemsFunction =
-                SKBuilders.completionFunctions(kernel)
-                        .createFunction(
-                                SemanticFunctionConstants.GetConversationActionItemsDefinition,
-                                "ActionItems",
-                                "ConversationSummarySkill",
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .setPromptTemplate(
+                                SemanticFunctionConstants.GetConversationActionItemsDefinition)
+                        .setFunctionName("ActionItems")
+                        .setSkillName("ConversationSummarySkill")
+                        .setDescription(
                                 "Given a section of a conversation transcript, identify action"
-                                        + " items.",
+                                        + " items.")
+                        .setCompletionConfig(
                                 SKBuilders.completionConfig()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
                                         .topP(0.5)
-                                        .build());
+                                        .build())
+                        .build();
 
         this.conversationTopicsFunction =
-                SKBuilders.completionFunctions(kernel)
-                        .createFunction(
-                                SemanticFunctionConstants.GetConversationTopicsDefinition,
-                                "Topics",
-                                "ConversationSummarySkill",
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .setPromptTemplate(
+                                SemanticFunctionConstants.GetConversationTopicsDefinition)
+                        .setFunctionName("Topics")
+                        .setSkillName("ConversationSummarySkill")
+                        .setDescription(
                                 "Analyze a conversation transcript and extract key topics worth"
-                                        + " remembering.",
+                                        + " remembering.")
+                        .setCompletionConfig(
                                 SKBuilders.completionConfig()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
                                         .topP(0.5)
-                                        .build());
+                                        .build())
+                        .build();
     }
 
     /**
@@ -92,7 +101,7 @@ public class ConversationSummarySkill {
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
 
         if (context == null) {
-            context = SKBuilders.context().with(kernel.getSkills()).build();
+            context = SKBuilders.context().setSkills(kernel.getSkills()).build();
         }
 
         SKContext completionContext = context.copy();

@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.templateengine.blocks.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

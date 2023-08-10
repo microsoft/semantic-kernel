@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.templateengine.blocks;
 
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.templateengine.TemplateException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

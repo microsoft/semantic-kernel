@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.coreskills;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
-
 import java.util.Locale;
 
 /** TextSkill provides a set of functions to manipulate strings. */

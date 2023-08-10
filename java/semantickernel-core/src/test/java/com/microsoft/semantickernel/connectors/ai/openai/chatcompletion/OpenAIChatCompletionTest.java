@@ -7,24 +7,20 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.ai.AIException;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.syntaxexamples.Example17ChatGPTTest;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 public class OpenAIChatCompletionTest {
 
@@ -35,7 +31,10 @@ public class OpenAIChatCompletionTest {
         Kernel kernel =
                 SKBuilders.kernel()
                         .withDefaultAIService(
-                                SKBuilders.chatCompletion().build(client, "gpt-3.5-turbo-0301"))
+                                SKBuilders.chatCompletion()
+                                        .withOpenAIClient(client)
+                                        .setModelId("gpt-3.5-turbo-0301")
+                                        .build())
                         .build();
 
         TextCompletion textCompletion = kernel.getService(null, TextCompletion.class);
@@ -65,7 +64,10 @@ public class OpenAIChatCompletionTest {
         Kernel kernel =
                 SKBuilders.kernel()
                         .withDefaultAIService(
-                                SKBuilders.chatCompletion().build(client, "gpt-3.5-turbo-0301"))
+                                SKBuilders.chatCompletion()
+                                        .withOpenAIClient(client)
+                                        .setModelId("gpt-3.5-turbo-0301")
+                                        .build())
                         .build();
 
         ChatCompletion<OpenAIChatHistory> chatGPT = kernel.getService(null, ChatCompletion.class);

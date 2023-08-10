@@ -3,18 +3,15 @@ package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/>./>.
@@ -25,8 +22,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
     @Nonnull private /*final*/ MemoryStore _storage;
 
     public DefaultSemanticTextMemory(
-            @Nonnull MemoryStore storage,
-            @Nonnull EmbeddingGeneration<String> embeddingGenerator) {
+            @Nonnull MemoryStore storage, @Nonnull EmbeddingGeneration<String> embeddingGenerator) {
         this._embeddingGenerator = embeddingGenerator;
         // TODO: this assignment raises EI_EXPOSE_REP2 in spotbugs (filtered out for now)
         this._storage = storage;
@@ -57,8 +53,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                     new MemoryRecordMetadata(
                                             true, id, text, description, "", additionalMetadata);
                             MemoryRecord memoryRecord =
-                                    new MemoryRecord(
-                                            data, embeddings.iterator().next(), id, null);
+                                    new MemoryRecord(data, embeddings.iterator().next(), id, null);
 
                             return _storage.upsertAsync(collection, memoryRecord)
                                     .onErrorResume(
@@ -93,8 +88,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                 records.stream()
                                         .map(
                                                 record -> {
-                                                    Tuple2<MemoryRecord, Float> tuple =
-                                                            record;
+                                                    Tuple2<MemoryRecord, Float> tuple = record;
                                                     MemoryRecord memoryRecord = tuple.getT1();
                                                     Number relevanceScore = tuple.getT2();
                                                     return new MemoryQueryResult(

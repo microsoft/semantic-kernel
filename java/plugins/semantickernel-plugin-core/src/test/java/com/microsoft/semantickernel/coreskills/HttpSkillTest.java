@@ -7,12 +7,10 @@ import static org.mockito.Mockito.when;
 import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 

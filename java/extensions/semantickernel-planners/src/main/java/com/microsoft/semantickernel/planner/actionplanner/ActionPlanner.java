@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.planner.actionplanner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
@@ -14,19 +14,15 @@ import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import reactor.core.publisher.Mono;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 /// <summary>
 /// Action Planner allows to select one function out of many, to achieve a given goal.
@@ -71,19 +67,18 @@ public class ActionPlanner {
         }
 
         this.plannerFunction =
-                SKBuilders.completionFunctions(kernel)
-                        .createFunction(
-                                promptTemplate,
-                                null,
-                                SkillName,
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.0, 0.0, 0.0, 0.0, 1024));
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .setPromptTemplate(promptTemplate)
+                        .setSkillName(SkillName)
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0.0, 0.0, 0.0, 0.0, 1024))
+                        .build();
 
         kernel.importSkill(this, SkillName);
 
         this.kernel = kernel;
-        this.context = SKBuilders.context().with(kernel.getSkills()).build();
+        this.context = SKBuilders.context().setSkills(kernel.getSkills()).build();
     }
 
     public static String read(String file) {

@@ -5,17 +5,14 @@ import static com.microsoft.semantickernel.chatcompletion.ChatHistory.AuthorRole
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.DefaultKernelTest;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-
+import java.util.function.BiFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
-
-import java.util.function.BiFunction;
 
 public class Example33StreamingChatTest {
 
@@ -37,7 +34,10 @@ public class Example33StreamingChatTest {
                                 "Second response"));
 
         ChatCompletion<?> chatCompletion =
-                SKBuilders.chatCompletion().build(client, "gpt-35-turbo");
+                SKBuilders.chatCompletion()
+                        .withOpenAIClient(client)
+                        .setModelId("gpt-35-turbo")
+                        .build();
 
         ChatHistory chatHistory =
                 chatCompletion.createNewChat("You are a librarian, expert about books");

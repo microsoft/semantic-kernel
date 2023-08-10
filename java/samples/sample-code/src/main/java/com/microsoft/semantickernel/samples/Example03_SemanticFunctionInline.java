@@ -33,17 +33,16 @@ public class Example03_SemanticFunctionInline {
     public static void inlineFunction(Kernel kernel, String prompt, String functionName, String text) {
         SKFunction summarize = kernel
                 .getSemanticFunctionBuilder()
-                .createFunction(
-                        prompt,
-                        functionName,
-                        null,
-                        null,
+                .setPromptTemplate(prompt)
+                .setFunctionName(functionName)
+                .setCompletionConfig(
                         new PromptTemplateConfig.CompletionConfig(
                                 0.2,
                                 0.5,
                                 0,
                                 0,
-                                2000));
+                                2000))
+                .build();
 
         Mono<SKContext> result = summarize.invokeAsync(text);
 

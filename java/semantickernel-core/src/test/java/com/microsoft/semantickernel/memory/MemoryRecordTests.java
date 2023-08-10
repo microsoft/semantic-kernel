@@ -7,12 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 class MemoryRecordTests {
     private static final boolean _isReference = false;
@@ -21,7 +19,7 @@ class MemoryRecordTests {
     private static final String _description = "description";
     private static final String _externalSourceName = "externalSourceName";
     private static final String _additionalMetadata = "value";
-    private static final Embedding _embedding =  new Embedding(Arrays.asList(1f, 2f, 3f));
+    private static final Embedding _embedding = new Embedding(Arrays.asList(1f, 2f, 3f));
 
     @Test
     void itCanBeConstructedFromMetadataAndVector() {

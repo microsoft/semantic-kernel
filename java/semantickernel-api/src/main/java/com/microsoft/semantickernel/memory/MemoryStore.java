@@ -2,17 +2,17 @@
 package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import java.util.Collection;
+import java.util.List;
+import javax.annotation.Nonnull;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 /** An interface for storing and retrieving indexed {@link MemoryRecord} objects in a data store. */
-public interface MemoryStore {
+public interface MemoryStore extends Buildable {
 
     /**
      * Creates a new collection in the data store.
@@ -148,7 +148,9 @@ public interface MemoryStore {
             double minRelevanceScore,
             boolean withEmbedding);
 
-    interface Builder {
-        MemoryStore build();
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(Builder.class);
     }
+
+    interface Builder extends SemanticKernelBuilder<MemoryStore> {}
 }

@@ -3,15 +3,17 @@ package com.microsoft.semantickernel.orchestration;
 
 // Copyright (c) Microsoft. All rights reserved.
 
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 /**
  * Context Variables is a data structure that holds temporary data while a task is being performed.
  * It is accessed by functions in the pipeline.
  */
-public interface ContextVariables {
+public interface ContextVariables extends Buildable {
 
     /** Default key for the main input */
     String MAIN_KEY = "input";
@@ -45,9 +47,12 @@ public interface ContextVariables {
      */
     String prettyPrint();
 
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(ContextVariables.Builder.class);
+    }
+
     /** Builder for ContextVariables */
-    interface Builder {
-        ContextVariables build();
+    interface Builder extends SemanticKernelBuilder<ContextVariables> {
 
         /**
          * Builds an instance with the given content in the default main key

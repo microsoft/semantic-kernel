@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.templateengine.blocks;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
-
 import reactor.core.publisher.Mono;
 
 /** Interface of dynamic blocks that need async IO to be rendered. */

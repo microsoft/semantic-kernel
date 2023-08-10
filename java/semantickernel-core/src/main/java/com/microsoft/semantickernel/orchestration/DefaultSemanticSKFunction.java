@@ -1,16 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /// <summary>
 /// Standard Semantic Kernel callable function.
@@ -40,9 +37,9 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
             assertSkillSupplierRegistered();
             context =
                     SKBuilders.context()
-                            .with(SKBuilders.variables().build())
-                            .with(NullMemory.getInstance())
-                            .with(super.getSkillsSupplier().get())
+                            .setVariables(SKBuilders.variables().build())
+                            .setMemory(NullMemory.getInstance())
+                            .setSkills(super.getSkillsSupplier().get())
                             .build();
         } else {
             context = context.copy();

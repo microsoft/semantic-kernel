@@ -6,9 +6,6 @@ import static com.microsoft.semantickernel.exceptions.ConfigurationException.Err
 import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.NoValidConfigurationsFound;
 
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-
-import org.slf4j.Logger;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
 
 /**
  * Creates a map of settings to be used in configuration, the settings are loaded from the following

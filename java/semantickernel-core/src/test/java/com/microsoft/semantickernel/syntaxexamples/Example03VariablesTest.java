@@ -4,15 +4,13 @@ package com.microsoft.semantickernel.syntaxexamples;
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.syntaxexamples.skills.StaticTextSkill;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import reactor.core.publisher.Mono;
 
 public class Example03VariablesTest {

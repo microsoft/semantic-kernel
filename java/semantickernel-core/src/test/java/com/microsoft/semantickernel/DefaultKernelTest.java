@@ -9,29 +9,25 @@ import com.azure.ai.openai.models.ChatMessage;
 import com.azure.ai.openai.models.Choice;
 import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Mockito;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuple3;
-import reactor.util.function.Tuples;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mockito;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
+import reactor.util.function.Tuples;
 
 public class DefaultKernelTest {
 
@@ -50,16 +46,17 @@ public class DefaultKernelTest {
 
         CompletionSKFunction chat =
                 kernel.getSemanticFunctionBuilder()
-                        .createFunction(
-                                prompt,
-                                "ChatBot",
-                                null,
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000));
+                        .withKernel(kernel)
+                        .setPromptTemplate(prompt)
+                        .setFunctionName("ChatBot")
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000))
+                        .build();
 
         SKContext readOnlySkContext =
                 SKBuilders.context()
-                        .build(kernel)
+                        .withKernel(kernel)
+                        .build()
                         .setVariable("history", "")
                         .setVariable("user_input", "A");
 
@@ -317,13 +314,13 @@ public class DefaultKernelTest {
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
         CompletionSKFunction summarize =
-                SKBuilders.completionFunctions(kernel)
-                        .createFunction(
-                                prompt,
-                                "summarize",
-                                null,
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .setPromptTemplate(prompt)
+                        .setFunctionName("summarize")
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
+                        .build();
 
         Mono<SKContext> mono = summarize.invokeAsync(text);
         SKContext result = mono.block();

@@ -5,9 +5,7 @@ import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 public interface SkillExecutor {

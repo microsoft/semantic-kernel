@@ -1,19 +1,20 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.textcompletion;
 
+import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-
+import java.util.List;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 /** Semantic function for text completion */
-public interface CompletionSKFunction extends SKFunction<CompletionRequestSettings> {
+public interface CompletionSKFunction extends SKFunction<CompletionRequestSettings>, Buildable {
 
     /**
      * Method to aggregate partitioned results of a semantic function.
@@ -25,59 +26,27 @@ public interface CompletionSKFunction extends SKFunction<CompletionRequestSettin
     Mono<SKContext> aggregatePartitionedResultsAsync(
             List<String> partitionedInput, @Nullable SKContext context);
 
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(CompletionSKFunction.Builder.class);
+    }
+
     /** Builder for completion functions */
-    abstract class Builder {
+    interface Builder extends SemanticKernelBuilder<CompletionSKFunction> {
 
-        protected Builder() {}
+        Builder withKernel(Kernel kernel);
 
-        /**
-         * Create a new completion function
-         *
-         * @param promptTemplate Prompt template
-         * @param config Prompt template config
-         * @param functionName Function name
-         * @param skillName Skill name
-         * @return Completion function
-         */
-        public abstract CompletionSKFunction createFunction(
-                String promptTemplate,
-                PromptTemplateConfig config,
-                String functionName,
-                @Nullable String skillName);
+        Builder setPromptTemplate(String promptTemplate);
 
-        /**
-         * Create a new completion function
-         *
-         * @param prompt Prompt
-         * @param functionConfig Function config
-         * @return Completion function
-         */
-        public abstract CompletionSKFunction createFunction(
-                String prompt, PromptTemplateConfig.CompletionConfig functionConfig);
+        Builder setPromptTemplateConfig(PromptTemplateConfig config);
 
-        /**
-         * Create a new completion function
-         *
-         * @param functionName Function name
-         * @param skillName Skill name
-         * @return Completion function
-         */
-        public abstract CompletionSKFunction createFunction(
-                @Nullable String skillName,
-                String functionName,
-                SemanticFunctionConfig functionConfig);
+        Builder setCompletionConfig(PromptTemplateConfig.CompletionConfig completionConfig);
 
-        public abstract CompletionSKFunction createFunction(
-                String promptTemplate,
-                @Nullable String functionName,
-                @Nullable String skillName,
-                @Nullable String description);
+        Builder setSemanticFunctionConfig(SemanticFunctionConfig functionConfig);
 
-        public abstract CompletionSKFunction createFunction(
-                String prompt,
-                @Nullable String functionName,
-                @Nullable String skillName,
-                @Nullable String description,
-                PromptTemplateConfig.CompletionConfig completionConfig);
+        Builder setSkillName(@Nullable String skillName);
+
+        Builder setFunctionName(@Nullable String functionName);
+
+        Builder setDescription(String description);
     }
 }

@@ -3,22 +3,19 @@ package com.microsoft.semantickernel.e2e;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
-
-import java.io.IOException;
 
 public class KernelTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelTest.class);
@@ -26,15 +23,14 @@ public class KernelTest extends AbstractKernelTest {
     private static void executeCompletion(Kernel kernel) {
         CompletionSKFunction summarize =
                 kernel.getSemanticFunctionBuilder()
-                        .createFunction(
+                        .setPromptTemplate(
                                 """
                                         {{$input}}
 
-                                        One line TLDR with the fewest words.""",
-                                null,
-                                "",
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256));
+                                        One line TLDR with the fewest words.""")
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256))
+                        .build();
 
         String text1 =
                 """

@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.memory;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import javax.annotation.Nonnull;
 
 /** Class representing the metadata associated with a Semantic Kernel memory. */

@@ -2,11 +2,9 @@
 package com.microsoft.semantickernel.textcompletion;
 
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.Nonnull;
 
 /** Settings for a text completion request */

@@ -5,14 +5,12 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import reactor.util.function.Tuples;
 
 public class ActionPlannerTest {
@@ -53,7 +51,9 @@ public class ActionPlannerTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.textCompletionService()
-                                        .build(client, "text-davinci-002"))
+                                        .setModelId("text-davinci-002")
+                                        .withOpenAIClient(client)
+                                        .build())
                         .build();
 
         SkillWithSomeArgs skill = Mockito.spy(new SkillWithSomeArgs());

@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.syntaxexamples.skills;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
-
 import reactor.core.publisher.Mono;
 
 public class SearchEngineSkill {

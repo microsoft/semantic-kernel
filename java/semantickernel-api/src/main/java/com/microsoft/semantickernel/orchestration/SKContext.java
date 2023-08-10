@@ -2,17 +2,16 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-
+import javax.annotation.CheckReturnValue;
 import reactor.util.annotation.Nullable;
 
-import java.util.function.Supplier;
-
-import javax.annotation.CheckReturnValue;
-
 /** Semantic Kernel context. */
-public interface SKContext {
+public interface SKContext extends Buildable {
 
     SKContext build(
             ContextVariables variables,
@@ -94,16 +93,13 @@ public interface SKContext {
      */
     SKContext copy();
 
-    interface BuilderSupplier extends Supplier<Builder> {}
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(SKContext.Builder.class);
+    }
 
-    interface Builder {
-        SKContext build(ReadOnlySkillCollection skills);
+    interface Builder extends SemanticKernelBuilder<SKContext> {
 
-        SKContext build();
-
-        SKContext build(Class<? extends SKContext> clazz);
-
-        Builder with(ContextVariables variables);
+        Builder setVariables(ContextVariables variables);
 
         /**
          * Sets the skills
@@ -111,7 +107,7 @@ public interface SKContext {
          * @param skills null argument will be ignored
          * @return Context for fluent calls
          */
-        Builder with(@Nullable ReadOnlySkillCollection skills);
+        Builder setSkills(@Nullable ReadOnlySkillCollection skills);
 
         /**
          * Sets the memory
@@ -119,7 +115,7 @@ public interface SKContext {
          * @param memory null argument will be ignored
          * @return Context for fluent calls
          */
-        Builder with(@Nullable SemanticTextMemory memory);
+        Builder setMemory(@Nullable SemanticTextMemory memory);
 
         Builder clone(SKContext context);
 
@@ -130,6 +126,6 @@ public interface SKContext {
          * @param kernel Kernel to use
          * @return Context
          */
-        SKContext build(Kernel kernel);
+        Builder withKernel(Kernel kernel);
     }
 }

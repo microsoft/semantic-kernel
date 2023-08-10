@@ -2,20 +2,16 @@
 package com.microsoft.semantickernel.planner.sequentialplanner;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.FunctionBuilders;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
-
-import javax.annotation.Nullable;
 
 /** A planner that uses semantic function to create a sequential plan. */
 public class SequentialPlanner {
@@ -53,16 +49,18 @@ public class SequentialPlanner {
         }
 
         this.functionFlowFunction =
-                FunctionBuilders.getCompletionBuilder(kernel)
-                        .createFunction(
-                                promptTemplate,
-                                null,
-                                RestrictedSkillName,
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .setPromptTemplate(promptTemplate)
+                        .setSkillName(RestrictedSkillName)
+                        .setDescription(
                                 "Given a request or command or goal generate a step by step plan to"
                                     + " fulfill the request using functions. This ability is also"
-                                    + " known as decision making and function flow",
+                                    + " known as decision making and function flow")
+                        .setCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(
-                                        0.0, 0.0, 0.0, 0.0, this.config.getMaxTokens()));
+                                        0.0, 0.0, 0.0, 0.0, this.config.getMaxTokens()))
+                        .build();
 
         this.kernel = kernel;
     }
@@ -74,7 +72,7 @@ public class SequentialPlanner {
      * @return The plan
      */
     public Mono<Plan> createPlanAsync(String goal) {
-        return createPlanAsync(goal, SKBuilders.context().build(kernel));
+        return createPlanAsync(goal, SKBuilders.context().withKernel(kernel).build());
     }
 
     /**

@@ -6,12 +6,10 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
 
 public class InlineFunctionTest extends AbstractKernelTest {
@@ -26,12 +24,11 @@ public class InlineFunctionTest extends AbstractKernelTest {
 
         CompletionSKFunction summarize =
                 kernel.getSemanticFunctionBuilder()
-                        .createFunction(
-                                prompt,
-                                "summarize",
-                                null,
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
+                        .setPromptTemplate(prompt)
+                        .setFunctionName("summarize")
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
+                        .build();
 
         String text =
                 """

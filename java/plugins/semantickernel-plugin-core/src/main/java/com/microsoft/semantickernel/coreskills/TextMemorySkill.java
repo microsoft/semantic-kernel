@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
@@ -9,13 +9,10 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
+import reactor.core.publisher.Mono;
 
 /**
  * TextMemorySkill provides a skill to save or recall information from the long or short term.
@@ -129,9 +126,9 @@ public class TextMemorySkill {
                         it -> {
                             context.setVariable(TextMemorySkill.KEY_PARAM, it);
                             return SKBuilders.context()
-                                    .with(context.getVariables())
-                                    .with(context.getSkills())
-                                    .with(context.getSemanticMemory())
+                                    .setVariables(context.getVariables())
+                                    .setSkills(context.getSkills())
+                                    .setMemory(context.getSemanticMemory())
                                     .build();
                         });
     }
