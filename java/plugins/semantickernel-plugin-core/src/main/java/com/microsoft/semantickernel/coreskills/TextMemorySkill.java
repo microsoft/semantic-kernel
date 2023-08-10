@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.coreskills;
 
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
@@ -126,9 +126,9 @@ public class TextMemorySkill {
                         it -> {
                             context.setVariable(TextMemorySkill.KEY_PARAM, it);
                             return SKBuilders.context()
-                                    .with(context.getVariables())
-                                    .with(context.getSkills())
-                                    .with(context.getSemanticMemory())
+                                    .setVariables(context.getVariables())
+                                    .setSkills(context.getSkills())
+                                    .setMemory(context.getSemanticMemory())
                                     .build();
                         });
     }

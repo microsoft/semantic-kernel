@@ -7,8 +7,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.AzureOpenAISettings;
 import com.microsoft.semantickernel.connectors.ai.openai.util.SettingsMap;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
@@ -70,21 +69,25 @@ public class Example08_RetryHandler {
 
         String prompt = "{{$input}}\nSummarize the content above.";
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
+        TextCompletion textCompletion = SKBuilders.textCompletionService()
+                .setModelId("text-davinci-003")
+                .withOpenAIClient(client)
+                .build();
 
         Kernel kernel = SKBuilders
                 .kernel()
                 .withDefaultAIService(textCompletion)
                 .build();
 
-        CompletionSKFunction summarizeFunc = SKBuilders.completionFunctions(kernel)
-                .createFunction(
-                        prompt,
-                        "summarize",
-                        null,
-                        null,
+        CompletionSKFunction summarizeFunc = SKBuilders
+                .completionFunctions()
+                .withKernel(kernel)
+                .setPromptTemplate(prompt)
+                .setFunctionName("summarize")
+                .setCompletionConfig(
                         new PromptTemplateConfig.CompletionConfig(
-                                0.2, 0.5, 0, 0, 2000));
+                                0.2, 0.5, 0, 0, 2000))
+                .build();
 
         kernel.registerSemanticFunction(summarizeFunc);
 

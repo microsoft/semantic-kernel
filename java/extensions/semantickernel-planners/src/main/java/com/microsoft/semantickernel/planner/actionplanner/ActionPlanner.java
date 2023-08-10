@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.planner.actionplanner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
@@ -67,19 +67,18 @@ public class ActionPlanner {
         }
 
         this.plannerFunction =
-                SKBuilders.completionFunctions(kernel)
-                        .createFunction(
-                                promptTemplate,
-                                null,
-                                SkillName,
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(
-                                        0.0, 0.0, 0.0, 0.0, 1024));
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .setPromptTemplate(promptTemplate)
+                        .setSkillName(SkillName)
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0.0, 0.0, 0.0, 0.0, 1024))
+                        .build();
 
         kernel.importSkill(this, SkillName);
 
         this.kernel = kernel;
-        this.context = SKBuilders.context().with(kernel.getSkills()).build();
+        this.context = SKBuilders.context().setSkills(kernel.getSkills()).build();
     }
 
     public static String read(String file) {

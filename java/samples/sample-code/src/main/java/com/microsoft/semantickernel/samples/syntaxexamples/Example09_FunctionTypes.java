@@ -3,9 +3,8 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
@@ -19,7 +18,10 @@ public class Example09_FunctionTypes {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
+        TextCompletion textCompletion = SKBuilders.textCompletionService()
+                .setModelId("text-davinci-003")
+                .withOpenAIClient(client)
+                .build();
 
         Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
 
@@ -33,7 +35,7 @@ public class Example09_FunctionTypes {
 
 
         var fakeContext = SKBuilders.context()
-                .with(kernel.getSkills())
+                .setSkills(kernel.getSkills())
                 .build();
 
         // The kernel takes care of wiring the input appropriately

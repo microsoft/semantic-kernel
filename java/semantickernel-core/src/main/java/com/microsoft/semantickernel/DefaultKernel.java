@@ -2,8 +2,7 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.ai.AIException;
-import com.microsoft.semantickernel.builders.FunctionBuilders;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
@@ -12,12 +11,12 @@ import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
 import com.microsoft.semantickernel.orchestration.RegistrableSkFunction;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.services.AIService;
+import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.AIServiceProvider;
 import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
@@ -29,6 +28,8 @@ import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import jakarta.inject.Inject;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -133,11 +134,12 @@ public class DefaultKernel implements Kernel {
         skills.entrySet().stream()
                 .map(
                         (entry) -> {
-                            return DefaultCompletionSKFunction.createFunction(
-                                    skillName,
-                                    entry.getKey(),
-                                    entry.getValue(),
-                                    promptTemplateEngine);
+                            return SKBuilders.completionFunctions()
+                                    .withKernel(this)
+                                    .setSkillName(skillName)
+                                    .setFunctionName(entry.getKey())
+                                    .setSemanticFunctionConfig(entry.getValue())
+                                    .build();
                         })
                 .forEach(this::registerSemanticFunction);
 
@@ -185,7 +187,7 @@ public class DefaultKernel implements Kernel {
 
     @Override
     public CompletionSKFunction.Builder getSemanticFunctionBuilder() {
-        return FunctionBuilders.getCompletionBuilder(this);
+        return SKBuilders.completionFunctions().withKernel(this);
     }
 
     @Override
@@ -269,7 +271,11 @@ public class DefaultKernel implements Kernel {
         // TODO: The SemanticTextMemory can be null, but there should be a way to provide it.
         //       Not sure registerMemory is the right way.
         Mono<SKContext> pipelineBuilder =
-                Mono.just(SKBuilders.context().with(variables).with(getSkills()).build());
+                Mono.just(
+                        SKBuilders.context()
+                                .setVariables(variables)
+                                .setSkills(getSkills())
+                                .build());
 
         for (SKFunction f : Arrays.asList(pipeline)) {
             pipelineBuilder =
@@ -279,17 +285,17 @@ public class DefaultKernel implements Kernel {
                                             () -> {
                                                 // Previous pipeline did not produce a result
                                                 return SKBuilders.context()
-                                                        .with(variables)
-                                                        .with(getSkills())
+                                                        .setVariables(variables)
+                                                        .setSkills(getSkills())
                                                         .build();
                                             }))
                             .flatMap(
                                     newContext -> {
                                         SKContext context =
                                                 SKBuilders.context()
-                                                        .with(newContext.getVariables())
-                                                        .with(newContext.getSemanticMemory())
-                                                        .with(newContext.getSkills())
+                                                        .setVariables(newContext.getVariables())
+                                                        .setMemory(newContext.getSemanticMemory())
+                                                        .setSkills(newContext.getSkills())
                                                         .build();
                                         return f.invokeAsync(context, null);
                                     });
@@ -298,10 +304,181 @@ public class DefaultKernel implements Kernel {
         return pipelineBuilder;
     }
 
-    public static class Builder implements Kernel.InternalBuilder {
+    public static class Builder implements Kernel.Builder {
+        @Nullable private KernelConfig config = null;
+        @Nullable private PromptTemplateEngine promptTemplateEngine = null;
+        @Nullable private final AIServiceCollection aiServices = new AIServiceCollection();
+        private Supplier<SemanticTextMemory> memoryFactory = NullMemory::new;
+        private Supplier<MemoryStore> memoryStorageFactory = null;
 
-        @Override
-        public Kernel build(
+        /**
+         * Set the kernel configuration
+         *
+         * @param kernelConfig Kernel configuration
+         * @return Builder
+         */
+        public Kernel.Builder withConfiguration(KernelConfig kernelConfig) {
+            this.config = kernelConfig;
+            return this;
+        }
+
+        /**
+         * Add prompt template engine to the kernel to be built.
+         *
+         * @param promptTemplateEngine Prompt template engine to add.
+         * @return Updated kernel builder including the prompt template engine.
+         */
+        public Kernel.Builder withPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine) {
+            Verify.notNull(promptTemplateEngine);
+            this.promptTemplateEngine = promptTemplateEngine;
+            return this;
+        }
+
+        /**
+         * Add memory storage to the kernel to be built.
+         *
+         * @param storage Storage to add.
+         * @return Updated kernel builder including the memory storage.
+         */
+        public Kernel.Builder withMemoryStorage(MemoryStore storage) {
+            Verify.notNull(storage);
+            this.memoryStorageFactory = () -> storage;
+            return this;
+        }
+
+        /**
+         * Add memory storage factory to the kernel.
+         *
+         * @param factory The storage factory.
+         * @return Updated kernel builder including the memory storage.
+         */
+        public Kernel.Builder withMemoryStorage(Supplier<MemoryStore> factory) {
+            Verify.notNull(factory);
+            this.memoryStorageFactory = factory::get;
+            return this;
+        }
+
+        /**
+         * Adds an instance to the services collection
+         *
+         * @param instance The instance.
+         * @return The builder.
+         */
+        public <T extends AIService> Kernel.Builder withDefaultAIService(T instance) {
+            Class<T> clazz = (Class<T>) instance.getClass();
+            this.aiServices.setService(instance, clazz);
+            return this;
+        }
+
+        /**
+         * Adds an instance to the services collection
+         *
+         * @param instance The instance.
+         * @param clazz The class of the instance.
+         * @return The builder.
+         */
+        public <T extends AIService> Kernel.Builder withDefaultAIService(
+                T instance, Class<T> clazz) {
+            this.aiServices.setService(instance, clazz);
+            return this;
+        }
+
+        /**
+         * Adds a factory method to the services collection
+         *
+         * @param factory The factory method that creates the AI service instances of type T.
+         * @param clazz The class of the instance.
+         */
+        public <T extends AIService> Kernel.Builder withDefaultAIService(
+                Supplier<T> factory, Class<T> clazz) {
+            this.aiServices.setService(factory, clazz);
+            return this;
+        }
+
+        /**
+         * Adds an instance to the services collection
+         *
+         * @param serviceId The service ID
+         * @param instance The instance.
+         * @param setAsDefault Optional: set as the default AI service for type T
+         * @param clazz The class of the instance.
+         */
+        public <T extends AIService> Kernel.Builder withAIService(
+                @Nullable String serviceId, T instance, boolean setAsDefault, Class<T> clazz) {
+            this.aiServices.setService(serviceId, instance, setAsDefault, clazz);
+
+            return this;
+        }
+
+        /**
+         * Adds a factory method to the services collection
+         *
+         * @param serviceId The service ID
+         * @param factory The factory method that creates the AI service instances of type T.
+         * @param setAsDefault Optional: set as the default AI service for type T
+         * @param clazz The class of the instance.
+         */
+        public <T extends AIService> Kernel.Builder withAIServiceFactory(
+                @Nullable String serviceId,
+                Function<KernelConfig, T> factory,
+                boolean setAsDefault,
+                Class<T> clazz) {
+            this.aiServices.setService(
+                    serviceId, (Supplier<T>) () -> factory.apply(this.config), setAsDefault, clazz);
+            return this;
+        }
+
+        /**
+         * Add a semantic text memory entity to the kernel to be built.
+         *
+         * @param memory Semantic text memory entity to add.
+         * @return Updated kernel builder including the semantic text memory entity.
+         */
+        public Kernel.Builder withMemory(SemanticTextMemory memory) {
+            Verify.notNull(memory);
+            this.memoryFactory = () -> memory;
+            return this;
+        }
+
+        /**
+         * Add memory storage and an embedding generator to the kernel to be built.
+         *
+         * @param storage Storage to add.
+         * @param embeddingGenerator Embedding generator to add.
+         * @return Updated kernel builder including the memory storage and embedding generator.
+         */
+        public Kernel.Builder withMemoryStorageAndTextEmbeddingGeneration(
+                MemoryStore storage, TextEmbeddingGeneration embeddingGenerator) {
+            Verify.notNull(storage);
+            Verify.notNull(embeddingGenerator);
+            this.memoryFactory =
+                    () ->
+                            SKBuilders.semanticTextMemory()
+                                    .setEmbeddingGenerator(embeddingGenerator)
+                                    .setStorage(storage)
+                                    .build();
+            return this;
+        }
+
+        /**
+         * Build the kernel
+         *
+         * @return Kernel
+         */
+        public Kernel build() {
+            if (config == null) {
+                config = SKBuilders.kernelConfig().build();
+            }
+
+            return build(
+                    config,
+                    promptTemplateEngine,
+                    memoryFactory.get(),
+                    memoryStorageFactory == null ? null : memoryStorageFactory.get(),
+                    aiServices.build());
+        }
+
+        private Kernel build(
                 KernelConfig kernelConfig,
                 @Nullable PromptTemplateEngine promptTemplateEngine,
                 @Nullable SemanticTextMemory memory,

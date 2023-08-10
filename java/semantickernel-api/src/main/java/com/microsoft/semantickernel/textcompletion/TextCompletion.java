@@ -2,14 +2,16 @@
 package com.microsoft.semantickernel.textcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.AIService;
 import java.util.List;
 import javax.annotation.Nonnull;
 import reactor.core.publisher.Mono;
 
 /** Interface for text completion services */
-public interface TextCompletion extends AIService {
-    // TODO: Support Cancellation Token
+public interface TextCompletion extends AIService, Buildable {
 
     /**
      * Creates a completion for the prompt and settings.
@@ -21,9 +23,14 @@ public interface TextCompletion extends AIService {
     Mono<List<String>> completeAsync(
             @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings);
 
-    abstract class Builder {
-        protected Builder() {}
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(Builder.class);
+    }
 
-        public abstract TextCompletion build(OpenAIAsyncClient client, String modelId);
+    interface Builder extends SemanticKernelBuilder<TextCompletion> {
+
+        Builder withOpenAIClient(OpenAIAsyncClient client);
+
+        Builder setModelId(String modelId);
     }
 }

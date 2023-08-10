@@ -5,7 +5,7 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -27,7 +27,9 @@ public class Example06TemplateLanguageTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.textCompletionService()
-                                        .build(client, "text-davinci-003"))
+                                        .setModelId("text-davinci-003")
+                                        .withOpenAIClient(client)
+                                        .build())
                         .build();
 
         // Load native skill into the kernel skill collection, sharing its functions
@@ -50,11 +52,12 @@ public class Example06TemplateLanguageTest {
 
         PromptTemplate promptRenderer =
                 SKBuilders.promptTemplate()
-                        .withPromptTemplateConfig(new PromptTemplateConfig())
-                        .withPromptTemplate(functionDefinition)
-                        .build(kernel.getPromptTemplateEngine());
+                        .setPromptTemplateConfig(new PromptTemplateConfig())
+                        .setPromptTemplate(functionDefinition)
+                        .setPromptTemplateEngine(kernel.getPromptTemplateEngine())
+                        .build();
 
-        SKContext skContext = SKBuilders.context().build(kernel.getSkills());
+        SKContext skContext = SKBuilders.context().setSkills(kernel.getSkills()).build();
 
         Mono<String> renderedPrompt = promptRenderer.renderAsync(skContext);
 
@@ -66,12 +69,11 @@ public class Example06TemplateLanguageTest {
         // Run the prompt / semantic function
         CompletionSKFunction kindOfDay =
                 kernel.getSemanticFunctionBuilder()
-                        .createFunction(
-                                functionDefinition,
-                                null,
-                                null,
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256));
+                        .withKernel(kernel)
+                        .setPromptTemplate(functionDefinition)
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256))
+                        .build();
 
         Assertions.assertEquals("A-RESULT", kindOfDay.invokeAsync("").block().getResult());
     }

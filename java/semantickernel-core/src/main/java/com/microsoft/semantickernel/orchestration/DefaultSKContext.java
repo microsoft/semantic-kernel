@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -40,12 +40,6 @@ public class DefaultSKContext extends AbstractSKContext {
         private SemanticTextMemory memory = NullMemory.getInstance();
 
         @Override
-        public SKContext build(ReadOnlySkillCollection skills) {
-            return new DefaultSKContext(
-                    SKBuilders.variables().build(), NullMemory.getInstance(), skills);
-        }
-
-        @Override
         public SKContext build() {
             if (variables == null) {
                 variables = SKBuilders.variables().build();
@@ -54,18 +48,13 @@ public class DefaultSKContext extends AbstractSKContext {
         }
 
         @Override
-        public SKContext build(Class<? extends SKContext> clazz) {
-            return null;
-        }
-
-        @Override
-        public SKContext.Builder with(ContextVariables variables) {
+        public SKContext.Builder setVariables(ContextVariables variables) {
             this.variables = variables;
             return this;
         }
 
         @Override
-        public SKContext.Builder with(@Nullable ReadOnlySkillCollection skills) {
+        public SKContext.Builder setSkills(@Nullable ReadOnlySkillCollection skills) {
             if (skills != null) {
                 this.skills = skills;
             }
@@ -73,7 +62,7 @@ public class DefaultSKContext extends AbstractSKContext {
         }
 
         @Override
-        public SKContext.Builder with(@Nullable SemanticTextMemory memory) {
+        public SKContext.Builder setMemory(@Nullable SemanticTextMemory memory) {
             if (memory != null) {
                 this.memory = memory.copy();
             }
@@ -82,13 +71,13 @@ public class DefaultSKContext extends AbstractSKContext {
 
         @Override
         public SKContext.Builder clone(SKContext context) {
-            return with(context.getVariables())
-                    .with(context.getSkills())
-                    .with(context.getSemanticMemory());
+            return setVariables(context.getVariables())
+                    .setSkills(context.getSkills())
+                    .setMemory(context.getSemanticMemory());
         }
 
         @Override
-        public SKContext build(Kernel kernel) {
+        public SKContext.Builder withKernel(Kernel kernel) {
             if (memory == null) {
                 memory = kernel.getMemory();
             }
@@ -98,7 +87,7 @@ public class DefaultSKContext extends AbstractSKContext {
             if (variables == null) {
                 variables = SKBuilders.variables().build();
             }
-            return build();
+            return this;
         }
     }
 }

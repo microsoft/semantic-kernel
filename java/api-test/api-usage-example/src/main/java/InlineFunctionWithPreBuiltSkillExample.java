@@ -3,7 +3,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -97,19 +97,23 @@ public class InlineFunctionWithPreBuiltSkillExample {
                         .credential(new AzureKeyCredential(API_KEY))
                         .buildAsyncClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, MODEL);
+        TextCompletion textCompletion =
+                SKBuilders.textCompletionService()
+                        .withOpenAIClient(client)
+                        .setModelId(MODEL)
+                        .build();
         String prompt = "{{$input}}\nSummarize the content above.";
 
         Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
 
         CompletionSKFunction summarize =
-                SKBuilders.completionFunctions(kernel)
-                        .createFunction(
-                                prompt,
-                                "summarize",
-                                null,
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
+                SKBuilders.completionFunctions()
+                        .withKernel(kernel)
+                        .setPromptTemplate(prompt)
+                        .setFunctionName("summarize")
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
+                        .build();
 
         if (summarize == null) {
             LOGGER.error("Null function");

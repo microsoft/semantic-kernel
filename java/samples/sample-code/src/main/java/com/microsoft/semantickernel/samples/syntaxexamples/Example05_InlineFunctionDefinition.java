@@ -4,9 +4,8 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -19,7 +18,10 @@ public class Example05_InlineFunctionDefinition {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService().build(client, "text-davinci-003");
+        TextCompletion textCompletion = SKBuilders.textCompletionService()
+                .setModelId("text-davinci-003")
+                .withOpenAIClient(client)
+                .build();
 
         Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
 
@@ -41,14 +43,15 @@ public class Example05_InlineFunctionDefinition {
 
         // Create function via builder
         var excuseFunction = SKBuilders
-                .completionFunctions(kernel)
-                .createFunction(
-                        functionDefinition,
+                .completionFunctions()
+                .setPromptTemplate(functionDefinition)
+                .setCompletionConfig(
                         new PromptTemplateConfig.CompletionConfigBuilder()
                                 .maxTokens(100)
                                 .temperature(0.4)
                                 .topP(1)
-                                .build());
+                                .build())
+                .build();
 
 
         var result = excuseFunction.invokeAsync("I missed the F1 final race").block();
@@ -60,13 +63,15 @@ public class Example05_InlineFunctionDefinition {
         // Create function via kernel
         var fixedFunction = kernel.
                 getSemanticFunctionBuilder()
-                .createFunction("Translate this date " +
-                                DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(LocalDateTime.now()) + " to French format",
+                .setPromptTemplate("Translate this date " +
+                        DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(LocalDateTime.now()) + " to French format")
+                .setCompletionConfig(
                         new PromptTemplateConfig.CompletionConfigBuilder()
                                 .maxTokens(100)
                                 .temperature(0.4)
                                 .topP(1)
-                                .build());
+                                .build())
+                .build();
 
         System.out.println(fixedFunction.invokeAsync().block().getResult());
     }

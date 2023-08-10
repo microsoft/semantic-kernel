@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.planner.sequentialplanner;
 
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;

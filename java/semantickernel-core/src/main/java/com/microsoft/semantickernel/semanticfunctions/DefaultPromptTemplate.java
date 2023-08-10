@@ -68,28 +68,38 @@ public class DefaultPromptTemplate implements PromptTemplate {
         return templateEngine.renderAsync(this.promptTemplate, executionContext);
     }
 
-    public static final class Builder extends PromptTemplate.Builder {
+    public static final class Builder implements PromptTemplate.Builder {
         @Nullable private String promptTemplate = null;
         @Nullable private PromptTemplateConfig config = null;
+        @Nullable private PromptTemplateEngine promptTemplateEngine = null;
 
         @Override
-        public PromptTemplate build(PromptTemplateEngine promptTemplateEngine) {
-            if (promptTemplate == null || config == null)
-                throw new IllegalStateException(
-                        "PromptTemplate and PromptTemplateConfig must be set");
-            return new DefaultPromptTemplate(promptTemplate, config, promptTemplateEngine);
-        }
-
-        @Override
-        public Builder withPromptTemplate(String promptTemplate) {
+        public PromptTemplate.Builder setPromptTemplate(String promptTemplate) {
             this.promptTemplate = promptTemplate;
             return this;
         }
 
         @Override
-        public Builder withPromptTemplateConfig(PromptTemplateConfig config) {
+        public PromptTemplate.Builder setPromptTemplateConfig(PromptTemplateConfig config) {
             this.config = config;
             return this;
+        }
+
+        @Override
+        public PromptTemplate.Builder setPromptTemplateEngine(
+                PromptTemplateEngine promptTemplateEngine) {
+            this.promptTemplateEngine = promptTemplateEngine;
+            return this;
+        }
+
+        @Override
+        public PromptTemplate build() {
+            if (promptTemplate == null || config == null || promptTemplateEngine == null) {
+                throw new IllegalStateException(
+                        "PromptTemplate, PromptTemplateConfig and promptTemplateEngine must be"
+                                + " set");
+            }
+            return new DefaultPromptTemplate(promptTemplate, config, promptTemplateEngine);
         }
     }
 }

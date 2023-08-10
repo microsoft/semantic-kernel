@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.planner.actionplanner;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.Verify;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.AbstractSkFunction;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
@@ -190,9 +190,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         // Execute the step
         SKContext initialContext =
                 SKBuilders.context()
-                        .with(context.getVariables().writableClone())
-                        .with(context.getSemanticMemory())
-                        .with(context.getSkills())
+                        .setVariables(context.getVariables().writableClone())
+                        .setMemory(context.getSemanticMemory())
+                        .setSkills(context.getSkills())
                         .build();
 
         return Flux.fromIterable(this.steps)
@@ -226,9 +226,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                     // Execute the step
                     SKContext functionContext =
                             SKBuilders.context()
-                                    .with(functionVariables)
-                                    .with(context.getSemanticMemory())
-                                    .with(context.getSkills())
+                                    .setVariables(functionVariables)
+                                    .setMemory(context.getSemanticMemory())
+                                    .setSkills(context.getSkills())
                                     .build();
 
                     return step.invokeAsync(functionContext, settings)
@@ -281,7 +281,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                                         return Mono.just(
                                                 SKBuilders.context()
                                                         .clone(context)
-                                                        .with(updatedContext)
+                                                        .setVariables(updatedContext)
                                                         .build());
                                     });
                 });
@@ -302,9 +302,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
         SKContext context =
                 SKBuilders.context()
-                        .with(variables)
-                        .with(memory)
-                        .with(skillsSupplier == null ? null : skillsSupplier.get())
+                        .setVariables(variables)
+                        .setMemory(memory)
+                        .setSkills(skillsSupplier == null ? null : skillsSupplier.get())
                         .build();
 
         return this.invokeAsync(context, settings);
@@ -322,8 +322,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         if (context == null) {
             context =
                     SKBuilders.context()
-                            .with(state)
-                            .with(getSkillsSupplier() == null ? null : getSkillsSupplier().get())
+                            .setVariables(state)
+                            .setSkills(
+                                    getSkillsSupplier() == null ? null : getSkillsSupplier().get())
                             .build();
         } else {
             ContextVariables variables = context.getVariables().writableClone().update(state, true);
@@ -386,7 +387,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                             }
                         });
 
-        return SKBuilders.context().clone(context).with(clone).build();
+        return SKBuilders.context().clone(context).setVariables(clone).build();
     }
 
     /**

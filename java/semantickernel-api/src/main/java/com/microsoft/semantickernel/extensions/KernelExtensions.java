@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.extensions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.KernelException;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
@@ -77,9 +77,10 @@ public class KernelExtensions {
 
                 PromptTemplate promptTemplate =
                         SKBuilders.promptTemplate()
-                                .withPromptTemplate(template)
-                                .withPromptTemplateConfig(config)
-                                .build(promptTemplateEngine);
+                                .setPromptTemplate(template)
+                                .setPromptTemplateConfig(config)
+                                .setPromptTemplateEngine(promptTemplateEngine)
+                                .build();
 
                 skills.put(dir.getName(), new SemanticFunctionConfig(config, promptTemplate));
             } catch (IOException e) {
@@ -110,9 +111,10 @@ public class KernelExtensions {
 
         PromptTemplate promptTemplate =
                 SKBuilders.promptTemplate()
-                        .withPromptTemplate(template)
-                        .withPromptTemplateConfig(config)
-                        .build(promptTemplateEngine);
+                        .setPromptTemplate(template)
+                        .setPromptTemplateConfig(config)
+                        .setPromptTemplateEngine(promptTemplateEngine)
+                        .build();
 
         skills.put(functionName, new SemanticFunctionConfig(config, promptTemplate));
 

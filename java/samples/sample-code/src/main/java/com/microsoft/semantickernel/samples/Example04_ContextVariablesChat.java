@@ -8,7 +8,7 @@ package com.microsoft.semantickernel.samples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -41,19 +41,18 @@ public class Example04_ContextVariablesChat {
 
         CompletionSKFunction chat = kernel
                 .getSemanticFunctionBuilder()
-                .createFunction(
-                        prompt,
-                        "ChatBot",
-                        null,
-                        null,
+                .setPromptTemplate(prompt)
+                .setFunctionName("ChatBot")
+                .setCompletionConfig(
                         new PromptTemplateConfig.CompletionConfig(
                                 0.7,
                                 0.5,
                                 0,
                                 0,
-                                2000));
+                                2000))
+                .build();
 
-        SKContext readOnlySkContext = SKBuilders.context().build(kernel);
+        SKContext readOnlySkContext = SKBuilders.context().withKernel(kernel).build();
 
         chat("Hi, I'm looking for book suggestions?", chat, readOnlySkContext)
                 .flatMap(

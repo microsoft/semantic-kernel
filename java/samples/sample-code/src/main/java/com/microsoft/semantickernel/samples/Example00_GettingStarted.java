@@ -8,7 +8,7 @@ package com.microsoft.semantickernel.samples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -40,7 +40,10 @@ public class Example00_GettingStarted {
      */
     public static Kernel getKernel(OpenAIAsyncClient client) {
         Kernel kernel = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.textCompletionService().build(client, "text-davinci-003"))
+                .withDefaultAIService(SKBuilders.textCompletionService()
+                        .setModelId("text-davinci-003")
+                        .withOpenAIClient(client)
+                        .build())
                 .build();
 
         return kernel;

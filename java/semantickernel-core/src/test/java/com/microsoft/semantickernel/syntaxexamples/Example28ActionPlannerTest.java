@@ -6,7 +6,7 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
@@ -123,7 +123,9 @@ public class Example28ActionPlannerTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.textCompletionService()
-                                        .build(client, "text-davinci-002"))
+                                        .setModelId("text-davinci-002")
+                                        .withOpenAIClient(client)
+                                        .build())
                         .build();
 
         kernel.importSkillFromDirectory("SummarizeSkill", "../../samples/skills", "SummarizeSkill");
