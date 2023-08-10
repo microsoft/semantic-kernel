@@ -60,7 +60,7 @@ SCRATCH_PAD_PREFIX = (
 
 
 def is_null_or_empty(value: str) -> bool:
-    return value is None or len(value) == 0
+    return value is None or value == ""
 
 
 class StepwisePlanner:
@@ -92,7 +92,7 @@ class StepwisePlanner:
         prompt_config.completion.max_tokens = self.config.max_tokens
 
         self._system_step_function = self.import_semantic_function(
-            kernel, "StepwsieStep", prompt_template, prompt_config
+            kernel, "StepwiseStep", prompt_template, prompt_config
         )
         self._native_functions = self._kernel.import_skill(self, RESTRICTED_SKILL_NAME)
 
@@ -100,7 +100,7 @@ class StepwisePlanner:
         self._logger = self._kernel.logger
 
     def create_plan(self, goal: str) -> Plan:
-        if len(goal) == 0:
+        if is_null_or_empty(goal):
             raise PlanningException(
                 PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty"
             )
