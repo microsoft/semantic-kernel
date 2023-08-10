@@ -44,6 +44,7 @@ public class Example06_UseMultipleModels {
         OpenAITextCompletion adaTextCompletion = new OpenAITextCompletion(client, "text-ada-001");
         
         Kernel kernel = SKBuilders.kernel()
+               // Add one of this serviceId to config.json in FunSkill to test difference models
               .withAIService("text-davinci-003", davinciTextCompletion, false, OpenAITextCompletion.class)
               .withAIService("text-ada-001", adaTextCompletion, false, OpenAITextCompletion.class)
               .build();
