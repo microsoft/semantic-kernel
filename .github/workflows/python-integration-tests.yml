@@ -8,12 +8,8 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ["main"]
-    paths:
-      - "python/**"
   merge_group:
     branches: ["main"]
-    paths:
-      - "python/**"
   schedule:
     - cron: "0 0 * * *" # Run at midnight UTC daily
 
@@ -22,7 +18,7 @@ permissions:
 
 jobs:
   python-merge-gate:
-    if: ${{ github.event_name == 'merge_group' }}
+    if: ${{ github.event_name != 'pull_request' && github.event_name != 'schedule'}}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
@@ -75,8 +71,10 @@ jobs:
         run: |
           cd python
           poetry run pytest ./tests/integration/completions/test_azure_oai_chat_service.py -v
+          poetry run pytest ./tests/integration/completions/test_oai_chat_service.py -v
           poetry run pytest ./tests/integration/completions/test_hf_local_text_completions.py -v
           poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
+          poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
           poetry run pytest ./tests/integration/planning -v
           poetry run pytest ./tests/integration/embeddings -v
 
@@ -87,16 +85,15 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9"]
-        os: [ubuntu-latest]
-        # python-version: ["3.8", "3.9", "3.10", "3.11"]
-        # os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
@@ -104,12 +101,14 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
           cd python && poetry install
+          
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
           cd python && poetry install
+          
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -134,29 +133,30 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          poetry run pytest ./tests/integration -v
+          echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_ENV"
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "Test Output<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$(poetry run pytest ./tests/integration)" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
 
-  notify-microsoft-teams:
-    if: always()
+  # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
+  python-integration-tests-check:
     runs-on: ubuntu-latest
-    needs: python-integration-tests
+    if: always()
+    needs: [python-merge-gate, python-integration-tests]
     steps:
-      - name: Get Date
-        id: date
-        shell: bash
-        run: |
-          echo "date=$(date +'%m/%d/%Y-%H:%M:%S')" >> "$GITHUB_ENV"
-          if [${{ github.event_name == 'schedule'}}]
-          then
-            echo "type=Nightly" >> "$GITHUB_ENV"
-          else
-            echo "type=Manual" >> "$GITHUB_ENV"
-          fi
+     - name: Fail workflow if tests failed
+       if: contains(join(needs.*.result, ','), 'failed')
+       uses: actions/github-script@v6
+       with:
+         script: core.setFailed('Integration Tests Failed!')
+          
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
-        if: always()
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
-          dry_run: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
-          job: ${{ toJson(needs.python-integration-tests) }}
-          overwrite: "{title: ` ${{ env.type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} `}"
+          dry_run: False
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} }"
