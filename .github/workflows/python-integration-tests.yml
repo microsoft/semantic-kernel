@@ -148,7 +148,18 @@ jobs:
         id: date
         shell: bash
         run: |
-          echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_ENV"
+          echo "date=$(date +'%m/%d/%Y %H:%M:%S')" >> "$GITHUB_ENV"
+
+          if [${{ github.event_name }} == 'workflow_dispatch']; then
+              echo "run_type=Manual" >> "$GITHUB_ENV"
+
+          elif [${{ github.event_name }} == 'schedule']; then
+              echo "run_type=Daily" >> "$GITHUB_ENV"
+
+          else
+            echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
+
+          fi
 
       - name: Fail workflow if tests failed
         id: check_tests_failed
@@ -172,4 +183,4 @@ jobs:
           dry_run: False
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ github.event_name }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n${{ toJson(steps.run_tests.outputs) }}`}"
+          overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
