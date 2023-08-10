@@ -10,55 +10,41 @@ namespace SemanticKernel.UnitTests.Memory.Collections;
 /// </summary>
 public class ScoredValueTests
 {
-    [Theory]
-    [InlineData(1, 1.1, 1, 1.1, true)]
-    [InlineData(1, 2.2, 1, 2.2, true)]
-    [InlineData(2, 1.1, 1, 1.1, false)]
-    [InlineData(1, 2.2, 1, 1.1, false)]
-    public void EqualOperatorWorksCorrectly(int firstValue, double firstScore, int secondValue, double secondScore, bool expectedResult)
+    [Fact]
+    public void InEqualScenarioComparisonOperatorsWorkCorrectly()
     {
         // Arrange
-        var first = new ScoredValue<int>(firstValue, firstScore);
-        var second = new ScoredValue<int>(secondValue, secondScore);
+        var first = new ScoredValue<int>(1, 1);
+        var second = new ScoredValue<int>(1, 1);
 
-        // Act
-        var actualResult = first == second;
+        // Act & Assert
+        Assert.False(first < second);
+        Assert.False(first > second);
 
-        // Assert
-        Assert.Equal(expectedResult, actualResult);
+        Assert.True(first <= second);
+        Assert.True(first >= second);
+
+        Assert.False(first != second);
+        Assert.True(first == second);
     }
 
     [Theory]
-    [InlineData(1, 1.1, 1, 1.1, false)]
-    [InlineData(1, 2.2, 1, 2.2, false)]
-    [InlineData(2, 1.1, 1, 1.1, true)]
-    [InlineData(1, 2.2, 1, 1.1, true)]
-    public void NotEqualOperatorWorksCorrectly(int firstValue, double firstScore, int secondValue, double secondScore, bool expectedResult)
+    [InlineData(1, 1, 1, 2)]
+    [InlineData(1, 1, 2, 1)]
+    public void InNotEqualScenarioComparisonOperatorsWorkCorrectly(int firstValue, double firstScore, int secondValue, double secondScore)
     {
         // Arrange
         var first = new ScoredValue<int>(firstValue, firstScore);
         var second = new ScoredValue<int>(secondValue, secondScore);
 
-        // Act
-        var actualResult = first != second;
+        // Act & Assert
+        Assert.True(first < second);
+        Assert.False(first > second);
 
-        // Assert
-        Assert.Equal(expectedResult, actualResult);
-    }
+        Assert.True(first <= second);
+        Assert.False(first >= second);
 
-    [Theory]
-    [InlineData(1, 1.0, 1, 1.1, true)]
-    [InlineData(1, 1.1, 1, 1.1, true)]
-    public void LessThanOperatorWorksCorrectly(int firstValue, double firstScore, int secondValue, double secondScore, bool expectedResult)
-    {
-        // Arrange
-        var first = new ScoredValue<int>(firstValue, firstScore);
-        var second = new ScoredValue<int>(secondValue, secondScore);
-
-        // Act
-        var actualResult = first < second;
-
-        // Assert
-        Assert.Equal(expectedResult, actualResult);
+        Assert.True(first != second);
+        Assert.False(first == second);
     }
 }
