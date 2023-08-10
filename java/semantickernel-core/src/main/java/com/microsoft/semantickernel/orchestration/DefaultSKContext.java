@@ -6,7 +6,6 @@ import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-
 import javax.annotation.Nullable;
 
 public class DefaultSKContext extends AbstractSKContext {

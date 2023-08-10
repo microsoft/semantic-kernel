@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory;
 
-import reactor.core.publisher.Mono;
-
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /** Implementation of {@link SemanticTextMemory} that stores nothing. */
 public final class NullMemory implements SemanticTextMemory {

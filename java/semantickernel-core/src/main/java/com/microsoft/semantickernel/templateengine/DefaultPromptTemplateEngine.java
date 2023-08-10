@@ -5,14 +5,11 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
 import com.microsoft.semantickernel.templateengine.blocks.CodeRendering;
 import com.microsoft.semantickernel.templateengine.blocks.TextRendering;
-
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:

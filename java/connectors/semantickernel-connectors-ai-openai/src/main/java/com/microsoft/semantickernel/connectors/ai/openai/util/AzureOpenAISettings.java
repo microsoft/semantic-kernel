@@ -2,9 +2,7 @@
 package com.microsoft.semantickernel.connectors.ai.openai.util;
 
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 /** Settings for Azure OpenAI client */

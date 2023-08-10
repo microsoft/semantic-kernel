@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.orchestration;
 // Copyright (c) Microsoft. All rights reserved.
 
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 /**

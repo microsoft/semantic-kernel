@@ -3,10 +3,8 @@ package com.microsoft.semantickernel.templateengine;
 
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.templateengine.blocks.Block;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
+import reactor.core.publisher.Mono;
 
 /** Prompt template engine interface */
 public interface PromptTemplateEngine {

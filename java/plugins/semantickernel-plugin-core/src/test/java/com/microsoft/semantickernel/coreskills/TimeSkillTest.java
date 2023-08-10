@@ -4,13 +4,12 @@ package com.microsoft.semantickernel.coreskills;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Locale;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("ReturnValueIgnored")
 public class TimeSkillTest {

@@ -15,10 +15,6 @@ import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,8 +22,9 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /** Standard Semantic Kernel callable plan. Plan is used to create trees of SKFunctions. */
 public class Plan extends AbstractSkFunction<CompletionRequestSettings> {

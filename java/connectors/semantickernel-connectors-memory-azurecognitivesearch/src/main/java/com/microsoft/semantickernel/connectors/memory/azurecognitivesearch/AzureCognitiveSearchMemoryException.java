@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.connectors.memory.azurecognitivesearch;
 
 import com.microsoft.semantickernel.SKException;
-
 import javax.annotation.Nullable;
 
 /** Exception thrown by the Azure Cognitive Search connector */

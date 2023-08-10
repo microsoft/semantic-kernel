@@ -14,17 +14,13 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.syntaxexamples.Example17ChatGPTTest;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 public class OpenAIChatCompletionTest {
 

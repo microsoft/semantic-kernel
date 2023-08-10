@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.orchestration.DefaultCompletionSKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import javax.annotation.Nullable;
 
 /** Provides various builders for completion functions */

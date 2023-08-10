@@ -22,9 +22,6 @@ import com.azure.search.documents.util.SearchPagedResponse;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
-
-import reactor.core.publisher.Mono;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,9 +34,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /**
  * Semantic Memory implementation using Azure Cognitive Search. For more information about Azure

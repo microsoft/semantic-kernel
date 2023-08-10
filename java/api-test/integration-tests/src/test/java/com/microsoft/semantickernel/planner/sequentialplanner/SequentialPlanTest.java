@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

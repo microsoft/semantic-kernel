@@ -18,18 +18,15 @@ import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-
-import reactor.core.publisher.Mono;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import reactor.core.publisher.Mono;
 
 // TODO: This class is in the core package to avoid a
 //       circular dependency with the connectors module.

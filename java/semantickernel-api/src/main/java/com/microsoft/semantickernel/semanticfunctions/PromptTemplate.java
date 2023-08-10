@@ -4,10 +4,8 @@ package com.microsoft.semantickernel.semanticfunctions;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
+import reactor.core.publisher.Mono;
 
 /** Interface for prompt template */
 public interface PromptTemplate {

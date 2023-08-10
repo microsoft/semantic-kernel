@@ -26,16 +26,12 @@ import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.templateengine.DefaultPromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
 import jakarta.inject.Inject;
-
-import reactor.core.publisher.Mono;
-
 import java.util.Arrays;
 import java.util.Map;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 public class DefaultKernel implements Kernel {
 

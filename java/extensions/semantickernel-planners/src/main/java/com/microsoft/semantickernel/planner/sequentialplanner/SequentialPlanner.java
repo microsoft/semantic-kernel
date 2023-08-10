@@ -9,13 +9,10 @@ import com.microsoft.semantickernel.planner.PlanningException;
 import com.microsoft.semantickernel.planner.actionplanner.Plan;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import reactor.core.publisher.Mono;
-
-import javax.annotation.Nullable;
 
 /** A planner that uses semantic function to create a sequential plan. */
 public class SequentialPlanner {

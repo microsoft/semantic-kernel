@@ -5,7 +5,6 @@ import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpMethod;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.HttpResponse;
-
 import reactor.core.publisher.Mono;
 
 /**

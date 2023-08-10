@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.util;
 
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
 import java.util.Locale;
 
 /**

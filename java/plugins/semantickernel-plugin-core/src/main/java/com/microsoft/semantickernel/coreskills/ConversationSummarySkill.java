@@ -8,12 +8,9 @@ import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.text.TextChunker;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /** Semantic skill that enables conversations summarization */
 public class ConversationSummarySkill {

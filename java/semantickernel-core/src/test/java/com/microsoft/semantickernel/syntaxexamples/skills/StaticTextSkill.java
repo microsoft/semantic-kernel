@@ -4,10 +4,8 @@ package com.microsoft.semantickernel.syntaxexamples.skills;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
-import reactor.core.publisher.Mono;
-
 import java.util.Locale;
+import reactor.core.publisher.Mono;
 
 public class StaticTextSkill {
 

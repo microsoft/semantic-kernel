@@ -5,7 +5,6 @@ import com.microsoft.semantickernel.templateengine.blocks.Block;
 import com.microsoft.semantickernel.templateengine.blocks.CodeBlock;
 import com.microsoft.semantickernel.templateengine.blocks.Symbols;
 import com.microsoft.semantickernel.templateengine.blocks.TextBlock;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

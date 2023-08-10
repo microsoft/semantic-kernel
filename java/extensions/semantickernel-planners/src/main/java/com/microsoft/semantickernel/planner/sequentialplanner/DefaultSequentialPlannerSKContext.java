@@ -7,14 +7,11 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.*;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class DefaultSequentialPlannerSKContext {
     public static final String PlannerMemoryCollectionName = "Planning.SKFunctionsManual";

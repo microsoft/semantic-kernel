@@ -5,7 +5,6 @@ import com.microsoft.semantickernel.orchestration.NativeSKFunction;
 import com.microsoft.semantickernel.skilldefinition.FunctionCollection;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

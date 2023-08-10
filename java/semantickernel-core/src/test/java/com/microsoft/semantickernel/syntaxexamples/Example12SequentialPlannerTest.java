@@ -16,14 +16,11 @@ import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
+import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import reactor.util.function.Tuples;
-
-import java.io.IOException;
 
 public class Example12SequentialPlannerTest {
     @Test

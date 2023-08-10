@@ -2,11 +2,9 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.builders.ServiceLoadUtil;
-
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.function.Supplier;
 
 @SuppressWarnings("ImmutableEnumChecker")
 enum InternalBuildersSingleton {

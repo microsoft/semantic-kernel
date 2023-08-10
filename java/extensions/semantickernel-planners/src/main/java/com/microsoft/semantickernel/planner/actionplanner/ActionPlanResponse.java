@@ -6,7 +6,6 @@ package com.microsoft.semantickernel.planner.actionplanner;
 /// </summary>
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Map;
 
 public class ActionPlanResponse {

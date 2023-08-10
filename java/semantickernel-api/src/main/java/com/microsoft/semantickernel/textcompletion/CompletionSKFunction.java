@@ -5,12 +5,9 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /** Semantic function for text completion */
 public interface CompletionSKFunction extends SKFunction<CompletionRequestSettings> {

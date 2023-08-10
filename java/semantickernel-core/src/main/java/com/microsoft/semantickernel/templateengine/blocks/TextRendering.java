@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.templateengine.blocks;
 
 import com.microsoft.semantickernel.orchestration.ContextVariables;
-
 import javax.annotation.Nullable;
 
 /// <summary>

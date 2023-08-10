@@ -5,7 +5,6 @@ import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.util.LocaleParser;
-
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;

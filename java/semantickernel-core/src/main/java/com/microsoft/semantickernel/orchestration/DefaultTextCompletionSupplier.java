@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
 import java.util.function.Supplier;
 
 public interface DefaultTextCompletionSupplier extends Supplier<TextCompletion> {

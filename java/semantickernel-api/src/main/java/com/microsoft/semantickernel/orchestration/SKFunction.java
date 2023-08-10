@@ -4,11 +4,9 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-
-import reactor.core.publisher.Mono;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /**
  * Semantic Kernel callable function interface

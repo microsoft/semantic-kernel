@@ -12,15 +12,13 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TextEmbeddingsTest extends AbstractKernelTest {
 

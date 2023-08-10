@@ -10,14 +10,11 @@ import com.microsoft.semantickernel.skilldefinition.FunctionNotFound;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
+import java.util.Objects;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import reactor.core.publisher.Mono;
-
-import java.util.Objects;
 
 public class NativeSKFunctionTest {
 
