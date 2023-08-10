@@ -150,10 +150,10 @@ jobs:
         run: |
           echo "date=$(date +'%m/%d/%Y %H:%M:%S')" >> "$GITHUB_ENV"
 
-          if [${{ github.event_name }} = 'workflow_dispatch']; then
+          if ["${{ github.event_name }}"" = "workflow_dispatch"]; then
               echo "run_type=Manual" >> "$GITHUB_ENV"
 
-          elif [${{ github.event_name }} = 'schedule']; then
+          elif ["${{ github.event_name }}" = "schedule"]; then
               echo "run_type=Daily" >> "$GITHUB_ENV"
 
           else
