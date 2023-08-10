@@ -133,11 +133,7 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_ENV"
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "Test Output<<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$(poetry run pytest ./tests/integration)" >> "$GITHUB_OUTPUT"
-          echo "$EOF" >> "$GITHUB_OUTPUT"
+          poetry run pytest ./tests/integration -v
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:
@@ -148,6 +144,12 @@ jobs:
       fail-fast: false
     needs: [python-merge-gate, python-integration-tests]
     steps:
+      - name: Get Date
+        id: date
+        shell: bash
+        run: |
+          echo "date=$(date +'%m/%d/%Y')" >> "$GITHUB_ENV"
+
       - name: Fail workflow if tests failed
         id: check_tests_failed
         if: contains(join(needs.*.result, ','), 'failed')
