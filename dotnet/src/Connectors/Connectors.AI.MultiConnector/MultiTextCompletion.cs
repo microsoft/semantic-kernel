@@ -49,7 +49,7 @@ public class MultiTextCompletion : ITextCompletion
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         var session = this.GetPromptAndConnectorSettings(text, requestSettings);
-        var completions = await session.NamedTextCompletion.TextCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        var completions = await session.NamedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallText, session.CallRequestSettings, cancellationToken).ConfigureAwait(false);
 
         var resultLazy = new AsyncLazy<string>(() =>
         {
@@ -70,7 +70,7 @@ public class MultiTextCompletion : ITextCompletion
     {
         var session = this.GetPromptAndConnectorSettings(text, requestSettings);
 
-        var result = session.NamedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
+        var result = session.NamedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(session.CallText, session.CallRequestSettings, cancellationToken);
 
         var resultLazy = new AsyncLazy<string>(async () =>
         {
@@ -112,7 +112,7 @@ public class MultiTextCompletion : ITextCompletion
             InputText = text,
             InputRequestSettings = requestSettings,
             CallText = adjustedPrompt.text,
-            CallsRequestSettings = adjustedPrompt.requestSettings,
+            CallRequestSettings = adjustedPrompt.requestSettings,
             IsNewPrompt = isNewPrompt,
             NamedTextCompletion = textCompletionAndSettings.namedTextCompletion,
             PromptConnectorSettings = textCompletionAndSettings.promptConnectorSettings,

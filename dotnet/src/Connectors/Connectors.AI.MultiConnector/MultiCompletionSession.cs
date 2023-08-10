@@ -33,7 +33,7 @@ internal struct MultiCompletionSession
     /// <summary>
     /// The <see cref="CompleteRequestSettings"/> that are passed to the individual LLM by the <see cref="MultiTextCompletion"/> and may be modified by various settings.
     /// </summary>
-    public CompleteRequestSettings CallsRequestSettings { get; set; }
+    public CompleteRequestSettings CallRequestSettings { get; set; }
 
     /// <summary>
     /// A flag that indicates whether the input prompt type identified has a prior configuration or not.
