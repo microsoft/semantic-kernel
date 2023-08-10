@@ -8,14 +8,11 @@ import com.microsoft.semantickernel.DefaultKernelTest;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-
+import java.util.function.BiFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
-
-import java.util.function.BiFunction;
 
 public class Example33StreamingChatTest {
 

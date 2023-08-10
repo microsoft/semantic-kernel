@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.coreskills;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionInputAttribute;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
 import java.math.BigDecimal;
 
 /**

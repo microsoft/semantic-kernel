@@ -15,13 +15,10 @@ import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.AIServiceProvider;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-
-import reactor.core.publisher.Mono;
-
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /** Interface for the semantic kernel. */
 public interface Kernel extends SkillExecutor {

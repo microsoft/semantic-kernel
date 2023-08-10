@@ -7,10 +7,8 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
-
 import reactor.util.function.Tuples;
 
 public class Example05UsingThePlannerTest {

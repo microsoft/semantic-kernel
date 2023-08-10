@@ -2,13 +2,10 @@
 package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.skilldefinition.CaseInsensitiveMap;
-
-import reactor.util.annotation.NonNull;
-
 import java.util.Collections;
 import java.util.Map;
-
 import javax.annotation.Nullable;
+import reactor.util.annotation.NonNull;
 
 /// <summary>
 /// Context Variables is a data structure that holds temporary data while a task is being performed.

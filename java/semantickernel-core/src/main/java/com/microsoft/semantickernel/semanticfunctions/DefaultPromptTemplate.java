@@ -6,15 +6,12 @@ import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.templateengine.blocks.BlockTypes;
 import com.microsoft.semantickernel.templateengine.blocks.VarBlock;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /// <summary>
 /// Prompt template.

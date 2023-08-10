@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.chatcompletion;
 
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
-
 import javax.annotation.Nonnull;
 
 /** Settings for a chat completion request */

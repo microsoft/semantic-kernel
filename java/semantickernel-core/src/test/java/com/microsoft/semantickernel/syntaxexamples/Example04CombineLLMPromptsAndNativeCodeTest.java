@@ -10,10 +10,8 @@ import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITe
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.syntaxexamples.skills.SearchEngineSkill;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 

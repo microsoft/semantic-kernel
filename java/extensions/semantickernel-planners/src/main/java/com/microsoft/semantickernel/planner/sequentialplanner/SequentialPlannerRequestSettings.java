@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.planner.sequentialplanner;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 /// <summary>

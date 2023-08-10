@@ -2,9 +2,7 @@
 package com.microsoft.semantickernel.skilldefinition;
 
 import com.microsoft.semantickernel.orchestration.SKFunction;
-
 import java.util.Map;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 

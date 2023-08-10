@@ -2,13 +2,10 @@
 package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
 /** An interface for semantic memory that creates and recalls memories associated with text. */
 public interface SemanticTextMemory {
@@ -102,8 +99,7 @@ public interface SemanticTextMemory {
     interface Builder {
         Builder setStorage(MemoryStore storage);
 
-        Builder setEmbeddingGenerator(
-                EmbeddingGeneration<String> embeddingGenerator);
+        Builder setEmbeddingGenerator(EmbeddingGeneration<String> embeddingGenerator);
 
         SemanticTextMemory build();
     }

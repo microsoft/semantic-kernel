@@ -9,16 +9,12 @@ import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-
 import jakarta.inject.Inject;
-
-import reactor.core.publisher.Mono;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
 import javax.annotation.Nonnull;
+import reactor.core.publisher.Mono;
 
 /// <summary>
 /// OpenAI text completion service.

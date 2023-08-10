@@ -8,11 +8,9 @@ import com.azure.ai.openai.models.EmbeddingsOptions;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import reactor.core.publisher.Mono;
 
 public class OpenAITextEmbeddingGeneration extends ClientBase
         implements EmbeddingGeneration<String> {

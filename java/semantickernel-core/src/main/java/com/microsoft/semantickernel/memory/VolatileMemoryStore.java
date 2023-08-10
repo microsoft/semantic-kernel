@@ -200,45 +200,52 @@ public class VolatileMemoryStore implements MemoryStore {
             return Mono.just(Collections.emptyList());
         }
 
-        return Mono.fromCallable(() -> {
-
-        Map<String, MemoryRecord> collection = getCollection(collectionName);
-        if (collection == null || collection.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        Collection<Tuple2<MemoryRecord, Float>> nearestMatches = new ArrayList<>();
-        collection.values().forEach(
-                record -> {
-                    if (record != null) {
-                        float similarity = embedding.cosineSimilarity(record.getEmbedding());
-                        if (similarity >= minRelevanceScore) {
-                            if (withEmbeddings) {
-                                nearestMatches.add(Tuples.of(record, similarity));
-                            } else {
-                                nearestMatches.add(
-                                        Tuples.of(
-                                                MemoryRecord.fromMetadata(
-                                                        record.getMetadata(),
-                                                        null,
-                                                        record.getMetadata().getId(),
-                                                        record.getTimestamp()),
-                                                similarity));
-                            }
-                        }
+        return Mono.fromCallable(
+                () -> {
+                    Map<String, MemoryRecord> collection = getCollection(collectionName);
+                    if (collection == null || collection.isEmpty()) {
+                        return Collections.emptyList();
                     }
+
+                    Collection<Tuple2<MemoryRecord, Float>> nearestMatches = new ArrayList<>();
+                    collection
+                            .values()
+                            .forEach(
+                                    record -> {
+                                        if (record != null) {
+                                            float similarity =
+                                                    embedding.cosineSimilarity(
+                                                            record.getEmbedding());
+                                            if (similarity >= minRelevanceScore) {
+                                                if (withEmbeddings) {
+                                                    nearestMatches.add(
+                                                            Tuples.of(record, similarity));
+                                                } else {
+                                                    nearestMatches.add(
+                                                            Tuples.of(
+                                                                    MemoryRecord.fromMetadata(
+                                                                            record.getMetadata(),
+                                                                            null,
+                                                                            record.getMetadata()
+                                                                                    .getId(),
+                                                                            record.getTimestamp()),
+                                                                    similarity));
+                                                }
+                                            }
+                                        }
+                                    });
+
+                    List<Tuple2<MemoryRecord, Float>> result =
+                            nearestMatches.stream()
+                                    // sort by similarity score, descending
+                                    .sorted(
+                                            Comparator.comparing(
+                                                    Tuple2::getT2, (a, b) -> Float.compare(b, a)))
+                                    .limit(limit)
+                                    .collect(Collectors.toList());
+
+                    return result;
                 });
-
-          List<Tuple2<MemoryRecord, Float>> result =
-                nearestMatches.stream()
-                    // sort by similarity score, descending
-                    .sorted(Comparator.comparing(Tuple2::getT2, (a,b) -> Float.compare(b, a)))
-                    .limit(limit)
-                    .collect(Collectors.toList());
-
-          return result;
-        });
-
     }
 
     @Override

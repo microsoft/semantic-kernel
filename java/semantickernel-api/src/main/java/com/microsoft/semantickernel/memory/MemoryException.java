@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.SKException;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 

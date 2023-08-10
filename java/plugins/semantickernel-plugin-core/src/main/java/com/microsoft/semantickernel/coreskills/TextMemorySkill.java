@@ -9,13 +9,10 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
-
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
+import reactor.core.publisher.Mono;
 
 /**
  * TextMemorySkill provides a skill to save or recall information from the long or short term.

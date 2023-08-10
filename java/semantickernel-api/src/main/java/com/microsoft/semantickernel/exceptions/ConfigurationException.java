@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.exceptions;
 
 import com.microsoft.semantickernel.SKCheckedException;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 

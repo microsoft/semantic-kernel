@@ -2,11 +2,9 @@
 package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.Verify;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
 
 /** Default implementation of {@link NamedServiceProvider} */

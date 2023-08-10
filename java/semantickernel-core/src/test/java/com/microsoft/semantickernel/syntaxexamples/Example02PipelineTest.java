@@ -7,10 +7,8 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.coreskills.TextSkill;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import reactor.core.publisher.Mono;
 
 public class Example02PipelineTest {

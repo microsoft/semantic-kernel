@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.connectors.memory.sqlite;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.SKException;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
@@ -105,7 +104,7 @@ public class SQLiteMemoryStore implements MemoryStore {
 
             return update.then(insert).then(Mono.just(record.getMetadata().getId()));
         } catch (JsonProcessingException e) {
-          throw new SQLConnectorException("Error serializing MemoryRecord", e);
+            throw new SQLConnectorException("Error serializing MemoryRecord", e);
         }
     }
 
@@ -175,7 +174,8 @@ public class SQLiteMemoryStore implements MemoryStore {
                                                     databaseEntry.getKey(),
                                                     databaseEntry.getTimestamp());
                                         } catch (JsonProcessingException e) {
-                                            throw new SQLConnectorException("Error deserializing database entry", e);
+                                            throw new SQLConnectorException(
+                                                    "Error deserializing database entry", e);
                                         }
                                     });
                         });
@@ -245,7 +245,8 @@ public class SQLiteMemoryStore implements MemoryStore {
                                 nearestMatches.add(Tuples.of(record, similarity));
                             }
                         } catch (JsonProcessingException e) {
-                          throw new SQLConnectorException("Error deserializing database entry", e);
+                            throw new SQLConnectorException(
+                                    "Error deserializing database entry", e);
                         }
                     }
                     List<Tuple2<MemoryRecord, Float>> results =

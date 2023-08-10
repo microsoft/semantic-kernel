@@ -4,11 +4,9 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-
+import javax.annotation.CheckReturnValue;
 import reactor.util.annotation.NonNull;
 import reactor.util.annotation.Nullable;
-
-import javax.annotation.CheckReturnValue;
 
 /** Semantic Kernel context */
 public abstract class AbstractSKContext implements SKContext {

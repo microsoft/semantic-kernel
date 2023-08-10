@@ -2,14 +2,12 @@
 package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.settings.GPT3Settings;
-
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
-
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 public class GPT3Tokenizer {
     /**

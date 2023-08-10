@@ -13,17 +13,14 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /** OpenAI chat completion client. */
 public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<OpenAIChatHistory> {
@@ -101,8 +98,8 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
                 chat.getMessages().stream()
                         .map(
                                 it ->
-                                        new ChatMessage(
-                                                toChatRole(it.getAuthorRoles())).setContent(it.getContent()))
+                                        new ChatMessage(toChatRole(it.getAuthorRoles()))
+                                                .setContent(it.getContent()))
                         .collect(Collectors.toList());
 
         ChatCompletionsOptions options = new ChatCompletionsOptions(messages);

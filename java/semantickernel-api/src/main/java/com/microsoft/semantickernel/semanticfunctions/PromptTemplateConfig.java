@@ -3,12 +3,10 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import reactor.util.annotation.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import reactor.util.annotation.Nullable;
 
 /** Prompt template configuration */
 public class PromptTemplateConfig {

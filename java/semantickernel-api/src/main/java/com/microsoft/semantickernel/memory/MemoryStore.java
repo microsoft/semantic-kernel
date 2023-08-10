@@ -2,14 +2,11 @@
 package com.microsoft.semantickernel.memory;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-
 import java.util.Collection;
 import java.util.List;
-
 import javax.annotation.Nonnull;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 /** An interface for storing and retrieving indexed {@link MemoryRecord} objects in a data store. */
 public interface MemoryStore {
