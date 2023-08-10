@@ -13,7 +13,7 @@ class FunctionView(SKBaseModel):
     description: str
     is_semantic: bool
     parameters: List[ParameterView]
-    is_function_call: bool = False
+    function_completion_enabled: bool = False
     is_asynchronous: bool = True
 
     def __init__(
@@ -23,7 +23,7 @@ class FunctionView(SKBaseModel):
         description: str,
         parameters: List[ParameterView],
         is_semantic: bool,
-        is_function_call: bool = False,
+        function_completion_enabled: bool = False,
         is_asynchronous: bool = True,
     ) -> None:
         validate_function_name(name)
@@ -33,19 +33,20 @@ class FunctionView(SKBaseModel):
             description=description,
             parameters=parameters,
             is_semantic=is_semantic,
-            is_function_call=is_function_call,
+            function_completion_enabled=function_completion_enabled,
             is_asynchronous=is_asynchronous,
         )
 
     @property
-    def function_call_repr(self) -> Dict[str, Any]:
+    def function_completion_repr(self) -> Dict[str, Any]:
         return {
             "name": f"{self.skill_name}-{self.name}",
             "description": self.description,
             "parameters": {
                 "type": "object",
                 "properties": {
-                    param.name: param.function_call_repr for param in self.parameters
+                    param.name: param.function_completion_repr
+                    for param in self.parameters
                 },
                 "required": [p.name for p in self.parameters if p.required],
             },

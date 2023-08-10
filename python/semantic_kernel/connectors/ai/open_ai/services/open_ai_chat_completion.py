@@ -45,7 +45,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         api_version: Optional[str] = None,
         endpoint: Optional[str] = None,
         log: Optional[Logger] = None,
-        function_calling_enabled: bool = False,
+        has_function_completion: bool = False,
     ) -> None:
         """
         Initializes a new instance of the OpenAIChatCompletion class.
@@ -58,6 +58,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
                 account belongs to multiple organizations.
+            has_function_completion {bool} -- Whether or not the model supports function calling.
         """
         self._model_id = model_id
         self._api_key = api_key
@@ -67,7 +68,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._endpoint = endpoint
         self._log = log if log is not None else NullLogger()
         self._messages = []
-        self.function_calling_enabled = function_calling_enabled
+        self._has_function_completion = has_function_completion
 
     async def complete_chat_async(
         self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
@@ -90,7 +91,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Tuple[Optional[str], Optional[Dict]], List[Tuple[Optional[str], Optional[Dict]]]
     ]:
         # TODO: tracking on token counts/etc.
-        if not self.function_calling_enabled:
+        if not self._has_function_completion:
             self._log.warning(
                 "Function calling is not enabled, using regular chat completion."
             )
@@ -109,12 +110,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self,
         messages: List[ChatMessage],
         request_settings: ChatRequestSettings,
-        logger: Optional[Logger] = None,
-        functions: Optional[List[Dict[str, Any]]] = None,
     ):
-        response = await self._send_chat_request(
-            messages, request_settings, True, functions
-        )
+        # TODO: enable function calling
+        response = await self._send_chat_request(messages, request_settings, True, None)
 
         # parse the completion text(s) and yield them
         async for chunk in response:
@@ -198,9 +196,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Completes the given user message with an asynchronous stream.
 
         Arguments:
-            user_message {str} -- The message (from a user) to respond to.
-            functions {List[Dict[str, Any]]} -- The functions available to the api.
+            message {str} -- The message (from a user) to respond to.
             request_settings {ChatRequestSettings} -- The request settings.
+            stream {bool} -- Whether to stream the response.
+            functions {List[Dict[str, Any]]} -- The functions available to the api.
 
         Returns:
             str -- The completed text.

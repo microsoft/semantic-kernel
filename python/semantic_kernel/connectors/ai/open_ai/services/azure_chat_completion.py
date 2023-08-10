@@ -22,7 +22,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
         api_version: str = "2023-03-15-preview",
         logger: Optional[Logger] = None,
         ad_auth=False,
-        function_calling_enabled=False,
+        has_function_completion=False,
     ) -> None:
         """
         Initialize an AzureChatCompletion service.
@@ -46,6 +46,7 @@ class AzureChatCompletion(OpenAIChatCompletion):
         :param logger: The logger instance to use. (Optional)
         :param ad_auth: Whether to use Azure Active Directory authentication.
             (Optional) The default value is False.
+        :param has_function_completion: Whether the service supports function calling.
         """
         if not deployment_name:
             raise ValueError("The deployment name cannot be `None` or empty")
@@ -66,5 +67,5 @@ class AzureChatCompletion(OpenAIChatCompletion):
             endpoint=endpoint,
             org_id=None,
             log=logger,
-            function_calling_enabled=function_calling_enabled,
+            has_function_completion=has_function_completion,
         )

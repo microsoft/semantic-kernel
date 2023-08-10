@@ -10,6 +10,8 @@ if TYPE_CHECKING:
 
 
 class ChatCompletionClientBase(ABC):
+    _has_function_completion: bool = False
+
     @abstractmethod
     async def complete_chat_async(
         self,
@@ -21,8 +23,7 @@ class ChatCompletionClientBase(ABC):
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of tuples, where each tuple is
-                comprised of a speaker ID and a message.
+            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a set of messages, from system, user, assistant and function.
             settings {ChatRequestSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging.
 
@@ -42,8 +43,7 @@ class ChatCompletionClientBase(ABC):
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is
-                comprised of a speaker ID and a message.
+            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a set of messages, from system, user, assistant and function.
             settings {ChatRequestSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging.
 
@@ -52,7 +52,6 @@ class ChatCompletionClientBase(ABC):
         """
         pass
 
-    @abstractmethod
     async def complete_chat_with_functions_async(
         self,
         messages: List["ChatMessage"],
@@ -65,9 +64,8 @@ class ChatCompletionClientBase(ABC):
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of tuples, where each tuple is
-                comprised of a speaker ID and a message.
-            functions {List[Dict[str, Any]]} -- A list of functions that the endpoint can refer to.
+            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a set of messages, from system, user, assistant and function.
+            functions {List[Dict[str, Any]]} -- A list of function definitions that the endpoint can refer to.
             settings {ChatRequestSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging.
 
@@ -76,4 +74,5 @@ class ChatCompletionClientBase(ABC):
                 Tuple[Optional[str], Optional[Dict]], List[Tuple[Optional[str], Optional[Dict]]]
             ] -- A tuple or list of tuples consisting of the completion message and the function_call result.
         """
-        pass
+        if not self._has_function_completion:
+            return await self.complete_chat_async(messages, request_settings)

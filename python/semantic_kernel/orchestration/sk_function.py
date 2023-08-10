@@ -108,7 +108,7 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=method.__sk_function_name__,
             is_semantic=False,
-            is_function_call=method.__sk_function_is_function_call__,
+            function_completion_enabled=method.__sk_function_function_completion_enabled__,
             log=log,
         )
 
@@ -159,9 +159,7 @@ class SKFunction(SKFunctionBase):
                     ) = await client.complete_chat_with_functions_async(
                         messages, functions, request_settings
                     )
-                    as_chat_prompt.add_assistant_message_with_function_call(
-                        completion, function_call
-                    )
+                    as_chat_prompt.add_assistant_message(completion, function_call)
                 else:
                     completion = await client.complete_chat_async(
                         messages, request_settings
@@ -171,7 +169,7 @@ class SKFunction(SKFunctionBase):
 
                 if function_call is not None:
                     skill_name, name = function_call["name"].split("-")
-                    func = context._skill_collection.get_function_call_function(
+                    func = context._skill_collection.get_function_completion_function(
                         skill_name, name
                     )
                     try:
@@ -279,8 +277,8 @@ class SKFunction(SKFunctionBase):
         return not self._is_semantic
 
     @property
-    def is_function_call(self) -> bool:
-        return self._is_function_call
+    def function_completion_enabled(self) -> bool:
+        return self._function_completion_enabled
 
     @property
     def request_settings(self) -> CompleteRequestSettings:
@@ -295,7 +293,7 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         is_semantic: bool,
-        is_function_call: bool = False,
+        function_completion_enabled: bool = False,
         log: Optional[Logger] = None,
         delegate_stream_function: Optional[Callable[..., Any]] = None,
     ) -> None:
@@ -306,7 +304,7 @@ class SKFunction(SKFunctionBase):
         self._skill_name = skill_name
         self._name = function_name
         self._is_semantic = is_semantic
-        self._is_function_call = is_function_call
+        self._function_completion_enabled = function_completion_enabled
         self._log = log if log is not None else NullLogger()
         self._stream_function = delegate_stream_function
         self._skill_collection = None
@@ -359,14 +357,14 @@ class SKFunction(SKFunctionBase):
             skill_name=self.skill_name,
             description=self.description,
             is_semantic=self.is_semantic,
-            is_function_call=self.is_function_call,
+            function_completion_enabled=self._function_completion_enabled,
             parameters=self._parameters,
         )
 
-    def describe_function_call(self) -> List[Dict[str, Any]]:
+    def describe_function_completion(self) -> List[Dict[str, Any]]:
         return [
-            func.function_call_repr
-            for func in self._skill_collection.get_functions_view().function_call_functions.values()
+            func.function_completion_repr
+            for func in self._skill_collection.get_functions_view().function_completion_functions.values()
         ]
 
     def __call__(
@@ -490,12 +488,12 @@ class SKFunction(SKFunctionBase):
                     "Semantic functions must have either an AI service or Chat service",
                 )
 
-        functions = self.describe_function_call()
+        functions = self.describe_function_completion()
 
         service = (
             self._ai_service if self._ai_service is not None else self._chat_service
         )
-        if service.function_calling_enabled and functions:
+        if service._has_function_completion and functions:
             new_context = await self._function(service, settings, context, functions)
         else:
             new_context = await self._function(service, context, settings)

@@ -57,13 +57,15 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
             return False
         return self.data[s_name][f_name].is_native
 
-    def has_function_call_function(self, skill_name: str, function_name: str) -> bool:
+    def has_function_completion_function(
+        self, skill_name: str, function_name: str
+    ) -> bool:
         s_name, f_name = self._normalize_names(skill_name, function_name, True)
         if s_name not in self.data:
             return False
         if f_name not in self.data[s_name]:
             return False
-        return self.data[s_name][f_name].is_function_call
+        return self.data[s_name][f_name].function_completion_enabled
 
     def get_semantic_function(
         self, skill_name: str, function_name: str
@@ -91,11 +93,11 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
             f"Function not available: {s_name}.{f_name}",
         )
 
-    def get_function_call_function(
+    def get_function_completion_function(
         self, skill_name: str, function_name: str
     ) -> "SKFunctionBase":
         s_name, f_name = self._normalize_names(skill_name, function_name, True)
-        if self.has_function_call_function(s_name, f_name):
+        if self.has_function_completion_function(s_name, f_name):
             return self.data[s_name][f_name]
 
         self._log.error(f"Function not available: {s_name}.{f_name}")

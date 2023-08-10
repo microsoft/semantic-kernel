@@ -23,12 +23,12 @@ class MathSkill(PydanticField):
         description="Adds value to a value",
         name="Add",
         input_description="The value to add",
-        is_function_call=True,
+        function_completion_enabled=True,
     )
     @sk_function_context_parameter(
         name="Amount",
         description="Amount to add",
-        type_="number",
+        type="number",
         required=True,
     )
     def add(self, initial_value_text: str, context: "SKContext") -> str:
@@ -45,12 +45,12 @@ class MathSkill(PydanticField):
         description="Subtracts value to a value",
         name="Subtract",
         input_description="The value to subtract",
-        is_function_call=True,
+        function_completion_enabled=True,
     )
     @sk_function_context_parameter(
         name="Amount",
         description="Amount to subtract",
-        type_="number",
+        type="number",
         required=True,
     )
     def subtract(self, initial_value_text: str, context: "SKContext") -> str:

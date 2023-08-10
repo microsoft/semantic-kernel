@@ -6,7 +6,7 @@ def sk_function_context_parameter(
     name: str,
     description: str,
     default_value: str = "",
-    type_: str = "string",
+    type: str = "string",
     required: bool = False
 ):
     """
@@ -16,8 +16,8 @@ def sk_function_context_parameter(
         name -- The name of the context parameter
         description -- The description of the context parameter
         default_value -- The default value of the context parameter
-        type -- The type of the context parameter
-        required -- Whether the context parameter is required
+        type -- The type of the context parameter, used for function calling
+        required -- Whether the context parameter is required for function calling
 
     """
 
@@ -30,7 +30,7 @@ def sk_function_context_parameter(
                 "name": name,
                 "description": description,
                 "default_value": default_value,
-                "type": type_,
+                "type": type,
                 "required": required,
             }
         )

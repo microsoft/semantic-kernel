@@ -26,7 +26,7 @@ kernel.add_chat_service(
         endpoint,
         api_key,
         api_version=api_version,
-        function_calling_enabled=True,
+        has_function_completion=True,
     ),
 )
 
