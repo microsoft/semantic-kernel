@@ -396,8 +396,8 @@ class StepwisePlanner:
         excluded_functions = self.config.excluded_functions or []
 
         available_functions: List[FunctionView] = [
-            *functions_view._semantic_functions.values(),
-            *functions_view._native_functions.values(),
+            *functions_view.semantic_functions.values(),
+            *functions_view.native_functions.values(),
         ]
         available_functions = itertools.chain.from_iterable(available_functions)
         available_functions = [
