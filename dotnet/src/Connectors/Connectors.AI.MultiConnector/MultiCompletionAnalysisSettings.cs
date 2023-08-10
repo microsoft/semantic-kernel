@@ -22,6 +22,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// </summary>
 public class MultiCompletionAnalysisSettings
 {
+    public event EventHandler<EvaluationCompletedEventArgs>? EvaluationCompleted;
+    public event EventHandler<SuggestionCompletedEventArgs>? SuggestionCompleted;
+
     /// <summary>
     /// This is the default vetting prompt used for connectors evaluation
     /// </summary>
@@ -158,18 +161,17 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// Asynchronously evaluates a connector test, writes the evaluation to a file, and updates settings if necessary.
     /// </summary>
-    public async Task<OptimizationCompletedEventArgs> EvaluatePromptConnectorsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public async Task EvaluatePromptConnectorsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
     {
         var completionAnalysis = new MultiCompletionAnalysis()
         {
             Timestamp = DateTime.MinValue
         };
-        var toReturn = new OptimizationCompletedEventArgs(completionAnalysis, settings);
         try
         {
             // Saving Original Tests
 
-            var needTest = this.SaveOriginalTestsReturnNeedRunningTest(originalTests, logger, ref toReturn);
+            completionAnalysis = this.SaveOriginalTestsReturnNeedRunningTest(originalTests, completionAnalysis, logger, out var needTest);
 
             List<ConnectorTest>? tests = null;
 
@@ -184,10 +186,10 @@ RESPONSE IS VALID? (true/false):
 
             if (tests == null)
             {
-                return toReturn;
+                return;
             }
 
-            bool needEvaluate = this.SaveConnectorTestsReturnNeedEvaluate(logger, tests, ref toReturn);
+            completionAnalysis = this.SaveConnectorTestsReturnNeedEvaluate(tests, completionAnalysis, logger, out var needEvaluate);
 
             // Generate evaluations
 
@@ -204,22 +206,26 @@ RESPONSE IS VALID? (true/false):
 
             if (currentEvaluations == null)
             {
-                return toReturn;
+                return;
             }
 
             //Save evaluations to file
 
-            bool needSuggestion = this.SaveEvaluationsReturnNeedSuggestion(logger, currentEvaluations, ref toReturn);
+            completionAnalysis = this.SaveEvaluationsReturnNeedSuggestion(currentEvaluations, completionAnalysis, out var needSuggestion, logger);
+
+            // Trigger the EvaluationCompleted event
+            this.EvaluationCompleted?.Invoke(this, new EvaluationCompletedEventArgs(completionAnalysis));
+            logger?.LogTrace(message: "EvaluationCompleted event raised");
 
             // If update or save suggested settings are enabled, suggest new settings from analysis and save them if needed
             if (needSuggestion)
             {
                 logger?.LogDebug("Analysis period reached. New settings suggested.");
-                toReturn.SuggestedSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, logger, cancellationToken);
+                var updatedSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, logger, cancellationToken);
                 if (this.SaveSuggestedSettings)
                 {
                     // Save the new settings
-                    var settingsJson = JsonSerializer.Serialize(toReturn.SuggestedSettings, new JsonSerializerOptions() { WriteIndented = true });
+                    var settingsJson = JsonSerializer.Serialize(updatedSettings, new JsonSerializerOptions() { WriteIndented = true });
                     File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
                 }
 
@@ -234,6 +240,10 @@ RESPONSE IS VALID? (true/false):
                         }
                     }
                 }
+
+                // Trigger the EvaluationCompleted event
+                this.SuggestionCompleted?.Invoke(this, updatedSettings);
+                logger?.LogTrace(message: "SuggestionCompleted event raised");
             }
             else
             {
@@ -243,20 +253,17 @@ RESPONSE IS VALID? (true/false):
         finally
         {
         }
-
-        return toReturn;
     }
 
-    private bool SaveOriginalTestsReturnNeedRunningTest(List<ConnectorTest> originalTests, ILogger? logger, ref OptimizationCompletedEventArgs toReturn)
+    private MultiCompletionAnalysis SaveOriginalTestsReturnNeedRunningTest(List<ConnectorTest> originalTests, MultiCompletionAnalysis analysis, ILogger? logger, out bool needTest)
     {
-        bool needTest;
-
         bool UpdateOriginalTestsAndProbeTests(MultiCompletionAnalysis multiCompletionAnalysis)
         {
             logger?.LogTrace("Found {0} original tests", multiCompletionAnalysis.OriginalTests.Count);
             var uniqueOriginalTests = originalTests.GroupBy(test => test.Prompt).Select(grouping => grouping.First());
             multiCompletionAnalysis.OriginalTests.AddRange(originalTests);
-            bool needRunningTests = (this.EnableConnectorTests) && (DateTime.Now - multiCompletionAnalysis.TestTimestamp) > this.TestsPeriod;
+            bool needRunningTests = (this.EnableConnectorTests)
+                                    && (DateTime.Now - multiCompletionAnalysis.TestTimestamp) > this.TestsPeriod;
             if (needRunningTests)
             {
                 multiCompletionAnalysis.TestTimestamp = DateTime.Now;
@@ -267,10 +274,10 @@ RESPONSE IS VALID? (true/false):
 
         logger?.LogTrace("Loading Analysis file from {0} to update original tests", this.AnalysisFilePath);
 
-        needTest = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateOriginalTestsAndProbeTests);
+        analysis = this.LockLoadApplySaveProbeNext(analysis, UpdateOriginalTestsAndProbeTests, out needTest, logger);
 
         logger?.LogTrace("Saved {0} original tests to {1}", originalTests.Count, this.AnalysisFilePath);
-        return needTest;
+        return analysis;
     }
 
     private async Task<List<ConnectorTest>> RunConnectorTestsAsync(List<ConnectorTest> originalTests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
@@ -352,7 +359,7 @@ RESPONSE IS VALID? (true/false):
         }
     }
 
-    private bool SaveConnectorTestsReturnNeedEvaluate(ILogger? logger, List<ConnectorTest> tests, ref OptimizationCompletedEventArgs toReturn)
+    private MultiCompletionAnalysis SaveConnectorTestsReturnNeedEvaluate(List<ConnectorTest> tests, MultiCompletionAnalysis analysis, ILogger? logger, out bool needEvaluate)
     {
         bool UpdateTestsAndProbeEvaluate(MultiCompletionAnalysis multiCompletionAnalysis)
         {
@@ -361,7 +368,9 @@ RESPONSE IS VALID? (true/false):
 
             logger?.LogTrace("Found {0} tests", multiCompletionAnalysis.Tests.Count);
             multiCompletionAnalysis.Tests.AddRange(tests);
-            bool needEvaluate = (this.EnableTestEvaluations) && (DateTime.Now - multiCompletionAnalysis.EvaluationTimestamp) > this.EvaluationPeriod;
+            bool needEvaluate = (this.EnableTestEvaluations)
+                                && (DateTime.Now - multiCompletionAnalysis.EvaluationTimestamp) > this.EvaluationPeriod
+                                && multiCompletionAnalysis.Tests.Count == 0;
             if (needEvaluate)
             {
                 multiCompletionAnalysis.EvaluationTimestamp = DateTime.Now;
@@ -372,10 +381,10 @@ RESPONSE IS VALID? (true/false):
 
         logger?.LogTrace("Loading Analysis file from {0} to update tests", this.AnalysisFilePath);
 
-        bool needEvaluate = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateTestsAndProbeEvaluate);
+        analysis = this.LockLoadApplySaveProbeNext(analysis, UpdateTestsAndProbeEvaluate, out needEvaluate, logger);
 
         logger?.LogTrace("Saved {0} new test results to {1}", tests.Count, this.AnalysisFilePath);
-        return needEvaluate;
+        return analysis;
     }
 
     private async Task<List<ConnectorPromptEvaluation>> RunConnectorTestsEvaluationsAsync(List<ConnectorTest> tests, IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
@@ -433,12 +442,12 @@ RESPONSE IS VALID? (true/false):
         return evaluation;
     }
 
-    private bool LockLoadApplySaveProbeNext(ILogger? logger, ref OptimizationCompletedEventArgs analysisAndSettings, Func<MultiCompletionAnalysis, bool> updateAndProbeTimespan)
+    private MultiCompletionAnalysis LockLoadApplySaveProbeNext(MultiCompletionAnalysis analysis, Func<MultiCompletionAnalysis, bool> updateAndProbeTimespan, out bool runNextStep, ILogger? logger)
     {
-        bool runNextStep;
+        var currentAnalysis = analysis;
+
         lock (this._analysisFileLock)
         {
-            var currentAnalysis = analysisAndSettings.Analysis;
             if (File.Exists(this.AnalysisFilePath))
             {
                 var json = File.ReadAllText(this.AnalysisFilePath);
@@ -448,13 +457,12 @@ RESPONSE IS VALID? (true/false):
             runNextStep = updateAndProbeTimespan(currentAnalysis);
             var jsonString = JsonSerializer.Serialize(currentAnalysis, new JsonSerializerOptions() { WriteIndented = true });
             File.WriteAllText(this.AnalysisFilePath, jsonString);
-            analysisAndSettings.Analysis = currentAnalysis;
         }
 
-        return runNextStep;
+        return currentAnalysis;
     }
 
-    private bool SaveEvaluationsReturnNeedSuggestion(ILogger? logger, List<ConnectorPromptEvaluation> currentEvaluations, ref OptimizationCompletedEventArgs toReturn)
+    private MultiCompletionAnalysis SaveEvaluationsReturnNeedSuggestion(List<ConnectorPromptEvaluation> currentEvaluations, MultiCompletionAnalysis completionAnalysis, out bool needSuggestion, ILogger? logger)
     {
         bool UpdateEvaluationsAndProbeSuggestion(MultiCompletionAnalysis multiCompletionAnalysis)
         {
@@ -462,7 +470,10 @@ RESPONSE IS VALID? (true/false):
             multiCompletionAnalysis.Tests.RemoveAll(test => testTimestampsToRemove.Contains(test.Timestamp));
             logger?.LogTrace("Found {0} evaluations", multiCompletionAnalysis.Evaluations.Count);
             multiCompletionAnalysis.Evaluations.AddRange(currentEvaluations);
-            bool needSuggestion = (this.EnableSuggestion && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings)) && (DateTime.Now - multiCompletionAnalysis.SuggestionTimestamp) > this.SuggestionPeriod;
+            bool needSuggestion = (this.EnableSuggestion
+                                   && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings))
+                                  && (DateTime.Now - multiCompletionAnalysis.SuggestionTimestamp) > this.SuggestionPeriod
+                                  && multiCompletionAnalysis.Tests.Count == 0;
             if (needSuggestion)
             {
                 multiCompletionAnalysis.SuggestionTimestamp = DateTime.Now;
@@ -473,22 +484,22 @@ RESPONSE IS VALID? (true/false):
 
         logger?.LogTrace("Loading Analysis file from {0} to save evaluations", this.AnalysisFilePath);
 
-        bool needSuggestion = this.LockLoadApplySaveProbeNext(logger, ref toReturn, UpdateEvaluationsAndProbeSuggestion);
+        completionAnalysis = this.LockLoadApplySaveProbeNext(completionAnalysis, UpdateEvaluationsAndProbeSuggestion, out needSuggestion, logger);
 
         logger?.LogTrace("Saved {0} evaluations to {1}", currentEvaluations.Count, this.AnalysisFilePath);
-        return needSuggestion;
+        return completionAnalysis;
     }
 
     /// <summary>
     /// Computes new MultiTextCompletionSettings with prompt connector settings based on analysis of their evaluation .
     /// </summary>
-    public MultiTextCompletionSettings ComputeNewSettingsFromAnalysis(IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, bool updateSettings, ILogger? logger, CancellationToken? cancellationToken = default)
+    public SuggestionCompletedEventArgs ComputeNewSettingsFromAnalysis(IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, bool updateSettings, ILogger? logger, CancellationToken? cancellationToken = default)
     {
         // If not updating settings in-place, create a new instance
         var settingsToReturn = settings;
         if (!updateSettings)
         {
-            settingsToReturn = JsonSerializer.Deserialize<MultiTextCompletionSettings>(JsonSerializer.Serialize(settings));
+            settingsToReturn = JsonSerializer.Deserialize<MultiTextCompletionSettings>(JsonSerializer.Serialize(settings))!;
         }
 
         MultiCompletionAnalysis completionAnalysis = new();
@@ -547,7 +558,7 @@ RESPONSE IS VALID? (true/false):
             }
         }
 
-        return settings;
+        return new SuggestionCompletedEventArgs(completionAnalysis, settingsToReturn);
     }
 
     /// <summary>

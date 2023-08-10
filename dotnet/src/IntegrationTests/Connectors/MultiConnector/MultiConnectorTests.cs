@@ -128,8 +128,8 @@ public sealed class MultiConnectorTests : IDisposable
                 EnableAnalysis = false,
                 NbPromptTests = nbPromptTests,
                 MaxInstanceNb = 1,
-                SuggestionPeriod = TimeSpan.FromMilliseconds(1),
-                AnalysisDelay = TimeSpan.FromMilliseconds(10),
+                SuggestionPeriod = TimeSpan.FromSeconds(10),
+                AnalysisDelay = TimeSpan.FromSeconds(10),
                 MaxDegreeOfParallelismConnectorTests = 1,
                 UpdateSuggestedSettings = true,
                 DeleteAnalysisFile = true,
@@ -161,13 +161,16 @@ public sealed class MultiConnectorTests : IDisposable
         settings.AnalysisSettings.EnableAnalysis = true;
 
         // Create a task completion source to signal the completion of the optimization
-        TaskCompletionSource<OptimizationCompletedEventArgs> optimizationCompletedTaskSource = new();
+
+        TaskCompletionSource<SuggestionCompletedEventArgs> suggestionCompletedTaskSource = new();
 
         // Subscribe to the OptimizationCompleted event
-        settings.OptimizationCompleted += (sender, args) =>
+        settings.AnalysisSettings.SuggestionCompleted += (sender, args) =>
         {
             // Signal the completion of the optimization
-            optimizationCompletedTaskSource.SetResult(args);
+            suggestionCompletedTaskSource.SetResult(args);
+
+            suggestionCompletedTaskSource = new();
         };
 
         settings.Creditor!.Reset();
@@ -191,7 +194,7 @@ public sealed class MultiConnectorTests : IDisposable
         //await optimizationCompletedTaskSource.Task.WaitAsync(cleanupToken.Token);
 
         // Get the optimization results
-        var optimizationResults = await optimizationCompletedTaskSource.Task.ConfigureAwait(false);
+        var optimizationResults = await suggestionCompletedTaskSource.Task.ConfigureAwait(false);
 
         var optimizationDoneElapsed = sw.Elapsed;
 

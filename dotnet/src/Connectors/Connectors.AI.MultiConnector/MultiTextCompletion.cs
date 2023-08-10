@@ -215,10 +215,7 @@ public class MultiTextCompletion : ITextCompletion
                 this._logger?.LogTrace(message: "OptimizeCompletionsAsync collected a new ConnectorTest series to analyze", testSeries);
                 // Evaluate the test
 
-                var analysisResult = await this._settings.AnalysisSettings.EvaluatePromptConnectorsAsync(testSeries, this._textCompletions, this._settings, this._logger, cancellationToken).ConfigureAwait(false);
-
-                // Raise the event after optimization is done
-                this._settings.OnOptimizationCompleted(analysisResult, this._logger);
+                await this._settings.AnalysisSettings.EvaluatePromptConnectorsAsync(testSeries, this._textCompletions, this._settings, this._logger, cancellationToken).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException exception)

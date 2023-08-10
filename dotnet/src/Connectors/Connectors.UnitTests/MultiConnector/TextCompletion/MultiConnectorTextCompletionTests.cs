@@ -123,7 +123,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         var optimizationCompletedTaskSource = new TaskCompletionSource<bool>();
 
         // Subscribe to the OptimizationCompleted event
-        settings.OptimizationCompleted += (sender, args) =>
+        settings.AnalysisSettings.SuggestionCompleted += (sender, args) =>
         {
             // Signal the completion of the optimization
             optimizationCompletedTaskSource.SetResult(true);

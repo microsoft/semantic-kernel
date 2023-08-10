@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
@@ -68,15 +67,6 @@ public class MultiTextCompletionSettings
     /// An optional creditor that will compute compound costs from the connectors settings and usage.
     /// </summary>
     public CallRequestCostCreditor? Creditor { get; set; }
-
-    public event EventHandler<OptimizationCompletedEventArgs>? OptimizationCompleted;
-
-    // Method to raise the event
-    internal virtual void OnOptimizationCompleted(OptimizationCompletedEventArgs analysisResult, ILogger? logger)
-    {
-        logger?.LogTrace(message: "OptimizationCompleted event raised");
-        this.OptimizationCompleted?.Invoke(this, analysisResult);
-    }
 
     /// <summary>
     /// Returns settings for a given prompt.
