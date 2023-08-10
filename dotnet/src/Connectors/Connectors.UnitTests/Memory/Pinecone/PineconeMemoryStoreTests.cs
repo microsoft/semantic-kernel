@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -62,13 +63,13 @@ public class PineconeMemoryStoreTests
             .ReturnsAsync(false);
 
         // Act
-        var exception = await Assert.ThrowsAsync<PineconeMemoryException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 
         // Assert
         this._mockPineconeClient
             .Verify<Task<bool>>(x => x.DoesIndexExistAsync("test", It.IsAny<CancellationToken>()), Times.Once());
 
-        Assert.Equal(PineconeMemoryException.ErrorCodes.IndexNotReady, exception.ErrorCode);
+        Assert.NotNull(exception);
     }
 
     [Fact]
