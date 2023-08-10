@@ -166,10 +166,12 @@ jobs:
 
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        needs: [check_tests_failed, check_tests_cancelled]
+        if: always()
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: False
+          needs: ${{ toJson(needs) }}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
           overwrite: "{title: ` ${{ github.event_name }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n${{ toJson(steps.run_tests.outputs) }}`}"
