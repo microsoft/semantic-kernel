@@ -162,4 +162,4 @@ jobs:
           dry_run: False
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
-          overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} }"
+          overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} `}"
