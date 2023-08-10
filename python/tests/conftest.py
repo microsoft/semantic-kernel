@@ -37,3 +37,16 @@ def get_oai_config():
         api_key, org_id = sk.openai_settings_from_dot_env()
 
     return api_key, org_id
+
+
+@pytest.fixture(scope="session")
+def get_jai_config():
+    if "Python_Integration_Tests" in os.environ:
+        api_key = os.environ["JinaAI__ApiKey"]
+        model_id = os.environ["JinaAI__ModelId"]
+        org_id = None
+    else:
+        # Load credentials from .env file
+        api_key, model_id, org_id = sk.jinaai_settings_from_dot_env()
+
+    return api_key, model_id, org_id

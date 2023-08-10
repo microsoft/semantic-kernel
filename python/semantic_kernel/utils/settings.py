@@ -91,9 +91,10 @@ def jinaai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
     config = dotenv_values(".env")
     api_key = config.get("JINAAI_API_KEY", None)
+    model_id = config.get("JINAAI_MODEL_ID", None)
     org_id = config.get("JINAAI_ORG_ID", None)
 
     assert api_key, "JinaAI API key not found in .env file"
-
+    assert model_id is not None, "JinaAI Model ID not found in .env file"
     # It's okay if the org ID is not found (not required)
-    return api_key, org_id
+    return api_key, model_id, org_id
