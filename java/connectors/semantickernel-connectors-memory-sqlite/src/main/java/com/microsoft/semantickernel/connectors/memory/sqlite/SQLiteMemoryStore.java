@@ -129,7 +129,7 @@ public class SQLiteMemoryStore implements MemoryStore {
                         })
                 .then(
                         Flux.fromIterable(records)
-                                .flatMap(record -> internalUpsertAsync(collectionName, record))
+                                .concatMap(record -> internalUpsertAsync(collectionName, record))
                                 .collect(Collectors.toCollection(ArrayList::new)));
     }
 
