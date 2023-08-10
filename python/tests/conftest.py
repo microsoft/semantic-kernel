@@ -2,6 +2,7 @@
 
 import os
 import typing as t
+import warnings
 
 import pytest
 
@@ -40,7 +41,14 @@ def enable_debug_mode():
     """
     import builtins
 
-    import snoop
+    try:
+        import snoop
+    except ImportError:
+        warnings.warn(
+            "Install snoop to enable trace debugging. `pip install snoop`",
+            ImportWarning,
+        )
+        return
 
     builtins.ss = snoop.snoop(depth=4).__enter__
     builtins.pr = snoop.pp
