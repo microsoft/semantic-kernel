@@ -183,10 +183,10 @@ jobs:
 
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
-        if: ${{ env.run_type == 'Daily' || env.run_type == 'Manual'}}
+        if: always()
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
-          dry_run: False
+          dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
           overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
