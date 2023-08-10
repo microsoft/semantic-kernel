@@ -22,7 +22,14 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
     public int CompareTo(ScoredValue<T> other)
     {
-        return this.Score.CompareTo(other.Score);
+        var result = this.Score.CompareTo(other.Score);
+
+        if (result == 0)
+        {
+            result = Comparer<T>.Default.Compare(this.Value, other.Value);
+        }
+
+        return result;
     }
 
     public override string ToString()
