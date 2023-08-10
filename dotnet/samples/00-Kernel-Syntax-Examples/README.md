@@ -18,8 +18,6 @@ cd dotnet/samples/00-Kernel-Syntax-Examples
 
 dotnet user-secrets init
 
-dotnet user-secrets set "Global:LlmService" "..." (OpenAI, AzureOpenAI, Apim, HuggingFace, etc.)
-
 dotnet user-secrets set "OpenAI:ModelType" "..." (text-completion or chat-completion)
 dotnet user-secrets set "OpenAI:TextCompletionModelId" "..."
 dotnet user-secrets set "OpenAI:ChatCompletionModelId" "..."
