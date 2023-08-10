@@ -59,7 +59,8 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
     public bool Equals(ScoredValue<T> other)
     {
-        return this.CompareTo(other) == 0;
+        return EqualityComparer<T>.Default.Equals(this.Value, other.Value) &&
+               this.Score.Equals(other.Score);
     }
 
     public override int GetHashCode()
@@ -84,7 +85,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
     public static bool operator <=(ScoredValue<T> left, ScoredValue<T> right)
     {
-        return left.CompareTo(right) <= 0;
+        return left < right || left.Equals(right);
     }
 
     public static bool operator >(ScoredValue<T> left, ScoredValue<T> right)
@@ -94,7 +95,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
     public static bool operator >=(ScoredValue<T> left, ScoredValue<T> right)
     {
-        return left.CompareTo(right) >= 0;
+        return left > right || left.Equals(right);
     }
 
     internal static ScoredValue<T> Min()
