@@ -13,10 +13,18 @@ from semantic_kernel.connectors.ai.open_ai import (
     AzureChatCompletion,
     OpenAIChatCompletion,
 )
+from semantic_kernel.core_skills import CodeSkill
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function
 
-from . import CodeSkill
+PROMPT_PREFIX = """The preceding is a summary of the data. There may be more rows."""
+PROMPT_SUFFIX = """Write a Python function `process({arg_name})` where 
+    {arg_name} {description}.
+    This is the function's purpose: {goal}
+    Write the function in a Python code block with all necessary imports.
+    Do not include any example usage. Do not include any explanation nor 
+    decoration. Store the reult in a local variable named `result`."""
+GLOBAL_VARS = {'pd': pd}    # must give access to pandas module
 
 
 class DataSkill:
@@ -28,8 +36,9 @@ class DataSkill:
         data_skill = kernel.import_skill(
         DataSkill(data=df,service=openai_chat_completion), skill_name="data"
         )
-        prompt = "How old is Bob?"
         query_async = data_skill["queryAsync"]
+
+        prompt = "How old is Bob?"
         result = await query_async.invoke_async(prompt)
         print(result)
     """
@@ -43,6 +52,7 @@ class DataSkill:
     _service: ChatCompletionClientBase
     _chat_settings: ChatRequestSettings
     _code_skill: CodeSkill
+    _data_context: str
 
     def __init__(
         self,
@@ -59,6 +69,7 @@ class DataSkill:
         self._service = service
         self._chat_settings = ChatRequestSettings(temperature=0.0)
         self._code_skill = CodeSkill(self._service)
+        self._data_context = self.get_df_data()
 
         if isinstance(self.path, str):
             if not self.path.endswith(".csv"):
@@ -91,36 +102,31 @@ class DataSkill:
                 else:
                     self.data.append(pd.read_csv(file))
 
-        self._prefix = """You were given the first five rows of each pandas 
-        dataframe earlier. There may be more rows. """
-        self._suffix = """Write a Python function `process({arg_name})` where 
-        {arg_name} {description}.
-        This is the function's purpose: {goal}
-        Write the function in a Python code block with all necessary imports. 
-        Do not include any example usage. Do not include any explanation nor 
-        decoration. Store the reult in a local variable named `result`."""
-
-    def get_df_data(self) -> str:
+    def get_df_data(self, num_rows: int = 3) -> str:
         """
-        Returns the first 5 rows of pandas dataframes in JSON format. The LLM
+        Returns the first header rows of pandas dataframes in JSON format. The LLM
         needs this information to answer the user's questions about the data.
 
+        Args:
+            num_rows {int} -- How many rows from the top to supply, defaults to 5
+            Control this to limit token usage, especially with many dataframes. 
+            The minimum is 1.
+
         Returns:
-            The row and column names of the data tables contained in a prompt.
+            A prompt containing information on how many dataframes and their headers.
         """
+        if num_rows < 1:
+            raise ValueError("Must have at least 1 row in each dataframe's header")
+
         if isinstance(self.data, pd.DataFrame):
-            prompt = """You are working with one pandas dataframe in Python. 
-            These are the first 5 rows, in JSON format: \n"""
-            prompt += self.data.head().to_json(orient="records") + "\n"
+            prompt = """You are working with one pandas dataframe in Python with the following header: \n"""
+            prompt += self.data.head(num_rows).to_json(orient="records") + "\n"
         else:
-            count = 1
             num = len(self.data)
-            prompt = f"""You are working with a list of {num} pandas dataframes 
-            in Python, named df1, df2, and so on. """
-            for table in self.data:
-                prompt += f"The first 5 rows of df{count} are, in this order: \n"
-                prompt += table.head().to_json(orient="records") + "\n"
-                count += 1
+            prompt = f"You are working with a list of {num} pandas dataframes in Python, named df1, df2, and so on.\n"
+            for i, table in enumerate(self.data):
+                prompt += f"The header of df{i + 1} is: \n"
+                prompt += table.head(num_rows).to_json(orient="records") + "\n"
         return prompt
 
     @sk_function(
@@ -141,38 +147,32 @@ class DataSkill:
             local_vars = {"df": df}
             arg = "df"
             description = "is a pandas dataframe"
-        else:  # If there are multiple dataframes
-            count = 1
+        else: # If there are multiple dataframes
             local_vars = {}
             arg = ""
-            for table in self.data:
-                name = f"df{count}"
+            for i, table in enumerate(self.data):
+                name = f"df{i + 1}"
                 arg += name + ", "
                 local_vars[name] = table
-                count += 1
+
             arg = arg[:-2]
             description = "are pandas dataframes"
-        #Construct the prompt
-        context = self.get_df_data()
-        formatted_suffix = self._suffix.format(
+
+        # Construct the prompt
+        formatted_suffix = PROMPT_SUFFIX.format(
             goal=ask, arg_name=arg, description=description
         )
-        prompt = (
-            context
-            + "\n"
-            + self._prefix
-            + """You need to write plain Python code that the user can run on 
-            their dataframes."""
-            + formatted_suffix
-        )
+        prompt = self._data_context + "\n" + PROMPT_PREFIX + formatted_suffix
 
-        max_retry = 1
-        for _ in range(max_retry):  # If generated code doesn't work, try again
+        max_attempts = 2
+        for _ in range(max_attempts):  # If generated code doesn't work, try again
             try:
                 # Get Python code as a string to answer the user's question
                 code = await self._code_skill.custom_code_async(prompt)
+
                 # Dynamically execute the code on the dataframe(s)
-                await self._code_skill.custom_execute_async(code, local_vars=local_vars)
+                await self._code_skill.custom_execute_async(code, GLOBAL_VARS, local_vars)
+
                 # Get all dataframes provided by the user
                 df_variables = [
                     var_name
@@ -181,6 +181,7 @@ class DataSkill:
                 ]
                 local_vars.get("process")
                 dataframes = [local_vars[var_name] for var_name in df_variables]
+
                 # Get the result of the execution
                 result = local_vars["process"](*dataframes)
                 break
@@ -190,13 +191,12 @@ class DataSkill:
                 continue
         else:
             # The loop completed without breaking, meaning all retries failed
-            raise AssertionError("Execution failed after 1 retry")
+            raise AssertionError("Execution failed after 1 retry, aborting")
 
         if result:
             # Re-format the result with natural language
-            prompt = "The answer to the user's question is: " + str(result)
-            prompt += f"""You need to provide the answer back to the user with 
-            natural language.
+            prompt = f"""The answer to the user's query was {result}.
+            Provide an answer back to the user in natural language.
             User: {ask}
             Bot:
             """
@@ -215,10 +215,10 @@ class DataSkill:
             ask -- The transformation to apply to the data
         """
         (
-            self._prefix
+            PROMPT_PREFIX
             + """You need to write Python code that will 
         transform the dataframe as the user asked."""
-            + self._suffix
+            + PROMPT_SUFFIX
         )
         # TODO
         pass
@@ -236,11 +236,11 @@ class DataSkill:
             ask -- The description of the plot to generate
         """
         (
-            self._prefix
+            PROMPT_PREFIX
             + """You need to write Python code that will plot 
         the data as the user asked. You need to import matplotlib and use nothing
         else for plotting. """
-            + self._suffix
+            + PROMPT_SUFFIX
         )
         # TODO
         pass

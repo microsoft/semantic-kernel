@@ -22,10 +22,10 @@ async def main() -> None:
         "Salary": [60000, 75000, 52000, 48000, 67000],
     }
     data2 = {
-        "Name": ["Amanda", "Brian", "Catherine", "Daniel", "Emily"],
-        "Age": [27, 35, 31, 24, 30],
-        "City": ["San Francisco", "Seattle", "Boston", "Austin", "Denver"],
-        "Salary": [62000, 80000, 55000, 50000, 67000],
+        "Name": ["Amanda", "Brian", "Catherine", "Daniel", "Emily", "Francis"],
+        "Age": [27, 35, 31, 24, 30, 33],
+        "City": ["San Francisco", "Seattle", "Boston", "Austin", "Denver", "Savannah"],
+        "Salary": [62000, 80000, 55000, 50000, 67000, 70000],
     }
     df1 = pd.DataFrame(data1)
     df2 = pd.DataFrame(data2)
@@ -35,22 +35,28 @@ async def main() -> None:
     )
     query_async = data_skill["queryAsync"]
 
-    prompt = "How old is Bob and what city does Eve live in?"
+    prompt = "How old is Bob and what city does Francis live in?"
     result = await query_async.invoke_async(prompt)
     print(result)
-    #Output: Bob is 32 years old and Eve lives in Miami.
+    # Output: Bob is 32 years old and Francis lives in Savannah.
 
     prompt = "What is Emily's income?"
     result = await query_async.invoke_async(prompt)
     print(result)
-    #Output: Emily's salary is $67,000.
-    
+    # Output: Emily's income is $67,000.
+
     prompt = "Which group has a higher average salary and what is the difference?"
-    query_async = data_skill["queryAsync"]
     result = await query_async.invoke_async(prompt)
     print(result)
-    #Output: The group with a higher average salary is df2.
-    
+    # Output: The group with the higher average salary is 'df2'.
+    #         The difference in average salary between the two groups is $3600.
+
+    prompt = "Explain the correlation between age and income with two decimal places."
+    result = await query_async.invoke_async(prompt)
+    print(result)
+    # Output: The correlation between age and income is 0.83, which indicates a strong positive relationship. 
+    #         This means that as age increases, income tends to increase as well.
+
 
 if __name__ == "__main__":
     asyncio.run(main())
