@@ -24,9 +24,9 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     {
         var result = this.Score.CompareTo(other.Score);
 
-        if (result == 0)
+        if (result == 0 && this.Value is IComparable<T> comparableValue)
         {
-            result = Comparer<T>.Default.Compare(this.Value, other.Value);
+            result = comparableValue.CompareTo(other.Value);
         }
 
         return result;
@@ -59,8 +59,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
     public bool Equals(ScoredValue<T> other)
     {
-        return EqualityComparer<T>.Default.Equals(this.Value, other.Value) &&
-               this.Score.Equals(other.Score);
+        return this.CompareTo(other) == 0;
     }
 
     public override int GetHashCode()
