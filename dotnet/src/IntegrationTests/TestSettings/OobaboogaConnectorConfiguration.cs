@@ -11,6 +11,8 @@ public class OobaboogaConnectorConfiguration
 {
     public string Name { get; set; } = "";
 
+    public string? EndPoint { get; set; }
+
     public int BlockingPort { get; set; }
 
     public int StreamingPort { get; set; }

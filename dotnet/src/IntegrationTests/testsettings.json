@@ -35,22 +35,22 @@
   "MultiConnector": {
     "OobaboogaEndPoint": "http://localhost",
     "OobaboogaCompletions": [
-      {
-        "Name": "TheBloke_orca_mini_3B-GGML",
-        "BlockingPort": 5000,
-        "StreamingPort": 5010,
-        "MaxTokens": 2048,
-        "CostPer1000Token": 0.0004,
-        "PromptTransform": {
-          "Template": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n### User:\n{0}\n\n### Response:"
-        }
-      },
+      //{
+      //  "Name": "TheBloke_orca_mini_3B-GGML",
+      //  "BlockingPort": 5000,
+      //  "StreamingPort": 5010,
+      //  "MaxTokens": 2048,
+      //  "CostPer1000Token": 0.0003,
+      //  "PromptTransform": {
+      //    "Template": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n### User:\n{0}\n\n### Response:"
+      //  }
+      //},
       //{
       //  "Name": "togethercomputer_RedPajama-INCITE-Chat-3B-v1",
       //  "BlockingPort": 5001,
       //  "StreamingPort": 5011,
       //  "MaxTokens": 2048,
-      //  "CostPer1000Token": 0.0006,
+      //  "CostPer1000Token": 0.0004,
       //  "PromptTransform": {
       //    "Template": "<human>: [Instruction]\n{0}\n<bot>:"
       //  }
@@ -60,21 +60,34 @@
       //  "BlockingPort": 5002,
       //  "StreamingPort": 5012,
       //  "MaxTokens": 4096,
-      //  "CostPer1000Token": 0.0006,
-      //  "PromptTransform": {
-      //    "Template": "### System:\nThis is a system prompt, please behave and help the user.\n\n### User:\n{0}\n\n### Assistant:"
-      //  }
-      //},
-      //{
-      //  "Name": "TheBloke_StableBeluga-13B-GGML",
-      //  "BlockingPort": 5003,
-      //  "StreamingPort": 5013,
-      //  "MaxTokens": 4096,
-      //  "CostPer1000Token": 0.001,
+      //  "CostPer1000Token": 0.0005,
       //  "PromptTransform": {
       //    "Template": "### System:\nThis is a system prompt, please behave and help the user.\n\n### User:\n{0}\n\n### Assistant:"
       //  }
       //}
+      //,
+      {
+        "Name": "TheBloke_StableBeluga-13B-GGML",
+        "BlockingPort": 5003,
+        "StreamingPort": 5013,
+        "MaxTokens": 4096,
+        "CostPer1000Token": 0.007,
+        "PromptTransform": {
+          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n\n### User:\n{0}\n\n### Assistant:"
+        }
+      }
+      //,
+      //{
+      //  "Name": "TheBloke_upstage-llama-30b-instruct-2048-GGML",
+      //  //"EndPoint": "http://x.x.x.x", Most probably you won't host that model on the same machine as the tests runner and the rest of the models
+      //  "BlockingPort": 5004,
+      //  "StreamingPort": 5014,
+      //  "MaxTokens": 2048,
+      //  "CostPer1000Token": 0.001,
+      //  "PromptTransform": {
+      //    "Template": "### System:\nThis is a system prompt, please behave and help the user.\n\n### User:\n{0}\n\n### Assistant:"
+      //  }
+      }
     ]
   }
 }

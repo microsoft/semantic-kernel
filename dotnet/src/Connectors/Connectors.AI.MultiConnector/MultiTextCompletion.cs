@@ -32,7 +32,11 @@ public class MultiTextCompletion : ITextCompletion
     /// <param name="analysisTaskCancellationToken">The cancellation token to use for the completion manager.</param>
     /// <param name="logger">An optional logger for instrumentation.</param>
     /// <param name="otherCompletions">The secondary text completions that need vetting to be used for completion calls.</param>
-    public MultiTextCompletion(MultiTextCompletionSettings settings, NamedTextCompletion mainTextCompletion, CancellationToken? analysisTaskCancellationToken, ILogger? logger = null, params NamedTextCompletion[]? otherCompletions)
+    public MultiTextCompletion(MultiTextCompletionSettings settings,
+        NamedTextCompletion mainTextCompletion,
+        CancellationToken? analysisTaskCancellationToken,
+        ILogger? logger = null,
+        params NamedTextCompletion[]? otherCompletions)
     {
         this._settings = settings;
         this._logger = logger;
@@ -44,24 +48,19 @@ public class MultiTextCompletion : ITextCompletion
     /// <inheritdoc />
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        var multiCompletionSession = this.GetPromptAndConnectorSettings(text, requestSettings);
-
-        var completions = await multiCompletionSession.namedTextCompletionAndSettings.namedTextCompletion.TextCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        var session = this.GetPromptAndConnectorSettings(text, requestSettings);
+        var completions = await session.NamedTextCompletion.TextCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
 
         var resultLazy = new AsyncLazy<string>(() =>
         {
             var toReturn = completions[0].GetCompletionAsync(cancellationToken);
-            multiCompletionSession.stopWatch.Stop();
+            session.StopWatch.Stop();
             return toReturn;
         }, cancellationToken);
 
-        await this.ProcessTextCompletionResultsAsync(multiCompletionSession.adjustedPrompt.text,
-            multiCompletionSession.adjustedPrompt.requestSettings,
-            multiCompletionSession.promptSettings,
-            multiCompletionSession.isNewPrompt,
-            multiCompletionSession.stopWatch,
-            multiCompletionSession.namedTextCompletionAndSettings,
-            resultLazy, cancellationToken).ConfigureAwait(false);
+        session.ResultProducer = resultLazy;
+
+        await this.ProcessTextCompletionResultsAsync(session, cancellationToken).ConfigureAwait(false);
 
         return completions;
     }
@@ -69,9 +68,9 @@ public class MultiTextCompletion : ITextCompletion
     /// <inheritdoc />
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        var multiCompletionSession = this.GetPromptAndConnectorSettings(text, requestSettings);
+        var session = this.GetPromptAndConnectorSettings(text, requestSettings);
 
-        var result = multiCompletionSession.namedTextCompletionAndSettings.namedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
+        var result = session.NamedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
 
         var resultLazy = new AsyncLazy<string>(async () =>
         {
@@ -86,50 +85,66 @@ public class MultiTextCompletion : ITextCompletion
                 break;
             }
 
-            multiCompletionSession.stopWatch.Stop();
+            session.StopWatch.Stop();
             return sb.ToString();
         }, cancellationToken);
 
-        this.ProcessTextCompletionResultsAsync(multiCompletionSession.adjustedPrompt.text,
-            multiCompletionSession.adjustedPrompt.requestSettings,
-            multiCompletionSession.promptSettings,
-            multiCompletionSession.isNewPrompt,
-            multiCompletionSession.stopWatch,
-            multiCompletionSession.namedTextCompletionAndSettings,
-            resultLazy, cancellationToken).ConfigureAwait(false);
+        session.ResultProducer = resultLazy;
+
+        this.ProcessTextCompletionResultsAsync(session, cancellationToken).ConfigureAwait(false);
 
         return result;
     }
 
-    private (PromptMultiConnectorSettings promptSettings, (string text, CompleteRequestSettings requestSettings) adjustedPrompt, bool isNewPrompt, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, Stopwatch stopWatch) GetPromptAndConnectorSettings(string text, CompleteRequestSettings requestSettings)
+    /// <summary>
+    /// This method is responsible for loading the appropriate settings in order to initiate the session state
+    /// </summary>
+    private MultiCompletionSession GetPromptAndConnectorSettings(string text, CompleteRequestSettings requestSettings)
     {
         var promptSettings = this._settings.GetPromptSettings(text, requestSettings, out var isNewPrompt);
-        ;
         var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(this._textCompletions, this._settings.ConnectorComparer);
         var adjustedPrompt = textCompletionAndSettings.namedTextCompletion.AdjustPromptAndRequestSettings(text, requestSettings, promptSettings, this._settings, this._logger);
         var stopWatch = Stopwatch.StartNew();
-        return (promptSettings, adjustedPrompt, isNewPrompt, textCompletionAndSettings, stopWatch);
+
+        return new MultiCompletionSession
+        {
+            PromptSettings = promptSettings,
+            InputText = text,
+            InputRequestSettings = requestSettings,
+            CallText = adjustedPrompt.text,
+            CallsRequestSettings = adjustedPrompt.requestSettings,
+            IsNewPrompt = isNewPrompt,
+            NamedTextCompletion = textCompletionAndSettings.namedTextCompletion,
+            PromptConnectorSettings = textCompletionAndSettings.promptConnectorSettings,
+            StopWatch = stopWatch
+        };
     }
 
-    private async Task ProcessTextCompletionResultsAsync(string text, CompleteRequestSettings requestSettings, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, Stopwatch stopWatch, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, AsyncLazy<string> resultLazy, CancellationToken cancellationToken)
+    /// <summary>
+    /// This method ends the multi-completion session and collects the results for analysis if needed
+    /// </summary>
+    private async Task ProcessTextCompletionResultsAsync(MultiCompletionSession session, CancellationToken cancellationToken)
     {
-        var costDebited = await this.ApplyCreditorCostsAsync(text, resultLazy, namedTextCompletionAndSettings.namedTextCompletion).ConfigureAwait(false);
+        var costDebited = await this.ApplyCreditorCostsAsync(session.CallText, session.ResultProducer, session.NamedTextCompletion).ConfigureAwait(false);
 
-        if (namedTextCompletionAndSettings.namedTextCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis)
+        if (session.NamedTextCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis)
         {
-            if (promptSettings.IsTestingNeeded(text, this._textCompletions, isNewPrompt))
+            if (session.PromptSettings.IsTestingNeeded(session.InputText, this._textCompletions, session.IsNewPrompt))
             {
-                promptSettings.AddSessionPrompt(text);
-                await this.CollectResultForTestAsync(text, requestSettings, stopWatch, namedTextCompletionAndSettings, resultLazy, costDebited, cancellationToken).ConfigureAwait(false);
+                session.PromptSettings.AddSessionPrompt(session.InputText);
+                await this.CollectResultForTestAsync(session, costDebited, cancellationToken).ConfigureAwait(false);
             }
         }
 
         if (this._settings.LogResult)
         {
-            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync: {0}: duration: \nPROMPT:\n{1}\nRESULT:\n{2}", namedTextCompletionAndSettings.namedTextCompletion.Name, text, await resultLazy.Value.ConfigureAwait(false));
+            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync: {0}: duration: \nPROMPT:\n{1}\nRESULT:\n{2}", session.NamedTextCompletion.Name, session.CallText, await session.ResultProducer.Value.ConfigureAwait(false));
         }
     }
 
+    /// <summary>
+    /// This method applies the cost of the text completion (input + result) to the creditor if one is configured
+    /// </summary>
     private async Task<decimal> ApplyCreditorCostsAsync(string text, AsyncLazy<string> resultLazy, NamedTextCompletion textCompletion)
     {
         decimal cost = 0;
@@ -146,14 +161,14 @@ public class MultiTextCompletion : ITextCompletion
     /// <summary>
     /// Asynchronously collects results from a prompt call to evaluate connectors against the same prompt.
     /// </summary>
-    private async Task CollectResultForTestAsync(string text, CompleteRequestSettings requestSettings, Stopwatch stopWatch, (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) namedTextCompletionAndSettings, AsyncLazy<string> resultLazy, decimal textCompletionCost, CancellationToken cancellationToken)
+    private async Task CollectResultForTestAsync(MultiCompletionSession session, decimal textCompletionCost, CancellationToken cancellationToken)
     {
-        var result = await resultLazy.Value.ConfigureAwait(false);
+        var result = await session.ResultProducer.Value.ConfigureAwait(false);
 
-        var duration = stopWatch.Elapsed;
+        var duration = session.StopWatch.Elapsed;
 
         // For the management task
-        ConnectorTest connectorTest = ConnectorTest.Create(text, requestSettings, namedTextCompletionAndSettings.namedTextCompletion, result, duration, textCompletionCost);
+        ConnectorTest connectorTest = ConnectorTest.Create(session.InputText, session.InputRequestSettings, session.NamedTextCompletion, result, duration, textCompletionCost);
         this.AppendConnectorTest(connectorTest);
     }
 
@@ -226,24 +241,5 @@ public class MultiTextCompletion : ITextCompletion
     {
         this._logger?.LogTrace("Collecting new test with duration {0},\nORIGINAL_PROMPT:\n{1}\nORIGINAL_RESULT:\n{2}", connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
         this._connectorTestChannel.Writer.TryWrite(connectorTest);
-    }
-
-    /// <inheritdoc />
-    private sealed class AsyncLazy<T> : Lazy<Task<T>>
-    {
-        public AsyncLazy(T value)
-            : base(() => Task.FromResult(value))
-        {
-        }
-
-        public AsyncLazy(Func<T> valueFactory, CancellationToken cancellationToken)
-            : base(() => Task.Factory.StartNew<T>(valueFactory, cancellationToken, TaskCreationOptions.None, TaskScheduler.Current))
-        {
-        }
-
-        public AsyncLazy(Func<Task<T>> taskFactory, CancellationToken cancellationToken)
-            : base(() => Task.Factory.StartNew(taskFactory, cancellationToken, TaskCreationOptions.None, TaskScheduler.Current).Unwrap())
-        {
-        }
     }
 }

@@ -161,19 +161,19 @@ public class NamedTextCompletion
         if (multiTextCompletionSettings.GlobalPromptTransform != null)
         {
             adjustedPrompt = multiTextCompletionSettings.GlobalPromptTransform.Transform(adjustedPrompt);
-            logger?.LogTrace("Applied global settings transform");
+            logger?.LogTrace("Applied global settings prompt transform");
         }
 
         if (promptMultiConnectorSettings.PromptTypeTransform != null)
         {
             adjustedPrompt = promptMultiConnectorSettings.PromptTypeTransform.Transform(adjustedPrompt);
-            logger?.LogTrace("Applied prompt settings transform");
+            logger?.LogTrace("Applied prompt type settings prompt transform");
         }
 
         if (promptMultiConnectorSettings.ApplyModelTransform && this.PromptTransform != null)
         {
             adjustedPrompt = this.PromptTransform.Transform(adjustedPrompt);
-            logger?.LogTrace("Applied connector transform");
+            logger?.LogTrace("Applied named connector settings transform");
         }
 
         return (adjustedPrompt, adjustedSettings);

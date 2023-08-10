@@ -70,6 +70,7 @@ public sealed class MultiConnectorTests : IDisposable
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
     [InlineData(1, 1, 1, "VettingSequentialPlan_SummarizeSkill_Summarize.json", "SummarizeSkill", "MiscSkill")]
+    [InlineData(1, 1, 1, "VettingSequentialPlan_SummarizeSkill.json", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFilePath, params string[] skillNames)
     {
         // Load the plan from the provided file path
@@ -258,7 +259,7 @@ public sealed class MultiConnectorTests : IDisposable
         foreach (var oobaboogaConnector in multiConnectorConfiguration.OobaboogaCompletions)
         {
             var oobaboogaCompletion = new OobaboogaTextCompletion(
-                endpoint: new Uri(multiConnectorConfiguration.OobaboogaEndPoint),
+                endpoint: new Uri(oobaboogaConnector.EndPoint ?? multiConnectorConfiguration.OobaboogaEndPoint),
                 blockingPort: oobaboogaConnector.BlockingPort,
                 streamingPort: oobaboogaConnector.StreamingPort,
                 webSocketFactory: this._webSocketFactory,
