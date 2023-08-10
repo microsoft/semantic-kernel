@@ -47,8 +47,6 @@ class DataSkill:
     data: Union[pd.DataFrame, List[pd.DataFrame]]
     mutable: bool  # TODO
     verbose: bool  # TODO
-    _prefix: str
-    _suffix: str
     _service: ChatCompletionClientBase
     _chat_settings: ChatRequestSettings
     _code_skill: CodeSkill
