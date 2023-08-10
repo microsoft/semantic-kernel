@@ -363,19 +363,26 @@ public class PromptTemplateConfig {
     private final int schema;
 
     private final String type; // { get; set; } = "completion";
+
+    private final String serviceId;
     private final String description;
 
     public PromptTemplateConfig() {
-        this("", "", null);
+        this("", "", null, null);
     }
 
     public PromptTemplateConfig(CompletionConfig completionConfig) {
-        this(1, "", "", completionConfig, new InputConfig(new ArrayList<>()));
+        this(1, "", "", null, completionConfig, new InputConfig(new ArrayList<>()));
     }
 
     public PromptTemplateConfig(
             String description, String type, @Nullable CompletionConfig completionConfig) {
-        this(1, description, type, completionConfig, new InputConfig(new ArrayList<>()));
+        this(1, description, type, null, completionConfig, new InputConfig(new ArrayList<>()));
+    }
+
+    public PromptTemplateConfig(
+            String description, String type, @Nullable String serviceId, @Nullable CompletionConfig completionConfig) {
+        this(1, description, type, serviceId, completionConfig, new InputConfig(new ArrayList<>()));
     }
 
     @JsonCreator
@@ -383,6 +390,7 @@ public class PromptTemplateConfig {
             @JsonProperty("schema") int schema,
             @JsonProperty("description") String description,
             @JsonProperty("type") String type,
+            @JsonProperty("serviceId") String serviceId,
             @Nullable @JsonProperty("completion") CompletionConfig completionConfig,
             @Nullable @JsonProperty("input") InputConfig input) {
         if (completionConfig == null) {
@@ -391,6 +399,7 @@ public class PromptTemplateConfig {
         this.schema = schema;
         this.description = description;
         this.type = type;
+        this.serviceId = serviceId;
         this.completionConfig = completionConfig;
         if (input == null) {
             input = new InputConfig(new ArrayList<>());
@@ -405,5 +414,9 @@ public class PromptTemplateConfig {
      */
     public String getDescription() {
         return description;
+    }
+
+    public String getServiceId() {
+        return serviceId;
     }
 }

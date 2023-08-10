@@ -44,7 +44,6 @@ public class Example06_UseMultipleModels {
         OpenAITextCompletion adaTextCompletion = new OpenAITextCompletion(client, "text-ada-001");
         
         Kernel kernel = SKBuilders.kernel()
-                //  .withDefaultAIService(SKBuilders.textCompletionService().build(client, "text-davinci-003"))
               .withAIService("text-davinci-003", davinciTextCompletion, false, OpenAITextCompletion.class)
               .withAIService("text-ada-001", adaTextCompletion, false, OpenAITextCompletion.class)
               .build();

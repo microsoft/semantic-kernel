@@ -1,5 +1,6 @@
 {
   "schema": 1,
+  "serviceId": "text-davinci-003",
   "description": "Generate a funny joke",
   "type": "completion",
   "completion": {
