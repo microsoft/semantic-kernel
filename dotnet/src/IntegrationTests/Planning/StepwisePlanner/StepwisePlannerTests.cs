@@ -68,7 +68,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
     [Theory]
     [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2")]
-    // [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2")] // Chat tests take long
+    [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2")] // Chat tests take long
     public async void CanExecuteStepwisePlan(bool useChatModel, string prompt)
     {
         // Arrange

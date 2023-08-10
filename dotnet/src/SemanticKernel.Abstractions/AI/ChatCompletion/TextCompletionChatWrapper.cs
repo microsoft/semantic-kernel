@@ -46,7 +46,7 @@ public class TextCompletionChatWrapper : IChatCompletion, ITextCompletion
 
         var response = this._wrappedCompletion.GetStreamingCompletionsAsync(text, completionSettings, cancellationToken);
 
-        return this._converter.TextResultToChatResult(response);
+        return this._converter.TextStreamingResultToChatStreamingResult(response);
     }
 
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)

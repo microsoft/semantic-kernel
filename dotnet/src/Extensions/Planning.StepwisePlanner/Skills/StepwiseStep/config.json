@@ -18,11 +18,6 @@
         "defaultValue": ""
       },
       {
-        "name": "agentScratchPad",
-        "description": "The agent's scratch pad",
-        "defaultValue": ""
-      },
-      {
         "name": "functionDescriptions",
         "description": "The manual of the agent's functions",
         "defaultValue": ""

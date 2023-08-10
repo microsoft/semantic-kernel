@@ -28,7 +28,7 @@ public sealed class WebSearchEngineSkill
     [SKFunction, Description("Perform a web search.")]
     public async Task<string> SearchAsync(
         [Description("Text to search for")] string query,
-        [Description("Number of results")] int count = 1,
+        [Description("Number of results")] int count = 5,
         [Description("Number of results to skip")] int offset = 0,
         CancellationToken cancellationToken = default)
     {

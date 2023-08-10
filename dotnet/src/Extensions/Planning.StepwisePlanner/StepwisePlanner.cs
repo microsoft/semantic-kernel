@@ -3,22 +3,28 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
+
 
 /// <summary>
 /// A planner that creates a Stepwise plan using Mrkl systems.
@@ -33,22 +39,37 @@ public class StepwisePlanner : IStepwisePlanner
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">Optional configuration object</param>
+    /// <param name="systemPromptAndExamples">System prompt and optional examples. To use the default system prompt you can call DefaultSystemPrompt</param>
     /// <param name="prompt">Optional prompt override</param>
     /// <param name="promptUserConfig">Optional prompt config override</param>
     public StepwisePlanner(
         IKernel kernel,
         StepwisePlannerConfig? config = null,
-        string? prompt = null,
+        string systemPrompt = null,
+        string[] examples = null,
         PromptTemplateConfig? promptUserConfig = null)
     {
         Verify.NotNull(kernel);
         this._kernel = kernel;
+        try
+        {
+            // TODO request for TryGetService
+            this._chatCompletion = kernel.GetService<IChatCompletion>(); // Throws if not avaialble.
+        }
+        catch (KernelException ke) when (ke.ErrorCode == KernelException.ErrorCodes.ServiceNotFound)
+        {
+            // TODO Consider just wrapping it for them. Better to be explicit or implicit?
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidConfiguration, "Chat completion service not found. Consider using TextCompletionChatWrapper to register a chat completion", ke);
+        }
 
         this.Config = config ?? new();
         this.Config.ExcludedSkills.Add(RestrictedSkillName);
 
         var promptConfig = promptUserConfig ?? new PromptTemplateConfig();
-        var promptTemplate = prompt ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
+
+        this._systemPrompt = systemPrompt ?? DefaultSystemPrompt();
+
+        this._examples = examples;
 
         if (promptUserConfig == null)
         {
@@ -59,9 +80,9 @@ public class StepwisePlanner : IStepwisePlanner
             }
         }
 
+        // TODO handle prompt config, maybe merge into StepwisePlannerConfig
         promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
 
-        this._systemStepFunction = this.ImportSemanticFunction(this._kernel, "StepwiseStep", promptTemplate, promptConfig);
         this._nativeFunctions = this._kernel.ImportSkill(this, RestrictedSkillName);
 
         this._context = this._kernel.CreateNewContext();
@@ -77,12 +98,11 @@ public class StepwisePlanner : IStepwisePlanner
         }
 
         string functionDescriptions = this.GetFunctionDescriptions();
+        this._context.Variables.Set("functionDescriptions", functionDescriptions);
 
         Plan planStep = new(this._nativeFunctions["ExecutePlan"]);
-        planStep.Parameters.Set("functionDescriptions", functionDescriptions);
         planStep.Parameters.Set("question", goal);
 
-        planStep.Outputs.Add("agentScratchPad");
         planStep.Outputs.Add("stepCount");
         planStep.Outputs.Add("skillCount");
         planStep.Outputs.Add("stepsTaken");
@@ -98,58 +118,77 @@ public class StepwisePlanner : IStepwisePlanner
     public async Task<SKContext> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,
-        [Description("List of tool descriptions")]
-        string functionDescriptions,
         SKContext context)
     {
-        var stepsTaken = new List<SystemStep>();
-        if (!string.IsNullOrEmpty(question))
+        if (string.IsNullOrEmpty(question))
         {
-            for (int i = 0; i < this.Config.MaxIterations; i++)
+            context.Variables.Update("Question not found.");
+            return context;
+        }
+
+        var stepsTaken = new List<SystemStep>();
+
+        var promptRendered = new PromptTemplateEngine();
+        var chatHistory = new ChatHistory();
+
+        // TODO why doesn't context from method call work here
+        // TODO better error message if they don't include time.
+        var systemMessage = await promptRendered.RenderAsync(this._systemPrompt, this._context).ConfigureAwait(false);
+
+        chatHistory.AddSystemMessage(systemMessage);
+        if (this._examples != null)
+        {
+            foreach (string example in this._examples)
             {
-                var scratchPad = this.CreateScratchPad(question, stepsTaken);
+                var assistantMessage = await promptRendered.RenderAsync(example, this._context).ConfigureAwait(false);
+                chatHistory.AddAssistantMessage(assistantMessage);
+            }
+        }
 
-                context.Variables.Set("agentScratchPad", scratchPad);
+        chatHistory.AddUserMessage(question);
 
-                var llmResponse = (await this._systemStepFunction.InvokeAsync(context).ConfigureAwait(false));
+        for (int i = 0; i < this.Config.MaxIterations; i++)
+        {
+            // TODO request settings and cancellation token
+            IReadOnlyList<IChatResult> llmResponse = await this._chatCompletion.GetChatCompletionsAsync(chatHistory).ConfigureAwait(false);
+            IChatResult llmResult = llmResponse.Single(); // TODO, is there a case where we get multiple messages?
+            ChatMessageBase responseMessage = await llmResult.GetChatMessageAsync().ConfigureAwait(false);
 
-                if (llmResponse.ErrorOccurred)
+            string actionText = responseMessage.Content.Trim();
+            chatHistory.AddAssistantMessage(actionText);
+            this._logger?.LogTrace("Response: {ActionText}", actionText);
+
+            SystemStep nextStep = this.ParseResult(actionText);
+            stepsTaken.Add(nextStep);
+
+            if (!string.IsNullOrEmpty(nextStep.FinalAnswer))
+            {
+                this._logger?.LogTrace("Final Answer: {FinalAnswer}", nextStep.FinalAnswer);
+
+                context.Variables.Update(nextStep.FinalAnswer);
+
+                // Add additional results to the context
+                this.AddExecutionStatsToContext(stepsTaken, context);
+
+                return context;
+            }
+
+            this._logger?.LogTrace("Thought: {Thought}", nextStep.Thought);
+
+            if (!string.IsNullOrEmpty(nextStep!.Action!))
+            {
+                this._logger?.LogInformation("Action: {Action}. Iteration: {Iteration}.", nextStep.Action, i + 1);
+                this._logger?.LogTrace("Action: {Action}({ActionVariables}). Iteration: {Iteration}.",
+                    nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables), i + 1);
+
+                try
                 {
-                    throw new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Error occurred while executing stepwise plan: {llmResponse.LastException?.Message}", llmResponse.LastException);
-                }
-
-                string actionText = llmResponse.Result.Trim();
-                this._logger?.LogTrace("Response: {ActionText}", actionText);
-
-                var nextStep = this.ParseResult(actionText);
-                stepsTaken.Add(nextStep);
-
-                if (!string.IsNullOrEmpty(nextStep.FinalAnswer))
-                {
-                    this._logger?.LogTrace("Final Answer: {FinalAnswer}", nextStep.FinalAnswer);
-
-                    context.Variables.Update(nextStep.FinalAnswer);
-                    var updatedScratchPlan = this.CreateScratchPad(question, stepsTaken);
-                    context.Variables.Set("agentScratchPad", updatedScratchPlan);
-
-                    // Add additional results to the context
-                    this.AddExecutionStatsToContext(stepsTaken, context);
-
-                    return context;
-                }
-
-                this._logger?.LogTrace("Thought: {Thought}", nextStep.Thought);
-
-                if (!string.IsNullOrEmpty(nextStep!.Action!))
-                {
-                    this._logger?.LogInformation("Action: {Action}. Iteration: {Iteration}.", nextStep.Action, i + 1);
-                    this._logger?.LogTrace("Action: {Action}({ActionVariables}). Iteration: {Iteration}.",
-                        nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables), i + 1);
-
-                    try
+                    if (this.Config.MinIterationTimeMs > 0)
                     {
                         await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
-                        var result = await this.InvokeActionAsync(nextStep.Action!, nextStep!.ActionVariables!).ConfigureAwait(false);
+                    }
+
+                    var result = await this.InvokeActionAsync(nextStep.Action!, nextStep!.ActionVariables!).ConfigureAwait(false);
 
                         if (string.IsNullOrEmpty(result))
                         {
@@ -166,23 +205,19 @@ public class StepwisePlanner : IStepwisePlanner
                         this._logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Action);
                     }
 
-                    this._logger?.LogTrace("Observation: {Observation}", nextStep.Observation);
-                }
-                else
-                {
-                    this._logger?.LogInformation("Action: No action to take");
-                }
-
-                // sleep 3 seconds
-                await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
+                this._logger?.LogTrace("Observation: {Observation}", nextStep.Observation);
+                chatHistory.AddAssistantMessage("[OBSERVATION] " + nextStep.Observation);
+            }
+            else
+            {
+                this._logger?.LogInformation("Action: No action to take");
             }
 
-            context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
+            // sleep 3 seconds
+            await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
         }
-        else
-        {
-            context.Variables.Update("Question not found.");
-        }
+
+        context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
 
         return context;
     }
@@ -278,6 +313,7 @@ public class StepwisePlanner : IStepwisePlanner
         context.Variables.Set("skillCount", $"{skillCallCountStr} ({skillCallListWithCounts})");
     }
 
+    // TODO use parts of this method to trim the chat history if it gets too long
     private string CreateScratchPad(string question, List<SystemStep> stepsTaken)
     {
         if (stepsTaken.Count == 0)
@@ -382,8 +418,11 @@ public class StepwisePlanner : IStepwisePlanner
     {
         FunctionsView functionsView = this._context.Skills!.GetFunctionsView();
 
-        var excludedSkills = this.Config.ExcludedSkills ?? new();
-        var excludedFunctions = this.Config.ExcludedFunctions ?? new();
+        var excludedSkills = this.Config.ExcludedSkills;
+
+        // TODO handle better
+        excludedSkills.Add("time");
+        var excludedFunctions = this.Config.ExcludedFunctions;
 
         var availableFunctions =
             functionsView.NativeFunctions
@@ -434,6 +473,17 @@ public class StepwisePlanner : IStepwisePlanner
         return $"{function.SkillName}.{function.Name}";
     }
 
+    private static string DefaultSystemPrompt()
+    {
+        string promptString = EmbeddedResource.Read("Skills.StepwiseStep.SystemPrompt.txt");
+        if (string.IsNullOrWhiteSpace(promptString))
+        {
+            throw new PlanningException(PlanningException.ErrorCodes.InvalidConfiguration, "Unable to read system prompt.");
+        }
+
+        return promptString;
+    }
+
     /// <summary>
     /// The configuration for the StepwisePlanner
     /// </summary>
@@ -442,17 +492,14 @@ public class StepwisePlanner : IStepwisePlanner
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;
     private readonly IKernel _kernel;
+    private readonly string _systemPrompt;
+    private readonly string[] _examples;
     private readonly ILogger _logger;
 
     /// <summary>
     /// Planner native functions
     /// </summary>
     private IDictionary<string, ISKFunction> _nativeFunctions = new Dictionary<string, ISKFunction>();
-
-    /// <summary>
-    /// System step function for Plan execution
-    /// </summary>
-    private ISKFunction _systemStepFunction;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
@@ -493,4 +540,6 @@ public class StepwisePlanner : IStepwisePlanner
     /// The regex for parsing the final answer response
     /// </summary>
     private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL ANSWER\](?<final_answer>.+)", RegexOptions.Singleline);
+
+    private readonly IChatCompletion _chatCompletion;
 }
