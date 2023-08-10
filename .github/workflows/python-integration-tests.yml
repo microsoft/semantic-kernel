@@ -137,7 +137,7 @@ jobs:
 
   # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
   python-integration-tests-check:
-    if: always()
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -150,16 +150,17 @@ jobs:
         run: |
           echo "date=$(date +'%m/%d/%Y %H:%M:%S')" >> "$GITHUB_ENV"
 
-          if ["${{ github.event_name }}"" = "workflow_dispatch"]; then
-              echo "run_type=Manual" >> "$GITHUB_ENV"
+      - name: Run Type is Daily
+        if: ${{ github.event_name == 'schedule' }}
+        shell: bash
+        run: |
+          echo "run_type=Daily" >> "$GITHUB_ENV"
 
-          elif ["${{ github.event_name }}" = "schedule"]; then
-              echo "run_type=Daily" >> "$GITHUB_ENV"
-
-          else
-            echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
-
-          fi
+      - name: Run Type is Manual
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        run: |
+          echo "run_type=Manual" >> "$GITHUB_ENV"
 
       - name: Fail workflow if tests failed
         id: check_tests_failed
