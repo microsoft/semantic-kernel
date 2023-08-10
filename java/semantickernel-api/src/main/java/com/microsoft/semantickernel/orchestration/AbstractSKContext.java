@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import javax.annotation.CheckReturnValue;
@@ -43,7 +43,8 @@ public abstract class AbstractSKContext implements SKContext {
             ContextVariables variables,
             @Nullable SemanticTextMemory memory,
             @Nullable ReadOnlySkillCollection skills) {
-        this.variables = InternalBuildersSingleton.variables().build(variables.asMap());
+        this.variables =
+                SKBuilders.variables().withVariables(variables.asMap()).build().writableClone();
 
         if (memory != null) {
             this.memory = memory.copy();

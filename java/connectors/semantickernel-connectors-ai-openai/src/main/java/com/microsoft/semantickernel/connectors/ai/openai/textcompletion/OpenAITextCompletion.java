@@ -7,6 +7,7 @@ import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
+import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import jakarta.inject.Inject;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
 /// <summary>
@@ -69,10 +71,28 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
                 .collectList();
     }
 
-    public static final class Builder extends TextCompletion.Builder {
+    public static final class Builder implements TextCompletion.Builder {
+        @Nullable private OpenAIAsyncClient client;
+        @Nullable private String modelId;
+
+        public Builder withOpenAIClient(OpenAIAsyncClient client) {
+            this.client = client;
+            return this;
+        }
+
+        public Builder setModelId(String modelId) {
+            this.modelId = modelId;
+            return this;
+        }
 
         @Override
-        public TextCompletion build(OpenAIAsyncClient client, String modelId) {
+        public TextCompletion build() {
+            if (client == null) {
+                throw new NotSupportedException("OpenAI client not set");
+            }
+            if (modelId == null) {
+                throw new NotSupportedException("Model ID not set");
+            }
             return new OpenAITextCompletion(client, modelId);
         }
     }

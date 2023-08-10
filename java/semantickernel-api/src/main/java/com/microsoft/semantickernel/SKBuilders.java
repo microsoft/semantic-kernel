@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.builders;
+package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.KernelConfig;
 import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
@@ -20,19 +19,8 @@ public class SKBuilders {
     // Prevent creating object
     private SKBuilders() {}
 
-    /**
-     * A CompletionSKFunction builder, the created function will be registered on the kernel
-     * provided
-     *
-     * @param kernel The kernel to register the function on
-     * @return a function builder
-     */
-    public static CompletionSKFunction.Builder completionFunctions(Kernel kernel) {
-        return FunctionBuilders.getCompletionBuilder(kernel);
-    }
-
     public static TextCompletion.Builder textCompletionService() {
-        return BuildersSingleton.INST.getTextCompletionBuilder();
+        return BuildersSingleton.INST.getInstance(TextCompletion.Builder.class);
     }
 
     public static EmbeddingGeneration.Builder<String> textEmbeddingGenerationService() {
@@ -40,7 +28,7 @@ public class SKBuilders {
     }
 
     public static Kernel.Builder kernel() {
-        return new Kernel.Builder();
+        return BuildersSingleton.INST.getInstance(Kernel.Builder.class);
     }
 
     public static KernelConfig.Builder kernelConfig() {
@@ -81,5 +69,9 @@ public class SKBuilders {
 
     public static MemoryStore.Builder memoryStore() {
         return BuildersSingleton.INST.getMemoryStoreBuilder();
+    }
+
+    public static CompletionSKFunction.Builder completionFunctions() {
+        return BuildersSingleton.INST.getInstance(CompletionSKFunction.Builder.class);
     }
 }

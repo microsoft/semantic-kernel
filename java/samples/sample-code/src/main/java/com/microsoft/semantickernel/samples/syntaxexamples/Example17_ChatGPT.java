@@ -3,8 +3,8 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatHistory;
@@ -22,7 +22,10 @@ public class Example17_ChatGPT {
         Kernel kernel = SKBuilders.kernel()
                 .withAIService(
                         "chat-test",
-                        SKBuilders.chatCompletion().build(client, "chat-test"),
+                        SKBuilders.chatCompletion()
+                                .withOpenAIClient(client)
+                                .setModelId("chat-test")
+                                .build(),
                         true,
                         ChatCompletion.class
                 )

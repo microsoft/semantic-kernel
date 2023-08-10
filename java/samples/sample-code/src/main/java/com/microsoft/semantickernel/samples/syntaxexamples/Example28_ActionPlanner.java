@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TextSkill;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.planner.actionplanner.ActionPlanner;
@@ -15,7 +15,10 @@ public class Example28_ActionPlanner {
         System.out.println("======== Action Planner ========");
 
         var kernel = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.textCompletionService().build(client, "text-davinci-002"))
+                .withDefaultAIService(SKBuilders.textCompletionService()
+                        .setModelId("text-davinci-002")
+                        .withOpenAIClient(client)
+                        .build())
                 .build();
 
         kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(), "SummarizeSkill");

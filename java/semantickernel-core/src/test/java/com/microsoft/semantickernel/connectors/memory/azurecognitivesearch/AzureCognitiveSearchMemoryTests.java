@@ -16,7 +16,7 @@ import com.azure.core.util.tracing.Tracer;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

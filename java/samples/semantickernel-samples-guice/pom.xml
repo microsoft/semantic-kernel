@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-guice</artifactId>
+    <artifactId>semantickernel-samples-guice</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>

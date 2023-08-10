@@ -2,12 +2,15 @@
 package com.microsoft.semantickernel.ai.embeddings;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.AIService;
 import java.util.List;
 import reactor.core.publisher.Mono;
 
 /** Interface for text embedding generation services */
-public interface EmbeddingGeneration<TValue> extends AIService {
+public interface EmbeddingGeneration<TValue> extends AIService, Buildable {
     /**
      * Generates a list of embeddings associated to the data
      *
@@ -16,7 +19,14 @@ public interface EmbeddingGeneration<TValue> extends AIService {
      */
     Mono<List<Embedding>> generateEmbeddingsAsync(List<TValue> data);
 
-    interface Builder<TValue> {
-        EmbeddingGeneration<TValue> build(OpenAIAsyncClient client, String modelId);
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(Builder.class);
+    }
+
+    interface Builder<TValue> extends SemanticKernelBuilder<EmbeddingGeneration<TValue>> {
+
+        Builder<TValue> withOpenAIClient(OpenAIAsyncClient client);
+
+        Builder<TValue> setModelId(String modelId);
     }
 }

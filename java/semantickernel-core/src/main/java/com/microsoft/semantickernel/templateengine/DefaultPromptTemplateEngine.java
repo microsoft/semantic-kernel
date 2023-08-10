@@ -119,7 +119,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
          */
     }
 
-    public static final class Builder extends PromptTemplateEngine.Builder {
+    public static final class Builder implements PromptTemplateEngine.Builder {
         @Override
         public PromptTemplateEngine build() {
             return new DefaultPromptTemplateEngine();

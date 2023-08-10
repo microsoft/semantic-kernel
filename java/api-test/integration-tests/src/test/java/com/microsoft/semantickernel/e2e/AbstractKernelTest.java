@@ -3,8 +3,8 @@ package com.microsoft.semantickernel.e2e;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
@@ -29,7 +29,10 @@ public class AbstractKernelTest {
         return SKBuilders.kernel()
                 .withDefaultAIService(textCompletion)
                 .withDefaultAIService(
-                        SKBuilders.textEmbeddingGenerationService().build(openAIClient, model))
+                        SKBuilders.textEmbeddingGenerationService()
+                                .withOpenAIClient(openAIClient)
+                                .setModelId(model)
+                                .build())
                 .withMemoryStorage(new VolatileMemoryStore())
                 .build();
     }

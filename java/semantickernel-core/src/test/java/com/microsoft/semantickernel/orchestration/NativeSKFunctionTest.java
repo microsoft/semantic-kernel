@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.ai.AIException;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.skilldefinition.DefaultSkillCollection;
 import com.microsoft.semantickernel.skilldefinition.FunctionCollection;

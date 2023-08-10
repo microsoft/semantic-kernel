@@ -1,7 +1,6 @@
 package com.microsoft.semantickernel;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -17,7 +16,10 @@ public class Example_PlanWithNativeFunctions {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = OpenAIClientProvider.getClient();
 
-        TextCompletion textCompletionService = SKBuilders.textCompletionService().build(client, "text-davinci-003");
+        TextCompletion textCompletionService = SKBuilders.textCompletionService()
+                .setModelId("text-davinci-003")
+                .withOpenAIClient(client)
+                .build();
 
         Kernel kernel = SKBuilders.kernel()
                 .withDefaultAIService(textCompletionService)

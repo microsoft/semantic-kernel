@@ -3,6 +3,9 @@ package com.microsoft.semantickernel.chatcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.models.ChatCompletions;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import javax.annotation.Nullable;
@@ -10,7 +13,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface ChatCompletion<ChatHistoryType extends ChatHistory>
-        extends AIService, TextCompletion {
+        extends AIService, TextCompletion, Buildable {
     /**
      * Generate a new chat message
      *
@@ -30,12 +33,19 @@ public interface ChatCompletion<ChatHistoryType extends ChatHistory>
     ChatHistoryType createNewChat(@Nullable String instructions);
 
     Flux<String> generateMessageStream(
-            ChatHistory chatHistory, @Nullable ChatRequestSettings requestSettings);
+            ChatHistoryType chatHistory, @Nullable ChatRequestSettings requestSettings);
 
     Flux<ChatCompletions> getStreamingChatCompletionsAsync(
-            ChatHistory chat, ChatRequestSettings requestSettings);
+            ChatHistoryType chat, ChatRequestSettings requestSettings);
 
-    interface Builder {
-        ChatCompletion<? extends ChatHistory> build(OpenAIAsyncClient client, String modelId);
+    static Builder builder() {
+        return BuildersSingleton.INST.getInstance(Builder.class);
+    }
+
+    interface Builder extends SemanticKernelBuilder<ChatCompletion> {
+
+        Builder withOpenAIClient(OpenAIAsyncClient client);
+
+        Builder setModelId(String modelId);
     }
 }

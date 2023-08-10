@@ -24,12 +24,11 @@ public class InlineFunctionTest extends AbstractKernelTest {
 
         CompletionSKFunction summarize =
                 kernel.getSemanticFunctionBuilder()
-                        .createFunction(
-                                prompt,
-                                "summarize",
-                                null,
-                                null,
-                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000));
+                        .setPromptTemplate(prompt)
+                        .setFunctionName("summarize")
+                        .setCompletionConfig(
+                                new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
+                        .build();
 
         String text =
                 """

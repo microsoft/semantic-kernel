@@ -16,7 +16,8 @@ public class ServiceLoadUtil {
 
     private ServiceLoadUtil() {}
 
-    public static <T> Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
+    public static <U extends Buildable, T extends SemanticKernelBuilder<U>>
+            Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);
 
         T impl = null;
@@ -25,24 +26,26 @@ public class ServiceLoadUtil {
             impl = services.get(0);
         }
 
-        try {
-            // Service loader not found, attempt to load the alternative class
-            Object instance =
-                    Class.forName(alternativeClassName).getDeclaredConstructor().newInstance();
-            if (clazz.isInstance(instance)) {
-                impl = (T) instance;
-            }
-        } catch (ClassNotFoundException
-                | InvocationTargetException
-                | InstantiationException
-                | IllegalAccessException
-                | NoSuchMethodException
-                | RuntimeException e) {
-            LOGGER.error("Unable to load service " + clazz.getName() + " ", e);
-        }
-
         if (impl == null) {
-            throw new RuntimeException("Service not found: " + clazz.getName());
+            try {
+                // Service loader not found, attempt to load the alternative class
+                Object instance =
+                        Class.forName(alternativeClassName).getDeclaredConstructor().newInstance();
+                if (clazz.isInstance(instance)) {
+                    impl = (T) instance;
+                }
+            } catch (ClassNotFoundException
+                    | InvocationTargetException
+                    | InstantiationException
+                    | IllegalAccessException
+                    | NoSuchMethodException
+                    | RuntimeException e) {
+                LOGGER.error("Unable to load service " + clazz.getName() + " ", e);
+            }
+
+            if (impl == null) {
+                throw new RuntimeException("Service not found: " + clazz.getName());
+            }
         }
 
         try {

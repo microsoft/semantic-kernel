@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,12 +23,10 @@ import java.util.stream.Collectors;
  */
 
 // ReSharper disable once InconsistentNaming
-public class Example14_SemanticMemory
-{
+public class Example14_SemanticMemory {
     private static final String MEMORY_COLLECTION_NAME = "SKGitHub";
 
-    public static void main(String[] args) throws Exception
-    {
+    public static void main(String[] args) throws Exception {
         System.out.println("==============================================================");
         System.out.println("======== Semantic Memory using Azure Cognitive Search ========");
         System.out.println("==============================================================");
@@ -59,32 +57,34 @@ public class Example14_SemanticMemory
         var openAIAsyncClient = SamplesConfig.getClient();
 
         var kernelWithCustomDb = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.textEmbeddingGenerationService().build(openAIAsyncClient, "text-embedding-ada-002"))
+                .withDefaultAIService(SKBuilders.textEmbeddingGenerationService()
+                        .withOpenAIClient(openAIAsyncClient)
+                        .setModelId("text-embedding-ada-002")
+                        .build())
                 .withMemoryStorage(SKBuilders.memoryStore().build())
                 .build();
 
         runExampleAsync(kernelWithCustomDb).block();
     }
 
-    public static Mono<Void> runExampleAsync(Kernel kernel)
-    {
+    public static Mono<Void> runExampleAsync(Kernel kernel) {
         return storeMemoryAsync(kernel)
                 .then(searchMemoryAsync(kernel, "How do I get started?"))
 
-        /*
-        Output:
+                /*
+                Output:
 
-        Query: How do I get started?
+                Query: How do I get started?
 
-        Result 1:
-          URL:     : https://github.com/microsoft/semantic-kernel/blob/main/README.md
-          Title    : README: Installation, getting started, and how to contribute
+                Result 1:
+                  URL:     : https://github.com/microsoft/semantic-kernel/blob/main/README.md
+                  Title    : README: Installation, getting started, and how to contribute
 
-        Result 2:
-          URL:     : https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet-jupyter-notebooks/00-getting-started.ipynb
-          Title    : Jupyter notebook describing how to get started with the Semantic Kernel
+                Result 2:
+                  URL:     : https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet-jupyter-notebooks/00-getting-started.ipynb
+                  Title    : Jupyter notebook describing how to get started with the Semantic Kernel
 
-        */
+                */
 
                 .then(searchMemoryAsync(kernel, "Can I build a chat with SK?"));
 
@@ -104,8 +104,7 @@ public class Example14_SemanticMemory
         */
     }
 
-    private static Mono<Void> searchMemoryAsync(Kernel kernel, String query)
-    {
+    private static Mono<Void> searchMemoryAsync(Kernel kernel, String query) {
         return kernel.getMemory().searchAsync(MEMORY_COLLECTION_NAME, query, 2, 0.5, false)
                 .mapNotNull(memories -> {
                     System.out.println("\nQuery: " + query + "\n");
@@ -121,8 +120,7 @@ public class Example14_SemanticMemory
                 });
     }
 
-    private static Mono<Void> storeMemoryAsync(Kernel kernel)
-    {
+    private static Mono<Void> storeMemoryAsync(Kernel kernel) {
         /* Store some data in the semantic memory.
          *
          * When using Azure Cognitive Search the data is automatically indexed on write.
@@ -134,31 +132,30 @@ public class Example14_SemanticMemory
         return Flux.fromIterable(sampleData().entrySet())
                 .doFirst(() -> System.out.println("\nAdding some GitHub file URLs and their descriptions to the semantic memory."))
                 .map(entry -> {
-                    System.out.println("Save '" + entry.getKey() + "' to memory.");
-                    return kernel.getMemory().saveReferenceAsync(
+                            System.out.println("Save '" + entry.getKey() + "' to memory.");
+                            return kernel.getMemory().saveReferenceAsync(
                                     MEMORY_COLLECTION_NAME,
                                     entry.getValue(),
                                     entry.getKey(),
                                     "GitHub",
                                     entry.getValue(),
                                     null);
-                    }
+                        }
                 )
                 .mapNotNull(Mono::block)
                 .doFinally(signalType -> System.out.println("\n----------------------"))
                 .then();
     }
 
-    private static Map<String, String> sampleData()
-    {
-        return Arrays.stream(new String[][] {
-            {"https://github.com/microsoft/semantic-kernel/blob/main/README.md", "README: Installation, getting started, and how to contribute"},
-            {"https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/02-running-prompts-from-file.ipynb", "Jupyter notebook describing how to pass prompts from a file to a semantic skill or function"},
-            {"https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/00-getting-started.ipynb", "Jupyter notebook describing how to get started with the Semantic Kernel"},
-            {"https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChatSkill/ChatGPT", "Sample demonstrating how to create a chat skill interfacing with ChatGPT"},
-            {"https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs", "C# class that defines a volatile embedding store"},
-            {"https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet/KernelHttpServer/README.md", "README: How to set up a Semantic Kernel Service API using Azure Function Runtime v4"},
-            {"https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/chat-summary-webapp-react/README.md", "README: README associated with a sample chat summary react-based webapp"},
+    private static Map<String, String> sampleData() {
+        return Arrays.stream(new String[][]{
+                {"https://github.com/microsoft/semantic-kernel/blob/main/README.md", "README: Installation, getting started, and how to contribute"},
+                {"https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/02-running-prompts-from-file.ipynb", "Jupyter notebook describing how to pass prompts from a file to a semantic skill or function"},
+                {"https://github.com/microsoft/semantic-kernel/blob/main/samples/notebooks/dotnet/00-getting-started.ipynb", "Jupyter notebook describing how to get started with the Semantic Kernel"},
+                {"https://github.com/microsoft/semantic-kernel/tree/main/samples/skills/ChatSkill/ChatGPT", "Sample demonstrating how to create a chat skill interfacing with ChatGPT"},
+                {"https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel/Memory/VolatileMemoryStore.cs", "C# class that defines a volatile embedding store"},
+                {"https://github.com/microsoft/semantic-kernel/blob/main/samples/dotnet/KernelHttpServer/README.md", "README: How to set up a Semantic Kernel Service API using Azure Function Runtime v4"},
+                {"https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/chat-summary-webapp-react/README.md", "README: README associated with a sample chat summary react-based webapp"},
         }).collect(Collectors.toMap(element -> element[0], element -> element[1]));
     }
 }

@@ -5,7 +5,7 @@ import static com.microsoft.semantickernel.DefaultKernelTest.mockCompletionOpenA
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.planner.sequentialplanner.SequentialPlanner;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
@@ -35,7 +35,9 @@ public class Example05UsingThePlannerTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.textCompletionService()
-                                        .build(client, "text-davinci-003"))
+                                        .setModelId("text-davinci-003")
+                                        .withOpenAIClient(client)
+                                        .build())
                         .build();
 
         SequentialPlanner planner = getPlanner(kernel);

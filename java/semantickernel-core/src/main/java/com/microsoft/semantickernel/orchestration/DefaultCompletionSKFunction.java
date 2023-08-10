@@ -3,7 +3,8 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.azure.core.exception.HttpResponseException;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
@@ -11,7 +12,6 @@ import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
@@ -97,8 +97,8 @@ public class DefaultCompletionSKFunction
     private SKContext buildContext() {
         assertSkillSupplierRegistered();
         return SKBuilders.context()
-                .with(SKBuilders.variables().build())
-                .with(getSkillsSupplier() == null ? null : getSkillsSupplier().get())
+                .setVariables(SKBuilders.variables().build())
+                .setSkills(getSkillsSupplier() == null ? null : getSkillsSupplier().get())
                 .build();
     }
 
@@ -245,99 +245,6 @@ public class DefaultCompletionSKFunction
         return "func" + UUID.randomUUID();
     }
 
-    public static DefaultCompletionSKFunction createFunction(
-            String promptTemplate,
-            @Nullable String functionName,
-            @Nullable String skillName,
-            @Nullable String description,
-            PromptTemplateConfig.CompletionConfig completion,
-            PromptTemplateEngine promptTemplateEngine) {
-
-        if (functionName == null) {
-            functionName = randomFunctionName();
-        }
-
-        if (description == null) {
-            description = "Generic function, unknown purpose";
-        }
-
-        PromptTemplateConfig config =
-                new PromptTemplateConfig(description, "completion", completion);
-
-        return createFunction(
-                promptTemplate, config, functionName, skillName, promptTemplateEngine);
-    }
-
-    public static DefaultCompletionSKFunction createFunction(
-            String promptTemplate,
-            PromptTemplateConfig config,
-            String functionName,
-            @Nullable String skillName,
-            PromptTemplateEngine promptTemplateEngine) {
-        if (functionName == null) {
-            functionName = randomFunctionName();
-        }
-
-        // TODO
-        // Verify.ValidFunctionName(functionName);
-        // if (!string.IsNullOrEmpty(skillName)) {
-        //    Verify.ValidSkillName(skillName);
-        // }
-
-        PromptTemplate template =
-                SKBuilders.promptTemplate()
-                        .withPromptTemplateConfig(config)
-                        .withPromptTemplate(promptTemplate)
-                        .build(promptTemplateEngine);
-
-        // Prepare lambda wrapping AI logic
-        SemanticFunctionConfig functionConfig = new SemanticFunctionConfig(config, template);
-
-        return createFunction(skillName, functionName, functionConfig, promptTemplateEngine);
-    }
-
-    public static DefaultCompletionSKFunction createFunction(
-            String functionName,
-            SemanticFunctionConfig functionConfig,
-            PromptTemplateEngine promptTemplateEngine) {
-        return createFunction(null, functionName, functionConfig, promptTemplateEngine);
-    }
-
-    /// <summary>
-    /// Create a native function instance, given a semantic function configuration.
-    /// </summary>
-    /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
-    /// <param name="functionName">Name of the function to create.</param>
-    /// <param name="functionConfig">Semantic function configuration.</param>
-    /// <param name="log">Optional logger for the function.</param>
-    /// <returns>SK function instance.</returns>
-    public static DefaultCompletionSKFunction createFunction(
-            @Nullable String skillNameFinal,
-            String functionName,
-            SemanticFunctionConfig functionConfig,
-            PromptTemplateEngine promptTemplateEngine) {
-        String skillName = skillNameFinal;
-        // Verify.NotNull(functionConfig, "Function configuration is empty");
-        if (skillName == null) {
-            skillName = ReadOnlySkillCollection.GlobalSkill;
-        }
-
-        CompletionRequestSettings requestSettings =
-                CompletionRequestSettings.fromCompletionConfig(
-                        functionConfig.getConfig().getCompletionConfig());
-
-        PromptTemplate promptTemplate = functionConfig.getTemplate();
-
-        return new DefaultCompletionSKFunction(
-                promptTemplate.getParameters(),
-                skillName,
-                functionName,
-                functionConfig.getConfig().getDescription(),
-                requestSettings,
-                functionConfig,
-                null);
-    }
-
     @Override
     public FunctionView describe() {
         return new FunctionView(
@@ -347,5 +254,133 @@ public class DefaultCompletionSKFunction
                 super.getParametersView(),
                 true,
                 false);
+    }
+
+    public static class Builder implements CompletionSKFunction.Builder {
+        private Kernel kernel;
+        @Nullable private String promptTemplate = null;
+        @Nullable private String functionName = null;
+        @Nullable private String skillName = null;
+        @Nullable private String description = null;
+        private PromptTemplateConfig.CompletionConfig completionConfig =
+                new PromptTemplateConfig.CompletionConfig();
+        @Nullable private SemanticFunctionConfig functionConfig = null;
+        @Nullable private PromptTemplateConfig promptTemplateConfig = null;
+
+        @Override
+        public CompletionSKFunction build() {
+            if (kernel == null) {
+                throw new AIException(
+                        AIException.ErrorCodes.InvalidConfiguration,
+                        "Called builder to create a function without setting the kernel");
+            }
+
+            if (functionName == null) {
+                functionName = randomFunctionName();
+            }
+
+            // Verify.NotNull(functionConfig, "Function configuration is empty");
+            if (skillName == null) {
+                skillName = ReadOnlySkillCollection.GlobalSkill;
+            }
+
+            if (functionConfig == null) {
+
+                if (description == null) {
+                    description = "Generic function, unknown purpose";
+                }
+
+                if (promptTemplate == null) {
+                    throw new AIException(
+                            AIException.ErrorCodes.InvalidConfiguration,
+                            "Must set prompt template before building");
+                }
+
+                if (promptTemplateConfig == null) {
+                    promptTemplateConfig =
+                            new PromptTemplateConfig(description, "completion", completionConfig);
+                }
+
+                PromptTemplate template =
+                        SKBuilders.promptTemplate()
+                                .setPromptTemplateConfig(promptTemplateConfig)
+                                .setPromptTemplate(promptTemplate)
+                                .setPromptTemplateEngine(kernel.getPromptTemplateEngine())
+                                .build();
+
+                // Prepare lambda wrapping AI logic
+                functionConfig = new SemanticFunctionConfig(promptTemplateConfig, template);
+            }
+
+            CompletionRequestSettings requestSettings =
+                    CompletionRequestSettings.fromCompletionConfig(
+                            functionConfig.getConfig().getCompletionConfig());
+
+            PromptTemplate promptTemplate = functionConfig.getTemplate();
+
+            DefaultCompletionSKFunction function =
+                    new DefaultCompletionSKFunction(
+                            promptTemplate.getParameters(),
+                            skillName,
+                            functionName,
+                            functionConfig.getConfig().getDescription(),
+                            requestSettings,
+                            functionConfig,
+                            null);
+
+            kernel.registerSemanticFunction(function);
+            return function;
+        }
+
+        @Override
+        public CompletionSKFunction.Builder withKernel(Kernel kernel) {
+            this.kernel = kernel;
+            return this;
+        }
+
+        @Override
+        public CompletionSKFunction.Builder setPromptTemplate(String promptTemplate) {
+            this.promptTemplate = promptTemplate;
+            return this;
+        }
+
+        @Override
+        public CompletionSKFunction.Builder setPromptTemplateConfig(
+                PromptTemplateConfig promptTemplateConfig) {
+            this.promptTemplateConfig = promptTemplateConfig;
+            return this;
+        }
+
+        @Override
+        public CompletionSKFunction.Builder setCompletionConfig(
+                PromptTemplateConfig.CompletionConfig completionConfig) {
+            this.completionConfig = completionConfig;
+            return this;
+        }
+
+        @Override
+        public CompletionSKFunction.Builder setSemanticFunctionConfig(
+                SemanticFunctionConfig functionConfig) {
+            this.functionConfig = functionConfig;
+            return this;
+        }
+
+        @Override
+        public CompletionSKFunction.Builder setSkillName(@Nullable String skillName) {
+            this.skillName = skillName;
+            return this;
+        }
+
+        @Override
+        public CompletionSKFunction.Builder setFunctionName(@Nullable String functionName) {
+            this.functionName = functionName;
+            return this;
+        }
+
+        @Override
+        public CompletionSKFunction.Builder setDescription(String description) {
+            this.description = description;
+            return this;
+        }
     }
 }

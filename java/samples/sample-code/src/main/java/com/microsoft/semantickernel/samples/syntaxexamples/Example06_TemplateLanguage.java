@@ -3,8 +3,8 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.builders.SKBuilders;
 import com.microsoft.semantickernel.coreskills.TimeSkill;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -22,7 +22,10 @@ public class Example06_TemplateLanguage {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
         Kernel kernel = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.textCompletionService().build(client, "text-davinci-003"))
+                .withDefaultAIService(SKBuilders.textCompletionService()
+                        .setModelId("text-davinci-003")
+                        .withOpenAIClient(client)
+                        .build())
                 .build();
 
         // Load native skill into the kernel skill collection, sharing its functions
@@ -44,13 +47,15 @@ public class Example06_TemplateLanguage {
         System.out.println("--- Rendered Prompt");
 
         var promptRenderer = SKBuilders.promptTemplate()
-                .withPromptTemplateConfig(new PromptTemplateConfig())
-                .withPromptTemplate(functionDefinition)
-                .build(kernel.getPromptTemplateEngine());
+                .setPromptTemplateConfig(new PromptTemplateConfig())
+                .setPromptTemplate(functionDefinition)
+                .setPromptTemplateEngine(kernel.getPromptTemplateEngine())
+                .build();
 
         SKContext skContext = SKBuilders
                 .context()
-                .build(kernel.getSkills());
+                .setSkills(kernel.getSkills())
+                .build();
 
         var renderedPrompt = promptRenderer.renderAsync(skContext);
         System.out.println(renderedPrompt.block());
@@ -58,13 +63,11 @@ public class Example06_TemplateLanguage {
         // Run the prompt / semantic function
         var kindOfDay = kernel
                 .getSemanticFunctionBuilder()
-                .createFunction(
-                        functionDefinition,
-                        null,
-                        null,
-                        null,
+                .setPromptTemplate(functionDefinition)
+                .setCompletionConfig(
                         new PromptTemplateConfig.CompletionConfig(
-                                0, 0, 0, 0, 256));
+                                0, 0, 0, 0, 256))
+                .build();
 
         // Show the result
         System.out.println("--- Semantic Function result");
