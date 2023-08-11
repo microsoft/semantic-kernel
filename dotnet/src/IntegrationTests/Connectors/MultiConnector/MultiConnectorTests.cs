@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -116,8 +117,7 @@ public sealed class MultiConnectorTests : IDisposable
 
         var creditor = new CallRequestCostCreditor();
 
-        //HttpRetryConfig httpRetryConfig = new() { MaxRetryCount = 0 };
-        //DefaultHttpRetryHandlerFactory defaultHttpRetryHandlerFactory = new(httpRetryConfig);
+        
 
         //We configure settings to enable analysis, and let the connector discover the best settings, updating on the fly and deleting analysis file 
         var settings = new MultiTextCompletionSettings()
@@ -143,6 +143,12 @@ public sealed class MultiConnectorTests : IDisposable
                 TransformFunction = s => s.EndsWith("\n", StringComparison.OrdinalIgnoreCase) ? s : s + "\n",
             }
         };
+
+        // Cleanup in case the previous test failed to delete the analysis file
+        if (File.Exists(settings.AnalysisSettings.AnalysisFilePath))
+        {
+            File.Delete(settings.AnalysisSettings.AnalysisFilePath);
+        }
 
         var kernel = this.InitializeKernel(settings, durationWeight: durationWeight, costWeight: costWeight, cancellationToken: cleanupToken.Token);
 

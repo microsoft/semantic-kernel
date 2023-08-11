@@ -2,7 +2,7 @@
   "state": [
     {
       "Key": "INPUT",
-      "Value": ""
+      "Value": "Artificial intelligence (AI) is a branch of computer science that aims to create intelligent machines capable of performing tasks that would typically require human intelligence. AI has applications in various fields, including healthcare, finance, and transportation. It involves the development of algorithms and models that can learn from data and make predictions or decisions. AI has the potential to revolutionize industries and improve efficiency. However, it also raises ethical concerns and challenges related to privacy and job displacement.\nLLMs are a recent trend of neural networks architecture. These models have the ability to understand and generate human-like text, which has made them highly popular for applications ranging from chatbots to content creation. Their capacity to process vast amounts of data allows them to provide insights, generate ideas, or even write essays, often exceeding human capabilities in terms of speed and sometimes even accuracy.\n"
     }
   ],
   "steps": [
@@ -17,29 +17,7 @@
       "parameters": [
         {
           "Key": "INPUT",
-          "Value": "The topic I have chosen is artificial intelligence. Artificial intelligence (AI) is a branch of computer science that aims to create intelligent machines capable of performing tasks that would typically require human intelligence. AI has applications in various fields, including healthcare, finance, and transportation. It involves the development of algorithms and models that can learn from data and make predictions or decisions. AI has the potential to revolutionize industries and improve efficiency. However, it also raises ethical concerns and challenges related to privacy and job displacement. In this plan, I will demonstrate the capabilities of a smaller LLM model by using distinct functions from the available skills."
-        }
-      ],
-      "outputs": [
-        "TEXT"
-      ],
-      "next_step_index": 0,
-      "name": "Continue",
-      "skill_name": "MiscSkill",
-      "description": "Given a text input, continue it with additional text."
-    },
-    {
-      "state": [
-        {
-          "Key": "INPUT",
-          "Value": ""
-        }
-      ],
-      "steps": [],
-      "parameters": [
-        {
-          "Key": "INPUT",
-          "Value": "$TEXT"
+          "Value": "$INPUT"
         }
       ],
       "outputs": [
@@ -61,7 +39,7 @@
       "parameters": [
         {
           "Key": "input",
-          "Value": "$TEXT"
+          "Value": "$INPUT"
         }
       ],
       "outputs": [
@@ -113,51 +91,7 @@
       "parameters": [
         {
           "Key": "input",
-          "Value": "$RESULT__SUMMARY"
-        }
-      ],
-      "outputs": [
-        "RESULT__READABLE_SUMMARY"
-      ],
-      "next_step_index": 0,
-      "name": "MakeAbstractReadable",
-      "skill_name": "SummarizeSkill",
-      "description": "Given a scientific white paper abstract, rewrite it to make it more readable"
-    },
-    {
-      "state": [
-        {
-          "Key": "INPUT",
-          "Value": ""
-        }
-      ],
-      "steps": [],
-      "parameters": [
-        {
-          "Key": "INPUT",
-          "Value": "$RESULT__READABLE_SUMMARY"
-        }
-      ],
-      "outputs": [
-        "RESULT__CONTINUED_SUMMARY"
-      ],
-      "next_step_index": 0,
-      "name": "Continue",
-      "skill_name": "MiscSkill",
-      "description": "Given a text input, continue it with additional text."
-    },
-    {
-      "state": [
-        {
-          "Key": "INPUT",
-          "Value": ""
-        }
-      ],
-      "steps": [],
-      "parameters": [
-        {
-          "Key": "input",
-          "Value": "$RESULT__CONTINUED_SUMMARY"
+          "Value": "$INPUT"
         }
       ],
       "outputs": [
@@ -179,12 +113,10 @@
     "RESULT__SUMMARY",
     "RESULT__TOPICS",
     "RESULT__FIRST_TOPIC",
-    "RESULT__READABLE_SUMMARY",
-    "RESULT__CONTINUED_SUMMARY",
     "RESULT__NOTES"
   ],
   "next_step_index": 0,
   "name": "",
   "skill_name": "Microsoft.SemanticKernel.Planning.Plan",
-  "description": "You must evaluate the capabilities of a smaller LLM model. Start by writing a text of about 100 words on a given topic, that should be the input parameter of the plan. Then use distinct functions from the available skills on the input text and/or the previous functions results, choosing parameters in such a way that you know you will succeed at running each function but a smaller model might not. Try to propose steps of distinct difficulties so that models of distinct capabilities might succeed on some functions and fail on others."
+  "description": "Evaluates the capabilities of a smaller LLM model. Starting with an input text on a given topic, several functions will be called on the text and/or the previous functions results."
 }
