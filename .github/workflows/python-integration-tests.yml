@@ -74,7 +74,7 @@ jobs:
           cd python
           poetry run pytest ./tests/integration/completions/test_azure_oai_chat_service.py -v
           poetry run pytest ./tests/integration/completions/test_oai_chat_service.py -v
-          poetry run pytest ./tests/integration/completions/test_hf_local_test_completions.py -v
+          poetry run pytest ./tests/integration/completions/test_hf_local_text_completions.py -v
           poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
           poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
           poetry run pytest ./tests/integration/planning -v
