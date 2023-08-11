@@ -188,7 +188,8 @@ RESPONSE IS VALID? (true/false):
         var prompt = this.VettingPromptTemplate.Replace("{prompt}", connectorTest.Prompt).Replace("{response}", connectorTest.Result);
         var stopWatch = Stopwatch.StartNew();
         var vettingPromptSettings = settings.GetPromptSettings(prompt, this.VettingRequestSettings, out _);
-        var newRequestSettings = vettingCompletion.AdjustPromptAndRequestSettings(prompt, this.VettingRequestSettings, vettingPromptSettings, settings, logger);
+        var vettingPromptConnectorSettings = vettingPromptSettings.GetConnectorSettings(vettingCompletion.Name);
+        var newRequestSettings = vettingCompletion.AdjustPromptAndRequestSettings(prompt, this.VettingRequestSettings, vettingPromptConnectorSettings, vettingPromptSettings, settings, logger);
         string completionResult;
         try
         {
@@ -425,7 +426,8 @@ RESPONSE IS VALID? (true/false):
             try
             {
                 PromptMultiConnectorSettings promptMultiConnectorSettings = multiTextCompletionSettings.GetPromptSettings(originalTest.Prompt, originalTest.RequestSettings, out _);
-                var adjustedPromptAndSettings = namedTextCompletion.AdjustPromptAndRequestSettings(originalTest.Prompt, originalTest.RequestSettings, promptMultiConnectorSettings, multiTextCompletionSettings, logger);
+                var promptConnectorSettings = promptMultiConnectorSettings.GetConnectorSettings(namedTextCompletion.Name);
+                var adjustedPromptAndSettings = namedTextCompletion.AdjustPromptAndRequestSettings(originalTest.Prompt, originalTest.RequestSettings, promptConnectorSettings, promptMultiConnectorSettings, multiTextCompletionSettings, logger);
 
                 if (this.TestsTemperatureTransform != null)
                 {

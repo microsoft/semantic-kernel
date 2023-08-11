@@ -59,6 +59,4 @@ internal struct MultiCompletionSession
     /// Some operations require to pick on the result, some others not. This property is updated with completion result which is only deferred if needed.
     /// </summary>
     public AsyncLazy<string> ResultProducer { get; set; }
-
-
 }

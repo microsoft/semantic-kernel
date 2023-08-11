@@ -105,7 +105,7 @@ public class MultiTextCompletion : ITextCompletion
     {
         var promptSettings = this._settings.GetPromptSettings(text, requestSettings, out var isNewPrompt);
         var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(this._textCompletions, this._settings.ConnectorComparer);
-        var adjustedPrompt = textCompletionAndSettings.namedTextCompletion.AdjustPromptAndRequestSettings(text, requestSettings, promptSettings, this._settings, this._logger);
+        var adjustedPrompt = textCompletionAndSettings.namedTextCompletion.AdjustPromptAndRequestSettings(text, requestSettings, textCompletionAndSettings.promptConnectorSettings, promptSettings, this._settings, this._logger);
         var stopWatch = Stopwatch.StartNew();
 
         return new MultiCompletionSession

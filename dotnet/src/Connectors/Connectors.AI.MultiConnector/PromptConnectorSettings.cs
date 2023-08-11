@@ -33,4 +33,19 @@ public class PromptConnectorSettings
     ///// the evaluations that were performed on the connector for the prompt type
     ///// </summary>
     //public List<ConnectorPromptEvaluation> Evaluations { get; set; } = new();
+
+    /// <summary>
+    /// Choose whether to apply the model specific global transforms for this prompt type and this connector
+    /// </summary>
+    public bool EnforceModelTransform { get; set; }
+
+    /// <summary>
+    /// Choose whether to apply the prompt specific transforms for this prompt type and this connector
+    /// </summary>
+    public bool ApplyPromptTypeTransform { get; set; } = true;
+
+    /// <summary>
+    /// Optionally transform the input prompt specifically
+    /// </summary>
+    public PromptTransform? PromptConnectorTypeTransform { get; set; }
 }

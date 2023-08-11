@@ -70,9 +70,10 @@ public sealed class MultiConnectorTests : IDisposable
     /// </summary>
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
-    [InlineData(1, 1, 1, "VettingSequentialPlan_SummarizeSkill_Summarize.json", "SummarizeSkill", "MiscSkill")]
-    [InlineData(1, 1, 1, "VettingSequentialPlan_SummarizeSkill.json", "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFilePath, params string[] skillNames)
+    [InlineData("", 1, 1, 1, "VettingSequentialPlan_SummarizeSkill_Summarize.json", "SummarizeSkill", "MiscSkill")]
+    [InlineData("", 1, 1, 1, "VettingSequentialPlan_SummarizeSkill.json", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingSequentialPlan_SummarizeSkill.json", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string planFilePath, params string[] skillNames)
     {
         // Load the plan from the provided file path
         var planDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, PlanParentDir);
@@ -85,13 +86,21 @@ public sealed class MultiConnectorTests : IDisposable
             var plan = Plan.FromJson(planJson, ctx, true);
             return plan;
         };
-        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, durationWeight, costWeight, nbPromptTests, skillNames).ConfigureAwait(false);
+
+        List<string>? modelNames = null;
+        if (!string.IsNullOrEmpty(completionName))
+        {
+            modelNames = new List<string> { completionName };
+        }
+
+        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, durationWeight, costWeight, nbPromptTests, skillNames).ConfigureAwait(false);
     }
 
     // This test method uses the SequentialPlanner to create a plan based on difficulty
     [Theory(Skip = "This test is for manual verification.")]
-    [InlineData(1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(double durationWeight, double costWeight, int nbPromptTests, string difficulty, params string[] skillNames)
+    [InlineData("", 1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string difficulty, params string[] skillNames)
     {
         // Create a plan using SequentialPlanner based on difficulty
         var modifiedStartGoal = StartGoal.Replace("distinct difficulties", $"{difficulty} difficulties", StringComparison.OrdinalIgnoreCase);
@@ -104,10 +113,17 @@ public sealed class MultiConnectorTests : IDisposable
             var plan = await planner.CreatePlanAsync(modifiedStartGoal, token);
             return plan;
         };
-        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, durationWeight, costWeight, nbPromptTests, skillNames).ConfigureAwait(false);
+
+        List<string>? modelNames = null;
+        if (!string.IsNullOrEmpty(completionName))
+        {
+            modelNames = new List<string> { completionName };
+        }
+
+        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, durationWeight, costWeight, nbPromptTests, skillNames).ConfigureAwait(false);
     }
 
-    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, Task<Plan>> planFactory, double durationWeight = 1, double costWeight = 1, int nbPromptTests = 1, params string[] skillNames)
+    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, Task<Plan>> planFactory, List<string>? modelNames, double durationWeight = 1, double costWeight = 1, int nbPromptTests = 1, params string[] skillNames)
     {
         // Arrange
 
@@ -116,8 +132,6 @@ public sealed class MultiConnectorTests : IDisposable
         using var cleanupToken = new CancellationTokenSource();
 
         var creditor = new CallRequestCostCreditor();
-
-        
 
         //We configure settings to enable analysis, and let the connector discover the best settings, updating on the fly and deleting analysis file 
         var settings = new MultiTextCompletionSettings()
@@ -150,7 +164,7 @@ public sealed class MultiConnectorTests : IDisposable
             File.Delete(settings.AnalysisSettings.AnalysisFilePath);
         }
 
-        var kernel = this.InitializeKernel(settings, durationWeight: durationWeight, costWeight: costWeight, cancellationToken: cleanupToken.Token);
+        var kernel = this.InitializeKernel(settings, modelNames, durationWeight: durationWeight, costWeight: costWeight, cancellationToken: cleanupToken.Token);
 
         var prepareKernelTimeElapsed = sw.Elapsed;
 
@@ -232,7 +246,7 @@ public sealed class MultiConnectorTests : IDisposable
     /// <summary>
     /// Configures a kernel with MultiTextCompletion comprising a primary OpenAI connector with parameters defined in main settings for OpenAI integration tests, and Oobabooga secondary connectors with parameters defined in the MultiConnector part of the settings file.
     /// </summary>
-    private IKernel InitializeKernel(MultiTextCompletionSettings multiTextCompletionSettings, double durationWeight = 1, double costWeight = 1, CancellationToken? cancellationToken = null)
+    private IKernel InitializeKernel(MultiTextCompletionSettings multiTextCompletionSettings, List<string>? modelNames, double durationWeight = 1, double costWeight = 1, CancellationToken? cancellationToken = null)
     {
         cancellationToken ??= CancellationToken.None;
 
@@ -267,6 +281,11 @@ public sealed class MultiConnectorTests : IDisposable
 
         foreach (var oobaboogaConnector in multiConnectorConfiguration.OobaboogaCompletions)
         {
+            if (modelNames != null && !modelNames.Contains(oobaboogaConnector.Name))
+            {
+                continue;
+            }
+
             var oobaboogaCompletion = new OobaboogaTextCompletion(
                 endpoint: new Uri(oobaboogaConnector.EndPoint ?? multiConnectorConfiguration.OobaboogaEndPoint),
                 blockingPort: oobaboogaConnector.BlockingPort,

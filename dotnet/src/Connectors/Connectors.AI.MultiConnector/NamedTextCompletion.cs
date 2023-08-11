@@ -92,7 +92,7 @@ public class NamedTextCompletion
     /// Adjusts the request max tokens and temperature settings based on the completion max token supported.
     /// </summary>
     public (string text, CompleteRequestSettings requestSettings) AdjustPromptAndRequestSettings(string text,
-        CompleteRequestSettings requestSettings,
+        CompleteRequestSettings requestSettings, PromptConnectorSettings promptConnectorSettings,
         PromptMultiConnectorSettings promptMultiConnectorSettings,
         MultiTextCompletionSettings multiTextCompletionSettings,
         ILogger? logger)
@@ -167,13 +167,19 @@ public class NamedTextCompletion
             logger?.LogTrace("Applied global settings prompt transform");
         }
 
-        if (promptMultiConnectorSettings.PromptTypeTransform != null)
+        if (promptMultiConnectorSettings.PromptTypeTransform != null && promptConnectorSettings.ApplyPromptTypeTransform)
         {
             adjustedPrompt = promptMultiConnectorSettings.PromptTypeTransform.Transform(adjustedPrompt);
             logger?.LogTrace("Applied prompt type settings prompt transform");
         }
 
-        if (promptMultiConnectorSettings.ApplyModelTransform && this.PromptTransform != null)
+        if (promptConnectorSettings.PromptConnectorTypeTransform != null)
+        {
+            adjustedPrompt = promptConnectorSettings.PromptConnectorTypeTransform.Transform(adjustedPrompt);
+            logger?.LogTrace("Applied prompt connector type settings prompt transform");
+        }
+
+        if (this.PromptTransform != null && (promptMultiConnectorSettings.ApplyModelTransform || promptConnectorSettings.EnforceModelTransform))
         {
             adjustedPrompt = this.PromptTransform.Transform(adjustedPrompt);
             logger?.LogTrace("Applied named connector settings transform");
