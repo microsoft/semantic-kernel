@@ -66,7 +66,6 @@ public static class Program
         await Example49_LogitBias.RunAsync().SafeWaitAsync(cancelToken);
         await Example51_StepwisePlanner.RunAsync().SafeWaitAsync(cancelToken);
         await Example52_ApimAuth.RunAsync().SafeWaitAsync(cancelToken);
-        await Example53_Kusto.RunAsync().SafeWaitAsync(cancelToken);
     }
 
     private static void LoadUserSecrets()

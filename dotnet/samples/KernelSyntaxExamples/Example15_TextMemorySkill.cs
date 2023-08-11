@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -63,6 +64,9 @@ public static class Example15_TextMemorySkill
 
         // Postgres Memory Store
         // store = await CreateSamplePostgresMemoryStoreAsync();
+
+        // Kusto Memory Store
+        // store = await CreateSampleKustoMemoryStoreAsync();
 
         await RunWithStoreAsync(store, cancellationToken);
     }
@@ -124,6 +128,13 @@ public static class Example15_TextMemorySkill
         dataSourceBuilder.UseVector();
         await using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
         IMemoryStore store = new PostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public");
+        return store;
+    }
+
+    private static IMemoryStore CreateSampleKustoMemoryStore()
+    {
+        var connectionString = new Kusto.Data.KustoConnectionStringBuilder(TestConfiguration.Kusto.ConnectionString).WithAadUserPromptAuthentication();
+        IMemoryStore store = new KustoMemoryStore(connectionString, "MyDatabase");
         return store;
     }
 
