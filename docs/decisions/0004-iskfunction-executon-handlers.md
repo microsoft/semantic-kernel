@@ -116,7 +116,7 @@ Cons:
   A: Currently post execution Handlers are executed after the LLM result, but before the end of the function execution itself.
 
 - Q: Should Pre/Post Handlers be many (pub/sub) allowing registration/deregistration?
-  A: Currently the approach used is a bit similar with HttpFeatures, OnCreation() regarding it's recursive capability (to executo multiple registrations) with an additional concept of HandlerRegistration class where the caller will have a reference to the registration and can decide when to cancel it to avoid further execution.
+  A: Currently the approach used is a bit similar with HttpFeatures, OnCreation() regarding it's recursive capability (to execute multiple registrations) with an additional concept of HandlerRegistration class where the caller will have a reference to the registration and can decide when to cancel it to avoid further execution.
 
 - Q: Setting Handlers on top of pre existing Handlers should be allowed or throw an error?
   A: Currently with the recursive approach is possible to add multiple Handlers so the latest will be called first. (Last in, First call)

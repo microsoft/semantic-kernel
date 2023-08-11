@@ -413,7 +413,7 @@ public sealed class Plan : IPlan
     /// <summary>
     /// Used for setting a post-execution handler to a plan and its children.
     /// </summary>
-    /// <param name="postExecutionHandler">Post-executin handler delegate</param>
+    /// <param name="postExecutionHandler">Post-execution handler delegate</param>
     /// <returns>Handler registration</returns>
     public HandlerRegistration<PostExecutionContext> SetPostExecutionHandler(ExecutionHandler<PostExecutionContext> postExecutionHandler)
     {
