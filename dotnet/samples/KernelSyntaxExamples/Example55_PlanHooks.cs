@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example54_PlanHooks
+public static class Example55_PlanHooks
 {
     public static async Task RunAsync()
     {

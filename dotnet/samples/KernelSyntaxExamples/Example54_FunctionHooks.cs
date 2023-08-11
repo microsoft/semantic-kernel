@@ -11,7 +11,7 @@ using RepoUtils;
 #pragma warning disable RCS1214 // Unnecessary interpolated string.
 
 // ReSharper disable once InconsistentNaming
-public static class Example53_FunctionHooks
+public static class Example54_FunctionHooks
 {
     public static async Task RunAsync()
     {
