@@ -33,6 +33,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
