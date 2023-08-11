@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -115,11 +114,11 @@ public abstract class ClientBase
     /// <param name="data">List of strings to generate embeddings for</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
-    private protected async Task<IList<Embedding<float>>> InternalGetEmbeddingsAsync(
+    private protected async Task<IList<ReadOnlyMemory<float>>> InternalGetEmbeddingsAsync(
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        var result = new List<Embedding<float>>();
+        var result = new List<ReadOnlyMemory<float>>(data.Count);
         foreach (string text in data)
         {
             var options = new EmbeddingsOptions(text);
@@ -137,9 +136,7 @@ public abstract class ClientBase
                 throw new SKException("Text embedding not found");
             }
 
-            EmbeddingItem x = response.Value.Data[0];
-
-            result.Add(new Embedding<float>(x.Embedding, transferOwnership: true));
+            result.Add(response.Value.Data[0].Embedding.ToArray());
         }
 
         return result;

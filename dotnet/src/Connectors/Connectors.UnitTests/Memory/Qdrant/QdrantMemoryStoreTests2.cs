@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
@@ -29,9 +28,9 @@ public class QdrantMemoryStoreTests2
     private readonly string _description = "description";
     private readonly string _description2 = "description2";
     private readonly string _description3 = "description3";
-    private readonly Embedding<float> _embedding = new(new float[] { 1, 1, 1 });
-    private readonly Embedding<float> _embedding2 = new(new float[] { 2, 2, 2 });
-    private readonly Embedding<float> _embedding3 = new(new float[] { 3, 3, 3 });
+    private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
+    private readonly ReadOnlyMemory<float> _embedding2 = new float[] { 2, 2, 2 };
+    private readonly ReadOnlyMemory<float> _embedding3 = new float[] { 3, 3, 3 };
     private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
 
     [Fact]
@@ -53,7 +52,7 @@ public class QdrantMemoryStoreTests2
         // this information will not be verified
         var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             guidString,
-            memoryRecord.Embedding.Vector,
+            memoryRecord.Embedding,
             memoryRecord.GetSerializedMetadata());
 
         mockQdrantClient
@@ -132,7 +131,7 @@ public class QdrantMemoryStoreTests2
 
         var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             memoryRecord.Key,
-            memoryRecord.Embedding.Vector,
+            memoryRecord.Embedding,
             memoryRecord.GetSerializedMetadata());
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
@@ -154,7 +153,7 @@ public class QdrantMemoryStoreTests2
         Assert.Equal(memoryRecord.Metadata.Description, getResult.Metadata.Description);
         Assert.Equal(memoryRecord.Metadata.ExternalSourceName, getResult.Metadata.ExternalSourceName);
         Assert.Equal(memoryRecord.Metadata.IsReference, getResult.Metadata.IsReference);
-        Assert.Equal(memoryRecord.Embedding.Vector, getResult.Embedding.Vector);
+        Assert.True(memoryRecord.Embedding.Span.SequenceEqual(getResult.Embedding.Span));
     }
 
     [Fact]
@@ -183,15 +182,15 @@ public class QdrantMemoryStoreTests2
 
         var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             key,
-            memoryRecord.Embedding.Vector,
+            memoryRecord.Embedding,
             memoryRecord.GetSerializedMetadata());
         var qdrantVectorRecord2 = QdrantVectorRecord.FromJsonMetadata(
             key2,
-            memoryRecord2.Embedding.Vector,
+            memoryRecord2.Embedding,
             memoryRecord2.GetSerializedMetadata());
         var qdrantVectorRecord3 = QdrantVectorRecord.FromJsonMetadata(
             key3,
-            memoryRecord3.Embedding.Vector,
+            memoryRecord3.Embedding,
             memoryRecord3.GetSerializedMetadata());
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
@@ -252,11 +251,11 @@ public class QdrantMemoryStoreTests2
 
         var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             key,
-            memoryRecord.Embedding.Vector,
+            memoryRecord.Embedding,
             memoryRecord.GetSerializedMetadata());
         var qdrantVectorRecord2 = QdrantVectorRecord.FromJsonMetadata(
             key2,
-            memoryRecord2.Embedding.Vector,
+            memoryRecord2.Embedding,
             memoryRecord2.GetSerializedMetadata());
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
@@ -366,7 +365,7 @@ public class QdrantMemoryStoreTests2
 
         var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             memoryRecord.Key,
-            memoryRecord.Embedding.Vector,
+            memoryRecord.Embedding,
             memoryRecord.GetSerializedMetadata());
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
@@ -391,7 +390,7 @@ public class QdrantMemoryStoreTests2
         Assert.Equal(memoryRecord.Metadata.Description, getResult.Metadata.Description);
         Assert.Equal(memoryRecord.Metadata.ExternalSourceName, getResult.Metadata.ExternalSourceName);
         Assert.Equal(memoryRecord.Metadata.IsReference, getResult.Metadata.IsReference);
-        Assert.Equal(memoryRecord.Embedding.Vector, getResult.Embedding.Vector);
+        Assert.True(memoryRecord.Embedding.Span.SequenceEqual(getResult.Embedding.Span));
     }
 
     [Fact]
@@ -420,15 +419,15 @@ public class QdrantMemoryStoreTests2
 
         var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             key,
-            memoryRecord.Embedding.Vector,
+            memoryRecord.Embedding,
             memoryRecord.GetSerializedMetadata());
         var qdrantVectorRecord2 = QdrantVectorRecord.FromJsonMetadata(
             key2,
-            memoryRecord2.Embedding.Vector,
+            memoryRecord2.Embedding,
             memoryRecord2.GetSerializedMetadata());
         var qdrantVectorRecord3 = QdrantVectorRecord.FromJsonMetadata(
             key3,
-            memoryRecord3.Embedding.Vector,
+            memoryRecord3.Embedding,
             memoryRecord3.GetSerializedMetadata());
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();

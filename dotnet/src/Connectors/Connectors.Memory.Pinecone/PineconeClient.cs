@@ -146,7 +146,7 @@ public sealed class PineconeClient : IPineconeClient
     /// <inheritdoc />
     public async IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
         string indexName,
-        IEnumerable<float> vector,
+        ReadOnlyMemory<float> vector,
         double threshold,
         int topK,
         bool includeValues,
