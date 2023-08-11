@@ -19,6 +19,7 @@ import com.azure.search.documents.models.QueryLanguage;
 import com.azure.search.documents.models.QueryType;
 import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.util.SearchPagedResponse;
+import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryException.ErrorCodes;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
@@ -138,6 +139,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         (response) -> {
                             if (response.getStatusCode() == 404 || response.getValue() == null) {
                                 throw new AzureCognitiveSearchMemoryException(
+                                    ErrorCodes.MEMORY_NOT_FOUND,
                                         "Memory read returned null");
                             }
                             return new MemoryQueryResult(
@@ -163,6 +165,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                     (list, response) -> {
                         if (response.getStatusCode() == 404 || response.getValue() == null) {
                             throw new AzureCognitiveSearchMemoryException(
+                                ErrorCodes.MEMORY_NOT_FOUND,
                                     "Memory read returned null");
                         }
                         response.getValue().stream()
@@ -284,6 +287,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                             || response.getValue().getResults() == null
                             || response.getValue().getResults().isEmpty()) {
                         throw new AzureCognitiveSearchMemoryException(
+                            ErrorCodes.MEMORY_NOT_FOUND,
                                 "Memory write returned null or an empty set");
                     }
                     return response.getValue().getResults().get(0).getKey();
@@ -324,7 +328,8 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     private static String normalizeIndexName(String indexName) {
         if (indexName.length() > 128) {
             throw new AzureCognitiveSearchMemoryException(
-                    "The collection name is too long, it cannot exceed 128 chars");
+                ErrorCodes.INVALID_INDEX_NAME,
+                    "The collection name cannot exceed 128 chars");
         }
 
         indexName = indexName.toLowerCase(Locale.ROOT);

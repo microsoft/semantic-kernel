@@ -40,7 +40,7 @@ public class AIException extends SKException {
             @Nonnull ErrorCodes errorCode,
             @Nullable String message,
             @Nullable Throwable innerException) {
-        super(getDefaultMessage(errorCode, message), innerException);
+        super(formatDefaultMessage(errorCode.getMessage(), message), innerException);
         this.errorCode = errorCode;
     }
 

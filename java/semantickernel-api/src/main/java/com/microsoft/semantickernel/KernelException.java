@@ -21,18 +21,12 @@ public class KernelException extends SKException {
             @Nonnull ErrorCodes errorCode,
             @Nullable String message,
             @Nullable Throwable innerException) {
-        super(getDefaultMessage(errorCode, message), innerException);
+        super(formatDefaultMessage(errorCode.getMessage(), message), innerException);
         this.errorCode = errorCode;
     }
 
     public ErrorCodes getErrorCode() {
         return errorCode;
-    }
-
-    /* Translate the error code into a default message */
-    private static String getDefaultMessage(
-            @Nonnull ErrorCodes errorCode, @Nullable String message) {
-        return String.format("%s: %s", errorCode.getMessage(), message);
     }
 
     /// <summary>

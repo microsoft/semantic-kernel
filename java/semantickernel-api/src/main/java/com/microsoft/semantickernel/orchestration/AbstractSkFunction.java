@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.NullMemory;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
+import com.microsoft.semantickernel.orchestration.FunctionNotRegisteredException.ErrorCodes;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -55,7 +56,7 @@ public abstract class AbstractSkFunction<RequestConfiguration>
      */
     protected void assertSkillSupplierRegistered() {
         if (skillsSupplier == null) {
-            throw new FunctionNotRegisteredException(getName());
+            throw new FunctionNotRegisteredException(ErrorCodes.FUNCTION_NOT_REGISTERED, getName());
         }
     }
 

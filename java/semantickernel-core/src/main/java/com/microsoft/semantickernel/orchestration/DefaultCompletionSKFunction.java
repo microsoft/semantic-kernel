@@ -5,6 +5,7 @@ import com.azure.core.exception.HttpResponseException;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.ai.AIException;
+import com.microsoft.semantickernel.orchestration.FunctionNotRegisteredException.ErrorCodes;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
@@ -153,7 +154,7 @@ public class DefaultCompletionSKFunction
         // this.ensureContextHasSkills(context);
 
         if (function == null) {
-            throw new FunctionNotRegisteredException(this.getName());
+            throw new FunctionNotRegisteredException(ErrorCodes.FUNCTION_NOT_REGISTERED, this.getName());
         }
 
         if (settings == null) {

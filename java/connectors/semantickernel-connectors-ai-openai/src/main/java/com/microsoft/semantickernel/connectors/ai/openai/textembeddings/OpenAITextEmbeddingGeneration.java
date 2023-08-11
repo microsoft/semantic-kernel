@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import reactor.core.publisher.Mono;
 
 public class OpenAITextEmbeddingGeneration extends ClientBase
@@ -59,10 +60,10 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
         @Override
         public EmbeddingGeneration<String> build() {
             if (client == null) {
-                throw new NotSupportedException("OpenAI client not set");
+                throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "OpenAI client not set");
             }
             if (modelId == null) {
-                throw new NotSupportedException("Model ID not set");
+                throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "Model ID not set");
             }
             return new OpenAITextEmbeddingGeneration(client, modelId);
         }

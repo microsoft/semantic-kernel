@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.exceptions.SkillsNotFoundException.ErrorCodes;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.memory.MemoryConfiguration;
 import com.microsoft.semantickernel.memory.MemoryStore;
@@ -145,7 +146,7 @@ public class DefaultKernel implements Kernel {
 
         ReadOnlyFunctionCollection collection = getSkill(skillName);
         if (collection == null) {
-            throw new SkillsNotFoundException();
+            throw new SkillsNotFoundException(ErrorCodes.SKILLS_NOT_FOUND);
         }
         return collection;
     }
@@ -194,7 +195,7 @@ public class DefaultKernel implements Kernel {
     public ReadOnlyFunctionCollection getSkill(String skillName) throws FunctionNotFound {
         ReadOnlyFunctionCollection functions = this.defaultSkillCollection.getFunctions(skillName);
         if (functions == null) {
-            throw new FunctionNotFound(skillName);
+            throw new FunctionNotFound(FunctionNotFound.ErrorCodes.FUNCTION_NOT_FOUND, skillName);
         }
 
         return functions;

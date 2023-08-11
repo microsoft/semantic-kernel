@@ -106,7 +106,7 @@ public class SQLiteMemoryStore implements MemoryStore {
 
             return update.then(insert).then(Mono.just(record.getMetadata().getId()));
         } catch (JsonProcessingException e) {
-            throw new SQLConnectorException("Error serializing MemoryRecord", e);
+            throw new SQLConnectorException(SQLConnectorException.ErrorCodes.SERIALIZATION_ERROR, "MemoryRecord", e);
         }
     }
 
@@ -177,7 +177,8 @@ public class SQLiteMemoryStore implements MemoryStore {
                                                     databaseEntry.getTimestamp());
                                         } catch (JsonProcessingException e) {
                                             throw new SQLConnectorException(
-                                                    "Error deserializing database entry", e);
+                                                SQLConnectorException.ErrorCodes.DESERIALIZATION_ERROR,
+                                                    "database entry", e);
                                         }
                                     });
                         });
@@ -248,7 +249,8 @@ public class SQLiteMemoryStore implements MemoryStore {
                             }
                         } catch (JsonProcessingException e) {
                             throw new SQLConnectorException(
-                                    "Error deserializing database entry", e);
+                                SQLConnectorException.ErrorCodes.DESERIALIZATION_ERROR,
+                                    "database entry", e);
                         }
                     }
                     List<Tuple2<MemoryRecord, Float>> results =
