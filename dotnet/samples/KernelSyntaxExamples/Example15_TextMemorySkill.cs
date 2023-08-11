@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
@@ -116,17 +116,17 @@ public static class Example15_TextMemorySkill
     private static async Task<IMemoryStore> CreateSampleRedisMemoryStoreAsync()
     {
         string configuration = TestConfiguration.Redis.Configuration;
-        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
+        ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
         IDatabase database = connectionMultiplexer.GetDatabase();
         IMemoryStore store = new RedisMemoryStore(database, vectorSize: 1536);
         return store;
     }
 
-    private static async Task<IMemoryStore> CreateSamplePostgresMemoryStoreAsync()
+    private static IMemoryStore CreateSamplePostgresMemoryStore()
     {
         NpgsqlDataSourceBuilder dataSourceBuilder = new(TestConfiguration.Postgres.ConnectionString);
         dataSourceBuilder.UseVector();
-        await using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
+        NpgsqlDataSource dataSource = dataSourceBuilder.Build();
         IMemoryStore store = new PostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public");
         return store;
     }
@@ -148,54 +148,105 @@ public static class Example15_TextMemorySkill
             .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var embeddingGenerator = kernel.GetService<ITextEmbeddingGeneration>();
+        // Create an embedding generator to use for semantic memory. 
+        var embeddingGenerator = new OpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
 
+        // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
+        // store and retrieve memories.
         using SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
 
-        // ========= Store memories using the ISemanticTextMemory object itself =========
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // PART 1: Store and retrieve memories using the ISemanticTextMemory (textMemory) object.
+        // 
+        // This is a simple way to store memories from a code perspective, without using the Kernel.
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        Console.WriteLine("== PART 1a: Saving Memories through the ISemanticTextMemory object ==");
 
+        Console.WriteLine("Saving memory with key 'info1': \"My name is Andrea\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info1", text: "My name is Andrea", cancellationToken: cancellationToken);
+
+        Console.WriteLine("Saving memory with key 'info2': \"I work as a tourist operator\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info2", text: "I work as a tourist operator", cancellationToken: cancellationToken);
+
+        Console.WriteLine("Saving memory with key 'info3': \"I've been living in Seattle since 2005\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info3", text: "I've been living in Seattle since 2005", cancellationToken: cancellationToken);
+
+        Console.WriteLine("Saving memory with key 'info4': \"I visited France and Italy five times since 2015\"");
         await textMemory.SaveInformationAsync(MemoryCollectionName, id: "info4", text: "I visited France and Italy five times since 2015", cancellationToken: cancellationToken);
 
-        // ========= Store memories using semantic function =========
+        // Retrieve a memory
+        Console.WriteLine("== PART 1b: Retrieving Memories through the ISemanticTextMemory object ==");
+        MemoryQueryResult? lookup = await textMemory.GetAsync(MemoryCollectionName, "info1", cancellationToken: cancellationToken);
+        Console.WriteLine("Memory with key 'info3':" + lookup?.Metadata.Text ?? "ERROR: memory not found");
+        Console.WriteLine();
 
-        // Add Memory as a skill for other functions
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // PART 2: Create TextMemorySkill, store and retrieve memories through the Kernel.
+        // 
+        // This enables semantic functions and the AI (via Planners) to access memories
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        Console.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemorySkill and the 'Save' function ==");
+
+        // Import the TextMemorySkill into the Kernel for other functions
         var memorySkill = new TextMemorySkill(textMemory);
-        kernel.ImportSkill(memorySkill);
+        var memoryFunctions = kernel.ImportSkill(memorySkill);
 
-        // Build a semantic function that saves info to memory
-        const string SaveFunctionDefinition = "{{save $info}}";
-        var memorySaver = kernel.CreateSemanticFunction(SaveFunctionDefinition);
-
-        await kernel.RunAsync(memorySaver, new()
+        // Save a memory with the Kernel
+        Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
+        await kernel.RunAsync(memoryFunctions["Save"], new()
         {
             [TextMemorySkill.CollectionParam] = MemoryCollectionName,
             [TextMemorySkill.KeyParam] = "info5",
             ["info"] = "My family is from New York"
         }, cancellationToken);
 
-        // ========= Test memory remember =========
-        Console.WriteLine("========= Example: Recalling a Memory =========");
+        // Retrieve a specific memory with the Kernel
+        Console.WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemorySkill and the 'Retrieve' function ==");
+        var result = await kernel.RunAsync(memoryFunctions["Retrieve"], new()
+        {
+            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
+            [TextMemorySkill.KeyParam] = "info5"
+        }, cancellationToken);
 
-        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info1", logger: logger, cancellationToken: cancellationToken);
-        Console.WriteLine("Memory associated with 'info1': {0}", answer);
-        /*
-        Output:
-        "Memory associated with 'info1': My name is Andrea
-        */
+        Console.WriteLine("Memory with key 'info3':" + result?.ToString() ?? "ERROR: memory not found");
+        Console.WriteLine();
 
-        // ========= Test memory recall =========
-        Console.WriteLine("========= Example: Recalling an Idea =========");
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // PART 3: Recall similar ideas with semantic search
+        // 
+        // Uses AI Embeddings for fuzzy lookup of memories based on intent, rather than a specific key. 
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        answer = await memorySkill.RecallAsync("where did I grow up?", MemoryCollectionName, relevance: null, limit: 2, logger: logger, cancellationToken: cancellationToken);
+        Console.WriteLine("== PART 3: Recall (similarity search) with AI Embeddings ==");
+
+        Console.WriteLine("== PART 3a: Recall (similarity search) with ISemanticTextMemory ==");
         Console.WriteLine("Ask: where did I grow up?");
-        Console.WriteLine("Answer:\n{0}", answer);
 
-        answer = await memorySkill.RecallAsync("where do I live?", MemoryCollectionName, relevance: null, limit: 2, logger: logger, cancellationToken: cancellationToken);
+        await foreach (var answer in textMemory.SearchAsync(
+            collection: MemoryCollectionName,
+            query: "where did I grow up?",
+            limit: 2,
+            minRelevanceScore: 0.8,
+            withEmbeddings: true,
+            cancellationToken: cancellationToken))
+        {
+            Console.WriteLine($"Answer: {answer}");
+        }
+
+        Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemorySkill 'Recall' function ==");
         Console.WriteLine("Ask: where do I live?");
-        Console.WriteLine("Answer:\n{0}", answer);
+
+        result = await kernel.RunAsync(memoryFunctions["Recall"], new()
+        {
+            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
+            [TextMemorySkill.LimitParam] = "2",
+            [TextMemorySkill.RelevanceParam] = "0.8",
+            ["input"] = "Ask: where do I live?"
+        }, cancellationToken);
+
+        Console.WriteLine($"Answer: {result}");
+        Console.WriteLine();
 
         /*
         Output:
@@ -209,15 +260,23 @@ public static class Example15_TextMemorySkill
                 ["I\u0027ve been living in Seattle since 2005","My family is from New York"]
         */
 
-        // ========= Use memory in a semantic function =========
-        Console.WriteLine("========= Example: Using Recall in a Semantic Function =========");
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // PART 3: TextMemorySkill Recall in a Semantic Function
+        // 
+        // Looks up related memories when rendering a prompt template, then sends the redered prompt to
+        // the text completion model to answer a natural language query.
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        Console.WriteLine("== PART 4: Using TextMemorySkill 'Recall' function in a Semantic Function ==");
 
         // Build a semantic function that uses memory to find facts
         const string RecallFunctionDefinition = @"
-Consider only the facts below when answering questions.
+Consider only the facts below when answering questions:
 
+BEGIN FACTS
 About me: {{recall 'where did I grow up?'}}
-About me: {{recall 'where do I live?'}}
+About me: {{recall 'where do I live now?'}}
+END FACTS
 
 Question: {{$input}}
 
@@ -226,55 +285,45 @@ Answer:
 
         var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, maxTokens: 100);
 
-        var result = await kernel.RunAsync(aboutMeOracle, new("Do I live in the same town where I grew up?")
+        result = await kernel.RunAsync(aboutMeOracle, new()
         {
             [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-            [TextMemorySkill.RelevanceParam] = "0.8"
+            [TextMemorySkill.RelevanceParam] = "0.8",
+            ["input"] = "Do I live in the same town where I grew up?"
         }, cancellationToken);
 
-        Console.WriteLine("Do I live in the same town where I grew up?\n");
-        Console.WriteLine(result);
+        Console.WriteLine("Ask: Do I live in the same town where I grew up?");
+        Console.WriteLine($"Answer: {result}");
 
         /*
-        Output:
-
-            Do I live in the same town where I grew up?
-
-            No, I do not live in the same town where I grew up since my family is from New York and I have been living in Seattle since 2005.
+        Approximate Output:
+            Answer: No, I do not live in the same town where I grew up since my family is from New York and I have been living in Seattle since 2005.
         */
 
-        // ========= Remove a memory =========
-        Console.WriteLine("========= Example: Forgetting a Memory =========");
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // PART 5: Cleanup, deleting database collection
+        // 
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        result = await kernel.RunAsync(aboutMeOracle, new("Tell me a bit about myself")
+        Console.WriteLine("== PART 5: Cleanup, deleting database collection ==");
+
+        Console.WriteLine("Printing Collections in DB...");
+        var collections = memoryStore.GetCollectionsAsync(cancellationToken);
+        await foreach (var collection in collections)
         {
-            ["fact1"] = "What is my name?",
-            ["fact2"] = "What do I do for a living?",
-            [TextMemorySkill.RelevanceParam] = ".75"
-        }, cancellationToken);
+            Console.WriteLine(collection);
+        }
+        Console.WriteLine();
 
-        Console.WriteLine("Tell me a bit about myself\n");
-        Console.WriteLine(result);
+        Console.WriteLine("Removing Collection {0}", MemoryCollectionName);
+        await memoryStore.DeleteCollectionAsync(MemoryCollectionName, cancellationToken);
+        Console.WriteLine();
 
-        /*
-        Approximate Output:
-            Tell me a bit about myself
-
-            My name is Andrea and my family is from New York. I work as a tourist operator.
-        */
-
-        await memorySkill.RemoveAsync(MemoryCollectionName, "info1", logger: logger, cancellationToken: cancellationToken);
-
-        result = await kernel.RunAsync(aboutMeOracle, new("Tell me a bit about myself"), cancellationToken);
-
-        Console.WriteLine("Tell me a bit about myself\n");
-        Console.WriteLine(result);
-
-        /*
-        Approximate Output:
-            Tell me a bit about myself
-
-            I'm from a family originally from New York and I work as a tourist operator. I've been living in Seattle since 2005.
-        */
+        Console.WriteLine($"Printing Collections in DB (after removing {MemoryCollectionName})...");
+        collections = memoryStore.GetCollectionsAsync(cancellationToken);
+        await foreach (var collection in collections)
+        {
+            Console.WriteLine(collection);
+        }
     }
 }
