@@ -7,7 +7,7 @@ consulted:
 informed: 
 ---
 
-# ISKFunctions Hooks - Notification
+# ISKFunctions Handlers - Notification
 
 ## Context and Problem Statement
 
@@ -48,21 +48,21 @@ An ISKFunction Caller needs:
 
 ## Considered Options
 
-- Callback Request + Recursive (Kernel, Plan and Function) **(Preferred)**
+- Callback Registration + Recursive (Kernel, Plan and Function) **(Preferred)**
 - Single Callback (Kernel, Plan and Function)
 - Event Based Registration (Kernel and Function)
 - Middleware (Kernel Only)
 
 ## Pros and Cons of the Options
 
-### Callback Request Recursive Delegate (Kernel, Plan, Function)
+### Callback Registration Recursive Delegate (Kernel, Plan, Function)
 
-- Specified on plan and function level as a configuration be able to specify what are the callback hooks that will be triggered.
+- Specified on plan and function level as a configuration be able to specify what are the callback Handlers that will be triggered.
 
 Pros:
 
 - Common pattern for observing and also changing data exposed as parameter into the delegate signature for (Get/Set) scenarios
-- Registering a callback gives back the request object that can be used to cancel the execution of the function in the future.
+- Registering a callback gives back the registration object that can be used to cancel the execution of the function in the future.
 - Recursive approach, allows to register multiple callbacks for the same event, and also allows to register callbacks on top of pre existing callbacks.
 
 Cons:
@@ -71,9 +71,9 @@ Cons:
 
 ### Single Callback Delegate (Kernel, Plan, Function)
 
-- Specified on kernel level as a configuration be able to specify what are the callback hooks that will be triggered.
-  - Specified on function creation: As part of the function constructor be able to specify what are the callback hooks that will be triggered.
-  - Specified on function invocation: As part of the function invoke be able to specify what are the callback hooks as a parameter that will be triggered.
+- Specified on kernel level as a configuration be able to specify what are the callback Handlers that will be triggered.
+  - Specified on function creation: As part of the function constructor be able to specify what are the callback Handlers that will be triggered.
+  - Specified on function invocation: As part of the function invoke be able to specify what are the callback Handlers as a parameter that will be triggered.
 
 Pros:
 
@@ -112,17 +112,17 @@ Cons:
 
 ## Open Questions
 
-- Q: Post Execution Hooks should execute right after the LLM result or before the end of the function execution itself?
-  A: Currently post execution hooks are executed after the LLM result, but before the end of the function execution itself.
+- Q: Post Execution Handlers should execute right after the LLM result or before the end of the function execution itself?
+  A: Currently post execution Handlers are executed after the LLM result, but before the end of the function execution itself.
 
-- Q: Should Pre/Post Hooks be many (pub/sub) allowing registration/deregistration?
-  A: Currently the approach used is a bit similar with HttpFeatures, OnCreation() regarding it's recursive capability (to executo multiple registrations) with an additional concept of HookRequest class where the caller will have a reference to the registration and can decide when to cancel it to avoid further execution.
+- Q: Should Pre/Post Handlers be many (pub/sub) allowing registration/deregistration?
+  A: Currently the approach used is a bit similar with HttpFeatures, OnCreation() regarding it's recursive capability (to executo multiple registrations) with an additional concept of HandlerRegistration class where the caller will have a reference to the registration and can decide when to cancel it to avoid further execution.
 
-- Q: Setting hooks on top of pre existing hooks should be allowed or throw an error?
-  A: Currently with the recursive approach is possible to add multiple hooks so the latest will be called first. (Last in, First call)
+- Q: Setting Handlers on top of pre existing Handlers should be allowed or throw an error?
+  A: Currently with the recursive approach is possible to add multiple Handlers so the latest will be called first. (Last in, First call)
 
-- Q: Setting hooks on Plans should automatically cascade this hooks for all the inner steps + overriding existing ones in the process?
-  A: Plans with hooks will manage the execution of those before/after each step is executed
+- Q: Setting Handlers on Plans should automatically cascade this Handlers for all the inner steps + overriding existing ones in the process?
+  A: Plans with Handlers will manage the execution of those before/after each step is executed
 
 ## Decision Outcome
 
