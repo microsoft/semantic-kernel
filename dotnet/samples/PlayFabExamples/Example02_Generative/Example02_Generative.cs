@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Skills.Core;
-using RepoUtils;
+using PlayFabExamples.Common.Configuration;
+using PlayFabExamples.Common.Logging;
 
-public static class Example00_02_PlayFabGenerative
+namespace PlayFabExamples.Example02_Generative;
+public static class Example02_Generative
 {
     public static async Task RunAsync()
     {
@@ -42,7 +41,7 @@ public static class Example00_02_PlayFabGenerative
         Console.WriteLine("======== Action Planner ========");
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithAzureTextCompletionService(TestConfiguration.AzureOpenAITextDavinci.DeploymentName, TestConfiguration.AzureOpenAITextDavinci.Endpoint, TestConfiguration.AzureOpenAITextDavinci.ApiKey)
+            .WithAzureTextCompletionService(TestConfiguration.AzureOpenAI.DeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         kernel.ImportSkill(new SegmentSkill(), "SegmentSkill");

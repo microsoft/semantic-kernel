@@ -1,22 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Newtonsoft.Json;
-using RepoUtils;
+using PlayFabExamples.Common.Configuration;
+using PlayFabExamples.Common.Logging;
+
+namespace PlayFabExamples.Example03_SegmentQuery;
 
 /// <summary>
 /// This example shows how to import PlayFab APIs as skills.
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public static class Example_00_03_OpenApiSkill_PlayFab
+public static class Example03_SegmentQuery
 {
     public static async Task RunAsync()
     {
