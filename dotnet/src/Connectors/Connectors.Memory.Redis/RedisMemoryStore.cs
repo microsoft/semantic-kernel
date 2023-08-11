@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
 /// <remarks>The embedded data is saved to the Redis server database specified in the constructor.
 /// Similarity search capability is provided through the RediSearch module. Use RediSearch's "Index" to implement "Collection".
 /// </remarks>
-public sealed class RedisMemoryStore : IMemoryStore
+public class RedisMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
     /// Create a new instance of semantic memory using Redis.
@@ -71,8 +71,24 @@ public sealed class RedisMemoryStore : IMemoryStore
         VectorIndexAlgorithms vectorIndexAlgorithm = VectorIndexAlgorithm,
         VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
         int queryDialect = QueryDialect)
-        : this(ConnectionMultiplexer.Connect(connectionString).GetDatabase(), vectorSize, vectorIndexAlgorithm, vectorDistanceMetric, queryDialect)
-    { }
+    {
+        if (vectorSize <= 0)
+        {
+            throw new ArgumentException("Vector size must be a positive integer.");
+        }
+
+        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
+        {
+            throw new ArgumentException("Unsupported vector indexing algorithm.");
+        }
+
+        this._connection = ConnectionMultiplexer.Connect(connectionString);
+        this._database = this._connection.GetDatabase();
+        this._vectorSize = vectorSize;
+        this._ft = this._database.FT();
+        this._vectorDistanceMetric = vectorDistanceMetric.ToString();
+        this._queryDialect = queryDialect;
+    }
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -235,6 +251,20 @@ public sealed class RedisMemoryStore : IMemoryStore
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._connection?.Dispose();
+        }
+    }
+
     #region private ================================================================================
 
     /// <summary>
@@ -274,6 +304,7 @@ public sealed class RedisMemoryStore : IMemoryStore
     private readonly IDatabase _database;
     private readonly int _vectorSize;
     private readonly SearchCommands _ft;
+    private readonly ConnectionMultiplexer? _connection;
     private readonly Schema.VectorField.VectorAlgo _vectorIndexAlgorithm;
     private readonly string _vectorDistanceMetric;
     private readonly int _queryDialect;
