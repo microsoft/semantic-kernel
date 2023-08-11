@@ -4,4 +4,6 @@ from semantic_kernel.connectors.ai.jina_ai.services.jina_ai_text_embedding impor
     JinaTextEmbedding,
 )
 
-__all__ = ["JinaTextEmbedding",]
+__all__ = [
+    "JinaTextEmbedding",
+]

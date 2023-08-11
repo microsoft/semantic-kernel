@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 import pytest
+
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.jina_ai as sk_jai
+
 
 @pytest.mark.asyncio
 async def test_jina_embedding_service(create_kernel, get_jai_config):
