@@ -263,7 +263,7 @@ public static class Example15_TextMemorySkill
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 3: TextMemorySkill Recall in a Semantic Function
         // 
-        // Looks up related memories when rendering a prompt template, then sends the redered prompt to
+        // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
         // the text completion model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
