@@ -1,19 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Net.Http;
-using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Newtonsoft.Json;
-using RepoUtils;
+using PlayFabExamples.Common.Configuration;
+using PlayFabExamples.Common.Logging;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace PlayFabExamples.Example02_Generative;
 
 /// <summary>
 /// Create a segment with given information.

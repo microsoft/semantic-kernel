@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure;
 using Microsoft.SemanticKernel;
@@ -13,14 +11,13 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
-using RepoUtils;
 using Microsoft.Azure.Cosmos;
-using System.Threading;
-using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using System.Linq;
 using Newtonsoft.Json;
-using System.Text.Json.Serialization;
+using PlayFabExamples.Common.Configuration;
+using PlayFabExamples.Common.Logging;
+
+namespace PlayFabExamples.Example01_DataQnA;
 
 public enum PlannerType
 {
@@ -30,7 +27,7 @@ public enum PlannerType
 }
 
 // ReSharper disable once InconsistentNaming
-public static partial class Example00_01_PlayFabDataQnA
+public static partial class Example01_DataQnA
 {
     public static Dictionary<string, string> AllTitleReports = null;
 
