@@ -23,7 +23,6 @@ public sealed class TestConfiguration
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
     public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
-    public static AzureOpenAITextDavinciConfig AzureOpenAITextDavinci => LoadSection<AzureOpenAITextDavinciConfig>();
     public static ACSConfig ACS => LoadSection<ACSConfig>();
     public static QdrantConfig Qdrant => LoadSection<QdrantConfig>();
     public static WeaviateConfig Weaviate => LoadSection<WeaviateConfig>();
@@ -37,7 +36,7 @@ public sealed class TestConfiguration
     public static RedisConfig Redis => LoadSection<RedisConfig>();
     public static JiraConfig Jira => LoadSection<JiraConfig>();
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
-    public static PlayFabConfig PlayFab => LoadSection<PlayFabConfig>();
+    public static KustoConfig Kusto => LoadSection<KustoConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -74,13 +73,6 @@ public sealed class TestConfiguration
     }
 
     public class AzureOpenAIEmbeddingsConfig
-    {
-        public string DeploymentName { get; set; }
-        public string Endpoint { get; set; }
-        public string ApiKey { get; set; }
-    }
-
-    public class AzureOpenAITextDavinciConfig
     {
         public string DeploymentName { get; set; }
         public string Endpoint { get; set; }
@@ -164,17 +156,9 @@ public sealed class TestConfiguration
         public string Endpoint { get; set; }
     }
 
-    public class PlayFabConfig
+    public class KustoConfig
     {
-        public string Endpoint { get; set; }
-        public string TitleId { get; set; }
-        public string TitleSecretKey { get; set; }
-        public string SwaggerEndpoint { get; set; }
-        public string ReportsCosmosDBEndpoint { get; set; }
-        public string ReportsCosmosDBKey { get; set; }
-        public string ReportsCosmosDBDatabaseName { get; set; }
-        public string ReportsCosmosDBContainerName { get; set; }
+        public string ConnectionString { get; set; }
     }
-
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 }
