@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -66,7 +67,7 @@ public class SemanticKernelEndpoint
 
         if (result.ErrorOccurred)
         {
-            return await ResponseErrorWithMessageAsync(req, result);
+            return await ResponseErrorWithMessageAsync(req, result.LastException!);
         }
 
         var r = req.CreateResponse(HttpStatusCode.OK);
@@ -161,19 +162,18 @@ public class SemanticKernelEndpoint
                 await r.WriteAsJsonAsync(new AskResult { Value = plan.State.ToString() });
             }
         }
-        catch (KernelException e)
+        catch (KernelException exception)
         {
-            context.Fail(e.Message, e);
-            return await ResponseErrorWithMessageAsync(req, context);
+            return await ResponseErrorWithMessageAsync(req, exception);
         }
 
         return r;
     }
 
-    private static async Task<HttpResponseData> ResponseErrorWithMessageAsync(HttpRequestData req, SKContext result)
+    private static async Task<HttpResponseData> ResponseErrorWithMessageAsync(HttpRequestData req, Exception exception)
     {
-        return result.LastException is AIException aiException && aiException.Detail is not null
+        return exception is AIException aiException && aiException.Detail is not null
             ? await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, string.Concat(aiException.Message, " - Detail: " + aiException.Detail))
-            : await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, result.LastErrorDescription);
+            : await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, exception.Message);
     }
 }
