@@ -18,8 +18,8 @@ public static class Example15_MemorySkill
 
         var kernel = Kernel.Builder
             .WithLogger(logger)
-            .WithOpenAITextCompletionService("text-davinci-003", TestConfiguration.OpenAI.ApiKey)
-            .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
@@ -50,7 +50,7 @@ public static class Example15_MemorySkill
         // ========= Test memory remember =========
         Console.WriteLine("========= Example: Recalling a Memory =========");
 
-        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info5", logger: logger);
+        var answer = await memorySkill.RetrieveAsync(MemoryCollectionName, "info1", logger: logger);
         Console.WriteLine("Memory associated with 'info1': {0}", answer);
         /*
         Output:

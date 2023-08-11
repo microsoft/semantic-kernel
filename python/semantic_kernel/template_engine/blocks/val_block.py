@@ -3,14 +3,19 @@
 from logging import Logger
 from typing import Optional, Tuple
 
+import pydantic as pdt
+
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
 from semantic_kernel.template_engine.blocks.symbols import Symbols
-from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 
 
-class ValBlock(Block, TextRenderer):
+class ValBlock(Block):
+    _first: str = pdt.PrivateAttr()
+    _last: str = pdt.PrivateAttr()
+    _value: str = pdt.PrivateAttr()
+
     def __init__(self, content: Optional[str] = None, log: Optional[Logger] = None):
         super().__init__(content=content and content.strip(), log=log)
 

@@ -1,51 +1,48 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
- * The following example shows how to use Semantic Kernel with Multiple Results Text Completion as streaming
+ * The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion
  */
 // ReSharper disable once InconsistentNaming
 public static class Example37_MultiStreamingCompletion
 {
-    private static readonly object s_lockObject = new();
-
     public static async Task RunAsync()
     {
-        await AzureOpenAIMultiTextCompletionStreamAsync();
-        await OpenAITextCompletionStreamAsync();
+        await AzureOpenAIMultiChatCompletionStreamAsync();
+        await OpenAIChatCompletionStreamAsync();
     }
 
-    private static async Task AzureOpenAIMultiTextCompletionStreamAsync()
+    private static async Task AzureOpenAIMultiChatCompletionStreamAsync()
     {
-        Console.WriteLine("======== Azure OpenAI - Multiple Text Completion - Raw Streaming ========");
+        Console.WriteLine("======== Azure OpenAI - Multiple Chat Completion - Raw Streaming ========");
 
-        var textCompletion = new AzureTextCompletion(
-            TestConfiguration.AzureOpenAI.DeploymentName,
+        var chatCompletion = new AzureChatCompletion(
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey);
 
-        await TextCompletionStreamAsync(textCompletion);
+        await ChatCompletionStreamAsync(chatCompletion);
     }
 
-    private static async Task OpenAITextCompletionStreamAsync()
+    private static async Task OpenAIChatCompletionStreamAsync()
     {
-        Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
+        Console.WriteLine("======== Open AI - Multiple Chat Completion - Raw Streaming ========");
 
-        ITextCompletion textCompletion = new OpenAITextCompletion(
-            "text-davinci-003",
+        IChatCompletion chatCompletion = new OpenAIChatCompletion(
+            TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
-        await TextCompletionStreamAsync(textCompletion);
+        await ChatCompletionStreamAsync(chatCompletion);
     }
 
-    private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
+    private static async Task ChatCompletionStreamAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new CompleteRequestSettings()
+        var requestSettings = new ChatRequestSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,
@@ -55,67 +52,14 @@ public static class Example37_MultiStreamingCompletion
             ResultsPerPrompt = 3
         };
 
-        var prompt = "Write one paragraph why AI is awesome";
-        var consoleLinesPerResult = 12;
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage("Write one paragraph about why AI is awesome");
 
-        PrepareDisplay();
-
-        List<Task> resultTasks = new();
-        int currentResult = 0;
-        await foreach (var completionResult in textCompletion.GetStreamingCompletionsAsync(prompt, requestSettings))
+        await foreach (string message in chatCompletion.GenerateMessageStreamAsync(chatHistory))
         {
-            resultTasks.Add(ProcessStreamAsyncEnumerableAsync(completionResult, currentResult++, consoleLinesPerResult));
+            Console.Write(message);
         }
 
         Console.WriteLine();
-
-        await Task.WhenAll(resultTasks.ToArray());
-
-        /*
-        
-        int position = 0;
-        await foreach (ITextCompletionStreamingResult completionResult in textCompletion.CompleteMultiStreamAsync(prompt, requestSettings))
-        {
-            string fullMessage = string.Empty;
-
-            await foreach (string message in completionResult.GetCompletionStreamingAsync())
-            {
-                fullMessage += message;
-
-                Console.SetCursorPosition(0, (position * consoleLinesPerResult));
-                Console.Write(fullMessage);
-            }
-
-            position++;
-        }*/
-
-        Console.SetCursorPosition(0, requestSettings.ResultsPerPrompt * consoleLinesPerResult);
-        Console.WriteLine();
-    }
-
-    private static async Task ProcessStreamAsyncEnumerableAsync(ITextStreamingResult result, int resultNumber, int linesPerResult)
-    {
-        var fullSentence = string.Empty;
-        await foreach (var word in result.GetCompletionStreamingAsync())
-        {
-            fullSentence += word;
-
-            lock (s_lockObject)
-            {
-                Console.SetCursorPosition(0, (resultNumber * linesPerResult));
-                Console.Write(fullSentence);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Break enough lines as the current console window size to display the results
-    /// </summary>
-    private static void PrepareDisplay()
-    {
-        for (int i = 0; i < Console.WindowHeight - 2; i++)
-        {
-            Console.WriteLine();
-        }
     }
 }

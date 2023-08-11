@@ -10,6 +10,8 @@ using Azure.Core.Pipeline;
 using Azure.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using RepoUtils;
 
@@ -57,10 +59,10 @@ public static class Example52_ApimAuth
                 .AddConsole();
         });
 
-        // Example: how to use a custom OpenAIClient and configure Azure OpenAI
         var kernel = Kernel.Builder
             .WithLogger(loggerFactory.CreateLogger<IKernel>())
-            .WithAzureTextCompletionService("text-davinci-003", openAIClient)
+            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (parameters) =>
+                new AzureChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, parameters.Logger))
             .Build();
 
         // Load semantic skill defined with prompt templates

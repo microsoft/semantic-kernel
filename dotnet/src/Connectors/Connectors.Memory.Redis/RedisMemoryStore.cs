@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using NRedisStack;
 using NRedisStack.RedisStackCommands;
@@ -180,7 +180,7 @@ public sealed class RedisMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -208,11 +208,11 @@ public sealed class RedisMemoryStore : IMemoryStore
                 yield break;
             }
 
-            Embedding<float> convertedEmbedding = withEmbeddings && document["embedding"].HasValue
+            ReadOnlyMemory<float> convertedEmbedding = withEmbeddings && document["embedding"].HasValue
                 ?
-                new Embedding<float>(MemoryMarshal.Cast<byte, float>((byte[])document["embedding"]!).ToArray())
+                MemoryMarshal.Cast<byte, float>((byte[])document["embedding"]!).ToArray()
                 :
-                Embedding<float>.Empty;
+                ReadOnlyMemory<float>.Empty;
 
             yield return (MemoryRecord.FromJsonMetadata(
                     json: document["metadata"]!,
@@ -223,7 +223,7 @@ public sealed class RedisMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -313,14 +313,14 @@ public sealed class RedisMemoryStore : IMemoryStore
             RedisValue embedding = hashEntries.FirstOrDefault(x => x.Name == "embedding").Value;
             return MemoryRecord.FromJsonMetadata(
                 json: hashEntries.FirstOrDefault(x => x.Name == "metadata").Value!,
-                embedding: embedding.HasValue ? new Embedding<float>(MemoryMarshal.Cast<byte, float>((byte[])embedding!).ToArray()) : Embedding<float>.Empty,
+                embedding: embedding.HasValue ? MemoryMarshal.Cast<byte, float>((byte[])embedding!).ToArray() : ReadOnlyMemory<float>.Empty,
                 key: hashEntries.FirstOrDefault(x => x.Name == "key").Value,
                 timestamp: ParseTimestamp((long?)hashEntries.FirstOrDefault(x => x.Name == "timestamp").Value));
         }
 
         return MemoryRecord.FromJsonMetadata(
             json: hashEntries.FirstOrDefault(x => x.Name == "metadata").Value!,
-            embedding: Embedding<float>.Empty,
+            embedding: ReadOnlyMemory<float>.Empty,
             key: hashEntries.FirstOrDefault(x => x.Name == "key").Value,
             timestamp: ParseTimestamp((long?)hashEntries.FirstOrDefault(x => x.Name == "timestamp").Value));
     }
@@ -331,15 +331,15 @@ public sealed class RedisMemoryStore : IMemoryStore
 
         if (vectorScoreValue.IsNullOrEmpty || !vectorScoreValue.TryParse(out double vectorScore))
         {
-            throw new RedisMemoryStoreException("Invalid or missing vector score value.");
+            throw new SKException("Invalid or missing vector score value.");
         }
 
         return 1 - vectorScore;
     }
 
-    private byte[] ConvertEmbeddingToBytes(Embedding<float> embedding)
+    private byte[] ConvertEmbeddingToBytes(ReadOnlyMemory<float> embedding)
     {
-        return MemoryMarshal.Cast<float, byte>(embedding.AsReadOnlySpan()).ToArray();
+        return MemoryMarshal.AsBytes(embedding.Span).ToArray()
     }
 
     #endregion

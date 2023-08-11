@@ -1,13 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
@@ -28,9 +29,9 @@ public class PineconeMemoryStoreTests
     private readonly string _description2 = "description2";
     private readonly string _description3 = "description3";
 
-    private readonly Embedding<float> _embedding = new(new float[] { 1, 1, 1 });
-    private readonly Embedding<float> _embedding2 = new(new float[] { 2, 2, 2 });
-    private readonly Embedding<float> _embedding3 = new(new float[] { 3, 3, 3 });
+    private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
+    private readonly ReadOnlyMemory<float> _embedding2 = new float[] { 2, 2, 2 };
+    private readonly ReadOnlyMemory<float> _embedding3 = new float[] { 3, 3, 3 };
 
     private readonly Mock<IPineconeClient> _mockPineconeClient;
     private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
@@ -62,13 +63,13 @@ public class PineconeMemoryStoreTests
             .ReturnsAsync(false);
 
         // Act
-        var exception = await Assert.ThrowsAsync<PineconeMemoryException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await this._pineconeMemoryStore.CreateCollectionAsync("test"));
 
         // Assert
         this._mockPineconeClient
             .Verify<Task<bool>>(x => x.DoesIndexExistAsync("test", It.IsAny<CancellationToken>()), Times.Once());
 
-        Assert.Equal(PineconeMemoryException.ErrorCodes.IndexNotReady, exception.ErrorCode);
+        Assert.NotNull(exception);
     }
 
     [Fact]
@@ -221,7 +222,7 @@ public class PineconeMemoryStoreTests
     public async Task TestGetNearestMatchesAsync()
     {
         // Arrange
-        Embedding<float> embedding = new(new float[] { 0.1f, 0.2f });
+        ReadOnlyMemory<float> embedding = new float[] { 0.1f, 0.2f };
 
         List<(PineconeDocument, double)> queryResults = new()
         {
@@ -232,20 +233,20 @@ public class PineconeMemoryStoreTests
                 {
                     { "document_Id", "value1" },
                 },
-                Values = this._embedding.Vector
+                Values = this._embedding
             }, 0.9),
             new(new()
             {
                 Id = this._id2,
                 Metadata = new Dictionary<string, object> { { "document_Id", "value2" } },
-                Values = this._embedding2.Vector,
+                Values = this._embedding2,
             }, 0.5)
         };
 
         this._mockPineconeClient
             .Setup<IAsyncEnumerable<(PineconeDocument, double)>>(x => x.GetMostRelevantAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
@@ -258,7 +259,7 @@ public class PineconeMemoryStoreTests
         // Act
         List<(MemoryRecord, double)> results = await this._pineconeMemoryStore.GetNearestMatchesAsync(
             "indexName",
-            new Embedding<float>(new[] { 0.1f, 0.2f, 0.3f }),
+            new[] { 0.1f, 0.2f, 0.3f },
             2,
             0.5,
             true).ToListAsync();
