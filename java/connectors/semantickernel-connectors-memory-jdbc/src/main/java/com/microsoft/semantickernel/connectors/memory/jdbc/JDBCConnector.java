@@ -14,28 +14,7 @@ import org.sqlite.SQLiteException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-public class JDBCConnector {
-
-    static class DatabaseEntry extends DataEntryBase {
-        private final String metadata;
-        private final String embedding;
-
-        public DatabaseEntry(
-                String key, String metadata, String embedding, ZonedDateTime timestamp) {
-            super(key, timestamp);
-            this.metadata = metadata;
-            this.embedding = embedding;
-        }
-
-        public String getMetadata() {
-            return metadata;
-        }
-
-        public String getEmbedding() {
-            return embedding;
-        }
-    }
-
+public class JDBCConnector implements Connector {
     // Convenience method to format a ZonedDateTime in a format acceptable to SQLite
     private static String formatDatetime(ZonedDateTime datetime) {
         if (datetime == null) return "";
@@ -48,9 +27,9 @@ public class JDBCConnector {
         return ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
-    private static final String COLLECTIONS_TABLE_NAME = "SKCollectionTable";
-    private static final String TABLE_NAME = "SKMemoryTable";
-    private static final String INDEX_NAME = "SKMemoryIndex";
+    protected static final String COLLECTIONS_TABLE_NAME = "SKCollectionTable";
+    protected static final String TABLE_NAME = "SKMemoryTable";
+    protected static final String INDEX_NAME = "SKMemoryIndex";
 
     public Mono<Void> createTableAsync(Connection connection) {
         return Mono.fromRunnable(
@@ -78,7 +57,7 @@ public class JDBCConnector {
                                             + " )";
 
                             String createIndex =
-                                    "CREATE INDEX "
+                                    "CREATE INDEX IF NOT EXISTS "
                                             + INDEX_NAME
                                             + " ON "
                                             + TABLE_NAME

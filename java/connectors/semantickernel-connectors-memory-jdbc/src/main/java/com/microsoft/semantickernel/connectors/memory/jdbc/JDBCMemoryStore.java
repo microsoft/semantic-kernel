@@ -21,8 +21,8 @@ import reactor.util.function.Tuples;
 
 public class JDBCMemoryStore implements MemoryStore {
 
-    private final JDBCConnector dbConnector;
-    private Connection dbConnection;
+    protected Connector dbConnector;
+    protected Connection dbConnection;
 
     public JDBCMemoryStore() {
         this.dbConnector = new JDBCConnector();
@@ -142,7 +142,7 @@ public class JDBCMemoryStore implements MemoryStore {
             @Nonnull String collectionName, @Nonnull String key, boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(key);
-        Mono<JDBCConnector.DatabaseEntry> entry =
+        Mono<DatabaseEntry> entry =
                 this.dbConnector.readAsync(this.dbConnection, collectionName, key);
 
         return entry.hasElement()
@@ -218,13 +218,13 @@ public class JDBCMemoryStore implements MemoryStore {
             boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
-        Mono<List<JDBCConnector.DatabaseEntry>> entries =
+        Mono<List<DatabaseEntry>> entries =
                 this.dbConnector.readAllAsync(this.dbConnection, collectionName);
 
         return entries.flatMap(
                 databaseEntries -> {
                     List<Tuple2<MemoryRecord, Float>> nearestMatches = new ArrayList<>();
-                    for (JDBCConnector.DatabaseEntry entry : databaseEntries) {
+                    for (DatabaseEntry entry : databaseEntries) {
                         if (entry.getEmbedding() == null || entry.getEmbedding().isEmpty()) {
                             continue;
                         }
