@@ -89,13 +89,13 @@ public static class Example15_TextMemorySkill
         return store;
     }
 
-    private static IMemoryStore CreateSampleQdrantMemoryStore()
+    private static IMemoryStore CreateSampleChromaMemoryStore()
     {
         IMemoryStore store = new ChromaMemoryStore(TestConfiguration.Chroma.Endpoint, ConsoleLogger.Logger);
         return store;
     }
 
-    private static IMemoryStore CreateSampleChromaMemoryStore()
+    private static IMemoryStore CreateSampleQdrantMemoryStore()
     {
         IMemoryStore store = new QdrantMemoryStore(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.Logger);
         return store;
