@@ -11,11 +11,11 @@ using RepoUtils;
 #pragma warning disable RCS1214 // Unnecessary interpolated string.
 
 // ReSharper disable once InconsistentNaming
-public static class Example54_FunctionHooks
+public static class Example54_FunctionHandlers
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Using Function Hooks ========");
+        Console.WriteLine("======== Using Function Execution Handlers ========");
 
         string openAIModelId = TestConfiguration.OpenAI.ModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
@@ -37,40 +37,40 @@ public static class Example54_FunctionHooks
 
         var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
 
-        Task MyPreHook(PreExecutionContext executionContext)
+        Task MyPreHandler(PreExecutionContext executionContext)
         {
-            Console.WriteLine($"Pre Hook - Prompt: {executionContext.Prompt}");
+            Console.WriteLine($"Pre Execution Handler - Prompt: {executionContext.Prompt}");
 
             return Task.CompletedTask;
         }
 
-        Task MyCancelledPreHook(PreExecutionContext executionContext)
+        Task MyCancelledPreExecutionHandler(PreExecutionContext executionContext)
         {
-            Console.WriteLine("Pre Hook - Should not trigger");
+            Console.WriteLine("Pre Execution Handler - Should not trigger");
 
             return Task.CompletedTask;
         }
 
-        Task MyPreHook2(PreExecutionContext executionContext)
+        Task MyPreHandler2(PreExecutionContext executionContext)
         {
-            Console.WriteLine($"Pre Hook 2 - Prompt Token: {GPT3Tokenizer.Encode(executionContext.Prompt!).Count}");
+            Console.WriteLine($"Pre Execution Handler 2 - Prompt Token: {GPT3Tokenizer.Encode(executionContext.Prompt!).Count}");
 
             return Task.CompletedTask;
         }
 
-        Task MyPostHook(PostExecutionContext executionContext)
+        Task MyPostExecutionHandler(PostExecutionContext executionContext)
         {
-            Console.WriteLine($"Post Hook - Total Tokens: {executionContext.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
+            Console.WriteLine($"Post Execution Handler - Total Tokens: {executionContext.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
             return Task.CompletedTask;
         }
 
-        excuseFunction.SetPreExecutionHook(MyPreHook);
-        excuseFunction.SetPreExecutionHook(MyPreHook2);
-        var hookToCancel = excuseFunction.SetPreExecutionHook(MyCancelledPreHook);
+        excuseFunction.SetPreExecutionHandler(MyPreHandler);
+        excuseFunction.SetPreExecutionHandler(MyPreHandler2);
+        var HandlerToCancel = excuseFunction.SetPreExecutionHandler(MyCancelledPreExecutionHandler);
 
-        excuseFunction.SetPostExecutionHook(MyPostHook);
+        excuseFunction.SetPostExecutionHandler(MyPostExecutionHandler);
 
-        hookToCancel.Cancel();
+        HandlerToCancel.Cancel();
 
         var result = await excuseFunction.InvokeAsync("I missed the F1 final race");
 

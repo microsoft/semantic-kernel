@@ -9,11 +9,11 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example55_PlanHooks
+public static class Example55_PlanHandlers
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Sequential Planner - Using Step Hooks ========");
+        Console.WriteLine("======== Sequential Planner - Using Step Execution Handlers ========");
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
             .WithAzureTextCompletionService(
@@ -34,24 +34,24 @@ public static class Example55_PlanHooks
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanString());
 
-        plan.SetPreExecutionHook(MyPreHook);
-        plan.SetPostExecutionHook(MyPostHook);
+        plan.SetPreExecutionHandler(MyPreHandler);
+        plan.SetPostExecutionHandler(MyPostHandler);
 
         var result = await kernel.RunAsync(plan);
 
         Console.WriteLine("Result:");
         Console.WriteLine(result.Result);
 
-        Task MyPreHook(PreExecutionContext executionContext)
+        Task MyPreHandler(PreExecutionContext executionContext)
         {
-            Console.WriteLine($"Pre Hook - Prompt: {executionContext.Prompt}");
+            Console.WriteLine($"Pre Execution Handler - Prompt: {executionContext.Prompt}");
 
             return Task.CompletedTask;
         }
 
-        Task MyPostHook(PostExecutionContext executionContext)
+        Task MyPostHandler(PostExecutionContext executionContext)
         {
-            Console.WriteLine($"Post Hook - Total Tokens: {executionContext.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
+            Console.WriteLine($"Post Execution Handler - Total Tokens: {executionContext.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
 
             return Task.CompletedTask;
         }

@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
-/// Context available to the pre-execution hook.
+/// Context available to the pre-execution handler.
 /// </summary>
 public sealed class PreExecutionContext
 {
@@ -19,7 +19,7 @@ public sealed class PreExecutionContext
     }
 
     /// <summary>
-    /// SKContext prior to sending to the LLM.
+    /// Current SKContext prior to executing the function.
     /// </summary>
     public SKContext SKContext { get; }
 

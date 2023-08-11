@@ -122,21 +122,21 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook)
+    public HandlerRegistration<PreExecutionContext> SetPreExecutionHandler(ExecutionHandler<PreExecutionContext> preExecutionHandler)
     {
         // Any new registration will be called before the existing one
-        this._preExecutionHookRequest = new HookRequest<PreExecutionContext>(preHook, this._preExecutionHookRequest);
+        this._preExecutionHandlerRegistration = new HandlerRegistration<PreExecutionContext>(preExecutionHandler, this._preExecutionHandlerRegistration);
 
-        return this._preExecutionHookRequest;
+        return this._preExecutionHandlerRegistration;
     }
 
     /// <inheritdoc/>
-    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook)
+    public HandlerRegistration<PostExecutionContext> SetPostExecutionHandler(ExecutionHandler<PostExecutionContext> postExecutionHandler)
     {
         // Any new registration will be called before the existing one
-        this._postExecutionHookRequest = new HookRequest<PostExecutionContext>(postHook, this._postExecutionHookRequest);
+        this._postExecutionHandlerRegistration = new HandlerRegistration<PostExecutionContext>(postExecutionHandler, this._postExecutionHandlerRegistration);
 
-        return this._postExecutionHookRequest;
+        return this._postExecutionHandlerRegistration;
     }
 
     /// <summary>
@@ -186,8 +186,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     #region private
 
-    private HookRequest<PreExecutionContext>? _preExecutionHookRequest;
-    private HookRequest<PostExecutionContext>? _postExecutionHookRequest;
+    private HandlerRegistration<PreExecutionContext>? _preExecutionHandlerRegistration;
+    private HandlerRegistration<PostExecutionContext>? _postExecutionHandlerRegistration;
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
@@ -229,7 +229,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
 
-            context = await this.CallPreExecutionHook(context, renderedPrompt).ConfigureAwait(false);
+            context = await this.CallPreExecutionHandler(context, renderedPrompt).ConfigureAwait(false);
 
             var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
@@ -238,7 +238,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             context.Variables.Update(completion);
             context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            context = await this.CallPostExecutionHook(context).ConfigureAwait(false);
+            context = await this.CallPostExecutionHandler(context).ConfigureAwait(false);
         }
         catch (AIException ex)
         {
@@ -258,30 +258,30 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return context;
     }
 
-    private async Task<SKContext> CallPreExecutionHook(SKContext context, string renderedPrompt)
+    private async Task<SKContext> CallPreExecutionHandler(SKContext context, string renderedPrompt)
     {
-        if (this._preExecutionHookRequest is not null)
+        if (this._preExecutionHandlerRegistration is not null)
         {
             var preExecutionContext = new PreExecutionContext(context, renderedPrompt);
 
-            await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
+            await this._preExecutionHandlerRegistration.InvokeAsync(preExecutionContext).ConfigureAwait(false);
 
-            // Allow the pre execution hook to update the context variables if needed
+            // Allow the pre execution handler to update the context variables if needed
             context.Variables.Update(preExecutionContext.SKContext.Variables, true);
         }
 
         return context;
     }
 
-    private async Task<SKContext> CallPostExecutionHook(SKContext context)
+    private async Task<SKContext> CallPostExecutionHandler(SKContext context)
     {
-        if (this._postExecutionHookRequest is not null)
+        if (this._postExecutionHandlerRegistration is not null)
         {
             var postExecutionContext = new PostExecutionContext(context);
 
-            await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
+            await this._postExecutionHandlerRegistration.InvokeAsync(postExecutionContext).ConfigureAwait(false);
 
-            // Allow the post execution hook to update the context variables if needed
+            // Allow the post execution handler to update the context variables if needed
             context.Variables.Update(postExecutionContext.SKContext.Variables, true);
         }
 

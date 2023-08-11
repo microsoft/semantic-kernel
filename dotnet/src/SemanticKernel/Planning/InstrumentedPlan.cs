@@ -75,20 +75,20 @@ public sealed class InstrumentedPlan : IPlan
         this._plan.SetDefaultSkillCollection(skills);
 
     /// <summary>
-    /// Used for setting a pre-execution hook to a plan and its children.
+    /// Used for setting a pre-execution handler to a plan and its children.
     /// </summary>
-    /// <param name="preHook">Pre-hook delegate</param>
-    /// <returns>Hook request</returns>
-    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook) =>
-        this._plan.SetPreExecutionHook(preHook);
+    /// <param name="preExecutionHandler">Pre-execution handler delegate</param>
+    /// <returns>Handler registration</returns>
+    public HandlerRegistration<PreExecutionContext> SetPreExecutionHandler(ExecutionHandler<PreExecutionContext> preExecutionHandler) =>
+        this._plan.SetPreExecutionHandler(preExecutionHandler);
 
     /// <summary>
-    /// Used for setting a post-execution hook to a plan and its children.
+    /// Used for setting a post-execution handler to a plan and its children.
     /// </summary>
-    /// <param name="postHook">Post-hook delegate</param>
-    /// <returns>Hook request</returns>
-    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook) =>
-        this._plan.SetPostExecutionHook(postHook);
+    /// <param name="postExecutionHandler">Post-execution handler delegate</param>
+    /// <returns>Handler registration</returns>
+    public HandlerRegistration<PostExecutionContext> SetPostExecutionHandler(ExecutionHandler<PostExecutionContext> postExecutionHandler) =>
+        this._plan.SetPostExecutionHandler(postExecutionHandler);
 
     #region private ================================================================================
 

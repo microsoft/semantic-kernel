@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
-/// Context available to the post-execution hook.
+/// Context available to the post-execution handler.
 /// </summary>
 public sealed class PostExecutionContext
 {
@@ -18,7 +18,7 @@ public sealed class PostExecutionContext
     }
 
     /// <summary>
-    /// SKContext changes after LLM call and prior to returning the result to the caller.
+    /// Current SKContext changes after the function was executed.
     /// </summary>
     public SKContext SKContext { get; }
 }

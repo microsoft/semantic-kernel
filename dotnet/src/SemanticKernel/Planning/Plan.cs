@@ -257,7 +257,7 @@ public sealed class Plan : IPlan
                 renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(functionContext, cancellationToken).ConfigureAwait(false);
             }
 
-            functionContext = await this.CallPreExecutionHook(functionContext, renderedPrompt).ConfigureAwait(false);
+            functionContext = await this.CallPreExecutionHandler(functionContext, renderedPrompt).ConfigureAwait(false);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -267,7 +267,7 @@ public sealed class Plan : IPlan
                     $"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
             }
 
-            result = await this.CallPostExecutionHook(result).ConfigureAwait(false);
+            result = await this.CallPostExecutionHandler(result).ConfigureAwait(false);
 
             var resultValue = result.Result.Trim();
 
@@ -304,12 +304,12 @@ public sealed class Plan : IPlan
         return this;
     }
 
-    private async Task<SKContext> CallPostExecutionHook(SKContext context)
+    private async Task<SKContext> CallPostExecutionHandler(SKContext context)
     {
-        if (this._postExecutionHookRequest is not null)
+        if (this._postExecutionHandlerRegistration is not null)
         {
             var postExecutionContext = new PostExecutionContext(context);
-            await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
+            await this._postExecutionHandlerRegistration.InvokeAsync(postExecutionContext).ConfigureAwait(false);
 
             context.Variables.Update(postExecutionContext.SKContext.Variables);
         }
@@ -317,12 +317,12 @@ public sealed class Plan : IPlan
         return context;
     }
 
-    private async Task<SKContext> CallPreExecutionHook(SKContext context, string? renderedPrompt)
+    private async Task<SKContext> CallPreExecutionHandler(SKContext context, string? renderedPrompt)
     {
-        if (this._preExecutionHookRequest is not null)
+        if (this._preExecutionHandlerRegistration is not null)
         {
             var preExecutionContext = new PreExecutionContext(context, renderedPrompt);
-            await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
+            await this._preExecutionHandlerRegistration.InvokeAsync(preExecutionContext).ConfigureAwait(false);
 
             context.Variables.Update(preExecutionContext.SKContext.Variables);
         }
@@ -398,29 +398,29 @@ public sealed class Plan : IPlan
     }
 
     /// <summary>
-    /// Used for setting a pre-execution hook to a plan and its children.
+    /// Used for setting a pre-execution handler to a plan and its children.
     /// </summary>
-    /// <param name="preHook">Pre-hook delegate</param>
-    /// <returns>Hook request</returns>
-    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook)
+    /// <param name="preExecutionHandler">Pre-execution handler delegate</param>
+    /// <returns>Handler registration</returns>
+    public HandlerRegistration<PreExecutionContext> SetPreExecutionHandler(ExecutionHandler<PreExecutionContext> preExecutionHandler)
     {
         // Any new registration will be called before the existing one
-        this._preExecutionHookRequest = new HookRequest<PreExecutionContext>(preHook, this._preExecutionHookRequest);
+        this._preExecutionHandlerRegistration = new HandlerRegistration<PreExecutionContext>(preExecutionHandler, this._preExecutionHandlerRegistration);
 
-        return this._preExecutionHookRequest;
+        return this._preExecutionHandlerRegistration;
     }
 
     /// <summary>
-    /// Used for setting a post-execution hook to a plan and its children.
+    /// Used for setting a post-execution handler to a plan and its children.
     /// </summary>
-    /// <param name="postHook">Post-hook delegate</param>
-    /// <returns>Hook request</returns>
-    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook)
+    /// <param name="postExecutionHandler">Post-executin handler delegate</param>
+    /// <returns>Handler registration</returns>
+    public HandlerRegistration<PostExecutionContext> SetPostExecutionHandler(ExecutionHandler<PostExecutionContext> postExecutionHandler)
     {
         // Any new registration will be called before the existing one
-        this._postExecutionHookRequest = new HookRequest<PostExecutionContext>(postHook, this._postExecutionHookRequest);
+        this._postExecutionHandlerRegistration = new HandlerRegistration<PostExecutionContext>(postExecutionHandler, this._postExecutionHandlerRegistration);
 
-        return this._postExecutionHookRequest;
+        return this._postExecutionHandlerRegistration;
     }
 
     #endregion ISKFunction implementation
@@ -646,8 +646,8 @@ public sealed class Plan : IPlan
 
     private const string DefaultResultKey = "PLAN.RESULT";
 
-    private HookRequest<PreExecutionContext>? _preExecutionHookRequest;
-    private HookRequest<PostExecutionContext>? _postExecutionHookRequest;
+    private HandlerRegistration<PreExecutionContext>? _preExecutionHandlerRegistration;
+    private HandlerRegistration<PostExecutionContext>? _postExecutionHandlerRegistration;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

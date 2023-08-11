@@ -162,11 +162,11 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         try
         {
-            await this.CallPreExecutionHook(context).ConfigureAwait(false);
+            await this.CallPreExecutionHandler(context).ConfigureAwait(false);
 
             var result = await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
 
-            await this.CallPostExecutionHook(context).ConfigureAwait(false);
+            await this.CallPostExecutionHandler(context).ConfigureAwait(false);
 
             return result;
         }
@@ -179,35 +179,35 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
     }
 
-    private async Task<SKContext> CallPreExecutionHook(SKContext context)
+    private async Task<SKContext> CallPreExecutionHandler(SKContext context)
     {
-        if (this._preExecutionHookRequest is not null)
+        if (this._preExecutionHandlerRegistration is not null)
         {
             var preExecutionContext = new PreExecutionContext(context);
 
-            await this._preExecutionHookRequest.InvokeAsync(preExecutionContext).ConfigureAwait(false);
+            await this._preExecutionHandlerRegistration.InvokeAsync(preExecutionContext).ConfigureAwait(false);
 
-            // Allow the pre execution hook to update the context variables if needed
+            // Allow the pre execution handler to update the context variables if needed
             context.Variables.Update(preExecutionContext.SKContext.Variables, true);
         }
 
         return context;
     }
 
-    private async Task<SKContext> CallPostExecutionHook(SKContext context)
+    private async Task<SKContext> CallPostExecutionHandler(SKContext resultContext)
     {
-        // Post execution hooks will be called only if the function was executed successfully
-        if (this._postExecutionHookRequest is not null)
+        // Post execution handlers will be called only if the function was executed successfully
+        if (this._postExecutionHandlerRegistration is not null)
         {
-            var postExecutionContext = new PostExecutionContext(context);
+            var postExecutionContext = new PostExecutionContext(resultContext);
 
-            await this._postExecutionHookRequest.InvokeAsync(postExecutionContext).ConfigureAwait(false);
+            await this._postExecutionHandlerRegistration.InvokeAsync(postExecutionContext).ConfigureAwait(false);
 
-            // Allow the post execution hook to update the context variables if needed
-            context.Variables.Update(postExecutionContext.SKContext.Variables, true);
+            // Allow the post execution handler to update the context variables if needed
+            resultContext.Variables.Update(postExecutionContext.SKContext.Variables, true);
         }
 
-        return context;
+        return resultContext;
     }
 
     /// <inheritdoc/>
@@ -233,21 +233,21 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook)
+    public HandlerRegistration<PreExecutionContext> SetPreExecutionHandler(ExecutionHandler<PreExecutionContext> preExecutionHandler)
     {
         // Any new registration will be called before the existing one
-        this._preExecutionHookRequest = new HookRequest<PreExecutionContext>(preHook, this._preExecutionHookRequest);
+        this._preExecutionHandlerRegistration = new HandlerRegistration<PreExecutionContext>(preExecutionHandler, this._preExecutionHandlerRegistration);
 
-        return this._preExecutionHookRequest;
+        return this._preExecutionHandlerRegistration;
     }
 
     /// <inheritdoc/>
-    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook)
+    public HandlerRegistration<PostExecutionContext> SetPostExecutionHandler(ExecutionHandler<PostExecutionContext> postExecutionHandler)
     {
         // Any new registration will be called before the existing one
-        this._postExecutionHookRequest = new HookRequest<PostExecutionContext>(postHook, this._postExecutionHookRequest);
+        this._postExecutionHandlerRegistration = new HandlerRegistration<PostExecutionContext>(postExecutionHandler, this._postExecutionHandlerRegistration);
 
-        return this._postExecutionHookRequest;
+        return this._postExecutionHandlerRegistration;
     }
 
     /// <summary>
@@ -912,8 +912,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
 
-    private HookRequest<PreExecutionContext>? _preExecutionHookRequest;
-    private HookRequest<PostExecutionContext>? _postExecutionHookRequest;
+    private HandlerRegistration<PreExecutionContext>? _preExecutionHandlerRegistration;
+    private HandlerRegistration<PostExecutionContext>? _postExecutionHandlerRegistration;
 
     #endregion
 }

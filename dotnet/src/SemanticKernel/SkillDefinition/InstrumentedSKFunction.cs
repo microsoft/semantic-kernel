@@ -89,12 +89,12 @@ public sealed class InstrumentedSKFunction : ISKFunction
         this._function.SetDefaultSkillCollection(skills);
 
     /// <inheritdoc/>
-    public HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook) =>
-        this._function.SetPreExecutionHook(preHook);
+    public HandlerRegistration<PreExecutionContext> SetPreExecutionHandler(ExecutionHandler<PreExecutionContext> preExecutionHandler) =>
+        this._function.SetPreExecutionHandler(preExecutionHandler);
 
     /// <inheritdoc/>
-    public HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook) =>
-        this._function.SetPostExecutionHook(postHook);
+    public HandlerRegistration<PostExecutionContext> SetPostExecutionHandler(ExecutionHandler<PostExecutionContext> postExecutionHandler) =>
+        this._function.SetPostExecutionHandler(postExecutionHandler);
 
     #region private ================================================================================
 

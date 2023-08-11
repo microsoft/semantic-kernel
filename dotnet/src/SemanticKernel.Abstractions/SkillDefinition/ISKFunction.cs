@@ -82,18 +82,18 @@ public interface ISKFunction
     ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
 
     /// <summary>
-    /// Used for setting a pre-execution hook to a function.
+    /// Used for setting a pre-execution handler to a function.
     /// </summary>
-    /// <remarks>Using more than once in the same function will override the previous pre-execution hook, avoid overriding when possible.</remarks>
-    /// <param name="preHook">Pre-hook delegate</param>
-    /// <returns>Self instance</returns>
-    HookRequest<PreExecutionContext> SetPreExecutionHook(ExecutionHook<PreExecutionContext> preHook);
+    /// <remarks>Using more than once in the same function will override the previous pre-execution handler, avoid overriding when possible.</remarks>
+    /// <param name="preExecutionHandler">Pre-execution handler delegate</param>
+    /// <returns>Pre-execution handler registration</returns>
+    HandlerRegistration<PreExecutionContext> SetPreExecutionHandler(ExecutionHandler<PreExecutionContext> preExecutionHandler);
 
     /// <summary>
-    /// Used for setting a post-execution hook to a function.
+    /// Used for setting a post-execution handler to a function.
     /// </summary>
-    /// <remarks>Using more than once in the same function will override the previous post-execution hook, avoid overriding when possible.</remarks>
-    /// <param name="postHook">Post-hook delegate</param>
-    /// <returns>Self instance</returns>
-    HookRequest<PostExecutionContext> SetPostExecutionHook(ExecutionHook<PostExecutionContext> postHook);
+    /// <remarks>Using more than once in the same function will override the previous post-execution handler, avoid overriding when possible.</remarks>
+    /// <param name="postExecutionHandler">Post-execution handler delegate</param>
+    /// <returns>Post-execution handler registration</returns>
+    HandlerRegistration<PostExecutionContext> SetPostExecutionHandler(ExecutionHandler<PostExecutionContext> postExecutionHandler);
 }

@@ -4,4 +4,4 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
-public delegate Task ExecutionHook<TExecutionContext>(TExecutionContext context);
+public delegate Task ExecutionHandler<TExecutionContext>(TExecutionContext context);
