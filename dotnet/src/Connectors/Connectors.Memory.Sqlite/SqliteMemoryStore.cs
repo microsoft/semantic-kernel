@@ -9,10 +9,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 
@@ -120,7 +120,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -139,11 +139,11 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             if (record != null)
             {
                 double similarity = embedding
-                    .AsReadOnlySpan()
-                    .CosineSimilarity(record.Embedding.AsReadOnlySpan());
+                    .Span
+                    .CosineSimilarity(record.Embedding.Span);
                 if (similarity >= minRelevanceScore)
                 {
-                    var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, Embedding<float>.Empty, record.Key, record.Timestamp);
+                    var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, ReadOnlyMemory<float>.Empty, record.Key, record.Timestamp);
                     embeddings.Add(new(entry, similarity));
                 }
             }
@@ -158,7 +158,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -236,7 +236,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
 
         await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
         {
-            Embedding<float>? vector = JsonSerializer.Deserialize<Embedding<float>>(dbEntry.EmbeddingString);
+            ReadOnlyMemory<float> vector = JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, s_jsonSerializerOptions);
 
             var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
 
@@ -254,7 +254,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
+            embedding: JsonSerializer.Serialize(record.Embedding, s_jsonSerializerOptions),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -264,7 +264,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
+            embedding: JsonSerializer.Serialize(record.Embedding, s_jsonSerializerOptions),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -285,16 +285,25 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         {
             return MemoryRecord.FromJsonMetadata(
                 json: entry.Value.MetadataString,
-                JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
+                JsonSerializer.Deserialize<ReadOnlyMemory<float>>(entry.Value.EmbeddingString, s_jsonSerializerOptions),
                 entry.Value.Key,
                 ParseTimestamp(entry.Value.Timestamp));
         }
 
         return MemoryRecord.FromJsonMetadata(
             json: entry.Value.MetadataString,
-            Embedding<float>.Empty,
+            ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
+    }
+
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
+
+    private static JsonSerializerOptions CreateSerializerOptions()
+    {
+        var jso = new JsonSerializerOptions();
+        jso.Converters.Add(new ReadOnlyMemoryConverter());
+        return jso;
     }
 
     #endregion

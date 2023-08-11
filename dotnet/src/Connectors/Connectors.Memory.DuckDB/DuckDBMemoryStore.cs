@@ -9,10 +9,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
 
@@ -141,7 +141,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -160,11 +160,11 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
             if (record != null)
             {
                 double similarity = embedding
-                    .AsReadOnlySpan()
-                    .CosineSimilarity(record.Embedding.AsReadOnlySpan());
+                    .Span
+                    .CosineSimilarity(record.Embedding.Span);
                 if (similarity >= minRelevanceScore)
                 {
-                    var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, Embedding<float>.Empty, record.Key, record.Timestamp);
+                    var entry = withEmbeddings ? record : MemoryRecord.FromMetadata(record.Metadata, ReadOnlyMemory<float>.Empty, record.Key, record.Timestamp);
                     embeddings.Add(new(entry, similarity));
                 }
             }
@@ -179,7 +179,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -285,7 +285,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
         {
             var dbEntryEmbeddingString = dbEntry.EmbeddingString;
-            Embedding<float>? vector = JsonSerializer.Deserialize<Embedding<float>>(dbEntryEmbeddingString);
+            ReadOnlyMemory<float> vector = JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntryEmbeddingString, s_jsonSerializerOptions);
 
             var record = MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp));
 
@@ -301,7 +301,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
             collection: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding),
+            embedding: JsonSerializer.Serialize(record.Embedding, s_jsonSerializerOptions),
             timestamp: ToTimestampString(record.Timestamp),
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -322,16 +322,25 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         {
             return MemoryRecord.FromJsonMetadata(
                 json: entry.Value.MetadataString,
-                JsonSerializer.Deserialize<Embedding<float>>(entry.Value.EmbeddingString),
+                JsonSerializer.Deserialize<ReadOnlyMemory<float>>(entry.Value.EmbeddingString, s_jsonSerializerOptions),
                 entry.Value.Key,
                 ParseTimestamp(entry.Value.Timestamp));
         }
 
         return MemoryRecord.FromJsonMetadata(
             json: entry.Value.MetadataString,
-            Embedding<float>.Empty,
+            ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
+    }
+
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
+
+    private static JsonSerializerOptions CreateSerializerOptions()
+    {
+        var jso = new JsonSerializerOptions();
+        jso.Converters.Add(new ReadOnlyMemoryConverter());
+        return jso;
     }
 
     #endregion

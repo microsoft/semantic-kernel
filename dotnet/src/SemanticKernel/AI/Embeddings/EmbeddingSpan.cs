@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.AI.Embeddings;
 /// A view of a vector that allows for low-level, optimized, read-write mathematical operations.
 /// </summary>
 /// <typeparam name="TEmbedding">The unmanaged data type (<see cref="float"/>, <see cref="double"/> currently supported).</typeparam>
+[Obsolete("This class is obsolete and will be removed in a future release. Please use ReadOnlyMemory<TEmbedding> instead.")]
 public readonly ref struct EmbeddingSpan<TEmbedding>
     where TEmbedding : unmanaged
 {

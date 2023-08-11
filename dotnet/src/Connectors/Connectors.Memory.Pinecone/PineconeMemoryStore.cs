@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -8,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -509,7 +509,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -529,7 +529,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesFromNamespaceAsync(
         string indexName,
         string indexNamespace,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -537,7 +537,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         IAsyncEnumerable<(PineconeDocument, double)> results = this._pineconeClient.GetMostRelevantAsync(
             indexName,
-            embedding.Vector,
+            embedding,
             minRelevanceScore,
             limit,
             withEmbeddings,
@@ -560,7 +560,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <param name="cancellationToken"></param>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
@@ -578,7 +578,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     public async Task<(MemoryRecord, double)?> GetNearestMatchFromNamespaceAsync(
         string indexName,
         string indexNamespace,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
@@ -600,7 +600,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesWithFilterAsync(
         string indexName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         Dictionary<string, object> filter,
         double minRelevanceScore = 0D,
@@ -610,7 +610,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         IAsyncEnumerable<(PineconeDocument, double)> results = this._pineconeClient.GetMostRelevantAsync(
             indexName,
-            embedding.Vector,
+            embedding,
             minRelevanceScore,
             limit,
             withEmbeddings,

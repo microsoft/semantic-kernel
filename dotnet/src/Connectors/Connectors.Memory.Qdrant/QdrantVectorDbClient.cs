@@ -112,7 +112,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             yield return new QdrantVectorRecord(
                 pointId: record.Id,
-                embedding: record.Vector ?? Array.Empty<float>(),
+                embedding: record.Vector ?? default,
                 record.Payload,
                 tags: null);
         }
@@ -159,7 +159,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         var record = new QdrantVectorRecord(
             pointId: point.Id,
-            embedding: point.Vector ?? Array.Empty<float>(),
+            embedding: point.Vector,
             payload: point.Payload,
             tags: null);
         this._logger.LogDebug("Vector found}");
@@ -272,7 +272,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async IAsyncEnumerable<(QdrantVectorRecord, double)> FindNearestInCollectionAsync(
         string collectionName,
-        IEnumerable<float> target,
+        ReadOnlyMemory<float> target,
         double threshold,
         int top = 1,
         bool withVectors = false,
@@ -323,7 +323,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             var record = new QdrantVectorRecord(
                 pointId: v.Id,
-                embedding: v.Vector ?? Array.Empty<float>(),
+                embedding: v.Vector,
                 payload: v.Payload);
 
             result.Add((record, v.Score ?? 0.0));

@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -48,7 +47,7 @@ public abstract class OpenAIClientBase
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of text embeddings</returns>
     /// <exception cref="AIException">AIException thrown during the request.</exception>
-    private protected async Task<IList<Embedding<float>>> ExecuteTextEmbeddingRequestAsync(
+    private protected async Task<IList<ReadOnlyMemory<float>>> ExecuteTextEmbeddingRequestAsync(
         string url,
         string requestBody,
         CancellationToken cancellationToken = default)
@@ -61,7 +60,7 @@ public abstract class OpenAIClientBase
                 "Embeddings not found");
         }
 
-        return result.Embeddings.Select(e => new Embedding<float>(e.Values, transferOwnership: true)).ToList();
+        return result.Embeddings.Select(e => e.Values).ToList();
     }
 
     /// <summary>

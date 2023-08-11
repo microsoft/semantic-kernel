@@ -11,7 +11,6 @@ using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
@@ -160,7 +159,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
@@ -172,7 +171,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,

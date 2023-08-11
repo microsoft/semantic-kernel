@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
@@ -27,7 +26,7 @@ public class QdrantMemoryStoreTests3
     private readonly string _id = "Id";
     private readonly string _text = "text";
     private readonly string _description = "description";
-    private readonly Embedding<float> _embedding = new(new float[] { 1, 1, 1 });
+    private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
     private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
 
     [Fact]
@@ -38,7 +37,7 @@ public class QdrantMemoryStoreTests3
         mockQdrantClient
             .Setup<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
@@ -73,7 +72,7 @@ public class QdrantMemoryStoreTests3
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 1,
                 false,
@@ -82,7 +81,7 @@ public class QdrantMemoryStoreTests3
             Times.Once());
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 1,
                 true,
@@ -91,7 +90,7 @@ public class QdrantMemoryStoreTests3
             Times.Once());
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 3,
                 false,
@@ -100,7 +99,7 @@ public class QdrantMemoryStoreTests3
             Times.Once());
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 3,
                 true,
@@ -117,7 +116,7 @@ public class QdrantMemoryStoreTests3
         mockQdrantClient
             .Setup<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
@@ -136,7 +135,7 @@ public class QdrantMemoryStoreTests3
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
@@ -162,14 +161,14 @@ public class QdrantMemoryStoreTests3
 
         var qdrantVectorRecord = QdrantVectorRecord.FromJsonMetadata(
             memoryRecord.Key,
-            memoryRecord.Embedding.Vector,
+            memoryRecord.Embedding,
             memoryRecord.GetSerializedMetadata());
 
         var mockQdrantClient = new Mock<IQdrantVectorDbClient>();
         mockQdrantClient
             .Setup<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
@@ -188,7 +187,7 @@ public class QdrantMemoryStoreTests3
         // Assert
         mockQdrantClient.Verify<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),
@@ -199,7 +198,7 @@ public class QdrantMemoryStoreTests3
         Assert.Equal(this._id, similarityResult.Value.Item1.Metadata.Id);
         Assert.Equal(this._text, similarityResult.Value.Item1.Metadata.Text);
         Assert.Equal(this._description, similarityResult.Value.Item1.Metadata.Description);
-        Assert.Equal(this._embedding.Vector, similarityResult.Value.Item1.Embedding.Vector);
+        Assert.True(this._embedding.Span.SequenceEqual(similarityResult.Value.Item1.Embedding.Span));
         Assert.Equal(0.5, similarityResult.Value.Item2);
     }
 
@@ -211,7 +210,7 @@ public class QdrantMemoryStoreTests3
         mockQdrantClient
             .Setup<IAsyncEnumerable<(QdrantVectorRecord, double)>>(x => x.FindNearestInCollectionAsync(
                 It.IsAny<string>(),
-                It.IsAny<IEnumerable<float>>(),
+                It.IsAny<ReadOnlyMemory<float>>(),
                 It.IsAny<double>(),
                 It.IsAny<int>(),
                 It.IsAny<bool>(),

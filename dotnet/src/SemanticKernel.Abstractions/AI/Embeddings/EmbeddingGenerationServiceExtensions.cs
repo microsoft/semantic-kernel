@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ public static class EmbeddingGenerationExtensions
     /// <param name="value">A value from which an <see cref="Embedding{TEmbedding}"/> will be generated.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of <see cref="Embedding{TEmbedding}"/> structs representing the input <paramref name="value"/>.</returns>
-    public static async Task<Embedding<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>
+    public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>
         (this IEmbeddingGeneration<TValue, TEmbedding> generator, TValue value, CancellationToken cancellationToken = default)
         where TEmbedding : unmanaged
     {

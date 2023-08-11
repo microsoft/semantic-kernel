@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,7 +60,7 @@ public interface IPineconeClient
     /// <param name="cancellationToken">Cancellation token.</param>
     IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
         string indexName,
-        IEnumerable<float> vector,
+        ReadOnlyMemory<float> vector,
         double threshold,
         int topK,
         bool includeValues,

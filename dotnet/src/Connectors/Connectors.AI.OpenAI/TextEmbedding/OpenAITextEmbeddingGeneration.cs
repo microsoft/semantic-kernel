@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -39,7 +40,7 @@ public sealed class OpenAITextEmbeddingGeneration : OpenAIClientBase, ITextEmbed
     /// <param name="data">List of strings to generate embeddings for</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
-    public Task<IList<Embedding<float>>> GenerateEmbeddingsAsync(
+    public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
