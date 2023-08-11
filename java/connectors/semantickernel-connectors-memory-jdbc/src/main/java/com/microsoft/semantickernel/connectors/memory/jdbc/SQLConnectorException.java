@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.sqlite;
+package com.microsoft.semantickernel.connectors.memory.jdbc;
 
 import com.microsoft.semantickernel.SKException;
 

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
@@ -11,10 +10,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
-
-    <name>Semantic Kernel SQLite Memory Connector</name>
-    <description>Defines connector for SQLite to be used with the Semantic Kernel</description>
+    <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
 
     <dependencies>
         <dependency>
@@ -63,11 +59,10 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
-            <version>0.2.8-alpha-SNAPSHOT</version>
-            <scope>compile</scope>
+            <artifactId>semantickernel-api</artifactId>
         </dependency>
 
     </dependencies>
+
 
 </project>

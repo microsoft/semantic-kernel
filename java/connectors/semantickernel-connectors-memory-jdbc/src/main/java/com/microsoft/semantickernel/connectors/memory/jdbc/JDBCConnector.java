@@ -1,14 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.sqlite;
+package com.microsoft.semantickernel.connectors.memory.jdbc;
 
 import com.microsoft.semantickernel.memory.DataEntryBase;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -18,7 +14,7 @@ import org.sqlite.SQLiteException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-public class Database {
+public class JDBCConnector {
 
     static class DatabaseEntry extends DataEntryBase {
         private final String metadata;
