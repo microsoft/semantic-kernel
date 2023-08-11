@@ -53,12 +53,6 @@ public class AIException extends SKException {
         return errorCode;
     }
 
-    /** Translate the error code into a default message */
-    private static String getDefaultMessage(
-            @Nonnull ErrorCodes errorCode, @Nullable String message) {
-        return String.format("%s: %s", errorCode.getMessage(), message);
-    }
-
     /** Error codes */
     public enum ErrorCodes {
         /** Unknown error. */

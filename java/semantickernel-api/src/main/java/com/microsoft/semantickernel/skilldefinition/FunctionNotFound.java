@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.skilldefinition;
 
 import com.microsoft.semantickernel.SKException;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class FunctionNotFound extends SKException {
 
@@ -12,11 +13,11 @@ public class FunctionNotFound extends SKException {
     this(errorCodes, null, null);
   }
 
-  public FunctionNotFound(@Nonnull ErrorCodes errorCodes, String functionName) {
+  public FunctionNotFound(@Nonnull ErrorCodes errorCodes, @Nullable String functionName) {
     this(errorCodes, functionName, null);
   }
 
-  public FunctionNotFound(@Nonnull ErrorCodes errorCodes, String functionName, Throwable cause) {
+  public FunctionNotFound(@Nonnull ErrorCodes errorCodes, @Nullable String functionName, @Nullable Throwable cause) {
       super(formatDefaultMessage(errorCodes.getMessage(), functionName), cause);
       this.errorCode = errorCodes;
   }

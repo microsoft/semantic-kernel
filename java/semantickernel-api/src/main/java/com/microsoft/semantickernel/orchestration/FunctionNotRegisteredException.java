@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.microsoft.semantickernel.SKException;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class FunctionNotRegisteredException extends SKException {
 
@@ -12,11 +13,11 @@ public class FunctionNotRegisteredException extends SKException {
   public FunctionNotRegisteredException(@Nonnull ErrorCodes errorCode) {
     this(errorCode, null);
   }
-  public FunctionNotRegisteredException(@Nonnull ErrorCodes errorCode, String name) {
+  public FunctionNotRegisteredException(@Nonnull ErrorCodes errorCode, @Nullable String name) {
     this(errorCode, name, null);
   }
 
-  public FunctionNotRegisteredException(@Nonnull ErrorCodes errorCode, String name, Throwable cause) {
+  public FunctionNotRegisteredException(@Nonnull ErrorCodes errorCode, @Nullable String name, @Nullable Throwable cause) {
     super(formatDefaultMessage(errorCode, name), cause);
     this.errorCode = errorCode;
   }

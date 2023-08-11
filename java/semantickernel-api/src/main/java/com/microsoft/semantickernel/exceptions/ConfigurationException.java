@@ -30,12 +30,6 @@ public class ConfigurationException extends SKCheckedException {
         return errorCode;
     }
 
-    /* Translate the error code into a default message */
-    private static String getDefaultMessage(
-            @Nonnull ErrorCodes errorCode, @Nullable String message) {
-        return String.format("%s: %s", errorCode.getMessage(), message);
-    }
-
     public enum ErrorCodes {
         UnknownError("Unknown error"),
 

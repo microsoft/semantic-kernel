@@ -2,20 +2,22 @@
 package com.microsoft.semantickernel.exceptions;
 
 import com.microsoft.semantickernel.SKException;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class SkillsNotFoundException extends SKException {
 
     private final ErrorCodes errorCode;
 
-    public SkillsNotFoundException(ErrorCodes errorCodes) {
+    public SkillsNotFoundException(@Nonnull ErrorCodes errorCodes) {
         this(errorCodes, null, null);
     }
 
-    public SkillsNotFoundException(ErrorCodes errorCodes, String message) {
+    public SkillsNotFoundException(@Nonnull ErrorCodes errorCodes, @Nullable String message) {
         this(errorCodes, message, null);
     }
 
-    public SkillsNotFoundException(ErrorCodes errorCodes, String message, Throwable cause) {
+    public SkillsNotFoundException(@Nonnull ErrorCodes errorCodes, @Nullable String message, @Nullable Throwable cause) {
         super(formatDefaultMessage(errorCodes.getMessage(), message), cause);
         this.errorCode = errorCodes;
     }
