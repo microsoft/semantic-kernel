@@ -190,6 +190,19 @@ public class MultiTextCompletion : ITextCompletion
             cancellationToken,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
+
+        // Start the analysis task
+        Task.Factory.StartNew(
+            async () =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await this.AnalyzeDataAsync(cancellationToken).ConfigureAwait(false);
+                }
+            },
+            cancellationToken,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
     }
 
     /// <summary>

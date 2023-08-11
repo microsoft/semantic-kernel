@@ -465,9 +465,10 @@ RESPONSE IS VALID? (true/false):
             logger?.LogTrace("Found {0} tests", multiCompletionAnalysis.Tests.Count);
             multiCompletionAnalysis.Tests.AddRange(tests);
             bool needEvaluate = (this.EnableTestEvaluations)
+                                && multiCompletionAnalysis.Tests.Count > 0
                                 && (DateTime.Now - multiCompletionAnalysis.EvaluationTimestamp) > this.EvaluationPeriod
                                 && multiCompletionAnalysis.OriginalTests.Count == 0
-                                || (DateTime.Now - multiCompletionAnalysis.TestTimestamp) > this.TestsPeriod;
+                                || (DateTime.Now - multiCompletionAnalysis.TestTimestamp) < this.TestsPeriod;
             if (needEvaluate)
             {
                 multiCompletionAnalysis.EvaluationTimestamp = DateTime.Now;
@@ -549,11 +550,12 @@ RESPONSE IS VALID? (true/false):
             multiCompletionAnalysis.Evaluations.AddRange(currentEvaluations);
             bool needSuggestion = (this.EnableSuggestion
                                    && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings))
+                                  && multiCompletionAnalysis.Evaluations.Count > 0
                                   && (DateTime.Now - multiCompletionAnalysis.SuggestionTimestamp) > this.SuggestionPeriod
                                   && multiCompletionAnalysis.Tests.Count == 0
                                   || (DateTime.Now - multiCompletionAnalysis.EvaluationTimestamp) < this.EvaluationPeriod
                                   && multiCompletionAnalysis.OriginalTests.Count == 0
-                                  || (DateTime.Now - multiCompletionAnalysis.TestTimestamp) > this.TestsPeriod;
+                                  || (DateTime.Now - multiCompletionAnalysis.TestTimestamp) < this.TestsPeriod;
             if (needSuggestion)
             {
                 multiCompletionAnalysis.SuggestionTimestamp = DateTime.Now;

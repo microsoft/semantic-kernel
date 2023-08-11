@@ -82,7 +82,10 @@ public class NamedTextCompletion
 
     public decimal GetCost(string text, string result)
     {
-        return this.CostPerRequest + (this.CostPer1000Token ?? 0) * (this.TokenCountFunc ?? (s => 0))(text + result) / 1000;
+        var tokenCount = (this.TokenCountFunc ?? (s => 0))(text + result);
+        decimal tokenCost = (this.CostPer1000Token ?? 0) * tokenCount / 1000;
+        var toReturn = this.CostPerRequest + tokenCost;
+        return toReturn;
     }
 
     /// <summary>
