@@ -339,7 +339,7 @@ public sealed class RedisMemoryStore : IMemoryStore
 
     private byte[] ConvertEmbeddingToBytes(ReadOnlyMemory<float> embedding)
     {
-        return MemoryMarshal.AsBytes(embedding.Span).ToArray()
+        return MemoryMarshal.AsBytes(embedding.Span).ToArray();
     }
 
     #endregion
