@@ -25,11 +25,11 @@ jobs:
         fail-fast: false
         matrix:
           include:
-          - { dotnet: '6.0-jammy', os: 'ubuntu', configuration: Debug, integration-tests: true }
+          - { dotnet: '6.0-jammy', os: 'ubuntu', configuration: Debug }
           - { dotnet: '7.0-jammy', os: 'ubuntu', configuration: Release }
           - { dotnet: '8.0-preview-jammy', os: 'ubuntu', configuration: Release }
           - { dotnet: '6.0', os: 'windows', configuration: Release }
-          - { dotnet: '7.0', os: 'windows', configuration: Debug }
+          - { dotnet: '7.0', os: 'windows', configuration: Debug, integration-tests: true }
           - { dotnet: '8.0-preview', os: 'windows', configuration: Release }
           
     runs-on: ubuntu-latest
