@@ -35,7 +35,7 @@ public static class Example15_TextMemorySkill
         // INSTRUCTIONS: uncomment one of the following lines to select the memory store to use. //
         ///////////////////////////////////////////////////////////////////////////////////////////
 
-        // Volatile MemoryStore - an in-memory store that is not persisted
+        // Volatile Memory Store - an in-memory store that is not persisted
         store = new VolatileMemoryStore();
 
         // Sqlite Memory Store - a file-based store that persists data in a Sqlite database
@@ -44,22 +44,22 @@ public static class Example15_TextMemorySkill
         // DuckDB Memory Store - a file-based store that persists data in a DuckDB database
         // store = await CreateSampleDuckDbMemoryStoreAsync();
 
-        // Azure Congnitive Search MemoryStore - a store that persists data in a hosted Azure Cognitive Search database
+        // Azure Cognitive Search Memory Store - a store that persists data in a hosted Azure Cognitive Search database
         // store = CreateSampleAzureCognitiveSearchMemoryStore();
 
-        // Qdrant MemoryStore - a store that persists data in a local or remote Qdrant database
+        // Qdrant Memory Store - a store that persists data in a local or remote Qdrant database
         // store = CreateSampleQdrantMemoryStore();
 
-        // Chroma MemoryStore
+        // Chroma Memory Store
         // store = CreateSampleChromaMemoryStore();
 
-        // Pinecone MemoryStore - a store that persists data in a hosted Pinecone database
+        // Pinecone Memory Store - a store that persists data in a hosted Pinecone database
         // store = CreateSamplePineconeMemoryStore();
 
         // Weaviate Memory Store
         // store = CreateSampleWeaviateMemoryStore();
 
-        // Redis MemoryStore
+        // Redis Memory Store
         // store = await CreateSampleRedisMemoryStoreAsync();
 
         // Postgres Memory Store
