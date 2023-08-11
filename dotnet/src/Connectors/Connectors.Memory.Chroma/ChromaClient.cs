@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
@@ -41,12 +42,12 @@ public class ChromaClient : IChromaClient
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
     /// <param name="logger">Optional logger instance.</param>
-    /// <exception cref="ChromaClientException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
+    /// <exception cref="SKException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
     public ChromaClient(HttpClient httpClient, string? endpoint = null, ILogger? logger = null)
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new ChromaClientException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
         this._httpClient = httpClient;
@@ -183,7 +184,7 @@ public class ChromaClient : IChromaClient
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "{0} {1} operation failed: {2}, {3}", request.Method.Method, operationName, e.Message, responseContent);
-            throw new ChromaClientException($"{request.Method.Method} {operationName} operation failed: {e.Message}, {responseContent}", e);
+            throw new SKException($"{request.Method.Method} {operationName} operation failed: {e.Message}, {responseContent}", e);
         }
 
         return (response, responseContent);

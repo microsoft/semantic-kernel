@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -100,7 +100,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord);
+            throw new SKException("Failed to convert memory record to Qdrant vector record");
         }
 
         try
@@ -112,9 +112,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
-                ex);
+            throw new SKException("Failed to upsert vectors", ex);
         }
 
         return vectorData.PointId;
@@ -136,9 +134,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToUpsertVectors,
-                ex);
+            throw new SKException("Failed to upsert vectors", ex);
         }
 
         foreach (var v in vectorData)
@@ -162,15 +158,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
-                ex);
-        }
-        catch (MemoryException ex)
-        {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
-                ex);
+            throw new SKException("Failed to get vector data", ex);
         }
     }
 
@@ -196,7 +184,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Memory record</returns>
-    /// <exception cref="QdrantMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async Task<MemoryRecord?> GetWithPointIdAsync(string collectionName, string pointId, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
@@ -215,15 +203,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToGetVectorData,
-                ex);
-        }
-        catch (MemoryException ex)
-        {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToConvertQdrantVectorRecordToMemoryRecord,
-                ex);
+            throw new SKException("Failed to get vector data", ex);
         }
     }
 
@@ -262,9 +242,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                ex);
+            throw new SKException("Failed to remove vector data", ex);
         }
     }
 
@@ -280,7 +258,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointId">The unique indexed ID associated with the Qdrant vector record to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="QdrantMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async Task RemoveWithPointIdAsync(string collectionName, string pointId, CancellationToken cancellationToken = default)
     {
         try
@@ -289,9 +267,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                ex);
+            throw new SKException("Failed to remove vector data", ex);
         }
     }
 
@@ -301,7 +277,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
     /// <param name="pointIds">The unique indexed IDs associated with the Qdrant vector records to remove.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <exception cref="QdrantMemoryException"></exception>
+    /// <exception cref="SKException"></exception>
     public async Task RemoveWithPointIdBatchAsync(string collectionName, IEnumerable<string> pointIds, CancellationToken cancellationToken = default)
     {
         try
@@ -310,9 +286,7 @@ public class QdrantMemoryStore : IMemoryStore
         }
         catch (HttpRequestException ex)
         {
-            throw new QdrantMemoryException(
-                QdrantMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                ex);
+            throw new SKException("Failed to remove vector data", ex);
         }
     }
 
@@ -439,7 +413,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         if (vectorData == null)
         {
-            throw new QdrantMemoryException(QdrantMemoryException.ErrorCodes.FailedToConvertMemoryRecordToQdrantVectorRecord);
+            throw new SKException("Failed to convert memory record to Qdrant vector record");
         }
 
         return vectorData;

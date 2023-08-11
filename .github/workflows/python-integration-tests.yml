@@ -8,12 +8,8 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ["main"]
-    paths:
-      - "python/**"
   merge_group:
     branches: ["main"]
-    paths:
-      - "python/**"
   schedule:
     - cron: "0 0 * * *" # Run at midnight UTC daily
 
@@ -76,7 +72,7 @@ jobs:
           cd python
           poetry run pytest ./tests/integration/completions/test_azure_oai_chat_service.py -v
           poetry run pytest ./tests/integration/completions/test_oai_chat_service.py -v
-          poetry run pytest ./tests/integration/completions/test_hf_local_test_completions.py -v
+          poetry run pytest ./tests/integration/completions/test_hf_local_text_completions.py -v
           poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
           poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
           poetry run pytest ./tests/integration/planning -v
@@ -97,6 +93,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          
       - name: Install dependencies with hnswlib native disabled
         if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
         run: |
@@ -104,12 +101,14 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
           cd python && poetry install
+          
       - name: Install dependencies with hnswlib native enabled
         if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
           cd python && poetry install
+          
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -139,6 +138,7 @@ jobs:
           echo "Test Output<<$EOF" >> "$GITHUB_OUTPUT"
           echo "$(poetry run pytest ./tests/integration)" >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
+          
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
         if: always()
@@ -149,3 +149,15 @@ jobs:
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
           overwrite: "{title: ` ${{ github.event_name }} ${{ steps.run_tests.outcome }}: ${{ env.date }} - ${{ matrix.python-version }} on ${{ matrix.os }}`, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n${{ toJson(steps.run_tests.outputs) }}`}"
+
+  # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
+  python-integration-tests-check:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [python-merge-gate, python-integration-tests]
+    steps:
+     - name: Fail workflow if tests failed
+       if: contains(join(needs.*.result, ','), 'failed')
+       uses: actions/github-script@v6
+       with:
+         script: core.setFailed('Integration Tests Failed!')
