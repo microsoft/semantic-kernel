@@ -85,12 +85,12 @@ simply output the final script below without any additional explanations.
     SKName("GetAnswerForGameQuestion"),
     Description("Answers questions about game's data and its players around engagement, usage, time spent and game analytics")]
     public async Task<string> GetAnswerForGameQuestionAsync(
-    [Description("The question related to the provided inline data.")]
-            string question,
-    SKContext context)
+        [Description("The question related to the provided inline data.")]
+        string question,
+        SKContext context)
     {
         StringBuilder stringBuilder = new();
-        var memories = _memory.SearchAsync("TitleID-Reports", question, limit: 2, minRelevanceScore: 0.65);
+        IAsyncEnumerable<MemoryQueryResult> memories = _memory.SearchAsync("TitleID-Reports", question, limit: 2, minRelevanceScore: 0.65);
         int idx = 1;
         await foreach (MemoryQueryResult memory in memories)
         {
