@@ -51,10 +51,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Connectors\MultiConnector\VettingSequentialPlan_SummarizeSkill_Summarize.json">
+    <None Update="Connectors\MultiConnector\Texts\Communication_hard.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Connectors\MultiConnector\VettingSequentialPlan_SummarizeSkill.json">
+    <None Update="Connectors\MultiConnector\Texts\Communication_medium.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Connectors\MultiConnector\Texts\Communication_simple.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Connectors\MultiConnector\Plans\VettingPlan_SummarizeSkill_Summarize.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Connectors\MultiConnector\Plans\VettingPlan_Summarize_Topics_ElementAt.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="testsettings.development.json">

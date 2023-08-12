@@ -61,7 +61,7 @@
       "parameters": [
         {
           "Key": "index",
-          "Value": "0"
+          "Value": "2"
         },
         {
           "Key": "INPUT",
@@ -73,34 +73,12 @@
         }
       ],
       "outputs": [
-        "RESULT__FIRST_TOPIC"
+        "RESULT__THIRD_TOPIC"
       ],
       "next_step_index": 0,
       "name": "ElementAtIndex",
       "skill_name": "MiscSkill",
       "description": "Get an element from an array at a specified index"
-    },
-    {
-      "state": [
-        {
-          "Key": "INPUT",
-          "Value": ""
-        }
-      ],
-      "steps": [],
-      "parameters": [
-        {
-          "Key": "input",
-          "Value": "$INPUT"
-        }
-      ],
-      "outputs": [
-        "RESULT__NOTES"
-      ],
-      "next_step_index": 0,
-      "name": "Notegen",
-      "skill_name": "SummarizeSkill",
-      "description": "Automatically generate compact notes for any text or text document."
     }
   ],
   "parameters": [
@@ -112,8 +90,7 @@
   "outputs": [
     "RESULT__SUMMARY",
     "RESULT__TOPICS",
-    "RESULT__FIRST_TOPIC",
-    "RESULT__NOTES"
+    "RESULT__THIRD_TOPIC"
   ],
   "next_step_index": 0,
   "name": "",

@@ -12,7 +12,7 @@ public class TestEvent
     /// <summary>
     /// Gets or sets the timestamp of the test event.
     /// </summary>
-    public DateTime Timestamp { get; set; } = DateTime.Now;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// Gets or sets the duration of the test event.

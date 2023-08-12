@@ -23,7 +23,6 @@ public class MultiTextCompletion : ITextCompletion
     private readonly IReadOnlyList<NamedTextCompletion> _textCompletions;
     private readonly MultiTextCompletionSettings _settings;
     private readonly Channel<ConnectorTest> _dataCollectionChannel;
-    private Channel<List<ConnectorTest>> _analysisChannel;
 
     /// <summary>
     /// Initializes a new instance of the MultiTextCompletion class.
@@ -43,7 +42,7 @@ public class MultiTextCompletion : ITextCompletion
         this._logger = logger;
         this._textCompletions = new[] { mainTextCompletion }.Concat(otherCompletions ?? Array.Empty<NamedTextCompletion>()).ToArray();
         this._dataCollectionChannel = Channel.CreateUnbounded<ConnectorTest>();
-        this._analysisChannel = Channel.CreateUnbounded<List<ConnectorTest>>();
+
         this.StartManagementTask(analysisTaskCancellationToken ?? CancellationToken.None);
     }
 
@@ -140,7 +139,11 @@ public class MultiTextCompletion : ITextCompletion
 
         if (this._settings.LogResult)
         {
-            this._logger?.LogInformation("MultiTextCompletion.GetCompletionsAsync: {0}: duration: \nPROMPT:\n{1}\nRESULT:\n{2}", session.NamedTextCompletion.Name, session.CallText, await session.ResultProducer.Value.ConfigureAwait(false));
+            var connectorName = session.NamedTextCompletion.Name;
+            var duration = session.StopWatch.Elapsed;
+            var callPromptText = session.CallText;
+            var result = await session.ResultProducer.Value.ConfigureAwait(false);
+            this._logger?.LogInformation("MULTI-COMPLETION returned from connector: {0}: duration:{1} \nADJUSTED PROMPT:\n{2}\n\nRESULT:{3}\n", connectorName, duration, callPromptText, result);
         }
     }
 
@@ -190,19 +193,6 @@ public class MultiTextCompletion : ITextCompletion
             cancellationToken,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
-
-        // Start the analysis task
-        Task.Factory.StartNew(
-            async () =>
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    await this.AnalyzeDataAsync(cancellationToken).ConfigureAwait(false);
-                }
-            },
-            cancellationToken,
-            TaskCreationOptions.LongRunning,
-            TaskScheduler.Default);
     }
 
     /// <summary>
@@ -233,7 +223,8 @@ public class MultiTextCompletion : ITextCompletion
                 if (needTest)
                 {
                     // Once you have a batch ready, write it to the channel
-                    await this._analysisChannel.Writer.WriteAsync(testSeries, cancellationToken).ConfigureAwait(false);
+                    var analysisJob = new AnalysisJob(this._settings, this._textCompletions, this._logger, cancellationToken);
+                    await this._settings.AnalysisSettings.AddAnalysisJobAsync(analysisJob).ConfigureAwait(false);
                 }
             }
         }
@@ -244,47 +235,6 @@ public class MultiTextCompletion : ITextCompletion
         catch (Exception exception)
         {
             this._logger?.LogError("CollectDataAsync Optimize task failed with exception {0}", exception, exception.ToString());
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously receives batch of ConnectorTests, evaluate available connectors against tests and perform analysis to vet connectors.
-    /// </summary>
-    private async Task AnalyzeDataAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            while (await this._analysisChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
-            {
-                var testSeries = new List<ConnectorTest>();
-
-                while (this._analysisChannel.Reader.TryRead(out var originalTestBatch))
-                {
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        this._logger?.LogTrace(message: "AnalyzeDataAsync collected a new batch of ConnectorTest series to analyze", originalTestBatch);
-
-                        testSeries.AddRange(originalTestBatch);
-
-                        await Task.Delay(this._settings.AnalysisSettings.AnalysisDelay, cancellationToken).ConfigureAwait(false);
-                        this._logger?.LogTrace(message: "AnalyzeDataAsync waited analysis delay for new ConnectorTest");
-                    }
-                }
-
-                this._logger?.LogTrace(message: "AnalyzeDataAsync launches new test and analysis pipeline", testSeries);
-                // Evaluate the test
-
-                await this._settings.AnalysisSettings.EvaluatePromptConnectorsAsync(this._textCompletions, this._settings, this._logger, cancellationToken).ConfigureAwait(false);
-            }
-        }
-        catch (OperationCanceledException exception)
-        {
-            this._logger?.LogTrace("AnalyzeDataAsync task was cancelled with exception {0}", exception, exception.ToString());
-        }
-        catch (Exception exception)
-        {
-            this._logger?.LogError("AnalyzeDataAsync task failed with exception {0}", exception, exception.ToString());
             throw;
         }
     }

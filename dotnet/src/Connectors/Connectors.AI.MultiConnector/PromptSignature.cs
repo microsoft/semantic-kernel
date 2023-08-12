@@ -23,7 +23,7 @@ public class PromptSignature
     /// <summary>
     /// First chars of a prompt that identify its type while staying the same between different calls.
     /// </summary>
-    public string TextBeginning { get; set; }
+    public string PromptStart { get; set; }
 
     /// <summary>
     /// optional regular expression pattern for matching complex prompts.
@@ -49,18 +49,18 @@ public class PromptSignature
     public PromptSignature()
     {
         this.RequestSettings = new();
-        this.TextBeginning = string.Empty;
+        this.PromptStart = string.Empty;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptSignature"/> class.
     /// </summary>
     /// <param name="requestSettings">The request settings for the prompt.</param>
-    /// <param name="textBeginning">The beginning of the text to identify the prompt type.</param>
-    public PromptSignature(CompleteRequestSettings requestSettings, string textBeginning)
+    /// <param name="promptStart">The beginning of the text to identify the prompt type.</param>
+    public PromptSignature(CompleteRequestSettings requestSettings, string promptStart)
     {
         this.RequestSettings = requestSettings;
-        this.TextBeginning = textBeginning;
+        this.PromptStart = promptStart;
     }
 
     /// <summary>
@@ -75,6 +75,26 @@ public class PromptSignature
         return new PromptSignature(settings, prompt.Substring(0, truncationLength));
     }
 
+    public static PromptSignature ExtractFrom2Instances(string prompt1, string prompt2, CompleteRequestSettings settings)
+    {
+        var staticPartLength = 0;
+
+        while (staticPartLength < prompt1.Length && staticPartLength < prompt2.Length &&
+               prompt1[staticPartLength] == prompt2[staticPartLength])
+        {
+            staticPartLength++;
+        }
+
+        if (staticPartLength >= prompt1.Length && staticPartLength >= prompt2.Length)
+        {
+            throw new ArgumentException("The two prompts don't have matching beginnings");
+        }
+
+        var newStart = prompt1.Substring(0, staticPartLength);
+
+        return new PromptSignature(settings, newStart);
+    }
+
     /// <summary>
     /// Determines if the prompt matches the <see cref="PromptSignature"/>.
     /// </summary>
@@ -84,7 +104,7 @@ public class PromptSignature
     public bool Matches(string prompt, CompleteRequestSettings promptSettings)
     {
         return (this.MatchSettings(promptSettings) && (this.CompiledRegex?.IsMatch(prompt) ??
-                                                       prompt.StartsWith(this.TextBeginning, StringComparison.OrdinalIgnoreCase)));
+                                                       prompt.StartsWith(this.PromptStart, StringComparison.OrdinalIgnoreCase)));
     }
 
     private bool MatchSettings(CompleteRequestSettings promptSettings)

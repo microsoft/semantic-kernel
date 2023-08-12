@@ -28,4 +28,9 @@ public class PromptType
     /// Identifying parameters of the prompt type, extracted from calls or manually edited.
     /// </summary>
     public PromptSignature Signature { get; set; } = new();
+
+    /// <summary>
+    /// While further instances of the prompt type are received, the start of the prompt may be adjusted to encompass the whole static part rather than just the first chars.
+    /// </summary>
+    public bool SignatureNeedsAdjusting { get; set; }
 }

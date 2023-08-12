@@ -33,7 +33,8 @@ public sealed class MultiConnectorTests : IDisposable
     private const string StartGoal =
         "The goal of this plan is to evaluate the capabilities of a smaller LLM model. Start by writing a text of about 100 words on a given topic, as the input parameter of the plan. Then use distinct functions from the available skills on the input text and/or the previous functions results, choosing parameters in such a way that you know you will succeed at running each function but a smaller model might not. Try to propose steps of distinct difficulties so that models of distinct capabilities might succeed on some functions and fail on others. In a second phase, you will be asked to evaluate the function answers from smaller models. Please beware of correct Xml tags, attributes, and parameter names when defined and when reused.";
 
-    private const string PlanParentDir = ".\\Connectors\\MultiConnector\\";
+    private const string PlansDirectory = ".\\Connectors\\MultiConnector\\Plans\\";
+    private const string TextsDirectory = ".\\Connectors\\MultiConnector\\Texts\\";
 
     private readonly ILogger _logger;
     private readonly IConfigurationRoot _configuration;
@@ -42,6 +43,8 @@ public sealed class MultiConnectorTests : IDisposable
     private readonly RedirectOutput _testOutputHelper;
     private readonly Func<string, int> _gp3TokenCounter = s => GPT3Tokenizer.Encode(s).Count;
     private readonly Func<string, int> _wordCounter = s => s.Split(' ').Length;
+    private string _planDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, PlansDirectory);
+    private string _textDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, TextsDirectory);
 
     public MultiConnectorTests(ITestOutputHelper output)
     {
@@ -66,24 +69,35 @@ public sealed class MultiConnectorTests : IDisposable
     }
 
     /// <summary>
-    /// This test method uses a plan loaded from a file
+    /// This test method uses a plan loaded from a file, an input text of a particular difficulty, and all models configured in settings file
+    /// </summary>
+    [Theory]
+    [InlineData(1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToMultipleOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
+    {
+        await this.ChatGptOffloadsToOobaboogaUsingFileAsync("", durationWeight, costWeight, nbPromptTests, planFileName, inputTextFileName, skillNames).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// This test method uses a plan loaded from a file, together with an input text loaded from a file, and adds a single completion model from its name as configured in the settings file.
     /// </summary>
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
-    [InlineData("", 1, 1, 1, "VettingSequentialPlan_SummarizeSkill_Summarize.json", "SummarizeSkill", "MiscSkill")]
-    [InlineData("", 1, 1, 1, "VettingSequentialPlan_SummarizeSkill.json", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingSequentialPlan_SummarizeSkill.json", "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string planFilePath, params string[] skillNames)
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
     {
         // Load the plan from the provided file path
-        var planDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, PlanParentDir);
-        var planPath = System.IO.Path.Combine(planDirectory, planFilePath);
+        var planPath = System.IO.Path.Combine(this._planDirectory, planFileName);
+        var textPath = System.IO.Path.Combine(this._textDirectory, inputTextFileName);
 
         Func<IKernel, CancellationToken, Task<Plan>> planFactory = async (kernel, token) =>
         {
             var planJson = await System.IO.File.ReadAllTextAsync(planPath, token);
             var ctx = kernel.CreateNewContext();
             var plan = Plan.FromJson(planJson, ctx, true);
+            var input = await System.IO.File.ReadAllTextAsync(textPath, token);
+            plan.State.Update(input);
             return plan;
         };
 
@@ -97,9 +111,11 @@ public sealed class MultiConnectorTests : IDisposable
     }
 
     // This test method uses the SequentialPlanner to create a plan based on difficulty
-    [Theory(Skip = "This test is for manual verification.")]
-    [InlineData("", 1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
+    //[Theory(Skip = "This test is for manual verification.")]
+    [Theory()]
+    //[InlineData("", 1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "medium", "WriterSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string difficulty, params string[] skillNames)
     {
         // Create a plan using SequentialPlanner based on difficulty
@@ -127,6 +143,8 @@ public sealed class MultiConnectorTests : IDisposable
     {
         // Arrange
 
+        this._logger.LogTrace("Starting test in environment directory: {0}", Environment.CurrentDirectory);
+
         var sw = Stopwatch.StartNew();
 
         using var cleanupToken = new CancellationTokenSource();
@@ -137,30 +155,39 @@ public sealed class MultiConnectorTests : IDisposable
         var settings = new MultiTextCompletionSettings()
         {
             Creditor = creditor,
-            AnalysisSettings = new MultiCompletionAnalysisSettings()
-            {
-                EnableAnalysis = false,
-                NbPromptTests = nbPromptTests,
-                MaxInstanceNb = 1,
-                SuggestionPeriod = TimeSpan.FromSeconds(10),
-                AnalysisDelay = TimeSpan.FromSeconds(10),
-                MaxDegreeOfParallelismConnectorTests = 1,
-                UpdateSuggestedSettings = true,
-                DeleteAnalysisFile = true,
-                SaveSuggestedSettings = false
-            },
             PromptTruncationLength = 11,
+            AdjustPromptStarts = true,
             LogResult = true,
             ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight),
             GlobalPromptTransform = new PromptTransform()
             {
                 TransformFunction = s => s.EndsWith("\n", StringComparison.OrdinalIgnoreCase) ? s : s + "\n",
+            },
+            AnalysisSettings = new MultiCompletionAnalysisSettings()
+            {
+                EnableAnalysis = false,
+                NbPromptTests = nbPromptTests,
+                MaxInstanceNb = 1,
+                // We use manual release of analysis task to make sure analysis event is only fired once with the final result
+                // Accordingly, delays and periods are also removed
+                AnalysisAwaitsManualTrigger = true,
+                AnalysisDelay = TimeSpan.Zero,
+                TestsPeriod = TimeSpan.Zero,
+                EvaluationPeriod = TimeSpan.Zero,
+                SuggestionPeriod = TimeSpan.Zero,
+                MaxDegreeOfParallelismConnectorTests = 1,
+                UpdateSuggestedSettings = true,
+                // For instrumented data in file format, feel free to uncomment either of the following lines
+                DeleteAnalysisFile = false,
+                SaveSuggestedSettings = true
             }
         };
 
         // Cleanup in case the previous test failed to delete the analysis file
         if (File.Exists(settings.AnalysisSettings.AnalysisFilePath))
         {
+            this._logger.LogTrace("Delete preexisting analysis file: {0}", settings.AnalysisSettings.AnalysisFilePath);
+
             File.Delete(settings.AnalysisSettings.AnalysisFilePath);
         }
 
@@ -211,7 +238,11 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogInformation("Result from primary connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}", firstPassDuration, firstPassEffectiveCost, firstResult);
 
-        //await optimizationCompletedTaskSource.Task.WaitAsync(cleanupToken.Token);
+        //make sure analysis was triggered after delay, and then release the waiting task manually;
+
+        await Task.Delay(settings.AnalysisSettings.AnalysisDelay, CancellationToken.None).ConfigureAwait(false);
+
+        settings.AnalysisSettings.ReleaseAnalysisTasks();
 
         // Get the optimization results
         var optimizationResults = await suggestionCompletedTaskSource.Task.ConfigureAwait(false);

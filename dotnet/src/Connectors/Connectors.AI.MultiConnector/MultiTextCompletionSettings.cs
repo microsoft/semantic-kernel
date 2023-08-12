@@ -43,6 +43,11 @@ public class MultiTextCompletionSettings
     public int PromptTruncationLength { get; set; } = 20;
 
     /// <summary>
+    /// If true, prompt signature starts are adjusted to the actual template starter when differing samples are witnessed.
+    /// </summary>
+    public bool AdjustPromptStarts { get; set; } = true;
+
+    /// <summary>
     /// By default, connectors instrumentation server side and client side avoids to trigger result evaluation for display. This is mostly harmless and this outputs the corresponding log for more comfort.
     /// </summary>
     public bool LogResult { get; set; } = false;
@@ -88,12 +93,23 @@ public class MultiTextCompletionSettings
                         Instances = { prompt },
                         MaxInstanceNb = this.AnalysisSettings.NbPromptTests,
                         Signature = newSignature,
-                        PromptName = newSignature.TextBeginning.Replace(" ", "_")
+                        PromptName = newSignature.PromptStart.Replace(" ", "_"),
+                        SignatureNeedsAdjusting = this.AdjustPromptStarts,
                     },
                 };
 
                 this.PromptMultiConnectorSettings.Add(toReturn);
                 isNew = true;
+            }
+        }
+        else
+        {
+            if (toReturn.PromptType.SignatureNeedsAdjusting && prompt != toReturn.PromptType.Instances[0])
+            {
+                lock (toReturn.PromptType.Signature)
+                {
+                    toReturn.PromptType.Signature = PromptSignature.ExtractFrom2Instances(prompt, toReturn.PromptType.Instances[0], promptSettings);
+                }
             }
         }
 

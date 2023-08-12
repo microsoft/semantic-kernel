@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
@@ -49,8 +50,19 @@ RESPONSE IS VALID? (true/false):
         ResultsPerPrompt = 1,
     };
 
+    private Channel<AnalysisJob> _analysisChannel;
+
     // Lock for thread-safe file operations
     private object _analysisFileLock = new();
+
+    // used for manual release of analysis tasks
+    private TaskCompletionSource<bool>? _manualTrigger;
+    private readonly object _triggerLock = new();
+
+    public MultiCompletionAnalysisSettings()
+    {
+        this._analysisChannel = Channel.CreateUnbounded<AnalysisJob>();
+    }
 
     /// <summary>
     /// Enable or disable the analysis
@@ -66,6 +78,11 @@ RESPONSE IS VALID? (true/false):
     /// Duration before analysis is started when a new event is recorded
     /// </summary>
     public TimeSpan AnalysisDelay { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// If true, analysis tasks start normally after the Analysis delay is awaited, but then await for a manual trigger using <see cref="ReleaseAnalysisTasks"/> to proceed and complete
+    /// </summary>
+    public bool AnalysisAwaitsManualTrigger { get; set; }
 
     /// <summary>
     /// Enable or disable the analysis
@@ -126,7 +143,7 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// Indicates whether to save suggested settings after analysis
     /// </summary>
-    public bool SaveSuggestedSettings { get; set; } = true;
+    public bool SaveSuggestedSettings { get; set; }
 
     /// <summary>
     /// Indicates whether to Analysis file with evaluations can be deleted after new suggested settings are saved or applied
@@ -279,33 +296,50 @@ RESPONSE IS VALID? (true/false):
     }
 
     /// <summary>
-    /// Asynchronously evaluates a connector test, writes the evaluation to a file, and updates settings if necessary.
+    /// Method to add an analysis job to the analysis pipeline. Starts a long running task if it does not exist
     /// </summary>
-    public async Task EvaluatePromptConnectorsAsync(IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger = null, CancellationToken cancellationToken = default)
+    public async Task AddAnalysisJobAsync(AnalysisJob analysisJob)
     {
-        MultiCompletionAnalysis completionAnalysis;
-
-        do
+        if (this._analysisTask == null)
         {
-            completionAnalysis = await this.RunAnalysisPipelineAsync(namedTextCompletions, settings, logger, cancellationToken).ConfigureAwait(false);
-        } while (completionAnalysis.OriginalTests.Count > 0);
+            this._analysisTask = await this.StartAnalysisTask(analysisJob).ConfigureAwait(false);
+        }
+
+        this._analysisChannel.Writer.TryWrite(analysisJob);
+    }
+
+    /// <summary>
+    /// Method to release the tasks awaiting to run the analysis pipeline.
+    /// </summary>
+    public void ReleaseAnalysisTasks()
+    {
+        lock (this._triggerLock)
+        {
+            this._manualTrigger?.SetResult(true);
+            this._manualTrigger = null;
+        }
     }
 
     #region Private methods
 
-    private async Task<MultiCompletionAnalysis> RunAnalysisPipelineAsync(IReadOnlyList<NamedTextCompletion> namedTextCompletions, MultiTextCompletionSettings settings, ILogger? logger, CancellationToken cancellationToken)
+    private async Task<MultiCompletionAnalysis> RunAnalysisPipelineAsync(AnalysisJob analysisJob)
     {
+        if (this.AnalysisAwaitsManualTrigger)
+        {
+            await this.WaitForManualTriggerAsync().ConfigureAwait(false);
+        }
+
         MultiCompletionAnalysis completionAnalysis = this.LoadMultiCompletionAnalysis();
 
         List<ConnectorTest>? tests = null;
 
         if (completionAnalysis.OriginalTests.Count > 0)
         {
-            tests = await this.RunConnectorTestsAsync(completionAnalysis.OriginalTests, namedTextCompletions, settings, logger, cancellationToken).ConfigureAwait(false);
+            tests = await this.RunConnectorTestsAsync(completionAnalysis.OriginalTests, analysisJob.TextCompletions, analysisJob.Settings, analysisJob.Logger, analysisJob.CancellationToken).ConfigureAwait(false);
         }
         else
         {
-            logger?.LogDebug("Not original test found. No new Test triggered.");
+            analysisJob.Logger?.LogDebug("Not original test found. No new Test triggered.");
         }
 
         if (tests == null)
@@ -313,7 +347,7 @@ RESPONSE IS VALID? (true/false):
             return completionAnalysis;
         }
 
-        completionAnalysis = this.SaveConnectorTestsReturnNeedEvaluate(tests, completionAnalysis, logger, out var needEvaluate);
+        completionAnalysis = this.SaveConnectorTestsReturnNeedEvaluate(tests, completionAnalysis, analysisJob.Logger, out var needEvaluate);
 
         // Generate evaluations
 
@@ -321,11 +355,11 @@ RESPONSE IS VALID? (true/false):
 
         if (needEvaluate)
         {
-            currentEvaluations = await this.RunConnectorTestsEvaluationsAsync(tests, namedTextCompletions, settings, logger, cancellationToken).ConfigureAwait(false);
+            currentEvaluations = await this.RunConnectorTestsEvaluationsAsync(tests, analysisJob.TextCompletions, analysisJob.Settings, analysisJob.Logger, analysisJob.CancellationToken).ConfigureAwait(false);
         }
         else
         {
-            logger?.LogDebug("Evaluation period not reached. No new Evaluation triggered.");
+            analysisJob.Logger?.LogDebug("Evaluation period not reached. No new Evaluation triggered.");
         }
 
         if (currentEvaluations == null)
@@ -335,27 +369,27 @@ RESPONSE IS VALID? (true/false):
 
         //Save evaluations to file
 
-        completionAnalysis = this.SaveEvaluationsReturnNeedSuggestion(currentEvaluations, completionAnalysis, out var needSuggestion, logger);
+        completionAnalysis = this.SaveEvaluationsReturnNeedSuggestion(currentEvaluations, completionAnalysis, out var needSuggestion, analysisJob.Logger);
 
         // Trigger the EvaluationCompleted event
         this.EvaluationCompleted?.Invoke(this, new EvaluationCompletedEventArgs(completionAnalysis));
-        logger?.LogTrace(message: "EvaluationCompleted event raised");
+        analysisJob.Logger?.LogTrace(message: "EvaluationCompleted event raised");
 
         // If update or save suggested settings are enabled, suggest new settings from analysis and save them if needed
         if (needSuggestion)
         {
-            logger?.LogDebug("Analysis period reached. New settings suggested.");
-            var updatedSettings = this.ComputeNewSettingsFromAnalysis(namedTextCompletions, settings, this.UpdateSuggestedSettings, logger, cancellationToken);
+            analysisJob.Logger?.LogDebug("Analysis period reached. New settings suggested.");
+            var updatedSettings = this.ComputeNewSettingsFromAnalysis(analysisJob.TextCompletions, analysisJob.Settings, this.UpdateSuggestedSettings, analysisJob.Logger, analysisJob.CancellationToken);
             if (this.SaveSuggestedSettings)
             {
                 // Save the new settings
-                var settingsJson = JsonSerializer.Serialize(updatedSettings, new JsonSerializerOptions() { WriteIndented = true });
+                var settingsJson = JsonSerializer.Serialize(updatedSettings.SuggestedSettings, new JsonSerializerOptions() { WriteIndented = true });
                 File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
             }
 
             if (this.DeleteAnalysisFile)
             {
-                logger?.LogTrace("Deleting evaluation file {0}", this.AnalysisFilePath);
+                analysisJob.Logger?.LogTrace("Deleting evaluation file {0}", this.AnalysisFilePath);
                 lock (this._analysisFileLock)
                 {
                     if (File.Exists(this.AnalysisFilePath))
@@ -367,11 +401,11 @@ RESPONSE IS VALID? (true/false):
 
             // Trigger the EvaluationCompleted event
             this.SuggestionCompleted?.Invoke(this, updatedSettings);
-            logger?.LogTrace(message: "SuggestionCompleted event raised");
+            analysisJob.Logger?.LogTrace(message: "SuggestionCompleted event raised");
         }
         else
         {
-            logger?.LogDebug("Suggestion period not reached. No new settings suggested.");
+            analysisJob.Logger?.LogDebug("Suggestion period not reached. No new settings suggested.");
         }
 
         return completionAnalysis;
@@ -637,7 +671,7 @@ RESPONSE IS VALID? (true/false):
                     // We then assess whether the connector is vetted by enough varied tests
                     var vettedVaried = evaluationsByMainConnector.Count() > 1 && !evaluationsByMainConnector.GroupBy(evaluation => evaluation.Test.Prompt).Any(grouping => grouping.Count() > 1);
                     promptConnectorSettings.VettingLevel = vetted ? vettedVaried ? VettingLevel.OracleVaried : VettingLevel.Oracle : VettingLevel.Invalid;
-                    logger?.LogDebug("Connector  {0}, configured according to evaluations with level:{1} for \nPrompt type with signature:\n{2}", connectorName, promptConnectorSettings.VettingLevel, promptMultiConnectorSettings.PromptType.Signature.TextBeginning);
+                    logger?.LogDebug("Connector  {0}, configured according to evaluations with level:{1} for \nPrompt type with signature:\n{2}", connectorName, promptConnectorSettings.VettingLevel, promptMultiConnectorSettings.PromptType.Signature.PromptStart);
                 }
             }
         }
@@ -665,6 +699,97 @@ RESPONSE IS VALID? (true/false):
         return currentAnalysis;
     }
 
-    #endregion
+    private Task<bool> WaitForManualTriggerAsync()
+    {
+        lock (this._triggerLock)
+        {
+            if (this._manualTrigger == null)
+            {
+                this._manualTrigger = new TaskCompletionSource<bool>();
+            }
 
+            return this._manualTrigger.Task;
+        }
+    }
+
+    private async Task AnalyzeDataAsync(AnalysisJob initialJob)
+    {
+        AnalysisJob currentAnalysisJob = initialJob;
+        try
+        {
+            while (await this._analysisChannel.Reader.WaitToReadAsync(currentAnalysisJob.CancellationToken).ConfigureAwait(false))
+            {
+                while (this._analysisChannel.Reader.TryRead(out var newAnalysisJob))
+                {
+                    currentAnalysisJob = newAnalysisJob;
+                    if (!currentAnalysisJob.CancellationToken.IsCancellationRequested)
+                    {
+                        var now = DateTime.UtcNow;
+                        currentAnalysisJob.Logger?.LogTrace(message: "AnalyzeDataAsync triggered by test batch. Sent: {0}, Received: {1} ", currentAnalysisJob.Timestamp, now);
+
+                        var delay = currentAnalysisJob.Timestamp + this.AnalysisDelay - now;
+
+                        if (delay > TimeSpan.FromMilliseconds(1))
+                        {
+                            currentAnalysisJob.Logger?.LogTrace(message: "AnalyzeDataAsync adding startup delay {0}", delay);
+                            await Task.Delay(delay, currentAnalysisJob.CancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                }
+
+                currentAnalysisJob.Logger?.LogTrace(message: "AnalyzeDataAsync launches new test and analysis pipeline");
+                // Evaluate the test
+
+                await this.EvaluatePromptConnectorsAsync(currentAnalysisJob).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException exception)
+        {
+            currentAnalysisJob.Logger?.LogTrace("AnalyzeDataAsync task was cancelled with exception {0}", exception, exception.ToString());
+        }
+        catch (Exception exception)
+        {
+            currentAnalysisJob.Logger?.LogError("AnalyzeDataAsync task failed with exception {0}", exception, exception.ToString());
+            throw;
+        }
+        finally
+        {
+            this._analysisTask = null;
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously evaluates a connector test, writes the evaluation to a file, and updates settings if necessary.
+    /// </summary>
+    private async Task EvaluatePromptConnectorsAsync(AnalysisJob analysisJob)
+    {
+        MultiCompletionAnalysis completionAnalysis;
+
+        do
+        {
+            completionAnalysis = await this.RunAnalysisPipelineAsync(analysisJob).ConfigureAwait(false);
+        } while (completionAnalysis.OriginalTests.Count > 0);
+    }
+
+    private Task? _analysisTask;
+
+    /// <summary>
+    /// Starts a management task charged with collecting and analyzing prompt connector usage.
+    /// </summary>
+    private Task<Task> StartAnalysisTask(AnalysisJob initialJob)
+    {
+        return Task.Factory.StartNew(
+            async () =>
+            {
+                while (!initialJob.CancellationToken.IsCancellationRequested)
+                {
+                    await this.AnalyzeDataAsync(initialJob).ConfigureAwait(false);
+                }
+            },
+            initialJob.CancellationToken,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
+    }
+
+    #endregion
 }
