@@ -242,11 +242,11 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// Gets the vetting prompt and vetting request settings to evaluate a given ConnectorTest.
     /// </summary>
-    public (string vettingPrompt, CompleteRequestSettings vettingRequestSettings) GetVettingPrompt(string prompt, string result)
+    public CompletionJob GetVettingCompletionJob(string prompt, string result)
     {
         var vettingPrompt = this.VettingPromptTemplate.Replace("{prompt}", prompt).Replace("{response}", result);
         var vettingRequestSettings = this.VettingRequestSettings;
-        return (vettingPrompt, vettingRequestSettings);
+        return new CompletionJob(vettingPrompt, vettingRequestSettings);
     }
 
     private Regex? _vettingCaptureRegex;

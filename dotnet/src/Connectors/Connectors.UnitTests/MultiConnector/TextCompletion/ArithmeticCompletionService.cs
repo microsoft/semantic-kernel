@@ -27,8 +27,8 @@ public class ArithmeticCompletionService : ITextCompletion
     {
         var tempOperation = ArithmeticEngine.GeneratePrompt(ArithmeticOperation.Add, 1, 1);
         var tempResult = "2";
-        var vettingParams = this.MultiTextCompletionSettings.AnalysisSettings.GetVettingPrompt(tempOperation, tempResult);
-        return this.MultiTextCompletionSettings.GetPromptSettings(vettingParams.vettingPrompt, vettingParams.vettingRequestSettings, out _);
+        var vettingJob = this.MultiTextCompletionSettings.AnalysisSettings.GetVettingCompletionJob(tempOperation, tempResult);
+        return this.MultiTextCompletionSettings.GetPromptSettings(vettingJob, out _);
     }
 
     public PromptMultiConnectorSettings VettingPromptSettings { get; set; }
@@ -47,7 +47,8 @@ public class ArithmeticCompletionService : ITextCompletion
 
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        ArithmeticStreamingResultBase streamingResult = await this.ComputeResultAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        var job = new CompletionJob(text, requestSettings);
+        ArithmeticStreamingResultBase streamingResult = await this.ComputeResultAsync(job, cancellationToken).ConfigureAwait(false);
         return new List<ITextResult>
         {
             streamingResult
@@ -56,23 +57,24 @@ public class ArithmeticCompletionService : ITextCompletion
 
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ArithmeticStreamingResultBase streamingResult = await this.ComputeResultAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        var job = new CompletionJob(text, requestSettings);
+        ArithmeticStreamingResultBase streamingResult = await this.ComputeResultAsync(job, cancellationToken).ConfigureAwait(false);
         yield return streamingResult;
     }
 
-    private async Task<ArithmeticStreamingResultBase> ComputeResultAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    private async Task<ArithmeticStreamingResultBase> ComputeResultAsync(CompletionJob job, CancellationToken cancellationToken = default)
     {
         await Task.Delay(this.CallTime, cancellationToken).ConfigureAwait(false);
-        var isVetting = this.VettingPromptSettings.PromptType.Signature.Matches(text, requestSettings);
+        var isVetting = this.VettingPromptSettings.PromptType.Signature.Matches(job);
         ArithmeticStreamingResultBase streamingResult;
         if (isVetting)
         {
-            streamingResult = new ArithmeticVettingStreamingResult(this.MultiTextCompletionSettings.AnalysisSettings, text, this.Engine, this.CallTime);
+            streamingResult = new ArithmeticVettingStreamingResult(this.MultiTextCompletionSettings.AnalysisSettings, job.Prompt, this.Engine, this.CallTime);
         }
         else
         {
             this.Creditor.Credit(this.CostPerRequest);
-            streamingResult = new ArithmeticComputingStreamingResult(text, this.Engine, this.CallTime);
+            streamingResult = new ArithmeticComputingStreamingResult(job.Prompt, this.Engine, this.CallTime);
         }
 
         return streamingResult;
