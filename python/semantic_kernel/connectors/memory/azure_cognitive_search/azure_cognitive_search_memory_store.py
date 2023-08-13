@@ -10,7 +10,7 @@ from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     SearchIndex,
     VectorSearch,
-    VectorSearchAlgorithmConfiguration,
+    HnswVectorSearchAlgorithmConfiguration,
 )
 from numpy import ndarray
 
@@ -82,13 +82,13 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     async def create_collection_async(
         self,
         collection_name: str,
-        vector_config: Optional[VectorSearchAlgorithmConfiguration] = None,
+        vector_config: Optional[HnswVectorSearchAlgorithmConfiguration] = None,
     ) -> None:
         """Creates a new collection if it does not exist.
 
         Arguments:
             collection_name {str}                              -- The name of the collection to create.
-            vector_config {VectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
+            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
                                                                   (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
         Returns:
@@ -100,7 +100,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         else:
             vector_search = VectorSearch(
                 algorithm_configurations=[
-                    VectorSearchAlgorithmConfiguration(
+                    HnswVectorSearchAlgorithmConfiguration(
                         name="az-vector-config",
                         kind="hnsw",
                         hnsw_parameters={
