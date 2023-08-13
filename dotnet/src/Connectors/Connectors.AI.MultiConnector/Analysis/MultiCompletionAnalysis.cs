@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
 /// <summary>
 /// Represents the collection of evaluations of connectors against prompt types, to be saved and analyzed.

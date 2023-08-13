@@ -3,7 +3,7 @@
 using System;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
 /// <summary>
 /// Represents a test performed on a connector, called with a prompt with its result and duration recorded.

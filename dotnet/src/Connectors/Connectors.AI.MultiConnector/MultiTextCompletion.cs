@@ -10,6 +10,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 

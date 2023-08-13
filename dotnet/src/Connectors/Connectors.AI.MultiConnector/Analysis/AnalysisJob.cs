@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
 /// <summary>
 /// Represents a job to be executed by the MultiConnector's analysis

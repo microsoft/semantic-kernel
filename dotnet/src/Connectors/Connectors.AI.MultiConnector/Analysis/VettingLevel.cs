@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
 /// <summary>
 /// Represents the vetting level of a connector against a prompt type.

@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
 /// <summary>
 /// Represents the settings used to configure the multi-completion analysis process.
@@ -291,8 +291,8 @@ RESPONSE IS VALID? (true/false):
             }
 
             var now = DateTime.Now;
-            bool needRunningTests = (this.EnableConnectorTests)
-                                    && (now - multiCompletionAnalysis.TestTimestamp) > this.TestsPeriod;
+            bool needRunningTests = this.EnableConnectorTests
+                                    && now - multiCompletionAnalysis.TestTimestamp > this.TestsPeriod;
             if (needRunningTests)
             {
                 multiCompletionAnalysis.TestTimestamp = now;
@@ -366,8 +366,8 @@ RESPONSE IS VALID? (true/false):
         {
             completionAnalysis = await this.RunAnalysisPipelineOnceAsync(analysisJob).ConfigureAwait(false);
             now = DateTime.Now;
-        } while ((completionAnalysis.OriginalTests.Count > 0 && (now - completionAnalysis.TestTimestamp) > this.TestsPeriod)
-                 || (completionAnalysis.Tests.Count > 0 && (now - completionAnalysis.EvaluationTimestamp) > this.EvaluationPeriod));
+        } while (completionAnalysis.OriginalTests.Count > 0 && now - completionAnalysis.TestTimestamp > this.TestsPeriod
+                 || completionAnalysis.Tests.Count > 0 && now - completionAnalysis.EvaluationTimestamp > this.EvaluationPeriod);
     }
 
     private async Task<MultiCompletionAnalysis> RunAnalysisPipelineOnceAsync(AnalysisJob analysisJob)
@@ -583,11 +583,11 @@ RESPONSE IS VALID? (true/false):
             }
 
             var now = DateTime.Now;
-            bool needEvaluate = (this.EnableTestEvaluations)
+            bool needEvaluate = this.EnableTestEvaluations
                                 && multiCompletionAnalysis.Tests.Count > 0
-                                && (now - multiCompletionAnalysis.EvaluationTimestamp) > this.EvaluationPeriod
+                                && now - multiCompletionAnalysis.EvaluationTimestamp > this.EvaluationPeriod
                                 && multiCompletionAnalysis.OriginalTests.Count == 0
-                                || (now - multiCompletionAnalysis.TestTimestamp) < this.TestsPeriod;
+                                || now - multiCompletionAnalysis.TestTimestamp < this.TestsPeriod;
             if (needEvaluate)
             {
                 multiCompletionAnalysis.EvaluationTimestamp = now;
@@ -596,7 +596,7 @@ RESPONSE IS VALID? (true/false):
             return needEvaluate;
         }
 
-        return this.LockLoadApplySaveProbeNext<ConnectorTest>(newTests, analysis, UpdateTestsAndProbeEvaluate, out needEvaluate, logger);
+        return this.LockLoadApplySaveProbeNext(newTests, analysis, UpdateTestsAndProbeEvaluate, out needEvaluate, logger);
     }
 
     private async Task<List<ConnectorPromptEvaluation>> RunConnectorTestsEvaluationsAsync(MultiCompletionAnalysis completionAnalysis, AnalysisJob analysisJob)
@@ -676,14 +676,14 @@ RESPONSE IS VALID? (true/false):
             }
 
             var now = DateTime.Now;
-            bool needSuggestion = (this.EnableSuggestion
-                                   && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings))
+            bool needSuggestion = this.EnableSuggestion
+                                   && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings)
                                   && multiCompletionAnalysis.Evaluations.Count > 0
-                                  && (now - multiCompletionAnalysis.SuggestionTimestamp) > this.SuggestionPeriod
+                                  && now - multiCompletionAnalysis.SuggestionTimestamp > this.SuggestionPeriod
                                   && multiCompletionAnalysis.Tests.Count == 0
-                                  || (now - multiCompletionAnalysis.EvaluationTimestamp) < this.EvaluationPeriod
+                                  || now - multiCompletionAnalysis.EvaluationTimestamp < this.EvaluationPeriod
                                   && multiCompletionAnalysis.OriginalTests.Count == 0
-                                  || (now - multiCompletionAnalysis.TestTimestamp) < this.TestsPeriod;
+                                  || now - multiCompletionAnalysis.TestTimestamp < this.TestsPeriod;
             if (needSuggestion)
             {
                 multiCompletionAnalysis.SuggestionTimestamp = now;

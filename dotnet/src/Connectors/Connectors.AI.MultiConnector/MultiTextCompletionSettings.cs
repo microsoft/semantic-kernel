@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 

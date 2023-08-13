@@ -3,7 +3,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion;

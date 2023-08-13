@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
