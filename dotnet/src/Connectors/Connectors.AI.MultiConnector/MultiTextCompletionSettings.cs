@@ -19,6 +19,17 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// </remarks>
 public class MultiTextCompletionSettings
 {
+    private const string DefaultTruncatedLogFormat = @"
+================================= START ====== PROMPT/RESULT =============================================
+{0}
+
+
+(...)
+
+
+{1}
+================================== END ====== PROMPT/RESULT ==============================================";
+
     private ConcurrentBag<PromptMultiConnectorSettings> _promptMultiConnectorSettingsInternal = new();
 
     /// <summary>
@@ -67,7 +78,22 @@ public class MultiTextCompletionSettings
     /// <summary>
     /// By default, connectors instrumentation server side and client side avoids to trigger result evaluation for display. This is mostly harmless and this outputs the corresponding log for more comfort.
     /// </summary>
-    public bool LogResult { get; set; } = false;
+    public bool LogCallResult { get; set; } = false;
+
+    /// <summary>
+    /// When enabled, a log event is generated when new tests are collected for analysis
+    /// </summary>
+    public bool LogTestCollection { get; set; }
+
+    /// <summary>
+    /// Represents the max length of prompt and response to be logged.
+    /// </summary>
+    public int PromptLogTruncationLength { get; set; } = 600;
+
+    /// <summary>
+    /// Represents the max length of prompt and response to be logged.
+    /// </summary>
+    public string TruncatedPromptLogFormat { get; set; } = DefaultTruncatedLogFormat;
 
     /// <summary>
     /// List of settings for multiple connectors associated with each prompt type.
@@ -155,6 +181,15 @@ public class MultiTextCompletionSettings
         }
 
         return toReturn;
+    }
+
+    /// <summary>
+    /// Generates a log for a prompt that is truncated at the beginning and the end.
+    /// </summary>
+    public string GeneratePromptLog(string prompt)
+    {
+        var promptLog = PromptSignature.GeneratePromptLog(prompt, this.PromptLogTruncationLength, this.TruncatedPromptLogFormat);
+        return promptLog;
     }
 
     private PromptMultiConnectorSettings? MatchPromptSettings(CompletionJob completionJob)

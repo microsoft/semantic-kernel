@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -80,24 +81,55 @@ public class PromptSignature
             if (promptMultiConnectorSettings.PromptType.Signature.MatchingRegex != null
                 && promptMultiConnectorSettings.PromptType.Signature.PromptStart.StartsWith(promptStart, StringComparison.Ordinal))
             {
-                var commonRadixLength = PromptSignature.GetCommonPrefixLength(promptMultiConnectorSettings.PromptType.Signature.PromptStart, promptStart);
-                promptStart = completionJob.Prompt.Substring(0, commonRadixLength);
+                promptStart = PromptSignature.GetCommonPrefix(promptMultiConnectorSettings.PromptType.Signature.PromptStart, completionJob.Prompt);
             }
         }
 
         return new PromptSignature(completionJob.RequestSettings, promptStart);
     }
 
+    /// <summary>
+    /// Extracts a <see cref="PromptSignature"/> from a prompt string, request settings and distinct prompt instance of the same type, increasing from default truncated start to deal with overlapping prompt starts.
+    /// </summary>
     public static PromptSignature ExtractFrom2Instances(string prompt1, string prompt2, CompleteRequestSettings settings)
     {
-        int staticPartLength = GetCommonPrefixLength(prompt1, prompt2);
+        int staticPartLength = GetCommonPrefix(prompt1, prompt2).Length;
 
         var newStart = prompt1.Substring(0, staticPartLength);
 
         return new PromptSignature(settings, newStart);
     }
 
-    public static int GetCommonPrefixLength(string prompt1, string prompt2)
+
+    /// <summary>
+    /// Generates a log for a prompt that is truncated at the beginning and the end.
+    /// </summary>
+    public static string GeneratePromptLog(string prompt, int truncationLength, string truncatedPromptFormat)
+    {
+        var promptLog = PromptSignature.GenerateTruncatedString(prompt, truncationLength, true, truncatedPromptFormat);
+        return promptLog;
+    }
+
+    /// <summary>
+    /// Generates a truncated string from input with optional formatting
+    /// </summary>
+    public static string GenerateTruncatedString(string prompt, int truncationLength, bool bidirectional, string template = "{0}{1}")
+    {
+        if (prompt.Length <= truncationLength)
+        {
+            return prompt;
+        }
+
+        var promptStart = prompt.Substring(0, truncationLength);
+        var promptEnd = bidirectional ? prompt.Substring(prompt.Length - truncationLength, truncationLength) : "";
+        var toReturn = string.Format(CultureInfo.InvariantCulture, template, promptStart, promptEnd);
+        return toReturn;
+    }
+
+    /// <summary>
+    /// Gets the common prefix of two strings.
+    /// </summary>
+    public static string GetCommonPrefix(string prompt1, string prompt2)
     {
         var staticPartLength = 0;
 
@@ -112,8 +144,10 @@ public class PromptSignature
             throw new ArgumentException("The two prompts don't have matching beginnings");
         }
 
-        return staticPartLength;
+        return prompt1.Substring(0, staticPartLength);
     }
+
+
 
     /// <summary>
     /// Determines if the prompt matches the <see cref="PromptSignature"/>.

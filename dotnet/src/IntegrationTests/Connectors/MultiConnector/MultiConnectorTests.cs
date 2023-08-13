@@ -84,10 +84,16 @@ public sealed class MultiConnectorTests : IDisposable
     /// </summary>
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
     {
         // Load the plan from the provided file path
@@ -162,7 +168,8 @@ public sealed class MultiConnectorTests : IDisposable
             //This optional feature adjust prompt start to the true static prefix, which is useful for some scenarios where prompt starts overlap.
             // Prompts with variable content at the start are currently not accounted for automatically though, and need either a manual regex to avoid creating increasing prompt types, or using the FreezePromptTypes setting but the first alternative is preferred because unmatched prompts will go through the entire settings unless a regex matches them. 
             AdjustPromptStarts = false,
-            LogResult = true,
+            // Uncomment to enable logging of MultiTextCompletion calls and results
+            //LogResult = true,
             ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight),
             GlobalPromptTransform = new PromptTransform()
             {
@@ -189,19 +196,28 @@ public sealed class MultiConnectorTests : IDisposable
             }
         };
 
+        this._logger.LogTrace("Created MultiTextCompletionSettings\n");
+
         // Cleanup in case the previous test failed to delete the analysis file
         if (File.Exists(settings.AnalysisSettings.AnalysisFilePath))
         {
-            this._logger.LogTrace("Delete preexisting analysis file: {0}", settings.AnalysisSettings.AnalysisFilePath);
-
             File.Delete(settings.AnalysisSettings.AnalysisFilePath);
+
+            this._logger.LogTrace("Deleted preexisting analysis file: {0}", settings.AnalysisSettings.AnalysisFilePath);
         }
 
         var kernel = this.InitializeKernel(settings, modelNames, durationWeight: durationWeight, costWeight: costWeight, cancellationToken: cleanupToken.Token);
 
+        if (kernel == null)
+        {
+            return;
+        }
+
         var prepareKernelTimeElapsed = sw.Elapsed;
 
         var skills = TestHelpers.GetSkills(kernel, skillNames);
+
+        this._logger.LogTrace("\nLoaded Skills\n");
 
         // Act
 
@@ -209,7 +225,9 @@ public sealed class MultiConnectorTests : IDisposable
         var plan = await planFactory(kernel, cleanupToken.Token);
         var planJson = plan.ToJson();
 
-        this._logger.LogInformation("Plan used for multi-connector evaluation: {0}", planJson);
+        this._logger.LogTrace("\nLoaded Test plan\n");
+
+        this._logger.LogDebug("Plan used for multi-connector evaluation: {0}", planJson);
 
         settings.AnalysisSettings.EnableAnalysis = true;
 
@@ -242,15 +260,17 @@ public sealed class MultiConnectorTests : IDisposable
 
         var firstPassDuration = planRunOnceTimeElapsed - planBuildingTimeElapsed;
 
-        this._logger.LogInformation("Result from primary connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}", firstPassDuration, firstPassEffectiveCost, firstResult);
+        this._logger.LogTrace("\nPlan run once with primary connector\n");
+
+        this._logger.LogDebug("Result from primary connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}\n", firstPassDuration, firstPassEffectiveCost, firstResult);
 
         //make sure analysis was triggered after delay, and then release the waiting task manually;
 
-        this._logger.LogInformation("Waiting Analysis delay to get the last test trigger");
+        this._logger.LogTrace("\nWaiting Analysis delay to get the last test trigger\n");
 
         await Task.Delay(settings.AnalysisSettings.AnalysisDelay, CancellationToken.None).ConfigureAwait(false);
 
-        this._logger.LogInformation("Releasing analysis task, waiting for suggestion completed event");
+        this._logger.LogTrace("\nReleasing analysis task, waiting for suggestion completed event\n");
 
         settings.AnalysisSettings.AnalysisAwaitsManualTrigger = false;
         settings.AnalysisSettings.ReleaseAnalysisTasks();
@@ -260,7 +280,9 @@ public sealed class MultiConnectorTests : IDisposable
 
         var optimizationDoneElapsed = sw.Elapsed;
 
-        this._logger.LogInformation("Optimized with suggested settings: {0}", Json.Serialize(optimizationResults.SuggestedSettings));
+        this._logger.LogTrace("\nOptimization task finished\n");
+
+        this._logger.LogDebug("Optimized with suggested settings: {0}\n", Json.Serialize(optimizationResults.SuggestedSettings));
 
         //Re execute plan with suggested settings
 
@@ -270,6 +292,8 @@ public sealed class MultiConnectorTests : IDisposable
 
         plan = Plan.FromJson(planJson, ctx, true);
 
+        this._logger.LogTrace("\nPrepared plan for second run\n");
+
         var secondResult = await kernel.RunAsync(ctx.Variables, cleanupToken.Token, plan).ConfigureAwait(false);
 
         var secondPassEffectiveCost = settings.Creditor.OngoingCost;
@@ -278,7 +302,9 @@ public sealed class MultiConnectorTests : IDisposable
 
         var secondPassDuration = planRunTwiceElapsed - optimizationDoneElapsed;
 
-        this._logger.LogInformation("Result from vetted connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}", secondPassDuration, secondPassEffectiveCost, secondResult);
+        this._logger.LogTrace("\nSecond run of plan finished");
+
+        this._logger.LogDebug("Result from vetted connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}\n", secondPassDuration, secondPassEffectiveCost, secondResult);
 
         // Assert
 
@@ -288,7 +314,7 @@ public sealed class MultiConnectorTests : IDisposable
     /// <summary>
     /// Configures a kernel with MultiTextCompletion comprising a primary OpenAI connector with parameters defined in main settings for OpenAI integration tests, and Oobabooga secondary connectors with parameters defined in the MultiConnector part of the settings file.
     /// </summary>
-    private IKernel InitializeKernel(MultiTextCompletionSettings multiTextCompletionSettings, List<string>? modelNames, double durationWeight = 1, double costWeight = 1, CancellationToken? cancellationToken = null)
+    private IKernel? InitializeKernel(MultiTextCompletionSettings multiTextCompletionSettings, List<string>? modelNames, double durationWeight = 1, double costWeight = 1, CancellationToken? cancellationToken = null)
     {
         cancellationToken ??= CancellationToken.None;
 
@@ -373,6 +399,12 @@ public sealed class MultiConnectorTests : IDisposable
                 //}
             };
             oobaboogaCompletions.Add(oobaboogaNamedCompletion);
+        }
+
+        if (oobaboogaCompletions.Count == 0)
+        {
+            this._logger.LogWarning("No Secondary connectors matching test configuration found, aborting test");
+            return null;
         }
 
         var builder = Kernel.Builder

@@ -96,6 +96,8 @@ public class NamedTextCompletion
         MultiTextCompletionSettings multiTextCompletionSettings,
         ILogger? logger)
     {
+        logger?.LogTrace("Adjusting prompt and settings for connector");
+
         // Adjusting settings
 
         var adjustedSettings = completionJob.RequestSettings;

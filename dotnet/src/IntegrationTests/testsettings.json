@@ -66,16 +66,16 @@
       //  }
       //}
       //,
-      {
-        "Name": "TheBloke_StableBeluga-13B-GGML",
-        "BlockingPort": 5003,
-        "StreamingPort": 5013,
-        "MaxTokens": 4096,
-        "CostPer1000Token": 0.0007,
-        "PromptTransform": {
-          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n\n### User:\n{0}\n\n### Assistant:"
-        }
-      }
+      //{
+      //  "Name": "TheBloke_StableBeluga-13B-GGML",
+      //  "BlockingPort": 5003,
+      //  "StreamingPort": 5013,
+      //  "MaxTokens": 4096,
+      //  "CostPer1000Token": 0.0007,
+      //  "PromptTransform": {
+      //    "Template": "### System:\nThis is a system prompt, please behave and help the user.\n\n### User:\n{0}\n\n### Assistant:"
+      //  }
+      //}
       //,
       //{
       //  "Name": "TheBloke_upstage-llama-30b-instruct-2048-GGML",

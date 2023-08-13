@@ -478,7 +478,8 @@ RESPONSE IS VALID? (true/false):
                 await testSemaphore.WaitAsync(analysisJob.CancellationToken).ConfigureAwait(false);
                 try
                 {
-                    analysisJob.Logger?.LogTrace("Starting running tests for prompt:\n {0} ", originalTest.Prompt);
+                    string promptLog = analysisJob.Settings.GeneratePromptLog(originalTest.Prompt);
+                    analysisJob.Logger?.LogTrace("Starting running tests for prompt:\n {0} ", promptLog);
 
                     var testJob = new CompletionJob(originalTest.Prompt, originalTest.RequestSettings);
                     var testPromptSettings = analysisJob.Settings.GetPromptSettings(testJob, out var isNew);
@@ -555,7 +556,7 @@ RESPONSE IS VALID? (true/false):
                 var connectorTest = ConnectorTest.Create(testJob, namedTextCompletion, result, duration, textCompletionCost);
                 connectorTests.Add(connectorTest);
 
-                analysisJob.Logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
+                analysisJob.Logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, analysisJob.Settings.GeneratePromptLog(connectorTest.Prompt), analysisJob.Settings.GeneratePromptLog(connectorTest.Result));
             }
             catch (AIException exception)
             {
@@ -648,7 +649,11 @@ RESPONSE IS VALID? (true/false):
             analysisJob.Logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
         }
 
-        analysisJob.Logger?.LogDebug("Evaluated connector {0}, Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}", evaluation?.Test.ConnectorName, evaluation?.IsVetted, evaluation?.Test.Prompt, evaluation?.Test.Result);
+        analysisJob.Logger?.LogDebug("Evaluated connector {0}, Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}",
+            evaluation?.Test.ConnectorName,
+            evaluation?.IsVetted,
+            analysisJob.Settings.GeneratePromptLog(evaluation?.Test.Prompt ?? ""),
+            analysisJob.Settings.GeneratePromptLog(evaluation?.Test.Result ?? ""));
 
         return evaluation;
     }
