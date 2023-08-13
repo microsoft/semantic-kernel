@@ -100,7 +100,6 @@ public class PromptSignature
         return new PromptSignature(settings, newStart);
     }
 
-
     /// <summary>
     /// Generates a log for a prompt that is truncated at the beginning and the end.
     /// </summary>
@@ -146,8 +145,6 @@ public class PromptSignature
 
         return prompt1.Substring(0, staticPartLength);
     }
-
-
 
     /// <summary>
     /// Determines if the prompt matches the <see cref="PromptSignature"/>.
