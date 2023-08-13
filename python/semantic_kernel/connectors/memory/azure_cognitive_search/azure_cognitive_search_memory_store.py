@@ -8,9 +8,9 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    HnswVectorSearchAlgorithmConfiguration,
     SearchIndex,
-    VectorSearch
+    VectorSearch,
+    HnswVectorSearchAlgorithmConfiguration,
 )
 
 from numpy import ndarray
@@ -89,7 +89,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         Arguments:
             collection_name {str}                              -- The name of the collection to create.
-            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration
+            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration 
                                                                   (default: {None}).
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
         Returns:
