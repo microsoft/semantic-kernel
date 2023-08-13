@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -64,18 +65,39 @@ public class PromptSignature
     }
 
     /// <summary>
-    /// Extracts a <see cref="PromptSignature"/> from a prompt string and request settings.
+    /// Extracts a <see cref="PromptSignature"/> from a prompt string, request settings and existing signatures to deal with overlapping prompt starts.
     /// </summary>
-    /// <param name="prompt">The prompt string.</param>
-    /// <param name="settings">The request settings associated with the prompt</param>
+    /// <param name="completionJob">The prompt and request settings to extract a signature from</param>
+    /// <param name="promptMultiConnectorSettingsCollection"></param>
     /// <param name="truncationLength">The length of the extracted beginning of the prompt for identification.</param>
     /// <returns>The extracted <see cref="PromptSignature"/>.</returns>
-    public static PromptSignature ExtractFromPrompt(string prompt, CompleteRequestSettings settings, int truncationLength)
+    public static PromptSignature ExtractFromPrompt(CompletionJob completionJob, IEnumerable<PromptMultiConnectorSettings> promptMultiConnectorSettingsCollection, int truncationLength)
     {
-        return new PromptSignature(settings, prompt.Substring(0, truncationLength));
+        var promptStart = completionJob.Prompt.Substring(0, truncationLength);
+
+        foreach (var promptMultiConnectorSettings in promptMultiConnectorSettingsCollection)
+        {
+            if (promptMultiConnectorSettings.PromptType.Signature.MatchingRegex != null
+                && promptMultiConnectorSettings.PromptType.Signature.PromptStart.StartsWith(promptStart, StringComparison.Ordinal))
+            {
+                var commonRadixLength = PromptSignature.GetCommonPrefixLength(promptMultiConnectorSettings.PromptType.Signature.PromptStart, promptStart);
+                promptStart = completionJob.Prompt.Substring(0, commonRadixLength);
+            }
+        }
+
+        return new PromptSignature(completionJob.RequestSettings, promptStart);
     }
 
     public static PromptSignature ExtractFrom2Instances(string prompt1, string prompt2, CompleteRequestSettings settings)
+    {
+        int staticPartLength = GetCommonPrefixLength(prompt1, prompt2);
+
+        var newStart = prompt1.Substring(0, staticPartLength);
+
+        return new PromptSignature(settings, newStart);
+    }
+
+    public static int GetCommonPrefixLength(string prompt1, string prompt2)
     {
         var staticPartLength = 0;
 
@@ -90,21 +112,18 @@ public class PromptSignature
             throw new ArgumentException("The two prompts don't have matching beginnings");
         }
 
-        var newStart = prompt1.Substring(0, staticPartLength);
-
-        return new PromptSignature(settings, newStart);
+        return staticPartLength;
     }
 
     /// <summary>
     /// Determines if the prompt matches the <see cref="PromptSignature"/>.
     /// </summary>
-    /// <param name="prompt">The prompt string.</param>
-    /// <param name="promptSettings">The request settings for the prompt.</param>
+    /// <param name="completionJob">The prompt and request settings for the completion</param>
     /// <returns><c>true</c> if the prompt matches the <see cref="PromptSignature"/>; otherwise, <c>false</c>.</returns>
-    public bool Matches(string prompt, CompleteRequestSettings promptSettings)
+    public bool Matches(CompletionJob completionJob)
     {
-        return (this.MatchSettings(promptSettings) && (this.CompiledRegex?.IsMatch(prompt) ??
-                                                       prompt.StartsWith(this.PromptStart, StringComparison.OrdinalIgnoreCase)));
+        return (this.MatchSettings(completionJob.RequestSettings) && (this.CompiledRegex?.IsMatch(completionJob.Prompt) ??
+                                                                      completionJob.Prompt.StartsWith(this.PromptStart, StringComparison.Ordinal)));
     }
 
     private bool MatchSettings(CompleteRequestSettings promptSettings)

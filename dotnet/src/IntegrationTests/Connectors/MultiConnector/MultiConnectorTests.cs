@@ -84,7 +84,10 @@ public sealed class MultiConnectorTests : IDisposable
     /// </summary>
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
     [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
     {
         // Load the plan from the provided file path
@@ -156,7 +159,9 @@ public sealed class MultiConnectorTests : IDisposable
         {
             Creditor = creditor,
             PromptTruncationLength = 11,
-            AdjustPromptStarts = true,
+            //This optional feature adjust prompt start to the true static prefix, which is useful for some scenarios where prompt starts overlap.
+            // Prompts with variable content at the start are currently not accounted for automatically though, and need either a manual regex to avoid creating increasing prompt types, or using the FreezePromptTypes setting but the first alternative is preferred because unmatched prompts will go through the entire settings unless a regex matches them. 
+            AdjustPromptStarts = false,
             LogResult = true,
             ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight),
             GlobalPromptTransform = new PromptTransform()
@@ -175,7 +180,8 @@ public sealed class MultiConnectorTests : IDisposable
                 TestsPeriod = TimeSpan.Zero,
                 EvaluationPeriod = TimeSpan.Zero,
                 SuggestionPeriod = TimeSpan.Zero,
-                MaxDegreeOfParallelismConnectorTests = 1,
+                // Change the following settings if you run all models on the same machine and want to limit the number of concurrent connectors
+                MaxDegreeOfParallelismConnectorsByTest = 3,
                 UpdateSuggestedSettings = true,
                 // For instrumented data in file format, feel free to uncomment either of the following lines
                 DeleteAnalysisFile = false,
@@ -240,8 +246,13 @@ public sealed class MultiConnectorTests : IDisposable
 
         //make sure analysis was triggered after delay, and then release the waiting task manually;
 
+        this._logger.LogInformation("Waiting Analysis delay to get the last test trigger");
+
         await Task.Delay(settings.AnalysisSettings.AnalysisDelay, CancellationToken.None).ConfigureAwait(false);
 
+        this._logger.LogInformation("Releasing analysis task, waiting for suggestion completed event");
+
+        settings.AnalysisSettings.AnalysisAwaitsManualTrigger = false;
         settings.AnalysisSettings.ReleaseAnalysisTasks();
 
         // Get the optimization results

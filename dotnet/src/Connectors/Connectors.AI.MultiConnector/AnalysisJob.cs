@@ -16,6 +16,8 @@ public class AnalysisJob : TestEvent
 
     public ILogger? Logger { get; }
 
+    public bool SkipPeriods { get; set; }
+
     public CancellationToken CancellationToken { get; }
 
     public AnalysisJob(MultiTextCompletionSettings settings, IReadOnlyList<NamedTextCompletion> textCompletions, ILogger? logger, CancellationToken cancellationToken)

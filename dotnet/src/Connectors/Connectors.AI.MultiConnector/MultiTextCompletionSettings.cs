@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,8 +14,13 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// <summary>
 /// Represents the settings used to configure the multi-text completion process.
 /// </summary>
+/// <remarks>
+///  Prompts with variable content at the start are currently not accounted for automatically and need attending by either providing a manual regex to avoid creating increasing prompt types indefinitely, or using the FreezePromptTypes setting to prevent new creation but the first alternative is preferred because unmatched prompts will go through the entire settings unless a regex matches them.
+/// </remarks>
 public class MultiTextCompletionSettings
 {
+    private ConcurrentBag<PromptMultiConnectorSettings> _promptMultiConnectorSettingsInternal = new();
+
     /// <summary>
     /// Loads suggested settings from an analysis.
     /// If the file doesn't exist, it returns the current settings.
@@ -38,13 +44,24 @@ public class MultiTextCompletionSettings
     public MultiCompletionAnalysisSettings AnalysisSettings { get; set; } = new();
 
     /// <summary>
+    /// If true, the prompt types, no new prompt types are discovered automatically and standard prompt settings will be associated with unrecognized prompts.
+    /// </summary>
+    public bool FreezePromptTypes { get; set; }
+
+    /// <summary>
     /// Represents the length to which prompts will be truncated for signature extraction.
     /// </summary>
+    /// <remarks>
+    /// Prompts with variable content at the start are currently not accounted for automatically though, and need either a manual regex to avoid creating increasing prompt types, or using the FreezePromptTypes setting but the first alternative is preferred because unmatched prompts will go through the entire settings unless a regex matches them.
+    /// </remarks>
     public int PromptTruncationLength { get; set; } = 20;
 
     /// <summary>
     /// If true, prompt signature starts are adjusted to the actual template starter when differing samples are witnessed.
     /// </summary>
+    /// <remarks>
+    /// This optional feature adjusts prompt start in matching signature to the true static prefix identified from comparing distinct instances. This is useful for scenarios where prompt starts may overlap but may induce higher computational cost unless a fast precomputed matching function is offered.
+    /// </remarks>
     public bool AdjustPromptStarts { get; set; } = true;
 
     /// <summary>
@@ -55,13 +72,23 @@ public class MultiTextCompletionSettings
     /// <summary>
     /// List of settings for multiple connectors associated with each prompt type.
     /// </summary>
-    public List<PromptMultiConnectorSettings> PromptMultiConnectorSettings { get; } = new();
+    public List<PromptMultiConnectorSettings> PromptMultiConnectorSettings
+    {
+        get => this._promptMultiConnectorSettingsInternal.ToList();
+        set => this._promptMultiConnectorSettingsInternal = new ConcurrentBag<PromptMultiConnectorSettings>(value);
+    }
 
     /// <summary>
     /// Comparer used to choose among vetted connectors.
     /// </summary>
     [JsonIgnore]
-    public Func<PromptConnectorSettings, PromptConnectorSettings, int> ConnectorComparer { get; set; } = GetConnectorComparer(1, 1);
+    public Func<CompletionJob, PromptConnectorSettings, PromptConnectorSettings, int> ConnectorComparer { get; set; } = GetConnectorComparer(1, 1);
+
+    /// <summary>
+    /// Custom matcher to find the prompt settings from prompt. Default enumerates prefixes and uses StartsWith. More efficient precomputed matchers can be used.
+    /// </summary>
+    [JsonIgnore]
+    public Func<CompletionJob, IEnumerable<PromptMultiConnectorSettings>, PromptMultiConnectorSettings?> PromptMatcher { get; set; } = SimpleMatchPromptSettings;
 
     /// <summary>
     /// Optionally transform the input prompts globally
@@ -77,20 +104,34 @@ public class MultiTextCompletionSettings
     /// Returns settings for a given prompt.
     /// If settings for the prompt do not exist, new settings are created, added to the list, and returned.
     /// </summary>
-    public PromptMultiConnectorSettings GetPromptSettings(string prompt, CompleteRequestSettings promptSettings, out bool isNew)
+    public PromptMultiConnectorSettings GetPromptSettings(CompletionJob completionJob, out bool isNew)
     {
         isNew = false;
-        var toReturn = this.PromptMultiConnectorSettings.FirstOrDefault(s => s.PromptType.Signature.Matches(prompt, promptSettings));
+        PromptMultiConnectorSettings? toReturn = this.MatchPromptSettings(completionJob);
         if (toReturn == null)
         {
-            lock (this.PromptMultiConnectorSettings)
+            if (this.FreezePromptTypes)
             {
-                var newSignature = PromptSignature.ExtractFromPrompt(prompt, promptSettings, this.PromptTruncationLength);
                 toReturn = new PromptMultiConnectorSettings()
                 {
                     PromptType = new PromptType()
                     {
-                        Instances = { prompt },
+                        Instances = { "" },
+                        MaxInstanceNb = 1,
+                        Signature = new PromptSignature(completionJob.RequestSettings, ""),
+                        PromptName = "default",
+                        SignatureNeedsAdjusting = false,
+                    },
+                };
+            }
+            else
+            {
+                var newSignature = PromptSignature.ExtractFromPrompt(completionJob, this._promptMultiConnectorSettingsInternal, this.PromptTruncationLength);
+                toReturn = new PromptMultiConnectorSettings()
+                {
+                    PromptType = new PromptType()
+                    {
+                        Instances = { completionJob.Prompt },
                         MaxInstanceNb = this.AnalysisSettings.NbPromptTests,
                         Signature = newSignature,
                         PromptName = newSignature.PromptStart.Replace(" ", "_"),
@@ -98,21 +139,38 @@ public class MultiTextCompletionSettings
                     },
                 };
 
-                this.PromptMultiConnectorSettings.Add(toReturn);
+                this._promptMultiConnectorSettingsInternal.Add(toReturn);
                 isNew = true;
             }
         }
         else
         {
-            if (toReturn.PromptType.SignatureNeedsAdjusting && prompt != toReturn.PromptType.Instances[0])
+            if (toReturn.PromptType.SignatureNeedsAdjusting && completionJob.Prompt != toReturn.PromptType.Instances[0])
             {
                 lock (toReturn.PromptType.Signature)
                 {
-                    toReturn.PromptType.Signature = PromptSignature.ExtractFrom2Instances(prompt, toReturn.PromptType.Instances[0], promptSettings);
+                    toReturn.PromptType.Signature = PromptSignature.ExtractFrom2Instances(completionJob.Prompt, toReturn.PromptType.Instances[0], completionJob.RequestSettings);
                 }
             }
         }
 
+        return toReturn;
+    }
+
+    private PromptMultiConnectorSettings? MatchPromptSettings(CompletionJob completionJob)
+    {
+        //TODO: Optionally allow for faster prompt matching with a pre-computation cost when prefix settings were tested and configured.
+        //Make the matching method based on a setting property. options of increasing complexity:
+        //   * Make a random char sampler to extract a unique sub-signature from the whole list of Signature.
+        //   * build a RadixTree<string, char, TValue> --> Trie<string, char, TValue> --> HybridDictionary<string, TValue> or a Dictionary<string, TValue> with a custom comparer.
+        //   * Use Infer.net string capabilities (see DNA samples) to build a probabilistic model of the signature and use it for matching.
+        var toReturn = this.PromptMatcher(completionJob, this._promptMultiConnectorSettingsInternal);
+        return toReturn;
+    }
+
+    private static PromptMultiConnectorSettings? SimpleMatchPromptSettings(CompletionJob completionJob, IEnumerable<PromptMultiConnectorSettings> promptMultiConnectorSettings)
+    {
+        var toReturn = promptMultiConnectorSettings.FirstOrDefault(s => s.PromptType.Signature.Matches(completionJob));
         return toReturn;
     }
 
@@ -121,7 +179,7 @@ public class MultiTextCompletionSettings
     /// </summary>
     public void ResetPromptVetting()
     {
-        foreach (var promptMultiConnectorSetting in this.PromptMultiConnectorSettings)
+        foreach (var promptMultiConnectorSetting in this._promptMultiConnectorSettingsInternal)
         {
             promptMultiConnectorSetting.PromptType.Instances.Clear();
             foreach (var pairConnectorSetting
@@ -137,20 +195,23 @@ public class MultiTextCompletionSettings
     /// </summary>
     /// <param name="durationWeight">the weight of the duration gains in proportion</param>
     /// <param name="costWeight">the weight of the cost gains in proportion</param>
-    public static Func<PromptConnectorSettings, PromptConnectorSettings, int> GetConnectorComparer(double durationWeight, double costWeight)
+    public static Func<CompletionJob, PromptConnectorSettings, PromptConnectorSettings, int> GetConnectorComparer(double durationWeight, double costWeight)
     {
-        return (a, b) =>
+        //TODO: Optionally allow for more elaborate connector comparison
+        //Possible implementation: Build an Infer.probabilistic model with latent variables for general LLM capabilities, prompt type skill capability, prompt difficulty, etc. and observed variables tests, evaluations etc., precompute the posterior distribution of the latent variables given the observed variables, and choose the connector with the highest expected gain.
+
+        return (completionJob, promptConnectorSettings1, promptConnectorSettings2) =>
         {
             double? durationCoefficient = null;
-            if (a.AverageDuration > TimeSpan.Zero && b.AverageDuration > TimeSpan.Zero)
+            if (promptConnectorSettings1.AverageDuration > TimeSpan.Zero && promptConnectorSettings2.AverageDuration > TimeSpan.Zero)
             {
-                durationCoefficient = b.AverageDuration.Ticks / (double)a.AverageDuration.Ticks;
+                durationCoefficient = promptConnectorSettings2.AverageDuration.Ticks / (double)promptConnectorSettings1.AverageDuration.Ticks;
             }
 
             double? costCoefficient = null;
-            if (a.AverageCost > 0 && b.AverageCost > 0)
+            if (promptConnectorSettings1.AverageCost > 0 && promptConnectorSettings2.AverageCost > 0)
             {
-                costCoefficient = (double)b.AverageCost / (double)a.AverageCost;
+                costCoefficient = (double)promptConnectorSettings2.AverageCost / (double)promptConnectorSettings1.AverageCost;
             }
 
             var doubledResult = (costWeight * costCoefficient ?? 1 + durationWeight * durationCoefficient ?? 1) / (costWeight + durationWeight);

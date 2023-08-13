@@ -49,7 +49,8 @@ public class MultiTextCompletion : ITextCompletion
     /// <inheritdoc />
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        var session = this.GetPromptAndConnectorSettings(text, requestSettings);
+        var completionJob = new CompletionJob(text, requestSettings);
+        var session = this.GetPromptAndConnectorSettings(completionJob);
         var completions = await session.NamedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallText, session.CallRequestSettings, cancellationToken).ConfigureAwait(false);
 
         var resultLazy = new AsyncLazy<string>(() =>
@@ -69,7 +70,8 @@ public class MultiTextCompletion : ITextCompletion
     /// <inheritdoc />
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        var session = this.GetPromptAndConnectorSettings(text, requestSettings);
+        var completionJob = new CompletionJob(text, requestSettings);
+        var session = this.GetPromptAndConnectorSettings(completionJob);
 
         var result = session.NamedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(session.CallText, session.CallRequestSettings, cancellationToken);
 
@@ -100,20 +102,20 @@ public class MultiTextCompletion : ITextCompletion
     /// <summary>
     /// This method is responsible for loading the appropriate settings in order to initiate the session state
     /// </summary>
-    private MultiCompletionSession GetPromptAndConnectorSettings(string text, CompleteRequestSettings requestSettings)
+    private MultiCompletionSession GetPromptAndConnectorSettings(CompletionJob completionJob)
     {
-        var promptSettings = this._settings.GetPromptSettings(text, requestSettings, out var isNewPrompt);
-        var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(this._textCompletions, this._settings.ConnectorComparer);
-        var adjustedPrompt = textCompletionAndSettings.namedTextCompletion.AdjustPromptAndRequestSettings(text, requestSettings, textCompletionAndSettings.promptConnectorSettings, promptSettings, this._settings, this._logger);
+        var promptSettings = this._settings.GetPromptSettings(completionJob, out var isNewPrompt);
+        var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(completionJob, this._textCompletions, this._settings.ConnectorComparer);
+        var adjustedCompletionJob = textCompletionAndSettings.namedTextCompletion.AdjustPromptAndRequestSettings(completionJob, textCompletionAndSettings.promptConnectorSettings, promptSettings, this._settings, this._logger);
         var stopWatch = Stopwatch.StartNew();
 
         return new MultiCompletionSession
         {
             PromptSettings = promptSettings,
-            InputText = text,
-            InputRequestSettings = requestSettings,
-            CallText = adjustedPrompt.text,
-            CallRequestSettings = adjustedPrompt.requestSettings,
+            InputText = completionJob.Prompt,
+            InputRequestSettings = completionJob.RequestSettings,
+            CallText = adjustedCompletionJob.Prompt,
+            CallRequestSettings = adjustedCompletionJob.RequestSettings,
             IsNewPrompt = isNewPrompt,
             NamedTextCompletion = textCompletionAndSettings.namedTextCompletion,
             PromptConnectorSettings = textCompletionAndSettings.promptConnectorSettings,
@@ -172,8 +174,9 @@ public class MultiTextCompletion : ITextCompletion
 
         var duration = session.StopWatch.Elapsed;
 
+        var completionJob = new CompletionJob(session.InputText, session.InputRequestSettings);
         // For the management task
-        ConnectorTest connectorTest = ConnectorTest.Create(session.InputText, session.InputRequestSettings, session.NamedTextCompletion, result, duration, textCompletionCost);
+        ConnectorTest connectorTest = ConnectorTest.Create(completionJob, session.NamedTextCompletion, result, duration, textCompletionCost);
         this.AppendConnectorTest(connectorTest);
     }
 
@@ -246,7 +249,7 @@ public class MultiTextCompletion : ITextCompletion
     /// </summary>
     private void AppendConnectorTest(ConnectorTest connectorTest)
     {
-        this._logger?.LogTrace("Collecting new test with duration {0},\nORIGINAL_PROMPT:\n{1}\nORIGINAL_RESULT:\n{2}", connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
+        this._logger?.LogTrace("Collecting new original sample to test with duration {0},\nORIGINAL_PROMPT:\n{1}\nORIGINAL_RESULT:\n{2}", connectorTest.Duration, connectorTest.Prompt, connectorTest.Result);
         this._dataCollectionChannel.Writer.TryWrite(connectorTest);
     }
 }

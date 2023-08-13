@@ -51,10 +51,11 @@ public class PromptMultiConnectorSettings
     /// <summary>
     /// Selects the appropriate text completion to use based on the vetting evaluations analyzed.
     /// </summary>
+    /// <param name="completionJob">The prompt and request settings to find the appropriate completion for</param>
     /// <param name="namedTextCompletions">The list of available text completions.</param>
     /// <param name="settingsConnectorComparer"></param>
     /// <returns>The selected <see cref="NamedTextCompletion"/>.</returns>
-    public (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) SelectAppropriateTextCompletion(IReadOnlyList<NamedTextCompletion> namedTextCompletions, Func<PromptConnectorSettings, PromptConnectorSettings, int> settingsConnectorComparer)
+    public (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) SelectAppropriateTextCompletion(CompletionJob completionJob, IReadOnlyList<NamedTextCompletion> namedTextCompletions, Func<CompletionJob, PromptConnectorSettings, PromptConnectorSettings, int> settingsConnectorComparer)
     {
         var filteredConnectors = new List<(NamedTextCompletion textCompletion, PromptConnectorSettings promptConnectorSettings)>();
         foreach (var namedTextCompletion in namedTextCompletions)
@@ -68,7 +69,7 @@ public class PromptMultiConnectorSettings
 
         if (filteredConnectors.Count > 0)
         {
-            filteredConnectors.Sort((c1, c2) => settingsConnectorComparer(c1.Item2, c2.Item2));
+            filteredConnectors.Sort((c1, c2) => settingsConnectorComparer(completionJob, c1.Item2, c2.Item2));
             return filteredConnectors[0];
         }
 

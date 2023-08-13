@@ -35,12 +35,12 @@ public class ConnectorTest : TestEvent
     /// <summary>
     /// Helper to create connector test from completion components
     /// </summary>
-    public static ConnectorTest Create(string text, CompleteRequestSettings requestSettings, NamedTextCompletion textCompletion, string result, TimeSpan duration, decimal textCompletionCost)
+    public static ConnectorTest Create(CompletionJob completionJob, NamedTextCompletion textCompletion, string result, TimeSpan duration, decimal textCompletionCost)
     {
         var connectorTest = new ConnectorTest
         {
-            Prompt = text,
-            RequestSettings = requestSettings,
+            Prompt = completionJob.Prompt,
+            RequestSettings = completionJob.RequestSettings,
             ConnectorName = textCompletion.Name,
             Result = result,
             Duration = duration,

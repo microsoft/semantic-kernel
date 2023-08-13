@@ -91,20 +91,19 @@ public class NamedTextCompletion
     /// <summary>
     /// Adjusts the request max tokens and temperature settings based on the completion max token supported.
     /// </summary>
-    public (string text, CompleteRequestSettings requestSettings) AdjustPromptAndRequestSettings(string text,
-        CompleteRequestSettings requestSettings, PromptConnectorSettings promptConnectorSettings,
+    public CompletionJob AdjustPromptAndRequestSettings(CompletionJob completionJob, PromptConnectorSettings promptConnectorSettings,
         PromptMultiConnectorSettings promptMultiConnectorSettings,
         MultiTextCompletionSettings multiTextCompletionSettings,
         ILogger? logger)
     {
         // Adjusting settings
 
-        var adjustedSettings = requestSettings;
+        var adjustedSettings = completionJob.RequestSettings;
 
         var adjustedSettingsModifier = new SettingsUpdater<CompleteRequestSettings>(adjustedSettings, MultiTextCompletionSettings.CloneRequestSettings);
 
         bool valueChanged = false;
-        if (this.MaxTokens != null && requestSettings.MaxTokens != null)
+        if (this.MaxTokens != null && completionJob.RequestSettings.MaxTokens != null)
         {
             int? ComputeMaxTokens(int? initialValue)
             {
@@ -119,7 +118,7 @@ public class NamedTextCompletion
                         case MaxTokensAdjustment.CountInputTokens:
                             if (this.TokenCountFunc != null)
                             {
-                                newMaxTokens = Math.Min(newMaxTokens.Value, this.MaxTokens.Value - this.TokenCountFunc(text));
+                                newMaxTokens = Math.Min(newMaxTokens.Value, this.MaxTokens.Value - this.TokenCountFunc(completionJob.Prompt));
                             }
                             else
                             {
@@ -137,7 +136,7 @@ public class NamedTextCompletion
 
             if (valueChanged)
             {
-                logger?.LogDebug("Changed request max token from {0} to {1}", requestSettings.MaxTokens.Value, adjustedSettings.MaxTokens);
+                logger?.LogDebug("Changed request max token from {0} to {1}", completionJob.RequestSettings.MaxTokens.Value, adjustedSettings.MaxTokens);
             }
         }
 
@@ -147,19 +146,19 @@ public class NamedTextCompletion
 
             if (valueChanged)
             {
-                logger?.LogDebug("Changed temperature from {0} to {1}", requestSettings.Temperature, adjustedSettings.Temperature);
+                logger?.LogDebug("Changed temperature from {0} to {1}", completionJob.RequestSettings.Temperature, adjustedSettings.Temperature);
             }
         }
 
         if (this.RequestSettingsTransform != null)
         {
-            adjustedSettings = this.RequestSettingsTransform(requestSettings);
+            adjustedSettings = this.RequestSettingsTransform(completionJob.RequestSettings);
             logger?.LogTrace("Applied request settings transform");
         }
 
         //Adjusting prompt
 
-        var adjustedPrompt = text;
+        var adjustedPrompt = completionJob.Prompt;
 
         if (multiTextCompletionSettings.GlobalPromptTransform != null)
         {
@@ -185,6 +184,6 @@ public class NamedTextCompletion
             logger?.LogTrace("Applied named connector settings transform");
         }
 
-        return (adjustedPrompt, adjustedSettings);
+        return new CompletionJob(adjustedPrompt, adjustedSettings);
     }
 }
