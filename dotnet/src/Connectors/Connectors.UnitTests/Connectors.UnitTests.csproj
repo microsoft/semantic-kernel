@@ -36,6 +36,7 @@
     <ProjectReference Include="..\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors.Memory.AzureCognitiveSearch\Connectors.Memory.AzureCognitiveSearch.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
