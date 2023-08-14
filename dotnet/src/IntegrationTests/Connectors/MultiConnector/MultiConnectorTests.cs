@@ -150,7 +150,7 @@ public sealed class MultiConnectorTests : IDisposable
         await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, nbPromptTests, skillNames).ConfigureAwait(false);
     }
 
-    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, Task<Plan>> planFactory, List<string>? modelNames, int nbPromptTests,  params string[] skillNames)
+    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, Task<Plan>> planFactory, List<string>? modelNames, int nbPromptTests, params string[] skillNames)
     {
         // Arrange
 
