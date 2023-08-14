@@ -11,26 +11,29 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 public class ConnectorTest : TestEvent
 {
     /// <summary>
-    /// name of the connector used for the test.
+    /// Name of the connector used for the test.
     /// </summary>
-    public string ConnectorName { get; set; } = "";
+    public string ConnectorName { get; private set; } = "";
 
     /// <summary>
-    /// prompt to call the connector with.
+    /// Sample prompt used for the test (before connector-specific transforms).
     /// </summary>
-    public string Prompt { get; set; } = "";
+    public string Prompt { get; private set; } = "";
 
     /// <summary>
-    /// request settings for the test.
+    /// Request settings for the test (before connector-specific adjustments).
     /// </summary>
-    public CompleteRequestSettings RequestSettings { get; set; } = new();
+    public CompleteRequestSettings RequestSettings { get; private set; } = new();
 
     /// <summary>
-    /// Gets or sets the result returned by the connector called with the test prompt.
+    /// Result returned by the connector called with the test prompt.
     /// </summary>
-    public string Result { get; set; } = "";
+    public string Result { get; private set; } = "";
 
-    public decimal Cost { get; set; }
+    /// <summary>
+    /// Cost of the call to the connector computed according to the cost per request and cost per token configured.
+    /// </summary>
+    public decimal Cost { get; private set; }
 
     /// <summary>
     /// Helper to create connector test from completion components
