@@ -36,25 +36,25 @@ public class KernelException extends SKException {
         /// <summary>
         /// Unknown error.
         /// </summary>
-        UnknownError("Unknown error"),
+        UNKOWN_ERROR("Unknown error"),
 
-        InvalidFunctionDescription("Invalid function description"),
+        INVALID_FUNCTION_DESCRIPTION("Invalid function description"),
 
-        FunctionOverloadNotSupported("Function overload not supported"),
+        FUNCTION_OVERLOAD_NOT_SUPPORTED("Function overload not supported"),
 
-        FunctionNotAvailable("Function not available"),
+        FUNCTION_NOT_AVAILABLE("Function not available"),
 
-        FunctionTypeNotSupported("Function type not supported"),
+        FUNCTION_TYPE_NOT_SUPPORTED("Function type not supported"),
 
-        InvalidFunctionType("Invalid function type"),
+        INVALID_FUNCTION_TYPE("Invalid function type"),
 
-        InvalidServiceConfiguration("Invalid service configuration"),
+        INVALID_SERVICE_CONFIGURATION("Invalid service configuration"),
 
-        ServiceNotFound("Service not found"),
+        SERVICE_NOT_FOUND("Service not found"),
 
-        SkillCollectionNotSet("Skill collection not set"),
+        SKILL_COLLECTION_NOT_SET("Skill collection not set"),
 
-        FunctionInvokeError("Represents an error that occurs when invoking a function");
+        FUNCTION_INVOCATION_ERROR("Represents an error that occurs when invoking a function");
 
         private final String message;
 

@@ -104,7 +104,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
                             if (response == null || response.getChoices().isEmpty()) {
                                 return Mono.error(
                                         new AIException(
-                                                AIException.ErrorCodes.InvalidResponseContent,
+                                                AIException.ErrorCodes.INVALID_RESPONSE_CONTENT,
                                                 "Chat completions not found"));
                             } else {
                                 return Mono.just(

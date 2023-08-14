@@ -50,7 +50,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         // TODO
 
         if (requestSettings.getMaxTokens() < 1) {
-            throw new AIException(AIException.ErrorCodes.InvalidRequest, "Max tokens must be >0");
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Max tokens must be >0");
         }
 
         CompletionsOptions completionsOptions =

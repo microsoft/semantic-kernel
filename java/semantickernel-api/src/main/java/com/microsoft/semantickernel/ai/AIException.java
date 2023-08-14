@@ -56,33 +56,33 @@ public class AIException extends SKException {
     /** Error codes */
     public enum ErrorCodes {
         /** Unknown error. */
-        UnknownError("Unknown error"),
+        UNKNOWN_ERROR("Unknown error"),
 
         /** No response. */
-        NoResponse("No response"),
+        NO_RESPONSE("No response"),
         /** Access denied. */
-        AccessDenied("Access is denied"),
+        ACCESS_DENIED("Access is denied"),
 
         /** Invalid request. */
-        InvalidRequest("The request was invalid"),
+        INVALID_REQUEST("The request was invalid"),
         /** Invalid response. */
-        InvalidResponseContent("The content of the response was invalid"),
+        INVALID_RESPONSE_CONTENT("The content of the response was invalid"),
 
         /** Throttling. */
-        Throttling("The request was throttled"),
+        THROTTLING("The request was throttled"),
         /** Request timeout. */
-        RequestTimeout("The request timed out"),
+        REQUEST_TIMEOUT("The request timed out"),
 
         /** Service error. */
-        ServiceError("There was an error in the service"),
+        SERVICE_ERROR("There was an error in the service"),
 
         /** Model not available. */
-        ModelNotAvailable("The requested model is not available"),
+        MODEL_NOT_AVAILABLE("The requested model is not available"),
 
         /** Invalid configuration. */
-        InvalidConfiguration("The supplied configuration was invalid"),
+        INVALID_CONFIGURATION("The supplied configuration was invalid"),
         /** Function type not supported. */
-        FunctionTypeNotSupported("The function is not supported");
+        FUNCTION_TYPE_NOT_SUPPORTED("The function is not supported");
         private final String message;
 
         ErrorCodes(String message) {

@@ -45,8 +45,6 @@ public class SQLConnectorException extends SKException {
     }
 
     public enum ErrorCodes {
-      SERIALIZATION_ERROR("Serialization error"),
-      DESERIALIZATION_ERROR("Deserialization error"),
       SQL_ERROR("SQL error");
 
       final String message;

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.util;
 
-import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.NoValidConfigurationsFound;
+import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.NO_VALID_CONFIGURATIONS_FOUND;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
@@ -152,7 +152,7 @@ public class OpenAIClientProvider {
      */
     public static OpenAIAsyncClient getClient() throws ConfigurationException {
         if (DEFAULT_INST == null) {
-            throw new ConfigurationException(NoValidConfigurationsFound);
+            throw new ConfigurationException(NO_VALID_CONFIGURATIONS_FOUND);
         }
         return DEFAULT_INST.getAsyncClient();
     }
@@ -196,7 +196,7 @@ public class OpenAIClientProvider {
                 return client;
             } catch (ConfigurationException e) {
                 LOGGER.debug("No Azure OpenAI client found");
-                throw new ConfigurationException(NoValidConfigurationsFound);
+                throw new ConfigurationException(NO_VALID_CONFIGURATIONS_FOUND);
             }
         } else {
             switch (clientType) {
@@ -205,7 +205,7 @@ public class OpenAIClientProvider {
                 case AZURE_OPEN_AI:
                     return buildAzureOpenAIClient();
                 default:
-                    throw new ConfigurationException(NoValidConfigurationsFound);
+                    throw new ConfigurationException(NO_VALID_CONFIGURATIONS_FOUND);
             }
         }
     }

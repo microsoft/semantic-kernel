@@ -45,7 +45,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
             blocks.forEach(
                     block -> {
                         if (!block.isValid()) {
-                            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError);
+                            throw new TemplateException(TemplateException.ErrorCodes.SYNTAX_ERROR);
                         }
                     });
         }
@@ -79,7 +79,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
                                 LOGGER.error(message);
                                 return Mono.error(
                                         new TemplateException(
-                                                TemplateException.ErrorCodes.UnexpectedBlockType,
+                                                TemplateException.ErrorCodes.UNEXPECTED_BLOCK_TYPE,
                                                 message));
                             }
                         })
@@ -108,7 +108,7 @@ public class DefaultPromptTemplateEngine implements PromptTemplateEngine {
                 default:
                     const string error = "Unexpected block type, the block doesn't have a rendering method";
                     this._log.LogError(error);
-                    throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, error);
+                    throw new TemplateException(TemplateException.ErrorCodes.UNEXPECTED_BLOCK_TYPE, error);
             }
         }
 

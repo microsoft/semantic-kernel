@@ -272,7 +272,7 @@ public class DefaultCompletionSKFunction
         public CompletionSKFunction build() {
             if (kernel == null) {
                 throw new AIException(
-                        AIException.ErrorCodes.InvalidConfiguration,
+                        AIException.ErrorCodes.INVALID_CONFIGURATION,
                         "Called builder to create a function without setting the kernel");
             }
 
@@ -293,7 +293,7 @@ public class DefaultCompletionSKFunction
 
                 if (promptTemplate == null) {
                     throw new AIException(
-                            AIException.ErrorCodes.InvalidConfiguration,
+                            AIException.ErrorCodes.INVALID_CONFIGURATION,
                             "Must set prompt template before building");
                 }
 

@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.extensions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.KernelException;
+import com.microsoft.semantickernel.KernelException.ErrorCodes;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -41,7 +42,7 @@ public class KernelExtensions {
         File[] files = skillDir.listFiles();
         if (files == null) {
             throw new KernelException(
-                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    ErrorCodes.FUNCTION_NOT_AVAILABLE,
                     "No Skills found in directory " + skillDir.getAbsolutePath());
         }
 
@@ -150,7 +151,7 @@ public class KernelExtensions {
             LOGGER.error("Failed to read file " + promptFileName, e);
 
             throw new KernelException(
-                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    ErrorCodes.FUNCTION_NOT_AVAILABLE,
                     "No Skills found in directory " + promptFileName);
         }
         return template;

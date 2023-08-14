@@ -24,7 +24,7 @@ public abstract class ClientBase {
     protected static void validateMaxTokens(int maxTokens) {
         if (maxTokens < 1) {
             throw new AIException(
-                    AIException.ErrorCodes.InvalidRequest,
+                    AIException.ErrorCodes.INVALID_REQUEST,
                     "MaxTokens "
                             + maxTokens
                             + " is not valid, the value must be greater than zero");

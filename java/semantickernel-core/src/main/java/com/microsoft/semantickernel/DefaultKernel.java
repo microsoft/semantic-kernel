@@ -72,7 +72,7 @@ public class DefaultKernel implements Kernel {
 
         if (service == null) {
             throw new KernelException(
-                    KernelException.ErrorCodes.ServiceNotFound,
+                    KernelException.ErrorCodes.SERVICE_NOT_FOUND,
                     "Service of type "
                             + clazz.getName()
                             + " and name "
@@ -156,7 +156,7 @@ public class DefaultKernel implements Kernel {
             Object skillInstance, @Nullable String skillName) {
         if (skillInstance instanceof String) {
             throw new KernelException(
-                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    KernelException.ErrorCodes.FUNCTION_NOT_AVAILABLE,
                     "Called importSkill with a string argument, it is likely the intention was to"
                             + " call importSkillFromDirectory");
         }
@@ -491,7 +491,7 @@ public class DefaultKernel implements Kernel {
 
             if (kernelConfig == null) {
                 throw new AIException(
-                        AIException.ErrorCodes.InvalidConfiguration,
+                        AIException.ErrorCodes.INVALID_CONFIGURATION,
                         "It is required to set a kernelConfig to build a kernel");
             }
 

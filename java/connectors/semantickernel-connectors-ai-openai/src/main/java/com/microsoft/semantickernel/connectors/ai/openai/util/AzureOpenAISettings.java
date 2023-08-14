@@ -37,7 +37,7 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
     public String getEndpoint() throws ConfigurationException {
         if (endpoint == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.ValueNotFound, AZURE_OPEN_AI_ENDPOINT_SUFFIX);
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND, AZURE_OPEN_AI_ENDPOINT_SUFFIX);
         }
         return endpoint;
     }
@@ -50,7 +50,7 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
     public String getDeploymentName() throws ConfigurationException {
         if (deploymentName == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND,
                     AZURE_OPEN_AI_DEPLOYMENT_NAME_SUFFIX);
         }
         return deploymentName;
@@ -59,7 +59,7 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
     public String getKey() throws ConfigurationException {
         if (key == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.ValueNotFound, KEY_SUFFIX);
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND, KEY_SUFFIX);
         }
         return key;
     }
@@ -68,12 +68,12 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
     public boolean assertIsValid() throws ConfigurationException {
         if (key == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND,
                     settingsPrefix + "." + KEY_SUFFIX);
         }
         if (endpoint == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND,
                     settingsPrefix + "." + AZURE_OPEN_AI_ENDPOINT_SUFFIX);
         }
 

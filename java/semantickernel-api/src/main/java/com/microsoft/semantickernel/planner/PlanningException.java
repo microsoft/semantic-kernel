@@ -51,14 +51,14 @@ public class PlanningException extends SKException {
 
     /** Error codes for PlanningException */
     public enum ErrorCodes {
-        UnknownError("Unknown error"),
+        UNKNOWN_ERROR("Unknown error"),
 
-        InvalidGoal("Invalid goal"),
+        INVALID_GOAL("Invalid goal"),
 
-        InvalidPlan("Invalid plan"),
+        INVALID_PLAN("Invalid plan"),
 
-        InvalidConfiguration("Invalid configuration"),
-        PlanExecutionProducedNoResults("Plan execution produced no result values");
+        INVALID_CONFIGURATION("Invalid configuration"),
+        PLAN_EXECUTION_PRODUCED_NO_RESULTS("Plan execution produced no result values");
 
         private final String message;
 

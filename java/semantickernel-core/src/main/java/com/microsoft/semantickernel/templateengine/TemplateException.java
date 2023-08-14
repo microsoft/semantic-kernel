@@ -85,7 +85,7 @@ public class TemplateException extends SKException {
          * </p>
          */
         //spotless:on
-        UnknownError("Unknown error"),
+        UNKNOWN_ERROR("Unknown error"),
 
         // spotless:off
         /**
@@ -94,7 +94,7 @@ public class TemplateException extends SKException {
          * </p>
          */
         //spotless:on
-        SyntaxError("Syntax error, the template syntax used is not valid"),
+        SYNTAX_ERROR("Syntax error, the template syntax used is not valid"),
 
         // spotless:off
         /**
@@ -102,7 +102,7 @@ public class TemplateException extends SKException {
          * The block type produced be the tokenizer was not expected.
          * </p>
          */
-        UnexpectedBlockType("The block type produced be the tokenizer was not expected"),
+        UNEXPECTED_BLOCK_TYPE("The block type produced be the tokenizer was not expected"),
 
         //spotless:off
         /**
@@ -111,7 +111,7 @@ public class TemplateException extends SKException {
          * </p>
          */
         //spotless:on
-        FunctionNotFound("The template requires an unknown function"),
+        FUNCTION_NOT_FOUND("The template requires an unknown function"),
 
         // spotless:off
         /**
@@ -120,7 +120,7 @@ public class TemplateException extends SKException {
          * </p>
          */
         //spotless:on
-        RuntimeError("The template execution failed, e.g. a function call threw an exception"),
+        RUNTIME_ERROR("The template execution failed, e.g. a function call threw an exception")
         ;
 
         private final String message;
