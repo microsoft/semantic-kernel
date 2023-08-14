@@ -149,7 +149,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             request_settings {ChatRequestSettings} -- The request settings.
 
         Returns:
-            AsyncGenerator[OpenAIChatCompletionResult, None] -- A generator for the completion delta results and finally the full list of results.
+            AsyncGenerator[OpenAIChatCompletionResult, None] --
+                A generator for the completion delta results and finally the full list of results.
         """
         self._check_messages_and_settings(messages, request_settings)
 
