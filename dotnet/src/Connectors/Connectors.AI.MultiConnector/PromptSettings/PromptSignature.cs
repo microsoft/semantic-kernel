@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 /// <summary>
 /// Identifies a type of prompts from its beginning and a subset of parameters.
@@ -153,8 +153,9 @@ public class PromptSignature
     /// <returns><c>true</c> if the prompt matches the <see cref="PromptSignature"/>; otherwise, <c>false</c>.</returns>
     public bool Matches(CompletionJob completionJob)
     {
-        return (this.MatchSettings(completionJob.RequestSettings) && (this.CompiledRegex?.IsMatch(completionJob.Prompt) ??
-                                                                      completionJob.Prompt.StartsWith(this.PromptStart, StringComparison.Ordinal)));
+        var toReturn = (this.MatchSettings(completionJob.RequestSettings) && (this.CompiledRegex?.IsMatch(completionJob.Prompt) ??
+                                                                              completionJob.Prompt.StartsWith(this.PromptStart, StringComparison.Ordinal)));
+        return toReturn;
     }
 
     private bool MatchSettings(CompleteRequestSettings promptSettings)

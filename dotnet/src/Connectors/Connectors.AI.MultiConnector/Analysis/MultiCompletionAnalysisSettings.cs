@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
@@ -29,7 +31,10 @@ public class MultiCompletionAnalysisSettings
     /// <summary>
     /// This is the default vetting prompt used for connectors evaluation
     /// </summary>
-    public const string DefaultVettingPromptTemplate = @"Following are an LLM prompt and the corresponding response from an LLM model to be evaluated. Please indicate whether the response is valid or not. Answer with true or false.
+    public const string DefaultVettingPromptTemplate = @"Validate a text completion model's response to a semantic function: following are a templated prompt sent to a large language model and the completion it returned, to be evaluated. Please indicate whether the response is valid or not.
+Note that semantic functions are employed within pipelines comprising other templated semantic functions intertwined with native code based functions. The latter might require stricter adherence to the templated instructions provided to parse input parameters, without any means to filter out potential noise.
+Be wise in your appraisal of what is an acceptable response to those instructions. Instructions often include a templated example of what the expected completion looks like, although this is not systematic, and sometimes the example is a bit too short to save on template tokens. 
+Does the reponse appropriately completes the prompt? Please answer with true or false.
 PROMPT:
 -------
 {prompt}
@@ -82,7 +87,7 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// If true, analysis tasks start normally after the Analysis delay is awaited, but then await for a manual trigger using <see cref="ReleaseAnalysisTasks"/> to proceed and complete
     /// </summary>
-    public bool AnalysisAwaitsManualTrigger { get; set; }
+    public bool AnalysisAwaitsManualTrigger { get; set; } = false;
 
     /// <summary>
     /// Enable or disable the analysis
@@ -148,7 +153,7 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// Indicates whether to save suggested settings after analysis
     /// </summary>
-    public bool SaveSuggestedSettings { get; set; }
+    public bool SaveSuggestedSettings { get; set; } = false;
 
     /// <summary>
     /// Indicates whether to Analysis file with evaluations can be deleted after new suggested settings are saved or applied
@@ -195,7 +200,7 @@ RESPONSE IS VALID? (true/false):
             lock (this._analysisFileLock)
             {
                 var json = File.ReadAllText(this.AnalysisFilePath);
-                completionAnalysis = JsonSerializer.Deserialize<MultiCompletionAnalysis>(json) ?? completionAnalysis;
+                completionAnalysis = Json.Deserialize<MultiCompletionAnalysis>(json) ?? completionAnalysis;
             }
         }
 
@@ -228,7 +233,22 @@ RESPONSE IS VALID? (true/false):
         }
 
         var elapsed = stopWatch.Elapsed;
-        var isVetted = completionResult.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+        bool isVetted;
+        if (completionResult.Equals("true", StringComparison.OrdinalIgnoreCase))
+        {
+            isVetted = true;
+        }
+        else if (completionResult.Equals("false", StringComparison.OrdinalIgnoreCase))
+        {
+            isVetted = false;
+        }
+        else
+        {
+            analysisJob.Logger?.LogError("Failed to evaluate test prompt with vetting connector {2}\nVetting Prompt:\n{1} ", completionResult, prompt, vettingCompletion.Name);
+            isVetted = false;
+        }
+
         var toReturn = new ConnectorPromptEvaluation
         {
             Test = connectorTest,
@@ -424,7 +444,7 @@ RESPONSE IS VALID? (true/false):
                 if (this.SaveSuggestedSettings)
                 {
                     // Save the new settings
-                    var settingsJson = JsonSerializer.Serialize(updatedSettings.SuggestedSettings, new JsonSerializerOptions() { WriteIndented = true });
+                    var settingsJson = Json.Serialize(updatedSettings.SuggestedSettings);
                     File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
                 }
 
@@ -677,7 +697,7 @@ RESPONSE IS VALID? (true/false):
 
             var now = DateTime.Now;
             bool needSuggestion = this.EnableSuggestion
-                                   && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings)
+                                  && (this.UpdateSuggestedSettings || this.SaveSuggestedSettings)
                                   && multiCompletionAnalysis.Evaluations.Count > 0
                                   && now - multiCompletionAnalysis.SuggestionTimestamp > this.SuggestionPeriod
                                   && multiCompletionAnalysis.Tests.Count == 0
@@ -704,7 +724,7 @@ RESPONSE IS VALID? (true/false):
         var settingsToReturn = settings;
         if (!updateSettings)
         {
-            settingsToReturn = JsonSerializer.Deserialize<MultiTextCompletionSettings>(JsonSerializer.Serialize(settings))!;
+            settingsToReturn = Json.Deserialize<MultiTextCompletionSettings>(JsonSerializer.Serialize(settings))!;
         }
 
         MultiCompletionAnalysis completionAnalysis = new();
@@ -714,7 +734,7 @@ RESPONSE IS VALID? (true/false):
             if (File.Exists(this.AnalysisFilePath))
             {
                 var json = File.ReadAllText(this.AnalysisFilePath);
-                completionAnalysis = JsonSerializer.Deserialize<MultiCompletionAnalysis>(json) ?? new MultiCompletionAnalysis();
+                completionAnalysis = Json.Deserialize<MultiCompletionAnalysis>(json) ?? new MultiCompletionAnalysis();
             }
         }
 
@@ -779,7 +799,7 @@ RESPONSE IS VALID? (true/false):
                 {
                     logger?.LogTrace("Loading Analysis file from {0} to save {1} new instances of {2}", this.AnalysisFilePath, itemsToSave.Count, typeof(TEvent).Name);
                     var json = File.ReadAllText(this.AnalysisFilePath);
-                    currentAnalysis = JsonSerializer.Deserialize<MultiCompletionAnalysis>(json) ?? currentAnalysis;
+                    currentAnalysis = Json.Deserialize<MultiCompletionAnalysis>(json) ?? currentAnalysis;
                 }
             }
         }
@@ -793,7 +813,7 @@ RESPONSE IS VALID? (true/false):
                 var now = DateTime.Now;
                 currentAnalysis.Duration = currentAnalysis.Duration.Add(now - currentAnalysis.Timestamp);
                 currentAnalysis.Timestamp = DateTime.Now;
-                var jsonString = JsonSerializer.Serialize(currentAnalysis, new JsonSerializerOptions() { WriteIndented = true });
+                var jsonString = Json.Serialize(currentAnalysis);
                 File.WriteAllText(this.AnalysisFilePath, jsonString);
                 logger?.LogTrace("Saved existing and new instances of  {0} to {1}", typeof(TEvent).Name, this.AnalysisFilePath);
             }

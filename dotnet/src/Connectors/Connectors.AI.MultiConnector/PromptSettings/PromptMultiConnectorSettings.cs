@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 /// <summary>
 /// Represents the settings for multiple connectors associated with a particular type of prompt.

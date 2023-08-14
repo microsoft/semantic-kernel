@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 /// <summary>
 /// Represents a unique type of prompt, typically a semantic function, identified by the beginning of the prompt and the associated settings.
@@ -17,8 +17,7 @@ public class PromptType
     /// <summary>
     /// Sets the maximum number of distinct prompts to collect for this prompt type
     /// </summary>
-    public int MaxInstanceNb { get; set; }
-
+    public int MaxInstanceNb { get; set; } = 10;
     /// <summary>
     /// recorded instances of the prompt type.
     /// </summary>

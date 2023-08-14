@@ -3,7 +3,7 @@
 using System;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 /// <summary>
 /// Represents the settings associated with a particular prompt type and a connector.

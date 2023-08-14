@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 namespace SemanticKernel.IntegrationTests.TestSettings;
 

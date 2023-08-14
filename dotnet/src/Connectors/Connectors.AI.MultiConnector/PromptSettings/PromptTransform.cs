@@ -4,7 +4,7 @@ using System;
 using System.Globalization;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
+namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 /// <summary>
 /// Represents a transformation of an input prompt string that can be template based or customized

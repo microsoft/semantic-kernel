@@ -30,8 +30,8 @@ public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
             var operation = ArithmeticEngine.ParsePrompt(analysisComponents.prompt);
             var correctResult = ArithmeticEngine.Compute(operation.operation, operation.operand1, operation.operand2);
             var connectorResult = int.Parse(analysisComponents.response, CultureInfo.InvariantCulture);
-
-            var result = (correctResult == connectorResult).ToString(CultureInfo.InvariantCulture);
+            var isCorrect = correctResult == connectorResult;
+            var result = isCorrect.ToString(CultureInfo.InvariantCulture);
 
             return Task.FromResult(new ModelResult(result));
         }

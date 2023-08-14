@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 

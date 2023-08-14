@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
@@ -85,16 +86,16 @@ public sealed class MultiConnectorTests : IDisposable
     /// </summary>
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
-    [InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
     {
         // Load the plan from the provided file path

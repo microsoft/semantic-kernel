@@ -4,9 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
@@ -94,15 +96,27 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
             {
                 EnableAnalysis = true,
                 NbPromptTests = 3,
-                SuggestionPeriod = TimeSpan.FromMilliseconds(1),
-                AnalysisDelay = TimeSpan.FromMilliseconds(10),
+                AnalysisAwaitsManualTrigger = true,
+                AnalysisDelay = TimeSpan.Zero,
+                TestsPeriod = TimeSpan.Zero,
+                EvaluationPeriod = TimeSpan.Zero,
+                SuggestionPeriod = TimeSpan.Zero,
                 UpdateSuggestedSettings = true,
-                DeleteAnalysisFile = true,
-                SaveSuggestedSettings = false
+                //Uncomment the following lines for additional debugging information
+                DeleteAnalysisFile = false,
+                SaveSuggestedSettings = true
             },
             PromptTruncationLength = 11,
             ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight)
         };
+
+        // Cleanup in case the previous test failed to delete the analysis file
+        if (File.Exists(settings.AnalysisSettings.AnalysisFilePath))
+        {
+            File.Delete(settings.AnalysisSettings.AnalysisFilePath);
+
+            this._logger.LogTrace("Deleted preexisting analysis file: {0}", settings.AnalysisSettings.AnalysisFilePath);
+        }
 
         // We configure a primary completion with default performances and cost, secondary completion have a gain of 2 in performances and in cost, but they can only handle a single operation each
 
@@ -139,8 +153,11 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         //We remove the first prompt in time measurement because it is longer on first pass due to warmup
         var firstPassDurationAfterWarmup = TimeSpan.FromTicks(primaryResults.Skip(1).Sum(tuple => tuple.duration.Ticks));
 
-        // Wait for the optimization to complete
-        await optimizationCompletedTaskSource.Task;
+        // release optimization task
+        settings.AnalysisSettings.AnalysisAwaitsManualTrigger = false;
+        settings.AnalysisSettings.ReleaseAnalysisTasks();
+        // Get the optimization results
+        var optimizationResults = await optimizationCompletedTaskSource.Task.ConfigureAwait(false);
 
         creditor.Reset();
 

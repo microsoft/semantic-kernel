@@ -9,6 +9,8 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -46,7 +48,7 @@ public class MultiTextCompletionSettings
         }
 
         string readAllText = File.ReadAllText(analysisSettingsMultiCompletionSettingsFilePath);
-        MultiTextCompletionSettings? loadSuggestedAnalysisSettings = JsonSerializer.Deserialize<MultiTextCompletionSettings>(readAllText);
+        MultiTextCompletionSettings? loadSuggestedAnalysisSettings = Json.Deserialize<MultiTextCompletionSettings>(readAllText);
         return loadSuggestedAnalysisSettings ?? this;
     }
 
@@ -58,7 +60,7 @@ public class MultiTextCompletionSettings
     /// <summary>
     /// If true, the prompt types, no new prompt types are discovered automatically and standard prompt settings will be associated with unrecognized prompts.
     /// </summary>
-    public bool FreezePromptTypes { get; set; }
+    public bool FreezePromptTypes { get; set; } = false;
 
     /// <summary>
     /// Represents the length to which prompts will be truncated for signature extraction.
@@ -68,13 +70,15 @@ public class MultiTextCompletionSettings
     /// </remarks>
     public int PromptTruncationLength { get; set; } = 20;
 
+    //TODO: Investigate the false positive issue (see remarks)
     /// <summary>
     /// If true, prompt signature starts are adjusted to the actual template starter when differing samples are witnessed.
     /// </summary>
     /// <remarks>
     /// This optional feature adjusts prompt start in matching signature to the true static prefix identified from comparing distinct instances. This is useful for scenarios where prompt starts may overlap but may induce higher computational cost unless a fast precomputed matching function is offered.
+    /// Beware of false positives though, as when the evaluation prompt is evaluated several times with the same template and different data.
     /// </remarks>
-    public bool AdjustPromptStarts { get; set; } = true;
+    public bool AdjustPromptStarts { get; set; } = false;
 
     /// <summary>
     /// By default, connectors instrumentation server side and client side avoids to trigger result evaluation for display. This is mostly harmless and this outputs the corresponding log for more comfort.
@@ -84,7 +88,7 @@ public class MultiTextCompletionSettings
     /// <summary>
     /// When enabled, a log event is generated when new tests are collected for analysis
     /// </summary>
-    public bool LogTestCollection { get; set; }
+    public bool LogTestCollection { get; set; } = false;
 
     /// <summary>
     /// Represents the max length of prompt and response to be logged.
