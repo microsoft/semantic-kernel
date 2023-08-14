@@ -35,6 +35,9 @@ public class MultiCompletionAnalysisSettings
     /// </summary>
     public event EventHandler<SuggestionCompletedEventArgs>? SuggestionCompleted;
 
+
+    public event EventHandler<AnalysisTaskCrashedEventArgs>? AnalysisTaskCrashed;
+
     /// <summary>
     /// Those are the default settings used for connectors evaluation
     /// </summary>
@@ -471,6 +474,12 @@ public class MultiCompletionAnalysisSettings
             analysisJob.Logger?.LogError("Analysis pipeline failed with IO exception {0}, \nCheck Analysis file path for locks: {1}", exception, exception.Message, this.AnalysisFilePath);
             completionAnalysis = new();
         }
+        catch (Exception exception)
+        {
+            analysisJob.Logger?.LogError("Analysis pipeline failed with exception {0}", exception, exception.Message);
+            this.AnalysisTaskCrashed?.Invoke(this, new(exception));
+            throw;
+        }
 
         return completionAnalysis;
     }
@@ -894,4 +903,6 @@ public class MultiCompletionAnalysisSettings
     }
 
     #endregion
+
+
 }

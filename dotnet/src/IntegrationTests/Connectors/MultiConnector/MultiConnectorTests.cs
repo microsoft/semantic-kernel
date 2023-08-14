@@ -281,6 +281,13 @@ public sealed class MultiConnectorTests : IDisposable
             suggestionCompletedTaskSource = new();
         };
 
+        // Subscribe to the OptimizationCompleted event
+        settings.AnalysisSettings.AnalysisTaskCrashed += (sender, args) =>
+        {
+            // Signal the completion of the optimization
+            suggestionCompletedTaskSource.SetException(args.Exception);
+        };
+
         settings.Creditor!.Reset();
 
         var planBuildingTimeElapsed = sw.Elapsed;

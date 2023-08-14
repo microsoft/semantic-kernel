@@ -144,6 +144,13 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
             optimizationCompletedTaskSource.SetResult(args);
         };
 
+        // Subscribe to the OptimizationCompleted event
+        settings.AnalysisSettings.AnalysisTaskCrashed += (sender, args) =>
+        {
+            // Signal the completion of the optimization
+            optimizationCompletedTaskSource.SetException(args.Exception);
+        };
+
         //Act
 
         var primaryResults = await RunPromptsAsync(prompts, multiConnector, requestSettings, completions[0].GetCost).ConfigureAwait(false);
