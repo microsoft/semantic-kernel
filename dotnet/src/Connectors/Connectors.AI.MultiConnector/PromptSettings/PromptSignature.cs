@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -13,10 +14,14 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 /// <summary>
 /// Identifies a type of prompts from its beginning and a subset of parameters.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay}")]
 public class PromptSignature
 {
     private Regex? _compiledRegex;
     private const float FloatComparisonTolerance = 2 * float.Epsilon;
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{this.PromptStart}";
 
     /// <summary>
     /// Gets or sets the request settings supplied with the prompt on a completion call.

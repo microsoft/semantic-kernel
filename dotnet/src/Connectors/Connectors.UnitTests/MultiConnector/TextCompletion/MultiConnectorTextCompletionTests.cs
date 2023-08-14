@@ -77,9 +77,9 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
     /// In this theory, we test that the multi-connector analysis is able to optimize the cost per request and duration of a multi-connector completion, with a primary connector capable of handling all 4 arithmetic operation, and secondary connectors only capable of performing 1 each. Depending on their respective performances in parameters and the respective weights of duration and cost in the analysis settings, the multi-connector analysis should be able to determine the best connector to account for the given preferences.
     /// </summary>
     [Theory]
-    [InlineData(3, 0.02, 1, 0.01, 1, 1, 0.01, 3)]
-    [InlineData(2, 0.02, 1, 0.1, 1, 1, 0.02, 1)]
-    [InlineData(2, 0.02, 1, 0.1, 1, 0, 0.1, 2)]
+    [InlineData(10, 0.02, 1, 0.01, 1, 1, 0.01, 10)]
+    [InlineData(10, 0.02, 1, 0.1, 1, 1, 0.02, 1)]
+    [InlineData(10, 0.02, 1, 0.1, 1, 0, 0.1, 10)]
     public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync(int primaryCallDuration = 2, decimal primaryCostPerRequest = 0.02m, int secondaryCallDuration = 1,
         decimal secondaryCostPerRequest = 0.01m,
         double durationWeight = 1,
@@ -107,7 +107,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
                 SaveSuggestedSettings = true
             },
             PromptTruncationLength = 11,
-            ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight)
+            ConnectorComparer = MultiTextCompletionSettings.GetWeightedConnectorComparer(durationWeight, costWeight)
         };
 
         // Cleanup in case the previous test failed to delete the analysis file
@@ -135,13 +135,13 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         var multiConnector = new MultiTextCompletion(settings, completions[0], CancellationToken.None, logger: this._logger, otherCompletions: completions.Skip(1).ToArray());
 
         // Create a task completion source to signal the completion of the optimization
-        var optimizationCompletedTaskSource = new TaskCompletionSource<bool>();
+        var optimizationCompletedTaskSource = new TaskCompletionSource<SuggestionCompletedEventArgs>();
 
         // Subscribe to the OptimizationCompleted event
         settings.AnalysisSettings.SuggestionCompleted += (sender, args) =>
         {
             // Signal the completion of the optimization
-            optimizationCompletedTaskSource.SetResult(true);
+            optimizationCompletedTaskSource.SetResult(args);
         };
 
         //Act

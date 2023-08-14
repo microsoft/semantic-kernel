@@ -2,14 +2,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
 /// <summary>
 /// Represents the collection of evaluations of connectors against prompt types, to be saved and analyzed.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay}")]
 public class MultiCompletionAnalysis : TestEvent
 {
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{this.Timestamp} - {this.OriginalTests.Count} samples - {this.Tests.Count} tests - {this.Evaluations.Count} evaluations";
+
     public List<ConnectorTest> OriginalTests { get; set; } = new();
 
     public DateTime TestTimestamp { get; set; } = DateTime.MinValue;

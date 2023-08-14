@@ -25,15 +25,15 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 /// </summary>
 public class MultiCompletionAnalysisSettings
 {
+    /// <summary>
+    /// Event raised when a new series of Tests were evaluated for validity
+    /// </summary>
     public event EventHandler<EvaluationCompletedEventArgs>? EvaluationCompleted;
-    public event EventHandler<SuggestionCompletedEventArgs>? SuggestionCompleted;
 
     /// <summary>
-    /// This is the default vetting prompt used for connectors evaluation
+    /// Event raised when new suggested settings were generated from evaluations
     /// </summary>
-    
-
-   
+    public event EventHandler<SuggestionCompletedEventArgs>? SuggestionCompleted;
 
     /// <summary>
     /// Those are the default settings used for connectors evaluation
@@ -83,6 +83,11 @@ public class MultiCompletionAnalysisSettings
     /// Enable or disable the analysis
     /// </summary>
     public bool EnableConnectorTests { get; set; } = true;
+
+    /// <summary>
+    /// By default, primary completion is tested for duration and cost performances like other secondary connectors. If disabled, primary completion will serve only as the default completion: any validated secondary completion will be preferred.
+    /// </summary>
+    public bool TestPrimaryCompletion { get; set; } = true;
 
     /// <summary>
     /// Time period to conduct Tests
@@ -409,15 +414,13 @@ public class MultiCompletionAnalysisSettings
 
             List<ConnectorPromptEvaluation>? currentEvaluations = null;
 
-            if (needEvaluate)
-            {
-                currentEvaluations = await this.RunConnectorTestsEvaluationsAsync(completionAnalysis, analysisJob).ConfigureAwait(false);
-            }
-            else
+            if (!needEvaluate)
             {
                 analysisJob.Logger?.LogDebug("Evaluation cancelled. Nb trailing Original Tests:{0}, Nb trailing Tests:{1}, Elapsed since last Evaluation{2}", completionAnalysis.OriginalTests.Count, completionAnalysis.Tests.Count, DateTime.Now - completionAnalysis.EvaluationTimestamp);
+                return completionAnalysis;
             }
 
+            currentEvaluations = await this.RunConnectorTestsEvaluationsAsync(completionAnalysis, analysisJob).ConfigureAwait(false);
             //Save evaluations to file
 
             completionAnalysis = this.SaveEvaluationsReturnNeedSuggestion(currentEvaluations, completionAnalysis, out var needSuggestion, analysisJob.Logger);
@@ -427,37 +430,36 @@ public class MultiCompletionAnalysisSettings
             analysisJob.Logger?.LogTrace(message: "EvaluationCompleted event raised");
 
             // If update or save suggested settings are enabled, suggest new settings from analysis and save them if needed
-            if (needSuggestion)
-            {
-                analysisJob.Logger?.LogDebug("Analysis period reached. New settings suggested.");
-                var updatedSettings = this.ComputeNewSettingsFromAnalysis(analysisJob.TextCompletions, analysisJob.Settings, this.UpdateSuggestedSettings, analysisJob.Logger, analysisJob.CancellationToken);
-                if (this.SaveSuggestedSettings)
-                {
-                    // Save the new settings
-                    var settingsJson = Json.Serialize(updatedSettings.SuggestedSettings);
-                    File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
-                }
-
-                if (this.DeleteAnalysisFile)
-                {
-                    analysisJob.Logger?.LogTrace("Deleting evaluation file {0}", this.AnalysisFilePath);
-                    lock (this._analysisFileLock)
-                    {
-                        if (File.Exists(this.AnalysisFilePath))
-                        {
-                            File.Delete(this.AnalysisFilePath);
-                        }
-                    }
-                }
-
-                // Trigger the EvaluationCompleted event
-                this.SuggestionCompleted?.Invoke(this, updatedSettings);
-                analysisJob.Logger?.LogTrace(message: "SuggestionCompleted event raised");
-            }
-            else
+            if (!needSuggestion)
             {
                 analysisJob.Logger?.LogDebug("Suggestion Cancelled. No new settings suggested. Nb trailing Original Tests:{0}, Nb trailing Tests:{1},  Nb Evaluations:{2} Elapsed since last Suggestion{2}", completionAnalysis.OriginalTests.Count, completionAnalysis.Tests.Count, completionAnalysis.Evaluations.Count, DateTime.Now - completionAnalysis.SuggestionTimestamp);
+                return completionAnalysis;
             }
+
+            analysisJob.Logger?.LogTrace("Suggesting new MultiCompletion settings according to evaluation.");
+            var updatedSettings = this.ComputeNewSettingsFromAnalysis(analysisJob.TextCompletions, analysisJob.Settings, this.UpdateSuggestedSettings, analysisJob.Logger, analysisJob.CancellationToken);
+            if (this.SaveSuggestedSettings)
+            {
+                // Save the new settings
+                var settingsJson = Json.Serialize(updatedSettings.SuggestedSettings);
+                File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
+            }
+
+            if (this.DeleteAnalysisFile)
+            {
+                analysisJob.Logger?.LogTrace("Deleting evaluation file {0}", this.AnalysisFilePath);
+                lock (this._analysisFileLock)
+                {
+                    if (File.Exists(this.AnalysisFilePath))
+                    {
+                        File.Delete(this.AnalysisFilePath);
+                    }
+                }
+            }
+
+            // Trigger the EvaluationCompleted event
+            this.SuggestionCompleted?.Invoke(this, updatedSettings);
+            analysisJob.Logger?.LogTrace(message: "SuggestionCompleted event raised");
         }
         catch (AIException exception)
         {
@@ -495,7 +497,7 @@ public class MultiCompletionAnalysisSettings
                     var testPromptSettings = analysisJob.Settings.GetPromptSettings(testJob, out var isNew);
 
                     // Generate tests
-                    var connectorsToTest = testPromptSettings.GetCompletionsToTest(originalTest, analysisJob.TextCompletions);
+                    var connectorsToTest = testPromptSettings.GetCompletionsToTest(originalTest, analysisJob.TextCompletions, this.TestPrimaryCompletion);
 
                     using SemaphoreSlim testConnectorsSemaphore = new(this.MaxDegreeOfParallelismTests);
 
@@ -533,7 +535,7 @@ public class MultiCompletionAnalysisSettings
 
     private async Task RunTestForConnectorAsync(NamedTextCompletion namedTextCompletion, CompletionJob testJob, PromptMultiConnectorSettings promptMultiConnectorSettings, ConcurrentBag<ConnectorTest> connectorTests, AnalysisJob analysisJob)
     {
-        analysisJob.Logger?.LogTrace("Running Tests for connector {0} ", namedTextCompletion.Name);
+        analysisJob.Logger?.LogTrace("Running Test for connector {0}", namedTextCompletion.Name);
 
         for (int i = 0; i < this.NbPromptTests; i++)
         {
@@ -659,7 +661,7 @@ public class MultiCompletionAnalysisSettings
             analysisJob.Logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
         }
 
-        analysisJob.Logger?.LogDebug("Evaluated connector {0}, Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}",
+        analysisJob.Logger?.LogDebug("Evaluated connector {0},\n Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}",
             evaluation?.Test.ConnectorName,
             evaluation?.IsVetted,
             analysisJob.Settings.GeneratePromptLog(evaluation?.Test.Prompt ?? ""),

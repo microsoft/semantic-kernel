@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
@@ -9,8 +10,12 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 /// <summary>
 /// Represents a job to be executed by the MultiConnector's analysis
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay}")]
 public class AnalysisJob : TestEvent
 {
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{this.Timestamp} - {this.TextCompletions.Count} Completions to test and analyze";
+
     public MultiTextCompletionSettings Settings { get; }
     public IReadOnlyList<NamedTextCompletion> TextCompletions { get; }
 

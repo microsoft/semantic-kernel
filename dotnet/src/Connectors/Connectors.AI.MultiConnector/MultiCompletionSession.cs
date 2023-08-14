@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
@@ -9,8 +10,12 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// <summary>
 /// Represents the state variables that are built and processed within a blocking or streaming call to the <see cref="MultiTextCompletion"/>.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay}")]
 internal struct MultiCompletionSession
 {
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{this.PromptSettings.PromptType.PromptName} - {this.NamedTextCompletion.Name}";
+
     /// <summary>
     /// The <see cref="PromptMultiConnectorSettings"/> that are obtained by matching the input prompt to the available Prompt Settings in <see cref="MultiTextCompletion"/>.
     /// </summary>

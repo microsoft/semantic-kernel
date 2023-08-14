@@ -50,7 +50,7 @@ public class MultiTextCompletion : ITextCompletion
     /// <inheritdoc />
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        this._logger?.LogTrace("Starting MultiTextCompletion.GetCompletionsAsync");
+        this._logger?.LogTrace("## Starting MultiTextCompletion.GetCompletionsAsync");
         var completionJob = new CompletionJob(text, requestSettings);
         var session = this.GetPromptAndConnectorSettings(completionJob);
         this._logger?.LogTrace("Calling chosen completion with adjusted prompt and settings");
@@ -67,14 +67,14 @@ public class MultiTextCompletion : ITextCompletion
 
         await this.ProcessTextCompletionResultsAsync(session, cancellationToken).ConfigureAwait(false);
 
-        this._logger?.LogTrace("Ending MultiTextCompletion.GetCompletionsAsync");
+        this._logger?.LogTrace("## Ending MultiTextCompletion.GetCompletionsAsync");
         return completions;
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        this._logger?.LogTrace("Starting MultiTextCompletion.GetCompletionsAsync");
+        this._logger?.LogTrace("## Starting MultiTextCompletion.GetStreamingCompletionsAsync");
         var completionJob = new CompletionJob(text, requestSettings);
         var session = this.GetPromptAndConnectorSettings(completionJob);
         this._logger?.LogTrace("Calling chosen completion with adjusted prompt and settings");
@@ -101,7 +101,7 @@ public class MultiTextCompletion : ITextCompletion
 
         this.ProcessTextCompletionResultsAsync(session, cancellationToken).ConfigureAwait(false);
 
-        this._logger?.LogTrace("Ending MultiTextCompletion.GetStreamingCompletionsAsync");
+        this._logger?.LogTrace("## Ending MultiTextCompletion.GetStreamingCompletionsAsync");
 
         return result;
     }

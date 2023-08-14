@@ -106,7 +106,7 @@ public class MultiTextCompletionSettings
     /// Comparer used to choose among vetted connectors.
     /// </summary>
     [JsonIgnore]
-    public Func<CompletionJob, PromptConnectorSettings, PromptConnectorSettings, int> ConnectorComparer { get; set; } = GetConnectorComparer(1, 1);
+    public Func<CompletionJob, PromptConnectorSettings, PromptConnectorSettings, int> ConnectorComparer { get; set; } = GetWeightedConnectorComparer(1, 1);
 
     /// <summary>
     /// Custom matcher to find the prompt settings from prompt. Default enumerates prefixes and uses StartsWith. More efficient precomputed matchers can be used.
@@ -238,7 +238,7 @@ public class MultiTextCompletionSettings
     /// </summary>
     /// <param name="durationWeight">the weight of the duration gains in proportion</param>
     /// <param name="costWeight">the weight of the cost gains in proportion</param>
-    public static Func<CompletionJob, PromptConnectorSettings, PromptConnectorSettings, int> GetConnectorComparer(double durationWeight, double costWeight)
+    public static Func<CompletionJob, PromptConnectorSettings, PromptConnectorSettings, int> GetWeightedConnectorComparer(double durationWeight, double costWeight)
     {
         //TODO: Optionally allow for more elaborate connector comparison
         //Possible implementation: Build an Infer.probabilistic model with latent variables for general LLM capabilities, prompt type skill capability, prompt difficulty, etc. and observed variables tests, evaluations etc., precompute the posterior distribution of the latent variables given the observed variables, and choose the connector with the highest expected gain.

@@ -181,7 +181,7 @@ public sealed class MultiConnectorTests : IDisposable
             //LogCallResult = true,
             //LogTestCollection = true,
             // In those tests, we don't have information about the underlying model hosts, so we can't make performance comparisons between models. Instead, arbitrary cost per token are defined in settings, and usage costs are computed.
-            ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(0, 1),
+            ConnectorComparer = MultiTextCompletionSettings.GetWeightedConnectorComparer(0, 1),
             // Adding a simple transform for template-less models, which require a line break at the end of the prompt
             GlobalPromptTransform = new PromptTransform()
             {

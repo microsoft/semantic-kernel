@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
@@ -11,8 +12,12 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 /// <summary>
 /// Represents the settings for multiple connectors associated with a particular type of prompt.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay}")]
 public class PromptMultiConnectorSettings
 {
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{this.PromptType.PromptName} - {this.ConnectorSettingsDictionary.Count} connector settings";
+
     /// <summary>
     /// Gets or sets the type of prompt associated with these settings.
     /// </summary>
@@ -59,7 +64,8 @@ public class PromptMultiConnectorSettings
     public (NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings) SelectAppropriateTextCompletion(CompletionJob completionJob, IReadOnlyList<NamedTextCompletion> namedTextCompletions, Func<CompletionJob, PromptConnectorSettings, PromptConnectorSettings, int> settingsConnectorComparer)
     {
         var filteredConnectors = new List<(NamedTextCompletion textCompletion, PromptConnectorSettings promptConnectorSettings)>();
-        foreach (var namedTextCompletion in namedTextCompletions)
+        filteredConnectors.Add((namedTextCompletions[0], this.GetConnectorSettings(namedTextCompletions[0].Name)));
+        foreach (var namedTextCompletion in namedTextCompletions.Skip(1))
         {
             var promptConnectorSettings = this.GetConnectorSettings(namedTextCompletion.Name);
             if (promptConnectorSettings.VettingLevel > 0)
@@ -68,15 +74,12 @@ public class PromptMultiConnectorSettings
             }
         }
 
-        if (filteredConnectors.Count > 0)
+        if (filteredConnectors.Count > 1)
         {
             filteredConnectors.Sort((c1, c2) => settingsConnectorComparer(completionJob, c1.Item2, c2.Item2));
-            return filteredConnectors[0];
         }
 
-        // if no vetted connector is found, return the first primary one
-        var primaryConnectorSettings = this.GetConnectorSettings(namedTextCompletions[0].Name);
-        return (namedTextCompletions[0], primaryConnectorSettings);
+        return filteredConnectors[0];
     }
 
     public void AddSessionPrompt(string prompt)
@@ -97,9 +100,9 @@ public class PromptMultiConnectorSettings
                    || value?.VettingLevel == 0);
     }
 
-    internal IEnumerable<NamedTextCompletion> GetCompletionsToTest(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions)
+    internal IEnumerable<NamedTextCompletion> GetCompletionsToTest(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool enablePrimaryCompletionTests)
     {
-        return namedTextCompletions.Where(namedTextCompletion => namedTextCompletion.Name != originalTest.ConnectorName
+        return namedTextCompletions.Where(namedTextCompletion => (namedTextCompletion.Name != originalTest.ConnectorName || enablePrimaryCompletionTests)
                                                                  && (!this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings value)
                                                                      || value.VettingLevel == 0));
     }

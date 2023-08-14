@@ -98,7 +98,7 @@ public class NamedTextCompletion
         MultiTextCompletionSettings multiTextCompletionSettings,
         ILogger? logger)
     {
-        logger?.LogTrace("Adjusting prompt and settings for connector");
+        logger?.LogTrace("Adjusting prompt and settings for connector {0} and prompt type {1}", this.Name, promptMultiConnectorSettings.PromptType.Signature.PromptStart);
 
         // Adjusting settings
 
