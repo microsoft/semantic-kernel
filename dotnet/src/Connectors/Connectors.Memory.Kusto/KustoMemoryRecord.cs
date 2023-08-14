@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json.Serialization;
 using Kusto.Cloud.Platform.Utils;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 
@@ -25,7 +26,8 @@ public sealed class KustoMemoryRecord
     /// <summary>
     /// Source content embedding.
     /// </summary>
-    public Embedding<float> Embedding { get; set; }
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float> Embedding { get; set; }
 
     /// <summary>
     /// Optional timestamp.
@@ -45,7 +47,7 @@ public sealed class KustoMemoryRecord
     /// <param name="metadata">Metadata associated with memory entity.</param>
     /// <param name="embedding">Source content embedding.</param>
     /// <param name="timestamp">Optional timestamp.</param>
-    public KustoMemoryRecord(string key, MemoryRecordMetadata metadata, Embedding<float> embedding, DateTimeOffset? timestamp = null)
+    public KustoMemoryRecord(string key, MemoryRecordMetadata metadata, ReadOnlyMemory<float> embedding, DateTimeOffset? timestamp = null)
     {
         this.Key = key;
         this.Metadata = metadata;
