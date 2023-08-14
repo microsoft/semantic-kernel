@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan

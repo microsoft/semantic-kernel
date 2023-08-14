@@ -3,12 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -26,7 +23,6 @@ using Microsoft.SemanticKernel.Text;
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planning;
 #pragma warning restore IDE0130
-
 
 /// <summary>
 /// A planner that creates a Stepwise plan using Mrkl systems.
@@ -56,7 +52,7 @@ public class StepwisePlanner : IStepwisePlanner
         try
         {
             // TODO We should consider a TryGetService so we don't have to throw here.
-            this._chatCompletion = kernel.GetService<IChatCompletion>(); // Throws if not avaialble.
+            this._chatCompletion = kernel.GetService<IChatCompletion>(); // Throws if not available.
         }
         catch (KernelException ke) when (ke.ErrorCode == KernelException.ErrorCodes.ServiceNotFound)
         {
@@ -205,20 +201,20 @@ public class StepwisePlanner : IStepwisePlanner
 
                     var result = await this.InvokeActionAsync(nextStep.Action!, nextStep!.ActionVariables!).ConfigureAwait(false);
 
-                        if (string.IsNullOrEmpty(result))
-                        {
-                            nextStep.Observation = "Got no result from action";
-                        }
-                        else
-                        {
-                            nextStep.Observation = result;
-                        }
-                    }
-                    catch (Exception ex) when (!ex.IsCriticalException())
+                    if (string.IsNullOrEmpty(result))
                     {
-                        nextStep.Observation = $"Error invoking action {nextStep.Action} : {ex.Message}";
-                        this._logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Action);
+                        nextStep.Observation = "Got no result from action";
                     }
+                    else
+                    {
+                        nextStep.Observation = result;
+                    }
+                }
+                catch (Exception ex) when (!ex.IsCriticalException())
+                {
+                    nextStep.Observation = $"Error invoking action {nextStep.Action} : {ex.Message}";
+                    this._logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Action);
+                }
 
                 this._logger?.LogTrace("Observation: {Observation}", nextStep.Observation);
                 chatHistory.AddAssistantMessage("[OBSERVATION] " + nextStep.Observation);

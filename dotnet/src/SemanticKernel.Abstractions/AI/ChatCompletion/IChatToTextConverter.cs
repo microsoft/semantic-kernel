@@ -10,5 +10,4 @@ public interface IChatToTextConverter
     CompleteRequestSettings ChatSettingsToCompleteSettings(ChatRequestSettings? textSettings);
     IReadOnlyList<IChatResult> TextResultToChatResult(IReadOnlyList<ITextResult> result);
     IAsyncEnumerable<IChatStreamingResult> TextStreamingResultToChatStreamingResult(IAsyncEnumerable<ITextStreamingResult> result);
-
 }
