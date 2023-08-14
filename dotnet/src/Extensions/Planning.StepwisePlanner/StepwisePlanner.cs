@@ -6,12 +6,14 @@ using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Stepwise;
@@ -46,20 +48,22 @@ public class StepwisePlanner : IStepwisePlanner
         IKernel kernel,
         StepwisePlannerConfig? config = null,
         string systemPrompt = null,
-        string[] examples = null,
+        FewShotExample[] examples = null,
         PromptTemplateConfig? promptUserConfig = null)
     {
         Verify.NotNull(kernel);
         this._kernel = kernel;
         try
         {
-            // TODO request for TryGetService
+            // TODO We should consider a TryGetService so we don't have to throw here.
             this._chatCompletion = kernel.GetService<IChatCompletion>(); // Throws if not avaialble.
         }
         catch (KernelException ke) when (ke.ErrorCode == KernelException.ErrorCodes.ServiceNotFound)
         {
-            // TODO Consider just wrapping it for them. Better to be explicit or implicit?
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidConfiguration, "Chat completion service not found. Consider using TextCompletionChatWrapper to register a chat completion", ke);
+            // TODO Consider if we want this to be explicit by just throwing and let the caller figure out what to do.
+            //throw new PlanningException(PlanningException.ErrorCodes.InvalidConfiguration, "Chat completion service not found. Consider using TextCompletionChatWrapper to register a chat completion", ke);
+
+            this._chatCompletion = new TextCompletionChatWrapper(kernel.GetService<ITextCompletion>());
         }
 
         this.Config = config ?? new();
@@ -77,6 +81,15 @@ public class StepwisePlanner : IStepwisePlanner
             if (!string.IsNullOrEmpty(promptConfigString))
             {
                 promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
+            }
+        }
+
+        if (examples == null)
+        {
+            string fewShotString = EmbeddedResource.Read("Skills.StepwiseStep.FewShotExamples.json");
+            if (!string.IsNullOrEmpty(fewShotString))
+            {
+                this._examples = Json.Deserialize<FewShotExample[]>(fewShotString);
             }
         }
 
@@ -138,10 +151,12 @@ public class StepwisePlanner : IStepwisePlanner
         chatHistory.AddSystemMessage(systemMessage);
         if (this._examples != null)
         {
-            foreach (string example in this._examples)
+            foreach (FewShotExample example in this._examples)
             {
-                var assistantMessage = await promptRendered.RenderAsync(example, this._context).ConfigureAwait(false);
-                chatHistory.AddAssistantMessage(assistantMessage);
+                var assistantMessage = await promptRendered.RenderAsync(example.Content, this._context).ConfigureAwait(false);
+                var authorRole = example.Role == Role.User ? AuthorRole.User : AuthorRole.Assistant;
+
+                chatHistory.AddMessage(authorRole, assistantMessage);
             }
         }
 
@@ -493,7 +508,7 @@ public class StepwisePlanner : IStepwisePlanner
     private readonly SKContext _context;
     private readonly IKernel _kernel;
     private readonly string _systemPrompt;
-    private readonly string[] _examples;
+    private readonly FewShotExample[]? _examples;
     private readonly ILogger _logger;
 
     /// <summary>

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -30,6 +31,7 @@ public class ChatToTextConverter : IChatToTextConverter
         public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
         {
             string result = await this._textResults.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+
             return new ChatMessage(AuthorRole.Assistant, result);
         }
     }
@@ -56,24 +58,34 @@ public class ChatToTextConverter : IChatToTextConverter
         }
     }*/
 
-    public CompleteRequestSettings? ChatSettingsToCompleteSettings(ChatRequestSettings? textSettings)
+    public CompleteRequestSettings ChatSettingsToCompleteSettings(ChatRequestSettings? textSettings)
     {
-        if (textSettings == null)
-        {
-            return null;
-        }
+        var settings = textSettings == null ?
+            new CompleteRequestSettings() :
+            new CompleteRequestSettings()
+            {
+                Temperature = textSettings.Temperature,
+                FrequencyPenalty = textSettings.FrequencyPenalty,
+                MaxTokens = textSettings.MaxTokens,
+                StopSequences = textSettings.StopSequences,
+                TopP = textSettings.TopP,
+                PresencePenalty = textSettings.PresencePenalty,
+                ResultsPerPrompt = textSettings.ResultsPerPrompt,
+                TokenSelectionBiases = textSettings.TokenSelectionBiases
+            };
 
-        return new CompleteRequestSettings()
-        {
-            Temperature = textSettings.Temperature,
-            FrequencyPenalty = textSettings.FrequencyPenalty,
-            MaxTokens = textSettings.MaxTokens,
-            StopSequences = textSettings.StopSequences,
-            TopP = textSettings.TopP,
-            PresencePenalty = textSettings.PresencePenalty,
-            ResultsPerPrompt = textSettings.ResultsPerPrompt,
-            TokenSelectionBiases = textSettings.TokenSelectionBiases
-        };
+        // TODO HACK
+        //settings.StopSequences = new List<string>() { "USER", "\nASSISTANT" };
+        //settings.StopSequences = new List<string>() { "<im_start>" };
+        settings.StopSequences = new List<string>() {
+                "<|im_end|>",
+                "<|im_start|>",
+                "[assistant]",
+                "[user]"
+            };
+        settings.MaxTokens ??= 200;
+
+        return settings;
     }
 
     public string ChatToText(ChatHistory chat)
@@ -82,17 +94,38 @@ public class ChatToTextConverter : IChatToTextConverter
 
         foreach (ChatMessageBase message in chat.Messages)
         {
-            sb.AppendLine(message.Role + ": " + message.Content);
+            WriteRolePrefix(sb, message.Role);
+
+            sb.Append(message.Content);
+            sb.Append("<|im_end|>\n");
         }
+
+        WriteRolePrefix(sb, AuthorRole.Assistant);
+
         return sb.ToString();
+    }
+
+    private static void WriteRolePrefix(StringBuilder sb, AuthorRole role)
+    {
+        if (role != AuthorRole.System)
+        {
+            sb.Append("<|im_start|>[");
+            sb.Append(role);
+            sb.Append("]\n");
+        }
     }
 
     public IReadOnlyList<IChatResult> TextResultToChatResult(IReadOnlyList<ITextResult> result)
     {
+        if (result.Count == 0)
+        {
+            return Array.Empty<IChatResult>();
+        }
+
         var chatResults = new List<IChatResult>(result.Count);
         for (int i = 0; i < result.Count; i++)
         {
-            chatResults[i] = new ChatResultFromTextResult(result[i]);
+            chatResults.Add(new ChatResultFromTextResult(result[i]));
         }
 
         return chatResults;

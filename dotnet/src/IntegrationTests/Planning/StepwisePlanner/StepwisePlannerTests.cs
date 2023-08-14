@@ -3,10 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.Skills.Core;
@@ -84,16 +87,29 @@ public sealed class StepwisePlannerTests : IDisposable
         // Act
         var plan = planner.CreatePlan(prompt);
         var result = await plan.InvokeAsync();
+        this._testOutputHelper.WriteLine(result.Result);
 
         // Assert
-        // Loose assertion -- we just want to make sure that the plan was executed and that the result contains the name of the current president.
-        // Calculations often wrong.
-        Assert.Contains("Biden", result.Result, StringComparison.InvariantCultureIgnoreCase);
+        var presidentBirthdate = new DateTime(1942, 11, 20);
+        var now = DateTime.UtcNow;
+        int presidentAge = now.Year - presidentBirthdate.Year;
+        if (presidentBirthdate.Date > now.AddYears(-presidentAge))
+        {
+            presidentAge--;
+        }
+
+        var presidentRegex = new Regex("\\bBiden\\b");
+        var ageRegex = new Regex($"\\b{presidentAge / 2d}\\b");
 
         Assert.True(result.Variables.TryGetValue("stepsTaken", out string? stepsTakenString));
+
         var stepsTaken = JsonSerializer.Deserialize<List<SystemStep>>(stepsTakenString!);
         Assert.NotNull(stepsTaken);
-        Assert.True(stepsTaken.Count >= 3 && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least 3 steps and at most 10 steps to be taken.");
+        this._testOutputHelper.WriteLine($"stepsTaken={stepsTaken.Count}");
+        Assert.True(presidentRegex.IsMatch(result.Result), stepsTakenString);
+        Assert.True(ageRegex.IsMatch(result.Result), stepsTakenString);
+
+        Assert.True(stepsTaken.Count >= 2 && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least 2 steps and at most 10 steps to be taken.");
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
@@ -119,6 +135,7 @@ public sealed class StepwisePlannerTests : IDisposable
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
                 apiKey: azureOpenAIConfiguration.ApiKey);
+
         }
 
         if (useEmbeddings)

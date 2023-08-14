@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 public interface IChatToTextConverter
 {
     string ChatToText(ChatHistory chat);
-    CompleteRequestSettings? ChatSettingsToCompleteSettings(ChatRequestSettings? textSettings);
+    CompleteRequestSettings ChatSettingsToCompleteSettings(ChatRequestSettings? textSettings);
     IReadOnlyList<IChatResult> TextResultToChatResult(IReadOnlyList<ITextResult> result);
     IAsyncEnumerable<IChatStreamingResult> TextStreamingResultToChatStreamingResult(IAsyncEnumerable<ITextStreamingResult> result);
 
