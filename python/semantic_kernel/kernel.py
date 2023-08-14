@@ -140,6 +140,10 @@ class Kernel:
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
     ):
+        """Executes a pipeline of functions, returning a stream of messages.
+
+        It also updates the context and/or variables.
+        """
         if len(functions) > 1:
             pipeline_functions = functions[:-1]
             stream_function = functions[-1]
@@ -190,11 +194,10 @@ class Kernel:
             raise ValueError("No functions passed to run")
 
         try:
-            completion = ""
             async for stream_message in stream_function.invoke_stream_async(
                 input=None, context=context
             ):
-                completion += stream_message
+                # completion += stream_message
                 yield stream_message
 
         except Exception as ex:

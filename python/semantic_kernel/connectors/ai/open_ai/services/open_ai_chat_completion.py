@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 import openai
 
@@ -13,10 +13,13 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.models.open_ai_chat_completion_result import (
+    OpenAIChatCompletionResult,
+)
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.models.chat.chat_message import ChatMessage
 
 
 class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
@@ -26,7 +29,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     _api_type: Optional[str] = None
     _api_version: Optional[str] = None
     _endpoint: Optional[str] = None
-    _log: Logger
 
     def __init__(
         self,
@@ -56,112 +58,150 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._api_type = api_type
         self._api_version = api_version
         self._endpoint = endpoint
-        self._log = log if log is not None else NullLogger()
         self._messages = []
+        super().__init__(log=log)
 
     async def complete_chat_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
-    ) -> Union[str, List[str]]:
-        # TODO: tracking on token counts/etc.
-        response = await self._send_chat_request(messages, request_settings, False)
-
-        if len(response.choices) == 1:
-            return response.choices[0].message.content
-        else:
-            return [choice.message.content for choice in response.choices]
+        self,
+        messages: List[Dict[str, str]],
+        request_settings: ChatRequestSettings,
+    ) -> OpenAIChatCompletionResult:
+        return await self._send_chat_request(messages, request_settings)
 
     async def complete_chat_stream_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
-    ):
-        response = await self._send_chat_request(messages, request_settings, True)
-
-        # parse the completion text(s) and yield them
-        async for chunk in response:
-            text, index = _parse_choices(chunk)
-            # if multiple responses are requested, keep track of them
-            if request_settings.number_of_responses > 1:
-                completions = [""] * request_settings.number_of_responses
-                completions[index] = text
-                yield completions
-            # if only one response is requested, yield it
-            else:
-                yield text
-
-    async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
-    ) -> Union[str, List[str]]:
-        """
-        Completes the given prompt.
-
-        Arguments:
-            prompt {str} -- The prompt to complete.
-            request_settings {CompleteRequestSettings} -- The request settings.
-
-        Returns:
-            str -- The completed text.
-        """
-        prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases,
-        )
-        response = await self._send_chat_request(
-            prompt_to_message, chat_settings, False
-        )
-
-        if len(response.choices) == 1:
-            return response.choices[0].message.content
-        else:
-            return [choice.message.content for choice in response.choices]
-
-    async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
-    ):
-        prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases,
-        )
-        response = await self._send_chat_request(prompt_to_message, chat_settings, True)
-
-        # parse the completion text(s) and yield them
-        async for chunk in response:
-            text, index = _parse_choices(chunk)
-            # if multiple responses are requested, keep track of them
-            if request_settings.number_of_responses > 1:
-                completions = [""] * request_settings.number_of_responses
-                completions[index] = text
-                yield completions
-            # if only one response is requested, yield it
-            else:
-                yield text
+        self,
+        messages: List[Dict[str, str]],
+        request_settings: ChatRequestSettings,
+    ) -> AsyncGenerator[OpenAIChatCompletionResult, None]:
+        async for response in self._send_chat_stream_request(
+            messages, request_settings
+        ):
+            yield response
 
     async def _send_chat_request(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[Dict[str, str]],
         request_settings: ChatRequestSettings,
-        stream: bool,
-    ):
+    ) -> OpenAIChatCompletionResult:
         """
         Completes the given user message with an asynchronous stream.
 
         Arguments:
-            user_message {str} -- The message (from a user) to respond to.
+            messages {List[Dict[str,str]]} -- The chat history of messages to complete.
             request_settings {ChatRequestSettings} -- The request settings.
 
         Returns:
-            str -- The completed text.
+            OpenAIChatCompletionResult -- The completion result.
         """
+        self._check_messages_and_settings(messages, request_settings)
+        try:
+            response: Any = await openai.ChatCompletion.acreate(
+                **self._get_model_args(),
+                api_key=self._api_key,
+                api_type=self._api_type,
+                api_base=self._endpoint,
+                api_version=self._api_version,
+                organization=self._org_id,
+                messages=messages,
+                temperature=request_settings.temperature,
+                top_p=request_settings.top_p,
+                presence_penalty=request_settings.presence_penalty,
+                frequency_penalty=request_settings.frequency_penalty,
+                max_tokens=request_settings.max_tokens,
+                n=request_settings.number_of_responses,
+                stream=False,
+                logit_bias=(
+                    request_settings.token_selection_biases
+                    if request_settings.token_selection_biases is not None
+                    and len(request_settings.token_selection_biases) > 0
+                    else {}
+                ),
+            )
+        except Exception as ex:
+            raise AIException(
+                AIException.ErrorCodes.ServiceError,
+                "OpenAI service failed to complete the chat",
+                ex,
+            ) from ex
+        try:
+            chat_result = OpenAIChatCompletionResult.from_openai_object(response)
+            self._log.debug(chat_result)
+            if chat_result.usage:
+                self.add_usage(chat_result.usage)
+            return chat_result
+        except Exception as ex:
+            raise AIException(
+                AIException.ErrorCodes.ServiceError,
+                "Failed to parse the completion response",
+                ex,
+            ) from ex
+
+    async def _send_chat_stream_request(
+        self,
+        messages: List[Dict[str, str]],
+        request_settings: ChatRequestSettings,
+    ) -> AsyncGenerator[OpenAIChatCompletionResult, None]:
+        """
+        Completes the given user message with an asynchronous stream.
+
+        Arguments:
+            messages {List[Dict[str,str]]} -- The chat history of messages to complete.
+            request_settings {ChatRequestSettings} -- The request settings.
+
+        Returns:
+            AsyncGenerator[OpenAIChatCompletionResult, None] -- A generator for the completion delta results and finally the full list of results.
+        """
+        self._check_messages_and_settings(messages, request_settings)
+
+        try:
+            response: Any = await openai.ChatCompletion.acreate(
+                **self._get_model_args(),
+                api_key=self._api_key,
+                api_type=self._api_type,
+                api_base=self._endpoint,
+                api_version=self._api_version,
+                organization=self._org_id,
+                messages=messages,
+                temperature=request_settings.temperature,
+                top_p=request_settings.top_p,
+                presence_penalty=request_settings.presence_penalty,
+                frequency_penalty=request_settings.frequency_penalty,
+                max_tokens=request_settings.max_tokens,
+                n=request_settings.number_of_responses,
+                stream=True,
+                logit_bias=(
+                    request_settings.token_selection_biases
+                    if request_settings.token_selection_biases is not None
+                    and len(request_settings.token_selection_biases) > 0
+                    else {}
+                ),
+            )
+        except Exception as ex:
+            raise AIException(
+                AIException.ErrorCodes.ServiceError,
+                "OpenAI service failed to complete the chat",
+                ex,
+            ) from ex
+
+        chat_result_chunks = []
+        async for chunk in response:
+            if "id" in chunk and chunk.id:
+                try:
+                    chat_result_chunk = OpenAIChatCompletionResult.from_openai_object(
+                        chunk, True
+                    )
+                    yield chat_result_chunk
+                    chat_result_chunks.append(chat_result_chunk)
+                    self._log.debug(chat_result_chunk)
+                except Exception as exc:
+                    self._log.warning(exc)
+                    continue
+        final_result = OpenAIChatCompletionResult.from_chunk_list(chat_result_chunks)
+        if final_result.usage:
+            self.add_usage(final_result.usage)
+        yield final_result
+
+    def _check_messages_and_settings(self, messages, request_settings):
         if request_settings is None:
             raise ValueError("The request settings cannot be `None`")
 
@@ -178,63 +218,75 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 "To complete a chat you need at least one message",
             )
 
-        if messages[-1][0] != "user":
+        if messages[-1]["role"] != "user":
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
                 "The last message must be from the user",
             )
 
-        model_args = {}
+    def _get_model_args(self) -> Dict[str, str]:
         if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
-        else:
-            model_args["model"] = self._model_id
+            return {"engine": self._model_id}
 
-        formatted_messages = [
-            {"role": role, "content": message} for role, message in messages
-        ]
+        return {"model": self._model_id}
 
-        try:
-            response: Any = await openai.ChatCompletion.acreate(
-                **model_args,
-                api_key=self._api_key,
-                api_type=self._api_type,
-                api_base=self._endpoint,
-                api_version=self._api_version,
-                organization=self._org_id,
-                messages=formatted_messages,
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                presence_penalty=request_settings.presence_penalty,
-                frequency_penalty=request_settings.frequency_penalty,
-                max_tokens=request_settings.max_tokens,
-                n=request_settings.number_of_responses,
-                stream=stream,
-                logit_bias=(
-                    request_settings.token_selection_biases
-                    if request_settings.token_selection_biases is not None
-                    and len(request_settings.token_selection_biases) > 0
-                    else {}
-                ),
-            )
-        except Exception as ex:
-            raise AIException(
-                AIException.ErrorCodes.ServiceError,
-                "OpenAI service failed to complete the chat",
-                ex,
-            )
+    async def complete_async(
+        self,
+        prompt: str,
+        settings: "CompleteRequestSettings",
+    ) -> OpenAIChatCompletionResult:
+        """
+        This is the method that is called from the kernel to get a response from a text-optimized LLM.
 
-        # TODO: tracking on token counts/etc.
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {CompleteRequestSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging.
 
-        return response
+        Returns:
+            ChatCompletionResult -- A object with all the results from the LLM.
+        """
+        message = ChatMessage(role="user", fixed_content=prompt)
+        return await self.complete_chat_async(
+            [message.as_dict()],
+            ChatRequestSettings(
+                temperature=settings.temperature,
+                top_p=settings.top_p,
+                presence_penalty=settings.presence_penalty,
+                frequency_penalty=settings.frequency_penalty,
+                max_tokens=settings.max_tokens,
+                number_of_responses=settings.number_of_responses,
+                token_selection_biases=settings.token_selection_biases,
+            ),
+        )
 
+    async def complete_stream_async(
+        self,
+        prompt: str,
+        settings: "CompleteRequestSettings",
+    ) -> AsyncGenerator[OpenAIChatCompletionResult, None]:
+        """
+        This is the method that is called from the kernel to get a stream response from a text-optimized LLM.
 
-def _parse_choices(chunk):
-    message = ""
-    if "role" in chunk.choices[0].delta:
-        message += chunk.choices[0].delta.role + ": "
-    if "content" in chunk.choices[0].delta:
-        message += chunk.choices[0].delta.content
+        Arguments:
+            prompt {str} -- The prompt to send to the LLM.
+            settings {CompleteRequestSettings} -- Settings for the request.
+            logger {Logger} -- A logger to use for logging.
 
-    index = chunk.choices[0].index
-    return message, index
+        Yields:
+            A stream representing LLM completion results.
+        """
+        message = ChatMessage(role="user", fixed_content=prompt)
+        async for response in self.complete_chat_stream_async(
+            [message.as_dict()],
+            ChatRequestSettings(
+                temperature=settings.temperature,
+                top_p=settings.top_p,
+                presence_penalty=settings.presence_penalty,
+                frequency_penalty=settings.frequency_penalty,
+                max_tokens=settings.max_tokens,
+                number_of_responses=settings.number_of_responses,
+                token_selection_biases=settings.token_selection_biases,
+            ),
+        ):
+            yield response

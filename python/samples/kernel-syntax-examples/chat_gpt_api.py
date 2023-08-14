@@ -11,14 +11,22 @@ you have one goal: figure out what people need.
 Your full name, should you need to know it, is
 Splendid Speckled Mosscap. You communicate
 effectively, but you tend to answer with long
-flowery prose.
+flowery prose, unless asked a direct question, then you give a direct answer.
 """
 
 kernel = sk.Kernel()
 
-api_key, org_id = sk.openai_settings_from_dot_env()
+deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+api_version = "2023-07-01-preview"
+chat_service = sk_oai.AzureChatCompletion(
+    deployment_name,
+    endpoint,
+    api_key,
+    api_version=api_version,
+)
 kernel.add_chat_service(
-    "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
+    "chat-gpt",
+    chat_service,
 )
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
@@ -39,7 +47,7 @@ function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
 
-async def chat() -> bool:
+async def chat(stream: bool = False) -> bool:
     context_vars = sk.ContextVariables()
 
     try:
@@ -47,24 +55,41 @@ async def chat() -> bool:
         context_vars["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
-        return False
+        return False, None
     except EOFError:
         print("\n\nExiting chat...")
-        return False
+        return False, None
 
     if user_input == "exit":
         print("\n\nExiting chat...")
-        return False
+        return False, None
+    if user_input == "switch":
+        return True, not stream
 
-    answer = await kernel.run_async(chat_function, input_vars=context_vars)
-    print(f"Mosscap:> {answer}")
-    return True
+    if stream:
+        print("Mosscap:> ", end="")
+        async for answer in kernel.run_stream_async(
+            chat_function, input_vars=context_vars
+        ):
+            if answer.content:
+                print(answer.content, end="")
+        print()
+    else:
+        answer = await kernel.run_async(chat_function, input_vars=context_vars)
+        print(f"Mosscap:> {answer}")
+    return True, None
 
 
 async def main() -> None:
     chatting = True
+    stream = True
     while chatting:
-        chatting = await chat()
+        chatting, stream_update = await chat(stream)
+        if stream_update is not None:
+            stream = stream_update
+            print(f'Switch to {"streaming" if stream else "non-streaming"} mode')
+            continue
+        print(chat_service.usage)
 
 
 if __name__ == "__main__":

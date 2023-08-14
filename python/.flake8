@@ -1,0 +1,9 @@
+
+[flake8]
+ignore = E226,E302,E41
+max-line-length = 160
+exclude = tests/*
+max-complexity = 10
+classmethod-decorators =
+    classmethod
+    validator

@@ -36,10 +36,9 @@ async def test_azure_e2e_chat_completion_with_skill(
         sk_prompt, max_tokens=200, temperature=0, top_p=0.5
     )
 
-    summary = await retry(
+    output = await retry(
         lambda: kernel.run_async(tldr_function, input_str=text_to_summarize)
     )
-    output = str(summary).strip()
     print(f"TLDR using input string: '{output}'")
     assert "First Law" not in output and (
         "human" in output or "Human" in output or "preserve" in output
@@ -79,9 +78,9 @@ async def test_oai_chat_stream_service_with_skills(
     async for message in kernel.run_stream_async(
         tldr_function, input_str=text_to_summarize
     ):
-        result.append(message)
+        if message.choices[0].delta.content:
+            result.append(message.choices[0].delta.content)
     output = "".join(result).strip()
-
     print(f"TLDR using input string: '{output}'")
     assert len(result) > 1
     assert "First Law" not in output and (

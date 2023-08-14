@@ -79,7 +79,8 @@ async def test_oai_text_stream_completion_with_skills(
     async for message in kernel.run_stream_async(
         tldr_function, input_str=text_to_summarize
     ):
-        result.append(message)
+        if message.is_streaming_result:
+            result.append(message.choices[0].text)
     output = "".join(result).strip()
 
     print(f"TLDR using input string: '{output}'")

@@ -14,6 +14,7 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
     OpenAITextCompletion,
 )
+from semantic_kernel.models.completion_result import CompletionResult
 
 
 def test_azure_text_completion_init() -> None:
@@ -118,6 +119,9 @@ async def test_azure_text_completion_call_with_parameters() -> None:
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.openai",
         new=mock_openai,
+    ), patch(
+        "semantic_kernel.connectors.ai.open_ai.models.open_ai_completion_result.OpenAICompletionResult.from_openai_object",
+        return_value=CompletionResult(),
     ):
         deployment_name = "test_deployment"
         endpoint = "https://test-endpoint.com"
@@ -163,6 +167,9 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() 
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion.openai",
         new=mock_openai,
+    ), patch(
+        "semantic_kernel.connectors.ai.open_ai.models.open_ai_completion_result.OpenAICompletionResult.from_openai_object",
+        return_value=CompletionResult(),
     ):
         deployment_name = "test_deployment"
         endpoint = "https://test-endpoint.com"

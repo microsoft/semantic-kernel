@@ -1,52 +1,58 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import ABC, abstractmethod
-from logging import Logger
-from typing import TYPE_CHECKING, List, Tuple, Union
+# from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, AsyncGenerator, Dict, List
+
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+    from semantic_kernel.models.chat.chat_completion_result import (
+        ChatCompletionResult,
+    )
 
 
-class ChatCompletionClientBase(ABC):
-    @abstractmethod
+class ChatCompletionClientBase(AIServiceClientBase):
+    """Base class for all Chat Completion Services"""
+
+    # @abstractmethod
     async def complete_chat_async(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
-        logger: Logger,
-    ) -> Union[str, List[str]]:
+    ) -> "ChatCompletionResult":
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is
+            messages {List[Dict[str, str]]} -- A list of tuples, where each tuple is
                 comprised of a speaker ID and a message.
             settings {ChatRequestSettings} -- Settings for the request.
-            logger {Logger} -- A logger to use for logging.
 
         Returns:
-            Union[str, List[str]] -- A string or list of strings representing the response(s) from the LLM.
+            ChatCompletionResult -- A object with all the results from the LLM.
         """
-        pass
+        raise NotImplementedError(
+            "complete_chat_async has to be implemented by the used subclass."
+        )
 
-    @abstractmethod
+    # @abstractmethod
     async def complete_chat_stream_async(
         self,
-        messages: List[Tuple[str, str]],
+        messages: List[Dict[str, str]],
         settings: "ChatRequestSettings",
-        logger: Logger,
-    ):
+    ) -> AsyncGenerator["ChatCompletionResult", None]:
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is
+            messages {List[Dict[str, str]]} -- A list of tuples, where each tuple is
                 comprised of a speaker ID and a message.
             settings {ChatRequestSettings} -- Settings for the request.
-            logger {Logger} -- A logger to use for logging.
 
         Yields:
-            A stream representing the response(s) from the LLM.
+            A stream representing LLM completion results.
         """
-        pass
+        raise NotImplementedError(
+            "complete_chat_stream_async has to be implemented by the used subclass."
+        )

@@ -24,6 +24,7 @@ ipykernel = "^6.21.1"
 pytest = "7.4.0"
 ruff = "0.0.283"
 pytest-asyncio = "0.21.1"
+pylint-pydantic = "0.2.4"
 
 [tool.poetry.group.google_palm.dependencies]
 google-generativeai = { version = "^0.1.0", markers = "python_version >= '3.9'" }
@@ -66,6 +67,9 @@ profile = "black"
 [tool.ruff]
 select = ["E", "F", "I"]
 line-length = 120
+
+[tool.pylint]
+load-plugins = "pylint_pydantic"
 
 [build-system]
 requires = ["poetry-core"]

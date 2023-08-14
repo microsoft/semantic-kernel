@@ -92,7 +92,7 @@ class SKFunctionBase(PydanticField):
         pass
 
     @abstractmethod
-    def describe() -> FunctionView:
+    def describe(self) -> FunctionView:
         """
         Returns a description of the function,
         including its parameters

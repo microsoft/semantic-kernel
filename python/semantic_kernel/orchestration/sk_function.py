@@ -21,6 +21,9 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.models.chat.chat_completion_result import (
+    ChatCompletionResult,
+)
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
@@ -121,27 +124,21 @@ class SKFunction(SKFunctionBase):
                     as_chat_prompt = cast(
                         ChatPromptTemplate, function_config.prompt_template
                     )
-
-                    # Similar to non-chat, render prompt (which renders to a
-                    # list of <role, content> messages)
                     messages = await as_chat_prompt.render_messages_async(context)
-                    completion = await client.complete_chat_async(
-                        messages, request_settings
+                    chat_result: ChatCompletionResult = (
+                        await client.complete_chat_async(
+                            messages,
+                            request_settings,
+                        )
                     )
-
-                    # Add the last message from the rendered chat prompt
-                    # (which will be the user message) and the response
-                    # from the model (the assistant message)
-                    _, content = messages[-1]
-                    as_chat_prompt.add_user_message(content)
-                    as_chat_prompt.add_assistant_message(completion)
-
-                    # Update context
-                    context.variables.update(completion)
+                    # TODO: handle storing multiple responses
+                    as_chat_prompt.add_chat_message(chat_result.chat_message)
+                    context.variables.update(as_chat_prompt.latest.content)
                 else:
                     prompt = await function_config.prompt_template.render_async(context)
                     completion = await client.complete_async(prompt, request_settings)
-                    context.variables.update(completion)
+                    # TODO: what to do with multiple results
+                    context.variables.update(completion.content)
             except Exception as e:
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)
@@ -152,41 +149,37 @@ class SKFunction(SKFunctionBase):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
-            try:
-                if function_config.has_chat_prompt:
+            if function_config.has_chat_prompt:
+                try:
                     as_chat_prompt = cast(
                         ChatPromptTemplate, function_config.prompt_template
                     )
-
-                    # Similar to non-chat, render prompt (which renders to a
-                    # list of <role, content> messages)
-                    completion = ""
                     messages = await as_chat_prompt.render_messages_async(context)
-                    async for steam_message in client.complete_chat_stream_async(
+                    async for chat_result in client.complete_chat_stream_async(
                         messages, request_settings
                     ):
-                        completion += steam_message
-                        yield steam_message
+                        if chat_result.is_streaming_result:
+                            yield chat_result
+                            continue
+                        as_chat_prompt.add_chat_message(chat_result.chat_message)
+                        # TODO: also multiple responses
+                        context.variables.update(as_chat_prompt.latest.content)
+                        return
+                except Exception as e:
+                    # TODO: "critical exceptions"
+                    context.fail(str(e), e)
+            try:
+                prompt = await function_config.prompt_template.render_async(context)
 
-                    # Add the last message from the rendered chat prompt
-                    # (which will be the user message) and the response
-                    # from the model (the assistant message)
-                    _, content = messages[-1]
-                    as_chat_prompt.add_user_message(content)
-                    as_chat_prompt.add_assistant_message(completion)
-
-                    # Update context
-                    context.variables.update(completion)
-                else:
-                    prompt = await function_config.prompt_template.render_async(context)
-
-                    completion = ""
-                    async for stream_message in client.complete_stream_async(
-                        prompt, request_settings
-                    ):
-                        completion += stream_message
+                async for stream_message in client.complete_stream_async(
+                    prompt, request_settings
+                ):
+                    if stream_message.is_streaming_result:
                         yield stream_message
-                    context.variables.update(completion)
+                        continue
+                    # TODO: also multiple responses
+                    context.variables.update(stream_message.content)
+                    return
             except Exception as e:
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)

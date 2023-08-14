@@ -14,6 +14,8 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
 )
+from semantic_kernel.models.chat.chat_completion_result import ChatCompletionResult
+from semantic_kernel.models.chat.role import Role
 
 
 def test_azure_chat_completion_init() -> None:
@@ -118,6 +120,9 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.openai",
         new=mock_openai,
+    ), patch(
+        "semantic_kernel.connectors.ai.open_ai.models.open_ai_chat_completion_result.OpenAIChatCompletionResult.from_openai_object",
+        return_value=ChatCompletionResult(),
     ):
         deployment_name = "test_deployment"
         endpoint = "https://test-endpoint.com"
@@ -126,7 +131,7 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
         api_version = "2023-03-15-preview"
         logger = Logger("test_logger")
         prompt = "hello world"
-        messages = [{"role": "user", "content": prompt}]
+        messages = [{"role": Role.user, "content": prompt}]
         complete_request_settings = CompleteRequestSettings()
 
         azure_chat_completion = AzureChatCompletion(
@@ -164,6 +169,9 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
     with patch(
         "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.openai",
         new=mock_openai,
+    ), patch(
+        "semantic_kernel.connectors.ai.open_ai.models.open_ai_chat_completion_result.OpenAIChatCompletionResult.from_openai_object",
+        return_value=ChatCompletionResult(),
     ):
         deployment_name = "test_deployment"
         endpoint = "https://test-endpoint.com"
