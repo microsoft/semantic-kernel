@@ -1,0 +1,13 @@
+### Azure SQL Server tables, with their properties:
+#
+# [SalesLT].[SalesOrderDetail](SalesOrderID, SalesOrderDetailID, OrderQty, ProductID, UnitPrice, UnitPriceDiscount, LineTotal, rowguid, ModifiedDate)
+# [SalesLT].[Product](ProductID, Name, ProductNumber, Color, StandardCost, ListPrice, Size, Weight, ProductCategoryID, ProductModelID, SellStartDate, SellEndDate, DiscontinuedDate, ThumbNailPhoto, ThumbnailPhotoFileName, rowguid, ModifiedDate)
+#
+### Here are samples
+## Get product name and its color
+SELECT Name, Color FROM [SalesLT].[Product] GROUP BY Name
+## Get average of UnitPrice in actual Sales order
+SELECT AVG(UnitPrice) as AverageUnitPrice FROM [SalesLT].[SalesOrderDetail] WHERE OrderQty > 0;  
+#
+## {{$input}}
+SELECT 

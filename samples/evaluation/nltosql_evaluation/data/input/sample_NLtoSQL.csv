@@ -1,0 +1,6 @@
+NL,SQL
+"Get count of each size","SELECT Size, Count(*) as count FROM [SalesLT].[Product] GROUP BY Size"
+"Get all product names","SELECT Name FROM [SalesLT].[Product]"
+"Get average of UnitPrice in actual Sales order","SELECT AVG(UnitPrice) FROM [SalesLT].[SalesOrderDetail]"
+"How many Sales order were there?","SELECT COUNT(SalesOrderID) FROM [SalesLT].[SalesOrderDetail]"
+"How many products are there for each color?","SELECT COUNT(*), Color FROM [SalesLT].[Product] GROUP BY Color"

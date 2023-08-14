@@ -1,0 +1,18 @@
+###### Requirements without Version Specifiers ######`
+semantic_kernel
+notebook
+openai
+pandas
+numpy
+seaborn
+scikit-learn
+python-levenshtein
+requests
+retrying
+statistics
+os
+dotenv
+pyodbc
+time
+difflib
+re
