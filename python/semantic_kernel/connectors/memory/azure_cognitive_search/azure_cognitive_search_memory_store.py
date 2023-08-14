@@ -8,9 +8,9 @@ from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    SearchIndex,
-    VectorSearch,
     HnswVectorSearchAlgorithmConfiguration,
+    SearchIndex,
+    VectorSearch
 )
 
 from numpy import ndarray
