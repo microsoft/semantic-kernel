@@ -54,7 +54,6 @@ public class MemoryException extends SKException {
         return errorCode;
     }
 
-
     /** Semantic kernel memory error codes. */
     public enum ErrorCodes {
         /** Unknown error. */

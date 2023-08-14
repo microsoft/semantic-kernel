@@ -154,7 +154,8 @@ public class DefaultCompletionSKFunction
         // this.ensureContextHasSkills(context);
 
         if (function == null) {
-            throw new FunctionNotRegisteredException(ErrorCodes.FUNCTION_NOT_REGISTERED, this.getName());
+            throw new FunctionNotRegisteredException(
+                    ErrorCodes.FUNCTION_NOT_REGISTERED, this.getName());
         }
 
         if (settings == null) {

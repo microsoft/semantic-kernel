@@ -7,20 +7,23 @@ import javax.annotation.Nullable;
 
 public class FunctionNotFound extends SKException {
 
-  private final ErrorCodes errorCode;
+    private final ErrorCodes errorCode;
 
-  public FunctionNotFound(@Nonnull ErrorCodes errorCodes) {
-    this(errorCodes, null, null);
-  }
+    public FunctionNotFound(@Nonnull ErrorCodes errorCodes) {
+        this(errorCodes, null, null);
+    }
 
-  public FunctionNotFound(@Nonnull ErrorCodes errorCodes, @Nullable String functionName) {
-    this(errorCodes, functionName, null);
-  }
+    public FunctionNotFound(@Nonnull ErrorCodes errorCodes, @Nullable String functionName) {
+        this(errorCodes, functionName, null);
+    }
 
-  public FunctionNotFound(@Nonnull ErrorCodes errorCodes, @Nullable String functionName, @Nullable Throwable cause) {
-      super(formatDefaultMessage(errorCodes.getMessage(), functionName), cause);
-      this.errorCode = errorCodes;
-  }
+    public FunctionNotFound(
+            @Nonnull ErrorCodes errorCodes,
+            @Nullable String functionName,
+            @Nullable Throwable cause) {
+        super(formatDefaultMessage(errorCodes.getMessage(), functionName), cause);
+        this.errorCode = errorCodes;
+    }
 
     public ErrorCodes getErrorCode() {
         return errorCode;

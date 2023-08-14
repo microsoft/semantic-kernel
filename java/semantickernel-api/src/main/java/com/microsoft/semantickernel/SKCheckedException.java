@@ -35,14 +35,15 @@ public class SKCheckedException extends Exception {
         super(message, cause);
     }
 
-  /**
-   * Translate the error code into a default message format.
-   * @param errorMessage The error message from an error code
-   * @param message The message from the code which throws the exception
-   * @return A formatted message
-   */
-  protected static String formatDefaultMessage(
-      @Nonnull String errorMessage, @Nullable String message) {
-    return SKException.formatDefaultMessage(errorMessage, message);
-  }
+    /**
+     * Translate the error code into a default message format.
+     *
+     * @param errorMessage The error message from an error code
+     * @param message The message from the code which throws the exception
+     * @return A formatted message
+     */
+    protected static String formatDefaultMessage(
+            @Nonnull String errorMessage, @Nullable String message) {
+        return SKException.formatDefaultMessage(errorMessage, message);
+    }
 }

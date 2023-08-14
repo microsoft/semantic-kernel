@@ -37,7 +37,8 @@ public class AzureOpenAISettings extends AbstractOpenAIClientSettings {
     public String getEndpoint() throws ConfigurationException {
         if (endpoint == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND, AZURE_OPEN_AI_ENDPOINT_SUFFIX);
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND,
+                    AZURE_OPEN_AI_ENDPOINT_SUFFIX);
         }
         return endpoint;
     }

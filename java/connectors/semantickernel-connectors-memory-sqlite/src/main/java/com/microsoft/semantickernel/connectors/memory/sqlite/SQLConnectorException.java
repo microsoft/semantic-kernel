@@ -8,24 +8,24 @@ import javax.annotation.Nullable;
 /** Exception thrown by the SQLite connector. */
 public class SQLConnectorException extends SKException {
 
-  private final ErrorCodes errorCode;
+    private final ErrorCodes errorCode;
 
-  /**
-   * Create an exception with a message
-   *
-   * @param errorCode The error code
-   */
-  public SQLConnectorException(@Nonnull ErrorCodes errorCode) {
-    this(errorCode, null, null);
-  }
+    /**
+     * Create an exception with a message
+     *
+     * @param errorCode The error code
+     */
+    public SQLConnectorException(@Nonnull ErrorCodes errorCode) {
+        this(errorCode, null, null);
+    }
 
-  /**
+    /**
      * Create an exception with a message
      *
      * @param message a description of the cause of the exception
      */
     public SQLConnectorException(@Nonnull ErrorCodes errorCode, @Nullable String message) {
-      this(errorCode, message, null);
+        this(errorCode, message, null);
     }
 
     /**
@@ -35,26 +35,27 @@ public class SQLConnectorException extends SKException {
      * @param message a description of the cause of the exception
      * @param cause the cause of the exception
      */
-    public SQLConnectorException(@Nonnull ErrorCodes errorCode, @Nullable String message, @Nullable Throwable cause) {
+    public SQLConnectorException(
+            @Nonnull ErrorCodes errorCode, @Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
         this.errorCode = errorCode;
     }
 
     public ErrorCodes getErrorCode() {
-      return errorCode;
+        return errorCode;
     }
 
     public enum ErrorCodes {
-      SQL_ERROR("SQL error");
+        SQL_ERROR("SQL error");
 
-      final String message;
+        final String message;
 
-      ErrorCodes(String message) {
-        this.message = message;
-      }
+        ErrorCodes(String message) {
+            this.message = message;
+        }
 
-      public String getMessage() {
-        return message;
-      }
+        public String getMessage() {
+            return message;
+        }
     }
 }

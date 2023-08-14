@@ -114,7 +114,9 @@ public class SequentialPlanner {
                             });
         } catch (Exception e) {
             throw new PlanningException(
-                    PlanningException.ErrorCodes.INVALID_PLAN, "Plan parsing error, invalid XML", e);
+                    PlanningException.ErrorCodes.INVALID_PLAN,
+                    "Plan parsing error, invalid XML",
+                    e);
         }
     }
 }

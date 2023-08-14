@@ -140,8 +140,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         (response) -> {
                             if (response.getStatusCode() == 404 || response.getValue() == null) {
                                 throw new MemoryException(
-                                    ErrorCodes.MEMORY_NOT_FOUND,
-                                        "Memory read returned null");
+                                        ErrorCodes.MEMORY_NOT_FOUND, "Memory read returned null");
                             }
                             return new MemoryQueryResult(
                                     toMemoryRecordMetadata(response.getValue()), 1);
@@ -166,8 +165,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                     (list, response) -> {
                         if (response.getStatusCode() == 404 || response.getValue() == null) {
                             throw new MemoryException(
-                                ErrorCodes.MEMORY_NOT_FOUND,
-                                    "Memory read returned null");
+                                    ErrorCodes.MEMORY_NOT_FOUND, "Memory read returned null");
                         }
                         response.getValue().stream()
                                 .map(
@@ -288,7 +286,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                             || response.getValue().getResults() == null
                             || response.getValue().getResults().isEmpty()) {
                         throw new MemoryException(
-                            ErrorCodes.MEMORY_NOT_FOUND,
+                                ErrorCodes.MEMORY_NOT_FOUND,
                                 "Memory write returned null or an empty set");
                     }
                     return response.getValue().getResults().get(0).getKey();

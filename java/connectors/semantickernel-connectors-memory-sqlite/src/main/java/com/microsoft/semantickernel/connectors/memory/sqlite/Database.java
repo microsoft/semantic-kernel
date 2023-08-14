@@ -95,8 +95,9 @@ public class Database {
                                 statement.executeBatch();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                    "\"CREATE TABLE\" failed", e);
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"CREATE TABLE\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -114,13 +115,15 @@ public class Database {
                             } catch (SQLiteException e) {
                                 if (e.getResultCode() != SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE) {
                                     throw new SQLConnectorException(
-                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                        "\"INSERT INTO\" failed", e);
+                                            SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                            "\"INSERT INTO\" failed",
+                                            e);
                                 }
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                    "\"INSERT INTO\" failed", e);
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"INSERT INTO\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -154,8 +157,9 @@ public class Database {
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                    "\"UPDATE\" failed", e);
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"UPDATE\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -187,8 +191,9 @@ public class Database {
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                    "\"INSERT OR IGNORE INTO\" failed", e);
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"INSERT OR IGNORE INTO\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -224,8 +229,9 @@ public class Database {
                             } catch (SQLException e) {
                                 return Mono.error(
                                         new SQLConnectorException(
-                                            SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                            "\"SELECT\" failed", e));
+                                                SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                                "\"SELECT\" failed",
+                                                e));
                             }
                             return Mono.just(collections);
                         })
@@ -259,8 +265,9 @@ public class Database {
                             } catch (SQLException e) {
                                 return Mono.error(
                                         new SQLConnectorException(
-                                            SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                            "\"SELECT * FROM\" failed", e));
+                                                SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                                "\"SELECT * FROM\" failed",
+                                                e));
                             }
                             return Mono.just(entries);
                         })
@@ -294,8 +301,9 @@ public class Database {
                             } catch (SQLException e) {
                                 return Mono.error(
                                         new SQLConnectorException(
-                                            SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                            "\"SELECT * FROM\" failed", e));
+                                                SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                                "\"SELECT * FROM\" failed",
+                                                e));
                             }
                             return Mono.empty();
                         })
@@ -326,8 +334,9 @@ public class Database {
                                 }
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                    "\"DELETE FROM\" failed", e);
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"DELETE FROM\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -351,8 +360,9 @@ public class Database {
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                    "\"DELETE FROM\" failed", e);
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"DELETE FROM\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -375,8 +385,9 @@ public class Database {
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                    "\"DELETE FROM\" failed", e);
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"DELETE FROM\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())

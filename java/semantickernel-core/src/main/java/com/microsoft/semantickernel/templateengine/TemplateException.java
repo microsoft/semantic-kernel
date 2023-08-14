@@ -120,8 +120,7 @@ public class TemplateException extends SKException {
          * </p>
          */
         //spotless:on
-        RUNTIME_ERROR("The template execution failed, e.g. a function call threw an exception")
-        ;
+        RUNTIME_ERROR("The template execution failed, e.g. a function call threw an exception");
 
         private final String message;
 

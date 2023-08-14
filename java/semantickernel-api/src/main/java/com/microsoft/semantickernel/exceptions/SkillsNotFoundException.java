@@ -17,7 +17,8 @@ public class SkillsNotFoundException extends SKException {
         this(errorCodes, message, null);
     }
 
-    public SkillsNotFoundException(@Nonnull ErrorCodes errorCodes, @Nullable String message, @Nullable Throwable cause) {
+    public SkillsNotFoundException(
+            @Nonnull ErrorCodes errorCodes, @Nullable String message, @Nullable Throwable cause) {
         super(formatDefaultMessage(errorCodes.getMessage(), message), cause);
         this.errorCode = errorCodes;
     }

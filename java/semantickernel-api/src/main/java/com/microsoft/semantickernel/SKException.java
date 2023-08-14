@@ -33,14 +33,15 @@ public class SKException extends RuntimeException {
         super(message, cause);
     }
 
-  /**
-   * Translate the error code into a default message format.
-   * @param errorMessage The error message from an error code
-   * @param message The message from the code which throws the exception
-   * @return A formatted message
-   */
-  protected static String formatDefaultMessage(
-      @Nonnull String errorMessage, @Nullable String message) {
-    return String.format("%s: %s", errorMessage, message);
-  }
+    /**
+     * Translate the error code into a default message format.
+     *
+     * @param errorMessage The error message from an error code
+     * @param message The message from the code which throws the exception
+     * @return A formatted message
+     */
+    protected static String formatDefaultMessage(
+            @Nonnull String errorMessage, @Nullable String message) {
+        return String.format("%s: %s", errorMessage, message);
+    }
 }
