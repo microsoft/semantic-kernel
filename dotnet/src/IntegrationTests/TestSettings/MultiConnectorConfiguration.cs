@@ -14,5 +14,7 @@ internal sealed class MultiConnectorConfiguration
 {
     public string OobaboogaEndPoint { get; set; } = "http://localhost";
 
+    public Dictionary<string, string> GlobalParameters { get; set; } = new();
+
     public List<OobaboogaConnectorConfiguration> OobaboogaCompletions { get; set; } = new();
 }

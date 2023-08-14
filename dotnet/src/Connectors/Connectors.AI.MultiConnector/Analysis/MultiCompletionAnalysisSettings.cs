@@ -31,19 +31,9 @@ public class MultiCompletionAnalysisSettings
     /// <summary>
     /// This is the default vetting prompt used for connectors evaluation
     /// </summary>
-    public const string DefaultVettingPromptTemplate = @"Validate a text completion model's response to a semantic function: following are a templated prompt sent to a large language model and the completion it returned, to be evaluated. Please indicate whether the response is valid or not.
-Note that semantic functions are employed within pipelines comprising other templated semantic functions intertwined with native code based functions. The latter might require stricter adherence to the templated instructions provided to parse input parameters, without any means to filter out potential noise.
-Be wise in your appraisal of what is an acceptable response to those instructions. Instructions often include a templated example of what the expected completion looks like, although this is not systematic, and sometimes the example is a bit too short to save on template tokens. 
-Does the reponse appropriately completes the prompt? Please answer with true or false.
-PROMPT:
--------
-{prompt}
-RESPONSE:
----------
-{response}
-RESPONSE IS VALID? (true/false):
---------------------------------
-";
+    
+
+   
 
     /// <summary>
     /// Those are the default settings used for connectors evaluation
@@ -178,7 +168,7 @@ RESPONSE IS VALID? (true/false):
     /// <summary>
     /// The vetting prompt used in evaluation
     /// </summary>
-    public string VettingPromptTemplate { get; set; } = DefaultVettingPromptTemplate;
+    public string VettingPromptTemplate { get; set; } = Defaults.VettingPromptTemplate;
 
     /// <summary>
     /// Request settings for the vetting process

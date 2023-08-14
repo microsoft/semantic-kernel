@@ -34,6 +34,10 @@
   },
   "MultiConnector": {
     "OobaboogaEndPoint": "http://localhost",
+    "GlobalParameters": {
+      "System": "User is now playing a game where he is writing messages in the form of semantic functions. That means you are expected to strictly answer with a completion of his message, without adding any additional comments.",
+      "UserPreamble": "Let's play a game: please read the following instructions, and simply answer with a completion of my message, don't add any personal comments."
+    },
     "OobaboogaCompletions": [
       {
         "Name": "TheBloke_orca_mini_3B-GGML",
@@ -42,9 +46,7 @@
         "MaxTokens": 2048,
         "CostPer1000Token": 0.0003,
         "PromptTransform": {
-          "Template": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n\n### User:\n{0}\n\n### Response:",
-          "TemplatedTemplate": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n{System}\n\n### User:\n{0}\n\n### Assistant:",
-          "AddUserPreamble": false
+          "Template": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n{System}\n\n### User:\n{0}\n\n### Assistant:"
         }
       },
       {
@@ -54,8 +56,7 @@
         "MaxTokens": 2048,
         "CostPer1000Token": 0.0004,
         "PromptTransform": {
-          "Template": "<human>: [Instruction]\n{0}\n<bot>:",
-          "AddUserPreamble": false
+          "Template": "<human>: {UserPreamble}[Instruction]\n{0}\n<bot>:"
         }
       },
       {
@@ -65,12 +66,9 @@
         "MaxTokens": 4096,
         "CostPer1000Token": 0.0005,
         "PromptTransform": {
-          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n\n### User:\n{0}\n\n### Assistant:",
-          "TemplatedTemplate": "### System:\nThis is a system prompt, please behave and help the user.\n{System}\n\n### User:\n{0}\n\n### Assistant:",
-          "AddUserPreamble": false
+          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n{System}\n\n### User:\n{0}\n\n### Assistant:"
         }
-      }
-      ,
+      },
       {
         "Name": "TheBloke_StableBeluga-13B-GGML",
         "BlockingPort": 5003,
@@ -78,12 +76,9 @@
         "MaxTokens": 4096,
         "CostPer1000Token": 0.0007,
         "PromptTransform": {
-          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n\n### User:\n{0}\n\n### Assistant:",
-          "TemplatedTemplate": "### System:\nThis is a system prompt, please behave and help the user.\n{System}\n\n### User:\n{0}\n\n### Assistant:",
-          "AddUserPreamble": false
+          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n{System}\n\n### User:\n{0}\n\n### Assistant:"
         }
-      }
-      ,
+      },
       {
         "Name": "TheBloke_upstage-llama-30b-instruct-2048-GGML",
         //"EndPoint": "http://x.x.x.x", Most probably you won't host that model on the same machine as the tests runner and the rest of the models
@@ -92,8 +87,7 @@
         "MaxTokens": 2048,
         "CostPer1000Token": 0.001,
         "PromptTransform": {
-          "TemplatedTemplate": "### System:\r\n{System}\r\n\r\n### User:\r\n{0}\n\n### Assistant:\n",
-          "AddUserPreamble": false
+          "Template": "### System:\r\n{System}\r\n\r\n### User:\r\n{0}\n\n### Assistant:\n"
         }
       }
     ]

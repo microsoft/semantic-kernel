@@ -92,7 +92,8 @@ public class NamedTextCompletion
     /// <summary>
     /// Adjusts the request max tokens and temperature settings based on the completion max token supported.
     /// </summary>
-    public CompletionJob AdjustPromptAndRequestSettings(CompletionJob completionJob, PromptConnectorSettings promptConnectorSettings,
+    public CompletionJob AdjustPromptAndRequestSettings(CompletionJob completionJob,
+        PromptConnectorSettings promptConnectorSettings,
         PromptMultiConnectorSettings promptMultiConnectorSettings,
         MultiTextCompletionSettings multiTextCompletionSettings,
         ILogger? logger)
@@ -165,25 +166,25 @@ public class NamedTextCompletion
 
         if (multiTextCompletionSettings.GlobalPromptTransform != null)
         {
-            adjustedPrompt = multiTextCompletionSettings.GlobalPromptTransform.Transform(adjustedPrompt);
+            adjustedPrompt = multiTextCompletionSettings.GlobalPromptTransform.TransformFunction(adjustedPrompt, multiTextCompletionSettings.GlobalParameters);
             logger?.LogTrace("Applied global settings prompt transform");
         }
 
         if (promptMultiConnectorSettings.PromptTypeTransform != null && promptConnectorSettings.ApplyPromptTypeTransform)
         {
-            adjustedPrompt = promptMultiConnectorSettings.PromptTypeTransform.Transform(adjustedPrompt);
+            adjustedPrompt = promptMultiConnectorSettings.PromptTypeTransform.TransformFunction(adjustedPrompt, multiTextCompletionSettings.GlobalParameters);
             logger?.LogTrace("Applied prompt type settings prompt transform");
         }
 
         if (promptConnectorSettings.PromptConnectorTypeTransform != null)
         {
-            adjustedPrompt = promptConnectorSettings.PromptConnectorTypeTransform.Transform(adjustedPrompt);
+            adjustedPrompt = promptConnectorSettings.PromptConnectorTypeTransform.TransformFunction(adjustedPrompt, multiTextCompletionSettings.GlobalParameters);
             logger?.LogTrace("Applied prompt connector type settings prompt transform");
         }
 
         if (this.PromptTransform != null && (promptMultiConnectorSettings.ApplyModelTransform || promptConnectorSettings.EnforceModelTransform))
         {
-            adjustedPrompt = this.PromptTransform.Transform(adjustedPrompt);
+            adjustedPrompt = this.PromptTransform.TransformFunction(adjustedPrompt, multiTextCompletionSettings.GlobalParameters);
             logger?.LogTrace("Applied named connector settings transform");
         }
 

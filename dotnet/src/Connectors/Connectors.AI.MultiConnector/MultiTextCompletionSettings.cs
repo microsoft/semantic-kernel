@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
@@ -22,17 +21,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// </remarks>
 public class MultiTextCompletionSettings
 {
-    private const string DefaultTruncatedLogFormat = @"
-================================= START ====== PROMPT/RESULT =============================================
-{0}
-
-
-(...)
-
-
-{1}
-================================== END ====== PROMPT/RESULT ==============================================";
-
     private ConcurrentBag<PromptMultiConnectorSettings> _promptMultiConnectorSettingsInternal = new();
 
     /// <summary>
@@ -91,14 +79,19 @@ public class MultiTextCompletionSettings
     public bool LogTestCollection { get; set; } = false;
 
     /// <summary>
-    /// Represents the max length of prompt and response to be logged.
+    /// By default, prompt logs are json encoded to maintain global readability of log traces, but you might remove that option to get more readable prompt logs.
     /// </summary>
-    public int PromptLogTruncationLength { get; set; } = 600;
+    public bool PromptLogsJsonEncoded { get; set; } = true;
 
     /// <summary>
-    /// Represents the max length of prompt and response to be logged.
+    /// Represents the max length of prompt and responses in chars to be logged.
     /// </summary>
-    public string TruncatedPromptLogFormat { get; set; } = DefaultTruncatedLogFormat;
+    public int PromptLogTruncationLength { get; set; } = 300;
+
+    /// <summary>
+    /// Optionally change the format of logged prompts for enhanced readability in very large execution traces.
+    /// </summary>
+    public string PromptLogTruncationFormat { get; set; } = Defaults.TruncatedLogFormat;
 
     /// <summary>
     /// List of settings for multiple connectors associated with each prompt type.
@@ -120,6 +113,16 @@ public class MultiTextCompletionSettings
     /// </summary>
     [JsonIgnore]
     public Func<CompletionJob, IEnumerable<PromptMultiConnectorSettings>, PromptMultiConnectorSettings?> PromptMatcher { get; set; } = SimpleMatchPromptSettings;
+
+    /// <summary>
+    /// Global parameters allow injecting dynamic blocks consistently into the specific templates associated with prompt types, named connectors or the evaluation process. Use them in your templates with token formatted like {ParamName}.
+    /// </summary>
+    public Dictionary<string, string> GlobalParameters { get; set; } = new()
+    {
+        { nameof(Defaults.SystemSupplement), Defaults.SystemSupplement },
+        { nameof(Defaults.UserPreamble), Defaults.UserPreamble },
+        { nameof(Defaults.SemanticRemarks), Defaults.SemanticRemarks }
+    };
 
     /// <summary>
     /// Optionally transform the input prompts globally
@@ -193,7 +196,7 @@ public class MultiTextCompletionSettings
     /// </summary>
     public string GeneratePromptLog(string prompt)
     {
-        var promptLog = PromptSignature.GeneratePromptLog(prompt, this.PromptLogTruncationLength, this.TruncatedPromptLogFormat);
+        var promptLog = PromptSignature.GeneratePromptLog(prompt, this.PromptLogTruncationLength, this.PromptLogTruncationFormat, this.PromptLogsJsonEncoded);
         return promptLog;
     }
 

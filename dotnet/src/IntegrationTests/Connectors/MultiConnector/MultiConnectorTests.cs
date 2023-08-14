@@ -78,7 +78,7 @@ public sealed class MultiConnectorTests : IDisposable
     [InlineData(1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToMultipleOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
     {
-        await this.ChatGptOffloadsToOobaboogaUsingFileAsync("", durationWeight, costWeight, nbPromptTests, planFileName, inputTextFileName, skillNames).ConfigureAwait(false);
+        await this.ChatGptOffloadsToOobaboogaUsingFileAsync("", nbPromptTests, planFileName, inputTextFileName, skillNames).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -86,17 +86,17 @@ public sealed class MultiConnectorTests : IDisposable
     /// </summary>
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
-    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
     [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
+    public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
     {
         // Load the plan from the provided file path
         var planPath = System.IO.Path.Combine(this._planDirectory, planFileName);
@@ -118,16 +118,16 @@ public sealed class MultiConnectorTests : IDisposable
             modelNames = new List<string> { completionName };
         }
 
-        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, durationWeight, costWeight, nbPromptTests, skillNames).ConfigureAwait(false);
+        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, nbPromptTests, skillNames).ConfigureAwait(false);
     }
 
     // This test method uses the SequentialPlanner to create a plan based on difficulty
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory()]
-    //[InlineData("", 1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "medium", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "medium", "WriterSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(string completionName, double durationWeight, double costWeight, int nbPromptTests, string difficulty, params string[] skillNames)
+    //[InlineData("",  1, "medium", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "WriterSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(string completionName, int nbPromptTests, string difficulty, params string[] skillNames)
     {
         // Create a plan using SequentialPlanner based on difficulty
         var modifiedStartGoal = StartGoal.Replace("distinct difficulties", $"{difficulty} difficulties", StringComparison.OrdinalIgnoreCase);
@@ -147,10 +147,10 @@ public sealed class MultiConnectorTests : IDisposable
             modelNames = new List<string> { completionName };
         }
 
-        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, durationWeight, costWeight, nbPromptTests, skillNames).ConfigureAwait(false);
+        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, nbPromptTests, skillNames).ConfigureAwait(false);
     }
 
-    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, Task<Plan>> planFactory, List<string>? modelNames, double durationWeight = 1, double costWeight = 1, int nbPromptTests = 1, params string[] skillNames)
+    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, Task<Plan>> planFactory, List<string>? modelNames, int nbPromptTests,  params string[] skillNames)
     {
         // Arrange
 
@@ -158,44 +158,79 @@ public sealed class MultiConnectorTests : IDisposable
 
         var sw = Stopwatch.StartNew();
 
+        var multiConnectorConfiguration = this._configuration.GetSection("MultiConnector").Get<MultiConnectorConfiguration>();
+        Assert.NotNull(multiConnectorConfiguration);
+
         using var cleanupToken = new CancellationTokenSource();
 
         var creditor = new CallRequestCostCreditor();
 
-        //We configure settings to enable analysis, and let the connector discover the best settings, updating on the fly and deleting analysis file 
+        //We configure settings to enable analysis, and let the connector discover the best connector settings, updating on the fly and deleting analysis file
+
+        // The most common settings for a MultiTextCompletion are illustrated below, most of them have default values and are optional
         var settings = new MultiTextCompletionSettings()
         {
+            // We'll use a simple creditor to track usage costs
             Creditor = creditor,
+            // Prompt type require a signature for identification, and we'll use the first 11 characters of the prompt as signature
             PromptTruncationLength = 11,
-            //This optional feature adjust prompt start to the true static prefix, which is useful for some scenarios where prompt starts overlap.
+            //This optional feature upgrade prompt signature by adjusting prompt starts to the true complete prefix of the template preceding user input. This is useful where many prompt would yield overlapping starts, but it may falsely create new prompt types if some inputs have partially overlapping starts. 
             // Prompts with variable content at the start are currently not accounted for automatically though, and need either a manual regex to avoid creating increasing prompt types, or using the FreezePromptTypes setting but the first alternative is preferred because unmatched prompts will go through the entire settings unless a regex matches them. 
             AdjustPromptStarts = false,
-            // Uncomment to enable logging of MultiTextCompletion calls and results
-            //LogResult = true,
-            ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(durationWeight, costWeight),
+            // Uncomment to enable additional logging of MultiTextCompletion calls, results and/or test sample collection
+            //LogCallResult = true,
+            //LogTestCollection = true,
+            // In those tests, we don't have information about the underlying model hosts, so we can't make performance comparisons between models. Instead, arbitrary cost per token are defined in settings, and usage costs are computed.
+            ConnectorComparer = MultiTextCompletionSettings.GetConnectorComparer(0, 1),
+            // Adding a simple transform for template-less models, which require a line break at the end of the prompt
             GlobalPromptTransform = new PromptTransform()
             {
-                TransformFunction = s => s.EndsWith("\n", StringComparison.OrdinalIgnoreCase) ? s : s + "\n",
+                TransformFunction = (s, context) => s.EndsWith("\n", StringComparison.OrdinalIgnoreCase) ? s : s + "\n",
             },
+            // Global parameter allow injecting common blocks in various prompts, using named string interpolation tokens
+            GlobalParameters = multiConnectorConfiguration.GlobalParameters,
+            // Analysis settings are an important part of the main settings, dealing with how to collect samples, conduct tests, evaluate them and update the connector settings
             AnalysisSettings = new MultiCompletionAnalysisSettings()
             {
                 EnableAnalysis = false,
+                // This is the number of tests to run and validate for each prompt type before it can be considered able to handle the prompt type
                 NbPromptTests = nbPromptTests,
+                // We only collect one sample for tests for now
                 MaxInstanceNb = 1,
+                // Because we only collect one sample, we have to artificially raise the temperature for the test completion request settings, in order to induce diverse results
+                TestsTemperatureTransform = d => Math.Max(d, 0.7),
                 // We use manual release of analysis task to make sure analysis event is only fired once with the final result
-                // Accordingly, delays and periods are also removed
                 AnalysisAwaitsManualTrigger = true,
+                // Accordingly, delays and periods are also removed
                 AnalysisDelay = TimeSpan.Zero,
                 TestsPeriod = TimeSpan.Zero,
                 EvaluationPeriod = TimeSpan.Zero,
                 SuggestionPeriod = TimeSpan.Zero,
+                // Secondary connectors usually don't support multiple concurrent requests, default Test parallelism defaults to 1 but you can change that here
+                MaxDegreeOfParallelismTests = 1,
                 // Change the following settings if you run all models on the same machine and want to limit the number of concurrent connectors
                 MaxDegreeOfParallelismConnectorsByTest = 3,
+                // Primary connector ChatGPT supports multiple concurrent request, default parallelism is 5 but you can change that here 
+                MaxDegreeOfParallelismEvaluations = 5,
+                // We update the settings live from suggestion following analysis
                 UpdateSuggestedSettings = true,
                 // For instrumented data in file format, feel free to uncomment either of the following lines
                 DeleteAnalysisFile = false,
-                SaveSuggestedSettings = true
-            }
+                SaveSuggestedSettings = true,
+                // In order to spare on fees, you can use self vetting of prompt tests by the tested connector, which may work well depending on the models vetted
+                //UseSelfVetting = false,
+            },
+            // In order to highlight prompts and response in log trace, you can uncomment the following lines
+            //PromptLogsJsonEncoded = false,
+            //PromptLogTruncationLength = 600,
+            //PromptLogTruncationFormat = @"
+            //================================= START ====== PROMPT/RESULT =============================================
+            //{0}
+
+            //(...)
+
+            //{1}
+            //================================== END ====== PROMPT/RESULT =============================================="
         };
 
         this._logger.LogTrace("Created MultiTextCompletionSettings\n");
@@ -208,7 +243,7 @@ public sealed class MultiConnectorTests : IDisposable
             this._logger.LogTrace("Deleted preexisting analysis file: {0}", settings.AnalysisSettings.AnalysisFilePath);
         }
 
-        var kernel = this.InitializeKernel(settings, modelNames, durationWeight: durationWeight, costWeight: costWeight, cancellationToken: cleanupToken.Token);
+        var kernel = this.InitializeKernel(settings, modelNames, multiConnectorConfiguration, cancellationToken: cleanupToken.Token);
 
         if (kernel == null)
         {
@@ -316,7 +351,7 @@ public sealed class MultiConnectorTests : IDisposable
     /// <summary>
     /// Configures a kernel with MultiTextCompletion comprising a primary OpenAI connector with parameters defined in main settings for OpenAI integration tests, and Oobabooga secondary connectors with parameters defined in the MultiConnector part of the settings file.
     /// </summary>
-    private IKernel? InitializeKernel(MultiTextCompletionSettings multiTextCompletionSettings, List<string>? modelNames, double durationWeight = 1, double costWeight = 1, CancellationToken? cancellationToken = null)
+    private IKernel? InitializeKernel(MultiTextCompletionSettings multiTextCompletionSettings, List<string>? modelNames, MultiConnectorConfiguration multiConnectorConfiguration, CancellationToken? cancellationToken = null)
     {
         cancellationToken ??= CancellationToken.None;
 
@@ -343,9 +378,6 @@ public sealed class MultiConnectorTests : IDisposable
             CostPer1000Token = 0.0015m,
             TokenCountFunc = this._gp3TokenCounter
         };
-
-        var multiConnectorConfiguration = this._configuration.GetSection("MultiConnector").Get<MultiConnectorConfiguration>();
-        Assert.NotNull(multiConnectorConfiguration);
 
         var oobaboogaCompletions = new List<NamedTextCompletion>();
 

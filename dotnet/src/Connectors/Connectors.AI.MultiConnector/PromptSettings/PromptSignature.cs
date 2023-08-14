@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
@@ -103,9 +104,14 @@ public class PromptSignature
     /// <summary>
     /// Generates a log for a prompt that is truncated at the beginning and the end.
     /// </summary>
-    public static string GeneratePromptLog(string prompt, int truncationLength, string truncatedPromptFormat)
+    public static string GeneratePromptLog(string prompt, int truncationLength, string truncatedPromptFormat, bool applyJsonEncode)
     {
         var promptLog = PromptSignature.GenerateTruncatedString(prompt, truncationLength, true, truncatedPromptFormat);
+        if (applyJsonEncode)
+        {
+            promptLog = Json.Encode(promptLog);
+        }
+
         return promptLog;
     }
 
