@@ -3115,13 +3115,13 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymilvus"
-version = "2.2.14"
+version = "2.2.15"
 description = "Python Sdk for Milvus"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pymilvus-2.2.14-py3-none-any.whl", hash = "sha256:c19c757832d46cb2688078cb09fbcaa2c8dea1acebcb3b9a087505c0435d10cc"},
-    {file = "pymilvus-2.2.14.tar.gz", hash = "sha256:c89b983823b8fb8d9e0ee30977b272e93c31056622d9cea942ec259130bf6e36"},
+    {file = "pymilvus-2.2.15-py3-none-any.whl", hash = "sha256:2c086a084f7bc34c35da39f3d473e2f91ffe43fc1a88a301f222f3ad09987226"},
+    {file = "pymilvus-2.2.15.tar.gz", hash = "sha256:0e618708a64088f476712dfff40c2a3818f775e4c18b6c551cf2dd5d8863063b"},
 ]
 
 [package.dependencies]
