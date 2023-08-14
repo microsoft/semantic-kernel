@@ -4,7 +4,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
 public static class Defaults
 {
-    public const string TruncatedLogFormat = @"{0}  (...)   {1}";
+    public const string TruncatedLogFormat = "{0}  (...)   {1}";
 
     public const string SemanticRemarks =
         "Note that semantic functions are employed within pipelines comprising other templated semantic functions intertwined with native code based functions. The latter might require stricter adherence to the instructions provided to parse input parameters, without any means to filter out potential noise.\nBe wise in your appraisal of what is an acceptable response to those instructions. Instructions often include an example with a simple input and the expected completion format, although this is not systematic, and sometimes the provided example is trivial as it was meant to keep the instructions short and should be properly extrapolated for an acceptable answer to the actual input.";
@@ -27,6 +27,4 @@ RESPONSE:
 RESPONSE IS VALID? (true/false):
 --------------------------------
 ";
-
-
 }
