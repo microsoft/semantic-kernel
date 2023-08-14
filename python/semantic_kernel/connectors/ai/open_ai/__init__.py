@@ -18,6 +18,12 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion impo
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
     OpenAITextEmbedding,
 )
+from semantic_kernel.connectors.ai.open_ai.services.echo_text_completion import (
+    EchoTextCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.services.echo_chat_completion import (
+    EchoChatCompletion,
+)
 
 __all__ = [
     "OpenAITextCompletion",
@@ -26,4 +32,6 @@ __all__ = [
     "AzureTextCompletion",
     "AzureChatCompletion",
     "AzureTextEmbedding",
+    "EchoTextCompletion",
+    "EchoChatCompletion",
 ]
