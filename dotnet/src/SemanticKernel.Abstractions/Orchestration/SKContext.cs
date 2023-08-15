@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -199,7 +200,7 @@ public sealed class SKContext
     public SKContext Fail(string errorDescription, Exception? exception = null)
     {
         // Temporary workaround: if no exception is provided, create a new one.
-        this.LastException = exception ?? new KernelException(KernelException.ErrorCodes.UnknownError, errorDescription);
+        this.LastException = exception ?? new SKException(errorDescription);
         return this;
     }
 

@@ -261,14 +261,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <summary>
     /// Throw an exception if the function is not semantic, use this method when some logic makes sense only for semantic functions.
     /// </summary>
-    /// <exception cref="KernelException"></exception>
+    /// <exception cref="SKException"></exception>
     [DoesNotReturn]
     private void ThrowNotSemantic()
     {
         this._logger.LogError("The function is not semantic");
-        throw new KernelException(
-            KernelException.ErrorCodes.InvalidFunctionType,
-            "Invalid operation, the method requires a semantic function");
+        throw new SKException("Invalid operation, the method requires a semantic function");
     }
 
     private static MethodDetails GetMethodDetails(
@@ -495,7 +493,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                 }
 
                 // 4. Otherwise, fail.
-                throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError, $"Missing value for parameter '{name}'");
+                throw new SKException($"Missing value for parameter '{name}'");
 
                 object? Process(string value)
                 {
@@ -662,15 +660,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         // Throws an exception if a result is found to be null unexpectedly
         static object ThrowIfNullResult(object? result) =>
             result ??
-            throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError, "Function returned null unexpectedly.");
+            throw new SKException("Function returned null unexpectedly.");
     }
 
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]
     private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionTypeNotSupported,
-            $"Function '{method.Name}' is not supported by the kernel. {reason}");
+        throw new SKException($"Function '{method.Name}' is not supported by the kernel. {reason}");
 
     /// <summary>Throws an exception indicating an invalid SKFunction signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)

@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -10,28 +11,33 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
 {
     public static readonly NullReadOnlySkillCollection Instance = new();
 
+    /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName)
     {
         return ThrowFunctionNotAvailable(functionName);
     }
 
+    /// <inheritdoc/>
     public ISKFunction GetFunction(string skillName, string functionName)
     {
         return ThrowFunctionNotAvailable(skillName, functionName);
     }
 
+    /// <inheritdoc/>
     public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
     {
         availableFunction = null;
         return false;
     }
 
+    /// <inheritdoc/>
     public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
     {
         availableFunction = null;
         return false;
     }
 
+    /// <inheritdoc/>
     public FunctionsView GetFunctionsView(bool includeSemantic = true, bool includeNative = true)
     {
         return new();
@@ -44,16 +50,12 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
     [DoesNotReturn]
     private static ISKFunction ThrowFunctionNotAvailable(string skillName, string functionName)
     {
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionNotAvailable,
-            $"Function not available: {skillName}.{functionName}");
+        throw new SKException($"Function not available: {skillName}.{functionName}");
     }
 
     [DoesNotReturn]
     private static ISKFunction ThrowFunctionNotAvailable(string functionName)
     {
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionNotAvailable,
-            $"Function not available: {functionName}");
+        throw new SKException($"Function not available: {functionName}");
     }
 }
