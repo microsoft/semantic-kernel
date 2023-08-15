@@ -360,21 +360,6 @@ public sealed class Kernel : IKernel, IDisposable
         this.Running?.Invoke(this, args);
 
         return !args.Cancel;
-
-#pragma warning disable CS0162 // Unreachable code detected
-        foreach (EventHandler<KernelRunningEventArgs> handler in this.Running.GetInvocationList())
-        {
-            handler.Invoke(this, args);
-
-            // Stop any further Handlers invocations after a cancellation request is submitted
-            if (args.Cancel)
-            {
-                return false;
-            }
-        }
-
-        return true;
-#pragma warning restore CS0162 // Unreachable code detected
     }
 
     private void OnRan(SKContext context)
