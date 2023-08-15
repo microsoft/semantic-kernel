@@ -7,7 +7,6 @@ from semantic_kernel.skill_definition import (
 )
 from semantic_kernel.orchestration.sk_context import SKContext
 
-
 class SQLConnection:
     connection_string = ""
     connection = None

@@ -1,9 +1,9 @@
 import Levenshtein
-from sklearn.metrics.pairwise import cosine_similarity
 import openai
 import numpy as np
-from retrying import retry
 from sklearn.metrics.pairwise import cosine_similarity
+from retrying import retry
+
 from semantic_kernel.skill_definition import (
     sk_function,
     sk_function_context_parameter,
@@ -12,7 +12,7 @@ from semantic_kernel.orchestration.sk_context import SKContext
 
 
 class TokenBasedSimilarity:
-    ## Get Embedding from OpenAI(Embeeding ADA)..
+    ## Get Embedding from OpenAI(Embeddings ADA)..
     @retry(
         stop_max_attempt_number=3,
         wait_incrementing_start=1000,
@@ -40,16 +40,16 @@ class TokenBasedSimilarity:
         return np.array(response["data"][0]["embedding"])
 
     @sk_function(
-        description="Calculate Levenshtein diatance fo two input strings",
+        description="Calculate Levenshtein distance fo two input strings",
         name="calc_levenshtein_distance",
     )
     @sk_function_context_parameter(
         name="expected_str",
-        description="The first strting to calcualte Levenshtein distance",
+        description="The first string to calculate Levenshtein distance",
     )
     @sk_function_context_parameter(
         name="generated_str",
-        description="The second string to calcualte Levenshtein distance",
+        description="The second string to calculate Levenshtein distance",
     )
     def calc_levenshtein_distance(self, context: SKContext) -> str:
         try:
