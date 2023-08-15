@@ -33,7 +33,7 @@ public class SequentialPlanParserTests
 
         var kernelMock = new Mock<IKernel>();
         kernelMock.SetupGet(k => k.Skills).Returns(mockSkillCollection.Object);
-        kernelMock.SetupGet(k => k.Logger).Returns(mockLogger.Object);
+        kernelMock.SetupGet(k => k.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         return kernelMock;
     }
@@ -42,7 +42,7 @@ public class SequentialPlanParserTests
         IKernel kernel,
         ContextVariables? variables = null)
     {
-        return new SKContext(variables, kernel.Skills, kernel.Logger);
+        return new SKContext(variables, kernel.Skills, kernel.LoggerFactory);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")

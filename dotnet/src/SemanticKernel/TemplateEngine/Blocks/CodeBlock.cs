@@ -22,9 +22,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
     /// </summary>
     /// <param name="content">Block content</param>
-    /// <param name="logger">App logger</param>
-    public CodeBlock(string? content, ILogger logger)
-        : this(new CodeTokenizer(logger).Tokenize(content), content?.Trim(), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public CodeBlock(string? content, ILoggerFactory? loggerFactory)
+        : this(new CodeTokenizer(loggerFactory).Tokenize(content), content?.Trim(), loggerFactory)
     {
     }
 
@@ -33,9 +33,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// </summary>
     /// <param name="tokens">A list of blocks</param>
     /// <param name="content">Block content</param>
-    /// <param name="logger">App logger</param>
-    public CodeBlock(List<Block> tokens, string? content, ILogger logger)
-        : base(content?.Trim(), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public CodeBlock(List<Block> tokens, string? content, ILoggerFactory? loggerFactory)
+        : base(content?.Trim(), loggerFactory)
     {
         this._tokens = tokens;
     }

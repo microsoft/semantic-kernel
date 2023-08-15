@@ -24,14 +24,15 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// </summary>
 public class PromptTemplateEngine : IPromptTemplateEngine
 {
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-
     private readonly TemplateTokenizer _tokenizer;
 
-    public PromptTemplateEngine(ILogger? logger = null)
+    public PromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
-        this._tokenizer = new TemplateTokenizer(this._logger);
+        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this._logger = this._loggerFactory.CreateLogger(nameof(PromptTemplateEngine));
+        this._tokenizer = new TemplateTokenizer(loggerFactory);
     }
 
     /// <inheritdoc/>
@@ -115,6 +116,6 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         this._logger.LogTrace("Rendering variables");
         return blocks.Select(block => block.Type != BlockTypes.Variable
             ? block
-            : new TextBlock(((ITextRendering)block).Render(variables), this._logger)).ToList();
+            : new TextBlock(((ITextRendering)block).Render(variables), this._loggerFactory)).ToList();
     }
 }

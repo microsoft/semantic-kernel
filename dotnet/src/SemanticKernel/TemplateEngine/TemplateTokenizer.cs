@@ -37,11 +37,11 @@ internal sealed class TemplateTokenizer
     /// <summary>
     /// Create a new instance of SK tokenizer
     /// </summary>
-    /// <param name="logger"></param>
-    public TemplateTokenizer(ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public TemplateTokenizer(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
-        this._codeTokenizer = new CodeTokenizer(this._logger);
+        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this._codeTokenizer = new CodeTokenizer(loggerFactory);
     }
 
     /// <summary>
@@ -59,13 +59,13 @@ internal sealed class TemplateTokenizer
         // Render NULL to ""
         if (text.IsNullOrEmpty())
         {
-            return new List<Block> { new TextBlock(string.Empty, this._logger) };
+            return new List<Block> { new TextBlock(string.Empty, this._loggerFactory) };
         }
 
         // If the template is "empty" return the content as a text block
         if (text.Length < MinCodeBlockLength)
         {
-            return new List<Block> { new TextBlock(text, this._logger) };
+            return new List<Block> { new TextBlock(text, this._loggerFactory) };
         }
 
         var blocks = new List<Block>();
@@ -133,7 +133,7 @@ internal sealed class TemplateTokenizer
                         // If there is plain text between the current var/val/code block and the previous one, capture that as a TextBlock
                         if (blockStartPos > endOfLastBlock)
                         {
-                            blocks.Add(new TextBlock(text, endOfLastBlock, blockStartPos, this._logger));
+                            blocks.Add(new TextBlock(text, endOfLastBlock, blockStartPos, this._loggerFactory));
                         }
 
                         // Extract raw block
@@ -147,7 +147,7 @@ internal sealed class TemplateTokenizer
                         if (contentWithoutDelimiters.Length == 0)
                         {
                             // If what is left is empty, consider the raw block a Text Block
-                            blocks.Add(new TextBlock(contentWithDelimiters, this._logger));
+                            blocks.Add(new TextBlock(contentWithDelimiters, this._loggerFactory));
                         }
                         else
                         {
@@ -182,7 +182,7 @@ internal sealed class TemplateTokenizer
                                             $"Functions support only one parameter: {contentWithoutDelimiters}");
                                     }
 
-                                    blocks.Add(new CodeBlock(codeBlocks, contentWithoutDelimiters, this._logger));
+                                    blocks.Add(new CodeBlock(codeBlocks, contentWithoutDelimiters, this._loggerFactory));
                                     break;
 
                                 case BlockTypes.Code:
@@ -204,7 +204,7 @@ internal sealed class TemplateTokenizer
         // If there is something left after the last block, capture it as a TextBlock
         if (endOfLastBlock < text.Length)
         {
-            blocks.Add(new TextBlock(text, endOfLastBlock, text.Length, this._logger));
+            blocks.Add(new TextBlock(text, endOfLastBlock, text.Length, this._loggerFactory));
         }
 
         return blocks;
@@ -212,7 +212,7 @@ internal sealed class TemplateTokenizer
 
     #region private ================================================================================
 
-    private readonly ILogger _logger;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly CodeTokenizer _codeTokenizer;
 
     private static string SubStr(string text, int startIndex, int stopIndex)

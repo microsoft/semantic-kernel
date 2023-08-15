@@ -19,21 +19,20 @@ namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
 public class CodeBlockTests
 {
     private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly Mock<ILogger> _logger;
+    private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
 
     public CodeBlockTests()
     {
         this._skills = new Mock<IReadOnlySkillCollection>();
-        this._logger = new Mock<ILogger>();
     }
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var context = new SKContext(skills: this._skills.Object, logger: this._logger.Object);
+        var context = new SKContext(skills: this._skills.Object, loggerFactory: this._logger);
         this._skills.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
-        var target = new CodeBlock("functionName", this._logger.Object);
+        var target = new CodeBlock("functionName", this._logger);
 
         // Act
         var exception = await Assert.ThrowsAsync<TemplateException>(async () => await target.RenderCodeAsync(context));
@@ -46,7 +45,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(skills: this._skills.Object, logger: this._logger.Object);
+        var context = new SKContext(skills: this._skills.Object, loggerFactory: this._logger);
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
@@ -54,7 +53,7 @@ public class CodeBlockTests
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
         this._skills.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
-        var target = new CodeBlock("functionName", this._logger.Object);
+        var target = new CodeBlock("functionName", this._logger);
 
         // Act
         var exception = await Assert.ThrowsAsync<TemplateException>(async () => await target.RenderCodeAsync(context));
@@ -67,7 +66,7 @@ public class CodeBlockTests
     public void ItHasTheCorrectType()
     {
         // Act
-        var target = new CodeBlock("", NullLogger.Instance);
+        var target = new CodeBlock("", NullLoggerFactory.Instance);
 
         // Assert
         Assert.Equal(BlockTypes.Code, target.Type);
@@ -77,7 +76,7 @@ public class CodeBlockTests
     public void ItTrimsSpaces()
     {
         // Act + Assert
-        Assert.Equal("aa", new CodeBlock("  aa  ", NullLogger.Instance).Content);
+        Assert.Equal("aa", new CodeBlock("  aa  ", NullLoggerFactory.Instance).Content);
     }
 
     [Fact]
@@ -89,8 +88,8 @@ public class CodeBlockTests
         var invalidBlock = new VarBlock("");
 
         // Act
-        var codeBlock1 = new CodeBlock(new List<Block> { validBlock1, validBlock2 }, "", NullLogger.Instance);
-        var codeBlock2 = new CodeBlock(new List<Block> { validBlock1, invalidBlock }, "", NullLogger.Instance);
+        var codeBlock1 = new CodeBlock(new List<Block> { validBlock1, validBlock2 }, "", NullLoggerFactory.Instance);
+        var codeBlock2 = new CodeBlock(new List<Block> { validBlock1, invalidBlock }, "", NullLoggerFactory.Instance);
 
         // Assert
         Assert.True(codeBlock1.IsValid(out _));
@@ -106,10 +105,10 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$var");
 
         // Act
-        var codeBlock1 = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLogger.Instance);
-        var codeBlock2 = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLogger.Instance);
-        var codeBlock3 = new CodeBlock(new List<Block> { funcId, funcId }, "", NullLogger.Instance);
-        var codeBlock4 = new CodeBlock(new List<Block> { funcId, varBlock, varBlock }, "", NullLogger.Instance);
+        var codeBlock1 = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock2 = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock3 = new CodeBlock(new List<Block> { funcId, funcId }, "", NullLoggerFactory.Instance);
+        var codeBlock4 = new CodeBlock(new List<Block> { funcId, varBlock, varBlock }, "", NullLoggerFactory.Instance);
 
         // Assert
         Assert.True(codeBlock1.IsValid(out _));
@@ -130,7 +129,7 @@ public class CodeBlockTests
         var context = new SKContext(variables);
 
         // Act
-        var codeBlock = new CodeBlock("$varName", NullLogger.Instance);
+        var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
         var result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
@@ -146,7 +145,7 @@ public class CodeBlockTests
         var varBlock = new VarBlock("$varName");
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { varBlock }, "", NullLogger.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { varBlock }, "", NullLoggerFactory.Instance);
         var result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
@@ -160,7 +159,7 @@ public class CodeBlockTests
         var context = new SKContext();
 
         // Act
-        var codeBlock = new CodeBlock("'ciao'", NullLogger.Instance);
+        var codeBlock = new CodeBlock("'ciao'", NullLoggerFactory.Instance);
         var result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
@@ -175,7 +174,7 @@ public class CodeBlockTests
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { valBlock }, "", NullLogger.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { valBlock }, "", NullLoggerFactory.Instance);
         var result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
@@ -215,7 +214,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLogger.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLoggerFactory.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert - Values are received
@@ -257,7 +256,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLogger.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
@@ -291,7 +290,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLogger.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLoggerFactory.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert

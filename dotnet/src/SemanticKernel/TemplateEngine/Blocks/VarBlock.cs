@@ -12,7 +12,7 @@ internal sealed class VarBlock : Block, ITextRendering
 
     internal string Name { get; } = string.Empty;
 
-    public VarBlock(string? content, ILogger? logger = null) : base(content?.Trim(), logger)
+    public VarBlock(string? content, ILoggerFactory? loggerFactory = null) : base(content?.Trim(), loggerFactory)
     {
         if (this.Content.Length < 2)
         {

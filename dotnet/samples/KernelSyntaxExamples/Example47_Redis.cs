@@ -20,7 +20,7 @@ public static class Example47_Redis
         IDatabase database = connectionMultiplexer.GetDatabase();
         RedisMemoryStore memoryStore = new(database, vectorSize: 1536);
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
