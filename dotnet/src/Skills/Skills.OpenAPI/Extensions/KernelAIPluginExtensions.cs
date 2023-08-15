@@ -43,21 +43,21 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var httpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromFilePath(
             kernel,
             filePath,
             executionParameters,
-            internalHttpClient,
+            httpClient,
             cancellationToken).ConfigureAwait(false);
 
         return await CompleteImport(
             kernel,
             pluginContents,
             skillName,
-            internalHttpClient,
+            httpClient,
             executionParameters,
             cancellationToken).ConfigureAwait(false);
     }
@@ -82,21 +82,21 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var httpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromUri(
             kernel,
             uri,
             executionParameters,
-            internalHttpClient,
+            httpClient,
             cancellationToken).ConfigureAwait(false);
 
         return await CompleteImport(
             kernel,
             pluginContents,
             skillName,
-            internalHttpClient,
+            httpClient,
             executionParameters,
             cancellationToken).ConfigureAwait(false);
     }
@@ -121,7 +121,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var httpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);
@@ -130,7 +130,7 @@ public static class KernelAIPluginExtensions
             kernel,
             pluginContents,
             skillName,
-            internalHttpClient,
+            httpClient,
             executionParameters,
             cancellationToken).ConfigureAwait(false);
     }
@@ -141,7 +141,7 @@ public static class KernelAIPluginExtensions
         IKernel kernel,
         string pluginContents,
         string skillName,
-        HttpClient internalHttpClient,
+        HttpClient httpClient,
         OpenApiSkillExecutionParameters? executionParameters,
         CancellationToken cancellationToken)
     {
@@ -160,7 +160,7 @@ public static class KernelAIPluginExtensions
             kernel,
             skillName,
             executionParameters,
-            internalHttpClient,
+            httpClient,
             pluginContents,
             cancellationToken).ConfigureAwait(false);
     }
@@ -169,7 +169,7 @@ public static class KernelAIPluginExtensions
         IKernel kernel,
         string skillName,
         OpenApiSkillExecutionParameters? executionParameters,
-        HttpClient internalHttpClient,
+        HttpClient httpClient,
         string pluginJson,
         CancellationToken cancellationToken)
     {
@@ -179,7 +179,12 @@ public static class KernelAIPluginExtensions
         {
             var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
-            var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, executionParameters?.UserAgent);
+            var runner = new RestApiOperationRunner(
+                httpClient,
+                executionParameters?.AuthCallback,
+                executionParameters?.UserAgent,
+                executionParameters?.BuildOperationPayloadDynamically,
+                executionParameters?.NamespacePayloadParameters);
 
             var skill = new Dictionary<string, ISKFunction>();
 
@@ -188,7 +193,7 @@ public static class KernelAIPluginExtensions
                 try
                 {
                     kernel.Logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
+                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters, cancellationToken);
                     skill[function.Name] = function;
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
@@ -207,7 +212,7 @@ public static class KernelAIPluginExtensions
         IKernel kernel,
         Uri uri,
         OpenApiSkillExecutionParameters? executionParameters,
-        HttpClient internalHttpClient,
+        HttpClient httpClient,
         CancellationToken cancellationToken)
     {
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
@@ -217,7 +222,7 @@ public static class KernelAIPluginExtensions
             requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
         }
 
-        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        using var response = await httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -227,7 +232,7 @@ public static class KernelAIPluginExtensions
         IKernel kernel,
         string filePath,
         OpenApiSkillExecutionParameters? executionParameters,
-        HttpClient internalHttpClient,
+        HttpClient httpClient,
         CancellationToken cancellationToken)
     {
         var pluginJson = string.Empty;
@@ -292,7 +297,7 @@ public static class KernelAIPluginExtensions
     /// <param name="skillName">Skill name.</param>
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
-    /// <param name="serverUrlOverride">Optional override for REST API server URL if user input required</param>
+    /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterRestApiFunction(
@@ -300,10 +305,14 @@ public static class KernelAIPluginExtensions
         string skillName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
-        Uri? serverUrlOverride = null,
+        OpenApiSkillExecutionParameters? executionParameters,
         CancellationToken cancellationToken = default)
     {
-        var restOperationParameters = operation.GetParameters(serverUrlOverride);
+        var restOperationParameters = operation.GetParameters(
+            executionParameters?.ServerUrlOverride,
+            executionParameters?.BuildOperationPayloadDynamically,
+            executionParameters?.NamespacePayloadParameters
+        );
 
         var logger = kernel.Logger ?? NullLogger.Instance;
 

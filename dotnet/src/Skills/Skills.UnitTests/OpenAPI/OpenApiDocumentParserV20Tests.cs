@@ -62,6 +62,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(valueProperty);
         Assert.True(valueProperty.IsRequired);
         Assert.Equal("The value of the secret.", valueProperty.Description);
+        Assert.Equal("string", valueProperty.Type);
         Assert.NotNull(valueProperty.Properties);
         Assert.False(valueProperty.Properties.Any());
 
@@ -69,6 +70,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(attributesProperty);
         Assert.False(attributesProperty.IsRequired);
         Assert.Equal("attributes", attributesProperty.Description);
+        Assert.Equal("object", attributesProperty.Type);
         Assert.NotNull(attributesProperty.Properties);
         Assert.True(attributesProperty.Properties.Any());
 
@@ -76,8 +78,8 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(enabledProperty);
         Assert.False(enabledProperty.IsRequired);
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Description);
-        Assert.NotNull(enabledProperty.Properties);
-        Assert.False(enabledProperty.Properties.Any());
+        Assert.Equal("boolean", enabledProperty.Type);
+        Assert.False(enabledProperty.Properties?.Any());
     }
 
     [Fact]
