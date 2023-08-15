@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import static com.microsoft.semantickernel.ai.AIException.ErrorCodes.InvalidRequest;
 import static com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters.NO_DEFAULT_VALUE;
 
 import com.microsoft.semantickernel.Kernel;
@@ -17,6 +18,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,8 +52,9 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             String skillName,
             String functionName,
             String description,
+            List<ParameterView> returnParameter,
             KernelSkillsSupplier skillCollection) {
-        super(parameters, skillName, functionName, description, skillCollection);
+        super(parameters, skillName, functionName, description, returnParameter, skillCollection);
         // TODO
         // Verify.NotNull(delegateFunction, "The function delegate is empty");
         // Verify.ValidSkillName(skillName);
@@ -88,18 +91,32 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         public final List<ParameterView> parameters;
         public final String name;
         public final String description;
+        private final String returnType;
+        private final String returnDescription;
 
         private MethodDetails(
                 boolean hasSkFunctionAttribute,
                 SKNativeTask<SKContext> function,
                 List<ParameterView> parameters,
                 String name,
-                String description) {
+                String description,
+                String returnType,
+                String returnDescription) {
             this.hasSkFunctionAttribute = hasSkFunctionAttribute;
             this.function = function;
             this.parameters = parameters;
             this.name = name;
             this.description = description;
+            this.returnType = returnType;
+            this.returnDescription = returnDescription;
+        }
+
+        public String getReturnType() {
+            return returnType;
+        }
+
+        public String getReturnDescription() {
+            return returnDescription;
         }
     }
 
@@ -119,12 +136,16 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
             throw new RuntimeException("Not a valid function");
         }
 
+        ParameterView returnParam =
+                new ParameterView("return", methodDetails.getReturnDescription(), "");
+
         return new NativeSKFunction(
                 methodDetails.function,
                 methodDetails.parameters,
                 skillName,
                 methodDetails.name,
                 methodDetails.description,
+                Collections.singletonList(returnParam),
                 kernelSkillsSupplier);
     }
 
@@ -161,7 +182,18 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
 
         List<ParameterView> parameters = getParameters(methodSignature);
 
-        return new MethodDetails(hasSkFunctionAttribute, function, parameters, name, description);
+        String returnType = methodSignature.getAnnotation(DefineSKFunction.class).returnType();
+        String returnDescription =
+                methodSignature.getAnnotation(DefineSKFunction.class).returnDescription();
+
+        return new MethodDetails(
+                hasSkFunctionAttribute,
+                function,
+                parameters,
+                name,
+                description,
+                returnType,
+                returnDescription);
     }
 
     private static List<ParameterView> getParameters(Method method) {
@@ -259,13 +291,18 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                         Mono.fromCallable(
                                         () -> {
                                             try {
-                                                Object result =
-                                                        method.invoke(instance, args.toArray());
-
-                                                return result;
+                                                if (method.getReturnType().getName().equals("void")
+                                                        || method.getReturnType()
+                                                                .equals(Void.class)) {
+                                                    method.invoke(instance, args.toArray());
+                                                    return null;
+                                                } else {
+                                                    return method.invoke(instance, args.toArray());
+                                                }
                                             } catch (IllegalAccessException
                                                     | InvocationTargetException e) {
-                                                throw new RuntimeException(e.getCause());
+                                                throw new AIException(
+                                                        InvalidRequest, e.getMessage());
                                             }
                                         })
                                 .subscribeOn(Schedulers.boundedElastic()));

@@ -93,7 +93,7 @@ public class Example12_SequentialPlanner {
         // - email.SendEmail INPUT='$TRANSLATED_SUMMARY' email_address='$EMAIL_ADDRESS' =>
 
         System.out.println("Original plan:");
-        System.out.println(plan.toPlanString());
+        System.out.println(plan.toManualString(false));
 
         var input =
                 "Once upon a time, in a faraway kingdom, there lived a kind and just king named Arjun. " +

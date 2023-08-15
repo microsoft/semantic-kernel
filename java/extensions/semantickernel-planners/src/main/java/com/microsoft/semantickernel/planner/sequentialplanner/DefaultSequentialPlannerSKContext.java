@@ -7,13 +7,21 @@ import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class DefaultSequentialPlannerSKContext {
+
     public static final String PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
 
     public static final String PlanSKFunctionsAreRemembered = "Planning.SKFunctionsAreRemembered";
@@ -23,16 +31,18 @@ public class DefaultSequentialPlannerSKContext {
         this.delegate = delegate;
     }
 
-    /// <summary>
-    /// Returns a string containing the manual for all available functions.
-    /// </summary>
-    /// <param name="context">The SKContext to get the functions manual for.</param>
-    /// <param name="semanticQuery">The semantic query for finding relevant registered
-    // functions</param>
-    /// <param name="config">The planner skill config.</param>
-    /// <returns>A string containing the manual for all available functions.</returns>
+    /**
+     * Returns a string containing the manual for all available functions.
+     *
+     * @param semanticQuery The semantic query for finding relevant registered functions
+     * @param config The planner skill config
+     * @param includeFunctionOutputs Whether to include function outputs in the manual
+     * @return A string containing the manual for all available functions.
+     */
     public Mono<String> getFunctionsManualAsync(
-            @Nullable String semanticQuery, @Nullable SequentialPlannerRequestSettings config) {
+            @Nullable String semanticQuery,
+            @Nullable SequentialPlannerRequestSettings config,
+            boolean includeFunctionOutputs) {
         if (config == null) {
             config = new SequentialPlannerRequestSettings();
         }
@@ -43,7 +53,7 @@ public class DefaultSequentialPlannerSKContext {
         return functions.map(
                 funcs ->
                         funcs.stream()
-                                .map(SKFunction::toManualString)
+                                .map(it -> it.toManualString(includeFunctionOutputs))
                                 .collect(Collectors.joining("\n\n")));
     }
 
