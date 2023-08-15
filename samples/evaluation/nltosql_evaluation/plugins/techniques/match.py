@@ -5,7 +5,7 @@ from semantic_kernel.skill_definition import (
 from semantic_kernel.orchestration.sk_context import SKContext
 
 
-class ExactMatch:
+class ExactMacth:
     @sk_function(
         description="Check expected string with generated string if they match exactly",
         name="check_exact_match",

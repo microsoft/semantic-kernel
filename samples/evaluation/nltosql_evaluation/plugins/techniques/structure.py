@@ -8,7 +8,7 @@ from semantic_kernel.skill_definition import (
 from semantic_kernel.orchestration.sk_context import SKContext
 
 
-class StructuralSimilarity:
+class StructuralSimiality:
     # Format SQL to check diff..
     def format_sql(sql):
         keywords = [
@@ -51,13 +51,13 @@ class StructuralSimilarity:
         expected_sql = context["expected_str"]
         generated_sql = context["generated_str"]
 
-        expected_sql = StructuralSimilarity.format_sql(expected_sql)
-        generated_sql = StructuralSimilarity.format_sql(generated_sql)
+        expected_sql = StructuralSimiality.format_sql(expected_sql)
+        generated_sql = StructuralSimiality.format_sql(generated_sql)
 
         diff = difflib.unified_diff(
             expected_sql.strip().splitlines(),
             generated_sql.strip().splitlines(),
-            line_term="",
+            lineterm="",
         )
         diff_string = "\n".join(diff)
 
