@@ -387,7 +387,7 @@ public static class KernelAIPluginExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (SKException)
         {
         }
 
