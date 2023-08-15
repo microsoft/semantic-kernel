@@ -101,7 +101,7 @@ class RedisMemoryStore(MemoryStoreBase):
             )
             schema = (
                 TextField(name="key"),
-                TextField("metadata"),
+                TextField(name="metadata"),
                 TextField(name="timestamp"),
                 VectorField(
                     name="embedding",
@@ -127,7 +127,7 @@ class RedisMemoryStore(MemoryStoreBase):
         Returns a list of names of all collection names present in the data store.
 
         Returns:
-            List[str]  -- list of collection names
+            List[str] -- list of collection names
         """
         # Note: FT._LIST is a temporary command that may be deprecated in the future according to Redis
         return [name.decode() for name in self._database.execute_command("FT._LIST")]
@@ -177,7 +177,7 @@ class RedisMemoryStore(MemoryStoreBase):
             record {MemoryRecord} -- Memory record to upsert
 
         Returns
-            str -- Redis key associated with the upserted memory record, or None if an error occurred
+            str -- Redis key associated with the upserted memory record
         """
 
         if not await self.does_collection_exist_async(collection_name):
@@ -195,8 +195,9 @@ class RedisMemoryStore(MemoryStoreBase):
                 mapping=serialize_record_to_redis(record, self._vector_type),
             )
             return record._key
-        except Exception:
-            return None
+        except Exception as e:
+            self._logger.error(e)
+            raise e
 
     async def upsert_batch_async(
         self, collection_name: str, records: List[MemoryRecord]
@@ -214,14 +215,13 @@ class RedisMemoryStore(MemoryStoreBase):
             records {List[MemoryRecord]} -- List of memory records to upsert
 
         Returns
-            List[str] -- Redis keys associated with the upserted memory records, or an empty list if an error occurred
+            List[str] -- Redis keys associated with the upserted memory records
         """
 
         keys = list()
         for record in records:
-            rec_key = await self.upsert_async(collection_name, record)
-            if rec_key:
-                keys.append(rec_key)
+            record_key = await self.upsert_async(collection_name, record)
+            keys.append(record_key)
 
         return keys
 
@@ -245,15 +245,13 @@ class RedisMemoryStore(MemoryStoreBase):
             raise Exception(f'Collection "{collection_name}" does not exist')
 
         internal_key = get_redis_key(collection_name, key)
-        raw_fields = self._database.hgetall(internal_key)
+        fields = self._database.hgetall(internal_key)
 
         # Did not find the record
-        if len(raw_fields) == 0:
+        if len(fields) == 0:
             return None
 
-        record = deserialize_redis_to_record(
-            raw_fields, self._vector_type, with_embedding
-        )
+        record = deserialize_redis_to_record(fields, self._vector_type, with_embedding)
         record._key = internal_key
 
         return record
@@ -319,8 +317,7 @@ class RedisMemoryStore(MemoryStoreBase):
         with_embeddings: bool = False,
     ) -> List[Tuple[MemoryRecord, float]]:
         """
-        Get the nearest matches to an embedding using the configured similarity algorithm, which is
-        defaulted to cosine similarity.
+        Get the nearest matches to an embedding using the configured similarity algorithm.
 
         Arguments:
             collection_name {str} -- Name for a collection of embeddings
@@ -337,6 +334,7 @@ class RedisMemoryStore(MemoryStoreBase):
             self._logger.error(f'Collection "{collection_name}" does not exist')
             raise Exception(f'Collection "{collection_name}" does not exist')
 
+        # Perform a k-nearest neighbors query, score by similarity
         query = (
             Query(f"*=>[KNN {limit} @embedding $embedding AS vector_score]")
             .dialect(self._query_dialect)
@@ -375,8 +373,7 @@ class RedisMemoryStore(MemoryStoreBase):
         with_embedding: bool = False,
     ) -> Tuple[MemoryRecord, float]:
         """
-        Get the nearest match to an embedding using the configured similarity algorithm, which is
-        defaulted to cosine similarity.
+        Get the nearest match to an embedding using the configured similarity algorithm.
 
         Arguments:
             collection_name {str} -- Name for a collection of embeddings

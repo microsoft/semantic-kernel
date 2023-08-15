@@ -13,14 +13,14 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 def get_redis_key(collection_name: str, record_id: str) -> str:
     """
-    Returns the Redis key for an element called key within collection_name
+    Returns the Redis key for an element called record_id within collection_name
 
     Arguments:
         collection_name {str} -- Name for a collection of embeddings
         record_id {str} -- ID associated with a memory record
 
     Returns:
-        str -- Redis key in the format collection_name:key
+        str -- Redis key in the format collection_name:id
     """
     return f"{collection_name}:{record_id}"
 
@@ -35,14 +35,14 @@ def split_redis_key(redis_key: str) -> Tuple[str, str]:
     Returns:
         Tuple[str, str] -- Tuple of the collection name and ID
     """
-    col, record_id = redis_key.split(":")
-    return col, record_id
+    collection, record_id = redis_key.split(":")
+    return collection, record_id
 
 
 def serialize_record_to_redis(
     record: MemoryRecord, vector_type: np.dtype
 ) -> Dict[str, Any]:
-    comb_metadata = {
+    all_metadata = {
         "is_reference": record._is_reference,
         "external_source_name": record._external_source_name or "",
         "id": record._id or "",
@@ -50,17 +50,18 @@ def serialize_record_to_redis(
         "text": record._text or "",
         "additional_metadata": record._additional_metadata or "",
     }
-    mapping = {
+
+    redis_mapping = {
         "key": record._key or "",
         "timestamp": record._timestamp.isoformat() if record._timestamp else "",
-        "metadata": json.dumps(comb_metadata),
+        "metadata": json.dumps(all_metadata),
         "embedding": (
             record._embedding.astype(vector_type).tobytes()
             if record._embedding is not None
             else ""
         ),
     }
-    return mapping
+    return redis_mapping
 
 
 def deserialize_redis_to_record(
@@ -92,7 +93,7 @@ def deserialize_redis_to_record(
 def deserialize_document_to_record(
     database: Redis, doc: Document, vector_type: np.dtype, with_embedding: bool
 ) -> MemoryRecord:
-    # Document ID refers to the Redis key
+    # Document's ID refers to the Redis key
     redis_key = doc["id"]
     _, id_str = split_redis_key(redis_key)
 
