@@ -1,8 +1,8 @@
-import Levenshtein
 import openai
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
 from retrying import retry
+import Levenshtein
+from sklearn.metrics.pairwise import cosine_similarity
 
 from semantic_kernel.skill_definition import (
     sk_function,
@@ -40,7 +40,7 @@ class TokenBasedSimilarity:
         return np.array(response["data"][0]["embedding"])
 
     @sk_function(
-        description="Calculate Levenshtein distance fo two input strings",
+        description="Calculate Levenshtein distance of two input strings",
         name="calc_levenshtein_distance",
     )
     @sk_function_context_parameter(
@@ -72,16 +72,16 @@ class TokenBasedSimilarity:
         return str(1 - lev_dist)
 
     @sk_function(
-        description="Calculate Levenshtein diatance fo two input strings",
+        description="Calculate Cosine Similarity of two input strings",
         name="calc_cosine_similarity",
     )
     @sk_function_context_parameter(
         name="expected_str",
-        description="The first strting to calcualte cosine simialiry",
+        description="The first string to calculate cosine similarity",
     )
     @sk_function_context_parameter(
         name="generated_str",
-        description="The second string to calcualte cosine simialiry",
+        description="The second string to calculate cosine similarity",
     )
     def calc_cosine_similarity(self, context: SKContext) -> str:
         cos_similarity = None
