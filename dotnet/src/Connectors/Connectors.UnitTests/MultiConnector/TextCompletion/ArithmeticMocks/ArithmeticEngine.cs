@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion;
+namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.ArithmeticMocks;
 
 public class ArithmeticEngine
 {

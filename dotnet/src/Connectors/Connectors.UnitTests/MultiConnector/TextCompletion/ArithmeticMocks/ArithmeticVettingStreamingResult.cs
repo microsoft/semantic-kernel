@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion;
+namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.ArithmeticMocks;
 
 public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
 {

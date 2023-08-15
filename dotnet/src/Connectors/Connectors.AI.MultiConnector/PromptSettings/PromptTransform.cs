@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -16,12 +17,14 @@ using System.Web;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
+/// <summary>
+/// Different types of interpolation that can be used to transform a prompt string
+/// </summary>
 public enum PromptInterpolationType
 {
     None,
     InterpolateKeys,
     InterpolateFormattable,
-    InterpolateFormattableExpression,
     InterpolateDynamicLinqExpression
 }
 
@@ -32,16 +35,28 @@ public class PromptTransform
 {
     private static readonly Regex s_interpolateRegex = new(@"{(\D.+?)}", RegexOptions.Compiled);
 
+    private static readonly Regex s_interpolateFormattableRegex = new(@"\{(?<token>[^\d\{\},:][^\{\},:]*)(?:,(?<alignment>-?\d+))?(?::(?<format>[^\{\}]+))?\}",
+        RegexOptions.Compiled);
+
     public PromptTransform()
     {
         this.Template = Defaults.EmptyFormat;
         this.TransformFunction = this.DefaultTransform;
     }
 
+    /// <summary>
+    /// This is the template used for prompt transformation. It can be a simple string with a {0} token for where to inject the input block or a string with tokens {key} that will be replaced by values from the context, or event complex expressions depending on the interpolation type.
+    /// </summary>
     public string Template { get; set; }
 
-    public PromptInterpolationType InterpolationType { get; set; }
+    /// <summary>
+    /// The type of interpolation to use for the prompt transformation. The default is InterpolateKeys.
+    /// </summary>
+    public PromptInterpolationType InterpolationType { get; set; } = PromptInterpolationType.InterpolateKeys;
 
+    /// <summary>
+    /// The transform function to use for the prompt transformation. The default is a simple interpolation of the template with tokens {key} from a dictionary of values for keys, and then a string format to inject the input in token {0}. This can be customized to use a different interpolation type or a custom function.
+    /// </summary>
     [JsonIgnore]
     public Func<string, Dictionary<string, object>?, string> TransformFunction { get; set; }
 
@@ -64,14 +79,11 @@ public class PromptTransform
                 case PromptInterpolationType.InterpolateFormattable:
                     processedTemplate = this.InterpolateFormattable(processedTemplate, context);
                     break;
-                case PromptInterpolationType.InterpolateFormattableExpression:
-                    processedTemplate = this.InterpolateFormattableExpression(processedTemplate, context);
-                    break;
                 case PromptInterpolationType.InterpolateDynamicLinqExpression:
                     processedTemplate = this.InterpolateDynamicLinqExpression(processedTemplate, context);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException($"Interpolation type {this.InterpolationType} is not supported");
             }
         }
 
@@ -97,69 +109,52 @@ public class PromptTransform
         });
     }
 
-
-
+    /// <summary>
+    /// More elaborate transformation where actual string interpolation is used through FormattableStringFactory. This is equivalent to $"" executed at runtime with a cost penalty.
+    /// </summary>
     public string InterpolateFormattable(string format, Dictionary<string, object> context)
     {
-        // Extract tokens from the format string.
-        var matches = s_interpolateRegex.Matches(format);
-        var tokens = matches.Cast<Match>().Select(m => m.Groups[1].Value).ToArray();
-
-        // Replace tokens with indexed placeholders.
-        for (int i = 0; i < tokens.Length; i++)
-        {
-            format = format.Replace($"{{{tokens[i]}}}", $"{{{i}}}");
-        }
-
-        // Create arguments array.
-        var args = tokens.Select(t => context.ContainsKey(t) ? context[t] : null).ToArray();
-
-        // Use FormattableStringFactory to create a FormattableString.
-        FormattableString formattable = FormattableStringFactory.Create(format, args);
-
-        // Finally, format the string.
-        return formattable.ToString(CultureInfo.InvariantCulture);
-    }
-
-    private static readonly ConcurrentDictionary<string, Func<Dictionary<string, object>, string>> s_cachedInterpolationFormattableExpressions = new ();
-
-    public string InterpolateFormattableExpression(string value, Dictionary<string, object> context)
-    {
-        return s_interpolateRegex.Replace(value, match =>
-        {
-            var matchToken = match.Groups[1].Value;
-            var key = $"{value}/{matchToken}";
-            if (!s_cachedInterpolationFormattableExpressions.TryGetValue(key, out var interpolationDelegate))
+        return s_interpolateFormattableRegex.Replace(format,
+            match =>
             {
-                var dictionaryParam = Expression.Parameter(typeof(Dictionary<string, object>), nameof(context));
+                var key = match.Groups["token"].Value;
+                var alignment = match.Groups["alignment"].Value;
+                var formatSpec = match.Groups["format"].Value;
 
-                // This fetches the value from the dictionary for the given token.
-                var tokenValueExpression = Expression.Property(dictionaryParam, "Item", Expression.Constant(matchToken));
-
-                var formattedStringExpression = Expression.Call(
-                    typeof(FormattableStringFactory),
-                    nameof(FormattableStringFactory.Create),
-                    typeArguments: null,
-                    arguments: new Expression[]
+                if (context.TryGetValue(key, out var replacementValue))
+                {
+                    // Construct the format token
+                    var formatToken = "{0";
+                    if (!string.IsNullOrEmpty(alignment))
                     {
-                        Expression.Constant($"{{{matchToken}}}"), // Template
-                        Expression.NewArrayInit(typeof(object), Expression.Convert(tokenValueExpression, typeof(object))) // Args
-                    });
+                        formatToken += "," + alignment;
+                    }
 
-                var toStringExpression = Expression.Call(formattedStringExpression, nameof(object.ToString), typeArguments: null);
+                    if (!string.IsNullOrEmpty(formatSpec))
+                    {
+                        formatToken += ":" + formatSpec;
+                    }
 
-                interpolationDelegate = Expression.Lambda<Func<Dictionary<string, object>, string>>(toStringExpression, dictionaryParam).Compile();
+                    formatToken += "}";
 
-                s_cachedInterpolationFormattableExpressions[key] = interpolationDelegate;
-            }
+                    // Directly use FormattableStringFactory to interpolate the value
+                    var interpolatedValue = FormattableStringFactory.Create(formatToken, replacementValue);
+                    return interpolatedValue.ToString(CultureInfo.InvariantCulture);
+                }
 
-            return interpolationDelegate(context);
-        });
+                return "";
+            });
     }
 
     private static ConcurrentDictionary<string, Delegate> s_cachedInterpolationLinqExpressions = new();
 
-    public string InterpolateDynamicLinqExpression( string value, Dictionary<string, object> context)
+    /// <summary>
+    /// Most advanced interpolation that uses DynamicLinq to parse and compile a lambda expression at runtime.
+    /// </summary>
+    /// <remarks>
+    /// Warning: Please be careful when using this feature as it can be a security risk if the input is not sanitized.
+    /// </remarks>
+    public string InterpolateDynamicLinqExpression(string value, Dictionary<string, object> context)
     {
         return s_interpolateRegex.Replace(value,
             match =>
@@ -230,5 +225,5 @@ public class PromptTransform
             return this.DefaultProvider.ResolveTypeBySimpleName(simpleTypeName);
         }
     }
-
 }
+

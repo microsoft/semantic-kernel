@@ -13,6 +13,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
+using SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.ArithmeticMocks;
 using Xunit;
 using Xunit.Abstractions;
 

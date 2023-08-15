@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
-namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion;
+namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.ArithmeticMocks;
 
 public class ArithmeticCompletionService : ITextCompletion
 {
