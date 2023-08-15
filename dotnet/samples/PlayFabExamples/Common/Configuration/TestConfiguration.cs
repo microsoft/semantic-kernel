@@ -47,6 +47,7 @@ public sealed class TestConfiguration
         public string ServiceId { get; set; }
         public string DeploymentName { get; set; }
         public string ChatDeploymentName { get; set; }
+        public string EmbeddingDeploymentName { get; set; }
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
     }

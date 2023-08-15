@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace PlayFabExamples.Example01_DataQnA.Reports;
@@ -66,5 +67,7 @@ public class PlayFabReportColumn
     public required string Name { get; set; }
     public required string Description { get; set; }
     public string? SourceName { get; internal set; }
+
+    [JsonIgnore]
     public Func<string, string>? SourceParser { get; set; }
 }

@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using PlayFabExamples.Common.Configuration;
+using System.Text.Json;
+using PlayFabExamples.Example01_DataQnA.Reports;
 
 namespace PlayFabExamples.Example01_DataQnA;
 
@@ -19,21 +21,26 @@ public class InlineDataProcessorSkill
     /// The system prompt for a chat that creates python scripts to solve analytic problems
     /// </summary>
     private static readonly string CreatePythonScriptSystemPrompt = @"
-You're a python script programmer. 
-Once you get a question, write a Python script that loads the comma-separated (CSV) data inline (within the script) into a dataframe.
-The CSV data should not be assumed to be available in any external file.
-Only load the data from [Input CSV]. do not attempt to initialize the data frame with any additional rows.
+You're a python script programmer and also data-driven descision maker.
+Your answers are also in the form of python script that can be compiled and without additional text except the script itself.
+The python script itself should prints to screen detailed explanation of it got to the answer using the 'print' method.
+Once you get a question, write a Python script that uses one or more of the data-frames loaded in [Input DataFrames] below and provides an answer.
+Only load the data from [Input DataFrames]. do not attempt to initialize other data frames and do not assume any other columns other than what documented below.
 The script should:
 - Attempt to answer the provided question and print the output to the console as a user-friendly answer.
-- Print facts and calculations that lead to this answer
+- Print intermediate calculations that lead to this answer
 - Import any necessary modules within the script (e.g., import datetime if used)
 - If the script needs to use StringIO, it should import io, and then use it as io.StringIO (To avoid this error: module 'pandas.compat' has no attribute 'StringIO')
-The script can use one or more of the provided inline scripts and should favor the ones relevant to the question.
+The script can use one or more of the provided dataframes and should favor [Input DataFrame 1] (and only use [Input DataFrames 2] if absolutely needed).
 
 Simply output the final script below without anything beside the code and its inline documentation.
-Never attempt to calculate the MonthlyActiveUsers as a sum of DailyActiveUsers since DailyActiveUsers only gurantees the user uniqueness within a single day
+Never attempt to calculate the MonthlyActiveUsers as a sum of DailyActiveUsers since DailyActiveUsers only gurantees the user uniqueness within a single day.
+Do not assume certain order of the dataframe. Always sort the data frame by the relevant columns before using it.
+Date columns are string formatted so you need to convert them to datetime before using them.
 
-[Input CSV]
+Today Date: {{$date.today}}
+
+[Input DataFrames]
 {{$inlineData}}
 
 ";
@@ -42,15 +49,15 @@ Never attempt to calculate the MonthlyActiveUsers as a sum of DailyActiveUsers s
     /// The user agent prompt for fixing a python script that has runtime errors
     /// </summary>
     private static readonly string FixPythonScriptPrompt = @"
-The following python error has encountered while running the script above.
-Fix the script so it has no errors.
-Make the minimum changes that are required. If you need to use StringIO, make sure to import io, and then use it as io.StringIO
+The python script had an error. Fix the script so it has no errors.
+Make the minimum changes that are required.
 simply output the final script below without any additional explanations.
 
 [Error]
 {{$error}}
 
 [Fixed Script]
+{{$scriptPrefix}}
 ";
     #endregion
 
@@ -89,41 +96,51 @@ simply output the final script below without any additional explanations.
         string question,
         SKContext context)
     {
-        StringBuilder stringBuilder = new();
-        IAsyncEnumerable<MemoryQueryResult> memories = _memory.SearchAsync("TitleID-Reports", question, limit: 2, minRelevanceScore: 0.65);
+        StringBuilder systemMessageInlineData = new();
+        IAsyncEnumerable<MemoryQueryResult> memories = _memory.SearchAsync("TitleID-Reports", question, limit: 2, minRelevanceScore: 0.7);
         int idx = 1;
+
+        StringBuilder pythonScriptScriptPrefix = new ();
+        pythonScriptScriptPrefix.AppendLine("import io");
+        pythonScriptScriptPrefix.AppendLine("import pandas as pd");
+        pythonScriptScriptPrefix.AppendLine();
+
+        StringBuilder pythonScriptScriptActualPrefix = new ();
+        pythonScriptScriptActualPrefix.AppendLine("import io");
+        pythonScriptScriptActualPrefix.AppendLine("import pandas as pd");
+        pythonScriptScriptActualPrefix.AppendLine();
+
+
         await foreach (MemoryQueryResult memory in memories)
         {
-            stringBuilder.AppendLine($"[Input CSV {idx++}]");
-            stringBuilder.AppendLine(memory.Metadata.Text);
-            stringBuilder.AppendLine();
+            PlayFabReport playFabReport = JsonSerializer.Deserialize<PlayFabReport>(memory.Metadata.AdditionalMetadata);
+
+            systemMessageInlineData.AppendLine($"[DataFrame {idx++}]");
+            systemMessageInlineData.AppendLine(playFabReport.GetDetailedDescription());
+            systemMessageInlineData.AppendLine($"{playFabReport.ReportName} = pd.read_csv('{playFabReport.ReportName}.csv')");
+            systemMessageInlineData.AppendLine();
+
+            pythonScriptScriptPrefix.AppendLine($"# Columns in DataFrame: {playFabReport.GetCsvHeader()}");
+            pythonScriptScriptPrefix.AppendLine($"{playFabReport.ReportName} = pd.read_csv('{playFabReport.ReportName}.csv')");
+            pythonScriptScriptPrefix.AppendLine();
+
+            string inlineCsvData = $"io.StringIO('''{playFabReport.GetCsvHeader()}\n{playFabReport.CsvData}''')";
+            pythonScriptScriptActualPrefix.AppendLine($"{playFabReport.ReportName} = pd.read_csv({inlineCsvData})");
+            pythonScriptScriptActualPrefix.AppendLine();
         }
-
-        string csvData = stringBuilder.ToString();
-        string ret = await CreateAndExcecutePythonScript(question, csvData);
-        return ret;
-    }
-    #endregion
-
-    #region Private Methods
-    /// <summary>
-    /// Creates and executes a python script to get an answer for an analytic question
-    /// </summary>
-    /// <param name="question">The analytic question</param>
-    /// <param name="inlineData">The data that can be used to answer the given question (e.g: can be list of CSV reports)</param>
-    /// <returns>The final answer</returns>
-    private async Task<string> CreateAndExcecutePythonScript(string question, string inlineData)
-    {
-        DateTime today = DateTime.UtcNow;
 
         var chatCompletion = new ChatCompletionsOptions()
         {
             Messages =
                 {
-                    new ChatMessage(ChatRole.System, CreatePythonScriptSystemPrompt.Replace("{{$inlineData}}", inlineData)),
-                    new ChatMessage(ChatRole.User, question + "\nPrint facts and calculations that lead to this answer\n[Python Script]")
+                    new ChatMessage(
+                        ChatRole.System,
+                        CreatePythonScriptSystemPrompt
+                            .Replace("{{$inlineData}}", systemMessageInlineData.ToString())
+                            .Replace("{{$date.today}}", DateTime.UtcNow.ToString("yyyy/MM/dd"))),
+                    new ChatMessage(ChatRole.User, $"\n# Python script that print an answer to this question '{question}\n# It also prints facts and calculations that lead the answer\n\n{pythonScriptScriptPrefix}")
                 },
-            Temperature = 0.1f,
+            Temperature = 0.05f,
             MaxTokens = 8000,
             NucleusSamplingFactor = 1f,
             FrequencyPenalty = 0,
@@ -133,22 +150,17 @@ simply output the final script below without any additional explanations.
         Azure.Response<ChatCompletions> response = await this._openAIClient.GetChatCompletionsAsync(
             deploymentOrModelName: TestConfiguration.AzureOpenAI.ChatDeploymentName, chatCompletion);
 
-        // Path to the Python executable
-        string pythonPath = "python"; // Use "python3" if on a Unix-like system
-
         int retry = 0;
         while (retry++ < 3)
         {
             // Inline Python script
-            string pythonScript = response.Value.Choices[0].Message.Content;
-            pythonScript = GetScriptOnly(pythonScript)
+            string pythonScript =
+                (pythonScriptScriptActualPrefix.ToString() + Environment.NewLine + GetScriptOnly(response.Value.Choices[0].Message.Content)
                 .Replace("\"", "\\\"")  // Quote so we can run python via commandline 
-                .Replace("pd.compat.StringIO(", "io.StringIO("); // Fix common script mistake
+                .Replace("pd.compat.StringIO(", "io.StringIO(")); // Fix common script mistake
 
-            if (!pythonScript.Contains("import io"))
-            {
-                pythonScript = "import io\n\n" + pythonScript;
-            }
+            // Path to the Python executable
+            string pythonPath = "python"; // Use "python3" if on a Unix-like system
 
             // Create a ProcessStartInfo and set the required properties
             var startInfo = new ProcessStartInfo
@@ -171,7 +183,6 @@ simply output the final script below without any additional explanations.
             string output = process.StandardOutput.ReadToEnd().Trim();
             string warningsAndErrors = process.StandardError.ReadToEnd().Trim();
 
-
             // Wait for the process to finish
             process.WaitForExit();
 
@@ -179,8 +190,14 @@ simply output the final script below without any additional explanations.
             if (process.ExitCode != 0)
             {
                 Console.WriteLine("Error in script: " + warningsAndErrors);
-                chatCompletion.Messages.Add(new ChatMessage(ChatRole.Assistant, pythonScript));
-                chatCompletion.Messages.Add(new ChatMessage(ChatRole.User, FixPythonScriptPrompt.Replace("{{$error}}", warningsAndErrors)));
+                chatCompletion.Messages.Add(new ChatMessage(
+                    ChatRole.Assistant,
+                    $"{pythonScriptScriptPrefix}\n{response.Value.Choices[0].Message.Content}"));
+                chatCompletion.Messages.Add(new ChatMessage(
+                    ChatRole.User,
+                    FixPythonScriptPrompt
+                        .Replace("{{$error}}", warningsAndErrors)
+                        .Replace("{{$scriptPrefix}}", pythonScriptScriptPrefix.ToString())));
 
                 response = await this._openAIClient.GetChatCompletionsAsync(
                     deploymentOrModelName: TestConfiguration.AzureOpenAI.ChatDeploymentName, chatCompletion);
@@ -192,6 +209,20 @@ simply output the final script below without any additional explanations.
         }
 
         return "Couldn't get an answer";
+
+    }
+    #endregion
+
+    #region Private Methods
+    /// <summary>
+    /// Creates and executes a python script to get an answer for an analytic question
+    /// </summary>
+    /// <param name="question">The analytic question</param>
+    /// <param name="inlineData">The data that can be used to answer the given question (e.g: can be list of CSV reports)</param>
+    /// <returns>The final answer</returns>
+    private async Task<string> CreateAndExcecutePythonScript(string question, string inlineData)
+    {
+        return null;
     }
 
     private string GetScriptOnly(string pythonScript)
