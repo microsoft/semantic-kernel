@@ -155,8 +155,8 @@ Today Date: {{$date.today}}
             process.Start();
 
             // Read the Python process output and error
-            string output = process.StandardOutput.ReadToEnd().Trim();
-            string warningsAndErrors = process.StandardError.ReadToEnd().Trim();
+            string output = (await process.StandardOutput.ReadToEndAsync()).Trim();
+            string warningsAndErrors = (await process.StandardError.ReadToEndAsync()).Trim();
 
             // Wait for the process to finish
             process.WaitForExit();
@@ -168,6 +168,13 @@ Today Date: {{$date.today}}
                 chatCompletion.Messages.Add(new ChatMessage(
                     ChatRole.User,
                     "The following error/s occured. Can you write the fixed script? " + Environment.NewLine + warningsAndErrors));
+            }
+            else if (string.IsNullOrEmpty(output))
+            {
+                chatCompletion.Messages.Add(new ChatMessage(ChatRole.Assistant, pythonScript));
+                chatCompletion.Messages.Add(new ChatMessage(
+                    ChatRole.User,
+                    "The script seems to be lacking any output (via print() function). Can you write the fixed script? " + Environment.NewLine + warningsAndErrors));
             }
             else
             {
