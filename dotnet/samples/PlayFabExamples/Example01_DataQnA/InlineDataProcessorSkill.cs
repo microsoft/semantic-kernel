@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using PlayFabExamples.Common.Configuration;
 using System.Text.Json;
 using PlayFabExamples.Example01_DataQnA.Reports;
+using System.Text.RegularExpressions;
 
 namespace PlayFabExamples.Example01_DataQnA;
 
@@ -21,44 +22,28 @@ public class InlineDataProcessorSkill
     /// The system prompt for a chat that creates python scripts to solve analytic problems
     /// </summary>
     private static readonly string CreatePythonScriptSystemPrompt = @"
-You're a python script programmer and also data-driven descision maker.
-Your answers are also in the form of python script that can be compiled and without additional text except the script itself.
-The python script itself should prints to screen detailed explanation of it got to the answer using the 'print' method.
-Once you get a question, write a Python script that uses one or more of the data-frames loaded in [Input DataFrames] below and provides an answer.
-Only load the data from [Input DataFrames]. do not attempt to initialize other data frames and do not assume any other columns other than what documented below.
+You're a python script programmer that write code to answer business questions.
+The python script should use the print() function to output to screen the following details in a user-friendly message:
+- First start by printing the final answer to the question.
+- Print additional explanation and intermediate results that led to the final answer.
+The python script that uses one or more of the data-frames loaded in [Input DataFrames] below and should favor using the one under [Input DataFrame 1].
+Do not attempt to initialize other data frames and do not assume any other columns other than what documented below.
 The script should:
 - Attempt to answer the provided question and print the output to the console as a user-friendly answer.
-- Print intermediate calculations that lead to this answer
+- Print intermediate calculations and chain of thought that lead to this answer
 - Import any necessary modules within the script (e.g., import datetime if used)
 - If the script needs to use StringIO, it should import io, and then use it as io.StringIO (To avoid this error: module 'pandas.compat' has no attribute 'StringIO')
-The script can use one or more of the provided dataframes and should favor [Input DataFrame 1] (and only use [Input DataFrames 2] if absolutely needed).
 
-Simply output the final script below without anything beside the code and its inline documentation.
-Never attempt to calculate the MonthlyActiveUsers as a sum of DailyActiveUsers since DailyActiveUsers only gurantees the user uniqueness within a single day.
-Do not assume certain order of the dataframe. Always sort the data frame by the relevant columns before using it.
+Never attempt to calculate the MonthlyActiveUsers as a sum of DailyActiveUsers since DailyActiveUsers only guarantees the user uniqueness within a single day.
+Do not assume certain order of the data-frame. Always sort the data-frame by the relevant columns before using it.
 Date columns are string formatted so you need to convert them to datetime before using them.
 
 Today Date: {{$date.today}}
 
 [Input DataFrames]
 {{$inlineData}}
-
 ";
 
-    /// <summary>
-    /// The user agent prompt for fixing a python script that has runtime errors
-    /// </summary>
-    private static readonly string FixPythonScriptPrompt = @"
-The python script had an error. Fix the script so it has no errors.
-Make the minimum changes that are required.
-simply output the final script below without any additional explanations.
-
-[Error]
-{{$error}}
-
-[Fixed Script]
-{{$scriptPrefix}}
-";
     #endregion
 
     #region Data Members
@@ -100,33 +85,17 @@ simply output the final script below without any additional explanations.
         IAsyncEnumerable<MemoryQueryResult> memories = _memory.SearchAsync("TitleID-Reports", question, limit: 2, minRelevanceScore: 0.7);
         int idx = 1;
 
-        StringBuilder pythonScriptScriptPrefix = new ();
-        pythonScriptScriptPrefix.AppendLine("import io");
-        pythonScriptScriptPrefix.AppendLine("import pandas as pd");
-        pythonScriptScriptPrefix.AppendLine();
-
-        StringBuilder pythonScriptScriptActualPrefix = new ();
-        pythonScriptScriptActualPrefix.AppendLine("import io");
-        pythonScriptScriptActualPrefix.AppendLine("import pandas as pd");
-        pythonScriptScriptActualPrefix.AppendLine();
-
-
+        List<PlayFabReport> playFabReports = new();
+        StringBuilder pythonScriptScriptActualPrefix = new();
         await foreach (MemoryQueryResult memory in memories)
         {
             PlayFabReport playFabReport = JsonSerializer.Deserialize<PlayFabReport>(memory.Metadata.AdditionalMetadata);
+            playFabReports.Add(playFabReport);
 
             systemMessageInlineData.AppendLine($"[DataFrame {idx++}]");
             systemMessageInlineData.AppendLine(playFabReport.GetDetailedDescription());
             systemMessageInlineData.AppendLine($"{playFabReport.ReportName} = pd.read_csv('{playFabReport.ReportName}.csv')");
             systemMessageInlineData.AppendLine();
-
-            pythonScriptScriptPrefix.AppendLine($"# Columns in DataFrame: {playFabReport.GetCsvHeader()}");
-            pythonScriptScriptPrefix.AppendLine($"{playFabReport.ReportName} = pd.read_csv('{playFabReport.ReportName}.csv')");
-            pythonScriptScriptPrefix.AppendLine();
-
-            string inlineCsvData = $"io.StringIO('''{playFabReport.GetCsvHeader()}\n{playFabReport.CsvData}''')";
-            pythonScriptScriptActualPrefix.AppendLine($"{playFabReport.ReportName} = pd.read_csv({inlineCsvData})");
-            pythonScriptScriptActualPrefix.AppendLine();
         }
 
         var chatCompletion = new ChatCompletionsOptions()
@@ -138,26 +107,32 @@ simply output the final script below without any additional explanations.
                         CreatePythonScriptSystemPrompt
                             .Replace("{{$inlineData}}", systemMessageInlineData.ToString())
                             .Replace("{{$date.today}}", DateTime.UtcNow.ToString("yyyy/MM/dd"))),
-                    new ChatMessage(ChatRole.User, $"\n# Python script that print an answer to this question '{question}\n# It also prints facts and calculations that lead the answer\n\n{pythonScriptScriptPrefix}")
+                    new ChatMessage(ChatRole.User, question)
                 },
-            Temperature = 0.05f,
+            Temperature = 0.1f,
             MaxTokens = 8000,
-            NucleusSamplingFactor = 1f,
+            NucleusSamplingFactor = 0f,
             FrequencyPenalty = 0,
             PresencePenalty = 0,
         };
 
-        Azure.Response<ChatCompletions> response = await this._openAIClient.GetChatCompletionsAsync(
-            deploymentOrModelName: TestConfiguration.AzureOpenAI.ChatDeploymentName, chatCompletion);
-
         int retry = 0;
         while (retry++ < 3)
         {
+            Azure.Response<ChatCompletions> response = await this._openAIClient.GetChatCompletionsAsync(
+            deploymentOrModelName: TestConfiguration.AzureOpenAI.ChatDeploymentName, chatCompletion);
+
+            string rawResponse = response.Value.Choices.Single().Message.Content;
+            string pythonScript = ExtractPythonScript(rawResponse);
+            pythonScript = AddMissingDataFrames(pythonScript, playFabReports);
+            pythonScript = AddMissingImports(pythonScript);
+
+            string pythonScriptWithInlinedData = InlineDataFramesData(pythonScript, playFabReports);
+
             // Inline Python script
-            string pythonScript =
-                (pythonScriptScriptActualPrefix.ToString() + Environment.NewLine + GetScriptOnly(response.Value.Choices[0].Message.Content)
+            pythonScriptWithInlinedData = pythonScriptWithInlinedData
                 .Replace("\"", "\\\"")  // Quote so we can run python via commandline 
-                .Replace("pd.compat.StringIO(", "io.StringIO(")); // Fix common script mistake
+                .Replace("pd.compat.StringIO(", "io.StringIO("); // Fix common script mistake
 
             // Path to the Python executable
             string pythonPath = "python"; // Use "python3" if on a Unix-like system
@@ -166,7 +141,7 @@ simply output the final script below without any additional explanations.
             var startInfo = new ProcessStartInfo
             {
                 FileName = pythonPath,
-                Arguments = "-c \"" + pythonScript + "\"",
+                Arguments = "-c \"" + pythonScriptWithInlinedData + "\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -189,18 +164,10 @@ simply output the final script below without any additional explanations.
             // If there are errors in the script, try to fix them
             if (process.ExitCode != 0)
             {
-                Console.WriteLine("Error in script: " + warningsAndErrors);
-                chatCompletion.Messages.Add(new ChatMessage(
-                    ChatRole.Assistant,
-                    $"{pythonScriptScriptPrefix}\n{response.Value.Choices[0].Message.Content}"));
+                chatCompletion.Messages.Add(new ChatMessage(ChatRole.Assistant, pythonScript));
                 chatCompletion.Messages.Add(new ChatMessage(
                     ChatRole.User,
-                    FixPythonScriptPrompt
-                        .Replace("{{$error}}", warningsAndErrors)
-                        .Replace("{{$scriptPrefix}}", pythonScriptScriptPrefix.ToString())));
-
-                response = await this._openAIClient.GetChatCompletionsAsync(
-                    deploymentOrModelName: TestConfiguration.AzureOpenAI.ChatDeploymentName, chatCompletion);
+                    "The following error/s occured. Can you write the fixed script? " + Environment.NewLine + warningsAndErrors));
             }
             else
             {
@@ -211,35 +178,92 @@ simply output the final script below without any additional explanations.
         return "Couldn't get an answer";
 
     }
+
     #endregion
 
     #region Private Methods
-    /// <summary>
-    /// Creates and executes a python script to get an answer for an analytic question
-    /// </summary>
-    /// <param name="question">The analytic question</param>
-    /// <param name="inlineData">The data that can be used to answer the given question (e.g: can be list of CSV reports)</param>
-    /// <returns>The final answer</returns>
-    private async Task<string> CreateAndExcecutePythonScript(string question, string inlineData)
+
+    private string ExtractPythonScript(string inputText)
     {
-        return null;
-    }
+        // Extract Python script using regular expressions
+        string pattern = @"```(?:\s*)python(.*?)```";
+        MatchCollection matches = Regex.Matches(inputText, pattern, RegexOptions.Singleline);
 
-    private string GetScriptOnly(string pythonScript)
-    {
-        const string startMarker = "```python";
-        const string endMarker = "```";
-
-        string ret = pythonScript;
-        int startIndex = pythonScript.IndexOf(startMarker) + startMarker.Length;
-        int endIndex = pythonScript.LastIndexOf(endMarker);
-
-        if (startIndex >= 0 && endIndex > startIndex)
+        if (matches.Count == 0)
         {
-            ret = pythonScript.Substring(startIndex, endIndex - startIndex);
+            return inputText;
         }
 
-        return ret;
+        StringBuilder ret = new();
+        foreach (Match match in matches)
+        {
+            string pythonScript = match.Groups[1].Value.Trim();
+            ret.AppendLine(pythonScript);
+            ret.AppendLine();
+        }
+
+        return ret.ToString();
+    }
+
+    private string AddMissingDataFrames(string pythonScript, List<PlayFabReport> playFabReports)
+    {
+        bool hadMissingDataFrames = false;
+        foreach (PlayFabReport report in playFabReports)
+        {
+            bool isFirstMissing = true;
+            if (pythonScript.Contains(report.ReportName) && !pythonScript.Contains($"'{report.ReportName}.csv'"))
+            {
+                if (isFirstMissing)
+                {
+                    isFirstMissing = false;
+                    pythonScript = Environment.NewLine + pythonScript;
+                }
+
+                pythonScript = $"{report.ReportName} = pd.read_csv('{report.ReportName}.csv')" + Environment.NewLine + pythonScript;
+            }
+        }
+
+        if (hadMissingDataFrames)
+        {
+            pythonScript += Environment.NewLine;
+        }
+
+        return pythonScript;
+    }
+
+    private string AddMissingImports(string pythonScript)
+    {
+        string[] requiredImports = new[]
+        {
+            "import pandas as pd",
+            "import io"
+        };
+
+        // Ensure required imports show up at the top of the script and only once. Move them to the top if needed
+        pythonScript = Environment.NewLine + pythonScript;
+        foreach (string requiredImport in requiredImports)
+        {
+            if (pythonScript.Contains(requiredImport))
+            {
+                pythonScript = pythonScript.Replace(requiredImport, "");
+            }
+
+            pythonScript = requiredImport + Environment.NewLine + pythonScript;
+        }
+
+        return pythonScript;
+    }
+
+    private string InlineDataFramesData(string pythonScript, List<PlayFabReport> playFabReports)
+    {
+        foreach (var report in playFabReports)
+        {
+            pythonScript = pythonScript.Replace(
+                $"'{report.ReportName}.csv'",
+                $"io.StringIO('''{report.GetCsvHeader()}\n{report.CsvData}''')");
+        }
+
+        return pythonScript;
     }
 
     #endregion

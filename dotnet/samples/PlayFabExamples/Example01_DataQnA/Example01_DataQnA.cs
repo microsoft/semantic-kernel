@@ -31,13 +31,13 @@ public static partial class Example01_DataQnA
         CancellationToken cancellationToken = CancellationToken.None;
         string[] questions = new string[]
         {
-           // "What is my 2-days retention average? Was my 2-days retention in the last few days was better or worse than that?",
-           // "How many players played my game yesterday?",
-           // "What is the average number of players I had last week excluding Friday and Monday?",
-           // "Is my game doing better in USA or in China?",
-           // "If the number of monthly active players in France increases by 30%, what would be the percentage increase to the overall monthly active players?",
+            "What is my 2-days retention average? Was my 2-days retention in the last few days was better or worse than that?",
+            "How many players played my game yesterday?",
+            "What is the average number of players I had last week excluding Friday and Monday?",
+            "Is my game doing better in USA or in China?",
+            "If the number of monthly active players in France increases by 30%, what would be the percentage increase to the overall monthly active players?",
             "At which specific times of the day were the highest and lowest numbers of purchases recorded? Please provide the actual sales figures for these particular time slots.",
-            "Which three items had the highest total sales and which had the highest revenue generated yesterday?",
+            "Which three items had the highest total sales and which had the highest revenue generated?",
         };
 
         PlannerType[] planners = new[]
@@ -110,7 +110,8 @@ public static partial class Example01_DataQnA
         }
 
         SKContext result = await plan.InvokeAsync(kernel.CreateNewContext(), cancellationToken: cancellationToken);
-        Console.WriteLine("Result: " + result);
+        Console.WriteLine("Answer: ");
+        Console.WriteLine(result.ToString());
         if (result.Variables.TryGetValue("stepCount", out string? stepCount))
         {
             Console.WriteLine("Steps Taken: " + stepCount);
@@ -273,7 +274,7 @@ public static partial class Example01_DataQnA
             PlayFabReport dailyTopItemsReport = new()
             {
                 Columns = dailyTopItemsReportColumns,
-                Description = "The dataset provides an overview of a sales reports, delivering total sales and total revenue, for individual products.",
+                Description = "The dataset provides an of a sales reports for last day, delivering total sales and total revenue for individual products.",
                 CsvData = PlayFabReport.CreateCsvReportFromJsonArray(latestReports["DailyTopItemsReport"].ReportData, dailyTopItemsReportColumns),
                 ReportName = "DailyTopItemsReport"
             };
