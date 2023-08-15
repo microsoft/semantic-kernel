@@ -18,8 +18,8 @@ public static class Program
 
         // Run PlayFab Examples
         await PlayFabExamples.Example01_DataQnA.Example01_DataQnA.RunAsync().SafeWaitAsync(cancelToken);
-        //await PlayFabExamples.Example02_Generative.Example02_Generative.RunAsync().SafeWaitAsync(cancelToken);
-        //await PlayFabExamples.Example03_SegmentQuery.Example03_SegmentQuery.RunAsync().SafeWaitAsync(cancelToken);
+        await PlayFabExamples.Example02_Generative.Example02_Generative.RunAsync().SafeWaitAsync(cancelToken);
+        await PlayFabExamples.Example03_SegmentQuery.Example03_SegmentQuery.RunAsync().SafeWaitAsync(cancelToken);
     }
 
     private static void LoadUserSecrets()
