@@ -12,7 +12,7 @@ from semantic_kernel.orchestration.sk_context import SKContext
 
 
 class TokenBasedSimilarity:
-    ## Get Embedding from OpenAI(Embeddings ADA)..
+    ## Get Embedding from OpenAI(Embeeding ADA)..
     @retry(
         stop_max_attempt_number=3,
         wait_incrementing_start=1000,
@@ -40,16 +40,16 @@ class TokenBasedSimilarity:
         return np.array(response["data"][0]["embedding"])
 
     @sk_function(
-        description="Calculate Levenshtein distance of two input strings",
+        description="Calculate Levenshtein diatance fo two input strings",
         name="calc_levenshtein_distance",
     )
     @sk_function_context_parameter(
         name="expected_str",
-        description="The first string to calculate Levenshtein distance",
+        description="The first strting to calcualte Levenshtein distance",
     )
     @sk_function_context_parameter(
         name="generated_str",
-        description="The second string to calculate Levenshtein distance",
+        description="The second string to calcualte Levenshtein distance",
     )
     def calc_levenshtein_distance(self, context: SKContext) -> str:
         try:
@@ -72,16 +72,16 @@ class TokenBasedSimilarity:
         return str(1 - lev_dist)
 
     @sk_function(
-        description="Calculate Cosine Similarity of two input strings",
+        description="Calculate Levenshtein diatance fo two input strings",
         name="calc_cosine_similarity",
     )
     @sk_function_context_parameter(
         name="expected_str",
-        description="The first string to calculate cosine similarity",
+        description="The first strting to calcualte cosine simialiry",
     )
     @sk_function_context_parameter(
         name="generated_str",
-        description="The second string to calculate cosine similarity",
+        description="The second string to calcualte cosine simialiry",
     )
     def calc_cosine_similarity(self, context: SKContext) -> str:
         cos_similarity = None
