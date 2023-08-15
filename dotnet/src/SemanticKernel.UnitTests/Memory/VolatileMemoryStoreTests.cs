@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
@@ -35,7 +34,7 @@ public class VolatileMemoryStoreTests
                 id: "test" + i,
                 text: "text" + i,
                 description: "description" + i,
-                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+                embedding: new float[] { 1, 1, 1 });
             records = records.Append(testRecord);
         }
 
@@ -45,7 +44,7 @@ public class VolatileMemoryStoreTests
                 externalId: "test" + i,
                 sourceName: "sourceName" + i,
                 description: "description" + i,
-                embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+                embedding: new float[] { 1, 2, 3 });
             records = records.Append(testRecord);
         }
 
@@ -93,7 +92,7 @@ public class VolatileMemoryStoreTests
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
         string collection = "test_collection" + this._collectionNum;
@@ -111,7 +110,7 @@ public class VolatileMemoryStoreTests
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
         string collection = "test_collection" + this._collectionNum;
@@ -126,8 +125,8 @@ public class VolatileMemoryStoreTests
         // Assert
         Assert.NotNull(actualDefault);
         Assert.NotNull(actualWithEmbedding);
-        Assert.Empty(actualDefault.Embedding.Vector);
-        Assert.NotEmpty(actualWithEmbedding.Embedding.Vector);
+        Assert.True(actualDefault.Embedding.IsEmpty);
+        Assert.False(actualWithEmbedding.Embedding.IsEmpty);
         Assert.NotEqual(testRecord, actualDefault);
         Assert.Equal(testRecord, actualWithEmbedding);
     }
@@ -140,7 +139,7 @@ public class VolatileMemoryStoreTests
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
         string collection = "test_collection" + this._collectionNum;
@@ -164,7 +163,7 @@ public class VolatileMemoryStoreTests
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }),
+            embedding: new float[] { 1, 2, 3 },
             key: null,
             timestamp: DateTimeOffset.UtcNow);
         string collection = "test_collection" + this._collectionNum;
@@ -189,12 +188,12 @@ public class VolatileMemoryStoreTests
             id: commonId,
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         MemoryRecord testRecord2 = MemoryRecord.LocalRecord(
             id: commonId,
             text: "text2",
             description: "description2",
-            embedding: new Embedding<float>(new float[] { 1, 2, 4 }));
+            embedding: new float[] { 1, 2, 4 });
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -219,7 +218,7 @@ public class VolatileMemoryStoreTests
             id: "test",
             text: "text",
             description: "description",
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
 
@@ -279,7 +278,7 @@ public class VolatileMemoryStoreTests
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
     {
         // Arrange
-        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        var compareEmbedding = new float[] { 1, 1, 1 };
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -289,7 +288,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            embedding: new float[] { 1, 1, 1 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -297,7 +296,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+            embedding: new float[] { -1, -1, -1 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -305,7 +304,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -313,7 +312,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+            embedding: new float[] { -1, -2, -3 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -321,7 +320,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+            embedding: new float[] { 1, -1, -2 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -341,7 +340,7 @@ public class VolatileMemoryStoreTests
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        var compareEmbedding = new float[] { 1, 1, 1 };
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         await this._db.CreateCollectionAsync(collection);
@@ -350,7 +349,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            embedding: new float[] { 1, 1, 1 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -358,7 +357,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+            embedding: new float[] { -1, -1, -1 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -366,7 +365,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -374,7 +373,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+            embedding: new float[] { -1, -2, -3 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -382,7 +381,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+            embedding: new float[] { 1, -1, -2 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -393,15 +392,15 @@ public class VolatileMemoryStoreTests
         // Assert
         Assert.NotNull(topNResultDefault);
         Assert.NotNull(topNResultWithEmbedding);
-        Assert.Empty(topNResultDefault.Value.Item1.Embedding.Vector);
-        Assert.NotEmpty(topNResultWithEmbedding.Value.Item1.Embedding.Vector);
+        Assert.True(topNResultDefault.Value.Item1.Embedding.IsEmpty);
+        Assert.False(topNResultWithEmbedding.Value.Item1.Embedding.IsEmpty);
     }
 
     [Fact]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
         // Arrange
-        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        var compareEmbedding = new float[] { 1, 1, 1 };
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
         await this._db.CreateCollectionAsync(collection);
@@ -410,7 +409,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+            embedding: new float[] { 1, 1, 1 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -418,7 +417,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -1, -1 }));
+            embedding: new float[] { -1, -1, -1 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -426,7 +425,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, 2, 3 }));
+            embedding: new float[] { 1, 2, 3 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -434,7 +433,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { -1, -2, -3 }));
+            embedding: new float[] { -1, -2, -3 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         i++;
@@ -442,7 +441,7 @@ public class VolatileMemoryStoreTests
             id: "test" + i,
             text: "text" + i,
             description: "description" + i,
-            embedding: new Embedding<float>(new float[] { 1, -1, -2 }));
+            embedding: new float[] { 1, -1, -2 });
         _ = await this._db.UpsertAsync(collection, testRecord);
 
         // Act
@@ -459,7 +458,7 @@ public class VolatileMemoryStoreTests
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
         // Arrange
-        var compareEmbedding = new Embedding<float>(new float[] { 1, 1, 1 });
+        var compareEmbedding = new float[] { 1, 1, 1 };
         int topN = 4;
         string collection = "test_collection" + this._collectionNum;
         this._collectionNum++;
@@ -471,7 +470,7 @@ public class VolatileMemoryStoreTests
                 id: "test" + i,
                 text: "text" + i,
                 description: "description" + i,
-                embedding: new Embedding<float>(new float[] { 1, 1, 1 }));
+                embedding: new float[] { 1, 1, 1 });
             _ = await this._db.UpsertAsync(collection, testRecord);
         }
 
