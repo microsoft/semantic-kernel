@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -52,6 +53,12 @@ public sealed class Kernel : IKernel, IDisposable
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
     /// </summary>
     public static KernelBuilder Builder => new();
+
+    /// <inheritdoc/>
+    public event EventHandler<KernelRunningEventArgs>? Running;
+
+    /// <inheritdoc/>
+    public event EventHandler<KernelRanEventArgs>? Ran;
 
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
@@ -194,6 +201,19 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                string? renderedPrompt = null;
+                if (f is SemanticFunction semanticFunction)
+                {
+                    renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (!this.OnRunning(context, renderedPrompt))
+                {
+                    this.Logger.LogInformation("Function invocation was cancelled {0}: {1}.{2}.", pipelineStepCount, f.SkillName, f.Name);
+                    break;
+                }
+
                 context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
@@ -202,6 +222,8 @@ public sealed class Kernel : IKernel, IDisposable
                         pipelineStepCount, f.SkillName, f.Name, context.LastException?.Message);
                     return context;
                 }
+
+                this.OnRan(context);
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
@@ -324,6 +346,40 @@ public sealed class Kernel : IKernel, IDisposable
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
+    }
+
+    /// <summary>
+    /// Execute the OnRunning event handlers and returns true if no cancellation was attempted.
+    /// </summary>
+    /// <param name="context">SKContext before Run</param>
+    /// <param name="prompt">Generated prompt when using semantic functions</param>
+    /// <returns>Returns true if no cancellation was attempted.</returns>
+    private bool OnRunning(SKContext context, string? prompt)
+    {
+        var args = new KernelRunningEventArgs(context, prompt);
+        this.Running?.Invoke(this, args);
+
+        return !args.Cancel;
+
+#pragma warning disable CS0162 // Unreachable code detected
+        foreach (EventHandler<KernelRunningEventArgs> handler in this.Running.GetInvocationList())
+        {
+            handler.Invoke(this, args);
+
+            // Stop any further Handlers invocations after a cancellation request is submitted
+            if (args.Cancel)
+            {
+                return false;
+            }
+        }
+
+        return true;
+#pragma warning restore CS0162 // Unreachable code detected
+    }
+
+    private void OnRan(SKContext context)
+    {
+        this.Ran?.Invoke(this, new KernelRanEventArgs(context));
     }
 
     #endregion

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -186,8 +187,17 @@ public interface IKernel
     /// <returns>Instance of T</returns>
     T GetService<T>(string? name = null) where T : IAIService;
 
-    #region Obsolete
+    /// <summary>
+    /// Used for registering a pre-run event handler.
+    /// </summary>
+    event EventHandler<KernelRunningEventArgs> Running;
 
+    /// <summary>
+    /// Used for registering a post-run event handler.
+    /// </summary>
+    event EventHandler<KernelRanEventArgs> Ran;
+
+    #region Obsolete
     /// <summary>
     /// App logger
     /// </summary>
