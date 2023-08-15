@@ -93,6 +93,12 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
         return new AzureCognitiveSearchMemory(this._adminClient);
     }
 
+    /**
+     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
+     *     letter or number, the rest of the name can include any letter, number and dashes, as long
+     *     as the dashes aren't consecutive.
+     */
     @Override
     public Mono<String> saveInformationAsync(
             @Nonnull String collection,
@@ -108,6 +114,12 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
         return this.upsertRecordAsync(collection, record);
     }
 
+    /**
+     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
+     *     letter or number, the rest of the name can include any letter, number and dashes, as long
+     *     as the dashes aren't consecutive.
+     */
     @Override
     public Mono<String> saveReferenceAsync(
             @Nonnull String collection,
@@ -129,6 +141,12 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
         return this.upsertRecordAsync(collection, record);
     }
 
+    /**
+     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
+     *     letter or number, the rest of the name can include any letter, number and dashes, as long
+     *     as the dashes aren't consecutive.
+     */
     @Override
     public Mono<MemoryQueryResult> getAsync(
             @Nonnull String collection, @Nonnull String key, boolean withEmbedding) {
@@ -147,6 +165,12 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         });
     }
 
+    /**
+     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
+     *     letter or number, the rest of the name can include any letter, number and dashes, as long
+     *     as the dashes aren't consecutive.
+     */
     @Override
     public Mono<Void> removeAsync(@Nonnull String collection, @Nonnull String key) {
 
@@ -183,6 +207,12 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         return left;
                     });
 
+    /**
+     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
+     *     letter or number, the rest of the name can include any letter, number and dashes, as long
+     *     as the dashes aren't consecutive.
+     */
     @Override
     public Mono<List<MemoryQueryResult>> searchAsync(
             @Nonnull String collection,
@@ -320,6 +350,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     }
 
     // Normalize index name to match ACS rules.
+    // See https://learn.microsoft.com/en-us/rest/api/searchservice/Create-Index
     // The method doesn't handle all the error scenarios, leaving it to the service
     // to throw an error for edge cases not handled locally.
     // <param name="indexName">Value to normalize</param>

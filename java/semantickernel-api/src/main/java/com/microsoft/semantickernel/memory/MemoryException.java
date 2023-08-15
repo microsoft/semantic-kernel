@@ -73,6 +73,8 @@ public class MemoryException extends SKException {
 
         /** Attempted to access a memory collection that does not exist. */
         ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION("Attempted to access non-existent collection"),
+
+        /** Attempted to access a memory that does not exist. */
         MEMORY_NOT_FOUND("Memory not found");
 
         /**
