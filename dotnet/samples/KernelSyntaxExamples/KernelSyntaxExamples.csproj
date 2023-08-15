@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <!-- Suppress: "Declare types in namespaces", "Require ConfigureAwait" -->
-    <NoWarn>CA1050;CA1707;CA2007;VSTHRD111</NoWarn>
+    <NoWarn>CA1050;CA1707;CA2007;VSTHRD111;CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="appsettings.json" />
@@ -59,4 +59,5 @@
     <EmbeddedResource Include="Resources\30-system-prompt.txt" />
     <EmbeddedResource Include="Resources\30-user-context.txt" />
   </ItemGroup>
+
 </Project>
