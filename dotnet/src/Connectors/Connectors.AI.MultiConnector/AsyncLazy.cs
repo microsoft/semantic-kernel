@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
 /// <inheritdoc />
-internal sealed class AsyncLazy<T> : Lazy<Task<T>>
+public sealed class AsyncLazy<T> : Lazy<Task<T>>
 {
     public AsyncLazy(T value)
         : base(() => Task.FromResult(value))

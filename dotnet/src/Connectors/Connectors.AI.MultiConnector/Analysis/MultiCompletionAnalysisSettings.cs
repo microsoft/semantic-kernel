@@ -216,7 +216,15 @@ public class MultiCompletionAnalysisSettings
         var vettingPromptSettings = analysisJob.Settings.GetPromptSettings(vettingJob, out _);
         var vettingPromptConnectorSettings = vettingPromptSettings.GetConnectorSettings(vettingCompletion.Name);
 
-        var newRequestSettings = vettingCompletion.AdjustPromptAndRequestSettings(vettingJob, vettingPromptConnectorSettings, vettingPromptSettings, analysisJob.Settings, analysisJob.Logger);
+        var session = new MultiCompletionSession(vettingJob,
+            vettingPromptSettings,
+            false,
+            vettingCompletion,
+            vettingPromptConnectorSettings,
+            analysisJob.Settings,
+            analysisJob.Logger);
+
+        session.AdjustPromptAndRequestSettings();
         string completionResult;
         var stopWatch = Stopwatch.StartNew();
         try
@@ -290,22 +298,22 @@ public class MultiCompletionAnalysisSettings
         return (capture.Groups["prompt"].Value.Trim(), capture.Groups["response"].Value.Trim());
     }
 
-    public bool SaveOriginalTestsReturnNeedRunningTest(List<ConnectorTest> newOriginalTests, ILogger? logger)
+    public bool SaveSamplesNeedRunningTest(List<ConnectorTest> newSamples, ILogger? logger)
     {
         var analysis = new MultiCompletionAnalysis()
         {
             Timestamp = DateTime.MinValue
         };
 
-        var uniqueOriginalTests = newOriginalTests.GroupBy(test => test.Prompt).Select(grouping => grouping.First()).ToList();
+        var uniqueSamples = newSamples.GroupBy(test => test.Prompt).Select(grouping => grouping.First()).ToList();
 
-        bool UpdateOriginalTestsAndProbeTests(List<ConnectorTest>? originalTests, MultiCompletionAnalysis multiCompletionAnalysis)
+        bool UpdateSamplesNeedTesting(List<ConnectorTest>? sampleTests, MultiCompletionAnalysis multiCompletionAnalysis)
         {
-            logger?.LogTrace("Found {0} existing original tests", multiCompletionAnalysis.OriginalTests.Count);
-            if (originalTests != null)
+            logger?.LogTrace("Found {0} existing original tests", multiCompletionAnalysis.Samples.Count);
+            if (sampleTests != null)
             {
-                logger?.LogTrace("Saving new {0} unique original tests", originalTests.Count);
-                multiCompletionAnalysis.OriginalTests.AddRange(originalTests);
+                logger?.LogTrace("Saving new {0} unique original tests", sampleTests.Count);
+                multiCompletionAnalysis.Samples.AddRange(sampleTests);
             }
 
             var now = DateTime.Now;
@@ -319,7 +327,7 @@ public class MultiCompletionAnalysisSettings
             return needRunningTests;
         }
 
-        analysis = this.LockLoadApplySaveProbeNext(uniqueOriginalTests, analysis, UpdateOriginalTestsAndProbeTests, out bool needTest, logger);
+        analysis = this.LockLoadApplySaveProbeNext(uniqueSamples, analysis, UpdateSamplesNeedTesting, out bool needTest, logger);
 
         return needTest;
     }
@@ -384,7 +392,7 @@ public class MultiCompletionAnalysisSettings
         {
             completionAnalysis = await this.RunAnalysisPipelineOnceAsync(analysisJob).ConfigureAwait(false);
             now = DateTime.Now;
-        } while (completionAnalysis.OriginalTests.Count > 0 && now - completionAnalysis.TestTimestamp > this.TestsPeriod
+        } while (completionAnalysis.Samples.Count > 0 && now - completionAnalysis.TestTimestamp > this.TestsPeriod
                  || completionAnalysis.Tests.Count > 0 && now - completionAnalysis.EvaluationTimestamp > this.EvaluationPeriod);
     }
 
@@ -400,7 +408,7 @@ public class MultiCompletionAnalysisSettings
 
             // Run new tests
 
-            if (completionAnalysis.OriginalTests.Count > 0)
+            if (completionAnalysis.Samples.Count > 0)
             {
                 tests = await this.RunConnectorTestsAsync(completionAnalysis, analysisJob).ConfigureAwait(false);
             }
@@ -419,7 +427,7 @@ public class MultiCompletionAnalysisSettings
 
             if (!needEvaluate)
             {
-                analysisJob.Logger?.LogDebug("Evaluation cancelled. Nb trailing Original Tests:{0}, Nb trailing Tests:{1}, Elapsed since last Evaluation{2}", completionAnalysis.OriginalTests.Count, completionAnalysis.Tests.Count, DateTime.Now - completionAnalysis.EvaluationTimestamp);
+                analysisJob.Logger?.LogDebug("Evaluation cancelled. Nb trailing Original Tests:{0}, Nb trailing Tests:{1}, Elapsed since last Evaluation{2}", completionAnalysis.Samples.Count, completionAnalysis.Tests.Count, DateTime.Now - completionAnalysis.EvaluationTimestamp);
                 return completionAnalysis;
             }
 
@@ -435,7 +443,7 @@ public class MultiCompletionAnalysisSettings
             // If update or save suggested settings are enabled, suggest new settings from analysis and save them if needed
             if (!needSuggestion)
             {
-                analysisJob.Logger?.LogDebug("Suggestion Cancelled. No new settings suggested. Nb trailing Original Tests:{0}, Nb trailing Tests:{1},  Nb Evaluations:{2} Elapsed since last Suggestion{2}", completionAnalysis.OriginalTests.Count, completionAnalysis.Tests.Count, completionAnalysis.Evaluations.Count, DateTime.Now - completionAnalysis.SuggestionTimestamp);
+                analysisJob.Logger?.LogDebug("Suggestion Cancelled. No new settings suggested. Nb trailing Original Tests:{0}, Nb trailing Tests:{1},  Nb Evaluations:{2} Elapsed since last Suggestion{2}", completionAnalysis.Samples.Count, completionAnalysis.Tests.Count, completionAnalysis.Evaluations.Count, DateTime.Now - completionAnalysis.SuggestionTimestamp);
                 return completionAnalysis;
             }
 
@@ -487,26 +495,26 @@ public class MultiCompletionAnalysisSettings
     private async Task<List<ConnectorTest>> RunConnectorTestsAsync(MultiCompletionAnalysis completionAnalysis, AnalysisJob analysisJob)
     {
         ConcurrentBag<ConnectorTest> tests = new();
-        analysisJob.Logger?.LogTrace("Starting running connector tests from {0} original prompts", completionAnalysis.OriginalTests.Count);
+        analysisJob.Logger?.LogTrace("Starting running connector tests from {0} original prompts", completionAnalysis.Samples.Count);
 
         var tasks = new List<Task>();
         using SemaphoreSlim testSemaphore = new(this.MaxDegreeOfParallelismTests);
 
-        foreach (ConnectorTest originalTest in completionAnalysis.OriginalTests)
+        foreach (ConnectorTest sampleTest in completionAnalysis.Samples)
         {
             tasks.Add(Task.Run(async () =>
             {
                 await testSemaphore.WaitAsync(analysisJob.CancellationToken).ConfigureAwait(false);
                 try
                 {
-                    string promptLog = analysisJob.Settings.GeneratePromptLog(originalTest.Prompt);
+                    string promptLog = analysisJob.Settings.GeneratePromptLog(sampleTest.Prompt);
                     analysisJob.Logger?.LogTrace("Starting running tests for prompt:\n {0} ", promptLog);
 
-                    var testJob = new CompletionJob(originalTest.Prompt, originalTest.RequestSettings);
+                    var testJob = new CompletionJob(sampleTest.Prompt, sampleTest.RequestSettings);
                     var testPromptSettings = analysisJob.Settings.GetPromptSettings(testJob, out var isNew);
 
                     // Generate tests
-                    var connectorsToTest = testPromptSettings.GetCompletionsToTest(originalTest, analysisJob.TextCompletions, this.TestPrimaryCompletion);
+                    var connectorsToTest = testPromptSettings.GetCompletionsToTest(sampleTest, analysisJob.TextCompletions, this.TestPrimaryCompletion);
 
                     using SemaphoreSlim testConnectorsSemaphore = new(this.MaxDegreeOfParallelismTests);
 
@@ -552,26 +560,34 @@ public class MultiCompletionAnalysisSettings
             try
             {
                 var promptConnectorSettings = promptMultiConnectorSettings.GetConnectorSettings(namedTextCompletion.Name);
-                var adjustedTestJob = namedTextCompletion.AdjustPromptAndRequestSettings(testJob, promptConnectorSettings, promptMultiConnectorSettings, analysisJob.Settings, analysisJob.Logger);
 
+                var session = new MultiCompletionSession(testJob,
+                    promptMultiConnectorSettings,
+                    false,
+                    namedTextCompletion,
+                    promptConnectorSettings,
+                    analysisJob.Settings,
+                    analysisJob.Logger);
+
+                session.AdjustPromptAndRequestSettings();
                 if (this.TestsTemperatureTransform != null)
                 {
-                    var temperatureUpdater = new SettingsUpdater<CompleteRequestSettings>(adjustedTestJob.RequestSettings, MultiTextCompletionSettings.CloneRequestSettings);
+                    var temperatureUpdater = new SettingsUpdater<CompleteRequestSettings>(session.CallJob.RequestSettings, MultiTextCompletionSettings.CloneRequestSettings);
                     var adjustedSettings = temperatureUpdater.ModifyIfChanged(settings => settings.Temperature, this.TestsTemperatureTransform, (settings, newTemp) => settings.Temperature = newTemp, out var settingChanged);
                     if (settingChanged)
                     {
-                        adjustedTestJob = new CompletionJob(adjustedTestJob.Prompt, adjustedSettings);
+                        session.CallJob = new CompletionJob(session.CallJob.Prompt, adjustedSettings);
                     }
                 }
 
-                var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(adjustedTestJob.Prompt, adjustedTestJob.RequestSettings, analysisJob.CancellationToken).ConfigureAwait(false);
+                var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, analysisJob.CancellationToken).ConfigureAwait(false);
 
                 var firstResult = completions[0];
                 string result = await firstResult.GetCompletionAsync(analysisJob.CancellationToken).ConfigureAwait(false) ?? string.Empty;
 
                 stopWatch.Stop();
                 var duration = stopWatch.Elapsed;
-                decimal textCompletionCost = namedTextCompletion.GetCost(adjustedTestJob.Prompt, result);
+                decimal textCompletionCost = namedTextCompletion.GetCost(session.CallJob.Prompt, result);
 
                 // For the evaluation task. We don't keep the adjusted settings since prompt type matching is based on the original prompt
                 var connectorTest = ConnectorTest.Create(testJob, namedTextCompletion, result, duration, textCompletionCost);
@@ -593,7 +609,7 @@ public class MultiCompletionAnalysisSettings
             if (tests != null)
             {
                 var originalTestPromptsToRemove = tests.Select(test => test.Prompt).Distinct();
-                multiCompletionAnalysis.OriginalTests.RemoveAll(test => originalTestPromptsToRemove.Contains(test.Prompt));
+                multiCompletionAnalysis.Samples.RemoveAll(test => originalTestPromptsToRemove.Contains(test.Prompt));
             }
 
             logger?.LogTrace("Found {0} existing tests", multiCompletionAnalysis.Tests.Count);
@@ -607,7 +623,7 @@ public class MultiCompletionAnalysisSettings
             bool needEvaluate = this.EnableTestEvaluations
                                 && multiCompletionAnalysis.Tests.Count > 0
                                 && now - multiCompletionAnalysis.EvaluationTimestamp > this.EvaluationPeriod
-                                && multiCompletionAnalysis.OriginalTests.Count == 0
+                                && multiCompletionAnalysis.Samples.Count == 0
                                 || now - multiCompletionAnalysis.TestTimestamp < this.TestsPeriod;
             if (needEvaluate)
             {
@@ -703,7 +719,7 @@ public class MultiCompletionAnalysisSettings
                                   && now - multiCompletionAnalysis.SuggestionTimestamp > this.SuggestionPeriod
                                   && multiCompletionAnalysis.Tests.Count == 0
                                   || now - multiCompletionAnalysis.EvaluationTimestamp < this.EvaluationPeriod
-                                  && multiCompletionAnalysis.OriginalTests.Count == 0
+                                  && multiCompletionAnalysis.Samples.Count == 0
                                   || now - multiCompletionAnalysis.TestTimestamp < this.TestsPeriod;
             if (needSuggestion)
             {

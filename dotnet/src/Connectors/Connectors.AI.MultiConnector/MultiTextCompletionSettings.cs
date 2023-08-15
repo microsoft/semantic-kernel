@@ -40,10 +40,8 @@ public class MultiTextCompletionSettings
         return loadSuggestedAnalysisSettings ?? this;
     }
 
-    /// <summary>
-    /// Holds the settings for completion analysis process.
-    /// </summary>
-    public MultiCompletionAnalysisSettings AnalysisSettings { get; set; } = new();
+
+   
 
     /// <summary>
     /// If true, the prompt types, no new prompt types are discovered automatically and standard prompt settings will be associated with unrecognized prompts.
@@ -67,6 +65,16 @@ public class MultiTextCompletionSettings
     /// Beware of false positives though, as when the evaluation prompt is evaluated several times with the same template and different data.
     /// </remarks>
     public bool AdjustPromptStarts { get; set; } = false;
+
+    /// <summary>
+    /// Determines if call prompts are considered for sampling to run tests and evaluations on connectors (enabled by default)
+    /// </summary>
+    public bool EnablePromptSampling { get; set; } = true;
+
+    /// <summary>
+    /// Holds the settings for completion analysis process.
+    /// </summary>
+    public MultiCompletionAnalysisSettings AnalysisSettings { get; set; } = new();
 
     /// <summary>
     /// By default, connectors instrumentation server side and client side avoids to trigger result evaluation for display. This is mostly harmless and this outputs the corresponding log for more comfort.
@@ -133,6 +141,8 @@ public class MultiTextCompletionSettings
     /// An optional creditor that will compute compound costs from the connectors settings and usage.
     /// </summary>
     public CallRequestCostCreditor? Creditor { get; set; }
+
+
 
     /// <summary>
     /// Returns settings for a given prompt.

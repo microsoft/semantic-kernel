@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -54,12 +55,12 @@ public class MultiTextCompletion : ITextCompletion
         var completionJob = new CompletionJob(text, requestSettings);
         var session = this.GetPromptAndConnectorSettings(completionJob);
         this._logger?.LogTrace("Calling chosen completion with adjusted prompt and settings");
-        var completions = await session.NamedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallText, session.CallRequestSettings, cancellationToken).ConfigureAwait(false);
+        var completions = await session.NamedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, cancellationToken).ConfigureAwait(false);
 
         var resultLazy = new AsyncLazy<string>(() =>
         {
             var toReturn = completions[0].GetCompletionAsync(cancellationToken);
-            session.StopWatch.Stop();
+            session.Stopwatch.Stop();
             return toReturn;
         }, cancellationToken);
 
@@ -78,7 +79,7 @@ public class MultiTextCompletion : ITextCompletion
         var completionJob = new CompletionJob(text, requestSettings);
         var session = this.GetPromptAndConnectorSettings(completionJob);
         this._logger?.LogTrace("Calling chosen completion with adjusted prompt and settings");
-        var result = session.NamedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(session.CallText, session.CallRequestSettings, cancellationToken);
+        var result = session.NamedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, cancellationToken);
 
         var resultLazy = new AsyncLazy<string>(async () =>
         {
@@ -93,7 +94,7 @@ public class MultiTextCompletion : ITextCompletion
                 break;
             }
 
-            session.StopWatch.Stop();
+            session.Stopwatch.Stop();
             return sb.ToString();
         }, cancellationToken);
 
@@ -115,21 +116,18 @@ public class MultiTextCompletion : ITextCompletion
         this._logger?.LogTrace("Retrieved prompt type and settings for connector, prompt signature:{0}", promptSettings.PromptType.Signature.PromptStart);
         var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(completionJob, this._textCompletions, this._settings.ConnectorComparer);
         this._logger?.LogTrace("Selected connector for prompt type: {0}", textCompletionAndSettings.namedTextCompletion.Name);
-        var adjustedCompletionJob = textCompletionAndSettings.namedTextCompletion.AdjustPromptAndRequestSettings(completionJob, textCompletionAndSettings.promptConnectorSettings, promptSettings, this._settings, this._logger);
-        var stopWatch = Stopwatch.StartNew();
 
-        return new MultiCompletionSession
-        {
-            PromptSettings = promptSettings,
-            InputText = completionJob.Prompt,
-            InputRequestSettings = completionJob.RequestSettings,
-            CallText = adjustedCompletionJob.Prompt,
-            CallRequestSettings = adjustedCompletionJob.RequestSettings,
-            IsNewPrompt = isNewPrompt,
-            NamedTextCompletion = textCompletionAndSettings.namedTextCompletion,
-            PromptConnectorSettings = textCompletionAndSettings.promptConnectorSettings,
-            StopWatch = stopWatch
-        };
+        var session = new MultiCompletionSession(completionJob,
+            promptSettings,
+            false,
+            textCompletionAndSettings.namedTextCompletion,
+            textCompletionAndSettings.promptConnectorSettings,
+            this._settings,
+            this._logger);
+
+        session.AdjustPromptAndRequestSettings();
+
+        return session;
     }
 
     /// <summary>
@@ -137,13 +135,13 @@ public class MultiTextCompletion : ITextCompletion
     /// </summary>
     private async Task ProcessTextCompletionResultsAsync(MultiCompletionSession session, CancellationToken cancellationToken)
     {
-        var costDebited = await this.ApplyCreditorCostsAsync(session.CallText, session.ResultProducer, session.NamedTextCompletion).ConfigureAwait(false);
+        var costDebited = await this.ApplyCreditorCostsAsync(session.CallJob.Prompt, session.ResultProducer, session.NamedTextCompletion).ConfigureAwait(false);
 
         if (session.NamedTextCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis)
         {
-            if (session.PromptSettings.IsTestingNeeded(session.InputText, this._textCompletions, session.IsNewPrompt))
+            if (this._settings.EnablePromptSampling && session.PromptSettings.IsSampleNeeded(session.InputJob.Prompt, this._textCompletions, session.IsNewPrompt))
             {
-                session.PromptSettings.AddSessionPrompt(session.InputText);
+                session.PromptSettings.AddSessionPrompt(session.InputJob.Prompt);
                 await this.CollectResultForTestAsync(session, costDebited, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -151,8 +149,8 @@ public class MultiTextCompletion : ITextCompletion
         if (this._settings.LogCallResult)
         {
             var connectorName = session.NamedTextCompletion.Name;
-            var duration = session.StopWatch.Elapsed;
-            var callPromptText = session.CallText;
+            var duration = session.Stopwatch.Elapsed;
+            var callPromptText = session.CallJob.Prompt;
             var result = await session.ResultProducer.Value.ConfigureAwait(false);
             this._logger?.LogInformation("\n\nMULTI-COMPLETION returned for connector: {0}: duration:{1} \nADJUSTED PROMPT:\n{2}\n\nRESULT:\n{3}\n\n",
                 connectorName,
@@ -185,11 +183,10 @@ public class MultiTextCompletion : ITextCompletion
     {
         var result = await session.ResultProducer.Value.ConfigureAwait(false);
 
-        var duration = session.StopWatch.Elapsed;
+        var duration = session.Stopwatch.Elapsed;
 
-        var completionJob = new CompletionJob(session.InputText, session.InputRequestSettings);
         // For the management task
-        ConnectorTest connectorTest = ConnectorTest.Create(completionJob, session.NamedTextCompletion, result, duration, textCompletionCost);
+        ConnectorTest connectorTest = ConnectorTest.Create(session.InputJob, session.NamedTextCompletion, result, duration, textCompletionCost);
         this.AppendConnectorTest(connectorTest);
     }
 
@@ -203,7 +200,7 @@ public class MultiTextCompletion : ITextCompletion
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    await this.CollectDataAsync(cancellationToken).ConfigureAwait(false);
+                    await this.CollectSamplesAsync(cancellationToken).ConfigureAwait(false);
                 }
             },
             cancellationToken,
@@ -214,7 +211,7 @@ public class MultiTextCompletion : ITextCompletion
     /// <summary>
     /// Asynchronously receives new ConnectorTest from completion calls, evaluate available connectors against tests and perform analysis to vet connectors.
     /// </summary>
-    private async Task CollectDataAsync(CancellationToken cancellationToken)
+    private async Task CollectSamplesAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -222,19 +219,19 @@ public class MultiTextCompletion : ITextCompletion
             {
                 var testSeries = new List<ConnectorTest>();
 
-                while (this._dataCollectionChannel.Reader.TryRead(out var connectorTest))
+                while (this._dataCollectionChannel.Reader.TryRead(out var newSample))
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        this._logger?.LogTrace(message: "CollectDataAsync received a new ConnectorTest", connectorTest);
-                        testSeries.Add(connectorTest);
+                        this._logger?.LogTrace(message: "CollectSamplesAsync received a new Sample", newSample);
+                        testSeries.Add(newSample);
                     }
                 }
 
-                this._logger?.LogTrace(message: "CollectDataAsync collected a new ConnectorTest series to analyze", testSeries);
+                this._logger?.LogTrace(message: "CollectSamplesAsync collected a new ConnectorTest series to analyze", testSeries);
 
                 // Save the tests
-                var needTest = this._settings.AnalysisSettings.SaveOriginalTestsReturnNeedRunningTest(testSeries, this._logger);
+                var needTest = this._settings.AnalysisSettings.SaveSamplesNeedRunningTest(testSeries, this._logger);
 
                 if (needTest)
                 {
@@ -246,11 +243,11 @@ public class MultiTextCompletion : ITextCompletion
         }
         catch (OperationCanceledException exception)
         {
-            this._logger?.LogTrace("CollectDataAsync Optimize task was cancelled with exception {0}", exception, exception.ToString());
+            this._logger?.LogTrace("CollectSamplesAsync task was cancelled with exception {0}", exception, exception.ToString());
         }
         catch (Exception exception)
         {
-            this._logger?.LogError("CollectDataAsync Optimize task failed with exception {0}", exception, exception.ToString());
+            this._logger?.LogError("CollectSamplesAsync task failed with exception {0}", exception, exception.ToString());
             throw;
         }
     }

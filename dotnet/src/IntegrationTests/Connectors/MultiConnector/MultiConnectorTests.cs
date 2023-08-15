@@ -308,11 +308,8 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogDebug("Result from primary connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}\n", firstPassDuration, firstPassEffectiveCost, firstResult);
 
-        //make sure analysis was triggered after delay, and then release the waiting task manually;
-
-        this._logger.LogTrace("\nWaiting Analysis delay to get the last test trigger\n");
-
-        await Task.Delay(settings.AnalysisSettings.AnalysisDelay, CancellationToken.None).ConfigureAwait(false);
+        // We disable prompt sampling to ensure no other tests are generated
+        settings.EnablePromptSampling = false;
 
         this._logger.LogTrace("\nReleasing analysis task, waiting for suggestion completed event\n");
 

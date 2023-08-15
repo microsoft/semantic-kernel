@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -89,105 +90,7 @@ public class NamedTextCompletion
         return toReturn;
     }
 
-    /// <summary>
-    /// Adjusts the request max tokens and temperature settings based on the completion max token supported.
-    /// </summary>
-    public CompletionJob AdjustPromptAndRequestSettings(CompletionJob completionJob,
-        PromptConnectorSettings promptConnectorSettings,
-        PromptMultiConnectorSettings promptMultiConnectorSettings,
-        MultiTextCompletionSettings multiTextCompletionSettings,
-        ILogger? logger)
-    {
-        logger?.LogTrace("Adjusting prompt and settings for connector {0} and prompt type {1}", this.Name, promptMultiConnectorSettings.PromptType.Signature.PromptStart);
+    
 
-        // Adjusting settings
 
-        var adjustedSettings = completionJob.RequestSettings;
-
-        var adjustedSettingsModifier = new SettingsUpdater<CompleteRequestSettings>(adjustedSettings, MultiTextCompletionSettings.CloneRequestSettings);
-
-        bool valueChanged = false;
-        if (this.MaxTokens != null && completionJob.RequestSettings.MaxTokens != null)
-        {
-            int? ComputeMaxTokens(int? initialValue)
-            {
-                var newMaxTokens = initialValue;
-                if (newMaxTokens != null)
-                {
-                    switch (this.MaxTokensAdjustment)
-                    {
-                        case MaxTokensAdjustment.Percentage:
-                            newMaxTokens = Math.Min(newMaxTokens.Value, this.MaxTokens.Value * this.MaxTokensReservePercentage / 100);
-                            break;
-                        case MaxTokensAdjustment.CountInputTokens:
-                            if (this.TokenCountFunc != null)
-                            {
-                                newMaxTokens = Math.Min(newMaxTokens.Value, this.MaxTokens.Value - this.TokenCountFunc(completionJob.Prompt));
-                            }
-                            else
-                            {
-                                logger?.LogWarning("Inconsistency found with named Completion {0}: Max Token adjustment is configured to account for input token number but no Token count function was defined. MaxToken settings will be left untouched", this.Name);
-                            }
-
-                            break;
-                    }
-                }
-
-                return newMaxTokens;
-            }
-
-            adjustedSettings = adjustedSettingsModifier.ModifyIfChanged(r => r.MaxTokens, ComputeMaxTokens, (setting, value) => setting.MaxTokens = value, out valueChanged);
-
-            if (valueChanged)
-            {
-                logger?.LogDebug("Changed request max token from {0} to {1}", completionJob.RequestSettings.MaxTokens.Value, adjustedSettings.MaxTokens);
-            }
-        }
-
-        if (this.TemperatureTransform != null)
-        {
-            adjustedSettings = adjustedSettingsModifier.ModifyIfChanged(r => r.Temperature, this.TemperatureTransform, (setting, value) => setting.Temperature = value, out valueChanged);
-
-            if (valueChanged)
-            {
-                logger?.LogDebug("Changed temperature from {0} to {1}", completionJob.RequestSettings.Temperature, adjustedSettings.Temperature);
-            }
-        }
-
-        if (this.RequestSettingsTransform != null)
-        {
-            adjustedSettings = this.RequestSettingsTransform(completionJob.RequestSettings);
-            logger?.LogTrace("Applied request settings transform");
-        }
-
-        //Adjusting prompt
-
-        var adjustedPrompt = completionJob.Prompt;
-
-        if (multiTextCompletionSettings.GlobalPromptTransform != null)
-        {
-            adjustedPrompt = multiTextCompletionSettings.GlobalPromptTransform.TransformFunction(adjustedPrompt, multiTextCompletionSettings.GlobalParameters);
-            logger?.LogTrace("Applied global settings prompt transform");
-        }
-
-        if (promptMultiConnectorSettings.PromptTypeTransform != null && promptConnectorSettings.ApplyPromptTypeTransform)
-        {
-            adjustedPrompt = promptMultiConnectorSettings.PromptTypeTransform.TransformFunction(adjustedPrompt, multiTextCompletionSettings.GlobalParameters);
-            logger?.LogTrace("Applied prompt type settings prompt transform");
-        }
-
-        if (promptConnectorSettings.PromptConnectorTypeTransform != null)
-        {
-            adjustedPrompt = promptConnectorSettings.PromptConnectorTypeTransform.TransformFunction(adjustedPrompt, multiTextCompletionSettings.GlobalParameters);
-            logger?.LogTrace("Applied prompt connector type settings prompt transform");
-        }
-
-        if (this.PromptTransform != null && (promptMultiConnectorSettings.ApplyModelTransform || promptConnectorSettings.EnforceModelTransform))
-        {
-            adjustedPrompt = this.PromptTransform.TransformFunction(adjustedPrompt, multiTextCompletionSettings.GlobalParameters);
-            logger?.LogTrace("Applied named connector settings transform");
-        }
-
-        return new CompletionJob(adjustedPrompt, adjustedSettings);
-    }
 }

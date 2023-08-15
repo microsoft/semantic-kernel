@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel.Connectors.AI.MultiConnector</AssemblyName>
@@ -10,6 +10,7 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
   <ItemGroup>
+    <PackageReference Include="System.Linq.Dynamic.Core" />
     <PackageReference Include="System.Threading.Channels" />
   </ItemGroup>
 

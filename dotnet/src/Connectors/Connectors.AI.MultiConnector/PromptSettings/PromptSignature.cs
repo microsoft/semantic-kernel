@@ -80,6 +80,11 @@ public class PromptSignature
     /// <returns>The extracted <see cref="PromptSignature"/>.</returns>
     public static PromptSignature ExtractFromPrompt(CompletionJob completionJob, IEnumerable<PromptMultiConnectorSettings> promptMultiConnectorSettingsCollection, int truncationLength)
     {
+        if (completionJob.Prompt.Length < truncationLength)
+        {
+            throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "Prompt is too short to extract a signature of length {0}.Prompt:\n{1}", truncationLength, completionJob.Prompt), nameof(completionJob));
+        }
+
         var promptStart = completionJob.Prompt.Substring(0, truncationLength);
 
         foreach (var promptMultiConnectorSettings in promptMultiConnectorSettingsCollection)

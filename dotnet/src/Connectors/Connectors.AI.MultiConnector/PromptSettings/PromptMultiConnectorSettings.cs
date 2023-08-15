@@ -89,7 +89,7 @@ public class PromptMultiConnectorSettings
 
     private readonly ConcurrentDictionary<string, bool> _currentSessionPrompts = new();
 
-    internal bool IsTestingNeeded(string prompt, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool isNewPrompt)
+    internal bool IsSampleNeeded(string prompt, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool isNewPrompt)
     {
         return (isNewPrompt
                 || (this.PromptType.Instances.Count < this.PromptType.MaxInstanceNb

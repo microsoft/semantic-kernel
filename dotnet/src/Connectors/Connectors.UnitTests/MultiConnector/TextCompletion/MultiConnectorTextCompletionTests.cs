@@ -160,6 +160,9 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         //We remove the first prompt in time measurement because it is longer on first pass due to warmup
         var firstPassDurationAfterWarmup = TimeSpan.FromTicks(primaryResults.Skip(1).Sum(tuple => tuple.duration.Ticks));
 
+        // We disable prompt sampling to ensure no other tests are generated
+        settings.EnablePromptSampling = false;
+
         // release optimization task
         settings.AnalysisSettings.AnalysisAwaitsManualTrigger = false;
         settings.AnalysisSettings.ReleaseAnalysisTasks();

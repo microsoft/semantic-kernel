@@ -13,7 +13,7 @@ public static class Defaults
 
     public const string SystemSupplement = "User is now playing a game where he is writing messages in the form of semantic functions. That means you are expected to strictly answer with a completion of his message, without adding any additional comments.";
 
-    public const string PromptTransformTemplate = "{0}";
+    public const string EmptyFormat = "{0}";
 
     public const string VettingPromptTemplate = @"Validate a text completion model's response to a semantic function: following are a templated prompt sent to a large language model and the completion it returned, to be evaluated. Please indicate whether the response is valid or not.
 {SemanticSupplement}
@@ -27,4 +27,5 @@ RESPONSE:
 RESPONSE IS VALID? (true/false):
 --------------------------------
 ";
+
 }

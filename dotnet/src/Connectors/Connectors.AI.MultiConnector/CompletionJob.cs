@@ -22,8 +22,14 @@ public readonly struct CompletionJob : System.IEquatable<CompletionJob>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Prompt.Substring(0, Math.Min(this.Prompt.Length, 10))}(...)";
 
+    /// <summary>
+    /// The input prompt that is passed to <see cref="MultiTextCompletion"/>.
+    /// </summary>
     public string Prompt { get; }
 
+    ///// <summary>
+    ///// The <see cref="CompleteRequestSettings"/> that are passed to <see cref="MultiTextCompletion"/>.
+    ///// </summary>
     public CompleteRequestSettings RequestSettings { get; }
 
     public override bool Equals(object obj)

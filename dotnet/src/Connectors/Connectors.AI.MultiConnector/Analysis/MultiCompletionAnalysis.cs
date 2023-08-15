@@ -13,9 +13,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 public class MultiCompletionAnalysis : TestEvent
 {
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Timestamp} - {this.OriginalTests.Count} samples - {this.Tests.Count} tests - {this.Evaluations.Count} evaluations";
+    private string DebuggerDisplay => $"{this.Timestamp} - {this.Samples.Count} samples - {this.Tests.Count} tests - {this.Evaluations.Count} evaluations";
 
-    public List<ConnectorTest> OriginalTests { get; set; } = new();
+    public List<ConnectorTest> Samples { get; set; } = new();
 
     public DateTime TestTimestamp { get; set; } = DateTime.MinValue;
 
