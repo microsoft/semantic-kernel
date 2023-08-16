@@ -96,7 +96,7 @@ public sealed class MultiConnectorTests : IDisposable
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingFileAsync(string completionName, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
     {
         // Load the plan from the provided file path
