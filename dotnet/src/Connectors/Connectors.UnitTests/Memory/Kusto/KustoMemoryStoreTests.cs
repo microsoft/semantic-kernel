@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kusto.Cloud.Platform.Utils;
 using Kusto.Data.Common;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -339,7 +338,7 @@ public class KustoMemoryStoreTests
     {
         Assert.Equal(expectedRecord.Key, actualRecord.Key);
         Assert.Equal(expectedRecord.Timestamp, actualRecord.Timestamp);
-        Assert.Equal(expectedRecord.Embedding.Vector, actualRecord.Embedding.Vector);
+        Assert.True(expectedRecord.Embedding.Span.SequenceEqual(actualRecord.Embedding.Span));
         Assert.Equal(expectedRecord.Metadata.Id, actualRecord.Metadata.Id);
         Assert.Equal(expectedRecord.Metadata.Text, actualRecord.Metadata.Text);
         Assert.Equal(expectedRecord.Metadata.Description, actualRecord.Metadata.Description);
@@ -348,10 +347,10 @@ public class KustoMemoryStoreTests
         Assert.Equal(expectedRecord.Metadata.ExternalSourceName, actualRecord.Metadata.ExternalSourceName);
     }
 
-    private MemoryRecord GetRandomMemoryRecord(Embedding<float>? embedding = null)
+    private MemoryRecord GetRandomMemoryRecord(ReadOnlyMemory<float>? embedding = null)
     {
         var id = Guid.NewGuid().ToString();
-        var memoryEmbedding = embedding ?? new Embedding<float>(new[] { 1f, 3f, 5f });
+        var memoryEmbedding = embedding ?? new[] { 1f, 3f, 5f };
 
         return MemoryRecord.LocalRecord(
             id: id,

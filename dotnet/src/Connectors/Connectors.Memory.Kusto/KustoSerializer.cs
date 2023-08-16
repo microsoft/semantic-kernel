@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 
@@ -17,30 +18,20 @@ public static class KustoSerializer
     /// Returns serialized string from <see cref="Embedding{TEmbedding}"/> instance.
     /// </summary>
     /// <param name="embedding">Instance of <see cref="Embedding{TEmbedding}"/> for serialization.</param>
-    public static string SerializeEmbedding(Embedding<float> embedding)
+    public static string SerializeEmbedding(ReadOnlyMemory<float> embedding)
     {
-        return JsonSerializer.Serialize(embedding.Vector);
+        return JsonSerializer.Serialize(embedding, s_jsonSerializerOptions);
     }
 
     /// <summary>
     /// Returns deserialized instance of <see cref="Embedding{TEmbedding}"/> from serialized embedding.
     /// </summary>
     /// <param name="embedding">Serialized embedding.</param>
-    public static Embedding<float> DeserializeEmbedding(string? embedding)
+    public static ReadOnlyMemory<float> DeserializeEmbedding(string? embedding)
     {
-        if (string.IsNullOrEmpty(embedding))
-        {
-            return default;
-        }
-
-        float[]? floatArray = JsonSerializer.Deserialize<float[]>(embedding!);
-
-        if (floatArray == null)
-        {
-            return default;
-        }
-
-        return new Embedding<float>(floatArray);
+        return string.IsNullOrEmpty(embedding) ?
+            default :
+            JsonSerializer.Deserialize<ReadOnlyMemory<float>>(embedding!, s_jsonSerializerOptions);
     }
 
     /// <summary>
@@ -102,6 +93,15 @@ public static class KustoSerializer
     #region private ================================================================================
 
     private const string TimestampFormat = "yyyy-MM-ddTHH:mm:ssZ";
+
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = CreateSerializerOptions();
+
+    private static JsonSerializerOptions CreateSerializerOptions()
+    {
+        var jso = new JsonSerializerOptions();
+        jso.Converters.Add(new ReadOnlyMemoryConverter());
+        return jso;
+    }
 
     #endregion
 }
