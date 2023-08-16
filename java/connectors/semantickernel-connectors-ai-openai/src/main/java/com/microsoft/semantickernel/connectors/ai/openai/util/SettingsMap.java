@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.ai.openai.util;
 
-import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.ConfigurationNotFound;
-import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.CouldNotReadConfiguration;
-import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.NoValidConfigurationsFound;
+import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.CONFIGURATION_NOT_FOUND;
+import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.COULD_NOT_READ_CONFIGURATION;
+import static com.microsoft.semantickernel.exceptions.ConfigurationException.ErrorCodes.NO_VALID_CONFIGURATIONS_FOUND;
 
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import java.io.File;
@@ -71,7 +71,7 @@ public class SettingsMap {
     public static Map<String, String> getDefault() throws ConfigurationException {
         initSettings();
         if (DEFAULT_INST == null) {
-            throw new ConfigurationException(NoValidConfigurationsFound);
+            throw new ConfigurationException(NO_VALID_CONFIGURATIONS_FOUND);
         }
         return Collections.unmodifiableMap(DEFAULT_INST);
     }
@@ -111,9 +111,9 @@ public class SettingsMap {
                 try (FileInputStream fis = new FileInputStream(CONF_PROPERTIES)) {
                     properties.load(fis);
                 } catch (FileNotFoundException e) {
-                    throw new ConfigurationException(ConfigurationNotFound, CONF_PROPERTIES);
+                    throw new ConfigurationException(CONFIGURATION_NOT_FOUND, CONF_PROPERTIES);
                 } catch (IOException e) {
-                    throw new ConfigurationException(CouldNotReadConfiguration, CONF_PROPERTIES);
+                    throw new ConfigurationException(COULD_NOT_READ_CONFIGURATION, CONF_PROPERTIES);
                 }
             }
         } else {

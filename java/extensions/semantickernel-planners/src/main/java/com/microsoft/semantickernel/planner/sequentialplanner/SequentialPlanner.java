@@ -85,7 +85,7 @@ public class SequentialPlanner {
     public Mono<Plan> createPlanAsync(String goal, SKContext context) {
         if (goal == null || goal.isEmpty()) {
             throw new PlanningException(
-                    PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+                    PlanningException.ErrorCodes.INVALID_GOAL, "The goal specified is empty");
         }
 
         try {
@@ -114,7 +114,9 @@ public class SequentialPlanner {
                             });
         } catch (Exception e) {
             throw new PlanningException(
-                    PlanningException.ErrorCodes.InvalidPlan, "Plan parsing error, invalid XML", e);
+                    PlanningException.ErrorCodes.INVALID_PLAN,
+                    "Plan parsing error, invalid XML",
+                    e);
         }
     }
 }

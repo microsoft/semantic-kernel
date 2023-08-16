@@ -106,7 +106,11 @@ public class SQLiteMemoryStore implements MemoryStore {
 
             return update.then(insert).then(Mono.just(record.getMetadata().getId()));
         } catch (JsonProcessingException e) {
-            throw new SQLConnectorException("Error serializing MemoryRecord", e);
+            throw new MemoryException(
+                    ErrorCodes.UNABLE_TO_SERIALIZE_MEMORY,
+                    String.format(
+                            "collection=%s, key=%s", collectionName, record.getMetadata().getId()),
+                    e);
         }
     }
 
@@ -176,8 +180,12 @@ public class SQLiteMemoryStore implements MemoryStore {
                                                     databaseEntry.getKey(),
                                                     databaseEntry.getTimestamp());
                                         } catch (JsonProcessingException e) {
-                                            throw new SQLConnectorException(
-                                                    "Error deserializing database entry", e);
+                                            throw new MemoryException(
+                                                    ErrorCodes.UNABLE_TO_DESERIALIZE_MEMORY,
+                                                    String.format(
+                                                            "collection=%s, key=%s",
+                                                            collectionName, databaseEntry.getKey()),
+                                                    e);
                                         }
                                     });
                         });
@@ -247,8 +255,12 @@ public class SQLiteMemoryStore implements MemoryStore {
                                 nearestMatches.add(Tuples.of(record, similarity));
                             }
                         } catch (JsonProcessingException e) {
-                            throw new SQLConnectorException(
-                                    "Error deserializing database entry", e);
+                            throw new MemoryException(
+                                    ErrorCodes.UNABLE_TO_DESERIALIZE_MEMORY,
+                                    String.format(
+                                            "collection=%s, key=%s",
+                                            collectionName, entry.getKey()),
+                                    e);
                         }
                     }
                     List<Tuple2<MemoryRecord, Float>> results =

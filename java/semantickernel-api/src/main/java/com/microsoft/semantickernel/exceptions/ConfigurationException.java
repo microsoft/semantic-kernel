@@ -22,7 +22,7 @@ public class ConfigurationException extends SKCheckedException {
             @Nonnull ErrorCodes errorCode,
             @Nullable String message,
             @Nullable Throwable innerException) {
-        super(getDefaultMessage(errorCode, message), innerException);
+        super(formatDefaultMessage(errorCode.getMessage(), message), innerException);
         this.errorCode = errorCode;
     }
 
@@ -30,20 +30,14 @@ public class ConfigurationException extends SKCheckedException {
         return errorCode;
     }
 
-    /* Translate the error code into a default message */
-    private static String getDefaultMessage(
-            @Nonnull ErrorCodes errorCode, @Nullable String message) {
-        return String.format("%s: %s", errorCode.getMessage(), message);
-    }
-
     public enum ErrorCodes {
-        UnknownError("Unknown error"),
+        UNKNOWN_ERROR("Unknown error"),
 
-        ConfigurationNotFound("Could not find configuration file"),
+        CONFIGURATION_NOT_FOUND("Could not find configuration file"),
 
-        CouldNotReadConfiguration("Could not parse or load configuration file"),
-        NoValidConfigurationsFound("Could not find any valid configuration settings"),
-        ValueNotFound("Could not find value for configuration key");
+        COULD_NOT_READ_CONFIGURATION("Could not parse or load configuration file"),
+        NO_VALID_CONFIGURATIONS_FOUND("Could not find any valid configuration settings"),
+        VALUE_NOT_FOUND("Could not find value for configuration key");
 
         private final String message;
 
