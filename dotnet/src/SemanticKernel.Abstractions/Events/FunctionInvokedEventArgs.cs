@@ -3,20 +3,26 @@
 using System;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Events;
 
 /// <summary>
-/// Event arguments context available to the Kernel.Ran event.
+/// Event arguments available to the Kernel.FunctionInvoked event.
 /// </summary>
-public sealed class KernelRanEventArgs : EventArgs
+public sealed class FunctionInvokedEventArgs : EventArgs
 {
-    internal KernelRanEventArgs(SKContext context)
+    internal FunctionInvokedEventArgs(FunctionView functionView, SKContext context)
     {
         Verify.NotNull(context);
-
+        this.FunctionView = functionView;
         this.SKContext = context;
     }
+
+    /// <summary>
+    /// Function view details of the function that was executed.
+    /// </summary>
+    public FunctionView FunctionView { get; }
 
     /// <summary>
     /// Current SKContext changes after the function was executed.

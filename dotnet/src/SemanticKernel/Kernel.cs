@@ -55,10 +55,10 @@ public sealed class Kernel : IKernel, IDisposable
     public static KernelBuilder Builder => new();
 
     /// <inheritdoc/>
-    public event EventHandler<KernelRunningEventArgs>? FunctionInvoking;
+    public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
 
     /// <inheritdoc/>
-    public event EventHandler<KernelRanEventArgs>? FunctionInvoked;
+    public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
@@ -201,14 +201,15 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
+                var functionDetails = f.Describe();
                 string? renderedPrompt = null;
+
                 if (f is SemanticFunction semanticFunction)
                 {
                     renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (!this.OnFunctionInvoking(context, renderedPrompt))
+                if (!this.OnFunctionInvoking(functionDetails, context, renderedPrompt))
                 {
                     this.Logger.LogInformation("Function invocation was cancelled {0}: {1}.{2}.", pipelineStepCount, f.SkillName, f.Name);
                     break;
@@ -223,7 +224,7 @@ public sealed class Kernel : IKernel, IDisposable
                     return context;
                 }
 
-                this.OnFunctionInvoked(context);
+                this.OnFunctionInvoked(functionDetails, context);
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
@@ -347,22 +348,28 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <summary>
-    /// Execute the OnRunning event handlers and returns true if no cancellation was attempted.
+    /// Execute the FunctionInvoking event handlers and returns true if no cancellation was attempted.
     /// </summary>
-    /// <param name="context">SKContext before Run</param>
+    /// <param name="functionView">Function view details</param>
+    /// <param name="context">SKContext before function invocation</param>
     /// <param name="prompt">Generated prompt when using semantic functions</param>
     /// <returns>Returns true if no cancellation was attempted.</returns>
-    private bool OnFunctionInvoking(SKContext context, string? prompt)
+    private bool OnFunctionInvoking(FunctionView functionView, SKContext context, string? prompt)
     {
-        var args = new KernelRunningEventArgs(context, prompt);
+        var args = new FunctionInvokingEventArgs(functionView, context, prompt);
         this.FunctionInvoking?.Invoke(this, args);
 
         return !args.Cancel;
     }
 
-    private void OnFunctionInvoked(SKContext context)
+    /// <summary>
+    /// Execute the OnFunctionInvoked event handlers.
+    /// </summary>
+    /// <param name="functionView">Function view details</param>
+    /// <param name="context">SKContext after function invocation</param>
+    private void OnFunctionInvoked(FunctionView functionView, SKContext context)
     {
-        this.FunctionInvoked?.Invoke(this, new KernelRanEventArgs(context));
+        this.FunctionInvoked?.Invoke(this, new FunctionInvokedEventArgs(functionView, context));
     }
 
     #endregion

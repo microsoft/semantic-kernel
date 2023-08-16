@@ -33,30 +33,35 @@ public static class Example54_FunctionHandlers
                 apiKey: openAIApiKey)
             .Build();
 
-        const string FunctionDefinition = "Write a paragraph about: {{$input}}.";
-        const string input = "I missed the F1 final race";
+        const string functionPrompt = "Write a paragraph about: {{$input}}.";
 
-        var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
+        var excuseFunction = kernel.CreateSemanticFunction(
+            functionPrompt,
+            skillName: "MySkill",
+            functionName: "Excuse",
+            maxTokens: 100,
+            temperature: 0.4,
+            topP: 1);
 
-        void MyPreHandler(object? sender, KernelRunningEventArgs e)
+        void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"Pre Execution Handler - Prompt: {e.Prompt}");
+            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Prompt: {e.Prompt}");
         }
 
-        void MyRemovedPreExecutionHandler(object? sender, KernelRunningEventArgs e)
+        void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine("Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel = true;
         }
 
-        void MyPreHandler2(object? sender, KernelRunningEventArgs e)
+        void MyPreHandler2(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"Pre Execution Handler 2 - Prompt Token: {GPT3Tokenizer.Encode(e.Prompt!).Count}");
+            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler 2 - Prompt Token: {GPT3Tokenizer.Encode(e.Prompt!).Count}");
         }
 
-        void MyPostExecutionHandler(object? sender, KernelRanEventArgs e)
+        void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            Console.WriteLine($"Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -66,13 +71,15 @@ public static class Example54_FunctionHandlers
 
         kernel.FunctionInvoked += MyPostExecutionHandler;
 
+        const string input = "I missed the F1 final race";
+
         var result = await kernel.RunAsync(input, excuseFunction);
         Console.WriteLine($"Function Result: {result}");
 
         // Adding new inline handler to cancel/prevent function execution
-        kernel.FunctionInvoking += (object? sender, KernelRunningEventArgs e) =>
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine("Pre Execution Handler - Cancel function execution");
+            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Cancel function execution");
 
             e.Cancel = true;
         };
