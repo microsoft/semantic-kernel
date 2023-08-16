@@ -1,0 +1,45 @@
+{
+  "state": [
+    {
+      "Key": "INPUT",
+      "Value": "In the field of quantum physics, the study of superconducting materials has gained significant attention. The unique properties of these materials, particularly their ability to conduct electricity without resistance, make them ideal for a variety of applications. However, the underlying mechanisms that give rise to these properties are not fully understood. This study aims to investigate the impact of quantum physics on the development of superconducting materials. The results indicate a significant correlation between the two, paving the way for future research in this field. The findings also suggest potential applications in the field of quantum computing, where superconducting materials could play a crucial role."
+    }
+  ],
+  "steps": [
+    {
+      "state": [
+        {
+          "Key": "INPUT",
+          "Value": ""
+        }
+      ],
+      "steps": [],
+      "parameters": [
+        {
+          "Key": "INPUT",
+          "Value": "$INPUT"
+        }
+      ],
+      "outputs": [
+        "RESULT__SUMMARY"
+      ],
+      "next_step_index": 0,
+      "name": "Summarize",
+      "skill_name": "SummarizeSkill",
+      "description": "Summarize given text or any text document"
+    }
+  ],
+  "parameters": [
+    {
+      "Key": "INPUT",
+      "Value": ""
+    }
+  ],
+  "outputs": [
+    "RESULT__SUMMARY"
+  ],
+  "next_step_index": 0,
+  "name": "",
+  "skill_name": "Microsoft.SemanticKernel.Planning.Plan",
+  "description": "You must evaluate the capabilities of a smaller LLM model. Start by writing a text of about 100 words on a given topic, that should be the input parameter of the plan. Then use one or several functions from the available skills on the input text and/or the previous functions results, choosing parameters in such a way that you know you will succeed at running each function but a smaller model might not. Try to propose steps of distinct difficulties so that models of distinct capabilities might succeed on some functions and fail on others."
+}

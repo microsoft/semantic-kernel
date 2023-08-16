@@ -89,15 +89,16 @@ public class PromptMultiConnectorSettings
 
     private readonly ConcurrentDictionary<string, bool> _currentSessionPrompts = new();
 
-    public bool IsSampleNeeded(string prompt, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool isNewPrompt)
+    public bool IsSampleNeeded(MultiCompletionSession session)
     {
-        return (isNewPrompt
-                || (this.PromptType.Instances.Count < this.PromptType.MaxInstanceNb
-                    && !this.PromptType.Instances.Contains(prompt)))
-               && !this._currentSessionPrompts.ContainsKey(prompt)
-               && namedTextCompletions.Any(namedTextCompletion =>
-                   !this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings? value)
-                   || value?.VettingLevel == 0);
+        var toReturn = (session.IsNewPrompt
+                        || (this.PromptType.Instances.Count < session.MultiConnectorSettings.MaxInstanceNb
+                            && !this.PromptType.Instances.Contains(session.InputJob.Prompt)))
+                       && !this._currentSessionPrompts.ContainsKey(session.InputJob.Prompt)
+                       && (session.MultiConnectorSettings.SampleVettedConnectors || session.AvailableCompletions.Any(namedTextCompletion =>
+                           !this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings? value)
+                           || value?.VettingLevel == 0));
+        return toReturn;
     }
 
     public IEnumerable<NamedTextCompletion> GetCompletionsToTest(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool enablePrimaryCompletionTests)

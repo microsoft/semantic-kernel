@@ -69,6 +69,11 @@ public class MultiTextCompletionSettings
     public bool EnablePromptSampling { get; set; } = true;
 
     /// <summary>
+    /// The number of sample to collect for each prompt type
+    /// </summary>
+    public int MaxInstanceNb { get; set; } = 10;
+
+    /// <summary>
     /// Holds the settings for completion analysis process.
     /// </summary>
     public MultiCompletionAnalysisSettings AnalysisSettings { get; set; } = new();
@@ -146,6 +151,16 @@ public class MultiTextCompletionSettings
     public CallRequestCostCreditor? Creditor { get; set; }
 
     /// <summary>
+    /// Each time a new sample is generated, a delay is applied to collect more before saving them in a batch and triggering analysis
+    /// </summary>
+    public TimeSpan SampleCollectionDelay { get; set; } = TimeSpan.FromMilliseconds(20);
+
+    /// <summary>
+    /// By default, samples are collected according to the configured MaxNumber. If disabled, samples will not be collected on prompt type where all known connectors were already evaluated for validity
+    /// </summary>
+    public bool SampleVettedConnectors { get; set; } = true;
+
+    /// <summary>
     /// Returns settings for a given prompt.
     /// If settings for the prompt do not exist, new settings are created, added to the list, and returned.
     /// </summary>
@@ -162,7 +177,6 @@ public class MultiTextCompletionSettings
                     PromptType = new PromptType()
                     {
                         Instances = { "" },
-                        MaxInstanceNb = 1,
                         Signature = new PromptSignature(completionJob.RequestSettings, ""),
                         PromptName = "default",
                         SignatureNeedsAdjusting = false,
@@ -177,7 +191,6 @@ public class MultiTextCompletionSettings
                     PromptType = new PromptType()
                     {
                         Instances = { completionJob.Prompt },
-                        MaxInstanceNb = this.AnalysisSettings.NbPromptTests,
                         Signature = newSignature,
                         PromptName = newSignature.PromptStart.Replace(" ", "_"),
                         SignatureNeedsAdjusting = this.AdjustPromptStarts,

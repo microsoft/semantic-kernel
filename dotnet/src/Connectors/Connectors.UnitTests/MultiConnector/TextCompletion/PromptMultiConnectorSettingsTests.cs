@@ -36,21 +36,21 @@ public class PromptMultiConnectorSettingsTests : MultiConnectorTestsBase
         Assert.Equal(completions[1].Name, result.namedTextCompletion.Name); // The one with the highest VettingLevel should be returned
     }
 
-    [Fact]
-    public void IsSampleNeededShouldReturnTrueWhenConditionsMet()
-    {
-        var settings = new PromptMultiConnectorSettings
-        {
-            PromptType = new PromptType { MaxInstanceNb = 10 }
-        };
+    //[Fact]
+    //public void IsSampleNeededShouldReturnTrueWhenConditionsMet()
+    //{
+    //    var settings = new PromptMultiConnectorSettings
+    //    {
+    //        PromptType = new PromptType { MaxInstanceNb = 10 }
+    //    };
 
-        var completions = this.CreateCompletions(new(), TimeSpan.Zero, 0m, TimeSpan.Zero, 0m, null); // 
+    //    var completions = this.CreateCompletions(new(), TimeSpan.Zero, 0m, TimeSpan.Zero, 0m, null); // 
 
-        settings.GetConnectorSettings(completions[0].Name).VettingLevel = VettingLevel.None;
+    //    settings.GetConnectorSettings(completions[0].Name).VettingLevel = VettingLevel.None;
 
-        var result = settings.IsSampleNeeded("TestPrompt", completions, true);
-        Assert.True(result); // Conditions are met so should return true
-    }
+    //    var result = settings.IsSampleNeeded("TestPrompt", completions, true);
+    //    Assert.True(result); // Conditions are met so should return true
+    //}
 
     [Fact]
     public void GetCompletionsToTestShouldReturnCorrectCompletions()

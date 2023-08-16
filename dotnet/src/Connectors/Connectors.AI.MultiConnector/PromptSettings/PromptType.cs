@@ -17,11 +17,6 @@ public class PromptType
     public string PromptName { get; set; } = "";
 
     /// <summary>
-    /// Sets the maximum number of distinct prompts to collect for this prompt type
-    /// </summary>
-    public int MaxInstanceNb { get; set; } = 10;
-
-    /// <summary>
     /// recorded instances of the prompt type.
     /// </summary>
     public List<string> Instances { get; } = new();

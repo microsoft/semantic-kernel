@@ -106,12 +106,12 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
     [InlineData(20, 0.02, 2, 0.01, 1, 1, 0.01, 10)]
     [InlineData(20, 0.02, 2, 0.1, 1, 1, 0.02, 1)]
     [InlineData(20, 0.02, 2, 0.1, 1, 0, 0.1, 10)]
-    public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync(int primaryCallDuration = 2, decimal primaryCostPerRequest = 0.02m, int secondaryCallDuration = 1,
-        decimal secondaryCostPerRequest = 0.01m,
+    public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync(int primaryDuration = 2, decimal primaryCost = 0.02m, int secondaryDuration = 1,
+        decimal secondaryCost = 0.01m,
         double durationWeight = 1,
         double costWeight = 1,
-        decimal expectedCostPerRequest = 0.01m,
-        double expectedDurationGain = 2)
+        decimal expectedCost = 0.01m,
+        double expectedPerfGain = 2)
     {
         //Arrange
 
@@ -151,7 +151,7 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
 
         var creditor = new CallRequestCostCreditor();
 
-        var completions = this.CreateCompletions(settings, TimeSpan.FromMilliseconds(primaryCallDuration), primaryCostPerRequest, TimeSpan.FromMilliseconds(secondaryCallDuration), secondaryCostPerRequest, creditor);
+        var completions = this.CreateCompletions(settings, TimeSpan.FromMilliseconds(primaryDuration), primaryCost, TimeSpan.FromMilliseconds(secondaryDuration), secondaryCost, creditor);
 
         var completionJobs = this.CreateSampleJobs(Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().ToArray(), 8, 2);
 
@@ -195,7 +195,7 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
         creditor.Reset();
 
         // Redo the same requests with the new settings
-        var secondaryResults = await RunPromptsAsync(completionJobs, multiConnector, (s, s1) => expectedCostPerRequest).ConfigureAwait(false);
+        var secondaryResults = await RunPromptsAsync(completionJobs, multiConnector, (s, s1) => expectedCost).ConfigureAwait(false);
         decimal secondPassExpectedCost = secondaryResults.Sum(tuple => tuple.expectedCost);
         var secondPassEffectiveCost = creditor.OngoingCost;
 
@@ -219,6 +219,6 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
         Assert.Equal(secondPassExpectedCost, secondPassEffectiveCost);
 
         //We measure time ratio very approximately because it may depend on the machine load
-        Assert.InRange(secondPassDurationAfterWarmup, firstPassDurationAfterWarmup / (expectedDurationGain * 3), firstPassDurationAfterWarmup / (expectedDurationGain / 3));
+        Assert.InRange(secondPassDurationAfterWarmup, firstPassDurationAfterWarmup / (expectedPerfGain * 3), firstPassDurationAfterWarmup / (expectedPerfGain / 3));
     }
 }

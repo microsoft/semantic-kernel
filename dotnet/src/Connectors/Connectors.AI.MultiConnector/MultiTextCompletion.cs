@@ -120,6 +120,7 @@ public class MultiTextCompletion : ITextCompletion
             promptSettings,
             isNewPrompt,
             textCompletionAndSettings.namedTextCompletion,
+            this._textCompletions,
             textCompletionAndSettings.promptConnectorSettings,
             this._settings,
             this._logger);
@@ -136,13 +137,10 @@ public class MultiTextCompletion : ITextCompletion
     {
         var costDebited = await this.ApplyCreditorCostsAsync(session.CallJob.Prompt, session.ResultProducer, session.NamedTextCompletion).ConfigureAwait(false);
 
-        if (session.NamedTextCompletion == this._textCompletions[0] && this._settings.AnalysisSettings.EnableAnalysis)
+        if (this._settings.EnablePromptSampling && session.PromptSettings.IsSampleNeeded(session))
         {
-            if (this._settings.EnablePromptSampling && session.PromptSettings.IsSampleNeeded(session.InputJob.Prompt, this._textCompletions, session.IsNewPrompt))
-            {
-                session.PromptSettings.AddSessionPrompt(session.InputJob.Prompt);
-                await this.CollectResultForTestAsync(session, costDebited, cancellationToken).ConfigureAwait(false);
-            }
+            session.PromptSettings.AddSessionPrompt(session.InputJob.Prompt);
+            await this.CollectResultForTestAsync(session, costDebited, cancellationToken).ConfigureAwait(false);
         }
 
         if (this._settings.LogCallResult)
@@ -222,19 +220,28 @@ public class MultiTextCompletion : ITextCompletion
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
+                        var now = DateTime.Now;
+                        var delay = newSample.Timestamp + this._settings.SampleCollectionDelay - now;
+
+                        if (delay > TimeSpan.FromMilliseconds(1))
+                        {
+                            this._logger?.LogTrace(message: "CollectSamplesAsync adding collection delay {0}", delay);
+                            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                        }
+
                         testSeries.Add(newSample);
                     }
                 }
 
                 this._logger?.LogTrace(message: "## CollectSamplesAsync collected a new ConnectorTest series to analyze", testSeries);
 
+                var analysisJob = new AnalysisJob(this._settings, this._textCompletions, this._logger, cancellationToken);
                 // Save the tests
-                var needTest = this._settings.AnalysisSettings.SaveSamplesNeedRunningTest(testSeries, this._logger);
+                var needTest = this._settings.AnalysisSettings.SaveSamplesNeedRunningTest(testSeries, analysisJob);
 
                 if (needTest)
                 {
                     // Once you have a batch ready, write it to the channel
-                    var analysisJob = new AnalysisJob(this._settings, this._textCompletions, this._logger, cancellationToken);
                     await this._settings.AnalysisSettings.AddAnalysisJobAsync(analysisJob).ConfigureAwait(false);
                 }
             }

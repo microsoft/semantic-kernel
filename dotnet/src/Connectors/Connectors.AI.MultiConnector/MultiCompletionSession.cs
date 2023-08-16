@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 [DebuggerDisplay("{DebuggerDisplay}")]
 public class MultiCompletionSession
 {
-    public MultiCompletionSession(CompletionJob completionJob, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings, MultiTextCompletionSettings multiConnectorSettings, ILogger? logger)
+    public MultiCompletionSession(CompletionJob completionJob, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, NamedTextCompletion namedTextCompletion, IReadOnlyList<NamedTextCompletion> availableCompletions, PromptConnectorSettings promptConnectorSettings, MultiTextCompletionSettings multiConnectorSettings, ILogger? logger)
     {
         this.MultiConnectorSettings = multiConnectorSettings;
         this.PromptSettings = promptSettings;
@@ -26,6 +26,7 @@ public class MultiCompletionSession
         this.CallJob = completionJob;
         this.IsNewPrompt = isNewPrompt;
         this.NamedTextCompletion = namedTextCompletion;
+        this.AvailableCompletions = availableCompletions;
         this.PromptConnectorSettings = promptConnectorSettings;
         this.Stopwatch = Stopwatch.StartNew();
         this.Logger = logger;
@@ -98,6 +99,11 @@ public class MultiCompletionSession
     /// The <see cref="NamedTextCompletion"/> that was elicited to answer the call to the <see cref="MultiTextCompletion"/>.
     /// </summary>
     public NamedTextCompletion NamedTextCompletion { get; set; }
+
+    /// <summary>
+    /// The list of all available <see cref="NamedTextCompletion"/>.
+    /// </summary>
+    public IReadOnlyList<NamedTextCompletion> AvailableCompletions { get; set; }
 
     /// <summary>
     /// The <see cref="PromptConnectorSettings"/> that correspond to the current Prompt settings and the chosen Text Completion.

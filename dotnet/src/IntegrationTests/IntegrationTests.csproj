@@ -51,19 +51,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Connectors\MultiConnector\Texts\Communication_hard.txt">
+    <None Update="Connectors\MultiConnector\Texts\Comm_hard.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Connectors\MultiConnector\Texts\Communication_medium.txt">
+    <None Update="Connectors\MultiConnector\Texts\Comm_medium.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Connectors\MultiConnector\Texts\Communication_simple.txt">
+    <None Update="Connectors\MultiConnector\Texts\Danse_hard.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Connectors\MultiConnector\Plans\VettingPlan_SummarizeSkill_Summarize.json">
+    <None Update="Connectors\MultiConnector\Texts\Danse_medium.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Connectors\MultiConnector\Plans\VettingPlan_Summarize_Topics_ElementAt.json">
+    <None Update="Connectors\MultiConnector\Texts\Danse_simple.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Connectors\MultiConnector\Texts\Comm_simple.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Connectors\MultiConnector\Plans\Summarize.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Connectors\MultiConnector\Plans\Summarize_Topics_ElementAt.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="testsettings.development.json">

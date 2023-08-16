@@ -18,6 +18,7 @@ using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.Text;
@@ -75,11 +76,11 @@ public sealed class MultiConnectorTests : IDisposable
     /// This test method uses a plan loaded from a file, an input text of a particular difficulty, and all models configured in settings file
     /// </summary>
     [Theory]
-    [InlineData(1, 1, 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData(1, 1, 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToMultipleOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
+    [InlineData(1, 1, 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(1, 1, 1, "Summarize_Topics_ElementAt.json", "Comm_medium.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToMultipleOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, string validationTextFileName, params string[] skillNames)
     {
-        await this.ChatGptOffloadsToSingleOobaboogaUsingFileAsync("", nbPromptTests, planFileName, inputTextFileName, skillNames).ConfigureAwait(false);
+        await this.ChatGptOffloadsToSingleOobaboogaUsingFileAsync("", nbPromptTests, planFileName, inputTextFileName, validationTextFileName, skillNames).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -87,41 +88,48 @@ public sealed class MultiConnectorTests : IDisposable
     /// </summary>
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
-    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_SummarizeSkill_Summarize.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_medium.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "VettingPlan_Summarize_Topics_ElementAt.json", "Communication_hard.txt", "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToSingleOobaboogaUsingFileAsync(string completionName, int nbPromptTests, string planFileName, string inputTextFileName, params string[] skillNames)
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_simple.txt","Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_simple.txt","Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToSingleOobaboogaUsingFileAsync(string completion, int nbTests, string planFile, string inputFile, string validationFile, params string[] skills)
     {
         // Load the plan from the provided file path
-        var planPath = System.IO.Path.Combine(this._planDirectory, planFileName);
-        var textPath = System.IO.Path.Combine(this._textDirectory, inputTextFileName);
+        var planPath = System.IO.Path.Combine(this._planDirectory, planFile);
+        var textPath = System.IO.Path.Combine(this._textDirectory, inputFile);
+        var validationTextPath = System.IO.Path.Combine(this._textDirectory, validationFile);
 
-        Func<IKernel, CancellationToken, Task<Plan>> planFactory = async (kernel, token) =>
+        Func<IKernel, CancellationToken, bool, Task<Plan>> planFactory = async (kernel, token, isValidation) =>
         {
             var planJson = await System.IO.File.ReadAllTextAsync(planPath, token);
             var ctx = kernel.CreateNewContext();
             var plan = Plan.FromJson(planJson, ctx, true);
-            var input = await System.IO.File.ReadAllTextAsync(textPath, token);
+            var inputPath = textPath;
+            if (isValidation)
+            {
+                inputPath = validationTextPath;
+            }
+
+            var input = await System.IO.File.ReadAllTextAsync(inputPath, token);
             plan.State.Update(input);
             return plan;
         };
 
         List<string>? modelNames = null;
-        if (!string.IsNullOrEmpty(completionName))
+        if (!string.IsNullOrEmpty(completion))
         {
-            modelNames = new List<string> { completionName };
+            modelNames = new List<string> { completion };
         }
 
-        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, nbPromptTests, skillNames).ConfigureAwait(false);
+        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, nbTests, skills).ConfigureAwait(false);
     }
 
     // This test method uses the SequentialPlanner to create a plan based on difficulty
@@ -135,7 +143,7 @@ public sealed class MultiConnectorTests : IDisposable
         // Create a plan using SequentialPlanner based on difficulty
         var modifiedStartGoal = StartGoal.Replace("distinct difficulties", $"{difficulty} difficulties", StringComparison.OrdinalIgnoreCase);
 
-        Func<IKernel, CancellationToken, Task<Plan>> planFactory = async (kernel, token) =>
+        Func<IKernel, CancellationToken, bool, Task<Plan>> planFactory = async (kernel, token, isValidation) =>
         {
             var planner = new SequentialPlanner(kernel,
                 new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
@@ -153,7 +161,7 @@ public sealed class MultiConnectorTests : IDisposable
         await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, nbPromptTests, skillNames).ConfigureAwait(false);
     }
 
-    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, Task<Plan>> planFactory, List<string>? modelNames, int nbPromptTests, params string[] skillNames)
+    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, bool, Task<Plan>> planFactory, List<string>? modelNames, int nbPromptTests, params string[] skillNames)
     {
         // Arrange
 
@@ -173,6 +181,10 @@ public sealed class MultiConnectorTests : IDisposable
         // The most common settings for a MultiTextCompletion are illustrated below, most of them have default values and are optional
         var settings = new MultiTextCompletionSettings()
         {
+            //We start with prompt sampling off to control precisely the prompt types we want to test by enabling this parameter on specific periods
+            EnablePromptSampling = false,
+            // We only collect one sample per prompt type for tests for now. We'll enable collecting one more sample for final validation on unseen material
+            MaxInstanceNb = 1,
             // We'll use a simple creditor to track usage costs
             Creditor = creditor,
             // Prompt type require a signature for identification, and we'll use the first 11 characters of the prompt as signature
@@ -195,11 +207,10 @@ public sealed class MultiConnectorTests : IDisposable
             // Analysis settings are an important part of the main settings, dealing with how to collect samples, conduct tests, evaluate them and update the connector settings
             AnalysisSettings = new MultiCompletionAnalysisSettings()
             {
+                // Analysis must be enabled for analysis jobs to be created from sample usage, we'll play with that parameter
                 EnableAnalysis = false,
                 // This is the number of tests to run and validate for each prompt type before it can be considered able to handle the prompt type
                 NbPromptTests = nbPromptTests,
-                // We only collect one sample for tests for now
-                MaxInstanceNb = 1,
                 // Because we only collect one sample, we have to artificially raise the temperature for the test completion request settings, in order to induce diverse results
                 TestsTemperatureTransform = d => Math.Max(d, 0.7),
                 // We use manual release of analysis task to make sure analysis event is only fired once with the final result
@@ -260,12 +271,41 @@ public sealed class MultiConnectorTests : IDisposable
 
         // Create a plan
         this._logger.LogTrace("\n# Loading Test plan\n");
-        var plan = await planFactory(kernel, this._cleanupToken.Token);
+        var plan = await planFactory(kernel, this._cleanupToken.Token, false);
         var planJson = plan.ToJson();
 
         this._logger.LogDebug("Plan used for multi-connector evaluation: {0}", planJson);
 
+        settings.Creditor!.Reset();
+
+        var planBuildingTimeElapsed = sw.Elapsed;
+
+        // Execute the plan once with primary connector
+
+        var ctx = kernel.CreateNewContext();
+
+        this._logger.LogTrace("\n# 1st Run of plan with primary connector\n");
+
+        //We enable sampling and analysis trigger. There is a lock to prevent automatic analysis starting while the test is running, but we'll manually trigger analysis after the test is done
+
+        settings.EnablePromptSampling = true;
+
         settings.AnalysisSettings.EnableAnalysis = true;
+
+        var firstResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan).ConfigureAwait(false);
+
+        var planRunOnceTimeElapsed = sw.Elapsed;
+
+        this._logger.LogTrace("\n# 1st run finished\n");
+
+        var firstPassEffectiveCost = settings.Creditor.OngoingCost;
+
+        var firstPassDuration = planRunOnceTimeElapsed - planBuildingTimeElapsed;
+
+        this._logger.LogDebug("Result from primary connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}\n", firstPassDuration, firstPassEffectiveCost, firstResult);
+
+        // We disable prompt sampling to ensure no other tests are generated
+        settings.EnablePromptSampling = false;
 
         // Create a task completion source to signal the completion of the optimization
 
@@ -287,31 +327,6 @@ public sealed class MultiConnectorTests : IDisposable
             suggestionCompletedTaskSource.SetException(args.CrashEvent.Exception);
         };
 
-        settings.Creditor!.Reset();
-
-        var planBuildingTimeElapsed = sw.Elapsed;
-
-        // Execute the plan once with primary connector
-
-        var ctx = kernel.CreateNewContext();
-
-        this._logger.LogTrace("\n# 1st Run of plan with primary connector\n");
-
-        var firstResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan).ConfigureAwait(false);
-
-        var planRunOnceTimeElapsed = sw.Elapsed;
-
-        this._logger.LogTrace("\n# 1st run finished\n");
-
-        var firstPassEffectiveCost = settings.Creditor.OngoingCost;
-
-        var firstPassDuration = planRunOnceTimeElapsed - planBuildingTimeElapsed;
-
-        this._logger.LogDebug("Result from primary connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}\n", firstPassDuration, firstPassEffectiveCost, firstResult);
-
-        // We disable prompt sampling to ensure no other tests are generated
-        settings.EnablePromptSampling = false;
-
         this._logger.LogTrace("\n# Releasing analysis task, waiting for suggestion completed event\n");
 
         settings.AnalysisSettings.AnalysisAwaitsManualTrigger = false;
@@ -321,6 +336,8 @@ public sealed class MultiConnectorTests : IDisposable
         var optimizationResults = await suggestionCompletedTaskSource.Task.ConfigureAwait(false);
 
         var optimizationDoneElapsed = sw.Elapsed;
+
+        settings.AnalysisSettings.EnableAnalysis = false;
 
         this._logger.LogTrace("\n# Optimization task finished\n");
 
@@ -349,9 +366,75 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogDebug("Result from vetted connector execution of Plan used for multi-connector evaluation with duration {0} and cost {1}:\n {2}\n", secondPassDuration, secondPassEffectiveCost, secondResult);
 
+        // We validate the new connector with a new plan with distinct data
+
+        settings.Creditor!.Reset();
+
+        ctx = kernel.CreateNewContext();
+
+        this._logger.LogTrace("\n# Loading validation plan from factory\n");
+
+        plan = await planFactory(kernel, this._cleanupToken.Token, true);
+
+        // 
+        settings.EnablePromptSampling = true;
+        settings.MaxInstanceNb = 2;
+
+        TaskCompletionSource<SamplesReceivedEventArgs> samplesReceivedTaskSource = new();
+
+        // Subscribe to the OptimizationCompleted event
+        settings.AnalysisSettings.SamplesReceived += (sender, args) =>
+        {
+            // Signal the completion of the optimization
+            samplesReceivedTaskSource.SetResult(args);
+
+            samplesReceivedTaskSource = new();
+        };
+
+        this._logger.LogTrace("\n# 3rd run: New validation plan with updated settings and variable completions\n");
+
+        var validationResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan).ConfigureAwait(false);
+
+        var planRunThriceElapsed = sw.Elapsed;
+        this._logger.LogTrace("\n# 3rd run finished\n");
+
+        var thirdPassEffectiveCost = settings.Creditor.OngoingCost;
+
+        var sampleReceived = await samplesReceivedTaskSource.Task.ConfigureAwait(false);
+
+        this._logger.LogTrace("\n# Start final validation from samples received from 3rd run validating manually with primary connector\n");
+
+        var validationTests = sampleReceived.NewSamples;
+
+        var evaluations = new List<ConnectorPromptEvaluation>();
+
+        foreach (ConnectorTest validationTest in validationTests)
+        {
+            var evaluation = await settings.AnalysisSettings.EvaluateConnectorTestAsync(validationTest, sampleReceived.AnalysisJob).ConfigureAwait(false);
+            if (evaluation == null)
+            {
+                throw new SKException("Validation of MultiCompletion failed to complete");
+            }
+
+            evaluations.Add(evaluation);
+        }
+
+        this._logger.LogTrace("\n# End validation, starting Asserts\n");
+
         // Assert
 
+        this._logger.LogTrace("\n# Assertions \n");
+
+        this._logger.LogTrace("Asserting secondary connectors reduced the original plan cost");
+
         Assert.True(firstPassEffectiveCost > secondPassEffectiveCost);
+
+        this._logger.LogTrace("Asserting secondary connectors plan capabilities are vetted on a distinct validation input");
+
+        foreach (ConnectorPromptEvaluation evaluation in evaluations)
+        {
+            Assert.True(evaluation.IsVetted);
+        }
     }
 
     /// <summary>
