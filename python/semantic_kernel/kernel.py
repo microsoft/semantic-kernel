@@ -200,7 +200,7 @@ class Kernel:
         except Exception as ex:
             # TODO: "critical exceptions"
             self._log.error(
-                "Something went wrong in stream function.During function invocation:"
+                "Something went wrong in stream function. During function invocation:"
                 f" '{stream_function.skill_name}.{stream_function.name}'. Error"
                 f" description: '{str(ex)}'"
             )
