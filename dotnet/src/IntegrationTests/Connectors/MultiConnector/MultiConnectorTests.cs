@@ -381,6 +381,7 @@ public sealed class MultiConnectorTests : IDisposable
         settings.MaxInstanceNb = 2;
 
         TaskCompletionSource<SamplesReceivedEventArgs> samplesReceivedTaskSource = new();
+        var firstSampleReceivedTaskSource = samplesReceivedTaskSource;
 
         // Subscribe to the OptimizationCompleted event
         settings.AnalysisSettings.SamplesReceived += (sender, args) =>
@@ -400,7 +401,7 @@ public sealed class MultiConnectorTests : IDisposable
 
         var thirdPassEffectiveCost = settings.Creditor.OngoingCost;
 
-        var sampleReceived = await samplesReceivedTaskSource.Task.ConfigureAwait(false);
+        var sampleReceived = await firstSampleReceivedTaskSource.Task.ConfigureAwait(false);
 
         this._logger.LogTrace("\n# Start final validation from samples received from 3rd run validating manually with primary connector\n");
 
