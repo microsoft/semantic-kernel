@@ -464,7 +464,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Debugger.Break();
                     throw;
                 }
 

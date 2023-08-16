@@ -36,7 +36,7 @@ public class PromptMultiConnectorSettings
     /// <summary>
     /// Gets a dictionary mapping connector names to their associated settings for this prompt type.
     /// </summary>
-    public Dictionary<string, PromptConnectorSettings> ConnectorSettingsDictionary { get; } = new();
+    public ConcurrentDictionary<string, PromptConnectorSettings> ConnectorSettingsDictionary { get; } = new();
 
     /// <summary>
     /// Retrieves the settings associated with a specific connector for the prompt type.
