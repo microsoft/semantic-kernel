@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -245,8 +246,9 @@ public class MultiTextCompletion : ITextCompletion
         }
         catch (Exception exception)
         {
-            this._logger?.LogError("CollectSamplesAsync task failed with exception {0}", exception, exception.ToString());
-            throw;
+            var message = "CollectSamplesAsync task failed";
+            this._logger?.LogError("{0} with exception {1}", exception, message, exception.ToString());
+            throw new SKException(message, exception);
         }
     }
 

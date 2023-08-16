@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
@@ -483,9 +484,10 @@ public class MultiCompletionAnalysisSettings
         }
         catch (Exception exception)
         {
-            analysisJob.Logger?.LogError("Analysis pipeline failed with exception {0}", exception, exception.Message);
+            var message = "MultiCompletion analysis pipeline failed";
+            analysisJob.Logger?.LogError("{0} with exception {1}", exception, message, exception.Message);
             this.AnalysisTaskCrashed?.Invoke(this, new(exception));
-            throw;
+            throw new SKException(message, exception);
         }
 
         return completionAnalysis;
@@ -888,8 +890,9 @@ public class MultiCompletionAnalysisSettings
         }
         catch (Exception exception)
         {
-            currentAnalysisJob.Logger?.LogError("AnalyzeDataAsync task failed with exception {0}", exception, exception.ToString());
-            throw;
+            var message = "AnalyzeDataAsync task failed";
+            currentAnalysisJob.Logger?.LogError("{0} with exception {1}", exception, message, exception.ToString());
+            throw new SKException(message, exception);
         }
         finally
         {

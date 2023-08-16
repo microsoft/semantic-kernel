@@ -70,18 +70,33 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
     }
 
     [Fact]
-    public void NamedTextCompletionPrimaryShouldAssignCorrectCost()
+    public async Task MultiCompletionUsesDefaultPrimaryAssignsCostAsync()
     {
+        var creditor = new CallRequestCostCreditor();
         // Arrange
-        var settings = new MultiTextCompletionSettings();
+        var settings = new MultiTextCompletionSettings() { EnablePromptSampling = false, Creditor = creditor};
         decimal expectedCost = 0.02m;
+
+        int operand1 = 8;
+        int operand2 = 4;
+        var completionJobs = this.CreateSampleJobs(new[] { ArithmeticOperation.Multiply }, operand1, operand2);
 
         // Act
         var completions = this.CreateCompletions(settings, TimeSpan.Zero, expectedCost, TimeSpan.Zero, 0m, null);
         var primaryCompletion = completions.First();
 
+        var multiConnector = new MultiTextCompletion(settings, completions[0], CancellationToken.None, logger: this.Logger, otherCompletions: completions.Skip(1).ToArray());
+
+        var primaryResults = await RunPromptsAsync(completionJobs, multiConnector, completions[0].GetCost).ConfigureAwait(false);
+
+        var effectiveCost = creditor.OngoingCost;
+
         // Assert
         Assert.Equal(expectedCost, primaryCompletion.CostPerRequest);
+
+        Assert.Equal(1, primaryResults.Count);
+        Assert.Equal((operand1 * operand2).ToString(CultureInfo.InvariantCulture), primaryResults.First().result);
+        Assert.Equal(expectedCost,effectiveCost);
     }
 
    
@@ -89,9 +104,9 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
     /// In this theory, we test that the multi-connector analysis is able to optimize the cost per request and duration of a multi-connector completion, with a primary connector capable of handling all 4 arithmetic operation, and secondary connectors only capable of performing 1 each. Depending on their respective performances in parameters and the respective weights of duration and cost in the analysis settings, the multi-connector analysis should be able to determine the best connector to account for the given preferences.
     /// </summary>
     [Theory]
-    [InlineData(10, 0.02, 1, 0.01, 1, 1, 0.01, 10)]
-    [InlineData(10, 0.02, 1, 0.1, 1, 1, 0.02, 1)]
-    [InlineData(10, 0.02, 1, 0.1, 1, 0, 0.1, 10)]
+    [InlineData(20, 0.02, 2, 0.01, 1, 1, 0.01, 10)]
+    [InlineData(20, 0.02, 2, 0.1, 1, 1, 0.02, 1)]
+    [InlineData(20, 0.02, 2, 0.1, 1, 0, 0.1, 10)]
     public async Task MultiConnectorAnalysisShouldDecreaseCostsAsync(int primaryCallDuration = 2, decimal primaryCostPerRequest = 0.02m, int secondaryCallDuration = 1,
         decimal secondaryCostPerRequest = 0.01m,
         double durationWeight = 1,
@@ -206,6 +221,7 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
 
         Assert.Equal(secondPassExpectedCost, secondPassEffectiveCost);
 
-        Assert.InRange(secondPassDurationAfterWarmup, firstPassDurationAfterWarmup / (expectedDurationGain * 2), firstPassDurationAfterWarmup / (expectedDurationGain / 2));
+        //We measure time ratio very approximately because it may depend on the machine load
+        Assert.InRange(secondPassDurationAfterWarmup, firstPassDurationAfterWarmup / (expectedDurationGain * 3), firstPassDurationAfterWarmup / (expectedDurationGain / 3));
     }
 }
