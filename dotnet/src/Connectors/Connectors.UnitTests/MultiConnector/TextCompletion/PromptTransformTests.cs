@@ -202,14 +202,14 @@ public class PromptTransformTests
 
 public class User
 {
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public DateTime DateOfBirth { get; set; }
-    public Address UserAddress { get; set; }
+    public string FirstName { get; set; } = "";
+    public string LastName { get; set; } = "";
+    public DateTime DateOfBirth { get; set; } = DateTime.MinValue;
+    public Address UserAddress { get; set; } = new Address();
 }
 
 public class Address
 {
-    public string City { get; set; }
-    public string Country { get; set; }
+    public string City { get; set; } = "";
+    public string Country { get; set; } = "";
 }

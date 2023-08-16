@@ -28,7 +28,9 @@ public class SettingsUpdater<T>
     {
         var oldValue = selector(this._settings);
         var newValue = transform(oldValue);
-        if (!EqualityComparer<TValue>.Default.Equals(oldValue, newValue))
+        if (!(oldValue == null && newValue == null)
+            && ((oldValue == null || newValue == null)
+                || !EqualityComparer<TValue>.Default.Equals(oldValue, newValue)))
         {
             changed = true;
             if (!this._isModified)

@@ -40,13 +40,14 @@ public sealed class MultiConnectorTests : IDisposable
 
     private readonly ILogger _logger;
     private readonly IConfigurationRoot _configuration;
-    private List<ClientWebSocket> _webSockets = new();
-    private Func<ClientWebSocket> _webSocketFactory;
+    private readonly List<ClientWebSocket> _webSockets = new();
+    private readonly Func<ClientWebSocket> _webSocketFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly Func<string, int> _gp3TokenCounter = s => GPT3Tokenizer.Encode(s).Count;
     private readonly Func<string, int> _wordCounter = s => s.Split(' ').Length;
-    private string _planDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, PlansDirectory);
-    private string _textDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, TextsDirectory);
+    private readonly string _planDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, PlansDirectory);
+    private readonly string _textDirectory = System.IO.Path.Combine(Environment.CurrentDirectory, TextsDirectory);
+    private readonly CancellationTokenSource _cleanupToken = new();
 
     public MultiConnectorTests(ITestOutputHelper output)
     {
@@ -161,8 +162,6 @@ public sealed class MultiConnectorTests : IDisposable
         var multiConnectorConfiguration = this._configuration.GetSection("MultiConnector").Get<MultiConnectorConfiguration>();
         Assert.NotNull(multiConnectorConfiguration);
 
-        using var cleanupToken = new CancellationTokenSource();
-
         var creditor = new CallRequestCostCreditor();
 
         //We configure settings to enable analysis, and let the connector discover the best connector settings, updating on the fly and deleting analysis file
@@ -243,7 +242,7 @@ public sealed class MultiConnectorTests : IDisposable
             this._logger.LogTrace("Deleted preexisting analysis file: {0}", settings.AnalysisSettings.AnalysisFilePath);
         }
 
-        var kernel = this.InitializeKernel(settings, modelNames, multiConnectorConfiguration, cancellationToken: cleanupToken.Token);
+        var kernel = this.InitializeKernel(settings, modelNames, multiConnectorConfiguration, cancellationToken: this._cleanupToken.Token);
 
         if (kernel == null)
         {
@@ -259,7 +258,7 @@ public sealed class MultiConnectorTests : IDisposable
         // Act
 
         // Create a plan
-        var plan = await planFactory(kernel, cleanupToken.Token);
+        var plan = await planFactory(kernel, this._cleanupToken.Token);
         var planJson = plan.ToJson();
 
         this._logger.LogTrace("\nLoaded Test plan\n");
@@ -285,7 +284,7 @@ public sealed class MultiConnectorTests : IDisposable
         settings.AnalysisSettings.AnalysisTaskCrashed += (sender, args) =>
         {
             // Signal the completion of the optimization
-            suggestionCompletedTaskSource.SetException(args.Exception);
+            suggestionCompletedTaskSource.SetException(args.CrashEvent.Exception);
         };
 
         settings.Creditor!.Reset();
@@ -296,7 +295,7 @@ public sealed class MultiConnectorTests : IDisposable
 
         var ctx = kernel.CreateNewContext();
 
-        var firstResult = await kernel.RunAsync(ctx.Variables, cleanupToken.Token, plan).ConfigureAwait(false);
+        var firstResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan).ConfigureAwait(false);
 
         var planRunOnceTimeElapsed = sw.Elapsed;
 
@@ -335,7 +334,7 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogTrace("\nPrepared plan for second run\n");
 
-        var secondResult = await kernel.RunAsync(ctx.Variables, cleanupToken.Token, plan).ConfigureAwait(false);
+        var secondResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan).ConfigureAwait(false);
 
         var secondPassEffectiveCost = settings.Creditor.OngoingCost;
 
@@ -468,6 +467,9 @@ public sealed class MultiConnectorTests : IDisposable
         {
             clientWebSocket.Dispose();
         }
+
+        this._cleanupToken.Cancel();
+        this._cleanupToken.Dispose();
 
         this._testOutputHelper.Dispose();
     }

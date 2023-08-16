@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -170,8 +169,8 @@ public class PromptTransform
                         parameters.Add(p);
                     }
 
-                    ParsingConfig config = new ParsingConfig();
-                    config.CustomTypeProvider = new CustomDynamicTypeProvider(context) { DefaultProvider = config.CustomTypeProvider };
+                    ParsingConfig config = new();
+                    config.CustomTypeProvider = new CustomDynamicTypeProvider(context, config.CustomTypeProvider);
 
                     var e = System.Linq.Dynamic.Core.DynamicExpressionParser.ParseLambda(config, parameters.ToArray(), null, matchToken);
                     tokenDelegate = e.Compile();
@@ -182,13 +181,14 @@ public class PromptTransform
             });
     }
 
-    private class CustomDynamicTypeProvider : IDynamicLinkCustomTypeProvider
+    private sealed class CustomDynamicTypeProvider : IDynamicLinkCustomTypeProvider
     {
         private readonly Dictionary<string, object> _context;
 
-        public CustomDynamicTypeProvider(Dictionary<string, object> context)
+        public CustomDynamicTypeProvider(Dictionary<string, object> context, IDynamicLinkCustomTypeProvider dynamicLinkCustomTypeProvider)
         {
             this._context = context;
+            this.DefaultProvider = dynamicLinkCustomTypeProvider;
         }
 
         public IDynamicLinkCustomTypeProvider DefaultProvider { get; set; }

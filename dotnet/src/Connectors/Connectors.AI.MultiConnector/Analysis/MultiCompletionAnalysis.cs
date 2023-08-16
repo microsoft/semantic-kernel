@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 public class MultiCompletionAnalysis : TestEvent
 {
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Timestamp} - {this.Samples.Count} samples - {this.Tests.Count} tests - {this.Evaluations.Count} evaluations";
+    public override string DebuggerDisplay => $"{base.DebuggerDisplay}, {this.Samples.Count} samples, {this.Tests.Count} tests, {this.Evaluations.Count} evaluations";
 
     public List<ConnectorTest> Samples { get; set; } = new();
 

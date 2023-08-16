@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 public class AnalysisJob : TestEvent
 {
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Timestamp} - {this.TextCompletions.Count} Completions to test and analyze";
+    public override string DebuggerDisplay => $"{base.DebuggerDisplay}, {this.TextCompletions.Count} Completions to test and analyze";
 
     public MultiTextCompletionSettings Settings { get; }
     public IReadOnlyList<NamedTextCompletion> TextCompletions { get; }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
@@ -15,15 +16,16 @@ namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion;
 
 public class MultiConnectorTestsBase : IDisposable
 {
-    internal XunitLogger<MultiTextCompletion> Logger;
-    internal readonly Func<string, int> DefaultTokenCounter = s => GPT3Tokenizer.Encode(s).Count;
+    internal readonly XunitLogger<MultiTextCompletion> Logger;
+    protected Func<string, int> DefaultTokenCounter { get; } = s => GPT3Tokenizer.Encode(s).Count;
+    protected CancellationTokenSource CleanupToken { get; } = new();
 
-    public MultiConnectorTestsBase(ITestOutputHelper output)
+    protected MultiConnectorTestsBase(ITestOutputHelper output)
     {
         this.Logger = new XunitLogger<MultiTextCompletion>(output);
     }
 
-    protected List<NamedTextCompletion> CreateCompletions(MultiTextCompletionSettings settings, TimeSpan primaryCallDuration, decimal primaryCostPerRequest, TimeSpan secondaryCallDuration, decimal secondaryCostPerRequest, CallRequestCostCreditor creditor)
+    protected List<NamedTextCompletion> CreateCompletions(MultiTextCompletionSettings settings, TimeSpan primaryCallDuration, decimal primaryCostPerRequest, TimeSpan secondaryCallDuration, decimal secondaryCostPerRequest, CallRequestCostCreditor? creditor)
     {
         var toReturn = new List<NamedTextCompletion>();
 
@@ -92,8 +94,27 @@ public class MultiConnectorTestsBase : IDisposable
         return toReturn;
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
-        this.Logger.Dispose();
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private bool _disposedValue;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this._disposedValue)
+        {
+            if (disposing)
+            {
+                this.CleanupToken.Cancel();
+                this.CleanupToken.Dispose();
+                this.Logger.Dispose();
+            }
+
+            this._disposedValue = true;
+        }
     }
 }

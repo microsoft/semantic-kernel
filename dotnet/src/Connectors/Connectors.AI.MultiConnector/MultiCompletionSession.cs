@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -128,7 +129,7 @@ public class MultiCompletionSession
     /// </summary>
     public static CompletionJob AdjustPromptAndRequestSettings(MultiCompletionSession multiCompletionSession)
     {
-        multiCompletionSession.Logger?.LogTrace("Adjusting prompt and settings for connector {0} and prompt type {1}", multiCompletionSession.NamedTextCompletion.Name, multiCompletionSession.PromptSettings.PromptType.Signature.PromptStart);
+        multiCompletionSession.Logger?.LogTrace("### Adjusting prompt and settings for connector {0} and prompt type {1}", multiCompletionSession.NamedTextCompletion.Name, multiCompletionSession.PromptSettings.PromptType.Signature.PromptStart);
 
         //Adjusting prompt
 
@@ -198,7 +199,7 @@ public class MultiCompletionSession
 
             if (valueChanged)
             {
-                multiCompletionSession.Logger?.LogDebug("Changed request max token from {0} to {1}", multiCompletionSession.InputJob.RequestSettings.MaxTokens.Value, adjustedSettings.MaxTokens);
+                multiCompletionSession.Logger?.LogDebug("Changed request max token from {0} to {1}", multiCompletionSession.InputJob.RequestSettings.MaxTokens?.ToString(CultureInfo.InvariantCulture) ?? "null", adjustedSettings.MaxTokens?.ToString(CultureInfo.InvariantCulture) ?? "null");
             }
         }
 

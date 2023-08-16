@@ -13,7 +13,7 @@ namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.Arit
 
 public class ArithmeticCompletionService : ITextCompletion
 {
-    public ArithmeticCompletionService(MultiTextCompletionSettings multiTextCompletionSettings, List<ArithmeticOperation> supportedOperations, ArithmeticEngine engine, TimeSpan callTime, decimal costPerRequest, CallRequestCostCreditor creditor)
+    public ArithmeticCompletionService(MultiTextCompletionSettings multiTextCompletionSettings, List<ArithmeticOperation> supportedOperations, ArithmeticEngine engine, TimeSpan callTime, decimal costPerRequest, CallRequestCostCreditor? creditor)
     {
         this.MultiTextCompletionSettings = multiTextCompletionSettings;
         this.SupportedOperations = supportedOperations;
@@ -44,7 +44,7 @@ public class ArithmeticCompletionService : ITextCompletion
 
     public decimal CostPerRequest { get; set; }
 
-    public CallRequestCostCreditor Creditor { get; set; }
+    public CallRequestCostCreditor? Creditor { get; set; }
 
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {

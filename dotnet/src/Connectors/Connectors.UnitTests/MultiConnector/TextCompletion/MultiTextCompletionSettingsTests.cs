@@ -81,5 +81,4 @@ public class MultiTextCompletionSettingsTests : MultiConnectorTestsBase
             Assert.Equal(truncationLength, firstSignature.Length);
         }
     }
-
 }

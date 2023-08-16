@@ -1,4 +1,6 @@
-﻿namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.ArithmeticMocks;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.ArithmeticMocks;
 
 public enum ArithmeticOperation
 {

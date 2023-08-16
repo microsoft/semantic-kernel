@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 /// <summary>
 /// Represents the settings used to configure the multi-completion analysis process.
 /// </summary>
-public class MultiCompletionAnalysisSettings
+public class MultiCompletionAnalysisSettings : IDisposable
 {
     /// <summary>
     /// Event raised when a new series of Tests were evaluated for validity
@@ -36,7 +36,7 @@ public class MultiCompletionAnalysisSettings
     /// </summary>
     public event EventHandler<SuggestionCompletedEventArgs>? SuggestionCompleted;
 
-    public event EventHandler<AnalysisTaskCrashedEvent>? AnalysisTaskCrashed;
+    public event EventHandler<AnalysisTaskCrashedEventArgs>? AnalysisTaskCrashed;
 
     /// <summary>
     /// Those are the default settings used for connectors evaluation
@@ -48,19 +48,15 @@ public class MultiCompletionAnalysisSettings
         ResultsPerPrompt = 1,
     };
 
-    private Channel<AnalysisJob> _analysisChannel;
+    private readonly Channel<AnalysisJob> _analysisChannel = Channel.CreateUnbounded<AnalysisJob>();
 
     // Lock for thread-safe file operations
-    private object _analysisFileLock = new();
+    private readonly object _analysisFileLock = new();
 
     // used for manual release of analysis tasks
     private TaskCompletionSource<bool>? _manualTrigger;
     private readonly object _triggerLock = new();
-
-    public MultiCompletionAnalysisSettings()
-    {
-        this._analysisChannel = Channel.CreateUnbounded<AnalysisJob>();
-    }
+    private readonly CancellationTokenSource _internalCancellationTokenSource = new();
 
     /// <summary>
     /// Enable or disable the analysis
@@ -345,6 +341,15 @@ public class MultiCompletionAnalysisSettings
         this._analysisChannel.Writer.TryWrite(analysisJob);
     }
 
+    public void StopAnalysisTask()
+    {
+        if (this._analysisTask != null)
+        {
+            this._internalCancellationTokenSource.Cancel();
+            this._analysisTask = null;
+        }
+    }
+
     /// <summary>
     /// Method to release the tasks awaiting to run the analysis pipeline.
     /// </summary>
@@ -452,7 +457,17 @@ public class MultiCompletionAnalysisSettings
             if (this.SaveSuggestedSettings)
             {
                 // Save the new settings
-                var settingsJson = Json.Serialize(updatedSettings.SuggestedSettings);
+                string settingsJson;
+                try
+                {
+                    settingsJson = Json.Serialize(updatedSettings.SuggestedSettings);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+
                 File.WriteAllText(this.MultiCompletionSettingsFilePath, settingsJson);
             }
 
@@ -486,7 +501,7 @@ public class MultiCompletionAnalysisSettings
         {
             var message = "MultiCompletion analysis pipeline failed";
             analysisJob.Logger?.LogError("{0} with exception {1}", exception, message, exception.Message);
-            this.AnalysisTaskCrashed?.Invoke(this, new(exception));
+            this.AnalysisTaskCrashed?.Invoke(this, new(new(exception)));
             throw new SKException(message, exception);
         }
 
@@ -886,7 +901,14 @@ public class MultiCompletionAnalysisSettings
         }
         catch (OperationCanceledException exception)
         {
-            currentAnalysisJob.Logger?.LogTrace("AnalyzeDataAsync task was cancelled with exception {0}", exception, exception.ToString());
+            if (exception.CancellationToken.Equals(this._internalCancellationTokenSource.Token))
+            {
+                currentAnalysisJob.Logger?.LogTrace("AnalyzeDataAsync task was Stopped manually");
+            }
+            else
+            {
+                currentAnalysisJob.Logger?.LogTrace("AnalyzeDataAsync task was cancelled with exception {0}", exception, exception.ToString());
+            }
         }
         catch (Exception exception)
         {
@@ -910,16 +932,45 @@ public class MultiCompletionAnalysisSettings
         return Task.Factory.StartNew(
             async () =>
             {
-                while (!initialJob.CancellationToken.IsCancellationRequested)
+                initialJob.Logger?.LogTrace("## Analysis task was started");
+
+                using (CancellationTokenSource linkedCts =
+                       CancellationTokenSource.CreateLinkedTokenSource(initialJob.CancellationToken, this._internalCancellationTokenSource.Token))
                 {
-                    await this.AnalyzeDataAsync(initialJob).ConfigureAwait(false);
+                    while (!linkedCts.IsCancellationRequested)
+                    {
+                        await this.AnalyzeDataAsync(initialJob).ConfigureAwait(false);
+                    }
                 }
+
+                initialJob.Logger?.LogTrace("## Analysis task was cancelled and is closing gracefully");
             },
             initialJob.CancellationToken,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
     }
 
-    #endregion
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
+    private bool _disposedValue;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this._disposedValue)
+        {
+            if (disposing)
+            {
+                this._internalCancellationTokenSource.Dispose();
+            }
+
+            this._disposedValue = true;
+        }
+    }
+
+    #endregion
 }

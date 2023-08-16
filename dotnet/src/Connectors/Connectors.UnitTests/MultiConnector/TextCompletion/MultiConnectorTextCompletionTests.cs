@@ -52,7 +52,7 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
         var result = await service.CompleteAsync(prompt, new CompleteRequestSettings());
 
         // Assert
-        Assert.Equal(expectedResult.ToString(), result);
+        Assert.Equal(expectedResult.ToString(CultureInfo.InvariantCulture), result);
     }
 
     [Theory]
@@ -74,7 +74,7 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
     {
         var creditor = new CallRequestCostCreditor();
         // Arrange
-        var settings = new MultiTextCompletionSettings() { EnablePromptSampling = false, Creditor = creditor};
+        var settings = new MultiTextCompletionSettings() { EnablePromptSampling = false, Creditor = creditor };
         decimal expectedCost = 0.02m;
 
         int operand1 = 8;
@@ -96,10 +96,9 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
 
         Assert.Equal(1, primaryResults.Count);
         Assert.Equal((operand1 * operand2).ToString(CultureInfo.InvariantCulture), primaryResults.First().result);
-        Assert.Equal(expectedCost,effectiveCost);
+        Assert.Equal(expectedCost, effectiveCost);
     }
 
-   
     /// <summary>
     /// In this theory, we test that the multi-connector analysis is able to optimize the cost per request and duration of a multi-connector completion, with a primary connector capable of handling all 4 arithmetic operation, and secondary connectors only capable of performing 1 each. Depending on their respective performances in parameters and the respective weights of duration and cost in the analysis settings, the multi-connector analysis should be able to determine the best connector to account for the given preferences.
     /// </summary>
@@ -154,11 +153,9 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
 
         var completions = this.CreateCompletions(settings, TimeSpan.FromMilliseconds(primaryCallDuration), primaryCostPerRequest, TimeSpan.FromMilliseconds(secondaryCallDuration), secondaryCostPerRequest, creditor);
 
-        var completionJobs = this.CreateSampleJobs(Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().ToArray(),8, 2);
+        var completionJobs = this.CreateSampleJobs(Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().ToArray(), 8, 2);
 
-        
-
-        var multiConnector = new MultiTextCompletion(settings, completions[0], CancellationToken.None, logger: this.Logger, otherCompletions: completions.Skip(1).ToArray());
+        var multiConnector = new MultiTextCompletion(settings, completions[0], this.CleanupToken.Token, logger: this.Logger, otherCompletions: completions.Skip(1).ToArray());
 
         // Create a task completion source to signal the completion of the optimization
         var optimizationCompletedTaskSource = new TaskCompletionSource<SuggestionCompletedEventArgs>();
@@ -174,7 +171,7 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
         settings.AnalysisSettings.AnalysisTaskCrashed += (sender, args) =>
         {
             // Signal the completion of the optimization
-            optimizationCompletedTaskSource.SetException(args.Exception);
+            optimizationCompletedTaskSource.SetException(args.CrashEvent.Exception);
         };
 
         //Act

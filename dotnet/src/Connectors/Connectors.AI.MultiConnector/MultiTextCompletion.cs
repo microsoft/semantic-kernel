@@ -53,7 +53,7 @@ public class MultiTextCompletion : ITextCompletion
         this._logger?.LogTrace("## Starting MultiTextCompletion.GetCompletionsAsync");
         var completionJob = new CompletionJob(text, requestSettings);
         var session = this.GetPromptAndConnectorSettings(completionJob);
-        this._logger?.LogTrace("Calling chosen completion with adjusted prompt and settings");
+        this._logger?.LogTrace("### Calling chosen completion with adjusted prompt and settings");
         var completions = await session.NamedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, cancellationToken).ConfigureAwait(false);
 
         var resultLazy = new AsyncLazy<string>(() =>
@@ -77,7 +77,7 @@ public class MultiTextCompletion : ITextCompletion
         this._logger?.LogTrace("## Starting MultiTextCompletion.GetStreamingCompletionsAsync");
         var completionJob = new CompletionJob(text, requestSettings);
         var session = this.GetPromptAndConnectorSettings(completionJob);
-        this._logger?.LogTrace("Calling chosen completion with adjusted prompt and settings");
+        this._logger?.LogTrace("### Calling chosen completion with adjusted prompt and settings");
         var result = session.NamedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, cancellationToken);
 
         var resultLazy = new AsyncLazy<string>(async () =>
@@ -112,9 +112,9 @@ public class MultiTextCompletion : ITextCompletion
     private MultiCompletionSession GetPromptAndConnectorSettings(CompletionJob completionJob)
     {
         var promptSettings = this._settings.GetPromptSettings(completionJob, out var isNewPrompt);
-        this._logger?.LogTrace("Retrieved prompt type and settings for connector, prompt signature:{0}", promptSettings.PromptType.Signature.PromptStart);
+        this._logger?.LogTrace("### Retrieved prompt type and settings for connector, prompt signature:{0}", promptSettings.PromptType.Signature.PromptStart);
         var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(completionJob, this._textCompletions, this._settings.ConnectorComparer);
-        this._logger?.LogTrace("Selected connector for prompt type: {0}", textCompletionAndSettings.namedTextCompletion.Name);
+        this._logger?.LogTrace("### Selected connector for prompt type: {0}", textCompletionAndSettings.namedTextCompletion.Name);
 
         var session = new MultiCompletionSession(completionJob,
             promptSettings,
@@ -222,12 +222,11 @@ public class MultiTextCompletion : ITextCompletion
                 {
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        this._logger?.LogTrace(message: "CollectSamplesAsync received a new Sample", newSample);
                         testSeries.Add(newSample);
                     }
                 }
 
-                this._logger?.LogTrace(message: "CollectSamplesAsync collected a new ConnectorTest series to analyze", testSeries);
+                this._logger?.LogTrace(message: "## CollectSamplesAsync collected a new ConnectorTest series to analyze", testSeries);
 
                 // Save the tests
                 var needTest = this._settings.AnalysisSettings.SaveSamplesNeedRunningTest(testSeries, this._logger);
