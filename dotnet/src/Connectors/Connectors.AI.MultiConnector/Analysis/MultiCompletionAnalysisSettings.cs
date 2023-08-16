@@ -18,6 +18,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
@@ -511,7 +512,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
     private async Task<List<ConnectorTest>> RunConnectorTestsAsync(MultiCompletionAnalysis completionAnalysis, AnalysisJob analysisJob)
     {
         ConcurrentBag<ConnectorTest> tests = new();
-        analysisJob.Logger?.LogTrace("Starting running connector tests from {0} original prompts", completionAnalysis.Samples.Count);
+        analysisJob.Logger?.LogTrace("## Starting running connector tests from {0} original prompts", completionAnalysis.Samples.Count);
 
         var tasks = new List<Task>();
         using SemaphoreSlim testSemaphore = new(this.MaxDegreeOfParallelismTests);
@@ -532,7 +533,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     // Generate tests
                     var connectorsToTest = testPromptSettings.GetCompletionsToTest(sampleTest, analysisJob.TextCompletions, this.TestPrimaryCompletion);
 
-                    using SemaphoreSlim testConnectorsSemaphore = new(this.MaxDegreeOfParallelismTests);
+                    using SemaphoreSlim testConnectorsSemaphore = new(this.MaxDegreeOfParallelismConnectorsByTest);
 
                     var subTasks = new List<Task>();
 
@@ -563,59 +564,76 @@ public class MultiCompletionAnalysisSettings : IDisposable
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
+        analysisJob.Logger?.LogTrace("## Finished running connector tests returning {0} tests to evaluate", tests.Count);
+
         return tests.ToList();
     }
 
     private async Task RunTestForConnectorAsync(NamedTextCompletion namedTextCompletion, CompletionJob testJob, PromptMultiConnectorSettings promptMultiConnectorSettings, ConcurrentBag<ConnectorTest> connectorTests, AnalysisJob analysisJob)
     {
-        analysisJob.Logger?.LogTrace("Running Test for connector {0}", namedTextCompletion.Name);
+        analysisJob.Logger?.LogTrace("### Running Tests for connector {0}, {1} tests per prompt configured", namedTextCompletion.Name, this.NbPromptTests);
+
+        var tasks = new List<Task>();
+        using SemaphoreSlim testSemaphore = new(namedTextCompletion.MaxDegreeOfParallelism);
 
         for (int i = 0; i < this.NbPromptTests; i++)
         {
-            var stopWatch = Stopwatch.StartNew();
-            try
+            tasks.Add(Task.Run(async () =>
             {
-                var promptConnectorSettings = promptMultiConnectorSettings.GetConnectorSettings(namedTextCompletion.Name);
-
-                var session = new MultiCompletionSession(testJob,
-                    promptMultiConnectorSettings,
-                    false,
-                    namedTextCompletion,
-                    promptConnectorSettings,
-                    analysisJob.Settings,
-                    analysisJob.Logger);
-
-                session.AdjustPromptAndRequestSettings();
-                if (this.TestsTemperatureTransform != null)
+                await testSemaphore.WaitAsync(analysisJob.CancellationToken).ConfigureAwait(false);
+                try
                 {
-                    var temperatureUpdater = new SettingsUpdater<CompleteRequestSettings>(session.CallJob.RequestSettings, MultiTextCompletionSettings.CloneRequestSettings);
-                    var adjustedSettings = temperatureUpdater.ModifyIfChanged(settings => settings.Temperature, this.TestsTemperatureTransform, (settings, newTemp) => settings.Temperature = newTemp, out var settingChanged);
-                    if (settingChanged)
+                    var stopWatch = Stopwatch.StartNew();
+                    var promptConnectorSettings = promptMultiConnectorSettings.GetConnectorSettings(namedTextCompletion.Name);
+
+                    var session = new MultiCompletionSession(testJob,
+                        promptMultiConnectorSettings,
+                        false,
+                        namedTextCompletion,
+                        promptConnectorSettings,
+                        analysisJob.Settings,
+                        analysisJob.Logger);
+
+                    session.AdjustPromptAndRequestSettings();
+                    if (this.TestsTemperatureTransform != null)
                     {
-                        session.CallJob = new CompletionJob(session.CallJob.Prompt, adjustedSettings);
+                        var temperatureUpdater = new SettingsUpdater<CompleteRequestSettings>(session.CallJob.RequestSettings, MultiTextCompletionSettings.CloneRequestSettings);
+                        var adjustedSettings = temperatureUpdater.ModifyIfChanged(settings => settings.Temperature, this.TestsTemperatureTransform, (settings, newTemp) => settings.Temperature = newTemp, out var settingChanged);
+                        if (settingChanged)
+                        {
+                            session.CallJob = new CompletionJob(session.CallJob.Prompt, adjustedSettings);
+                        }
                     }
+
+                    var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, analysisJob.CancellationToken).ConfigureAwait(false);
+
+                    var firstResult = completions[0];
+                    string result = await firstResult.GetCompletionAsync(analysisJob.CancellationToken).ConfigureAwait(false) ?? string.Empty;
+
+                    stopWatch.Stop();
+                    var duration = stopWatch.Elapsed;
+                    decimal textCompletionCost = namedTextCompletion.GetCost(session.CallJob.Prompt, result);
+
+                    // For the evaluation task. We don't keep the adjusted settings since prompt type matching is based on the original prompt
+                    var connectorTest = ConnectorTest.Create(testJob, namedTextCompletion, result, duration, textCompletionCost);
+                    connectorTests.Add(connectorTest);
+
+                    analysisJob.Logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, analysisJob.Settings.GeneratePromptLog(connectorTest.Prompt), analysisJob.Settings.GeneratePromptLog(connectorTest.Result));
                 }
-
-                var completions = await namedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, analysisJob.CancellationToken).ConfigureAwait(false);
-
-                var firstResult = completions[0];
-                string result = await firstResult.GetCompletionAsync(analysisJob.CancellationToken).ConfigureAwait(false) ?? string.Empty;
-
-                stopWatch.Stop();
-                var duration = stopWatch.Elapsed;
-                decimal textCompletionCost = namedTextCompletion.GetCost(session.CallJob.Prompt, result);
-
-                // For the evaluation task. We don't keep the adjusted settings since prompt type matching is based on the original prompt
-                var connectorTest = ConnectorTest.Create(testJob, namedTextCompletion, result, duration, textCompletionCost);
-                connectorTests.Add(connectorTest);
-
-                analysisJob.Logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, analysisJob.Settings.GeneratePromptLog(connectorTest.Prompt), analysisJob.Settings.GeneratePromptLog(connectorTest.Result));
-            }
-            catch (AIException exception)
-            {
-                analysisJob.Logger?.LogError(exception, "Failed to run test prompt with connector {2}\nException:{0}Prompt:\n{1} ", exception, exception.ToString(), testJob.Prompt, namedTextCompletion.Name);
-            }
+                catch (AIException exception)
+                {
+                    analysisJob.Logger?.LogError(exception, "Failed to run test prompt with connector {2}\nException:{0}Prompt:\n{1} ", exception, exception.ToString(), testJob.Prompt, namedTextCompletion.Name);
+                }
+                finally
+                {
+                    testSemaphore.Release();
+                }
+            }, analysisJob.CancellationToken));
         }
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        analysisJob.Logger?.LogTrace("### Finished Running Tests for connector {0}, {1} tests were run", namedTextCompletion.Name, this.NbPromptTests);
     }
 
     private MultiCompletionAnalysis SaveConnectorTestsReturnNeedEvaluate(List<ConnectorTest>? newTests, MultiCompletionAnalysis analysis, ILogger? logger, out bool needEvaluate)
@@ -655,7 +673,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
     private async Task<List<ConnectorPromptEvaluation>> RunConnectorTestsEvaluationsAsync(MultiCompletionAnalysis completionAnalysis, AnalysisJob analysisJob)
     {
         var currentEvaluations = new ConcurrentBag<ConnectorPromptEvaluation>();
-        analysisJob.Logger?.LogTrace("Generating Evaluations from prompt test results");
+        analysisJob.Logger?.LogTrace("## Generating Evaluations from prompt test results");
 
         var tasks = new List<Task>();
         using SemaphoreSlim evaluationSemaphore = new(this.MaxDegreeOfParallelismEvaluations);
@@ -682,11 +700,15 @@ public class MultiCompletionAnalysisSettings : IDisposable
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
+        analysisJob.Logger?.LogTrace("## Finished Generating Evaluations from prompt test results");
+
         return currentEvaluations.ToList();
     }
 
     private async Task<ConnectorPromptEvaluation?> EvaluateConnectorTestAsync(ConnectorTest connectorTest, AnalysisJob analysisJob)
     {
+        analysisJob.Logger?.LogTrace("### Starting evaluating connector test");
+
         NamedTextCompletion? vettingConnector = null;
         if (this.UseSelfVetting)
         {
@@ -701,6 +723,8 @@ public class MultiCompletionAnalysisSettings : IDisposable
         {
             analysisJob.Logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
         }
+
+        analysisJob.Logger?.LogTrace("### Finished evaluating connector test");
 
         analysisJob.Logger?.LogDebug("Evaluated connector {0},\n Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}",
             evaluation?.Test.ConnectorName,
@@ -893,7 +917,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     }
                 }
 
-                currentAnalysisJob.Logger?.LogTrace(message: "AnalyzeDataAsync launches new test and analysis pipeline");
+                currentAnalysisJob.Logger?.LogTrace(message: "## AnalyzeDataAsync launches new test and analysis pipeline");
                 // Evaluate the test
 
                 await this.RunAnalysisPipelineAsync(currentAnalysisJob, this.AnalysisAwaitsManualTrigger).ConfigureAwait(false);
@@ -932,7 +956,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
         return Task.Factory.StartNew(
             async () =>
             {
-                initialJob.Logger?.LogTrace("## Analysis task was started");
+                initialJob.Logger?.LogTrace("# Analysis task was started");
 
                 using (CancellationTokenSource linkedCts =
                        CancellationTokenSource.CreateLinkedTokenSource(initialJob.CancellationToken, this._internalCancellationTokenSource.Token))
@@ -943,7 +967,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     }
                 }
 
-                initialJob.Logger?.LogTrace("## Analysis task was cancelled and is closing gracefully");
+                initialJob.Logger?.LogTrace("# Analysis task was cancelled and is closing gracefully");
             },
             initialJob.CancellationToken,
             TaskCreationOptions.LongRunning,

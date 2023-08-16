@@ -70,6 +70,11 @@ public class NamedTextCompletion
     public Func<string, int>? TokenCountFunc { get; set; }
 
     /// <summary>
+    /// The maximum number of parallel requests to send to the model.
+    /// </summary>
+    public int MaxDegreeOfParallelism { get; set; } = 1;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="NamedTextCompletion"/> class.
     /// </summary>
     /// <param name="name">The name of the text completion provider.</param>
