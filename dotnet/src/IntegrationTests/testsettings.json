@@ -35,7 +35,7 @@
   "MultiConnector": {
     "OobaboogaEndPoint": "http://localhost",
     "GlobalParameters": {
-      "System": "User is now playing a game where he is writing messages in the form of semantic functions. That means you are expected to strictly answer with a completion of his message, without adding any additional comments.",
+      "SystemSupplement": "User is now playing a game where he is writing messages in the form of semantic functions. That means you are expected to strictly answer with a completion of his message, without adding any additional comments.",
       "UserPreamble": "Let's play a game: please read the following instructions, and simply answer with a completion of my message, don't add any personal comments."
     },
     "OobaboogaCompletions": [
