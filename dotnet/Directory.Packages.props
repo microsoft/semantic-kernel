@@ -19,6 +19,7 @@
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
+    <PackageVersion Include="PowerShellStandard.Library" Version="5.1.1" />
     <!-- Microsoft.Extensions.Logging -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
