@@ -94,10 +94,13 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     }
 
     /**
-     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
-     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
-     *     letter or number, the rest of the name can include any letter, number and dashes, as long
-     *     as the dashes aren't consecutive.
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
      */
     @Override
     public Mono<String> saveInformationAsync(
@@ -115,10 +118,13 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     }
 
     /**
-     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
-     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
-     *     letter or number, the rest of the name can include any letter, number and dashes, as long
-     *     as the dashes aren't consecutive.
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
      */
     @Override
     public Mono<String> saveReferenceAsync(
@@ -142,10 +148,13 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     }
 
     /**
-     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
-     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
-     *     letter or number, the rest of the name can include any letter, number and dashes, as long
-     *     as the dashes aren't consecutive.
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
      */
     @Override
     public Mono<MemoryQueryResult> getAsync(
@@ -166,10 +175,13 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     }
 
     /**
-     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
-     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
-     *     letter or number, the rest of the name can include any letter, number and dashes, as long
-     *     as the dashes aren't consecutive.
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
      */
     @Override
     public Mono<Void> removeAsync(@Nonnull String collection, @Nonnull String key) {
@@ -208,10 +220,13 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                     });
 
     /**
-     * @param collection {@inheritDoc} The name must be lower-case, start with a letter or number,
-     *     have no slashes or dots, and be fewer than 128 characters. After starting the name with a
-     *     letter or number, the rest of the name can include any letter, number and dashes, as long
-     *     as the dashes aren't consecutive.
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
      */
     @Override
     public Mono<List<MemoryQueryResult>> searchAsync(
