@@ -55,10 +55,10 @@ public sealed class Kernel : IKernel, IDisposable
     public static KernelBuilder Builder => new();
 
     /// <inheritdoc/>
-    public event EventHandler<KernelRunningEventArgs>? Running;
+    public event EventHandler<KernelRunningEventArgs>? FunctionInvoking;
 
     /// <inheritdoc/>
-    public event EventHandler<KernelRanEventArgs>? Ran;
+    public event EventHandler<KernelRanEventArgs>? FunctionInvoked;
 
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
@@ -208,7 +208,7 @@ public sealed class Kernel : IKernel, IDisposable
                     renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (!this.OnRunning(context, renderedPrompt))
+                if (!this.OnFunctionInvoking(context, renderedPrompt))
                 {
                     this.Logger.LogInformation("Function invocation was cancelled {0}: {1}.{2}.", pipelineStepCount, f.SkillName, f.Name);
                     break;
@@ -223,7 +223,7 @@ public sealed class Kernel : IKernel, IDisposable
                     return context;
                 }
 
-                this.OnRan(context);
+                this.OnFunctionInvoked(context);
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
@@ -352,17 +352,17 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="context">SKContext before Run</param>
     /// <param name="prompt">Generated prompt when using semantic functions</param>
     /// <returns>Returns true if no cancellation was attempted.</returns>
-    private bool OnRunning(SKContext context, string? prompt)
+    private bool OnFunctionInvoking(SKContext context, string? prompt)
     {
         var args = new KernelRunningEventArgs(context, prompt);
-        this.Running?.Invoke(this, args);
+        this.FunctionInvoking?.Invoke(this, args);
 
         return !args.Cancel;
     }
 
-    private void OnRan(SKContext context)
+    private void OnFunctionInvoked(SKContext context)
     {
-        this.Ran?.Invoke(this, new KernelRanEventArgs(context));
+        this.FunctionInvoked?.Invoke(this, new KernelRanEventArgs(context));
     }
 
     #endregion

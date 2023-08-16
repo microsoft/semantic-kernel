@@ -188,14 +188,16 @@ public interface IKernel
     T GetService<T>(string? name = null) where T : IAIService;
 
     /// <summary>
-    /// Used for registering a pre-run event handler.
+    /// Used for registering a function invoking event handler.
+    /// Triggers before each function invocation.
     /// </summary>
-    event EventHandler<KernelRunningEventArgs> Running;
+    event EventHandler<KernelRunningEventArgs> FunctionInvoking;
 
     /// <summary>
-    /// Used for registering a post-run event handler.
+    /// Used for registering a function invoked event handler.
+    /// Triggers after each function invocation.
     /// </summary>
-    event EventHandler<KernelRanEventArgs> Ran;
+    event EventHandler<KernelRanEventArgs> FunctionInvoked;
 
     #region Obsolete
     /// <summary>

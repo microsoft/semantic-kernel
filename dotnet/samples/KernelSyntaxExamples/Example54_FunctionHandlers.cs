@@ -59,18 +59,18 @@ public static class Example54_FunctionHandlers
             Console.WriteLine($"Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
         }
 
-        kernel.Running += MyPreHandler;
-        kernel.Running += MyPreHandler2;
-        kernel.Running += MyRemovedPreExecutionHandler;
-        kernel.Running -= MyRemovedPreExecutionHandler;
+        kernel.FunctionInvoking += MyPreHandler;
+        kernel.FunctionInvoking += MyPreHandler2;
+        kernel.FunctionInvoking += MyRemovedPreExecutionHandler;
+        kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
-        kernel.Ran += MyPostExecutionHandler;
+        kernel.FunctionInvoked += MyPostExecutionHandler;
 
         var result = await kernel.RunAsync(input, excuseFunction);
         Console.WriteLine($"Function Result: {result}");
 
         // Adding new inline handler to cancel/prevent function execution
-        kernel.Running += (object? sender, KernelRunningEventArgs e) =>
+        kernel.FunctionInvoking += (object? sender, KernelRunningEventArgs e) =>
         {
             Console.WriteLine("Pre Execution Handler - Cancel function execution");
 
