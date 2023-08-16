@@ -180,8 +180,6 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
 
         var primaryResults = await RunPromptsAsync(completionJobs, multiConnector, completions[0].GetCost).ConfigureAwait(false);
 
-        
-
         var firstPassEffectiveCost = creditor.OngoingCost;
         decimal firstPassExpectedCost = primaryResults.Sum(tuple => tuple.expectedCost);
         //We remove the first prompt in time measurement because it is longer on first pass due to warmup

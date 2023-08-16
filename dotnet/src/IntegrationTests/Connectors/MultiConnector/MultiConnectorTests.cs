@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -137,18 +138,39 @@ public sealed class MultiConnectorTests : IDisposable
     [Theory()]
     //[InlineData("",  1, "medium", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "WriterSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(string completionName, int nbPromptTests, string difficulty, params string[] skillNames)
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "Comm_simple.txt", "Danse_simple.txt", "WriterSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(string completionName, int nbPromptTests, string difficulty, string inputFile, string validationFile, params string[] skillNames)
     {
         // Create a plan using SequentialPlanner based on difficulty
         var modifiedStartGoal = StartGoal.Replace("distinct difficulties", $"{difficulty} difficulties", StringComparison.OrdinalIgnoreCase);
+        var textPath = System.IO.Path.Combine(this._textDirectory, inputFile);
+        var validationTextPath = System.IO.Path.Combine(this._textDirectory, validationFile);
 
         Func<IKernel, CancellationToken, bool, Task<Plan>> planFactory = async (kernel, token, isValidation) =>
         {
             var planner = new SequentialPlanner(kernel,
                 new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
+            var inputPath = textPath;
+            if (isValidation)
+            {
+                inputPath = validationTextPath;
+            }
 
+            var input = await System.IO.File.ReadAllTextAsync(inputPath, token);
             var plan = await planner.CreatePlanAsync(modifiedStartGoal, token);
+
+            this._logger.LogDebug("Plan proposed by primary connector:\n {0}\n", plan.ToJson(true));
+
+            plan.State.Update(input);
+            var inputKey = "INPUT";
+            var inputToken = "$INPUT";
+            if (plan.Steps[0].Parameters[inputKey] != inputToken)
+            {
+                this._logger.LogTrace("Fixed generated plan first param to variable text");
+                plan.Steps[0].Parameters.Set(inputKey, inputToken);
+            }
+
+            this._logger.LogDebug("Plan After update:\n {0}\n", plan.ToJson(true));
             return plan;
         };
 
@@ -466,7 +488,9 @@ public sealed class MultiConnectorTests : IDisposable
         {
             MaxTokens = 4096,
             CostPer1000Token = 0.0015m,
-            TokenCountFunc = this._gp3TokenCounter
+            TokenCountFunc = this._gp3TokenCounter,
+            //We did not observe any limit on Open AI concurrent calls
+            MaxDegreeOfParallelism = 5,
         };
 
         var oobaboogaCompletions = new List<NamedTextCompletion>();
