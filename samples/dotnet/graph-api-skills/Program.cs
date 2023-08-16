@@ -115,7 +115,7 @@ public sealed class Program
             AzureOpenAIConfiguration? azureOpenAIConfiguration = configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
             if (azureOpenAIConfiguration != null)
             {
-                builder.WithAzureTextCompletionService(
+                builder.WithAzureChatCompletionService(
                         deploymentName: azureOpenAIConfiguration.DeploymentName,
                         endpoint: azureOpenAIConfiguration.Endpoint,
                         apiKey: azureOpenAIConfiguration.ApiKey,
@@ -129,7 +129,7 @@ public sealed class Program
             OpenAIConfiguration? openAIConfiguration = configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
             if (openAIConfiguration != null)
             {
-                builder.WithOpenAITextCompletionService(
+                builder.WithOpenAIChatCompletionService(
                     modelId: openAIConfiguration.ModelId,
                     apiKey: openAIConfiguration.ApiKey,
                     serviceId: openAIConfiguration.ServiceId,
@@ -164,7 +164,7 @@ public sealed class Program
             summarizeSkills["Summarize"]);
         if (fileContentResult.ErrorOccurred)
         {
-            throw new InvalidOperationException($"Failed to get file content: {fileContentResult.LastErrorDescription}");
+            throw new InvalidOperationException("Failed to get file content.", fileContentResult.LastException!);
         }
 
         string fileSummary = fileContentResult.Result;

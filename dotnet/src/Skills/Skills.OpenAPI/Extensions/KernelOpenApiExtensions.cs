@@ -41,6 +41,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
         this IKernel kernel,
         string skillName,
@@ -80,6 +81,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(
         this IKernel kernel,
         string skillName,
@@ -110,6 +112,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
@@ -148,6 +151,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(
         this IKernel kernel,
         string skillName,
@@ -176,6 +180,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(
         this IKernel kernel,
         Stream documentStream,
@@ -320,7 +325,7 @@ public static class KernelOpenApiExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (SKException)
         {
         }
 

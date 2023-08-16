@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
@@ -69,8 +70,8 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
         var kernel = new KernelBuilder()
             .WithLogger(ConsoleLogger.Logger)
-            .WithAzureTextCompletionService(
-                TestConfiguration.AzureOpenAI.DeploymentName,
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
@@ -272,7 +273,7 @@ internal static class Example12_SequentialPlanner
                 Console.WriteLine(plan.State.ToString());
             }
         }
-        catch (KernelException e)
+        catch (SKException e)
         {
             Console.WriteLine("Step - Execution failed:");
             Console.WriteLine(e.Message);

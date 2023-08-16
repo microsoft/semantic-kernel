@@ -7,16 +7,6 @@ version: 2
 updates:
   # Maintain dependencies for nuget
   - package-ecosystem: "nuget"
-    directory: "samples/apps/copilot-chat-app/webapi"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    labels:
-      - "copilot chat"
-      - "dependencies"
-
-  # Maintain dependencies for nuget
-  - package-ecosystem: "nuget"
     directory: "dotnet/"
     schedule:
       interval: "weekly"
@@ -28,11 +18,12 @@ updates:
       - dependency-name: "Microsoft.Extensions.*"
         update-types: ["version-update:semver-major"]
       - dependency-name: "Microsoft.Bcl.*"
-        update-types: ["version-update:semver-major"]      
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Moq"
     labels:
       - ".NET"
       - "dependencies"
-      
+
   # Maintain dependencies for nuget
   - package-ecosystem: "nuget"
     directory: "samples/dotnet"
@@ -46,7 +37,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      
+
   # Maintain dependencies for pip
   - package-ecosystem: "pip"
     directory: "python/"
@@ -56,7 +47,7 @@ updates:
     labels:
       - "python"
       - "dependencies"
-      
+
   # Maintain dependencies for github-actions
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
