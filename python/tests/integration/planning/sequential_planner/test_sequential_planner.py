@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import time
+
 import pytest
 
 import semantic_kernel
@@ -14,6 +15,7 @@ from tests.integration.fakes.email_skill_fake import EmailSkillFake
 from tests.integration.fakes.fun_skill_fake import FunSkillFake
 from tests.integration.fakes.writer_skill_fake import WriterSkillFake
 
+
 async def retry(func, retries=3):
     min_delay = 2
     max_delay = 7
@@ -21,7 +23,7 @@ async def retry(func, retries=3):
         try:
             result = await func()
             return result
-        except Exception as e:
+        except Exception:
             if i == retries - 1:  # Last retry
                 raise
             time.sleep(max(min(i, max_delay), min_delay))
@@ -115,9 +117,7 @@ async def test_create_plan_with_defaults_async(
     planner = SequentialPlanner(kernel)
 
     # Act
-    plan = await retry(
-        lambda: planner.create_plan_async(prompt)
-    )
+    plan = await retry(lambda: planner.create_plan_async(prompt))
 
     # Assert
     assert any(
@@ -162,9 +162,7 @@ async def test_create_plan_goal_relevant_async(
     )
 
     # Act
-    plan = await retry(
-        lambda: planner.create_plan_async(prompt)
-    )
+    plan = await retry(lambda: planner.create_plan_async(prompt))
 
     # Assert
     assert any(
