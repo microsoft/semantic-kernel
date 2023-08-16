@@ -604,7 +604,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     var connectorTest = ConnectorTest.Create(testJob, namedTextCompletion, result, duration, textCompletionCost);
                     connectorTests.Add(connectorTest);
 
-                    analysisJob.Logger?.LogDebug("Generated Test results for connector {0}, duration: {1}\nTEST_PROMPT:\n{2}\nTEST_RESULT:\n{3} ", connectorTest.ConnectorName, connectorTest.Duration, analysisJob.Settings.GeneratePromptLog(connectorTest.Prompt), analysisJob.Settings.GeneratePromptLog(connectorTest.Result));
+                    analysisJob.Logger?.LogDebug("Generated Test results for connector {0}, temperature: {1} duration: {2}\nTEST_PROMPT:\n{3}\nTEST_RESULT:\n{4} ", connectorTest.ConnectorName, session.CallJob.RequestSettings.Temperature, connectorTest.Duration, analysisJob.Settings.GeneratePromptLog(session.CallJob.Prompt), analysisJob.Settings.GeneratePromptLog(connectorTest.Result));
                 }
                 catch (AIException exception)
                 {

@@ -23,6 +23,8 @@ public class MultiTextCompletionSettings
 {
     private ConcurrentBag<PromptMultiConnectorSettings> _promptMultiConnectorSettingsInternal = new();
 
+    private object _promptTypelock = new();
+
     /// <summary>
     /// Loads suggested settings from an analysis.
     /// If the file doesn't exist, it returns the current settings.
@@ -96,7 +98,7 @@ public class MultiTextCompletionSettings
     /// <summary>
     /// Represents the max length of prompt and responses in chars to be logged.
     /// </summary>
-    public int PromptLogTruncationLength { get; set; } = 300;
+    public int PromptLogTruncationLength { get; set; } = 2000;
 
     /// <summary>
     /// Optionally change the format of logged prompts for enhanced readability in very large execution traces.
@@ -185,20 +187,27 @@ public class MultiTextCompletionSettings
             }
             else
             {
-                var newSignature = PromptSignature.ExtractFromPrompt(completionJob, this._promptMultiConnectorSettingsInternal, this.PromptTruncationLength);
-                toReturn = new PromptMultiConnectorSettings()
+                lock (this._promptTypelock)
                 {
-                    PromptType = new PromptType()
+                    toReturn = this.MatchPromptSettings(completionJob);
+                    if (toReturn == null)
                     {
-                        Instances = { completionJob.Prompt },
-                        Signature = newSignature,
-                        PromptName = newSignature.PromptStart.Replace(" ", "_"),
-                        SignatureNeedsAdjusting = this.AdjustPromptStarts,
-                    },
-                };
+                        var newSignature = PromptSignature.ExtractFromPrompt(completionJob, this._promptMultiConnectorSettingsInternal, this.PromptTruncationLength);
+                        toReturn = new PromptMultiConnectorSettings()
+                        {
+                            PromptType = new PromptType()
+                            {
+                                Instances = { completionJob.Prompt },
+                                Signature = newSignature,
+                                PromptName = newSignature.PromptStart.Replace(" ", "_"),
+                                SignatureNeedsAdjusting = this.AdjustPromptStarts,
+                            },
+                        };
 
-                this._promptMultiConnectorSettingsInternal.Add(toReturn);
-                isNew = true;
+                        this._promptMultiConnectorSettingsInternal.Add(toReturn);
+                        isNew = true;
+                    }
+                }
             }
         }
         else

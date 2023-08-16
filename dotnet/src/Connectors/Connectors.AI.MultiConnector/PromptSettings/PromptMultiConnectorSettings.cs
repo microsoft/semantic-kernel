@@ -26,7 +26,7 @@ public class PromptMultiConnectorSettings
     /// <summary>
     /// Choose whether to apply the model specific transforms for this prompt type
     /// </summary>
-    public bool ApplyModelTransform { get; set; }
+    public bool ApplyModelTransform { get; set; } = true;
 
     /// <summary>
     /// Optionally transform the input prompt specifically
@@ -103,8 +103,9 @@ public class PromptMultiConnectorSettings
 
     public IEnumerable<NamedTextCompletion> GetCompletionsToTest(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool enablePrimaryCompletionTests)
     {
-        return namedTextCompletions.Where(namedTextCompletion => (namedTextCompletion.Name != originalTest.ConnectorName || enablePrimaryCompletionTests)
-                                                                 && (!this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings value)
-                                                                     || value.VettingLevel == 0));
+        return namedTextCompletions.Where(
+            namedTextCompletion => (namedTextCompletion.Name != originalTest.ConnectorName || enablePrimaryCompletionTests)
+                                   && (!this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings value)
+                                       || value.VettingLevel == 0));
     }
 }

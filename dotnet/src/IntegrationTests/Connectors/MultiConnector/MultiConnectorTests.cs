@@ -193,7 +193,7 @@ public sealed class MultiConnectorTests : IDisposable
             // Prompts with variable content at the start are currently not accounted for automatically though, and need either a manual regex to avoid creating increasing prompt types, or using the FreezePromptTypes setting but the first alternative is preferred because unmatched prompts will go through the entire settings unless a regex matches them. 
             AdjustPromptStarts = false,
             // Uncomment to enable additional logging of MultiTextCompletion calls, results and/or test sample collection
-            //LogCallResult = true,
+            LogCallResult = true,
             //LogTestCollection = true,
             // In those tests, we don't have information about the underlying model hosts, so we can't make performance comparisons between models. Instead, arbitrary cost per token are defined in settings, and usage costs are computed.
             ConnectorComparer = MultiTextCompletionSettings.GetWeightedConnectorComparer(0, 1),
@@ -236,7 +236,7 @@ public sealed class MultiConnectorTests : IDisposable
             },
             // In order to highlight prompts and response in log trace, you can uncomment the following lines
             //PromptLogsJsonEncoded = false,
-            //PromptLogTruncationLength = 600,
+            //PromptLogTruncationLength = 500,
             //PromptLogTruncationFormat = @"
             //================================= START ====== PROMPT/RESULT =============================================
             //{0}
