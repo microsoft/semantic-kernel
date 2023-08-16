@@ -9,6 +9,7 @@
     <PackageVersion Include="Azure.Identity" Version="1.9.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.3" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.2" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
@@ -38,7 +39,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.9" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.10" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.8.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.8.1" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
