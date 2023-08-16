@@ -355,13 +355,13 @@ public class MultiCompletionAnalysisSettings : IDisposable
             analysisJob.Logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
         }
 
-        analysisJob.Logger?.LogTrace("### Finished evaluating connector test");
-
-        analysisJob.Logger?.LogDebug("Evaluated connector {0},\n Vetted:{1} from \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}",
+        analysisJob.Logger?.LogDebug("Evaluated connector {0},\nVetted:{1} from: \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}",
             evaluation?.Test.ConnectorName,
             evaluation?.IsVetted,
             analysisJob.Settings.GeneratePromptLog(evaluation?.Test.Prompt ?? ""),
             analysisJob.Settings.GeneratePromptLog(evaluation?.Test.Result ?? ""));
+
+        analysisJob.Logger?.LogTrace("### Finished evaluating connector test");
 
         return evaluation;
     }
@@ -851,7 +851,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     // We then assess whether the connector is vetted by enough varied tests
                     var vettedVaried = evaluationsByMainConnector.Count() > 1 && !evaluationsByMainConnector.GroupBy(evaluation => evaluation.Test.Prompt).Any(grouping => grouping.Count() > 1);
                     promptConnectorSettings.VettingLevel = vetted ? vettedVaried ? VettingLevel.OracleVaried : VettingLevel.Oracle : VettingLevel.Invalid;
-                    logger?.LogDebug("Connector  {0}, configured according to evaluations with level:{1} for \nPrompt type with signature:\n{2}", connectorName, promptConnectorSettings.VettingLevel, promptMultiConnectorSettings.PromptType.Signature.PromptStart);
+                    logger?.LogDebug("Connector  {0}, configured according to evaluations with level:\n{1} for \nPrompt type with signature:\n{2}", connectorName, promptConnectorSettings.VettingLevel, promptMultiConnectorSettings.PromptType.Signature.PromptStart);
                 }
             }
         }

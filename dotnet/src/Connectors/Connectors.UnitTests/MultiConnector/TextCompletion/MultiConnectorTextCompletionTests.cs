@@ -121,7 +121,7 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
             AnalysisSettings = new MultiCompletionAnalysisSettings()
             {
                 EnableAnalysis = true,
-                NbPromptTests = 3,
+                NbPromptTests = 1,
                 AnalysisAwaitsManualTrigger = true,
                 AnalysisDelay = TimeSpan.Zero,
                 TestsPeriod = TimeSpan.Zero,
@@ -176,7 +176,11 @@ public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
 
         //Act
 
+        settings.EnablePromptSampling = true;
+
         var primaryResults = await RunPromptsAsync(completionJobs, multiConnector, completions[0].GetCost).ConfigureAwait(false);
+
+        
 
         var firstPassEffectiveCost = creditor.OngoingCost;
         decimal firstPassExpectedCost = primaryResults.Sum(tuple => tuple.expectedCost);
