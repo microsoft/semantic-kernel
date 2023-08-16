@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition.sk_function_decorator import sk_function
 
@@ -63,7 +65,7 @@ def test_init_native_function_from_sk_function_decorator():
     def decorated_function():
         pass
 
-    assert decorated_function.__sk_function__ == True
+    assert decorated_function.__sk_function__ is True
     assert decorated_function.__sk_function_description__ == "Test description"
     assert decorated_function.__sk_function_name__ == "test_function"
     assert (
@@ -86,7 +88,7 @@ def test_init_native_function_from_sk_function_decorator_defaults():
     def decorated_function():
         pass
 
-    assert decorated_function.__sk_function__ == True
+    assert decorated_function.__sk_function__ is True
     assert decorated_function.__sk_function_description__ == ""
     assert decorated_function.__sk_function_name__ == "decorated_function"
     assert decorated_function.__sk_function_input_description__ == ""
@@ -96,9 +98,3 @@ def test_init_native_function_from_sk_function_decorator_defaults():
 
     assert native_function._function == decorated_function
     assert len(native_function._parameters) == 0
-
-
-if __name__ == "__main__":
-    import pytest
-
-    pytest.main([__file__])
