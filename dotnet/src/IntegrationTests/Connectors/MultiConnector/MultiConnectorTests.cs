@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -138,6 +137,7 @@ public sealed class MultiConnectorTests : IDisposable
     [Theory()]
     //[InlineData("",  1, "medium", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "SummarizeSkill", "MiscSkill")]
+    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "trivial", "Comm_simple.txt", "Danse_simple.txt", "WriterSkill", "MiscSkill")]
     [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "Comm_simple.txt", "Danse_simple.txt", "WriterSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(string completionName, int nbPromptTests, string difficulty, string inputFile, string validationFile, params string[] skillNames)
     {
@@ -215,7 +215,7 @@ public sealed class MultiConnectorTests : IDisposable
             // Prompts with variable content at the start are currently not accounted for automatically though, and need either a manual regex to avoid creating increasing prompt types, or using the FreezePromptTypes setting but the first alternative is preferred because unmatched prompts will go through the entire settings unless a regex matches them. 
             AdjustPromptStarts = false,
             // Uncomment to enable additional logging of MultiTextCompletion calls, results and/or test sample collection
-            LogCallResult = true,
+            //LogCallResult = true,
             //LogTestCollection = true,
             // In those tests, we don't have information about the underlying model hosts, so we can't make performance comparisons between models. Instead, arbitrary cost per token are defined in settings, and usage costs are computed.
             ConnectorComparer = MultiTextCompletionSettings.GetWeightedConnectorComparer(0, 1),
@@ -403,8 +403,8 @@ public sealed class MultiConnectorTests : IDisposable
         settings.MaxInstanceNb = 2;
 
         TaskCompletionSource<SamplesReceivedEventArgs> samplesReceivedTaskSource = new();
-        var firstSampleReceivedTaskSource = samplesReceivedTaskSource;
-
+        var receivedTaskSources = new List<TaskCompletionSource<SamplesReceivedEventArgs>>();
+        receivedTaskSources.Add(samplesReceivedTaskSource);
         // Subscribe to the OptimizationCompleted event
         settings.AnalysisSettings.SamplesReceived += (sender, args) =>
         {
@@ -412,6 +412,7 @@ public sealed class MultiConnectorTests : IDisposable
             samplesReceivedTaskSource.SetResult(args);
 
             samplesReceivedTaskSource = new();
+            receivedTaskSources.Add(samplesReceivedTaskSource);
         };
 
         this._logger.LogTrace("\n# 3rd run: New validation plan with updated settings and variable completions\n");
@@ -423,23 +424,30 @@ public sealed class MultiConnectorTests : IDisposable
 
         var thirdPassEffectiveCost = settings.Creditor.OngoingCost;
 
-        var sampleReceived = await firstSampleReceivedTaskSource.Task.ConfigureAwait(false);
+        var validationTestBatches = new List<SamplesReceivedEventArgs>();
 
-        this._logger.LogTrace("\n# Start final validation from samples received from 3rd run validating manually with primary connector\n");
-
-        var validationTests = sampleReceived.NewSamples;
-
-        var evaluations = new List<ConnectorPromptEvaluation>();
-
-        foreach (ConnectorTest validationTest in validationTests)
+        foreach (var receivedTaskSource in receivedTaskSources)
         {
-            var evaluation = await settings.AnalysisSettings.EvaluateConnectorTestAsync(validationTest, sampleReceived.AnalysisJob).ConfigureAwait(false);
-            if (evaluation == null)
-            {
-                throw new SKException("Validation of MultiCompletion failed to complete");
-            }
+            var sampleReceived = await receivedTaskSource.Task.ConfigureAwait(false);
+            validationTestBatches.Add(sampleReceived);
+        }
 
-            evaluations.Add(evaluation);
+        this._logger.LogTrace("\n# Start final validation with {0} samples received from 3rd run validating manually with primary connector\n", validationTestBatches.Count);
+
+        var evaluations = new List<(ConnectorPromptEvaluation, AnalysisJob)>();
+
+        foreach (SamplesReceivedEventArgs validationTestBatch in validationTestBatches)
+        {
+            foreach (var sample in validationTestBatch.NewSamples)
+            {
+                var evaluation = await settings.AnalysisSettings.EvaluateConnectorTestAsync(sample, validationTestBatch.AnalysisJob).ConfigureAwait(false);
+                if (evaluation == null)
+                {
+                    throw new SKException("Validation of MultiCompletion failed to complete");
+                }
+
+                evaluations.Add((evaluation, validationTestBatch.AnalysisJob));
+            }
         }
 
         this._logger.LogTrace("\n# End validation, starting Asserts\n");
@@ -454,10 +462,17 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogTrace("Asserting secondary connectors plan capabilities are vetted on a distinct validation input");
 
-        foreach (ConnectorPromptEvaluation evaluation in evaluations)
+        var atLeastOneSecondaryCompletionValidated = false;
+        foreach (var evaluation in evaluations)
         {
-            Assert.True(evaluation.IsVetted);
+            if (evaluation.Item1.Test.ConnectorName != evaluation.Item2.TextCompletions[0].Name)
+            {
+                Assert.True(evaluation.Item1.IsVetted);
+                atLeastOneSecondaryCompletionValidated = true;
+            }
         }
+
+        Assert.True(atLeastOneSecondaryCompletionValidated);
     }
 
     /// <summary>
