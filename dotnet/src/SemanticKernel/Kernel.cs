@@ -260,7 +260,7 @@ public sealed class Kernel : IKernel, IDisposable
             return service;
         }
 
-        throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, $"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
+        throw new SKException($"Service of type {typeof(T)} and name {name ?? "<NONE>"} not registered.");
     }
 
     /// <summary>
@@ -334,9 +334,7 @@ public sealed class Kernel : IKernel, IDisposable
                 ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, logger);
                 if (result.ContainsKey(function.Name))
                 {
-                    throw new KernelException(
-                        KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                        "Function overloads are not supported, please differentiate function names");
+                    throw new SKException("Function overloads are not supported, please differentiate function names");
                 }
 
                 result.Add(function.Name, function);
