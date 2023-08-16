@@ -136,9 +136,14 @@ public class PromptSignature
         }
 
         var promptStart = prompt.Substring(0, truncationLength);
-        var promptEnd = bidirectional ? prompt.Substring(prompt.Length - truncationLength, truncationLength) : "";
-        var toReturn = string.Format(CultureInfo.InvariantCulture, template, promptStart, promptEnd);
-        return toReturn;
+
+        if (bidirectional && prompt.Length > 2 * truncationLength)
+        {
+            var promptEnd = prompt.Substring(prompt.Length - truncationLength, truncationLength);
+            return string.Format(CultureInfo.InvariantCulture, template, promptStart, promptEnd);
+        }
+
+        return prompt; // Return the entire prompt if length is between truncationLength and 2*truncationLength
     }
 
     /// <summary>
@@ -146,20 +151,13 @@ public class PromptSignature
     /// </summary>
     public static string GetCommonPrefix(string prompt1, string prompt2)
     {
-        var staticPartLength = 0;
-
-        while (staticPartLength < prompt1.Length && staticPartLength < prompt2.Length &&
-               prompt1[staticPartLength] == prompt2[staticPartLength])
+        int i = 0;
+        while (i < prompt1.Length && i < prompt2.Length && prompt1[i] == prompt2[i])
         {
-            staticPartLength++;
+            i++;
         }
 
-        if (staticPartLength >= prompt1.Length && staticPartLength >= prompt2.Length)
-        {
-            throw new ArgumentException("The two prompts don't have matching beginnings");
-        }
-
-        return prompt1.Substring(0, staticPartLength);
+        return prompt1.Substring(0, i);
     }
 
     /// <summary>

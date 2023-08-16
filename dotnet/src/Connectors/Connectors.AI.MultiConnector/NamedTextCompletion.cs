@@ -2,9 +2,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
@@ -89,8 +87,4 @@ public class NamedTextCompletion
         var toReturn = this.CostPerRequest + tokenCost;
         return toReturn;
     }
-
-    
-
-
 }

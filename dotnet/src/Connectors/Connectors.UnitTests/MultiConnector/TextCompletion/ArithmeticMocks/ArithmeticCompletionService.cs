@@ -74,7 +74,7 @@ public class ArithmeticCompletionService : ITextCompletion
         }
         else
         {
-            this.Creditor.Credit(this.CostPerRequest);
+            this.Creditor?.Credit(this.CostPerRequest);
             streamingResult = new ArithmeticComputingStreamingResult(job.Prompt, this.Engine, this.CallTime);
         }
 

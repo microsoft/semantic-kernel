@@ -40,9 +40,6 @@ public class MultiTextCompletionSettings
         return loadSuggestedAnalysisSettings ?? this;
     }
 
-
-   
-
     /// <summary>
     /// If true, the prompt types, no new prompt types are discovered automatically and standard prompt settings will be associated with unrecognized prompts.
     /// </summary>
@@ -133,6 +130,12 @@ public class MultiTextCompletionSettings
     };
 
     /// <summary>
+    /// Optionally provide a context provider to inject dynamic blocks consistently into the specific templates associated with prompt types, named connectors or the evaluation process. Use them in your templates with token formatted like {ParamName}.
+    /// </summary>
+    [JsonIgnore]
+    public Func<MultiCompletionSession, Dictionary<string, object>>? ContextProvider { get; set; }
+
+    /// <summary>
     /// Optionally transform the input prompts globally
     /// </summary>
     public PromptTransform? GlobalPromptTransform { get; set; }
@@ -141,8 +144,6 @@ public class MultiTextCompletionSettings
     /// An optional creditor that will compute compound costs from the connectors settings and usage.
     /// </summary>
     public CallRequestCostCreditor? Creditor { get; set; }
-
-
 
     /// <summary>
     /// Returns settings for a given prompt.
@@ -221,7 +222,7 @@ public class MultiTextCompletionSettings
         return toReturn;
     }
 
-    private static PromptMultiConnectorSettings? SimpleMatchPromptSettings(CompletionJob completionJob, IEnumerable<PromptMultiConnectorSettings> promptMultiConnectorSettings)
+    public static PromptMultiConnectorSettings? SimpleMatchPromptSettings(CompletionJob completionJob, IEnumerable<PromptMultiConnectorSettings> promptMultiConnectorSettings)
     {
         var toReturn = promptMultiConnectorSettings.FirstOrDefault(s => s.PromptType.Signature.Matches(completionJob));
         return toReturn;

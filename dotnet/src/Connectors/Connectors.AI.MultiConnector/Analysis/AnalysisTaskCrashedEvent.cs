@@ -4,14 +4,12 @@ using System;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 
-public class AnalysisTaskCrashedEventArgs
+public class AnalysisTaskCrashedEvent: TestEvent
 {
-
-    public AnalysisTaskCrashedEventArgs(Exception exception)
+    public AnalysisTaskCrashedEvent(Exception exception)
     {
         this.Exception = exception;
     }
 
     public Exception Exception { get; }
-
 }

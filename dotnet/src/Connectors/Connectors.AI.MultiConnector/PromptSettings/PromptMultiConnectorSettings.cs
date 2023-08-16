@@ -76,7 +76,7 @@ public class PromptMultiConnectorSettings
 
         if (filteredConnectors.Count > 1)
         {
-            filteredConnectors.Sort((c1, c2) => settingsConnectorComparer(completionJob, c1.Item2, c2.Item2));
+            filteredConnectors.Sort((c1, c2) => settingsConnectorComparer(completionJob, c1.promptConnectorSettings, c2.promptConnectorSettings));
         }
 
         return filteredConnectors[0];
@@ -89,7 +89,7 @@ public class PromptMultiConnectorSettings
 
     private readonly ConcurrentDictionary<string, bool> _currentSessionPrompts = new();
 
-    internal bool IsSampleNeeded(string prompt, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool isNewPrompt)
+    public bool IsSampleNeeded(string prompt, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool isNewPrompt)
     {
         return (isNewPrompt
                 || (this.PromptType.Instances.Count < this.PromptType.MaxInstanceNb
@@ -100,7 +100,7 @@ public class PromptMultiConnectorSettings
                    || value?.VettingLevel == 0);
     }
 
-    internal IEnumerable<NamedTextCompletion> GetCompletionsToTest(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool enablePrimaryCompletionTests)
+    public IEnumerable<NamedTextCompletion> GetCompletionsToTest(ConnectorTest originalTest, IReadOnlyList<NamedTextCompletion> namedTextCompletions, bool enablePrimaryCompletionTests)
     {
         return namedTextCompletions.Where(namedTextCompletion => (namedTextCompletion.Name != originalTest.ConnectorName || enablePrimaryCompletionTests)
                                                                  && (!this.ConnectorSettingsDictionary.TryGetValue(namedTextCompletion.Name, out PromptConnectorSettings value)

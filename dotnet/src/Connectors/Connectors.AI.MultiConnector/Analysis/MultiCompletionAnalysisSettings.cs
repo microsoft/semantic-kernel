@@ -35,8 +35,7 @@ public class MultiCompletionAnalysisSettings
     /// </summary>
     public event EventHandler<SuggestionCompletedEventArgs>? SuggestionCompleted;
 
-
-    public event EventHandler<AnalysisTaskCrashedEventArgs>? AnalysisTaskCrashed;
+    public event EventHandler<AnalysisTaskCrashedEvent>? AnalysisTaskCrashed;
 
     /// <summary>
     /// Those are the default settings used for connectors evaluation
@@ -919,6 +918,5 @@ public class MultiCompletionAnalysisSettings
     }
 
     #endregion
-
 
 }

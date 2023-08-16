@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
-using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -119,7 +117,7 @@ public class MultiTextCompletion : ITextCompletion
 
         var session = new MultiCompletionSession(completionJob,
             promptSettings,
-            false,
+            isNewPrompt,
             textCompletionAndSettings.namedTextCompletion,
             textCompletionAndSettings.promptConnectorSettings,
             this._settings,
@@ -251,8 +249,6 @@ public class MultiTextCompletion : ITextCompletion
             throw;
         }
     }
-
-    // Define the event
 
     /// <summary>
     /// Appends a connector test to the test channel listened to in the Optimization long running task.

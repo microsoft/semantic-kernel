@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.ArithmeticMocks;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,58 +20,71 @@ namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion;
 /// <summary>
 /// Unit tests for <see cref="MultiTextCompletion"/> class.
 /// </summary>
-public sealed class MultiConnectorTextCompletionTests : IDisposable
+public sealed class MultiConnectorTextCompletionTests : MultiConnectorTestsBase
 {
-    private readonly XunitLogger<MultiTextCompletion> _logger;
-
-    private readonly Func<string, int> _defaultTokenCounter = s => GPT3Tokenizer.Encode(s).Count;
-
-    public MultiConnectorTextCompletionTests(ITestOutputHelper output)
+    public MultiConnectorTextCompletionTests(ITestOutputHelper output) : base(output)
     {
-        this._logger = new XunitLogger<MultiTextCompletion>(output);
     }
 
-    private List<NamedTextCompletion> CreateCompletions(MultiTextCompletionSettings settings, TimeSpan primaryCallDuration, decimal primaryCostPerRequest, TimeSpan secondaryCallDuration, decimal secondaryCostPerRequest, CallRequestCostCreditor creditor)
+    [Fact]
+    public void CreateCompletionsShouldReturnCorrectCompletions()
     {
-        var toReturn = new List<NamedTextCompletion>();
-
-        //Build primary connectors with default multi-operation engine
-        var primaryConnector = new ArithmeticCompletionService(settings,
-            new List<ArithmeticOperation>() { ArithmeticOperation.Add, ArithmeticOperation.Divide, ArithmeticOperation.Multiply, ArithmeticOperation.Subtract },
-            new(),
-            primaryCallDuration,
-            primaryCostPerRequest, creditor);
-        var primaryCompletion = new NamedTextCompletion("Primary", primaryConnector)
-        {
-            CostPerRequest = primaryCostPerRequest,
-            TokenCountFunc = this._defaultTokenCounter
-        };
-
-        toReturn.Add(primaryCompletion);
-
-        //Build secondary specialized connectors, specialized single-operation engine
-        foreach (var operation in primaryConnector.SupportedOperations)
-        {
-            var secondaryConnector = new ArithmeticCompletionService(settings,
-                new List<ArithmeticOperation>() { operation },
-                new ArithmeticEngine()
-                {
-                    ComputeFunc = (arithmeticOperation, operand1, operand2) => ArithmeticEngine.Compute(operation, operand1, operand2)
-                },
-                secondaryCallDuration,
-                secondaryCostPerRequest, creditor);
-            var secondaryCompletion = new NamedTextCompletion($"Secondary - {operation}", secondaryConnector)
-            {
-                CostPerRequest = secondaryCostPerRequest,
-                TokenCountFunc = this._defaultTokenCounter
-            };
-
-            toReturn.Add(secondaryCompletion);
-        }
-
-        return toReturn;
+        var settings = new MultiTextCompletionSettings();
+        var completions = this.CreateCompletions(settings, TimeSpan.FromMilliseconds(10), 0.02m, TimeSpan.FromMilliseconds(5), 0.01m, new CallRequestCostCreditor());
+        Assert.Equal(5, completions.Count);
+        Assert.Equal("Primary", completions.First().Name);
+        var secondaryCompletion = completions.Skip(1).First();
+        Assert.StartsWith("Secondary", secondaryCompletion.Name, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData(ArithmeticOperation.Add, 5, 3, 8)]
+    [InlineData(ArithmeticOperation.Subtract, 5, 3, 2)]
+    public async Task ArithmeticCompletionServiceShouldPerformOperationCorrectlyAsync(ArithmeticOperation operation, int operand1, int operand2, int expectedResult)
+    {
+        // Arrange
+        var settings = new MultiTextCompletionSettings();
+        var operations = new List<ArithmeticOperation>() { operation };
+        var service = new ArithmeticCompletionService(settings, operations, new ArithmeticEngine(), TimeSpan.Zero, 0m, null);
+        var prompt = ArithmeticEngine.GeneratePrompt(operation, operand1, operand2);
+
+        // Act
+        var result = await service.CompleteAsync(prompt, new CompleteRequestSettings());
+
+        // Assert
+        Assert.Equal(expectedResult.ToString(), result);
+    }
+
+    [Theory]
+    [InlineData("Compute Add(5, 3)", ArithmeticOperation.Add, 5, 3)]
+    [InlineData("Compute Subtract(8, 2)", ArithmeticOperation.Subtract, 8, 2)]
+    public void ArithmeticEngineShouldParsePromptCorrectly(string prompt, ArithmeticOperation expectedOperation, int expectedOperand1, int expectedOperand2)
+    {
+        // Act
+        var parsed = ArithmeticEngine.ParsePrompt(prompt);
+
+        // Assert
+        Assert.Equal(expectedOperation, parsed.operation);
+        Assert.Equal(expectedOperand1, parsed.operand1);
+        Assert.Equal(expectedOperand2, parsed.operand2);
+    }
+
+    [Fact]
+    public void NamedTextCompletionPrimaryShouldAssignCorrectCost()
+    {
+        // Arrange
+        var settings = new MultiTextCompletionSettings();
+        decimal expectedCost = 0.02m;
+
+        // Act
+        var completions = this.CreateCompletions(settings, TimeSpan.Zero, expectedCost, TimeSpan.Zero, 0m, null);
+        var primaryCompletion = completions.First();
+
+        // Assert
+        Assert.Equal(expectedCost, primaryCompletion.CostPerRequest);
+    }
+
+   
     /// <summary>
     /// In this theory, we test that the multi-connector analysis is able to optimize the cost per request and duration of a multi-connector completion, with a primary connector capable of handling all 4 arithmetic operation, and secondary connectors only capable of performing 1 each. Depending on their respective performances in parameters and the respective weights of duration and cost in the analysis settings, the multi-connector analysis should be able to determine the best connector to account for the given preferences.
     /// </summary>
@@ -108,7 +119,10 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
                 SaveSuggestedSettings = true
             },
             PromptTruncationLength = 11,
-            ConnectorComparer = MultiTextCompletionSettings.GetWeightedConnectorComparer(durationWeight, costWeight)
+            ConnectorComparer = MultiTextCompletionSettings.GetWeightedConnectorComparer(durationWeight, costWeight),
+            // Uncomment to enable additional logging of MultiTextCompletion calls, results and/or test sample collection
+            LogCallResult = true,
+            //LogTestCollection = true,
         };
 
         // Cleanup in case the previous test failed to delete the analysis file
@@ -116,7 +130,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         {
             File.Delete(settings.AnalysisSettings.AnalysisFilePath);
 
-            this._logger.LogTrace("Deleted preexisting analysis file: {0}", settings.AnalysisSettings.AnalysisFilePath);
+            this.Logger.LogTrace("Deleted preexisting analysis file: {0}", settings.AnalysisSettings.AnalysisFilePath);
         }
 
         // We configure a primary completion with default performances and cost, secondary completion have a gain of 2 in performances and in cost, but they can only handle a single operation each
@@ -125,15 +139,11 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
 
         var completions = this.CreateCompletions(settings, TimeSpan.FromMilliseconds(primaryCallDuration), primaryCostPerRequest, TimeSpan.FromMilliseconds(secondaryCallDuration), secondaryCostPerRequest, creditor);
 
-        var prompts = Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().Select(arithmeticOperation => ArithmeticEngine.GeneratePrompt(arithmeticOperation, 8, 2)).ToArray();
+        var completionJobs = this.CreateSampleJobs(Enum.GetValues(typeof(ArithmeticOperation)).Cast<ArithmeticOperation>().ToArray(),8, 2);
 
-        var requestSettings = new CompleteRequestSettings()
-        {
-            Temperature = 0,
-            MaxTokens = 10
-        };
+        
 
-        var multiConnector = new MultiTextCompletion(settings, completions[0], CancellationToken.None, logger: this._logger, otherCompletions: completions.Skip(1).ToArray());
+        var multiConnector = new MultiTextCompletion(settings, completions[0], CancellationToken.None, logger: this.Logger, otherCompletions: completions.Skip(1).ToArray());
 
         // Create a task completion source to signal the completion of the optimization
         var optimizationCompletedTaskSource = new TaskCompletionSource<SuggestionCompletedEventArgs>();
@@ -154,7 +164,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
 
         //Act
 
-        var primaryResults = await RunPromptsAsync(prompts, multiConnector, requestSettings, completions[0].GetCost).ConfigureAwait(false);
+        var primaryResults = await RunPromptsAsync(completionJobs, multiConnector, completions[0].GetCost).ConfigureAwait(false);
 
         var firstPassEffectiveCost = creditor.OngoingCost;
         decimal firstPassExpectedCost = primaryResults.Sum(tuple => tuple.expectedCost);
@@ -173,7 +183,7 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         creditor.Reset();
 
         // Redo the same requests with the new settings
-        var secondaryResults = await RunPromptsAsync(prompts, multiConnector, requestSettings, (s, s1) => expectedCostPerRequest).ConfigureAwait(false);
+        var secondaryResults = await RunPromptsAsync(completionJobs, multiConnector, (s, s1) => expectedCostPerRequest).ConfigureAwait(false);
         decimal secondPassExpectedCost = secondaryResults.Sum(tuple => tuple.expectedCost);
         var secondPassEffectiveCost = creditor.OngoingCost;
 
@@ -183,9 +193,9 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
 
         // Assert
 
-        for (int index = 0; index < prompts.Length; index++)
+        for (int index = 0; index < completionJobs.Length; index++)
         {
-            string? prompt = prompts[index];
+            string? prompt = completionJobs[index].Prompt;
             var parsed = ArithmeticEngine.ParsePrompt(prompt);
             var realResult = ArithmeticEngine.Compute(parsed.operation, parsed.operand1, parsed.operand2).ToString(CultureInfo.InvariantCulture);
             Assert.Equal(realResult, primaryResults[index].result);
@@ -197,26 +207,5 @@ public sealed class MultiConnectorTextCompletionTests : IDisposable
         Assert.Equal(secondPassExpectedCost, secondPassEffectiveCost);
 
         Assert.InRange(secondPassDurationAfterWarmup, firstPassDurationAfterWarmup / (expectedDurationGain * 2), firstPassDurationAfterWarmup / (expectedDurationGain / 2));
-    }
-
-    private static async Task<List<(string result, TimeSpan duration, decimal expectedCost)>> RunPromptsAsync(string[] prompts, MultiTextCompletion multiConnector, CompleteRequestSettings promptRequestSettings, Func<string, string, decimal> completionCostFunction)
-    {
-        List<(string result, TimeSpan duration, decimal expectedCost)> toReturn = new();
-        foreach (var prompt in prompts)
-        {
-            var stopWatch = Stopwatch.StartNew();
-            var result = await multiConnector.CompleteAsync(prompt, promptRequestSettings).ConfigureAwait(false);
-            stopWatch.Stop();
-            var duration = stopWatch.Elapsed;
-            var cost = completionCostFunction(prompt, result);
-            toReturn.Add((result, duration, cost));
-        }
-
-        return toReturn;
-    }
-
-    public void Dispose()
-    {
-        this._logger.Dispose();
     }
 }

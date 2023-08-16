@@ -27,5 +27,4 @@ RESPONSE:
 RESPONSE IS VALID? (true/false):
 --------------------------------
 ";
-
 }

@@ -8,7 +8,6 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -16,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 /// Represents the state variables that are built and processed within a blocking or streaming call to the <see cref="MultiTextCompletion"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay}")]
-public struct MultiCompletionSession
+public class MultiCompletionSession
 {
     public MultiCompletionSession(CompletionJob completionJob, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, NamedTextCompletion namedTextCompletion, PromptConnectorSettings promptConnectorSettings, MultiTextCompletionSettings multiConnectorSettings, ILogger? logger)
     {
@@ -29,8 +28,23 @@ public struct MultiCompletionSession
         this.PromptConnectorSettings = promptConnectorSettings;
         this.Stopwatch = Stopwatch.StartNew();
         this.Logger = logger;
-        this.Context = multiConnectorSettings.GlobalParameters.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value);
+        this.Context = new();
         this.ResultProducer = new AsyncLazy<string>(() => "", CancellationToken.None);
+        this.Context = this.CreateSessionContext();
+    }
+
+    private Dictionary<string, object> CreateSessionContext()
+    {
+        var newContext = this.MultiConnectorSettings.GlobalParameters.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value);
+        if (this.MultiConnectorSettings.ContextProvider != null)
+        {
+            foreach (var kvp in this.MultiConnectorSettings.ContextProvider(this))
+            {
+                newContext[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return newContext;
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -206,6 +220,4 @@ public struct MultiCompletionSession
 
         return new CompletionJob(adjustedPrompt, adjustedSettings);
     }
-
-
 }

@@ -15,8 +15,8 @@ public readonly struct CompletionJob : System.IEquatable<CompletionJob>
 {
     public CompletionJob(string prompt, CompleteRequestSettings settings)
     {
-        this.Prompt = prompt;
-        this.RequestSettings = settings;
+        this.Prompt = prompt ?? throw new ArgumentNullException(nameof(prompt));
+        this.RequestSettings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
