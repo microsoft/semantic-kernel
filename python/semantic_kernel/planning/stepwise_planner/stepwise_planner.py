@@ -132,7 +132,6 @@ class StepwisePlanner:
     )
     async def execute_plan_async(self, context: SKContext):
         question = context["question"]
-        # function_description = context["function_descriptions"]
 
         steps_taken: List[SystemStep] = []
         if not is_null_or_empty(question):
@@ -297,7 +296,6 @@ class StepwisePlanner:
         scratch_pad_lines: List[str] = []
 
         # Add the original first thought
-        # joowon-dm-snu: does prompt really need SCRATCH_PAD_PREFIX? it looks like it breaks thought process pattern
         scratch_pad_lines.append(SCRATCH_PAD_PREFIX)
         scratch_pad_lines.append(f"{THOUGHT}\n{steps_taken[0].thought}")
 
