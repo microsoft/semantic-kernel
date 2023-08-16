@@ -41,7 +41,15 @@ public class MultiCompletionSession
         {
             foreach (var kvp in this.MultiConnectorSettings.ContextProvider(this))
             {
-                newContext[kvp.Key] = kvp.Value;
+                if (newContext.ContainsKey(kvp.Key))
+                {
+                    this.Logger?.LogWarning("Context provider is overriding a key already defined in the Global Parameters: {0}", kvp.Key);
+                    newContext[kvp.Key] = kvp.Value;
+                }
+                else
+                {
+                    newContext.Add(kvp.Key, kvp.Value);
+                }
             }
         }
 
