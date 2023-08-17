@@ -191,13 +191,13 @@ public interface IKernel
     /// Used for registering a function invoking event handler.
     /// Triggers before each function invocation.
     /// </summary>
-    event EventHandler<FunctionInvokingEventArgs> FunctionInvoking;
+    event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
 
     /// <summary>
     /// Used for registering a function invoked event handler.
     /// Triggers after each function invocation.
     /// </summary>
-    event EventHandler<FunctionInvokedEventArgs> FunctionInvoked;
+    event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     #region Obsolete
     /// <summary>

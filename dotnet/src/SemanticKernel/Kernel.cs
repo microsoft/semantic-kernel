@@ -207,6 +207,7 @@ public sealed class Kernel : IKernel, IDisposable
                 if (f is SemanticFunction semanticFunction)
                 {
                     renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+                    context.SetRenderedPrompt(renderedPrompt);
                 }
 
                 if (!this.OnFunctionInvoking(functionDetails, context, renderedPrompt))
@@ -356,10 +357,15 @@ public sealed class Kernel : IKernel, IDisposable
     /// <returns>Returns true if no cancellation was attempted.</returns>
     private bool OnFunctionInvoking(FunctionView functionView, SKContext context, string? prompt)
     {
-        var args = new FunctionInvokingEventArgs(functionView, context, prompt);
-        this.FunctionInvoking?.Invoke(this, args);
+        if (this.FunctionInvoking is not null)
+        {
+            var args = new FunctionInvokingEventArgs(functionView, context, prompt);
+            this.FunctionInvoking.Invoke(this, args);
 
-        return !args.Cancel;
+            return !args.Cancel;
+        }
+
+        return true;
     }
 
     /// <summary>

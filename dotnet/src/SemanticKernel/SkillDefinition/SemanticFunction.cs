@@ -207,7 +207,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         try
         {
-            string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            var renderedPrompt = context.GetAndForgetRenderedPrompt();
+            if (renderedPrompt is null)
+            {
+                renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            }
             var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
