@@ -8,12 +8,13 @@ import pytest
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
-from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
-    GooglePalmTextCompletion,
-)
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
+)
+
+from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
+    GooglePalmTextCompletion,
 )
 
 
