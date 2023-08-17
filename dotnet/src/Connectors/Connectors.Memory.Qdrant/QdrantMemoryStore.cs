@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
@@ -153,7 +152,7 @@ public class QdrantMemoryStore : IMemoryStore
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
+                embedding: vectorData.Embedding,
                 key: vectorData.PointId);
         }
         catch (HttpRequestException ex)
@@ -199,7 +198,7 @@ public class QdrantMemoryStore : IMemoryStore
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true));
+                embedding: vectorData.Embedding);
         }
         catch (HttpRequestException ex)
         {
@@ -228,7 +227,7 @@ public class QdrantMemoryStore : IMemoryStore
         {
             yield return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
+                embedding: vectorData.Embedding,
                 key: vectorData.PointId);
         }
     }
@@ -293,7 +292,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -302,7 +301,7 @@ public class QdrantMemoryStore : IMemoryStore
         IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient
             .FindNearestInCollectionAsync(
                 collectionName: collectionName,
-                target: embedding.Vector,
+                target: embedding,
                 threshold: minRelevanceScore,
                 top: limit,
                 withVectors: withEmbeddings,
@@ -338,7 +337,7 @@ public class QdrantMemoryStore : IMemoryStore
                 yield return (
                     MemoryRecord.FromJsonMetadata(
                         json: result.Value.Item1.GetSerializedPayload(),
-                        embedding: new Embedding<float>(result.Value.Item1.Embedding, transferOwnership: true)),
+                        embedding: result.Value.Item1.Embedding),
                     result.Value.Item2);
             }
         } while (hasResult);
@@ -347,7 +346,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
@@ -408,7 +407,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         var vectorData = QdrantVectorRecord.FromJsonMetadata(
             pointId: pointId,
-            embedding: record.Embedding.Vector,
+            embedding: record.Embedding,
             json: record.GetSerializedMetadata());
 
         if (vectorData == null)
