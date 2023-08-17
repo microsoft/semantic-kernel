@@ -42,7 +42,7 @@ public class GPT3Settings {
             System.out.println(e.getMessage());
 
             throw new AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
+                    AIException.ErrorCodes.INVALID_CONFIGURATION,
                     "Encoding table deserialization returned NULL");
         }
     }

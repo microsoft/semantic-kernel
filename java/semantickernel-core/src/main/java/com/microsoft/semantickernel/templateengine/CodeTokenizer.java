@@ -168,7 +168,7 @@ public class CodeTokenizer {
             if (currentTokenType == TokenTypes.None) {
                 if (!spaceSeparatorFound) {
                     throw new TemplateException(
-                            TemplateException.ErrorCodes.SyntaxError,
+                            TemplateException.ErrorCodes.SYNTAX_ERROR,
                             "Tokens must be separated by one space least");
                 }
 
@@ -203,7 +203,7 @@ public class CodeTokenizer {
 
             case None:
                 throw new TemplateException(
-                        TemplateException.ErrorCodes.SyntaxError,
+                        TemplateException.ErrorCodes.SYNTAX_ERROR,
                         "Tokens must be separated by one space least");
         }
 

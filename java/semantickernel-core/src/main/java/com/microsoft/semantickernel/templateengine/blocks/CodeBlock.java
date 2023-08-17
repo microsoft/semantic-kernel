@@ -57,7 +57,7 @@ public final class CodeBlock extends Block implements CodeRendering {
     @Override
     public Mono<String> renderCodeAsync(SKContext context) {
         if (!this.isValid()) {
-            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError);
+            throw new TemplateException(TemplateException.ErrorCodes.SYNTAX_ERROR);
         }
 
         // this.Log.LogTrace("Rendering code: `{0}`", this.Content);

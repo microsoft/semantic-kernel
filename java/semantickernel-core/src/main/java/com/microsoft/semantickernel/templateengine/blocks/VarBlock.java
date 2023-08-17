@@ -29,7 +29,7 @@ public final class VarBlock extends Block implements TextRendering {
 
         if (name == null || name.isEmpty()) {
             throw new TemplateException(
-                    TemplateException.ErrorCodes.SyntaxError,
+                    TemplateException.ErrorCodes.SYNTAX_ERROR,
                     "Variable rendering failed, the variable name is empty");
         }
 
