@@ -9,7 +9,7 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
 
-if sys.version_info < (3, 9):
+if sys.version_info >= (3, 9):
     from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
         GooglePalmTextCompletion,
     )
