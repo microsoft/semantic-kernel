@@ -489,8 +489,8 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context._variables = variables.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = variables.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
             if memory is not None:
                 context._memory = memory
