@@ -2,7 +2,7 @@
 
 from abc import abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, Callable, Optional, TypeVar
+from typing import TYPE_CHECKING, Callable, Optional
 
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,

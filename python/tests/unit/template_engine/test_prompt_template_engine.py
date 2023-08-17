@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 from pytest import fixture, mark
 
