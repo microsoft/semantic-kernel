@@ -168,7 +168,7 @@ jobs:
         shell: bash
         run: |
           echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
-          echo "MSTEAMS_WEBHOOK=None" >> "$GITHUB_ENV
+          echo "MSTEAMS_WEBHOOK=empty" >> "$GITHUB_ENV
 
       - name: Fail workflow if tests failed
         id: check_tests_failed
