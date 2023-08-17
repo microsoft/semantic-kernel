@@ -9,10 +9,6 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.open_ai import (
-    AzureChatCompletion,
-    OpenAIChatCompletion,
-)
 from semantic_kernel.core_skills import CodeSkill
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function
@@ -43,8 +39,7 @@ class DataSkill:
         print(result)
     """
 
-    path: Union[str, List[str]]
-    data: Union[pd.DataFrame, List[pd.DataFrame]]
+    data: List[pd.DataFrame]
     mutable: bool  # TODO
     verbose: bool  # TODO
     _service: ChatCompletionClientBase
@@ -54,51 +49,56 @@ class DataSkill:
 
     def __init__(
         self,
-        service: Union[AzureChatCompletion, OpenAIChatCompletion],
-        path: Union[str, List[str]] = None,
-        data: Union[pd.DataFrame, List[pd.DataFrame]] = None,
+        service: ChatCompletionClientBase,
         mutable: bool = False,
         verbose: bool = True,
+        sources: Union[str, List[str], pd.DataFrame, List[pd.DataFrame]] = None
     ):
-        self.data = data
-        self.path = path
+        self.data = []
+        self._data_context = ""
         self.mutable = mutable
         self.verbose = verbose
         self._service = service
         self._chat_settings = ChatRequestSettings(temperature=0.0)
         self._code_skill = CodeSkill(self._service)
-        self._data_context = self.get_df_data()
+        
+        # If data has been given now, process it, or use add_data() later
+        if sources:
+            self.add_data(sources) if not isinstance(sources, List) else self.add_data(*sources)
 
-        if isinstance(self.path, str):
-            if not self.path.endswith(".csv"):
-                raise ValueError("File path must be to a CSV file")
-            else:
-                if self.data is None:
-                    self.data = pd.read_csv(self.path)
-                elif isinstance(self.data, pd.DataFrame):
-                    self.data = [self.data, pd.read_csv(self.path)]
-                elif all(isinstance(item, pd.DataFrame) for item in self.data):
-                    self.data.append(pd.read_csv(self.path))
-                else:
-                    raise ValueError(
-                        "Data must be a pandas dataframe or a list of pandas dataframes"
-                    )
-        if isinstance(self.path, List):
-            if self.data is None:
-                self.data = []
-            elif isinstance(self.data, pd.DataFrame):
-                self.data = [self.data]
-            elif all(isinstance(item, pd.DataFrame) for item in self.data):
-                pass
-            else:
-                raise ValueError(
-                    "Data must be a pandas dataframe or a list of pandas dataframes"
-                )
-            for file in self.path:
-                if not file.endswith(".csv"):
+    def add_data(self, *sources: Union[str, pd.DataFrame]) -> None:
+        """
+        Add data to this skill instance
+
+        Args:
+            *sources {str, pd.DataFrame} -- Variable number of CSV file paths and/or Pandas dataframes
+
+        Usage:
+            csv = "...csv"
+            df = DataFrame(...)
+            data_skill = DataSkill(...)
+            data_skill.add_data(csv, df) or data_skill.add_data(*[csv, df])
+        """
+        for s in sources:
+            if isinstance(s, str):  # a CSV file
+                if not s.endswith(".csv"):
                     raise ValueError("File path must be to a CSV file")
                 else:
-                    self.data.append(pd.read_csv(file))
+                    self.data.append(pd.read_csv(s))
+            elif isinstance(s, pd.DataFrame):
+                self.data.append(s)
+            else:
+                raise ValueError("Data sources must be paths to CSV or a DataFrame")
+
+        self._data_context = self.get_df_data()
+
+    def clear_data(self) -> None:
+        """
+        Clear all data from this skill
+        """
+        self.data.clear()
+        self._data_context = ""
+
 
     def get_df_data(self, num_rows: int = 3) -> str:
         """
@@ -106,7 +106,7 @@ class DataSkill:
         needs this information to answer the user's questions about the data.
 
         Args:
-            num_rows {int} -- How many rows from the top to supply, defaults to 5
+            num_rows {int} -- How many rows from the top to supply, defaults to 3
             Control this to limit token usage, especially with many dataframes. 
             The minimum is 1.
 
@@ -116,12 +116,11 @@ class DataSkill:
         if num_rows < 1:
             raise ValueError("Must have at least 1 row in each dataframe's header")
 
-        if isinstance(self.data, pd.DataFrame):
-            prompt = """You are working with one pandas dataframe in Python with the following header: \n"""
-            prompt += self.data.head(num_rows).to_json(orient="records") + "\n"
+        num_sources = len(self.data)
+        if num_sources == 0:
+            raise ValueError("No data has been loaded")
         else:
-            num = len(self.data)
-            prompt = f"You are working with a list of {num} pandas dataframes in Python, named df1, df2, and so on.\n"
+            prompt = f"You are working with {num_sources} Pandas dataframe(s) in Python, named df1, df2, and so on.\n"
             for i, table in enumerate(self.data):
                 prompt += f"The header of df{i + 1} is: \n"
                 prompt += table.head(num_rows).to_json(orient="records") + "\n"
@@ -140,21 +139,16 @@ class DataSkill:
         Args:
             ask -- The question to ask the LLM
         """
-        if isinstance(self.data, pd.DataFrame):  # If there is only one dataframe
-            df = self.data
-            local_vars = {"df": df}
-            arg = "df"
-            description = "is a pandas dataframe"
-        else: # If there are multiple dataframes
-            local_vars = {}
-            arg = ""
-            for i, table in enumerate(self.data):
-                name = f"df{i + 1}"
-                arg += name + ", "
-                local_vars[name] = table
 
-            arg = arg[:-2]
-            description = "are pandas dataframes"
+        local_vars = {}
+        arg = ""
+        for i, table in enumerate(self.data):
+            name = f"df{i + 1}"
+            arg += name + ", "
+            local_vars[name] = table
+
+        arg = arg[:-2]
+        description = "is/are Pandas dataframe(s)"
 
         # Construct the prompt
         formatted_suffix = PROMPT_SUFFIX.format(

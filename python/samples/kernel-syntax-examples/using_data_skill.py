@@ -31,7 +31,7 @@ async def main() -> None:
     df2 = pd.DataFrame(data2)
 
     data_skill = kernel.import_skill(
-        DataSkill(data=[df1, df2], service=openai_chat_completion), skill_name="data"
+        DataSkill(sources=[df1, df2], service=openai_chat_completion), skill_name="data"
     )
     query_async = data_skill["queryAsync"]
 
