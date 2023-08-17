@@ -22,11 +22,8 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         var functionNameParts = this.Content.Split('.');
         if (functionNameParts.Length > 2)
         {
-#pragma warning disable CA2254 // Template should be a static expression. The code should be refactored as part of the semantic/structural logging adoption in SK.
-            var errorMessage = $"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the skill name from the function name";
-            this.Logger.LogError(errorMessage);
-            throw new SKException(errorMessage);
-#pragma warning restore CA2254 // Template should be a static expression. The code should be refactored as part of the semantic/structural logging adoption in SK.
+            this.Logger.LogError("Invalid function name `{FunctionName}`.", this.Content);
+            throw new SKException($"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the skill name from the function name");
         }
 
         if (functionNameParts.Length == 2)
