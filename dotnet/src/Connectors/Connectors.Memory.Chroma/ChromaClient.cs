@@ -107,7 +107,7 @@ public class ChromaClient : IChromaClient
     }
 
     /// <inheritdoc />
-    public async Task UpsertEmbeddingsAsync(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
+    public async Task UpsertEmbeddingsAsync(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Upserting embeddings to collection with id: {0}", collectionId);
 
@@ -141,7 +141,7 @@ public class ChromaClient : IChromaClient
     }
 
     /// <inheritdoc />
-    public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, float[][] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default)
+    public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, ReadOnlyMemory<float>[] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Query embeddings in collection with id: {0}", collectionId);
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
 
 // Use base namespace for better discoverability and to avoid conflicts with other extensions.
@@ -17,11 +18,11 @@ public static class TextCompletionServiceExtensions
     /// <param name="services">The service provider.</param>
     /// <param name="serviceId">Optional identifier of the desired service.</param>
     /// <returns>The text completion service id matching the given ID or the default.</returns>
-    /// <exception cref="KernelException">Thrown when no suitable service is found.</exception>
+    /// <exception cref="SKException">Thrown when no suitable service is found.</exception>
     public static ITextCompletion GetTextCompletionServiceOrDefault(
         this IAIServiceProvider services,
         string? serviceId = null) => services.GetService<ITextCompletion>(serviceId)
-            ?? throw new KernelException(KernelException.ErrorCodes.ServiceNotFound, "Text completion service not found");
+            ?? throw new SKException("Text completion service not found");
 
     /// <summary>
     /// Returns true if a <see cref="ITextCompletion"/> exist with the specified ID.
