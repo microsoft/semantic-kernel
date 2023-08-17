@@ -39,12 +39,6 @@ def get_oai_config():
     return api_key, org_id
 
 
-pytestmark = pytest.mark.skipif(
-    "Python_Integration_Tests" in os.environ,
-    reason="Google Palm integration tests are only set up to run locally",
-)
-
-
 @pytest.fixture(scope="session")
 def get_gp_config():
     if "Python_Integration_Tests" in os.environ:
