@@ -47,6 +47,16 @@ public class MultiTextCompletion : ITextCompletion
         this.StartManagementTask(analysisTaskCancellationToken ?? CancellationToken.None);
     }
 
+    /// <summary>
+    /// The list of text completions that are part of this multi-completion
+    /// </summary>
+    public IReadOnlyList<NamedTextCompletion> TextCompletions => this._textCompletions;
+
+    /// <summary>
+    /// The settings used to configure this multi-completion
+    /// </summary>
+    public MultiTextCompletionSettings Settings => this._settings;
+
     /// <inheritdoc />
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
