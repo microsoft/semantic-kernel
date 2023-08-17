@@ -8,6 +8,7 @@ import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
+import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import jakarta.inject.Inject;
@@ -49,7 +50,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         // TODO
 
         if (requestSettings.getMaxTokens() < 1) {
-            throw new AIException(AIException.ErrorCodes.InvalidRequest, "Max tokens must be >0");
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Max tokens must be >0");
         }
 
         CompletionsOptions completionsOptions =
@@ -88,10 +89,10 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
         @Override
         public TextCompletion build() {
             if (client == null) {
-                throw new NotSupportedException("OpenAI client not set");
+                throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "OpenAI client not set");
             }
             if (modelId == null) {
-                throw new NotSupportedException("Model ID not set");
+                throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "Model ID not set");
             }
             return new OpenAITextCompletion(client, modelId);
         }

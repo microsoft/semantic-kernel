@@ -4,7 +4,11 @@ package com.microsoft.semantickernel.connectors.memory.jdbc;
 import com.microsoft.semantickernel.memory.DataEntryBase;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -70,7 +74,10 @@ public class JDBCConnector implements Connector {
                                 statement.addBatch(createIndex);
                                 statement.executeBatch();
                             } catch (SQLException e) {
-                                throw new SQLConnectorException("\"CREATE TABLE\" failed", e);
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"CREATE TABLE\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -87,10 +94,16 @@ public class JDBCConnector implements Connector {
                                 statement.executeUpdate();
                             } catch (SQLiteException e) {
                                 if (e.getResultCode() != SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE) {
-                                    throw new SQLConnectorException("\"INSERT INTO\" failed", e);
+                                    throw new SQLConnectorException(
+                                            SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                            "\"INSERT INTO\" failed",
+                                            e);
                                 }
                             } catch (SQLException e) {
-                                throw new SQLConnectorException("\"INSERT INTO\" failed", e);
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"INSERT INTO\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -123,7 +136,10 @@ public class JDBCConnector implements Connector {
                                 statement.setString(5, key != null && !key.isEmpty() ? key : null);
                                 statement.executeUpdate();
                             } catch (SQLException e) {
-                                throw new SQLConnectorException("\"UPDATE\" failed", e);
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"UPDATE\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -155,7 +171,9 @@ public class JDBCConnector implements Connector {
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                        "\"INSERT INTO OR IGNORE\" failed", e);
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"INSERT OR IGNORE INTO\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -190,7 +208,10 @@ public class JDBCConnector implements Connector {
                                 }
                             } catch (SQLException e) {
                                 return Mono.error(
-                                        new SQLConnectorException("\"SELECT\" failed", e));
+                                        new SQLConnectorException(
+                                                SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                                "\"SELECT\" failed",
+                                                e));
                             }
                             return Mono.just(collections);
                         })
@@ -223,7 +244,10 @@ public class JDBCConnector implements Connector {
                                 }
                             } catch (SQLException e) {
                                 return Mono.error(
-                                        new SQLConnectorException("\"SELECT * FROM\" failed", e));
+                                        new SQLConnectorException(
+                                                SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                                "\"SELECT * FROM\" failed",
+                                                e));
                             }
                             return Mono.just(entries);
                         })
@@ -256,7 +280,10 @@ public class JDBCConnector implements Connector {
                                 }
                             } catch (SQLException e) {
                                 return Mono.error(
-                                        new SQLConnectorException("\"SELECT * FROM\" failed", e));
+                                        new SQLConnectorException(
+                                                SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                                "\"SELECT * FROM\" failed",
+                                                e));
                             }
                             return Mono.empty();
                         })
@@ -286,7 +313,10 @@ public class JDBCConnector implements Connector {
                                             ErrorCodes.ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION);
                                 }
                             } catch (SQLException e) {
-                                throw new SQLConnectorException("\"DELETE FROM\" failed", e);
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"DELETE FROM\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -309,7 +339,10 @@ public class JDBCConnector implements Connector {
                                 statement.setString(2, key != null && !key.isEmpty() ? key : null);
                                 statement.executeUpdate();
                             } catch (SQLException e) {
-                                throw new SQLConnectorException("\"DELETE FROM\" failed", e);
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"DELETE FROM\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -331,7 +364,10 @@ public class JDBCConnector implements Connector {
                                 statement.setString(1, collectionName);
                                 statement.executeUpdate();
                             } catch (SQLException e) {
-                                throw new SQLConnectorException("\"DELETE FROM\" failed", e);
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"DELETE FROM\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())

@@ -41,7 +41,7 @@ public class MemoryException extends SKException {
             @Nonnull ErrorCodes errorCode,
             @Nullable String message,
             @Nullable Throwable innerException) {
-        super(getDefaultMessage(errorCode, message), innerException);
+        super(formatDefaultMessage(errorCode.getMessage(), message), innerException);
         this.errorCode = errorCode;
     }
 
@@ -52,12 +52,6 @@ public class MemoryException extends SKException {
      */
     public ErrorCodes getErrorCode() {
         return errorCode;
-    }
-
-    /* Translate the error code into a default message */
-    private static String getDefaultMessage(
-            @Nonnull ErrorCodes errorCode, @Nullable String message) {
-        return String.format("%s: %s", errorCode.getMessage(), message);
     }
 
     /** Semantic kernel memory error codes. */
@@ -72,10 +66,16 @@ public class MemoryException extends SKException {
         FAILED_TO_DELETE_COLLECTION("Failed to delete collection"),
 
         /** Unable to construct memory from serialized metadata. */
-        UNABLE_TO_DESERIALIZE_METADATA("Unable to deserialize metadata"),
+        UNABLE_TO_DESERIALIZE_MEMORY("Unable to deserialize memory"),
+
+        /** Unable to serialize a memory . */
+        UNABLE_TO_SERIALIZE_MEMORY("Unable to serialize memory"),
 
         /** Attempted to access a memory collection that does not exist. */
-        ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION("Attempted to access non-existent collection");
+        ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION("Attempted to access non-existent collection"),
+
+        /** Attempted to access a memory that does not exist. */
+        MEMORY_NOT_FOUND("Memory not found");
 
         /**
          * Gets the error message.

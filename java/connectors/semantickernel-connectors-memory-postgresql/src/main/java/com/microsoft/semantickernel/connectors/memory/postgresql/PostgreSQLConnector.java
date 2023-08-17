@@ -53,7 +53,9 @@ public class PostgreSQLConnector extends JDBCConnector implements Connector {
                                 statement.addBatch(createIndex);
                                 statement.executeBatch();
                             } catch (SQLException e) {
-                                throw new SQLConnectorException("\"CREATE TABLE\" failed", e);
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"CREATE TABLE\" failed", e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -87,6 +89,7 @@ public class PostgreSQLConnector extends JDBCConnector implements Connector {
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
                                         "\"INSERT INTO\" failed", e);
                             }
                         })

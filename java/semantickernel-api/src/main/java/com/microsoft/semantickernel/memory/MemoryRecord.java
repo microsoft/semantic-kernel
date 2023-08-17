@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
+import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
 import java.time.ZonedDateTime;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -189,7 +190,7 @@ public class MemoryRecord extends DataEntryBase {
         }
 
         throw new MemoryException(
-                MemoryException.ErrorCodes.UNABLE_TO_DESERIALIZE_METADATA,
+                ErrorCodes.UNABLE_TO_DESERIALIZE_MEMORY,
                 "Unable to create memory record from serialized metadata");
     }
 }

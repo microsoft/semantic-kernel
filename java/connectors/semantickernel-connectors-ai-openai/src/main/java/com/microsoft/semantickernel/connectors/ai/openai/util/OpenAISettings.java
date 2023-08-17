@@ -26,7 +26,7 @@ public class OpenAISettings extends AbstractOpenAIClientSettings {
     public String getKey() throws ConfigurationException {
         if (key == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.ValueNotFound, "key");
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND, "key");
         }
         return key;
     }
@@ -34,7 +34,7 @@ public class OpenAISettings extends AbstractOpenAIClientSettings {
     public String getOrganizationId() throws ConfigurationException {
         if (organizationId == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.ValueNotFound, "organizationid");
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND, "organizationid");
         }
         return organizationId;
     }
@@ -43,7 +43,7 @@ public class OpenAISettings extends AbstractOpenAIClientSettings {
     public boolean assertIsValid() throws ConfigurationException {
         if (key == null) {
             throw new ConfigurationException(
-                    ConfigurationException.ErrorCodes.ValueNotFound,
+                    ConfigurationException.ErrorCodes.VALUE_NOT_FOUND,
                     settingsPrefix + "." + KEY_SUFFIX);
         }
         return true;

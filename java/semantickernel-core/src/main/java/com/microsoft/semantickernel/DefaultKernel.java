@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.ai.AIException;
 import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.SkillImporter;
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.exceptions.SkillsNotFoundException.ErrorCodes;
 import com.microsoft.semantickernel.extensions.KernelExtensions;
 import com.microsoft.semantickernel.memory.MemoryConfiguration;
 import com.microsoft.semantickernel.memory.MemoryStore;
@@ -71,7 +72,7 @@ public class DefaultKernel implements Kernel {
 
         if (service == null) {
             throw new KernelException(
-                    KernelException.ErrorCodes.ServiceNotFound,
+                    KernelException.ErrorCodes.SERVICE_NOT_FOUND,
                     "Service of type "
                             + clazz.getName()
                             + " and name "
@@ -145,7 +146,7 @@ public class DefaultKernel implements Kernel {
 
         ReadOnlyFunctionCollection collection = getSkill(skillName);
         if (collection == null) {
-            throw new SkillsNotFoundException();
+            throw new SkillsNotFoundException(ErrorCodes.SKILLS_NOT_FOUND);
         }
         return collection;
     }
@@ -155,7 +156,7 @@ public class DefaultKernel implements Kernel {
             Object skillInstance, @Nullable String skillName) {
         if (skillInstance instanceof String) {
             throw new KernelException(
-                    KernelException.ErrorCodes.FunctionNotAvailable,
+                    KernelException.ErrorCodes.FUNCTION_NOT_AVAILABLE,
                     "Called importSkill with a string argument, it is likely the intention was to"
                             + " call importSkillFromDirectory");
         }
@@ -194,7 +195,7 @@ public class DefaultKernel implements Kernel {
     public ReadOnlyFunctionCollection getSkill(String skillName) throws FunctionNotFound {
         ReadOnlyFunctionCollection functions = this.defaultSkillCollection.getFunctions(skillName);
         if (functions == null) {
-            throw new FunctionNotFound(skillName);
+            throw new FunctionNotFound(FunctionNotFound.ErrorCodes.FUNCTION_NOT_FOUND, skillName);
         }
 
         return functions;
@@ -490,7 +491,7 @@ public class DefaultKernel implements Kernel {
 
             if (kernelConfig == null) {
                 throw new AIException(
-                        AIException.ErrorCodes.InvalidConfiguration,
+                        AIException.ErrorCodes.INVALID_CONFIGURATION,
                         "It is required to set a kernelConfig to build a kernel");
             }
 

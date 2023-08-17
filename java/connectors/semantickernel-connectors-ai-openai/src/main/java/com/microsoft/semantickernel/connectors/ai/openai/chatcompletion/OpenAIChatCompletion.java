@@ -13,6 +13,7 @@ import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
+import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,10 +56,10 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         @Override
         public ChatCompletion build() {
             if (client == null) {
-                throw new NotSupportedException("OpenAI client not set");
+                throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "OpenAI client not set");
             }
             if (modelId == null) {
-                throw new NotSupportedException("Model ID not set");
+                throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "Model ID not set");
             }
             return new OpenAIChatCompletion(client, modelId);
         }
@@ -103,7 +104,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
                             if (response == null || response.getChoices().isEmpty()) {
                                 return Mono.error(
                                         new AIException(
-                                                AIException.ErrorCodes.InvalidResponseContent,
+                                                AIException.ErrorCodes.INVALID_RESPONSE_CONTENT,
                                                 "Chat completions not found"));
                             } else {
                                 return Mono.just(

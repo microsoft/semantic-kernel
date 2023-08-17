@@ -94,7 +94,7 @@ public class ActionPlanner {
     public Mono<Plan> createPlanAsync(String goal) {
         if (goal == null || goal.isEmpty()) {
             throw new PlanningException(
-                    PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+                    PlanningException.ErrorCodes.INVALID_GOAL, "The goal specified is empty");
         }
 
         context = this.context.update(goal);
@@ -125,14 +125,14 @@ public class ActionPlanner {
             planData = new ObjectMapper().readValue(plan, ActionPlanResponse.class);
         } catch (Exception e) {
             throw new PlanningException(
-                    PlanningException.ErrorCodes.InvalidPlan,
+                    PlanningException.ErrorCodes.INVALID_PLAN,
                     "Plan parsing error, invalid JSON",
                     e);
         }
 
         if (planData == null) {
             throw new PlanningException(
-                    PlanningException.ErrorCodes.InvalidPlan,
+                    PlanningException.ErrorCodes.INVALID_PLAN,
                     "The plan deserialized to a null object");
         }
 
@@ -165,7 +165,7 @@ public class ActionPlanner {
 
             if (function == null) {
                 throw new PlanningException(
-                        PlanningException.ErrorCodes.InvalidPlan,
+                        PlanningException.ErrorCodes.INVALID_PLAN,
                         "Unknown function " + planData.plan.function);
             }
             return function;
@@ -177,7 +177,7 @@ public class ActionPlanner {
 
             if (function == null) {
                 throw new PlanningException(
-                        PlanningException.ErrorCodes.InvalidPlan,
+                        PlanningException.ErrorCodes.INVALID_PLAN,
                         "Unknown skill " + planData.plan.function);
             }
 
