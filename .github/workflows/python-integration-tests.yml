@@ -154,21 +154,21 @@ jobs:
         shell: bash
         run: |
           echo "run_type=Daily" >> "$GITHUB_ENV"
-          echo "MSTEAMS_WEBHOOK=${{ secrets.MSTEAMS_WEBHOOK }}" >> "$GITHUB_ENV
+          echo "MSTEAMS_WEBHOOK=${{ secrets.MSTEAMS_WEBHOOK }}" >> "$GITHUB_ENV"
 
       - name: Run Type is Manual
         if: ${{ github.event_name == 'workflow_dispatch' }}
         shell: bash
         run: |
           echo "run_type=Manual" >> "$GITHUB_ENV"
-          echo "MSTEAMS_WEBHOOK=${{ secrets.MSTEAMS_WEBHOOK }}" >> "$GITHUB_ENV
+          echo "MSTEAMS_WEBHOOK=${{ secrets.MSTEAMS_WEBHOOK }}" >> "$GITHUB_ENV"
 
       - name: Run Type is Other
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
         shell: bash
         run: |
           echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
-          echo "MSTEAMS_WEBHOOK=empty" >> "$GITHUB_ENV
+          echo "MSTEAMS_WEBHOOK=NONE" >> "$GITHUB_ENV"
 
       - name: Fail workflow if tests failed
         id: check_tests_failed
