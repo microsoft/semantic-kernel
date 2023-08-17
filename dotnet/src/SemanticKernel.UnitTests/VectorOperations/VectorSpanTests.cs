@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 using System;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Xunit;
@@ -13,68 +15,6 @@ public class VectorSpanTests
 
     private readonly double[] _doubleV1 = new double[] { 1.0, 2.0, -4.0, 10.0 };
     private readonly double[] _doubleV2 = new double[] { 3.0, -7.0, 1.0, 6.0 };
-
-    [Fact]
-    public void ItOnlySupportsFPDataTypes()
-    {
-        // Assert
-        TestTypeUnmanaged<float>(true);
-        TestTypeUnmanaged<double>(true);
-
-        TestTypeUnmanaged<bool>(false);
-        TestTypeUnmanaged<byte>(false);
-        TestTypeUnmanaged<sbyte>(false);
-        TestTypeUnmanaged<char>(false);
-        TestTypeUnmanaged<decimal>(false);
-        TestTypeUnmanaged<int>(false);
-        TestTypeUnmanaged<uint>(false);
-        TestTypeUnmanaged<nint>(false);
-        TestTypeUnmanaged<nuint>(false);
-        TestTypeUnmanaged<long>(false);
-        TestTypeUnmanaged<ulong>(false);
-        TestTypeUnmanaged<short>(false);
-        TestTypeUnmanaged<ushort>(false);
-        TestType<object>(false);
-        TestType<string>(false);
-
-        static void TestType<T>(bool expected)
-        {
-            if (expected)
-            {
-                Assert.True(Embedding.IsSupported<T>());
-                Assert.True(Embedding.IsSupported(typeof(T)));
-                Assert.Contains(typeof(T), Embedding.SupportedTypes);
-            }
-            else
-            {
-                Assert.False(Embedding.IsSupported<T>());
-                Assert.False(Embedding.IsSupported(typeof(T)));
-                Assert.DoesNotContain(typeof(T), Embedding.SupportedTypes);
-            }
-        }
-
-        static void TestTypeUnmanaged<T>(bool expected) where T : unmanaged
-        {
-            TestType<T>(expected);
-            if (expected)
-            {
-                _ = new Embedding<T>(Array.Empty<T>());
-                _ = new Embedding<T>(Array.Empty<T>(), transferOwnership: true);
-                _ = new EmbeddingSpan<T>(Array.Empty<T>());
-                _ = new EmbeddingReadOnlySpan<T>(Array.Empty<T>());
-            }
-            else
-            {
-                Assert.False(Embedding.IsSupported<T>());
-                Assert.False(Embedding.IsSupported(typeof(T)));
-                Assert.DoesNotContain(typeof(T), Embedding.SupportedTypes);
-                Assert.Throws<NotSupportedException>(() => new Embedding<T>(Array.Empty<T>()));
-                Assert.Throws<NotSupportedException>(() => new Embedding<T>(Array.Empty<T>(), transferOwnership: true));
-                Assert.Throws<NotSupportedException>(() => new EmbeddingSpan<T>(Array.Empty<T>()));
-                Assert.Throws<NotSupportedException>(() => new EmbeddingReadOnlySpan<T>(Array.Empty<T>()));
-            }
-        }
-    }
 
     [Fact]
     public void ItCanComputeCosineSimilarityFloats()
