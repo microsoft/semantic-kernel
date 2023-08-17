@@ -3,9 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
@@ -45,16 +47,23 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
 
         ValidateMaxTokens(requestSettings.MaxTokens);
 
-        return await this.ExecuteChatCompletionsRequestAsync(chat, requestSettings, isStreamEnabled: false, cancellationToken).ConfigureAwait(false);
+        return await this.ExecuteCompletionRequestAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
     }
 
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(chat);
+
+        requestSettings ??= new();
+
+        ValidateMaxTokens(requestSettings.MaxTokens);
+
+        return this.ExecuteCompletionStreamingRequestAsync(chat, requestSettings, cancellationToken);
     }
 
     #region private ================================================================================
 
+    private const string ServerEventPayloadPrefix = "data:";
     private const string DefaultApiVersion = "2023-06-01-preview";
     private const string EndpointUriFormat = "{0}/openai/deployments/{1}/extensions/chat/completions?api-version={2}";
 
@@ -85,57 +94,73 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         }
     }
 
-    private async Task<IReadOnlyList<IChatResult>> ExecuteChatCompletionsRequestAsync(
+    private async Task<IReadOnlyList<IChatResult>> ExecuteCompletionRequestAsync(
         ChatHistory chat,
         ChatRequestSettings requestSettings,
-        bool isStreamEnabled,
         CancellationToken cancellationToken = default)
     {
-        try
+        var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
+
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), request);
+
+        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        httpRequestMessage.Headers.Add("Api-Key", this._config.CompletionApiKey);
+
+        using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+
+        response.EnsureSuccessStatusCode();
+
+        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
+
+        return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(choice)).ToList();
+    }
+
+    private async IAsyncEnumerable<IChatStreamingResult> ExecuteCompletionStreamingRequestAsync(
+        ChatHistory chat,
+        ChatRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
+
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), request);
+
+        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        httpRequestMessage.Headers.Add("Api-Key", this._config.CompletionApiKey);
+
+        using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+
+        response.EnsureSuccessStatusCode();
+
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
         {
-            var request = new ChatWithDataRequest
+            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+
+            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                Temperature = requestSettings.Temperature,
-                TopP = requestSettings.TopP,
-                IsStreamEnabled = isStreamEnabled,
-                StopSequences = requestSettings.StopSequences,
-                MaxTokens = requestSettings.MaxTokens,
-                PresencePenalty = requestSettings.PresencePenalty,
-                FrequencyPenalty = requestSettings.FrequencyPenalty,
-                TokenSelectionBiases = requestSettings.TokenSelectionBiases,
-                DataSources = this.GetDataSources(),
-                Messages = this.GetMessages(chat)
-            };
+                body = body.Substring(ServerEventPayloadPrefix.Length);
+            }
 
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), request);
+            if (body.Length == 0)
+            {
+                continue;
+            }
 
-            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-            httpRequestMessage.Headers.Add("Api-Key", this._config.CompletionApiKey);
+            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
 
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            var choice = chatWithDataResponse.Choices.LastOrDefault();
 
-            response.EnsureSuccessStatusCode();
-
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
-
-            return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(choice)).ToList();
-        }
-        catch (Exception ex) when (ex is not AIException && !ex.IsCriticalException())
-        {
-            this._logger.LogError(ex,
-                "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
-
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Error occurred on chat completion with data request execution: {ex.Message}", ex);
+            yield return new ChatWithDataStreamingResult(choice);
         }
     }
 
     private T DeserializeResponse<T>(string body)
     {
-        var response = JsonSerializer.Deserialize<T>(body);
+        var response = Json.Deserialize<T>(body);
 
         if (response == null)
         {
@@ -145,6 +170,26 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         }
 
         return response;
+    }
+
+    private ChatWithDataRequest GetRequest(
+        ChatHistory chat,
+        ChatRequestSettings requestSettings,
+        bool isStreamEnabled)
+    {
+        return new ChatWithDataRequest
+        {
+            Temperature = requestSettings.Temperature,
+            TopP = requestSettings.TopP,
+            IsStreamEnabled = isStreamEnabled,
+            StopSequences = requestSettings.StopSequences,
+            MaxTokens = requestSettings.MaxTokens,
+            PresencePenalty = requestSettings.PresencePenalty,
+            FrequencyPenalty = requestSettings.FrequencyPenalty,
+            TokenSelectionBiases = requestSettings.TokenSelectionBiases,
+            DataSources = this.GetDataSources(),
+            Messages = this.GetMessages(chat)
+        };
     }
 
     private List<ChatWithDataSource> GetDataSources()
