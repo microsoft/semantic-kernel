@@ -4,7 +4,7 @@ from typing import List
 from semantic_kernel.models.completion_content import CompletionContent
 from semantic_kernel.models.completion_result import CompletionResult
 from semantic_kernel.models.completion_result_base import CompletionResultBase
-from semantic_kernel.models.finish_reason import FinishReasonEnum
+from semantic_kernel.models.finish_reason import FinishReason
 
 
 def test_from_chunk_list():
@@ -57,4 +57,4 @@ def test_from_chunk_list():
 
     assert result.choices[0].index == 0
     assert result.choices[0].text == "How are you?"
-    assert result.choices[0].finish_reason == FinishReasonEnum.stop
+    assert result.choices[0].finish_reason == FinishReason.STOP

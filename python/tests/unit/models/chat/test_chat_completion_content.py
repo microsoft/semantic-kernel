@@ -1,6 +1,6 @@
 from semantic_kernel.models.chat.chat_completion_content import ChatCompletionContent
 from semantic_kernel.models.chat.chat_message import ChatMessage
-from semantic_kernel.models.finish_reason import FinishReasonEnum
+from semantic_kernel.models.finish_reason import FinishReason
 
 
 def test_chat_completion_content():
@@ -15,5 +15,5 @@ def test_chat_completion_content():
     )
 
     assert chat_completion_content.index == 0
-    assert chat_completion_content.finish_reason is FinishReasonEnum.stop
+    assert chat_completion_content.finish_reason is FinishReason.STOP
     assert chat_completion_content.message.content == content

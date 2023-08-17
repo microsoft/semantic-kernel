@@ -7,7 +7,7 @@ from semantic_kernel.models.chat.chat_completion_content import (
 from semantic_kernel.models.chat.chat_completion_result import ChatCompletionResult
 from semantic_kernel.models.chat.chat_message import ChatMessage
 from semantic_kernel.models.completion_result_base import CompletionResultBase
-from semantic_kernel.models.finish_reason import FinishReasonEnum
+from semantic_kernel.models.finish_reason import FinishReason
 
 
 def test_from_chunk_list():
@@ -80,4 +80,4 @@ def test_from_chunk_list():
 
     assert result.choices[0].index == 0
     assert result.choices[0].message.fixed_content == "How are you?"
-    assert result.choices[0].finish_reason == FinishReasonEnum.stop
+    assert result.choices[0].finish_reason == FinishReason.STOP

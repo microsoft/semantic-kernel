@@ -1,5 +1,5 @@
 from semantic_kernel.models.completion_content import CompletionContent
-from semantic_kernel.models.finish_reason import FinishReasonEnum
+from semantic_kernel.models.finish_reason import FinishReason
 
 
 def test_completion_content():
@@ -18,4 +18,4 @@ def test_completion_content():
     )
     assert content.logprobs == logprobs
     assert content.text == text
-    assert content.finish_reason == FinishReasonEnum.stop
+    assert content.finish_reason == FinishReason.STOP

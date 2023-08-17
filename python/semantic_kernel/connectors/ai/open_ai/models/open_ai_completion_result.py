@@ -9,7 +9,7 @@ from semantic_kernel.models.completion_result import (
     CompletionResult,
 )
 from semantic_kernel.models.finish_reason import (
-    FinishReasonEnum,
+    FinishReason,
 )
 from semantic_kernel.models.usage_result import UsageResult
 
@@ -28,7 +28,7 @@ class OpenAICompletionResult(CompletionResult):
                 CompletionContent(
                     index=x.index,
                     text=x.text,
-                    finish_reason=FinishReasonEnum(x.finish_reason)
+                    finish_reason=FinishReason(x.finish_reason)
                     if x.finish_reason
                     else None,
                     logprobs=x.logprobs,

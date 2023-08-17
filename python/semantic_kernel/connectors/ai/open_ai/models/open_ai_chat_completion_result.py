@@ -13,7 +13,7 @@ from semantic_kernel.models.chat.chat_completion_result import (
     ChatCompletionResult,
 )
 from semantic_kernel.models.finish_reason import (
-    FinishReasonEnum,
+    FinishReason,
 )
 from semantic_kernel.models.usage_result import UsageResult
 
@@ -26,6 +26,8 @@ class OpenAIChatCompletionResult(ChatCompletionResult):
         cls, openai_object: OpenAIObject, is_streaming: bool = False
     ) -> ChatCompletionResult:
         """Parse a OpenAI Object response into a ChatCompletionResult."""
+        openai_object_dict = openai_object.to_dict_recursive()
+        print(openai_object_dict)
         choices = None
         if len(openai_object.choices) > 0:
             if "message" in openai_object.choices[0]:
@@ -33,7 +35,7 @@ class OpenAIChatCompletionResult(ChatCompletionResult):
                     ChatCompletionContent(
                         index=x.index,
                         message=OpenAIChatMessage.from_openai_object(x.message),
-                        finish_reason=FinishReasonEnum(x.finish_reason)
+                        finish_reason=FinishReason(x.finish_reason)
                         if x.finish_reason
                         else None,
                     )
@@ -44,7 +46,7 @@ class OpenAIChatCompletionResult(ChatCompletionResult):
                     ChatCompletionChunkContent(
                         index=x.index,
                         delta=OpenAIChatMessage.from_openai_object(x.delta),
-                        finish_reason=FinishReasonEnum(x.finish_reason)
+                        finish_reason=FinishReason(x.finish_reason)
                         if x.finish_reason
                         else None,
                     )
