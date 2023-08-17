@@ -26,8 +26,8 @@ ruff = "0.0.283"
 pytest-asyncio = "0.21.1"
 
 [tool.poetry.group.google_palm.dependencies]
-google-generativeai = "v0.1.0rc2"
-grpcio-status = "1.53.0"
+google-generativeai = { version = "^0.1.0", markers = "python_version >= '3.9'" }
+grpcio-status = { version = "^1.53.0", markers = "python_version >= '3.9'" }
 
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"

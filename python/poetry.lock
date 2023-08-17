@@ -1173,13 +1173,13 @@ requests = ["requests (>=2.20.0,<3.0.0.dev0)"]
 
 [[package]]
 name = "google-generativeai"
-version = "0.1.0rc2"
+version = "0.1.0"
 description = "Google Generative AI High level API client library and tools."
 category = "dev"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "google_generativeai-0.1.0rc2-py3-none-any.whl", hash = "sha256:b890489a7be176fb89f90c54a7b647976ffb39e28a8b47744945d0b9496f2eaa"},
+    {file = "google_generativeai-0.1.0-py3-none-any.whl", hash = "sha256:1cdfbef1bfc280a56172c48f480b71665122796f9f98f464e7918b840cc80c07"},
 ]
 
 [package.dependencies]
@@ -1278,19 +1278,19 @@ protobuf = ["grpcio-tools (>=1.56.0)"]
 
 [[package]]
 name = "grpcio-status"
-version = "1.53.0"
+version = "1.56.0"
 description = "Status proto mapping for gRPC"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "grpcio-status-1.53.0.tar.gz", hash = "sha256:5a46820dc7d94bac48aae5dd97c94cadea09d80a05553aca74a92a2954030420"},
-    {file = "grpcio_status-1.53.0-py3-none-any.whl", hash = "sha256:4f4bc140ed718a343d04a573c838c9fff5cb87f40d3cb2aa33b027c55031489d"},
+    {file = "grpcio-status-1.56.0.tar.gz", hash = "sha256:9eca0b2dcda0782d3702df225918efd6d820f75f93cd5c51c7fb6a4ffbfea12c"},
+    {file = "grpcio_status-1.56.0-py3-none-any.whl", hash = "sha256:e5f101c96686e9d4e94a114567960fdb00052aa3c818b029745e3db37dc9c613"},
 ]
 
 [package.dependencies]
 googleapis-common-protos = ">=1.5.5"
-grpcio = ">=1.53.0"
+grpcio = ">=1.56.0"
 protobuf = ">=4.21.6"
 
 [[package]]
@@ -5307,4 +5307,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "8c843101032dc48931b4a01e2c68df236bc1ec5115ba321b77b8cf322829af3d"
+content-hash = "fb23364a5daabcea4dd95b174c7fe88957eb53ec1dbf3dd655b0f071989273e7"
