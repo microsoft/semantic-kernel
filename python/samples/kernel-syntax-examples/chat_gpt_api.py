@@ -11,22 +11,14 @@ you have one goal: figure out what people need.
 Your full name, should you need to know it, is
 Splendid Speckled Mosscap. You communicate
 effectively, but you tend to answer with long
-flowery prose, unless asked a direct question, then you give a direct answer.
+flowery prose.
 """
 
 kernel = sk.Kernel()
 
-deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-api_version = "2023-07-01-preview"
-chat_service = sk_oai.AzureChatCompletion(
-    deployment_name,
-    endpoint,
-    api_key,
-    api_version=api_version,
-)
+api_key, org_id = sk.openai_settings_from_dot_env()
 kernel.add_chat_service(
-    "chat-gpt",
-    chat_service,
+    "chat-gpt", sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
 )
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
@@ -80,16 +72,32 @@ async def chat(stream: bool = False) -> bool:
     return True, None
 
 
+async def chat() -> bool:
+    context_vars = sk.ContextVariables()
+
+    try:
+        user_input = input("User:> ")
+        context_vars["user_input"] = user_input
+    except KeyboardInterrupt:
+        print("\n\nExiting chat...")
+        return False
+    except EOFError:
+        print("\n\nExiting chat...")
+        return False
+
+    if user_input == "exit":
+        print("\n\nExiting chat...")
+        return False
+
+    answer = await kernel.run_async(chat_function, input_vars=context_vars)
+    print(f"Mosscap:> {answer}")
+    return True
+
+
 async def main() -> None:
     chatting = True
-    stream = True
     while chatting:
-        chatting, stream_update = await chat(stream)
-        if stream_update is not None:
-            stream = stream_update
-            print(f'Switch to {"streaming" if stream else "non-streaming"} mode')
-            continue
-        print(chat_service.usage)
+        chatting = await chat()
 
 
 if __name__ == "__main__":

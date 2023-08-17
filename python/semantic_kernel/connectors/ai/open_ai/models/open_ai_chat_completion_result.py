@@ -26,8 +26,6 @@ class OpenAIChatCompletionResult(ChatCompletionResult):
         cls, openai_object: OpenAIObject, is_streaming: bool = False
     ) -> ChatCompletionResult:
         """Parse a OpenAI Object response into a ChatCompletionResult."""
-        openai_object_dict = openai_object.to_dict_recursive()
-        print(openai_object_dict)
         choices = None
         if len(openai_object.choices) > 0:
             if "message" in openai_object.choices[0]:
