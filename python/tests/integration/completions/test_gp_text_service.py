@@ -1,11 +1,21 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
-import semantic_kernel as sk
 import os
+import sys
 
-pytestmark = pytest.mark.skipif( "Python_Integration_Tests" in os.environ, 
-reason="Google Palm integration tests are only set up to run locally", )
+import pytest
+
+import semantic_kernel as sk
+
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
+)
+
+pytestmark = pytest.mark.skipif(
+    "Python_Integration_Tests" in os.environ,
+    reason="Google Palm integration tests are only set up to run locally",
+)
+
 
 @pytest.mark.asyncio
 async def test_text2text_generation_input_str(setup_gp_text_completion_function):
@@ -81,6 +91,7 @@ async def test_text2text_generation_input_context_with_str(
     output = str(summary).strip()
     print(f"Completion using context and additional string: '{output}'")
     assert len(output) > 0
+
 
 @pytest.mark.asyncio
 async def test_text2text_generation_input_context_with_vars_and_str(

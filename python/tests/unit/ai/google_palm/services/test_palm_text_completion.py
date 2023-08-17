@@ -1,13 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
+import asyncio
+import sys
+from unittest.mock import MagicMock, patch
 
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
+
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
 from semantic_kernel.connectors.ai.google_palm.services.gp_text_completion import (
-    GooglePalmTextCompletion
+    GooglePalmTextCompletion,
+)
+
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
 )
 
 
@@ -25,9 +31,10 @@ def test_google_palm_text_completion_init() -> None:
     assert gp_text_completion._api_key == api_key
     assert isinstance(gp_text_completion, GooglePalmTextCompletion)
 
+
 def test_google_palm_text_completion_init_with_empty_api_key() -> None:
     model_id = "test_model_id"
-    #api_key = "test_api_key"
+    # api_key = "test_api_key"
 
     with pytest.raises(
         ValueError, match="The Google PaLM API key cannot be `None` or empty"
@@ -37,6 +44,7 @@ def test_google_palm_text_completion_init_with_empty_api_key() -> None:
             api_key="",
         )
 
+
 @pytest.mark.asyncio
 async def test_google_palm_text_completion_complete_async_call_with_parameters() -> None:
     mock_response = MagicMock()
@@ -44,7 +52,7 @@ async def test_google_palm_text_completion_complete_async_call_with_parameters()
     mock_response.result.set_result("Example response")
     mock_gp = MagicMock()
     mock_gp.generate_text.return_value = mock_response
-    with patch (
+    with patch(
         "semantic_kernel.connectors.ai.google_palm.services.gp_text_completion.palm",
         new=mock_gp,
     ):
@@ -60,7 +68,7 @@ async def test_google_palm_text_completion_complete_async_call_with_parameters()
         assert isinstance(response.result(), str) and len(response.result()) > 0
 
         mock_gp.generate_text.assert_called_once_with(
-            model=model_id, 
+            model=model_id,
             prompt=prompt,
             temperature=settings.temperature,
             max_output_tokens=settings.max_tokens,

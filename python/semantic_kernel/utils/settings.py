@@ -80,6 +80,7 @@ def pinecone_settings_from_dot_env() -> Tuple[str, str]:
 
     return api_key, environment
 
+
 def google_palm_settings_from_dot_env() -> str:
     """
     Reads the Google PaLM API key from the .env file.
