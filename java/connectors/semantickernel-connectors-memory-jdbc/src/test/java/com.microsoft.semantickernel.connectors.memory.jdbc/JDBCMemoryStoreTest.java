@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.sqlite;
+package com.microsoft.semantickernel.connectors.memory.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,8 +30,8 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-public class SQLiteMemoryStoreTest {
-
+public class JDBCMemoryStoreTest {
+    
     private static MemoryStore _db;
     private static int _collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -40,8 +40,8 @@ public class SQLiteMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        _db = new SQLiteMemoryStore.Builder().build();
-        ((SQLiteMemoryStore) _db).connectAsync(":memory:").block();
+        _db = new JDBCMemoryStore.Builder().build();
+        ((JDBCMemoryStore) _db).connectAsync("jdbc:sqlite::memory:").block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {

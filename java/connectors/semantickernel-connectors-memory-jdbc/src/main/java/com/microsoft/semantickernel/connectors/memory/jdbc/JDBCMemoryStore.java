@@ -34,6 +34,12 @@ public class JDBCMemoryStore implements MemoryStore {
         return this.dbConnector.createTableAsync(this.dbConnection);
     }
 
+    public Mono<Void> connectAsync(@Nonnull Connection connection) throws SQLException {
+        Objects.requireNonNull(connection);
+        this.dbConnection = connection;
+        return this.dbConnector.createTableAsync(this.dbConnection);
+    }
+
     @Override
     public Mono<Void> createCollectionAsync(@Nonnull String collectionName) {
         Objects.requireNonNull(collectionName);

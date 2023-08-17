@@ -7,8 +7,10 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.ZonedDateTime;
 
 public class PostgreSQLConnector extends JDBCConnector implements Connector {
     @Override
@@ -32,6 +34,7 @@ public class PostgreSQLConnector extends JDBCConnector implements Connector {
                                             + "metadata TEXT, "
                                             + "embedding TEXT, "
                                             + "timestamp TEXT, "
+                                            + "UNIQUE (collection, key), "
                                             + "FOREIGN KEY(collection) REFERENCES "
                                             + COLLECTIONS_TABLE_NAME
                                             + "(id)"
@@ -51,6 +54,40 @@ public class PostgreSQLConnector extends JDBCConnector implements Connector {
                                 statement.executeBatch();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException("\"CREATE TABLE\" failed", e);
+                            }
+                        })
+                .subscribeOn(Schedulers.boundedElastic())
+                .then();
+    }
+
+    @Override
+    public Mono<Void> insertOrIgnoreAsync(
+            Connection connection,
+            String collection,
+            String key,
+            String metadata,
+            String embedding,
+            ZonedDateTime timestamp) {
+        return Mono.fromRunnable(
+                        () -> {
+                            String query =
+                                    "INSERT INTO "
+                                            + TABLE_NAME
+                                            + " (collection, key, metadata, embedding, timestamp)"
+                                            + " VALUES ((SELECT id FROM "
+                                            + COLLECTIONS_TABLE_NAME
+                                            + " WHERE name = ?), ?, ?, ?, ?)"
+                                            + " ON CONFLICT (collection, key) DO NOTHING";
+                            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                                statement.setString(1, collection);
+                                statement.setString(2, key);
+                                statement.setString(3, metadata != null ? metadata : "");
+                                statement.setString(4, embedding != null ? embedding : "");
+                                statement.setString(5, formatDatetime(timestamp));
+                                statement.executeUpdate();
+                            } catch (SQLException e) {
+                                throw new SQLConnectorException(
+                                        "\"INSERT INTO\" failed", e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())

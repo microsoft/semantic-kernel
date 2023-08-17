@@ -15,14 +15,14 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class JDBCConnector implements Connector {
-    // Convenience method to format a ZonedDateTime in a format acceptable to SQLite
-    private static String formatDatetime(ZonedDateTime datetime) {
+    // Convenience method to format a ZonedDateTime in a format acceptable to SQL
+    protected static String formatDatetime(ZonedDateTime datetime) {
         if (datetime == null) return "";
         return datetime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
-    // Convenience method to parse a SQLite datetime string into a ZonedDateTime
-    private static ZonedDateTime parseDatetime(String datetime) {
+    // Convenience method to parse a SQL datetime string into a ZonedDateTime
+    protected static ZonedDateTime parseDatetime(String datetime) {
         if (datetime == null || datetime.isEmpty()) return null;
         return ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
@@ -38,7 +38,7 @@ public class JDBCConnector implements Connector {
                                     "CREATE TABLE IF NOT EXISTS "
                                             + COLLECTIONS_TABLE_NAME
                                             + " ("
-                                            + "id INTEGER PRIMARY KEY, "
+                                            + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                                             + "name TEXT NOT NULL UNIQUE"
                                             + " )";
 
@@ -51,6 +51,7 @@ public class JDBCConnector implements Connector {
                                             + "metadata TEXT, "
                                             + "embedding TEXT, "
                                             + "timestamp TEXT, "
+                                            + "UNIQUE (collection, key), "
                                             + "FOREIGN KEY(collection) REFERENCES "
                                             + COLLECTIONS_TABLE_NAME
                                             + "(id)"
@@ -154,7 +155,7 @@ public class JDBCConnector implements Connector {
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
-                                        "\"INSERT OR IGNORE INTO\" failed", e);
+                                        "\"INSERT INTO OR IGNORE\" failed", e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())

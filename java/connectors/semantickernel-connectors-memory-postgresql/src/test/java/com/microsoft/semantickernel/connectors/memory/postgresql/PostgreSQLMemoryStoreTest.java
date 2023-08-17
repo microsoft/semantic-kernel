@@ -5,11 +5,16 @@ import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -20,19 +25,16 @@ import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PostgreSQLMemoryStoreTest {
-
-    private MemoryStore _db;
-
-    private int _collectionNum = 0;
-
+    private static MemoryStore _db;
+    private static int _collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
     private static final String NULL_KEY = null;
     private static final ZonedDateTime NULL_TIMESTAMP = null;
 
-    @BeforeEach
-    void setUp() throws SQLException {
+    @BeforeAll
+    static void setUp() throws SQLException {
         _db = new PostgreSQLMemoryStore.Builder().build();
-        ((PostgreSQLMemoryStore) _db).connectAsync("jdbc:postgresql://localhost:5432/test?user=postgres&password=root").block();
+        ((PostgreSQLMemoryStore) _db).connectAsync("jdbc:postgresql:database").block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -75,10 +77,10 @@ public class PostgreSQLMemoryStoreTest {
     }
 
     @Test
-    void itCanCreateAndGetCollectionAsync() {
+    void itCanCreateAndGetCollectionAsync() throws IOException {
         // Arrange
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         this._db.createCollectionAsync(collection).block();
@@ -115,8 +117,8 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Assert
         assertThrows(
@@ -137,8 +139,8 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         this._db.createCollectionAsync(collection).block();
@@ -174,8 +176,8 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         this._db.createCollectionAsync(collection).block();
@@ -200,8 +202,8 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         ZonedDateTime.now(ZoneId.of("UTC")));
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         this._db.createCollectionAsync(collection).block();
@@ -236,8 +238,8 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         this._db.createCollectionAsync(collection).block();
@@ -265,8 +267,8 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         this._db.createCollectionAsync(collection).block();
@@ -282,8 +284,8 @@ public class PostgreSQLMemoryStoreTest {
     @Test
     void removingNonExistingRecordDoesNothingAsync() {
         // Arrange
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         this._db.removeAsync(collection, "key").block();
@@ -298,20 +300,24 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         int numCollections = 3;
         String[] testCollections =
-                IntStream.range(this._collectionNum, this._collectionNum += numCollections)
+                IntStream.range(_collectionNum, _collectionNum += numCollections)
                         .mapToObj(i -> "test_collection" + i)
                         .toArray(String[]::new);
+
+        Collection<String> collections = this._db.getCollectionsAsync().block();
+        assertNotNull(collections);
+        int initialSize = collections.size();
 
         Flux.fromArray(testCollections)
                 .concatMap(collection -> this._db.createCollectionAsync(collection))
                 .blockLast();
 
         // Act
-        Collection<String> collections = this._db.getCollectionsAsync().block();
+        collections = this._db.getCollectionsAsync().block();
 
         // Assert
         assertNotNull(collections);
-        assertEquals(numCollections, collections.size());
+        assertEquals(initialSize + numCollections, collections.size());
         for (String collection : testCollections) {
             assertTrue(
                     collections.contains(collection),
@@ -324,8 +330,8 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
         int i = 0;
         MemoryRecord testRecord =
@@ -410,8 +416,8 @@ public class PostgreSQLMemoryStoreTest {
     void getNearestMatchesReturnsLimit() {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
         int i = 0;
         MemoryRecord testRecord =
@@ -490,8 +496,8 @@ public class PostgreSQLMemoryStoreTest {
     void getNearestMatchesReturnsEmptyIfLimitZero() {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
         int i = 0;
         MemoryRecord testRecord =
@@ -569,8 +575,8 @@ public class PostgreSQLMemoryStoreTest {
     void getNearestMatchesReturnsEmptyIfCollectionEmpty() {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
 
         // Act
@@ -591,8 +597,8 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
         int i = 0;
         MemoryRecord testRecord =
@@ -681,8 +687,8 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
         int i = 0;
         MemoryRecord testRecord =
@@ -762,8 +768,8 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
 
         // Act
@@ -782,8 +788,8 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
 
         for (int i = 0; i < 10; i++) {
@@ -826,8 +832,8 @@ public class PostgreSQLMemoryStoreTest {
     void itCanBatchUpsertRecordsAsync() {
         // Arrange
         int numRecords = 10;
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
         Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
 
@@ -846,8 +852,8 @@ public class PostgreSQLMemoryStoreTest {
     void itCanBatchGetRecordsAsync() {
         // Arrange
         int numRecords = 10;
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
         Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
         Collection<String> keys = this._db.upsertBatchAsync(collection, records).block();
@@ -865,8 +871,8 @@ public class PostgreSQLMemoryStoreTest {
     void itCanBatchRemoveRecordsAsync() {
         // Arrange
         int numRecords = 10;
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
         Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
 
@@ -889,18 +895,23 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         int numCollections = 3;
         String[] testCollections =
-                IntStream.range(this._collectionNum, this._collectionNum += numCollections)
+                IntStream.range(_collectionNum, _collectionNum += numCollections)
                         .mapToObj(i -> "test_collection" + i)
                         .toArray(String[]::new);
+
+        Collection<String> collections = this._db.getCollectionsAsync().block();
+        assertNotNull(collections);
+        int initialSize = collections.size();
 
         Flux.fromArray(testCollections)
                 .concatMap(collection -> this._db.createCollectionAsync(collection))
                 .blockLast();
+        _collectionNum += numCollections;
 
         // Act
-        Collection<String> collections = this._db.getCollectionsAsync().block();
+        collections = this._db.getCollectionsAsync().block();
         assertNotNull(collections);
-        assertEquals(numCollections, collections.size());
+        assertEquals(initialSize + numCollections, collections.size());
 
         // Act
         for (String collection : collections) {
@@ -916,8 +927,8 @@ public class PostgreSQLMemoryStoreTest {
     @Test
     void itThrowsWhenDeletingNonExistentCollectionAsync() {
         // Arrange
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         assertThrows(
@@ -927,8 +938,8 @@ public class PostgreSQLMemoryStoreTest {
     @Test
     void doesCollectionExistAsyncReturnTrueForExistingCollection() {
         // Arrange
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
         this._db.createCollectionAsync(collection).block();
 
         // Act
@@ -938,8 +949,8 @@ public class PostgreSQLMemoryStoreTest {
     @Test
     void doesCollectionExistAsyncReturnFalseForNonExistentCollection() {
         // Arrange
-        String collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        String collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
         assertFalse(this._db.doesCollectionExistAsync(collection).block());
