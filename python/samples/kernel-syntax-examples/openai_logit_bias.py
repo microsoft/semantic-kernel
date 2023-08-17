@@ -84,24 +84,24 @@ async def chat_request_example(kernel, api_key, org_id):
     kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
     chat_messages = list()
-    chat_messages.append(("user", user_mssg))
+    chat_messages.append({"role": "user", "content": user_mssg})
     answer = await openai_chat_completion.complete_chat_async(chat_messages, settings)
-    chat_messages.append(("assistant", str(answer)))
+    chat_messages.append({"role": "assistant", "content": answer.content})
 
     user_mssg = "What are his best all-time stats?"
-    chat_messages.append(("user", user_mssg))
+    chat_messages.append({"role": "user", "content": user_mssg})
     answer = await openai_chat_completion.complete_chat_async(chat_messages, settings)
-    chat_messages.append(("assistant", str(answer)))
+    chat_messages.append({"role": "assistant", "content": answer.content})
 
     context_vars = sk.ContextVariables()
     context_vars["chat_history"] = ""
     context_vars["chat_bot_ans"] = ""
-    for role, mssg in chat_messages:
-        if role == "user":
-            context_vars["chat_history"] += f"User:> {mssg}\n"
-        elif role == "assistant":
-            context_vars["chat_history"] += f"ChatBot:> {mssg}\n"
-            context_vars["chat_bot_ans"] += f"{mssg}\n"
+    for mssg in chat_messages:
+        if mssg["role"] == "user":
+            context_vars["chat_history"] += f"User:> {mssg['content']}\n"
+        elif mssg["role"] == "assistant":
+            context_vars["chat_history"] += f"ChatBot:> {mssg['content']}\n"
+            context_vars["chat_bot_ans"] += f"{mssg['content']}\n"
 
     kernel.remove_chat_service("chat_service")
     return context_vars, banned_words
@@ -160,8 +160,8 @@ async def text_complete_request_example(kernel, api_key, org_id):
     answer = await openai_text_completion.complete_async(user_mssg, settings)
 
     context_vars = sk.ContextVariables()
-    context_vars["chat_history"] = f"User:> {user_mssg}\nChatBot:> {answer}\n"
-    context_vars["chat_bot_ans"] = str(answer)
+    context_vars["chat_history"] = f"User:> {user_mssg}\nChatBot:> {answer.content}\n"
+    context_vars["chat_bot_ans"] = answer.content
 
     kernel.remove_text_completion_service("text_service")
     return context_vars, banned_words
