@@ -17,4 +17,9 @@ public class SKChatMessage : ChatMessageBase
         : base(new AuthorRole(message.Role.ToString()), message.Content)
     {
     }
+
+    public SKChatMessage(string role, string content)
+        : base(new AuthorRole(role), content)
+    {
+    }
 }
