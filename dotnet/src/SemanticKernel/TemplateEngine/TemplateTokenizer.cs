@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Microsoft.SemanticKernel.Text;
 
@@ -158,8 +159,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Variable:
                                     if (codeBlocks.Count > 1)
                                     {
-                                        throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                                            $"Invalid token detected after the variable: {contentWithoutDelimiters}");
+                                        throw new SKException($"Invalid token detected after the variable: {contentWithoutDelimiters}");
                                     }
 
                                     blocks.Add(codeBlocks[0]);
@@ -168,8 +168,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Value:
                                     if (codeBlocks.Count > 1)
                                     {
-                                        throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                                            $"Invalid token detected after the value: {contentWithoutDelimiters}");
+                                        throw new SKException($"Invalid token detected after the value: {contentWithoutDelimiters}");
                                     }
 
                                     blocks.Add(codeBlocks[0]);
@@ -178,8 +177,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.FunctionId:
                                     if (codeBlocks.Count > 2)
                                     {
-                                        throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                                            $"Functions support only one parameter: {contentWithoutDelimiters}");
+                                        throw new SKException($"Functions support only one parameter: {contentWithoutDelimiters}");
                                     }
 
                                     blocks.Add(new CodeBlock(codeBlocks, contentWithoutDelimiters, this._logger));
@@ -189,8 +187,7 @@ internal sealed class TemplateTokenizer
                                 case BlockTypes.Text:
                                 case BlockTypes.Undefined:
                                 default:
-                                    throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
-                                        $"Code tokenizer returned an incorrect first token type {codeBlocks[0].Type:G}");
+                                    throw new SKException($"Code tokenizer returned an incorrect first token type {codeBlocks[0].Type:G}");
                             }
                         }
 

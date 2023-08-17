@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
@@ -86,7 +86,7 @@ public class FunctionIdBlockTests
         // Arrange
         var target1 = new FunctionIdBlock("functionName");
         var target2 = new FunctionIdBlock("skillName.functionName");
-        Assert.Throws<TemplateException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
 
         // Act + Assert
         Assert.True(target1.IsValid(out _));

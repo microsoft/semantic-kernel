@@ -3,6 +3,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -21,9 +22,8 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         var functionNameParts = this.Content.Split('.');
         if (functionNameParts.Length > 2)
         {
-            this.Logger.LogError("Invalid function name `{0}`", this.Content);
-            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                "A function name can contain at most one dot separating the skill name from the function name");
+            this.Logger.LogError("Invalid function name `{FunctionName}`.", this.Content);
+            throw new SKException($"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the skill name from the function name");
         }
 
         if (functionNameParts.Length == 2)
