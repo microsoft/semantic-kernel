@@ -88,16 +88,27 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
-        this.AddDefaultValues(context.Variables);
+        return this.InternalInvokeAsync(context, settings, addDefaultValues: true, cancellationToken);
+    }
+
+    internal async Task<SKContext> InternalInvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null,
+        bool addDefaultValues = true,
+        CancellationToken cancellationToken = default)
+    {
+        if (addDefaultValues)
+        {
+            this.AddDefaultValues(context.Variables);
+        }
 
         return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
-
     /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
@@ -185,7 +196,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
-    private void AddDefaultValues(ContextVariables variables)
+    internal void AddDefaultValues(ContextVariables variables)
     {
         foreach (var parameter in this.Parameters)
         {

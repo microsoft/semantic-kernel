@@ -204,8 +204,11 @@ public sealed class Kernel : IKernel, IDisposable
                 var functionDetails = f.Describe();
                 string? renderedPrompt = null;
 
-                if (f is SemanticFunction semanticFunction)
+                SemanticFunction? semanticFunction = f as SemanticFunction;
+
+                if (semanticFunction is not null)
                 {
+                    semanticFunction.AddDefaultValues(context.Variables);
                     renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
                     context.SetRenderedPrompt(renderedPrompt);
                 }
@@ -216,7 +219,14 @@ public sealed class Kernel : IKernel, IDisposable
                     break;
                 }
 
-                context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (semanticFunction is not null)
+                {
+                    context = await semanticFunction.InternalInvokeAsync(context, addDefaultValues: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
 
                 if (context.ErrorOccurred)
                 {
