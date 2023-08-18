@@ -19,7 +19,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding impor
     OpenAITextEmbedding,
 )
 
-
 __all__ = [
     "OpenAITextCompletion",
     "OpenAIChatCompletion",
