@@ -13,7 +13,7 @@ internal static class Json
 
     internal static string ToJson(this object o) => JsonSerializer.Serialize(o, s_options);
 
-    internal static string Encode(string s) => HttpUtility.JavaScriptStringEncode(s);
+    internal static string Encode(string s, bool addQuotes) => addQuotes ? $"\"{HttpUtility.JavaScriptStringEncode(s)}\"" : HttpUtility.JavaScriptStringEncode(s);
 
     #region private ================================================================================
 

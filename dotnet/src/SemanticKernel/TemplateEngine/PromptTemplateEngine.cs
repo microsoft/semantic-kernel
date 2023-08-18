@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
@@ -37,7 +38,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     /// <inheritdoc/>
     public IList<Block> ExtractBlocks(string? templateText, bool validate = true)
     {
-        this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
+        this._logger.LogTrace("Extracting blocks from template: {0}", templateText != null ? Json.Encode(templateText, true) : "");
         var blocks = this._tokenizer.Tokenize(templateText);
 
         if (validate)
@@ -57,7 +58,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     /// <inheritdoc/>
     public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {
-        this._logger.LogTrace("Rendering string template: {0}", templateText);
+        this._logger.LogTrace("Rendering string template: {0}", Json.Encode(templateText, true));
         var blocks = this.ExtractBlocks(templateText);
         return await this.RenderAsync(blocks, context, cancellationToken).ConfigureAwait(false);
     }
@@ -99,7 +100,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         }
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Rendered prompt: {0}", result);
+        this._logger.LogTrace("Rendered prompt: {0}", Json.Encode(result.ToString(), true));
 
         return result.ToString();
     }
