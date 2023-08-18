@@ -42,7 +42,7 @@ Cons:
   
 ```handlebars
 
-{{MyFunction street:"123 Main St" zip:"98123" city:"Seattle" age: 25}}
+{{MyFunction street:"123 Main St" zip:"98123" city:"Seattle" age: "25"}}
 
 ```
 
@@ -98,4 +98,16 @@ Example
 ```handlebars
 
 {{MyFunction "inputVal" street="123 Main St" zip="98123" city="Seattle"}}
+
 ```
+
+* Allow whitespace before and after equals sign for named args because spaces are also ignored within curly braces.
+* Arg values are allowed to be defined as strings or variables, e.g.
+  
+```handlebars
+{{MyFunction street=$street zip="98123" city='Seattle'}}
+```
+
+If function expects a value other than a string for an argument, the SDK will use the corresponding TypeConverter to parse the string provided when evaluating the expression.
+
+Quotes are still required? TODO
