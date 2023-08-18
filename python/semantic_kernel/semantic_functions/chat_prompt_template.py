@@ -61,3 +61,24 @@ class ChatPromptTemplate(PromptTemplate):
         rendered_messages.append(("user", latest_user_message))
 
         return rendered_messages
+
+    @property
+    def messages(self) -> List[Tuple[str, str]]:
+        """Return the messages as a list of tuples of role and message."""
+        return [(role, message._template) for role, message in self._messages]
+
+    @classmethod
+    def restore(
+        cls,
+        messages: List[Tuple[str, str]],
+        template: str,
+        template_engine: PromptTemplatingEngine,
+        prompt_config: PromptTemplateConfig,
+        log: Optional[Logger] = None,
+    ) -> "ChatPromptTemplate":
+        """Restore a ChatPromptTemplate from a list of tuples of role and message."""
+        chat_template = cls(template, template_engine, prompt_config, log)
+        for role, message in messages:
+            chat_template.add_message(role, message)
+
+        return chat_template
