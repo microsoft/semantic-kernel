@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -63,14 +63,17 @@ class ChatPromptTemplate(PromptTemplate):
         return rendered_messages
 
     @property
-    def messages(self) -> List[Tuple[str, str]]:
+    def messages(self) -> List[Dict[str, str]]:
         """Return the messages as a list of tuples of role and message."""
-        return [(role, message._template) for role, message in self._messages]
+        return [
+            {"role": role, "message": message._template}
+            for role, message in self._messages
+        ]
 
     @classmethod
     def restore(
         cls,
-        messages: List[Tuple[str, str]],
+        messages: List[Dict[str, str]],
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
@@ -78,7 +81,7 @@ class ChatPromptTemplate(PromptTemplate):
     ) -> "ChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of tuples of role and message."""
         chat_template = cls(template, template_engine, prompt_config, log)
-        for role, message in messages:
-            chat_template.add_message(role, message)
+        for message in messages:
+            chat_template.add_message(message["role"], message["message"])
 
         return chat_template
