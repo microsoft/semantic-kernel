@@ -38,38 +38,7 @@ prompt_template.add_assistant_message(
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
-
-async def chat(stream: bool = False) -> bool:
-    context_vars = sk.ContextVariables()
-
-    try:
-        user_input = input("User:> ")
-        context_vars["user_input"] = user_input
-    except KeyboardInterrupt:
-        print("\n\nExiting chat...")
-        return False, None
-    except EOFError:
-        print("\n\nExiting chat...")
-        return False, None
-
-    if user_input == "exit":
-        print("\n\nExiting chat...")
-        return False, None
-    if user_input == "switch":
-        return True, not stream
-
-    if stream:
-        print("Mosscap:> ", end="")
-        async for answer in kernel.run_stream_async(
-            chat_function, input_vars=context_vars
-        ):
-            if answer.content:
-                print(answer.content, end="")
-        print()
-    else:
-        answer = await kernel.run_async(chat_function, input_vars=context_vars)
-        print(f"Mosscap:> {answer}")
-    return True, None
+STREAM = True
 
 
 async def chat() -> bool:
@@ -89,8 +58,17 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_async(chat_function, input_vars=context_vars)
-    print(f"Mosscap:> {answer}")
+    if STREAM:
+        print("Mosscap:> ", end="")
+        async for answer in kernel.run_stream_async(
+            chat_function, input_vars=context_vars
+        ):
+            if answer.content:
+                print(answer.content, end="")
+        print()
+    else:
+        answer = await kernel.run_async(chat_function, input_vars=context_vars)
+        print(f"Mosscap:> {answer}")
     return True
 
 
