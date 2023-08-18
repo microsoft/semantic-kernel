@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
@@ -321,6 +322,32 @@ public static class OpenAIKernelBuilderExtensions
         {
             builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
         }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the Azure OpenAI chat completion with data service to the list.
+    /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance.</param>
+    /// <param name="config">Required configuration for Azure OpenAI chat completion with data.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithAzureChatCompletionWithDataService(this KernelBuilder builder,
+        AzureChatCompletionWithDataConfig config,
+        string? serviceId = null,
+        bool setAsDefault = false,
+        HttpClient? httpClient = null)
+    {
+        AzureChatCompletionWithData Factory((ILogger Logger, KernelConfig Config) parameters) => new(
+            config,
+            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+            parameters.Logger);
+
+        builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
         return builder;
     }
