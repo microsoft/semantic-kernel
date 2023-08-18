@@ -9,6 +9,7 @@
     <PackageVersion Include="Azure.Identity" Version="1.9.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.3" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.2" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />

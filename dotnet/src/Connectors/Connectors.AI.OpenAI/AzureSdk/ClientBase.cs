@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -67,16 +66,16 @@ public abstract class ClientBase
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
             () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null)
+        if (response is null)
         {
-            throw new OpenAIInvalidResponseException<Completions>(null, "Text completions null response");
+            throw new SKException("Text completions null response");
         }
 
         var responseData = response.Value;
 
         if (responseData.Choices.Count == 0)
         {
-            throw new OpenAIInvalidResponseException<Completions>(responseData, "Text completions not found");
+            throw new SKException("Text completions not found");
         }
 
         return responseData.Choices.Select(choice => new TextResult(responseData, choice)).ToList();
@@ -115,11 +114,11 @@ public abstract class ClientBase
     /// <param name="data">List of strings to generate embeddings for</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of embeddings</returns>
-    private protected async Task<IList<Embedding<float>>> InternalGetEmbeddingsAsync(
+    private protected async Task<IList<ReadOnlyMemory<float>>> InternalGetEmbeddingsAsync(
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        var result = new List<Embedding<float>>();
+        var result = new List<ReadOnlyMemory<float>>(data.Count);
         foreach (string text in data)
         {
             var options = new EmbeddingsOptions(text);
@@ -127,19 +126,17 @@ public abstract class ClientBase
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
                 () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-            if (response == null)
+            if (response is null)
             {
-                throw new OpenAIInvalidResponseException<Embeddings>(null, "Text embedding null response");
+                throw new SKException("Text embedding null response");
             }
 
             if (response.Value.Data.Count == 0)
             {
-                throw new OpenAIInvalidResponseException<Embeddings>(response.Value, "Text embedding not found");
+                throw new SKException("Text embedding not found");
             }
 
-            EmbeddingItem x = response.Value.Data[0];
-
-            result.Add(new Embedding<float>(x.Embedding, transferOwnership: true));
+            result.Add(response.Value.Data[0].Embedding.ToArray());
         }
 
         return result;
@@ -166,14 +163,14 @@ public abstract class ClientBase
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null)
+        if (response is null)
         {
-            throw new OpenAIInvalidResponseException<ChatCompletions>(null, "Chat completions null response");
+            throw new SKException("Chat completions null response");
         }
 
         if (response.Value.Choices.Count == 0)
         {
-            throw new OpenAIInvalidResponseException<ChatCompletions>(response.Value, "Chat completions not found");
+            throw new SKException("Chat completions not found");
         }
 
         return response.Value.Choices.Select(chatChoice => new ChatResult(response.Value, chatChoice)).ToList();
@@ -203,7 +200,7 @@ public abstract class ClientBase
 
         if (response is null)
         {
-            throw new OpenAIInvalidResponseException<StreamingChatCompletions>(null, "Chat completions null response");
+            throw new SKException("Chat completions null response");
         }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;

@@ -11,10 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
@@ -124,7 +124,7 @@ public class ChromaMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         var results = this.GetNearestMatchesAsync(
             collectionName,
@@ -140,13 +140,13 @@ public class ChromaMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, Embedding<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, ReadOnlyMemory<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
         var collection = await this.GetCollectionOrThrowAsync(collectionName, cancellationToken).ConfigureAwait(false);
 
-        var queryEmbeddings = new float[][] { embedding.Vector.ToArray() };
+        var queryEmbeddings = new[] { embedding };
         var nResults = limit;
         var include = this.GetEmbeddingIncludeTypes(withEmbeddings: withEmbeddings, withDistances: true);
 
@@ -204,13 +204,13 @@ public class ChromaMemoryStore : IMemoryStore
         var recordsLength = recordsArray.Length;
 
         var ids = new string[recordsLength];
-        var embeddings = new float[recordsLength][];
+        var embeddings = new ReadOnlyMemory<float>[recordsLength];
         var metadatas = new object[recordsLength];
 
         for (var i = 0; i < recordsLength; i++)
         {
             ids[i] = recordsArray[i].Metadata.Id;
-            embeddings[i] = recordsArray[i].Embedding.Vector.ToArray();
+            embeddings[i] = recordsArray[i].Embedding;
             metadatas[i] = recordsArray[i].Metadata;
         }
 
@@ -232,9 +232,13 @@ public class ChromaMemoryStore : IMemoryStore
     private readonly IChromaClient _chromaClient;
     private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
 
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    internal static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
-        Converters = { new ChromaBooleanConverter() }
+        Converters =
+        {
+            new ChromaBooleanConverter(),
+            new ReadOnlyMemoryConverter(),
+        }
     };
 
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
@@ -252,7 +256,7 @@ public class ChromaMemoryStore : IMemoryStore
         }
         catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
         {
-            this._logger.LogError("Collection {0} does not exist", collectionName);
+            this._logger.LogDebug("Collection {0} does not exist", collectionName);
 
             return null;
         }
@@ -307,16 +311,16 @@ public class ChromaMemoryStore : IMemoryStore
 
     private MemoryRecordMetadata GetMetadataForMemoryRecord(List<Dictionary<string, object>>? metadatas, int recordIndex)
     {
-        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex]) : string.Empty;
+        var serializedMetadata = metadatas != null ? JsonSerializer.Serialize(metadatas[recordIndex], s_jsonSerializerOptions) : string.Empty;
 
         return
-            JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, this._jsonSerializerOptions) ??
+            JsonSerializer.Deserialize<MemoryRecordMetadata>(serializedMetadata, ChromaMemoryStore.s_jsonSerializerOptions) ??
             throw new SKException("Unable to deserialize memory record metadata.");
     }
 
-    private Embedding<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
+    private ReadOnlyMemory<float> GetEmbeddingForMemoryRecord(List<float[]>? embeddings, int recordIndex)
     {
-        return embeddings != null ? new Embedding<float>(embeddings[recordIndex]) : Embedding<float>.Empty;
+        return embeddings != null ? embeddings[recordIndex] : ReadOnlyMemory<float>.Empty;
     }
 
     private double GetSimilarityScore(List<double>? distances, int recordIndex)
