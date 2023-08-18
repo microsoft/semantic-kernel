@@ -9,6 +9,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 
@@ -18,7 +19,14 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 [DebuggerDisplay("{DebuggerDisplay}")]
 public class MultiCompletionSession
 {
-    public MultiCompletionSession(CompletionJob completionJob, PromptMultiConnectorSettings promptSettings, bool isNewPrompt, NamedTextCompletion namedTextCompletion, IReadOnlyList<NamedTextCompletion> availableCompletions, PromptConnectorSettings promptConnectorSettings, MultiTextCompletionSettings multiConnectorSettings, ILogger? logger)
+    public MultiCompletionSession(CompletionJob completionJob,
+        PromptMultiConnectorSettings promptSettings,
+        bool isNewPrompt,
+        NamedTextCompletion namedTextCompletion,
+        IReadOnlyList<NamedTextCompletion> availableCompletions,
+        PromptConnectorSettings promptConnectorSettings,
+        MultiTextCompletionSettings multiConnectorSettings,
+        ILogger? logger)
     {
         this.MultiConnectorSettings = multiConnectorSettings;
         this.PromptSettings = promptSettings;
@@ -35,9 +43,19 @@ public class MultiCompletionSession
         this.Context = this.CreateSessionContext();
     }
 
+    /// <summary>
+    /// This initializes a new dictionary with the global parameters from the <see cref="MultiTextCompletionSettings"/>. No dynamic transforms are applied.
+    /// </summary>
+    /// <param name="multiConnectorSettings"></param>
+    /// <returns></returns>
+    public static Dictionary<string, object> CreateSimpleContext(MultiTextCompletionSettings multiConnectorSettings)
+    {
+        return multiConnectorSettings.GlobalParameters.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value);
+    }
+
     private Dictionary<string, object> CreateSessionContext()
     {
-        var newContext = this.MultiConnectorSettings.GlobalParameters.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value);
+        var newContext = CreateSimpleContext(this.MultiConnectorSettings);
         if (this.MultiConnectorSettings.ContextProvider != null)
         {
             foreach (var kvp in this.MultiConnectorSettings.ContextProvider(this))
@@ -143,7 +161,7 @@ public class MultiCompletionSession
     /// </summary>
     public static CompletionJob AdjustPromptAndRequestSettings(MultiCompletionSession multiCompletionSession)
     {
-        multiCompletionSession.Logger?.LogTrace("### Adjusting prompt and settings for connector {0} and prompt type {1}", multiCompletionSession.NamedTextCompletion.Name, multiCompletionSession.PromptSettings.PromptType.Signature.PromptStart);
+        multiCompletionSession.Logger?.LogTrace("Adjusting prompt and settings for connector {0} and prompt type {1}", multiCompletionSession.NamedTextCompletion.Name, Json.Encode(multiCompletionSession.PromptSettings.PromptType.Signature.PromptStart, true));
 
         //Adjusting prompt
 

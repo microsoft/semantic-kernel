@@ -119,7 +119,7 @@ public class PromptSignature
         var promptLog = PromptSignature.GenerateTruncatedString(prompt, truncationLength, true, truncatedPromptFormat);
         if (applyJsonEncode)
         {
-            promptLog = Json.Encode(promptLog);
+            promptLog = Json.Encode(promptLog, true);
         }
 
         return promptLog;

@@ -152,6 +152,7 @@ public class PromptTransform
     /// </summary>
     /// <remarks>
     /// Warning: Please be careful when using this feature as it can be a security risk if the input is not sanitized.
+    /// Note that this is mitigated because templating capabilities only apply to their own level in a hierarchy of nested templates, they won't affect the inner template nor user inputs.
     /// </remarks>
     public string InterpolateDynamicLinqExpression(string value, Dictionary<string, object> context)
     {

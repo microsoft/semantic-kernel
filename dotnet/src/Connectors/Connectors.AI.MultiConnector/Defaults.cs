@@ -16,7 +16,9 @@ public static class Defaults
     public const string EmptyFormat = "{0}";
 
     public const string VettingPromptTemplate = @"Validate a text completion model's response to a semantic function: following are a templated prompt sent to a large language model and the completion it returned, to be evaluated. Please indicate whether the response is valid or not.
-{SemanticSupplement}
+{"
+                                                + nameof(Defaults.SemanticRemarks)
+                                                + @"}
 Does the reponse appropriately completes the prompt? Please answer simply with true or false.
 PROMPT:
 -------

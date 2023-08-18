@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ using Microsoft.SemanticKernel.Text;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace SemanticKernel.IntegrationTests.Connectors.MultiConnector;
 
@@ -76,11 +78,11 @@ public sealed class MultiConnectorTests : IDisposable
     /// This test method uses a plan loaded from a file, an input text of a particular difficulty, and all models configured in settings file
     /// </summary>
     [Theory]
-    [InlineData(1, 1, 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData(1, 1, 1, "Summarize_Topics_ElementAt.json", "Comm_medium.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToMultipleOobaboogaUsingFileAsync(double durationWeight, double costWeight, int nbPromptTests, string planFileName, string inputTextFileName, string validationTextFileName, params string[] skillNames)
+    [InlineData(true, 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, 1, "Summarize_Topics_ElementAt.json", "Comm_medium.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToMultipleOobaboogaUsingFileAsync(bool succeedsOffloading, int nbPromptTests, string planFileName, string inputTextFileName, string validationTextFileName, params string[] skillNames)
     {
-        await this.ChatGptOffloadsToSingleOobaboogaUsingFileAsync("", nbPromptTests, planFileName, inputTextFileName, validationTextFileName, skillNames).ConfigureAwait(false);
+        await this.ChatGptOffloadsToSingleOobaboogaUsingFileAsync(succeedsOffloading, "", nbPromptTests, planFileName, inputTextFileName, validationTextFileName, skillNames).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -88,19 +90,19 @@ public sealed class MultiConnectorTests : IDisposable
     /// </summary>
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
-    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")] Fail
-    //[InlineData("TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")] Fail
-    [InlineData("TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
-    //[InlineData("TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")] Fail
-    [InlineData("TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToSingleOobaboogaUsingFileAsync(string completion, int nbTests, string planFile, string inputFile, string validationFile, params string[] skills)
+    [InlineData(true, "TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(false, "TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(false, "TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToSingleOobaboogaUsingFileAsync(bool succeedsOffloading, string completion, int nbTests, string planFile, string inputFile, string validationFile, params string[] skills)
     {
         // Load the plan from the provided file path
         var planPath = System.IO.Path.Combine(this._planDirectory, planFile);
@@ -129,7 +131,7 @@ public sealed class MultiConnectorTests : IDisposable
             modelNames = new List<string> { completion };
         }
 
-        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, nbTests, skills).ConfigureAwait(false);
+        await this.ChatGptOffloadsToOobaboogaAsync(succeedsOffloading, planFactory, modelNames, nbTests, skills).ConfigureAwait(false);
     }
 
     // This test method uses the SequentialPlanner to create a plan based on difficulty
@@ -137,9 +139,9 @@ public sealed class MultiConnectorTests : IDisposable
     [Theory()]
     //[InlineData("",  1, "medium", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "SummarizeSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "trivial", "Comm_simple.txt", "Danse_simple.txt", "WriterSkill", "MiscSkill")]
-    [InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "Comm_simple.txt", "Danse_simple.txt", "WriterSkill", "MiscSkill")]
-    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(string completionName, int nbPromptTests, string difficulty, string inputFile, string validationFile, params string[] skillNames)
+    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "trivial", "Comm_simple.txt", "Danse_simple.txt", "WriterSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "medium", "Comm_simple.txt", "Danse_simple.txt", "WriterSkill", "MiscSkill")]
+    public async Task ChatGptOffloadsToOobaboogaUsingPlannerAsync(bool succeedsOffloading, string completionName, int nbPromptTests, string difficulty, string inputFile, string validationFile, params string[] skillNames)
     {
         // Create a plan using SequentialPlanner based on difficulty
         var modifiedStartGoal = StartGoal.Replace("distinct difficulties", $"{difficulty} difficulties", StringComparison.OrdinalIgnoreCase);
@@ -180,10 +182,10 @@ public sealed class MultiConnectorTests : IDisposable
             modelNames = new List<string> { completionName };
         }
 
-        await this.ChatGptOffloadsToOobaboogaAsync(planFactory, modelNames, nbPromptTests, skillNames).ConfigureAwait(false);
+        await this.ChatGptOffloadsToOobaboogaAsync(succeedsOffloading, planFactory, modelNames, nbPromptTests, skillNames).ConfigureAwait(false);
     }
 
-    private async Task ChatGptOffloadsToOobaboogaAsync(Func<IKernel, CancellationToken, bool, Task<Plan>> planFactory, List<string>? modelNames, int nbPromptTests, params string[] skillNames)
+    private async Task ChatGptOffloadsToOobaboogaAsync(bool succeedsOffloading, Func<IKernel, CancellationToken, bool, Task<Plan>> planFactory, List<string>? modelNames, int nbPromptTests, params string[] skillNames)
     {
         // Arrange
 
@@ -215,8 +217,8 @@ public sealed class MultiConnectorTests : IDisposable
             // Prompts with variable content at the start are currently not accounted for automatically though, and need either a manual regex to avoid creating increasing prompt types, or using the FreezePromptTypes setting but the first alternative is preferred because unmatched prompts will go through the entire settings unless a regex matches them. 
             AdjustPromptStarts = false,
             // Uncomment to enable additional logging of MultiTextCompletion calls, results and/or test sample collection
-            //LogCallResult = true,
-            //LogTestCollection = true,
+            LogCallResult = true,
+            LogTestCollection = true,
             // In those tests, we don't have information about the underlying model hosts, so we can't make performance comparisons between models. Instead, arbitrary cost per token are defined in settings, and usage costs are computed.
             ConnectorComparer = MultiTextCompletionSettings.GetWeightedConnectorComparer(0, 1),
             // Adding a simple transform for template-less models, which require a line break at the end of the prompt
@@ -224,8 +226,6 @@ public sealed class MultiConnectorTests : IDisposable
             {
                 TransformFunction = (s, context) => s.EndsWith("\n", StringComparison.OrdinalIgnoreCase) ? s : s + "\n",
             },
-            // Global parameter allow injecting common blocks in various prompts, using named string interpolation tokens
-            GlobalParameters = multiConnectorConfiguration.GlobalParameters,
             // Analysis settings are an important part of the main settings, dealing with how to collect samples, conduct tests, evaluate them and update the connector settings
             AnalysisSettings = new MultiCompletionAnalysisSettings()
             {
@@ -269,6 +269,13 @@ public sealed class MultiConnectorTests : IDisposable
             //================================== END ====== PROMPT/RESULT =============================================="
         };
 
+        // We add or override the global parameters from the settings file
+
+        foreach (var userGlobalParams in multiConnectorConfiguration.GlobalParameters)
+        {
+            settings.GlobalParameters[userGlobalParams.Key] = userGlobalParams.Value;
+        }
+
         // Cleanup in case the previous test failed to delete the analysis file
         if (File.Exists(settings.AnalysisSettings.AnalysisFilePath))
         {
@@ -293,10 +300,10 @@ public sealed class MultiConnectorTests : IDisposable
 
         // Create a plan
         this._logger.LogTrace("\n# Loading Test plan\n");
-        var plan = await planFactory(kernel, this._cleanupToken.Token, false);
-        var planJson = plan.ToJson();
+        var plan1 = await planFactory(kernel, this._cleanupToken.Token, false);
+        var plan1Json = plan1.ToJson();
 
-        this._logger.LogDebug("Plan used for multi-connector evaluation: {0}", planJson);
+        this._logger.LogDebug("Plan used for multi-connector first pass: {0}", plan1Json);
 
         settings.Creditor!.Reset();
 
@@ -314,7 +321,7 @@ public sealed class MultiConnectorTests : IDisposable
 
         settings.AnalysisSettings.EnableAnalysis = true;
 
-        var firstResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan).ConfigureAwait(false);
+        var firstResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan1).ConfigureAwait(false);
 
         var planRunOnceTimeElapsed = sw.Elapsed;
 
@@ -363,21 +370,19 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogTrace("\n# Optimization task finished\n");
 
-        this._logger.LogDebug("Optimized with suggested settings: {0}\n", Json.Serialize(optimizationResults.SuggestedSettings));
+        this._logger.LogDebug("Optimized with suggested settings: {0}\n", Json.Encode(Json.Serialize(optimizationResults.SuggestedSettings), true));
 
         //Re execute plan with suggested settings
 
-        this._logger.LogTrace("\n# Preparing plan for second run\n");
+        this._logger.LogTrace("\n# 2nd run of plan with updated settings and variable completions\n");
 
         settings.Creditor!.Reset();
 
         ctx = kernel.CreateNewContext();
 
-        plan = Plan.FromJson(planJson, ctx, true);
+        var plan2 = Plan.FromJson(plan1Json, ctx, true);
 
-        this._logger.LogTrace("\n# 2nd run of plan with updated settings and variable completions\n");
-
-        var secondResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan).ConfigureAwait(false);
+        var secondResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan2).ConfigureAwait(false);
 
         var planRunTwiceElapsed = sw.Elapsed;
         this._logger.LogTrace("\n# 2nd run finished\n");
@@ -396,7 +401,9 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogTrace("\n# Loading validation plan from factory\n");
 
-        plan = await planFactory(kernel, this._cleanupToken.Token, true);
+        var plan3 = await planFactory(kernel, this._cleanupToken.Token, true);
+
+        this._logger.LogDebug("Plan used for multi-connector validation: {0}", plan3.ToJson(true));
 
         // 
         settings.EnablePromptSampling = true;
@@ -417,7 +424,7 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogTrace("\n# 3rd run: New validation plan with updated settings and variable completions\n");
 
-        var validationResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan).ConfigureAwait(false);
+        var validationResult = await kernel.RunAsync(ctx.Variables, this._cleanupToken.Token, plan3).ConfigureAwait(false);
 
         var planRunThriceElapsed = sw.Elapsed;
         this._logger.LogTrace("\n# 3rd run finished\n");
@@ -456,6 +463,18 @@ public sealed class MultiConnectorTests : IDisposable
 
         this._logger.LogTrace("\n# Assertions \n");
 
+        if (succeedsOffloading)
+        {
+            this.DoOffloadingAsserts(firstPassEffectiveCost, secondPassEffectiveCost, evaluations);
+        }
+        else
+        {
+            Assert.Throws<XunitException>((Action)(() => this.DoOffloadingAsserts(firstPassEffectiveCost, secondPassEffectiveCost, evaluations)));
+        }
+    }
+
+    private void DoOffloadingAsserts(decimal firstPassEffectiveCost, decimal secondPassEffectiveCost, List<(ConnectorPromptEvaluation, AnalysisJob)> evaluations)
+    {
         this._logger.LogTrace("Asserting secondary connectors reduced the original plan cost");
 
         Assert.True(firstPassEffectiveCost > secondPassEffectiveCost);
@@ -510,7 +529,12 @@ public sealed class MultiConnectorTests : IDisposable
 
         var oobaboogaCompletions = new List<NamedTextCompletion>();
 
-        foreach (var oobaboogaConnector in multiConnectorConfiguration.OobaboogaCompletions)
+        var includedCompletions = multiConnectorConfiguration.OobaboogaCompletions.Where(configuration =>
+            multiConnectorConfiguration.IncludedConnectorsDev.Count > 0
+                ? multiConnectorConfiguration.IncludedConnectorsDev.Contains(configuration.Name)
+                : multiConnectorConfiguration.IncludedConnectors.Contains(configuration.Name));
+
+        foreach (var oobaboogaConnector in includedCompletions)
         {
             if (modelNames != null && !modelNames.Contains(oobaboogaConnector.Name))
             {

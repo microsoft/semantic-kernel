@@ -28,8 +28,8 @@ public class ArithmeticCompletionService : ITextCompletion
     {
         var tempOperation = ArithmeticEngine.GeneratePrompt(ArithmeticOperation.Add, 1, 1);
         var tempResult = "2";
-        var vettingJob = this.MultiTextCompletionSettings.AnalysisSettings.GetVettingCompletionJob(tempOperation, tempResult);
-        return this.MultiTextCompletionSettings.GetPromptSettings(vettingJob, out _);
+        var vettingSession = this.MultiTextCompletionSettings.AnalysisSettings.GetVettingJob(tempOperation, tempResult, this.MultiTextCompletionSettings);
+        return this.MultiTextCompletionSettings.GetPromptSettings(vettingSession, out _);
     }
 
     public PromptMultiConnectorSettings VettingPromptSettings { get; set; }

@@ -16,5 +16,9 @@ internal sealed class MultiConnectorConfiguration
 
     public Dictionary<string, string> GlobalParameters { get; set; } = new();
 
+    public List<string> IncludedConnectors { get; set; } = new();
+
+    public List<string> IncludedConnectorsDev { get; set; } = new();
+
     public List<OobaboogaConnectorConfiguration> OobaboogaCompletions { get; set; } = new();
 }

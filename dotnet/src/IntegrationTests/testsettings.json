@@ -38,6 +38,22 @@
       "SystemSupplement": "User is now playing a game where he is writing messages in the form of semantic functions. That means you are expected to strictly answer with a completion of his message, without adding any additional comments.",
       "UserPreamble": "Let's play a game: please read the following instructions, and simply answer with a completion of my message, don't add any personal comments."
     },
+    "IncludedConnectors": [
+      "TheBloke_orca_mini_3B-GGML",
+      "togethercomputer_RedPajama-INCITE-Chat-3B-v1",
+      "TheBloke_StableBeluga-7B-GGML",
+      "TheBloke_StableBeluga-13B-GGML",
+      "TheBloke_upstage-llama-30b-instruct-2048-GGML"
+    ],
+    "IncludedConnectorsDev": [
+      // Use this property in your testsettings.development.json file, uncommenting the appropriate lines according to your multi-start configuration,
+      // This allows enabling and disabling secondary completions without altering the main testsettings.json file.
+      //"TheBloke_orca_mini_3B-GGML",
+      //"togethercomputer_RedPajama-INCITE-Chat-3B-v1",
+      //"TheBloke_StableBeluga-7B-GGML",
+      //"TheBloke_StableBeluga-13B-GGML",
+      //"TheBloke_upstage-llama-30b-instruct-2048-GGML"
+    ],
     "OobaboogaCompletions": [
       {
         "Name": "TheBloke_orca_mini_3B-GGML",
@@ -46,7 +62,7 @@
         "MaxTokens": 2048,
         "CostPer1000Token": 0.0003,
         "PromptTransform": {
-          "Template": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n{System}\n\n### User:\n{0}\n\n### Assistant:"
+          "Template": "### System:\nYou are an AI assistant that follows instruction extremely well. Help as much as you can.\n{SystemSupplement}\n\n### User:\n{0}\n\n### Assistant:"
         }
       },
       {
@@ -66,7 +82,7 @@
         "MaxTokens": 4096,
         "CostPer1000Token": 0.0005,
         "PromptTransform": {
-          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n{System}\n\n### User:\n{0}\n\n### Assistant:"
+          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n{SystemSupplement}\n\n### User:\n{0}\n\n### Assistant:"
         }
       },
       {
@@ -76,7 +92,7 @@
         "MaxTokens": 4096,
         "CostPer1000Token": 0.0007,
         "PromptTransform": {
-          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n{System}\n\n### User:\n{0}\n\n### Assistant:"
+          "Template": "### System:\nThis is a system prompt, please behave and help the user.\n{SystemSupplement}\n\n### User:\n{0}\n\n### Assistant:"
         }
       },
       {
@@ -87,7 +103,7 @@
         "MaxTokens": 2048,
         "CostPer1000Token": 0.001,
         "PromptTransform": {
-          "Template": "### System:\r\n{System}\r\n\r\n### User:\r\n{0}\n\n### Assistant:\n"
+          "Template": "### System:\r\n{SystemSupplement}\r\n\r\n### User:\r\n{0}\n\n### Assistant:\n"
         }
       }
     ]

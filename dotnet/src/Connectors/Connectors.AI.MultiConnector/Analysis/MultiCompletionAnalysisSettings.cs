@@ -175,7 +175,11 @@ public class MultiCompletionAnalysisSettings : IDisposable
     /// <summary>
     /// The vetting prompt used in evaluation
     /// </summary>
-    public string VettingPromptTemplate { get; set; } = Defaults.VettingPromptTemplate;
+    public PromptTransform VettingPromptTransform { get; set; } = new()
+    {
+        Template = Defaults.VettingPromptTemplate,
+        InterpolationType = PromptInterpolationType.InterpolateKeys,
+    };
 
     /// <summary>
     /// Request settings for the vetting process
@@ -207,9 +211,12 @@ public class MultiCompletionAnalysisSettings : IDisposable
     /// <summary>
     /// Gets the vetting prompt and vetting request settings to evaluate a given ConnectorTest.
     /// </summary>
-    public CompletionJob GetVettingCompletionJob(string prompt, string result)
+    public CompletionJob GetVettingJob(string prompt, string result, MultiTextCompletionSettings generalSettings)
     {
-        var vettingPrompt = this.VettingPromptTemplate.Replace("{prompt}", prompt).Replace("{response}", result);
+        var vettingContext = MultiCompletionSession.CreateSimpleContext(generalSettings);
+        vettingContext.Add("prompt", prompt);
+        vettingContext.Add("response", result);
+        var vettingPrompt = this.VettingPromptTransform.TransformFunction("", vettingContext);
         var vettingRequestSettings = this.VettingRequestSettings;
         return new CompletionJob(vettingPrompt, vettingRequestSettings);
     }
@@ -217,15 +224,18 @@ public class MultiCompletionAnalysisSettings : IDisposable
     private Regex? _vettingCaptureRegex;
 
     /// <summary>
-    /// Accounting for the <see cref="VettingPromptTemplate"/> template, this method uses custom regex to return the prompt and response components of a given vetting prompt.
+    /// Accounting for the vetting prompt template, this method uses custom regex to return the prompt and response components of a given vetting prompt.
     /// </summary>
-    public (string prompt, string response) CaptureVettingPromptComponents(string vettingPrompt)
+    public (string prompt, string response) CaptureVettingPromptComponents(string vettingPrompt, MultiTextCompletionSettings generalSettings)
     {
         if (this._vettingCaptureRegex == null)
         {
-            var vettingPattern = Regex.Escape(this.VettingPromptTemplate)
-                                     .Replace(Regex.Escape("{prompt}"), "(?<prompt>[\\s\\S]+?)")
-                                     .Replace(Regex.Escape("{response}"), "(?<response>[\\s\\S]+?)")
+            var tempPrompt = "tempPrompt";
+            var tempResponse = "tempResponse";
+            var tempVettingJob = this.GetVettingJob(tempPrompt, tempResponse, generalSettings);
+            var vettingPattern = Regex.Escape(tempVettingJob.Prompt)
+                                     .Replace(tempPrompt, "(?<prompt>[\\s\\S]+?)")
+                                     .Replace(tempResponse, "(?<response>[\\s\\S]+?)")
                                  // Append a pattern to account for the rest of the text
                                  + "[\\s\\S]*";
 
@@ -338,7 +348,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
     /// </summary>
     public async Task<ConnectorPromptEvaluation?> EvaluateConnectorTestAsync(ConnectorTest connectorTest, AnalysisJob analysisJob)
     {
-        analysisJob.Logger?.LogTrace("### Starting evaluating connector test");
+        analysisJob.Logger?.LogTrace("\nStarting evaluating connector test\n");
 
         NamedTextCompletion? vettingConnector = null;
         if (this.UseSelfVetting)
@@ -355,13 +365,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
             analysisJob.Logger?.LogError("Evaluation could not be performed for connector {0}", connectorTest.ConnectorName);
         }
 
-        analysisJob.Logger?.LogDebug("Evaluated connector {0},\nVetted:{1} from: \nPROMPT_EVALUATED:\n{2}\nRESULT_EVALUATED:{3}",
-            evaluation?.Test.ConnectorName,
-            evaluation?.IsVetted,
-            analysisJob.Settings.GeneratePromptLog(evaluation?.Test.Prompt ?? ""),
-            analysisJob.Settings.GeneratePromptLog(evaluation?.Test.Result ?? ""));
-
-        analysisJob.Logger?.LogTrace("### Finished evaluating connector test");
+        analysisJob.Logger?.LogTrace("\nFinished evaluating test for connector {0}", connectorTest.ConnectorName);
 
         return evaluation;
     }
@@ -497,7 +501,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
     private async Task<List<ConnectorTest>> RunConnectorTestsAsync(MultiCompletionAnalysis completionAnalysis, AnalysisJob analysisJob)
     {
         ConcurrentBag<ConnectorTest> tests = new();
-        analysisJob.Logger?.LogTrace("## Starting running connector tests from {0} original prompts", completionAnalysis.Samples.Count);
+        analysisJob.Logger?.LogTrace("\n## Starting running connector tests from {0} original prompts, with max {1} prompts tested in parallel\n", completionAnalysis.Samples.Count, this.MaxDegreeOfParallelismTests);
 
         var tasks = new List<Task>();
         using SemaphoreSlim testSemaphore = new(this.MaxDegreeOfParallelismTests);
@@ -510,7 +514,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                 try
                 {
                     string promptLog = analysisJob.Settings.GeneratePromptLog(sampleTest.Prompt);
-                    analysisJob.Logger?.LogTrace("Starting running tests for prompt:\n {0} ", promptLog);
+                    analysisJob.Logger?.LogTrace("Starting running connector tests with max {0} connectors tested in parallel for prompt:\n {1}\n", promptLog, this.MaxDegreeOfParallelismConnectorsByTest);
 
                     var testJob = new CompletionJob(sampleTest.Prompt, sampleTest.RequestSettings);
                     var testPromptSettings = analysisJob.Settings.GetPromptSettings(testJob, out var isNew);
@@ -549,14 +553,14 @@ public class MultiCompletionAnalysisSettings : IDisposable
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        analysisJob.Logger?.LogTrace("## Finished running connector tests returning {0} tests to evaluate", tests.Count);
+        analysisJob.Logger?.LogTrace("\n## Finished running connector tests returning {0} tests to evaluate\n", tests.Count);
 
         return tests.ToList();
     }
 
     private async Task RunTestForConnectorAsync(NamedTextCompletion namedTextCompletion, CompletionJob testJob, PromptMultiConnectorSettings promptMultiConnectorSettings, ConcurrentBag<ConnectorTest> connectorTests, AnalysisJob analysisJob)
     {
-        analysisJob.Logger?.LogTrace("### Running Tests for connector {0}, {1} tests per prompt configured", namedTextCompletion.Name, this.NbPromptTests);
+        analysisJob.Logger?.LogTrace("\nRunning Tests for connector {0}, {1} tests per prompt configured, with max {2} tests run in parallel\n", namedTextCompletion.Name, this.NbPromptTests, namedTextCompletion.MaxDegreeOfParallelism);
 
         var tasks = new List<Task>();
         using SemaphoreSlim testSemaphore = new(namedTextCompletion.MaxDegreeOfParallelism);
@@ -571,16 +575,8 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     var stopWatch = Stopwatch.StartNew();
                     var promptConnectorSettings = promptMultiConnectorSettings.GetConnectorSettings(namedTextCompletion.Name);
 
-                    var session = new MultiCompletionSession(testJob,
-                        promptMultiConnectorSettings,
-                        false,
-                        namedTextCompletion,
-                        analysisJob.TextCompletions,
-                        promptConnectorSettings,
-                        analysisJob.Settings,
-                        analysisJob.Logger);
+                    var session = analysisJob.Settings.GetMultiCompletionSession(testJob, analysisJob.TextCompletions, analysisJob.Logger);
 
-                    session.AdjustPromptAndRequestSettings();
                     if (this.TestsTemperatureTransform != null)
                     {
                         var temperatureUpdater = new SettingsUpdater<CompleteRequestSettings>(session.CallJob.RequestSettings, MultiTextCompletionSettings.CloneRequestSettings);
@@ -604,7 +600,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     var connectorTest = ConnectorTest.Create(testJob, namedTextCompletion, result, duration, textCompletionCost);
                     connectorTests.Add(connectorTest);
 
-                    analysisJob.Logger?.LogDebug("Generated Test results for connector {0}, temperature: {1} duration: {2}\nTEST_PROMPT:\n{3}\nTEST_RESULT:\n{4} ", connectorTest.ConnectorName, session.CallJob.RequestSettings.Temperature, connectorTest.Duration, analysisJob.Settings.GeneratePromptLog(session.CallJob.Prompt), analysisJob.Settings.GeneratePromptLog(connectorTest.Result));
+                    analysisJob.Logger?.LogDebug("Generated Test results for connector {0}, temperature: {1} duration: {2}\nTEST_PROMPT:\n{3}\nTEST_RESULT:\n{4}\n", connectorTest.ConnectorName, session.CallJob.RequestSettings.Temperature, connectorTest.Duration, analysisJob.Settings.GeneratePromptLog(session.CallJob.Prompt), analysisJob.Settings.GeneratePromptLog(connectorTest.Result));
                 }
                 catch (AIException exception)
                 {
@@ -619,7 +615,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        analysisJob.Logger?.LogTrace("### Finished Running Tests for connector {0}, {1} tests were run", namedTextCompletion.Name, this.NbPromptTests);
+        analysisJob.Logger?.LogTrace("\nFinished Running Tests for connector {0}, {1} tests were run\n", namedTextCompletion.Name, this.NbPromptTests);
     }
 
     private MultiCompletionAnalysis SaveConnectorTestsReturnNeedEvaluate(List<ConnectorTest>? newTests, MultiCompletionAnalysis analysis, ILogger? logger, out bool needEvaluate)
@@ -659,7 +655,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
     private async Task<List<ConnectorPromptEvaluation>> RunConnectorTestsEvaluationsAsync(MultiCompletionAnalysis completionAnalysis, AnalysisJob analysisJob)
     {
         var currentEvaluations = new ConcurrentBag<ConnectorPromptEvaluation>();
-        analysisJob.Logger?.LogTrace("## Generating Evaluations from prompt test results");
+        analysisJob.Logger?.LogTrace(@"\n## Generating Evaluations from prompt test results with max {0} evaluations run in parallel\n", this.MaxDegreeOfParallelismEvaluations);
 
         var tasks = new List<Task>();
         var maxDegreeParallelism = Math.Min(this.MaxDegreeOfParallelismEvaluations, completionAnalysis.Tests.Count);
@@ -687,39 +683,31 @@ public class MultiCompletionAnalysisSettings : IDisposable
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        analysisJob.Logger?.LogTrace("## Finished Generating Evaluations from prompt test results");
+        analysisJob.Logger?.LogTrace("\n## Finished Generating Evaluations from prompt test results\n");
 
         return currentEvaluations.ToList();
     }
 
     private async Task<ConnectorPromptEvaluation?> EvaluateConnectorTestWithCompletionAsync(NamedTextCompletion vettingCompletion, ConnectorTest connectorTest, AnalysisJob analysisJob)
     {
-        var prompt = this.VettingPromptTemplate.Replace("{prompt}", connectorTest.Prompt).Replace("{response}", connectorTest.Result);
+        //var vettingPrompt = this.VettingPromptTemplate.Replace("{prompt}", connectorTest.Prompt).Replace("{response}", connectorTest.Result);
 
-        var vettingJob = new CompletionJob(prompt, this.VettingRequestSettings);
+        var vettingJob = this.GetVettingJob(connectorTest.Prompt, connectorTest.Result, analysisJob.Settings);
         var vettingPromptSettings = analysisJob.Settings.GetPromptSettings(vettingJob, out _);
         var vettingPromptConnectorSettings = vettingPromptSettings.GetConnectorSettings(vettingCompletion.Name);
 
-        var session = new MultiCompletionSession(vettingJob,
-            vettingPromptSettings,
-            false,
-            vettingCompletion,
-            analysisJob.TextCompletions,
-            vettingPromptConnectorSettings,
-            analysisJob.Settings,
-            analysisJob.Logger);
+        var vettingSession = analysisJob.Settings.GetMultiCompletionSession(vettingJob, analysisJob.TextCompletions, analysisJob.Logger);
 
-        session.AdjustPromptAndRequestSettings();
         string completionResult;
         var stopWatch = Stopwatch.StartNew();
         try
         {
-            completionResult = await vettingCompletion.TextCompletion.CompleteAsync(prompt, this.VettingRequestSettings, analysisJob.CancellationToken).ConfigureAwait(false) ?? "false";
+            completionResult = await vettingCompletion.TextCompletion.CompleteAsync(vettingJob.Prompt, vettingJob.RequestSettings, analysisJob.CancellationToken).ConfigureAwait(false) ?? "false";
             stopWatch.Stop();
         }
         catch (AIException exception)
         {
-            analysisJob.Logger?.LogError(exception, "Failed to evaluate test prompt with vetting connector {2}\nException:{0}\nVetting Prompt:\n{1} ", exception, exception.ToString(), prompt, vettingCompletion.Name);
+            analysisJob.Logger?.LogError(exception, "Failed to evaluate test prompt, exception thrown, with vetting connector {2}\nException:{0}\nVetting Prompt:\n{1}\n", exception, exception.ToString(), vettingJob.Prompt, vettingCompletion.Name);
             return null;
         }
 
@@ -736,7 +724,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
         }
         else
         {
-            analysisJob.Logger?.LogError("Failed to evaluate test prompt with vetting connector {2}\nVetting Prompt:\n{1} ", completionResult, prompt, vettingCompletion.Name);
+            analysisJob.Logger?.LogError("Failed to evaluate test prompt, primary connector answer not valid, with vetting connector {2}\nVetting Prompt:\n{1}\n", completionResult, vettingJob.Prompt, vettingCompletion.Name);
             isVetted = false;
         }
 
@@ -747,6 +735,13 @@ public class MultiCompletionAnalysisSettings : IDisposable
             Duration = elapsed,
             IsVetted = isVetted,
         };
+
+        analysisJob.Logger?.LogDebug("Evaluated connector {0},\nVetted:{1} by vetting connector:{2} from: \nVetting prompt:\n{3}\n",
+            toReturn.Test.ConnectorName,
+            toReturn.IsVetted,
+            toReturn.VettingConnector,
+            analysisJob.Settings.GeneratePromptLog(vettingSession.CallJob.Prompt));
+
         return toReturn;
     }
 
@@ -851,7 +846,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     // We then assess whether the connector is vetted by enough varied tests
                     var vettedVaried = evaluationsByMainConnector.Count() > 1 && !evaluationsByMainConnector.GroupBy(evaluation => evaluation.Test.Prompt).Any(grouping => grouping.Count() > 1);
                     promptConnectorSettings.VettingLevel = vetted ? vettedVaried ? VettingLevel.OracleVaried : VettingLevel.Oracle : VettingLevel.Invalid;
-                    logger?.LogDebug("Connector  {0}, configured according to evaluations with level:\n{1} for \nPrompt type with signature:\n{2}", connectorName, promptConnectorSettings.VettingLevel, promptMultiConnectorSettings.PromptType.Signature.PromptStart);
+                    logger?.LogDebug("Connector {0}, configured according to evaluations with level:\n{1}\nfor Prompt type with signature:{2}", connectorName, promptConnectorSettings.VettingLevel, Json.Encode(promptMultiConnectorSettings.PromptType.Signature.PromptStart, true));
                 }
             }
         }
@@ -920,7 +915,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     if (!currentAnalysisJob.CancellationToken.IsCancellationRequested)
                     {
                         var now = DateTime.Now;
-                        currentAnalysisJob.Logger?.LogTrace(message: "AnalyzeDataAsync triggered by test batch. Sent: {0}, Received: {1} ", currentAnalysisJob.Timestamp, now);
+                        currentAnalysisJob.Logger?.LogTrace(message: "AnalyzeDataAsync triggered by test batch. Sent: {0}, Received: {1}", currentAnalysisJob.Timestamp, now);
 
                         var delay = currentAnalysisJob.Timestamp + this.AnalysisDelay - now;
 
@@ -932,7 +927,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     }
                 }
 
-                currentAnalysisJob.Logger?.LogTrace(message: "## AnalyzeDataAsync launches new test and analysis pipeline");
+                currentAnalysisJob.Logger?.LogTrace(message: "AnalyzeDataAsync launches new test and analysis pipeline");
                 // Evaluate the test
 
                 await this.RunAnalysisPipelineAsync(currentAnalysisJob, this.AnalysisAwaitsManualTrigger).ConfigureAwait(false);
@@ -971,7 +966,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
         return Task.Factory.StartNew(
             async () =>
             {
-                initialJob.Logger?.LogTrace("# Analysis task was started");
+                initialJob.Logger?.LogTrace("\n# Analysis task was started\n");
 
                 using (CancellationTokenSource linkedCts =
                        CancellationTokenSource.CreateLinkedTokenSource(initialJob.CancellationToken, this._internalCancellationTokenSource.Token))
@@ -982,7 +977,7 @@ public class MultiCompletionAnalysisSettings : IDisposable
                     }
                 }
 
-                initialJob.Logger?.LogTrace("# Analysis task was cancelled and is closing gracefully");
+                initialJob.Logger?.LogTrace("\n# Analysis task was cancelled and is closing gracefully\n");
             },
             initialJob.CancellationToken,
             TaskCreationOptions.LongRunning,

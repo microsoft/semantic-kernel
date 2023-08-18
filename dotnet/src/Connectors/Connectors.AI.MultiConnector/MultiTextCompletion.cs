@@ -60,10 +60,10 @@ public class MultiTextCompletion : ITextCompletion
     /// <inheritdoc />
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        this._logger?.LogTrace("## Starting MultiTextCompletion.GetCompletionsAsync");
+        this._logger?.LogTrace("\n## Starting MultiTextCompletion.GetCompletionsAsync\n");
         var completionJob = new CompletionJob(text, requestSettings);
-        var session = this.GetPromptAndConnectorSettings(completionJob);
-        this._logger?.LogTrace("### Calling chosen completion with adjusted prompt and settings");
+        var session = this._settings.GetMultiCompletionSession(completionJob, this.TextCompletions, this._logger);
+        this._logger?.LogTrace("Calling chosen completion with adjusted prompt and settings");
         var completions = await session.NamedTextCompletion.TextCompletion.GetCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, cancellationToken).ConfigureAwait(false);
 
         var resultLazy = new AsyncLazy<string>(() =>
@@ -77,17 +77,17 @@ public class MultiTextCompletion : ITextCompletion
 
         await this.ProcessTextCompletionResultsAsync(session, cancellationToken).ConfigureAwait(false);
 
-        this._logger?.LogTrace("## Ending MultiTextCompletion.GetCompletionsAsync");
+        this._logger?.LogTrace("\n## Ending MultiTextCompletion.GetCompletionsAsync\n");
         return completions;
     }
 
     /// <inheritdoc />
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
-        this._logger?.LogTrace("## Starting MultiTextCompletion.GetStreamingCompletionsAsync");
+        this._logger?.LogTrace("\n## Starting MultiTextCompletion.GetStreamingCompletionsAsync\n");
         var completionJob = new CompletionJob(text, requestSettings);
-        var session = this.GetPromptAndConnectorSettings(completionJob);
-        this._logger?.LogTrace("### Calling chosen completion with adjusted prompt and settings");
+        var session = this._settings.GetMultiCompletionSession(completionJob, this.TextCompletions, this._logger);
+        this._logger?.LogTrace("Calling chosen completion with adjusted prompt and settings");
         var result = session.NamedTextCompletion.TextCompletion.GetStreamingCompletionsAsync(session.CallJob.Prompt, session.CallJob.RequestSettings, cancellationToken);
 
         var resultLazy = new AsyncLazy<string>(async () =>
@@ -111,33 +111,9 @@ public class MultiTextCompletion : ITextCompletion
 
         this.ProcessTextCompletionResultsAsync(session, cancellationToken).ConfigureAwait(false);
 
-        this._logger?.LogTrace("## Ending MultiTextCompletion.GetStreamingCompletionsAsync");
+        this._logger?.LogTrace("\n## Ending MultiTextCompletion.GetStreamingCompletionsAsync\n");
 
         return result;
-    }
-
-    /// <summary>
-    /// This method is responsible for loading the appropriate settings in order to initiate the session state
-    /// </summary>
-    private MultiCompletionSession GetPromptAndConnectorSettings(CompletionJob completionJob)
-    {
-        var promptSettings = this._settings.GetPromptSettings(completionJob, out var isNewPrompt);
-        this._logger?.LogTrace("### Retrieved prompt type and settings for connector, prompt signature:{0}", promptSettings.PromptType.Signature.PromptStart);
-        var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(completionJob, this._textCompletions, this._settings.ConnectorComparer);
-        this._logger?.LogTrace("### Selected connector for prompt type: {0}", textCompletionAndSettings.namedTextCompletion.Name);
-
-        var session = new MultiCompletionSession(completionJob,
-            promptSettings,
-            isNewPrompt,
-            textCompletionAndSettings.namedTextCompletion,
-            this._textCompletions,
-            textCompletionAndSettings.promptConnectorSettings,
-            this._settings,
-            this._logger);
-
-        session.AdjustPromptAndRequestSettings();
-
-        return session;
     }
 
     /// <summary>
@@ -243,7 +219,7 @@ public class MultiTextCompletion : ITextCompletion
                     }
                 }
 
-                this._logger?.LogTrace(message: "## CollectSamplesAsync collected a new ConnectorTest series to analyze", testSeries);
+                this._logger?.LogTrace(message: "CollectSamplesAsync collected a new ConnectorTest series to analyze", testSeries);
 
                 var analysisJob = new AnalysisJob(this._settings, this._textCompletions, this._logger, cancellationToken);
                 // Save the tests

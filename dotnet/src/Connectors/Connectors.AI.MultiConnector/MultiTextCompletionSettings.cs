@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
 using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.PromptSettings;
@@ -222,6 +223,30 @@ public class MultiTextCompletionSettings
         }
 
         return toReturn;
+    }
+
+    /// <summary>
+    /// This method is responsible for loading the appropriate settings in order to initiate the session state
+    /// </summary>
+    public MultiCompletionSession GetMultiCompletionSession(CompletionJob completionJob, IReadOnlyList<NamedTextCompletion> textCompletions, ILogger? logger)
+    {
+        var promptSettings = this.GetPromptSettings(completionJob, out var isNewPrompt);
+        logger?.LogTrace("Retrieved prompt type and settings for connector, prompt signature:{0}", Json.Encode(promptSettings.PromptType.Signature.PromptStart, true));
+        var textCompletionAndSettings = promptSettings.SelectAppropriateTextCompletion(completionJob, textCompletions, this.ConnectorComparer);
+        logger?.LogTrace("Selected connector for prompt type: {0}", textCompletionAndSettings.namedTextCompletion.Name);
+
+        var session = new MultiCompletionSession(completionJob,
+            promptSettings,
+            isNewPrompt,
+            textCompletionAndSettings.namedTextCompletion,
+            textCompletions,
+            textCompletionAndSettings.promptConnectorSettings,
+            this,
+            logger);
+
+        session.AdjustPromptAndRequestSettings();
+
+        return session;
     }
 
     /// <summary>
