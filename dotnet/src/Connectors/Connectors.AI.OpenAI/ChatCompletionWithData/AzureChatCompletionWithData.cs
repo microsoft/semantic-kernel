@@ -29,8 +29,8 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
     /// Initializes a new instance of the <see cref="AzureChatCompletionWithData"/> class.
     /// </summary>
     /// <param name="config">Instance of <see cref="AzureChatCompletionWithDataConfig"/> class with completion configuration.</param>
-    /// <param name="httpClient"></param>
-    /// <param name="logger"></param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <param name="logger">Optional logger.</param>
     public AzureChatCompletionWithData(
         AzureChatCompletionWithDataConfig config,
         HttpClient? httpClient = null,
