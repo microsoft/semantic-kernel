@@ -112,12 +112,30 @@ The scripts below are used to build, test, and lint within the project.
   - Linting (auto-fix): `yarn lint:fix`
 
 ### Adding Plugins and Memory Connectors
-When considering contributions to plugins and memory connectors for Semantic Kernel, please note the following guidelines:
+
+When considering contributions to plugins and memory connectors for Semantic
+Kernel, please note the following guidelines:
+
 #### Plugins
-We appreciate your interest in extending Semantic Kernel's functionality through plugins. However, we want to clarify our approach to hosting plugins within our GitHub repository. To maintain a clean and manageable codebase, we will not be hosting plugins directly in the Semantic Kernel GitHub repository.
-Instead, we encourage contributors to host their plugin code in separate repositories under their own GitHub accounts or organization. You can then provide a link to your plugin repository in the relevant discussions, issues, or documentation within the Semantic Kernel repository. This approach ensures that each plugin can be maintained independently and allows for easier tracking of updates and issues specific to each plugin.
+
+We appreciate your interest in extending Semantic Kernel's functionality through
+plugins. However, we want to clarify our approach to hosting plugins within our
+GitHub repository. To maintain a clean and manageable codebase, we will not be
+hosting plugins directly in the Semantic Kernel GitHub repository.
+Instead, we encourage contributors to host their plugin code in separate
+repositories under their own GitHub accounts or organization. You can then
+provide a link to your plugin repository in the relevant discussions, issues,
+or documentation within the Semantic Kernel repository. This approach ensures
+that each plugin can be maintained independently and allows for easier tracking
+of updates and issues specific to each plugin.
+
 #### Memory Connectors
-For memory connectors, while we won't be directly adding hosting for them within the Semantic Kernel repository, we highly recommend building memory connectors as separate plugins. Memory connectors play a crucial role in interfacing with external memory systems, and treating them as plugins enhances modularity and maintainability.
+
+For memory connectors, while we won't be directly adding hosting for them within
+the Semantic Kernel repository, we highly recommend building memory connectors
+as separate plugins. Memory connectors play a crucial role in interfacing with
+external memory systems, and treating them as plugins enhances modularity and
+maintainability.
 
 ### PR - CI Process
 
