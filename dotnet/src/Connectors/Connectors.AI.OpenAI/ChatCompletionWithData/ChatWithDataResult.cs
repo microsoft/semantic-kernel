@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
-internal class ChatWithDataResult : IChatResult
+internal sealed class ChatWithDataResult : IChatResult
 {
     public ChatWithDataResult(ChatWithDataChoice choice)
     {

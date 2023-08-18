@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 [Serializable]
-internal class ChatWithDataMessage
+internal sealed class ChatWithDataMessage
 {
     [JsonPropertyName("role")]
     public string Role { get; set; } = string.Empty;

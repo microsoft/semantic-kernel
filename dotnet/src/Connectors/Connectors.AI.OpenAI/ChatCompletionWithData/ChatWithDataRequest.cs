@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 

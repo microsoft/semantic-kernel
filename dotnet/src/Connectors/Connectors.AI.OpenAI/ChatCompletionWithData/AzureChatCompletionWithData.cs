@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
 /// <summary>
 /// Azure OpenAI Chat Completion with data client.
-/// More information: https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart
+/// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
 public sealed class AzureChatCompletionWithData : IChatCompletion
 {
