@@ -3,7 +3,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.MultiConnector.Analysis;
+using Microsoft.SemanticKernel.Connectors.AI.MultiConnector;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.Connectors.UnitTests.MultiConnector.TextCompletion.ArithmeticMocks;
@@ -12,11 +12,11 @@ public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
 {
     private readonly string _prompt;
     private ArithmeticEngine _engine;
-    private readonly MultiCompletionAnalysisSettings _analysisSettings;
+    private readonly MultiTextCompletionSettings _settings;
 
-    public ArithmeticVettingStreamingResult(MultiCompletionAnalysisSettings analysisSettings, string prompt, ArithmeticEngine engine, TimeSpan callTime) : base()
+    public ArithmeticVettingStreamingResult(MultiTextCompletionSettings settings, string prompt, ArithmeticEngine engine, TimeSpan callTime) : base()
     {
-        this._analysisSettings = analysisSettings;
+        this._settings = settings;
         this._prompt = prompt;
         this._engine = engine;
     }
@@ -25,7 +25,7 @@ public class ArithmeticVettingStreamingResult : ArithmeticStreamingResultBase
     {
         try
         {
-            var analysisComponents = this._analysisSettings.CaptureVettingPromptComponents(this._prompt);
+            var analysisComponents = this._settings.AnalysisSettings.CaptureVettingPromptComponents(this._prompt, this._settings);
 
             var operation = ArithmeticEngine.ParsePrompt(analysisComponents.prompt);
             var correctResult = ArithmeticEngine.Compute(operation.operation, operation.operand1, operation.operand2);

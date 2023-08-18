@@ -70,7 +70,7 @@ public class ArithmeticCompletionService : ITextCompletion
         ArithmeticStreamingResultBase streamingResult;
         if (isVetting)
         {
-            streamingResult = new ArithmeticVettingStreamingResult(this.MultiTextCompletionSettings.AnalysisSettings, job.Prompt, this.Engine, this.CallTime);
+            streamingResult = new ArithmeticVettingStreamingResult(this.MultiTextCompletionSettings, job.Prompt, this.Engine, this.CallTime);
         }
         else
         {

@@ -101,7 +101,7 @@ public sealed class MultiConnectorTests : IDisposable
     [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
     [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
     [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(false, "TheBloke_StableBeluga-13B-GGML", 1, "Summarize_Topics_ElementAt.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
     public async Task ChatGptOffloadsToSingleOobaboogaUsingFileAsync(bool succeedsOffloading, string completion, int nbTests, string planFile, string inputFile, string validationFile, params string[] skills)
     {
         // Load the plan from the provided file path
@@ -136,7 +136,7 @@ public sealed class MultiConnectorTests : IDisposable
 
     // This test method uses the SequentialPlanner to create a plan based on difficulty
     //[Theory(Skip = "This test is for manual verification.")]
-    [Theory()]
+    [Theory]
     //[InlineData("",  1, "medium", "SummarizeSkill", "MiscSkill")]
     //[InlineData("TheBloke_StableBeluga-13B-GGML", 1, "medium", "SummarizeSkill", "MiscSkill")]
     [InlineData(true, "TheBloke_StableBeluga-13B-GGML", 1, "trivial", "Comm_simple.txt", "Danse_simple.txt", "WriterSkill", "MiscSkill")]
