@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -166,7 +166,7 @@ public class SequentialPlanParserTests
         var planString = "<someTag>";
 
         // Act
-        Assert.Throws<PlanningException>(() => planString.ToPlanFromXml(GoalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext())));
+        Assert.Throws<SKException>(() => planString.ToPlanFromXml(GoalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext())));
     }
 
     // Test that contains a #text node in the plan
@@ -237,7 +237,7 @@ public class SequentialPlanParserTests
         }
         else
         {
-            Assert.Throws<PlanningException>(() => planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()), allowMissingFunctions));
+            Assert.Throws<SKException>(() => planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()), allowMissingFunctions));
         }
     }
 

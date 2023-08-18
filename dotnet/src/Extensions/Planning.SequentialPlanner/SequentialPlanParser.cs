@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -68,7 +69,7 @@ internal static class SequentialPlanParser
     /// <param name="getSkillFunction">The callback to get a skill function.</param>
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
-    /// <exception cref="PlanningException">Thrown when the plan xml is invalid.</exception>
+    /// <exception cref="SKException">Thrown when the plan xml is invalid.</exception>
     internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getSkillFunction, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
@@ -98,12 +99,12 @@ internal static class SequentialPlanParser
                 }
                 catch (XmlException ex)
                 {
-                    throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml strings: '{xmlString}' or '{planXml}'", ex);
+                    throw new SKException($"Failed to parse plan xml strings: '{xmlString}' or '{planXml}'", ex);
                 }
             }
             else
             {
-                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to parse plan xml string: '{xmlString}'", e);
+                throw new SKException($"Failed to parse plan xml string: '{xmlString}'", e);
             }
         }
 
@@ -187,7 +188,7 @@ internal static class SequentialPlanParser
                             }
                             else
                             {
-                                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to find function '{skillFunctionName}' in skill '{skillName}'.");
+                                throw new SKException($"Failed to find function '{skillFunctionName}' in skill '{skillName}'.");
                             }
                         }
                     }
