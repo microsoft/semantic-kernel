@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
@@ -14,9 +15,6 @@ public static class Example54_AzureChatCompletionWithData
 {
     public static async Task RunAsync()
     {
-        var chatCompletion = GetChatCompletion();
-        var chatHistory = chatCompletion.CreateNewChat();
-
         // Uploaded content in Azure Blob Storage in .txt file:
 
         // Emily and David, two passionate scientists, met during a research expedition to Antarctica.
@@ -24,20 +22,31 @@ public static class Example54_AzureChatCompletionWithData
         // they uncovered a groundbreaking phenomenon in glaciology that could
         // potentially reshape our understanding of climate change.
 
-        // First message without previous context - question based on uploaded content.
+        await ExampleWithChatCompletion();
+        await ExampleWithKernel();
+    }
+
+    private static async Task ExampleWithChatCompletion()
+    {
+        Console.WriteLine("=== Example with Chat Completion ===");
+
+        var chatCompletion = new AzureChatCompletionWithData(GetCompletionWithDataConfig());
+        var chatHistory = chatCompletion.CreateNewChat();
+
+        // First question without previous context based on uploaded content.
         chatHistory.AddUserMessage("How did Emily and David meet?");
 
-        // Completion example
+        // Chat Completion example
         string reply = await chatCompletion.GenerateMessageAsync(chatHistory);
 
         // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine(reply);
         Console.Write(Environment.NewLine);
 
-        // Second message
-        chatHistory.AddUserMessage("What are they studying?");
+        // Second question based on uploaded content.
+        chatHistory.AddUserMessage("What are Emily and David studying?");
 
-        // Completion streaming example
+        // Chat Completion Streaming example
         await foreach (var message in chatCompletion.GenerateMessagesStreamAsync(chatHistory))
         {
             // Output:
@@ -45,14 +54,47 @@ public static class Example54_AzureChatCompletionWithData
             // a branch of geology that deals with the study of ice and its effects.
             Console.Write(message);
         }
+
+        Console.Write(Environment.NewLine);
+    }
+
+    private static async Task ExampleWithKernel()
+    {
+        Console.WriteLine("=== Example with Kernel ===");
+
+        var completionWithDataConfig = GetCompletionWithDataConfig();
+
+        IKernel kernel = new KernelBuilder()
+            .WithAzureChatCompletionService(config: completionWithDataConfig)
+            .Build();
+
+        var semanticFunction = kernel.CreateSemanticFunction("Question: {{$input}}");
+
+        // First question without previous context based on uploaded content.
+        var result = await semanticFunction.InvokeAsync("How did Emily and David meet?");
+
+        // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
+        Console.WriteLine(result);
+        Console.Write(Environment.NewLine);
+
+        // Second question based on uploaded content.
+        result = await semanticFunction.InvokeAsync("What are Emily and David studying?");
+
+        // Output:
+        // They are passionate scientists who study glaciology,
+        // a branch of geology that deals with the study of ice and its effects.
+        Console.WriteLine(result);
+
+        Console.Write(Environment.NewLine);
+        Console.Write(Environment.NewLine);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureChatCompletionWithData"/> class with completion configuration.
+    /// Initializes a new instance of the <see cref="AzureChatCompletionWithDataConfig"/> class.
     /// </summary>
-    private static AzureChatCompletionWithData GetChatCompletion()
+    private static AzureChatCompletionWithDataConfig GetCompletionWithDataConfig()
     {
-        return new(new AzureChatCompletionWithDataConfig
+        return new AzureChatCompletionWithDataConfig
         {
             CompletionModelId = TestConfiguration.AzureOpenAI.ChatDeploymentName,
             CompletionEndpoint = TestConfiguration.AzureOpenAI.Endpoint,
@@ -60,6 +102,6 @@ public static class Example54_AzureChatCompletionWithData
             DataSourceEndpoint = TestConfiguration.ACS.Endpoint,
             DataSourceApiKey = TestConfiguration.ACS.ApiKey,
             DataSourceIndex = TestConfiguration.ACS.IndexName
-        });
+        };
     }
 }
