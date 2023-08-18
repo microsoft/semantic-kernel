@@ -147,14 +147,14 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         {
             var body = await reader.ReadLineAsync().ConfigureAwait(false);
 
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                continue;
+            }
+
             if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 body = body.Substring(ServerEventPayloadPrefix.Length);
-            }
-
-            if (body.Length == 0)
-            {
-                continue;
             }
 
             var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
