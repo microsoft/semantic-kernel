@@ -35,15 +35,14 @@ public static class Example54_AzureChatCompletionWithData
         Console.Write(Environment.NewLine);
 
         // Second message
-        chatHistory.AddUserMessage("What did they find?");
+        chatHistory.AddUserMessage("What are they studying?");
 
         // Completion streaming example
         await foreach (var message in chatCompletion.GenerateMessagesStreamAsync(chatHistory))
         {
             // Output:
-            // Emily and David uncovered a groundbreaking phenomenon in
-            // glaciology that could potentially reshape our understanding
-            // of climate change during their research expedition to Antarctica [doc1].[DONE]
+            // They are passionate scientists who study glaciology,
+            // a branch of geology that deals with the study of ice and its effects.
             Console.Write(message);
         }
     }
