@@ -92,7 +92,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
         Returns:
             None
-        """ 
+        """ # noqa: E501
 
         if vector_config:
             vector_search = VectorSearch(algorithm_configurations=[vector_config])
