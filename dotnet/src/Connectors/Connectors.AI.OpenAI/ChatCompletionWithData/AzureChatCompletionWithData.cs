@@ -51,7 +51,10 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
 
@@ -63,7 +66,10 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
 
@@ -180,11 +186,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         catch (HttpRequestException ex)
         {
             this._logger.LogError(
-                "Error occurred on chat completion with data execution: {ExceptionMessage}", ex.Message);
+                "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
 
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
-                $"Error occurred on chat completion with data execution: {ex.Message}", ex);
+                $"Error occurred on chat completion with data request execution: {ex.Message}", ex);
         }
     }
 
