@@ -37,7 +37,7 @@ public static class Example54_AzureChatCompletionWithData
         // Second message
         chatHistory.AddUserMessage("What did they find?");
 
-        // Streaming completion example
+        // Completion streaming example
         await foreach (var message in chatCompletion.GenerateMessagesStreamAsync(chatHistory))
         {
             // Output:
@@ -49,7 +49,7 @@ public static class Example54_AzureChatCompletionWithData
     }
 
     /// <summary>
-    /// Initializes instance of <see cref="AzureChatCompletionWithData"/> with completion configuration.
+    /// Initializes a new instance of the <see cref="AzureChatCompletionWithData"/> class with completion configuration.
     /// </summary>
     private static AzureChatCompletionWithData GetChatCompletion()
     {

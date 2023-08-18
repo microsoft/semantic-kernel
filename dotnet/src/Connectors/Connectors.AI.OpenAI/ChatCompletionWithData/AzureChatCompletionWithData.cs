@@ -19,8 +19,18 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
+/// <summary>
+/// Azure OpenAI Chat Completion with data client.
+/// More information: https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart
+/// </summary>
 public sealed class AzureChatCompletionWithData : IChatCompletion
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureChatCompletionWithData"/> class.
+    /// </summary>
+    /// <param name="config">Instance of <see cref="AzureChatCompletionWithDataConfig"/> class with completion configuration.</param>
+    /// <param name="httpClient"></param>
+    /// <param name="logger"></param>
     public AzureChatCompletionWithData(
         AzureChatCompletionWithDataConfig config,
         HttpClient? httpClient = null,
@@ -34,11 +44,13 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         this._logger = logger ?? NullLogger.Instance;
     }
 
+    /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
     {
         return new OpenAIChatHistory(instructions);
     }
 
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
@@ -50,6 +62,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         return await this.ExecuteCompletionRequestAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
@@ -100,15 +113,9 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         CancellationToken cancellationToken = default)
     {
         var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
+        using var response = await this.GetResponse(request, cancellationToken).ConfigureAwait(false);
 
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), request);
-
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-        httpRequestMessage.Headers.Add("Api-Key", this._config.CompletionApiKey);
-
-        using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-
-        response.EnsureSuccessStatusCode();
+        this.EnsureSuccessStatusCode(response);
 
         var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
@@ -123,15 +130,9 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
+        using var response = await this.GetResponse(request, cancellationToken).ConfigureAwait(false);
 
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), request);
-
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-        httpRequestMessage.Headers.Add("Api-Key", this._config.CompletionApiKey);
-
-        using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-
-        response.EnsureSuccessStatusCode();
+        this.EnsureSuccessStatusCode(response);
 
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         using var reader = new StreamReader(stream);
@@ -158,15 +159,48 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         }
     }
 
+    private async Task<HttpResponseMessage> GetResponse(
+        ChatWithDataRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), request);
+
+        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        httpRequestMessage.Headers.Add("Api-Key", this._config.CompletionApiKey);
+
+        return await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+    }
+
+    private void EnsureSuccessStatusCode(HttpResponseMessage response)
+    {
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException ex)
+        {
+            this._logger.LogError(
+                "Error occurred on chat completion with data execution: {ExceptionMessage}", ex.Message);
+
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Error occurred on chat completion with data execution: {ex.Message}", ex);
+        }
+    }
+
     private T DeserializeResponse<T>(string body)
     {
         var response = Json.Deserialize<T>(body);
 
         if (response == null)
         {
+            const string errorMessage = "Error occurred on chat completion with data response deserialization";
+
+            this._logger.LogError(errorMessage);
+
             throw new AIException(
                 AIException.ErrorCodes.InvalidResponseContent,
-                "Error occurred on chat completion with data response deserialization");
+                errorMessage);
         }
 
         return response;
