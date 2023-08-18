@@ -114,6 +114,31 @@ public class CodeTokenizerTests
         Assert.Equal(BlockTypes.Value, blocks3[1].Type);
     }
 
+    //[Fact]
+    //public void ItParsesMultiNamedArgFunctionCalls()
+    //{
+    //    // Arrange
+    //    var template1 = "x.y first=$foo second = 'bar'";
+
+    //    // Act
+    //    var blocks1 = this._target.Tokenize(template1);
+
+    //    // Assert
+    //    Assert.Equal(5, blocks1.Count);
+
+    //    var firstBlock = blocks1[0];
+    //    var secondBlock = blocks1[1];
+    //    var thirdBlock = blocks1[2];
+    //    Assert.Equal("x.y", firstBlock.Content);
+    //    Assert.Equal(BlockTypes.FunctionId, firstBlock.Type);
+    //    Assert.Equal("first=$foo", secondBlock.Content);
+    //    Assert.Equal(BlockTypes.NamedArg, secondBlock.Type);
+
+    //    var secondBlockParts = (NamedArgBlock secondBlock)..
+    //    Assert.Equal("second='bar'", thirdBlock.Content);
+    //    Assert.Equal(BlockTypes.NamedArg, thirdBlock.Type);
+    //}
+
     [Fact]
     public void ItSupportsEscaping()
     {
