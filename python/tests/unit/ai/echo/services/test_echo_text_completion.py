@@ -2,7 +2,7 @@
 
 from logging import Logger
 
-from semantic_kernel.connectors.ai.open_ai.services.echo_text_completion import (
+from semantic_kernel.connectors.ai.echo.services.echo_text_completion import (
     EchoTextCompletion,
 )
 
