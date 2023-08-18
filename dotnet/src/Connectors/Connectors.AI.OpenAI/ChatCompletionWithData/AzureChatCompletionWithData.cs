@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
@@ -23,7 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 /// Azure OpenAI Chat Completion with data client.
 /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
 /// </summary>
-public sealed class AzureChatCompletionWithData : IChatCompletion
+public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompletion
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureChatCompletionWithData"/> class.
@@ -80,6 +81,39 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         return this.ExecuteCompletionStreamingRequestAsync(chat, requestSettings, cancellationToken);
     }
 
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        requestSettings ??= new();
+
+        var chat = this.PrepareChatHistory(text, requestSettings);
+        var chatRequestSettings = this.PrepareChatRequestSettings(requestSettings);
+
+        return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
+            .OfType<ITextResult>()
+            .ToList();
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        requestSettings ??= new();
+
+        var chat = this.PrepareChatHistory(text, requestSettings);
+        var chatRequestSettings = this.PrepareChatRequestSettings(requestSettings);
+
+        await foreach (var result in this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken))
+        {
+            yield return (ITextStreamingResult)result;
+        }
+    }
+
     #region private ================================================================================
 
     private const string ServerEventPayloadPrefix = "data:";
@@ -127,7 +161,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
 
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
 
-        return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(choice)).ToList();
+        return chatWithDataResponse.Choices.Select(choice => new ChatWithDataResult(chatWithDataResponse, choice)).ToList();
     }
 
     private async IAsyncEnumerable<IChatStreamingResult> ExecuteCompletionStreamingRequestAsync(
@@ -198,7 +232,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
 
             foreach (var choice in chatWithDataResponse.Choices)
             {
-                yield return new ChatWithDataStreamingResult(choice);
+                yield return new ChatWithDataStreamingResult(chatWithDataResponse, choice);
             }
         }
     }
@@ -266,6 +300,28 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
                 Content = message.Content
             })
             .ToList();
+    }
+
+    private ChatHistory PrepareChatHistory(string text, CompleteRequestSettings requestSettings)
+    {
+        var chat = this.CreateNewChat(requestSettings.ChatSystemPrompt);
+
+        chat.AddUserMessage(text);
+
+        return chat;
+    }
+
+    private ChatRequestSettings PrepareChatRequestSettings(CompleteRequestSettings requestSettings)
+    {
+        return new ChatRequestSettings
+        {
+            MaxTokens = requestSettings.MaxTokens,
+            Temperature = requestSettings.Temperature,
+            TopP = requestSettings.TopP,
+            PresencePenalty = requestSettings.PresencePenalty,
+            FrequencyPenalty = requestSettings.FrequencyPenalty,
+            StopSequences = requestSettings.StopSequences,
+        };
     }
 
     private string GetRequestUri()

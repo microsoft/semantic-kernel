@@ -7,16 +7,23 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 
-internal sealed class ChatWithDataStreamingResult : IChatStreamingResult
+internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextStreamingResult
 {
-    public ChatWithDataStreamingResult(ChatWithDataStreamingChoice choice)
+    public ModelResult ModelResult { get; }
+
+    public ChatWithDataStreamingResult(ChatWithDataStreamingResponse response, ChatWithDataStreamingChoice choice)
     {
+        Verify.NotNull(response);
         Verify.NotNull(choice);
+
+        this.ModelResult = new(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created)));
 
         this._choice = choice;
     }
@@ -33,6 +40,21 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult
     public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken))
+        {
+            yield return result.Content;
+        }
+    }
+
+    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    {
+        var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+
+        return message.Content;
     }
 
     #region private ================================================================================
