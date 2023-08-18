@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Microsoft.SemanticKernel.Text;
 
@@ -188,8 +189,7 @@ internal sealed class CodeTokenizer
             {
                 if (!spaceSeparatorFound)
                 {
-                    throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                        "Tokens must be separated by one space least");
+                    throw new SKException("Tokens must be separated by one space least");
                 }
 
                 if (IsQuote(currentChar))
@@ -228,8 +228,7 @@ internal sealed class CodeTokenizer
                 break;
 
             case TokenTypes.None:
-                throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                    "Tokens must be separated by one space least");
+                throw new SKException("Tokens must be separated by one space least");
         }
 
         return blocks;
