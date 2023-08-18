@@ -56,6 +56,7 @@ public static class Example54_AzureChatCompletionWithData
         }
 
         Console.Write(Environment.NewLine);
+        Console.Write(Environment.NewLine);
     }
 
     private static async Task ExampleWithKernel()
