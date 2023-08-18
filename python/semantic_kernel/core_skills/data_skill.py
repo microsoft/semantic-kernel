@@ -15,7 +15,7 @@ from semantic_kernel.skill_definition import sk_function
 
 PROMPT_PREFIX = """The preceding is a summary of the data. There may be more rows."""
 PROMPT_SUFFIX = """Write a Python function `process({arg_name})` where 
-    {arg_name} {description}.
+    {arg_name} is/are Pandas dataframe(s).
     This is the function's purpose: {goal}
     Write the function in a Python code block with all necessary imports.
     Do not include any example usage. Do not include any explanation nor 
@@ -139,7 +139,7 @@ class DataSkill:
         Args:
             ask -- The question to ask the LLM
         """
-
+        execute = True
         local_vars = {}
         arg = ""
         for i, table in enumerate(self.data):
@@ -148,11 +148,10 @@ class DataSkill:
             local_vars[name] = table
 
         arg = arg[:-2]
-        description = "is/are Pandas dataframe(s)"
 
         # Construct the prompt
         formatted_suffix = PROMPT_SUFFIX.format(
-            goal=ask, arg_name=arg, description=description
+            goal=ask, arg_name=arg
         )
         prompt = self._data_context + "\n" + PROMPT_PREFIX + formatted_suffix
 
@@ -161,22 +160,30 @@ class DataSkill:
             try:
                 # Get Python code as a string to answer the user's question
                 code = await self._code_skill.custom_code_async(prompt)
+                # Check if user wants to give permission to execute the code
+                if self.verbose:
+                    print("Generated code:", "\n", code, "\n")
+                    user_input = input("Do you want to execute this code? (y/n) ")
+                    if user_input.lower() != "y":
+                        execute = False
+                        print("Code execution aborted.")
+                        return ""
+                if execute:
+                    # Dynamically execute the code on the dataframe(s)
+                    await self._code_skill.custom_execute_async(code, GLOBAL_VARS, local_vars)
 
-                # Dynamically execute the code on the dataframe(s)
-                await self._code_skill.custom_execute_async(code, GLOBAL_VARS, local_vars)
+                    # Get all dataframes provided by the user
+                    df_variables = [
+                        var_name
+                        for var_name in local_vars.keys()
+                        if var_name.startswith("df")
+                    ]
+                    local_vars.get("process")
+                    dataframes = [local_vars[var_name] for var_name in df_variables]
 
-                # Get all dataframes provided by the user
-                df_variables = [
-                    var_name
-                    for var_name in local_vars.keys()
-                    if var_name.startswith("df")
-                ]
-                local_vars.get("process")
-                dataframes = [local_vars[var_name] for var_name in df_variables]
-
-                # Get the result of the execution
-                result = local_vars["process"](*dataframes)
-                break
+                    # Get the result of the execution
+                    result = local_vars["process"](*dataframes)
+                    break
             except Exception as e:
                 print(f"Error occurred: {e}")
                 await asyncio.sleep(1)  # Introduce a delay before the next retry

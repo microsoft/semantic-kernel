@@ -8,6 +8,12 @@ import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.core_skills import DataSkill
 
+"""
+Use the Data Skill to query CSV files and pandas dataframes with natural 
+language. Use with caution, it is possible to generate harmful code. Set 
+verbose=True to see the generated code and give permission to execute it.
+"""
+
 kernel = sk.Kernel()
 api_key, org_id = sk.openai_settings_from_dot_env()
 openai_chat_completion = sk_oai.OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
@@ -31,7 +37,7 @@ async def main() -> None:
     df2 = pd.DataFrame(data2)
 
     data_skill = kernel.import_skill(
-        DataSkill(sources=[df1, df2], service=openai_chat_completion), skill_name="data"
+        DataSkill(sources=[df1, df2], service=openai_chat_completion, verbose=True), skill_name="data"
     )
     query_async = data_skill["queryAsync"]
 
