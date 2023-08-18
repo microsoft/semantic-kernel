@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Optional, Union, List
+from typing import List, Optional, Union
 
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,

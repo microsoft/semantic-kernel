@@ -10,7 +10,6 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
-
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -36,7 +35,7 @@ class EchoChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         request_settings: ChatRequestSettings,
         logger: Logger,
     ) -> Union[str, List[str]]:
-        return ['_'.join(i) for i in messages]
+        return ["_".join(i) for i in messages]
 
     async def complete_chat_stream_async(
         self,
@@ -44,7 +43,7 @@ class EchoChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         request_settings: ChatRequestSettings,
         logger: Logger,
     ):
-        yield ['_'.join(i) for i in messages]
+        yield ["_".join(i) for i in messages]
 
     async def complete_async(
         self, prompt: str, request_settings: CompleteRequestSettings

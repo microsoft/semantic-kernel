@@ -8,7 +8,6 @@ from semantic_kernel.connectors.ai.echo.services.echo_chat_completion import (
 
 
 def test_azure_chat_completion_init() -> None:
-
     logger = Logger("test_logger")
 
     # Test successful initialization
