@@ -78,7 +78,7 @@ public sealed class ActionPlannerTests
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
