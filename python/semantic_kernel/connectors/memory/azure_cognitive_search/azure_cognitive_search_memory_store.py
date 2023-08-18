@@ -59,7 +59,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             async with AzureCognitiveSearchMemoryStore(<...>) as memory:
                 await memory.<...>
 
-        """
+        """  # noqa: E501
         try:
             pass
         except ImportError:
