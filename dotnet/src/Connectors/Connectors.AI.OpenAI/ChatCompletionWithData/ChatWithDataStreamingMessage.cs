@@ -12,4 +12,7 @@ internal sealed class ChatWithDataStreamingMessage
 {
     [JsonPropertyName("delta")]
     public ChatWithDataStreamingDelta Delta { get; set; } = new();
+
+    [JsonPropertyName("end_turn")]
+    public bool EndTurn { get; set; }
 }

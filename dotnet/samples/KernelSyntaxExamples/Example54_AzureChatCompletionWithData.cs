@@ -30,7 +30,7 @@ public static class Example54_AzureChatCompletionWithData
         // Completion example
         string reply = await chatCompletion.GenerateMessageAsync(chatHistory);
 
-        // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica [doc1].
+        // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine(reply);
         Console.Write(Environment.NewLine);
 

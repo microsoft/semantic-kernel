@@ -23,8 +23,7 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult
 
     public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        var message = this._choice.Messages
-            .FirstOrDefault(message => message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+        var message = this._choice.Messages.FirstOrDefault(this.IsValidMessage);
 
         var result = new SKChatMessage(AuthorRole.Assistant.Label, message?.Delta?.Content ?? string.Empty);
 
@@ -39,6 +38,12 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult
     #region private ================================================================================
 
     private readonly ChatWithDataStreamingChoice _choice;
+
+    private bool IsValidMessage(ChatWithDataStreamingMessage message)
+    {
+        return !message.EndTurn &&
+            (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+    }
 
     #endregion
 }

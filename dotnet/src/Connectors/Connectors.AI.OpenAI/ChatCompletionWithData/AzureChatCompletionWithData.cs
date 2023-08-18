@@ -140,28 +140,9 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
 
         this.EnsureSuccessStatusCode(response);
 
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        using var reader = new StreamReader(stream);
-
-        while (!reader.EndOfStream)
+        await foreach (var result in this.GetStreamingResultsAsync(response))
         {
-            var body = await reader.ReadLineAsync().ConfigureAwait(false);
-
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                continue;
-            }
-
-            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                body = body.Substring(ServerEventPayloadPrefix.Length);
-            }
-
-            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
-
-            var choice = chatWithDataResponse.Choices.LastOrDefault();
-
-            yield return new ChatWithDataStreamingResult(choice);
+            yield return result;
         }
     }
 
@@ -194,11 +175,39 @@ public sealed class AzureChatCompletionWithData : IChatCompletion
         }
     }
 
+    private async IAsyncEnumerable<IChatStreamingResult> GetStreamingResultsAsync(HttpResponseMessage response)
+    {
+        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            var body = await reader.ReadLineAsync().ConfigureAwait(false);
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                continue;
+            }
+
+            if (body.StartsWith(ServerEventPayloadPrefix, StringComparison.Ordinal))
+            {
+                body = body.Substring(ServerEventPayloadPrefix.Length);
+            }
+
+            var chatWithDataResponse = this.DeserializeResponse<ChatWithDataStreamingResponse>(body);
+
+            foreach (var choice in chatWithDataResponse.Choices)
+            {
+                yield return new ChatWithDataStreamingResult(choice);
+            }
+        }
+    }
+
     private T DeserializeResponse<T>(string body)
     {
         var response = Json.Deserialize<T>(body);
 
-        if (response == null)
+        if (response is null)
         {
             const string errorMessage = "Error occurred on chat completion with data response deserialization";
 
