@@ -4,7 +4,7 @@ status: proposed
 date: 6/16/2023
 deciders: shawncal, hario90
 consulted: dmytrostruk {list everyone whose opinions are sought (typically subject-matter experts); and with whom there is a two-way communication}
-informed: {list everyone who is kept up-to-date on progress; and with whom there is a one-way communication}
+informed: lemillermicrosoft
 ---
 # Add support for multiple named arguments in template function calls
 
@@ -15,24 +15,87 @@ Native functions now support multiple parameters, populated from context values 
 <!-- This is an optional element. Feel free to remove. -->
 ## Decision Drivers
 
-
-* {decision driver 1, e.g., a force, facing concern, …}
-* {decision driver 2, e.g., a force, facing concern, …}
-* … <!-- numbers of drivers can vary -->
+* YAML compatibility
+* Guidance
+* Similarity to languages used by SK developers  
+* Ease of use
 
 ## Considered Options
 
-* Support the following syntax for named arguments:
+### Syntax idea 1: Pseudo JavaScript/C#-style with commas
   
 ```handlebars
-{{MyFunction street:"123 Main St", zip:"98123", city:"Seattle"}}
+{{Skill.MyFunction street:"123 Main St", zip:"98123", city:"Seattle", age: 25}}
 ```
 
-* {title of option 2}
-* {title of option 3}
-* … <!-- numbers of options can vary -->
+Pros:
+
+* commas could make longer function calls easier to read.
+
+Cons:
+
+* commas add implementation/maintenance cost
+* spaces are already used as delimiters elsewhere so commas seem unnecessary
+
+
+### Syntax idea 2: JavaScript/C#-Style without commas
+  
+```handlebars
+
+{{MyFunction street:"123 Main St" zip:"98123" city:"Seattle" age: 25}}
+
+```
+
+Pros:
+
+* Resembles JavaScript Object syntax and C# named argument syntax
+* Not using commas avoids the Cons in Syntax idea #1.
+
+Cons:
+
+* Doesn't align with Guidance syntax
+
+### Syntax idea 3: Python/Guidance-Style keyword arguments
+
+```handlebars
+{{MyFunction street="123 Main St" zip="98123" city="Seattle"}}
+```
+
+Pros:
+
+* Resembles Python's keyword argument syntax
+* Resembles Guidance's named argument syntax
+
+Cons:
+
+* Doesn't align with C# syntax
+
+### Allow whitespace between arg name/value separator
+
+```handlebars
+{{MyFunction street = "123 Main St" zip="98123" city="Seattle"}}
+```
+
+Pros:
+
+* Follows the convention followed by many programming languages of whitespace flexibility where spaces, tabs, and newlines within code don't impact a program's functionality
+
+Cons:
+
+* Promotes code that is harder to read
+* Harder to support
 
 ## Decision Outcome
 
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+Chosen option: "Syntax idea 3: Python/Guidance-Style keyword arguments", because it aligns well with Guidance's syntax and TODO.
+
+Additional decisions:
+
+* Continue supporting up to 1 positional argument for backward compatibility. Currently, the argument passed to a function is assumed to be the `$input` context variable.
+
+Example
+
+```handlebars
+
+{{MyFunction "inputVal" street="123 Main St" zip="98123" city="Seattle"}}
+```
