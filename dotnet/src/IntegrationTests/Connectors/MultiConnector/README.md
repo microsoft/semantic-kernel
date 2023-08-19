@@ -65,7 +65,11 @@ For the purposes of the test, ChatGPT acts as the primary connector for generati
 
    To toggle secondary connectors on or off, adjust the IncludedConnectors section by commenting or uncommenting lines.
 
-   **Note**: Using an extra testsettings.development.json file to leave the main one intact? Employ the IncludedConnectorsDev section, which takes precedence over the IncludedConnectors section. If you've modified models in your multi-start script, reflect those changes in the OobaboogaCompletions section as well.
+   **Note**: Using an extra testsettings.development.json file to leave the main one intact? Employ the IncludedConnectorsDev section, which takes precedence over the IncludedConnectors section. 
+   
+   If you've modified models in your multi-start script, reflect those changes in the OobaboogaCompletions section of the main settings file.
+
+   Also, most models were trained with a specific chat-instruct format, so those were included in the default settings in order to wrap call prompts. Additional global tokens are available in the settings files to fine tune  bindings between semantic function prompts and chat-instruct templates.
 
 ```json
 {
