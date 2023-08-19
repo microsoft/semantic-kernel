@@ -36,11 +36,13 @@ async def main() -> None:
     df1 = pd.DataFrame(data1)
     df2 = pd.DataFrame(data2)
 
+    instance = DataSkill(
+        sources=[df1, df2], service=openai_chat_completion, verbose=True
+        )
     data_skill = kernel.import_skill(
-        DataSkill(sources=[df1, df2], service=openai_chat_completion, verbose=True), skill_name="data"
+        instance, skill_name="data"
     )
     query_async = data_skill["queryAsync"]
-
     prompt = "How old is Bob and what city does Francis live in?"
     result = await query_async.invoke_async(prompt)
     print(result)
@@ -63,6 +65,20 @@ async def main() -> None:
     # Output: The correlation between age and income is 0.83, which indicates a strong positive relationship. 
     #         This means that as age increases, income tends to increase as well.
 
+    prompt = """Add a new Job column to the second dataframe with values
+    accountant, software engineer, paralegal, lab tech, HR manager, web developer."""
+    new_df = await instance.transform_async(prompt)
+    print(new_df)
+    """
+    Output:
+            Name  Age           City  Salary                Job
+    0     Amanda   27  San Francisco   62000         accountant
+    1      Brian   35        Seattle   80000  software engineer
+    2  Catherine   31         Boston   55000          paralegal
+    3     Daniel   24         Austin   50000           lab tech
+    4      Emily   30         Denver   67000         HR manager
+    5    Francis   33       Savannah   70000      web developer
+    """
 
 if __name__ == "__main__":
     asyncio.run(main())
