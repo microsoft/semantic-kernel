@@ -87,12 +87,12 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """Creates a new collection if it does not exist.
 
         Arguments:
-            collection_name {str}                              -- The name of the collection to create.
-            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration  (default: {None}).
-            semantic_config {SemanticConfiguration}            -- Optional search index configuration (default: {None}).
+            collection_name {str}                                  -- The name of the collection to create.
+            vector_config {HnswVectorSearchAlgorithmConfiguration} -- Optional search algorithm configuration (default: {None}).
+            semantic_config {SemanticConfiguration}                -- Optional search index configuration (default: {None}).
         Returns:
             None
-        """
+        """  # noqa: E501
 
         if vector_config:
             vector_search = VectorSearch(algorithm_configurations=[vector_config])
