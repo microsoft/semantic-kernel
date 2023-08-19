@@ -91,7 +91,7 @@ public sealed class MultiConnectorTests : IDisposable
     //[Theory(Skip = "This test is for manual verification.")]
     [Theory]
     [InlineData(true, "TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
-    [InlineData(false, "TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
+    [InlineData(true, "TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
     [InlineData(false, "TheBloke_orca_mini_3B-GGML", 1, "Summarize.json", "Comm_hard.txt", "Danse_hard.txt", "SummarizeSkill", "MiscSkill")]
     [InlineData(true, "TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_simple.txt", "Danse_simple.txt", "SummarizeSkill", "MiscSkill")]
     [InlineData(true, "TheBloke_StableBeluga-7B-GGML", 1, "Summarize.json", "Comm_medium.txt", "Danse_medium.txt", "SummarizeSkill", "MiscSkill")]
@@ -470,7 +470,7 @@ public sealed class MultiConnectorTests : IDisposable
         }
         else
         {
-            Assert.Throws<XunitException>((Action)(() => this.DoOffloadingAsserts(firstPassEffectiveCost, secondPassEffectiveCost, evaluations)));
+            Assert.Throws<TrueException>((Action)(() => this.DoOffloadingAsserts(firstPassEffectiveCost, secondPassEffectiveCost, evaluations)));
         }
     }
 
