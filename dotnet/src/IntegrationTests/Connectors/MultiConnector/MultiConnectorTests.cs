@@ -341,6 +341,7 @@ public sealed class MultiConnectorTests : IDisposable
         TaskCompletionSource<SuggestionCompletedEventArgs> suggestionCompletedTaskSource = new();
 
         // Subscribe to the OptimizationCompleted event
+
         settings.AnalysisSettings.SuggestionCompleted += (sender, args) =>
         {
             // Signal the completion of the optimization

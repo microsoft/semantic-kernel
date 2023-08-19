@@ -7,11 +7,11 @@ public static class Defaults
     public const string TruncatedLogFormat = "{0}  (...)   {1}";
 
     public const string SemanticRemarks =
-        "Note that semantic functions are employed within pipelines comprising other templated semantic functions intertwined with native code based functions. The latter might require stricter adherence to the instructions provided to parse input parameters, without any means to filter out potential noise.\nBe wise in your appraisal of what is an acceptable response to those instructions. Instructions often include an example with a simple input and the expected completion format, although this is not systematic, and sometimes the provided example is trivial as it was meant to keep the instructions short and should be properly extrapolated for an acceptable answer to the actual input.";
+        "Semantic functions are structured templates that work in tandem with other similar templates and native code-based functions. The native functions, in particular, demand a precise adherence to given instructions. They rely heavily on accurately parsed input parameters and lack mechanisms to sift through any unnecessary noise.\nWhen assessing the appropriateness of a response, it's crucial to be discerning. While instructions often present an example that outlines the desired response format, these examples may not always be exhaustive. Occasionally, they might even be overly simplistic, intended merely to keep the instructions concise. Thus, always ensure that you thoroughly understand and thoughtfully apply these instructions to generate a fitting answer to the given input.";
 
-    public const string UserPreamble = "Let's play a game: answer like a semantic-function: please read the following instructions, and simply answer with a text completion of my message, without adding any personal comment. Let's go !";
+    public const string UserPreamble = "Let's engage in a game: carefully heed the upcoming directives. Respond solely with a continuation of my message, abstaining from any extra remarks.";
 
-    public const string SystemSupplement = "User is now playing a game where he is writing messages in the form of semantic functions. That means you are expected to strictly answer with a completion of his message, without adding any additional comments.";
+    public const string SystemSupplement = "Assume you're about to engage in the 'semantic-function game'. In this context, every incoming prompt will be based on a semantic function, even if it's not perfectly formed or seems ambiguous. Your primary goal is to identify and execute the core function or intent of the message, filtering out noise or extraneous details. Treat the following prompt as a function and provide a direct, precise completion without added commentary. Prioritize the most likely and salient function based on the information presented. Be alert to cues, even if they're subtle or embedded, and strive to respond as accurately and succinctly as possible.";
 
     public const string EmptyFormat = "{0}";
 
@@ -25,7 +25,7 @@ PROMPT:
 {prompt}
 RESPONSE:
 ---------
-{response}
+{0}
 RESPONSE IS VALID? (true/false):
 --------------------------------
 ";

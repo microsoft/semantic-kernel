@@ -86,8 +86,7 @@ public class PromptTransform
             }
         }
 
-        var toReturn = string.Format(CultureInfo.InvariantCulture, processedTemplate, input);
-
+        string toReturn = processedTemplate.Replace(Defaults.EmptyFormat, input);
         return toReturn;
     }
 

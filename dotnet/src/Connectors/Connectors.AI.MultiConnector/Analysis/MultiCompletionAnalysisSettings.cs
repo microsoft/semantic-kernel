@@ -215,8 +215,8 @@ public class MultiCompletionAnalysisSettings : IDisposable
     {
         var vettingContext = MultiCompletionSession.CreateSimpleContext(generalSettings);
         vettingContext.Add("prompt", prompt);
-        vettingContext.Add("response", result);
-        var vettingPrompt = this.VettingPromptTransform.TransformFunction("", vettingContext);
+        //vettingContext.Add("response", result);
+        var vettingPrompt = this.VettingPromptTransform.TransformFunction(result, vettingContext);
         var vettingRequestSettings = this.VettingRequestSettings;
         return new CompletionJob(vettingPrompt, vettingRequestSettings);
     }
