@@ -6,11 +6,19 @@ using global::Connectors.AI.SourceGraph;
 using StrawberryShake;
 
 
+/// <summary>
+///  SourceGraph search client.
+/// </summary>
 public class SourceGraphSearchClient : ISourceGraphSearchClient
 {
 
     private readonly ISourceGraphClient _sourceGraphClient;
 
+
+    /// <summary>
+    ///  Constructor.
+    /// </summary>
+    /// <param name="sourceGraphClient"></param>
     public SourceGraphSearchClient(ISourceGraphClient sourceGraphClient) => _sourceGraphClient = sourceGraphClient;
 
 

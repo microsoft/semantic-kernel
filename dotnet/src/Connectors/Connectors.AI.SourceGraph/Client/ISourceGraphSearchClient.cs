@@ -10,6 +10,20 @@ using global::Connectors.AI.SourceGraph;
 public interface ISourceGraphSearchClient
 {
 
+    /// <summary>
+    ///  Runs a search query against SourceGraph GraphQL API.
+    /// </summary>
+    /// <param name="query"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <remarks>
+    ///  Supports:
+    ///     - Standard GitHub search syntax
+    ///     - Regular expressions
+    ///     - Structural search
+    ///     - Keyword search
+    ///  see https://docs.sourcegraph.com/code_search/reference/queries for an explanation of the query syntax.
+    /// </remarks>
     Task<SearchResult?> SearchAsync(string query, CancellationToken cancellationToken = default);
 
 

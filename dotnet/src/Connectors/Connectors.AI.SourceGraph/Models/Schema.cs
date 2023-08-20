@@ -32,27 +32,27 @@ public partial class Data
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("repository")]
-    public Repository Repository { get; set; }
+    public Repository? Repository { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("repositories")]
-    public List<Repository> Repositories { get; set; }
+    public List<Repository>? Repositories { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("search")]
-    public Search Search { get; set; }
+    public Search? Search { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("getCodyContext")]
-    public List<CodeContext> GetCodyContext { get; set; }
+    public List<CodeContext>? GetCodyContext { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("embeddingsSearch")]
-    public EmbeddingsSearch EmbeddingsSearch { get; set; }
+    public EmbeddingsSearch? EmbeddingsSearch { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("embeddingsMultiSearch")]
-    public EmbeddingsSearch EmbeddingsMultiSearch { get; set; }
+    public EmbeddingsSearch? EmbeddingsMultiSearch { get; set; }
 }
 
 
@@ -60,11 +60,11 @@ public partial class EmbeddingsSearch
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("codeResults")]
-    public List<Result> CodeResults { get; set; }
+    public List<Result>? CodeResults { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("textResults")]
-    public List<Result> TextResults { get; set; }
+    public List<Result>? TextResults { get; set; }
 }
 
 
@@ -80,7 +80,7 @@ public partial class Result
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("fileName")]
-    public string FileName { get; set; }
+    public string? FileName { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("startLine")]
@@ -92,7 +92,7 @@ public partial class Result
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
 }
 
 
@@ -100,7 +100,7 @@ public partial class CodeContext
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("__typename")]
-    public string Typename { get; set; }
+    public string? Typename { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("blob")]
@@ -116,7 +116,7 @@ public partial class CodeContext
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("chunkContent")]
-    public string ChunkContent { get; set; }
+    public string? ChunkContent { get; set; }
 
 
     public static CodeContext FromFileChunkContext(IGetCodyContext_GetCodyContext_FileChunkContext fileChunkContext)
@@ -136,19 +136,19 @@ public partial class Blob
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("path")]
-    public string Path { get; set; }
+    public string? Path { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("repository")]
-    public Repository Repository { get; set; }
+    public Repository? Repository { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("commit")]
-    public Commit Commit { get; set; }
+    public Commit? Commit { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
     
     public static Blob FromFileChunkContextBlob(IGetCodyContext_GetCodyContext_FileChunkContext blob)
     {
@@ -174,19 +174,19 @@ public partial class Commit
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("oid")]
-    public string Oid { get; set; }
+    public string? Oid { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("tree")]
-    public Tree Tree { get; set; }
+    public Tree? Tree { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("symbols")]
-    public Symbols Symbols { get; set; }
+    public Symbols? Symbols { get; set; }
 }
 
 
@@ -194,27 +194,27 @@ public partial class Repository
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("uri")]
-    public string Uri { get; set; }
+    public string? Uri { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string? Url { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("description")]
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("language")]
-    public string Language { get; set; }
+    public string? Language { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("sourceType")]
@@ -224,8 +224,10 @@ public partial class Repository
     [JsonPropertyName("createdAt")]
     public DateTimeOffset? CreatedAt { get; set; }
 
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("updatedAt")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("isFork")]
@@ -252,7 +254,7 @@ public partial class Repository
     public long? Stars { get; set; }
 
     [JsonPropertyName("diskSizeBytes")]
-    public object DiskSizeBytes { get; set; }
+    public object? DiskSizeBytes { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("embeddingExists")]
@@ -260,11 +262,15 @@ public partial class Repository
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("branches")]
-    public Branches Branches { get; set; }
+    public Branches? Branches { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("defaultBranch")]
-    public DefaultBranch DefaultBranch { get; set; }
+    public DefaultBranch? DefaultBranch { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("comparison")]
+    public  Comparison? Comparison { get; set; }
 }
 
 
@@ -272,7 +278,7 @@ public partial class Branches
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("nodes")]
-    public List<Node> Nodes { get; set; }
+    public List<Node>? Nodes { get; set; }
 }
 
 
@@ -280,30 +286,35 @@ public partial class Node
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("target")]
-    public Target Target { get; set; }
+    public Target? Target { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("oldPath")]
-    public virtual string OldPath { get; set; }
+    public  string? OldPath { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("newPath")]
-    public virtual string NewPath { get; set; }
+    public  string? NewPath { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("hunks")]
-    public virtual List<Hunk> Hunks { get; set; }
+    public  List<Hunk>? Hunks { get; set; }
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("location")]
-    public Location Location { get; set; }
+    public Location? Location { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
 }
 
 
@@ -311,7 +322,7 @@ public partial class Target
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("commit")]
-    public Commit Commit { get; set; }
+    public Commit? Commit { get; set; }
 }
 
 
@@ -319,7 +330,7 @@ public partial class Tree
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("files")]
-    public List<FileElement> Files { get; set; }
+    public List<FileElement>? Files { get; set; }
 }
 
 
@@ -327,7 +338,7 @@ public partial class FileElement
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("path")]
-    public string Path { get; set; }
+    public string? Path { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("isDirectory")]
@@ -335,15 +346,15 @@ public partial class FileElement
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string? Url { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("commit")]
@@ -359,23 +370,23 @@ public partial class DefaultBranch
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("abbrevName")]
-    public string AbbrevName { get; set; }
+    public string? AbbrevName { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("displayName")]
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("prefix")]
-    public string Prefix { get; set; }
+    public string? Prefix { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("type")]
@@ -383,7 +394,7 @@ public partial class DefaultBranch
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string? Url { get; set; }
 }
 
 
@@ -391,11 +402,11 @@ public partial class Comparison
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("commits")]
-    public virtual Commits Commits { get; set; }
+    public  Commits Commits { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("fileDiffs")]
-    public virtual FileDiffs FileDiffs { get; set; }
+    public  FileDiffs FileDiffs { get; set; }
 }
 
 
@@ -403,11 +414,11 @@ public partial class Commits
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("totalCount")]
-    public virtual long? TotalCount { get; set; }
+    public  long? TotalCount { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("nodes")]
-    public virtual List<Node> Nodes { get; set; }
+    public  List<Node>? Nodes { get; set; }
 }
 
 
@@ -415,7 +426,7 @@ public partial class FileDiffs
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("nodes")]
-    public virtual List<Node> Nodes { get; set; }
+    public  List<Node>? Nodes { get; set; }
 }
 
 
@@ -423,7 +434,7 @@ public partial class DefaultBranchTarget
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("commit")]
-    public Commit Commit { get; set; }
+    public Commit? Commit { get; set; }
 }
 
 
@@ -431,31 +442,20 @@ public partial class Symbols
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("nodes")]
-    public List<Node> Nodes { get; set; }
+    public List<Node>? Nodes { get; set; }
 }
 
-
-// public partial class Symbol
-// {
-//     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-//     [JsonPropertyName("name")]
-//     public string Name { get; set; }
-//
-//     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-//     [JsonPropertyName("location")]
-//     public Location Location { get; set; }
-// }
 
 
 public partial class Location
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string? Url { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("resource")]
-    public Resource Resource { get; set; }
+    public Resource? Resource { get; set; }
 }
 
 
@@ -463,11 +463,11 @@ public partial class Resource
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("path")]
-    public string Path { get; set; }
+    public string? Path { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
 }
 
 
@@ -475,7 +475,7 @@ public partial class Hunk
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("body")]
-    public virtual string Body { get; set; }
+    public  string? Body { get; set; }
 }
 
 
@@ -483,7 +483,7 @@ public partial class Search
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("results")]
-    public SearchResult Result { get; set; }
+    public SearchResult? Result { get; set; }
 }
 
 
@@ -491,7 +491,7 @@ public partial class SearchResult
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("results")]
-    public List<FileMatch> Results { get; set; }
+    public List<FileMatch>? Results { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyName("limitHit")]
@@ -583,8 +583,6 @@ internal static class Converter
     {
         Converters =
         {
-            // new DateOnlyConverter(),
-            // new TimeOnlyConverter(),
             IsoDateTimeOffsetConverter.Singleton
         }
     };
