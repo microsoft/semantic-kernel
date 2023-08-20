@@ -1,0 +1,23 @@
+query SymbolReferenceQuery($repoName: String!, $className: String!) {
+    repository(name: $repoName) {
+        defaultBranch{
+            target{
+                commit{
+                    symbols (query: $className, first: 10){
+                        nodes{
+                            name
+                            location{
+                                url
+                                resource {
+                                    path
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+

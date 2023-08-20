@@ -1,0 +1,3 @@
+query IsContextRequiredForChatQuery($query: String!) {
+    isContextRequiredForChatQuery(query: $query)
+}
