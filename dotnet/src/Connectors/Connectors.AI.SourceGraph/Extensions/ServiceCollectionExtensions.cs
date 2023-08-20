@@ -20,9 +20,9 @@ public static class ServiceCollectionExtensions
     /// <param name="services"></param>
     /// <param name="accessToken"></param>
     /// <returns></returns>
-    public static IServiceCollection AddSourceGraphQLClient(this IServiceCollection services, string accessToken = "")
+    public static IServiceCollection AddSourceGraphClient(this IServiceCollection services, string accessToken = "")
     {
-        services.AddSourceGraphClient()
+        SourceGraphClientServiceCollectionExtensions.AddSourceGraphClient(services)
             .ConfigureHttpClient(client =>
             {
                 client.BaseAddress = new Uri(SourceGraphGraphAPI);
@@ -40,6 +40,12 @@ public static class ServiceCollectionExtensions
         {
             var sourceGraphClient = provider.GetRequiredService<ISourceGraphClient>();
             return new SourceGraphSearchClient(sourceGraphClient);
+        });
+
+        services.AddSingleton<ISourceGraphGitClient, SourceGraphGitClient>(provider =>
+        {
+            var sourceGraphClient = provider.GetRequiredService<ISourceGraphClient>();
+            return new SourceGraphGitClient(sourceGraphClient);
         });
 
         return services;
