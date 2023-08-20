@@ -1,0 +1,22 @@
+query GitDiffQuery($name: String! $base: String!, $head: String!) {
+    repository(name: $name) {
+        comparison(base: $base, head: $head) {
+            commits {
+                totalCount
+                nodes {
+                    message
+                }
+            }
+            fileDiffs {
+                nodes {
+                    oldPath
+                    newPath
+                    hunks {
+                        body
+                    }
+                }
+            }
+
+        }
+    }
+}

@@ -1,0 +1,6 @@
+query RepositoryEmbeddingsExistQuery($name: String!) {
+    repository(name: $name) {
+        id
+        embeddingExists
+    }
+}

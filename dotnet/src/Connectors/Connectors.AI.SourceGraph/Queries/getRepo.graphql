@@ -1,0 +1,29 @@
+query RepositoryQuery($name: String!) {
+    repository(name: $name) {
+        uri
+        sourceType
+        description
+        language
+        createdAt
+        updatedAt
+        isFork
+        isArchived
+        isPrivate
+        cloneInProgress
+        url
+        viewerCanAdminister
+        stars
+        diskSizeBytes
+        embeddingExists
+        id
+        defaultBranch {
+            id
+            name
+            abbrevName
+            displayName
+            prefix
+            type
+            url
+        }
+    }
+}

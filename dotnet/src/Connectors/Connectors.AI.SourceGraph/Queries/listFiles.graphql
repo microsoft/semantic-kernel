@@ -1,0 +1,19 @@
+query RepositoryFilesQuery($repoName: String!, $branchName: String!, $directory: String!) {
+    repository(name: $repoName) {
+        branches(first: 1, query: $branchName) {
+            nodes {
+                target{
+                    commit{
+                        tree(path: $directory, recursive: true) {
+                            files {
+                                path
+                                isDirectory
+                                url
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

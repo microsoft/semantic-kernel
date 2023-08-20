@@ -1,0 +1,13 @@
+query RepositoryFileContentQuery($repoName: String!, $path: String!) {
+    repository(name: $repoName) {
+        defaultBranch {
+            target {
+                commit {
+                    blob(path: $path) {
+                        content
+                    }
+                }
+            }
+        }
+    }
+}

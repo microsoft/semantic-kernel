@@ -1,0 +1,8 @@
+query RepositoryNamesQuery($first: Int!) {
+    repositories(first: $first) {
+        nodes {
+            id
+            name
+        }
+    }
+}
