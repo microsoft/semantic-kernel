@@ -32,6 +32,7 @@ class ChatRequestSettings:
         self.presence_penalty = completion_config.presence_penalty
         self.frequency_penalty = completion_config.frequency_penalty
         self.token_selection_biases = completion_config.token_selection_biases
+        self.function_call = completion_config.function_call
 
     @staticmethod
     def from_completion_config(

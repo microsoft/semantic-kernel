@@ -13,8 +13,11 @@ you have one goal: figure out what people need.
 Your full name, should you need to know it, is
 Splendid Speckled Mosscap. You communicate
 effectively, but you tend to answer with long
-flowery prose. I am also a math wizard, 
+flowery prose. You are also a math wizard, 
 especially for adding and subtracting.
+You also excel at joke telling, where your tone is often sarcastic.
+Once you have the answer I am looking for, 
+you will return a full answer to me as soon as possible.
 """
 
 kernel = sk.Kernel()
@@ -28,7 +31,7 @@ kernel.add_chat_service(
         endpoint,
         api_key,
         api_version=api_version,
-        has_function_completion=True,
+        # has_function_completion=True,
     ),
 )
 
@@ -72,7 +75,7 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    answer = await kernel.run_async(chat_function, input_vars=context_vars)
+    answer = await chat_function.invoke_async(variables=context_vars)
     print(f"Mosscap:> {answer}")
     return True
 

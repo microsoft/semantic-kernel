@@ -80,6 +80,11 @@ class ChatPromptTemplate(PromptTemplate):
 
     async def render_messages_async(self, context: "SKContext") -> List[Dict[str, str]]:
         rendered_messages: List[Dict[str, str]] = []
+        # render_last_message = await self._template_engine.render_async(
+        #     self._template, context
+        # )
+        if self._messages[-1].role == "assistant":
+            self.add_user_message(message=self._template)
         for mess in self._messages:
             new_message = {"role": mess.role}
             if mess.message:
@@ -95,10 +100,10 @@ class ChatPromptTemplate(PromptTemplate):
                     new_message["content"] = mess.content
             rendered_messages.append(new_message)
 
-        latest_user_message = await self._template_engine.render_async(
-            self._template, context
-        )
-        rendered_messages.append({"role": "user", "content": latest_user_message})
+        # latest_user_message = await self._template_engine.render_async(
+        #     self._template, context
+        # )
+        # rendered_messages.append({"role": "user", "content": latest_user_message})
 
         return rendered_messages
 

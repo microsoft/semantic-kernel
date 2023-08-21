@@ -44,7 +44,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         api_version: Optional[str] = None,
         endpoint: Optional[str] = None,
         log: Optional[Logger] = None,
-        has_function_completion: bool = False,
     ) -> None:
         """
         Initializes a new instance of the OpenAIChatCompletion class.
@@ -67,7 +66,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._endpoint = endpoint
         self._log = log if log is not None else NullLogger()
         self._messages = []
-        self._has_function_completion = has_function_completion
 
     async def complete_chat_async(
         self, messages: List[Dict[str, str]], request_settings: ChatRequestSettings
@@ -90,11 +88,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Tuple[Optional[str], Optional[Dict]], List[Tuple[Optional[str], Optional[Dict]]]
     ]:
         # TODO: tracking on token counts/etc.
-        if not self._has_function_completion:
-            self._log.warning(
-                "Function calling is not enabled, using regular chat completion."
-            )
-            return await self.complete_chat_async(messages, request_settings)
 
         response = await self._send_chat_request(
             messages, request_settings, False, functions
@@ -259,7 +252,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             ),
         }
 
-        if functions:
+        if request_settings.function_call is not None:
             model_args["functions"] = functions
             model_args["function_call"] = request_settings.function_call
 
@@ -308,7 +301,7 @@ def _parse_choices(chunk):
 
 
 def _parse_message(
-    message: "OpenAIObject", logger: Logger | None = None
+    message: "OpenAIObject", logger: Optional[Logger] = None
 ) -> Tuple[Optional[str], Optional[Dict]]:
     """
     Parses the message.

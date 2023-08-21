@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -17,7 +17,7 @@ class PromptTemplateConfig:
         stop_sequences: List[str] = field(default_factory=list)
         token_selection_biases: Dict[int, int] = field(default_factory=dict)
         chat_system_prompt: str = None
-        function_call: str = ""
+        function_call: Optional[str] = None
 
     @dataclass
     class InputParameter:
@@ -132,7 +132,7 @@ class PromptTemplateConfig:
         stop_sequences: List[str] = [],
         token_selection_biases: Dict[int, int] = {},
         chat_system_prompt: str = None,
-        function_call: str = "",
+        function_call: Optional[str] = None,
     ) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature
