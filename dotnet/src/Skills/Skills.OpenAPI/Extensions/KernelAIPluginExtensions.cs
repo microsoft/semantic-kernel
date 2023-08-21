@@ -357,7 +357,8 @@ public static class KernelAIPluginExtensions
             {
                 Name = p.AlternativeName ?? p.Name,
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
-                DefaultValue = p.DefaultValue ?? string.Empty
+                DefaultValue = p.DefaultValue ?? string.Empty,
+                Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
             })
             .ToList();
 
@@ -386,7 +387,7 @@ public static class KernelAIPluginExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (SKException)
         {
         }
 

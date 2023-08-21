@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Redis;
 using Microsoft.SemanticKernel.Memory;
 using RepoUtils;
-using StackExchange.Redis;
 
 // ReSharper disable once InconsistentNaming
 public static class Example47_Redis
@@ -15,14 +14,12 @@ public static class Example47_Redis
 
     public static async Task RunAsync()
     {
-        string configuration = TestConfiguration.Redis.Configuration;
-        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configuration);
-        IDatabase database = connectionMultiplexer.GetDatabase();
-        RedisMemoryStore memoryStore = new(database, vectorSize: 1536);
+        using RedisMemoryStore memoryStore = new(TestConfiguration.Redis.Configuration, vectorSize: 1536);
+
         IKernel kernel = Kernel.Builder
             .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService(
-                modelId: TestConfiguration.OpenAI.ModelId,
+            .WithOpenAIChatCompletionService(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,
