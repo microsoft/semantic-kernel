@@ -116,9 +116,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     #region private ================================================================================
 
-    private const string ServerEventPayloadPrefix = "data:";
     private const string DefaultApiVersion = "2023-06-01-preview";
-    private const string EndpointUriFormat = "{0}/openai/deployments/{1}/extensions/chat/completions?api-version={2}";
 
     private readonly AzureChatCompletionWithDataConfig _config;
 
@@ -209,6 +207,8 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private async IAsyncEnumerable<IChatStreamingResult> GetStreamingResultsAsync(HttpResponseMessage response)
     {
+        const string ServerEventPayloadPrefix = "data:";
+
         using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         using var reader = new StreamReader(stream);
 
@@ -326,6 +326,8 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private string GetRequestUri()
     {
+        const string EndpointUriFormat = "{0}/openai/deployments/{1}/extensions/chat/completions?api-version={2}";
+
         var apiVersion = this._config.CompletionApiVersion;
 
         if (string.IsNullOrWhiteSpace(apiVersion))
