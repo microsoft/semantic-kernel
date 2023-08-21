@@ -125,6 +125,8 @@ async def main() -> None:
         open_api_key,
         open_ai_endpoint,
     ) = sk.azure_openai_settings_from_dot_env()
+
+    # Setting up OpenAI services for text completion and text embedding
     kernel.add_text_completion_service(
         "dv",
         AzureTextCompletion(
@@ -150,14 +152,16 @@ async def main() -> None:
         vector_size, ACS_ENDPOINT, ACS_ADMIN_KEY
     )
 
+    # Register the memory store with the kernel
     kernel.register_memory_store(memory_store=connector)
-    kernel.import_skill(sk.core_skills.TextMemorySkill())
 
     print("Populating memory...")
     await populate_memory(kernel)
 
     print("Asking questions... (manually)")
     await search_acs_memory_questions(kernel)
+
+    await connector.close_async()
 
 
 if __name__ == "__main__":
