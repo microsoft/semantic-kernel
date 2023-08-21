@@ -97,7 +97,7 @@ def google_palm_settings_from_dot_env() -> str:
     return api_key
   
   
- def redis_settings_from_dot_env() -> str:
+def redis_settings_from_dot_env() -> str:
     """Reads the Redis connection string from the .env file.
 
     Returns:
