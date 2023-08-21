@@ -5,8 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -78,7 +78,7 @@ public sealed class ActionPlannerTests
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
         // Act & Assert
-        await Assert.ThrowsAsync<PlanningException>(async () => await planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public sealed class ActionPlannerTests
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
         // Act & Assert
-        await Assert.ThrowsAsync<PlanningException>(async () => await planner.CreatePlanAsync("goal"));
+        await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
     }
 
     private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? skills = null)
