@@ -35,11 +35,15 @@ kernel.add_chat_service(
     ),
 )
 
+skills_directory = os.path.join(__file__, "../../../../samples/skills")
+# adding skills to the kernel
+# the joke skill in the FunSkills is a semantic skill and has the function calling disabled.
+kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
+# the math skill is a core skill and has the function calling enabled.
 kernel.import_skill(MathSkill(), skill_name="math")
 
-skills_directory = os.path.join(__file__, "../../../../samples/skills")
-kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
-
+# enabling or disabling function calling is done by setting the has_function_completion parameter in the service.
+# if the model or api version do not support this you will get an error.
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     max_tokens=2000, temperature=0.7, top_p=0.8, function_call="auto"
 )
@@ -75,6 +79,8 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
+    # calling the chat, you could add a overloaded version of the settings here,
+    # to enable or disable function calling or set the function calling to a specific skill.
     answer = await chat_function.invoke_async(variables=context_vars)
     print(f"Mosscap:> {answer}")
     return True
