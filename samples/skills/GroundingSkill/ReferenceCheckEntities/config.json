@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "type": "completion",
-  "description": "Check to see if a given list of entities is grounded in a reference context. Any of the items which are not supported by the reference context will be returned as a bulleted list.",
+  "description": "Check to see if a given list of entities is grounded in a reference context. Any of the items which are not supported by the reference context will be returned as a bulleted list. If all items are supported then the output will be empty.",
   "completion": {
     "max_tokens": 2048,
     "temperature": 0.0,
