@@ -94,3 +94,19 @@ def sqlite_settings_from_dot_env() -> str:
     assert db_file_name is not None, "SQLite connection string not found in .env file"
 
     return db_file_name
+
+
+def google_palm_settings_from_dot_env() -> str:
+    """
+    Reads the Google PaLM API key from the .env file.
+
+    Returns:
+        str: The Google PaLM API key
+    """
+
+    config = dotenv_values(".env")
+    api_key = config.get("GOOGLE_PALM_API_KEY", None)
+
+    assert api_key is not None, "Google PaLM API key not found in .env file"
+
+    return api_key
