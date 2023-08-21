@@ -146,6 +146,7 @@ public class StepwisePlanner : IStepwisePlanner
                     this._logger?.LogTrace("Action: {Action}({ActionVariables}). Iteration: {Iteration}.",
                         nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables), i + 1);
 
+#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
                     try
                     {
                         await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
@@ -160,11 +161,12 @@ public class StepwisePlanner : IStepwisePlanner
                             nextStep.Observation = result;
                         }
                     }
-                    catch (Exception ex) when (!ex.IsCriticalException())
+                    catch (Exception ex)
                     {
                         nextStep.Observation = $"Error invoking action {nextStep.Action} : {ex.Message}";
                         this._logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Action);
                     }
+#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
 
                     this._logger?.LogTrace("Observation: {Observation}", nextStep.Observation);
                 }
@@ -340,6 +342,7 @@ public class StepwisePlanner : IStepwisePlanner
             throw new SKException($"The function '{actionName}' was not found.");
         }
 
+#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
         try
         {
             var function = this._kernel.Func(targetFunction.SkillName, targetFunction.Name);
@@ -357,11 +360,12 @@ public class StepwisePlanner : IStepwisePlanner
 
             return result.Result;
         }
-        catch (Exception e) when (!e.IsCriticalException())
+        catch (Exception e)
         {
             this._logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
             return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException.Message}";
         }
+#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
     }
 
     private SKContext CreateActionContext(Dictionary<string, string> actionVariables)

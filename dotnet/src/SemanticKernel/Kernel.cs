@@ -191,6 +191,7 @@ public sealed class Kernel : IKernel, IDisposable
 
             pipelineStepCount++;
 
+#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -203,13 +204,14 @@ public sealed class Kernel : IKernel, IDisposable
                     return context;
                 }
             }
-            catch (Exception e) when (!e.IsCriticalException())
+            catch (Exception e)
             {
                 this.Logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
                 context.LastException = e;
                 return context;
             }
+#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
         }
 
         return context;

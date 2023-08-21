@@ -139,16 +139,18 @@ internal sealed class CodeBlock : Block, ICodeRendering
             contextClone.Variables.Update(input);
         }
 
+#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
         try
         {
             contextClone = await function.InvokeAsync(contextClone).ConfigureAwait(false);
         }
-        catch (Exception ex) when (!ex.IsCriticalException())
+        catch (Exception ex)
         {
             this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
                 function.SkillName, function.Name, ex.Message);
             contextClone.LastException = ex;
         }
+#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
 
         if (contextClone.ErrorOccurred)
         {

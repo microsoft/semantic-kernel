@@ -223,7 +223,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message, ex.Detail);
             throw;
         }
-        catch (Exception ex) when (!ex.IsCriticalException())
+        catch (Exception ex)
         {
             const string Message = "Something went wrong while rendering the semantic function" +
                                    " or while executing the text completion. Function: {0}.{1}. Error: {2}";

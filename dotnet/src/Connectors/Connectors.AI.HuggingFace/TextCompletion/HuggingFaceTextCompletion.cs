@@ -120,7 +120,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
             return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (Exception e) when (e is not AIException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

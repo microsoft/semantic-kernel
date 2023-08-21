@@ -225,7 +225,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (Exception e) when (e is not AIException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

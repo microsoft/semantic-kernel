@@ -111,18 +111,20 @@ public static class KernelGrpcExtensions
 
         foreach (var operation in operations)
         {
+#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
             try
             {
                 kernel.Logger.LogTrace("Registering gRPC function {0}.{1}", skillName, operation.Name);
                 var function = kernel.RegisterGrpcFunction(runner, skillName, operation);
                 skill[function.Name] = function;
             }
-            catch (Exception ex) when (!ex.IsCriticalException())
+            catch (Exception ex)
             {
                 //Logging the exception and keep registering other gRPC functions
                 kernel.Logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}",
                     skillName, operation.Name, ex.Message);
             }
+#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
         }
 
         return skill;
@@ -173,7 +175,7 @@ public static class KernelGrpcExtensions
                     context.Variables.Update(result.ToString());
                 }
             }
-            catch (Exception ex) when (!ex.IsCriticalException())
+            catch (Exception ex)
             {
                 kernel.Logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}", skillName, operation.Name,
                     ex.Message);

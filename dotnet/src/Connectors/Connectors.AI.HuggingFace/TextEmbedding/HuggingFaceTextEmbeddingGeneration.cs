@@ -115,7 +115,7 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
             return embeddingResponse?.Embeddings?.Select(l => l.Embedding).ToList()!;
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (Exception e) when (e is not AIException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

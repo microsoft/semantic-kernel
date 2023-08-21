@@ -160,17 +160,19 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
+#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
         try
         {
             return await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception e) when (!e.IsCriticalException())
+        catch (Exception e)
         {
             const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
             this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
             context.LastException = e;
             return context;
         }
+#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
     }
 
     /// <inheritdoc/>
@@ -506,7 +508,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                     {
                         return parser(value, context.Culture);
                     }
-                    catch (Exception e) when (!e.IsCriticalException())
+                    catch (Exception e)
                     {
                         throw new ArgumentOutOfRangeException(name, value, e.Message);
                     }
@@ -738,14 +740,16 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
                     // First try to parse using the supplied culture (or current if none was supplied).
                     // If that fails, try with the invariant culture and allow any exception to propagate.
+#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
                     try
                     {
                         return converter.ConvertFromString(context: null, cultureInfo, input);
                     }
-                    catch (Exception e) when (!e.IsCriticalException() && cultureInfo != CultureInfo.InvariantCulture)
+                    catch (Exception) when (cultureInfo != CultureInfo.InvariantCulture)
                     {
                         return converter.ConvertFromInvariantString(input);
                     }
+#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
                 };
             }
 

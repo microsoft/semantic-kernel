@@ -205,18 +205,20 @@ public static class KernelOpenApiExtensions
 
         foreach (var operation in operations)
         {
+#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
             try
             {
                 kernel.Logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
                 var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
                 skill[function.Name] = function;
             }
-            catch (Exception ex) when (!ex.IsCriticalException())
+            catch (Exception ex)
             {
                 //Logging the exception and keep registering other Rest functions
                 kernel.Logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
                     skillName, operation.Id, ex.Message);
             }
+#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
         }
 
         return skill;
@@ -281,7 +283,7 @@ public static class KernelOpenApiExtensions
                     context.Variables.Update(result.ToString());
                 }
             }
-            catch (Exception ex) when (!ex.IsCriticalException())
+            catch (Exception ex)
             {
                 logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
                     ex.Message);
