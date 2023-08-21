@@ -6,7 +6,7 @@ import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 """
 System messages prime the assistant with different personalities or behaviors.
-The system messsage is added to the prompt template, and a chat history can be 
+The system message is added to the prompt template, and a chat history can be 
 added as well to provide further context. 
 A system message can only be used once at the start of the conversation, and 
 conversation history persists with the instance of GooglePalmChatCompletion. To 
