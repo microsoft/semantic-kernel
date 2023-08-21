@@ -215,7 +215,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             // Sensitive data, logging as trace, disabled by default
             this.Logger.LogTrace("Passing variable/value: `{0}`", arg.Content);
 
-            contextClone.Variables.Set(arg.Name, arg.Value);
+            contextClone.Variables.Set(arg.Name, arg.GetValue(context.Variables));
         }
 
         return contextClone;

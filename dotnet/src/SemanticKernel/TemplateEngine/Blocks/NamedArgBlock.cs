@@ -13,7 +13,26 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
     internal string Name { get; } = string.Empty;
 
-    internal string Value { get; } = string.Empty;
+    public string GetValue(ContextVariables? variables)
+    {
+        var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
+        var valueIsValidVarBlock = this._argValueAsVarBlock != null && this._argValueAsVarBlock.IsValid(out var errorMessage2);
+        if (valueIsValidValBlock && this._valBlock != null)
+        {
+            return this._valBlock.Render(variables);
+        }
+
+        if (valueIsValidVarBlock && this._argValueAsVarBlock != null)
+        {
+            return this._argValueAsVarBlock.Render(variables);
+        }
+
+        return string.Empty;
+    }
+
+    private readonly VarBlock _argNameAsVarBlock;
+    private readonly ValBlock? _valBlock;
+    private readonly VarBlock? _argValueAsVarBlock;
 
     public NamedArgBlock(string? text, ILogger? logger = null)
         : base(NamedArgBlock.TrimWhitespace(text), logger)
@@ -21,9 +40,18 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         var argParts = NamedArgBlock.GetTrimmedParts(text);
         if (argParts.Length == 2)
         {
-            // TODO validate each part (can't have = sign for instance)
             this.Name = argParts[0];
-            this.Value = argParts[1];
+            this._argNameAsVarBlock = new VarBlock($"{Symbols.VarPrefix}{argParts[0]}");
+            var secondPart = argParts[1];
+            if (secondPart[0] == Symbols.VarPrefix)
+            {
+                this._argValueAsVarBlock = new VarBlock(secondPart);
+            }
+            else
+            {
+                this._valBlock = new ValBlock(argParts[1]);
+            }
+
             return;
         }
 
@@ -50,7 +78,16 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return false;
         }
 
-        if (string.IsNullOrEmpty(this.Value))
+        var isValueValid = true;
+        if (this._valBlock != null)
+        {
+            isValueValid = this._valBlock.IsValid(out errorMsg);
+        }
+        else if (this._argValueAsVarBlock != null)
+        {
+            isValueValid = this._argValueAsVarBlock.IsValid(out errorMsg);
+        }
+        else
         {
             errorMsg = "A name argument must have a value";
             this.Logger.LogError(errorMsg);
@@ -58,13 +95,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         }
 
         // Argument names share the same validation as variables
-        var tempVar = new VarBlock($"${this.Name}");
-        var isNameValid = tempVar.IsValid(out errorMsg);
-
-        // Argument values share the same validation as values
-        var tempVal = new ValBlock(this.Value);
-        tempVal.IsValid(out errorMsg);
-        var isValueValid = tempVal.IsValid(out errorMsg);
+        var isNameValid = this._argNameAsVarBlock.IsValid(out errorMsg);
 
         return isNameValid && isValueValid;
     }
