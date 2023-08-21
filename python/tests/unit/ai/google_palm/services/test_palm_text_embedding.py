@@ -1,11 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import (
-    GooglePalmTextEmbedding,
+if sys.version_info >= (3, 9):
+    from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import (
+        GooglePalmTextEmbedding,
+    )
+
+
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
 )
 
 

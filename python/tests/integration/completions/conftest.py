@@ -1,9 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import sys
+
 import pytest
 
-import semantic_kernel.connectors.ai.google_palm as sk_gp
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
+
+if sys.version_info < (3, 9):
+    import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 
 @pytest.fixture(

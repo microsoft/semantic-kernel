@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -8,8 +9,15 @@ import pytest
 from semantic_kernel.connectors.ai.chat_request_settings import (
     ChatRequestSettings,
 )
-from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
-    GooglePalmChatCompletion,
+
+if sys.version_info >= (3, 9):
+    from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
+        GooglePalmChatCompletion,
+    )
+
+
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
 )
 
 
