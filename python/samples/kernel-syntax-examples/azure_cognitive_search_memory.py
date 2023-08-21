@@ -52,69 +52,6 @@ async def search_acs_memory_questions(kernel: sk.Kernel) -> None:
         print(f"Answer: {result[0].text}\n")
 
 
-async def setup_chat_with_memory(
-    kernel: sk.Kernel,
-) -> Tuple[sk.SKFunctionBase, sk.SKContext]:
-    sk_prompt = """
-    ChatBot can have a conversation with you about any topic.
-    It can give explicit instructions or say 'I don't know' if
-    it does not have an answer.
-
-    Information about me, from previous conversations:
-    - {{$fact1}} {{recall $fact1}}
-    - {{$fact2}} {{recall $fact2}}
-    - {{$fact3}} {{recall $fact3}}
-    - {{$fact4}} {{recall $fact4}}
-    - {{$fact5}} {{recall $fact5}}
-
-    Chat:
-    {{$chat_history}}
-    User: {{$user_input}}
-    ChatBot: """.strip()
-
-    chat_func = kernel.create_semantic_function(
-        sk_prompt, max_tokens=200, temperature=0.8
-    )
-
-    context = kernel.create_new_context()
-    context["fact1"] = "what is my name?"
-    context["fact2"] = "where do I live?"
-    context["fact3"] = "where's my family from?"
-    context["fact4"] = "where have I traveled?"
-    context["fact5"] = "what do I do for work?"
-
-    context[sk.core_skills.TextMemorySkill.COLLECTION_PARAM] = COLLECTION_NAME
-    context[sk.core_skills.TextMemorySkill.RELEVANCE_PARAM] = 0.8
-
-    context["chat_history"] = ""
-
-    return chat_func, context
-
-
-async def chat(
-    kernel: sk.Kernel, chat_func: sk.SKFunctionBase, context: sk.SKContext
-) -> bool:
-    try:
-        user_input = input("User:> ")
-        context["user_input"] = user_input
-    except KeyboardInterrupt:
-        print("\n\nExiting chat...")
-        return False
-    except EOFError:
-        print("\n\nExiting chat...")
-        return False
-
-    if user_input == "exit":
-        print("\n\nExiting chat...")
-        return False
-
-    answer = await kernel.run_async(chat_func, input_vars=context.variables)
-    context["chat_history"] += f"\nUser:> {user_input}\nChatBot:> {answer}\n"
-
-    print(f"ChatBot:> {answer}")
-    return True
-
-
 async def main() -> None:
     kernel = sk.Kernel()
 
