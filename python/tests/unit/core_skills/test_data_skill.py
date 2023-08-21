@@ -1,17 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import os
-import tempfile
-from semantic_kernel.core_skills.data_skill import DataSkill
-import pytest
-from semantic_kernel import Kernel
-from unittest.mock import patch
-import pandas as pd
+from logging import Logger
 from typing import List
+
+import pandas as pd
+import pytest
+
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
 )
-from logging import Logger
+from semantic_kernel.core_skills.data_skill import DataSkill
+
 
 @pytest.fixture
 def chat_service() -> AzureChatCompletion:
@@ -29,6 +29,14 @@ def chat_service() -> AzureChatCompletion:
     )
     yield azure_chat_completion
 
+
+@pytest.fixture
+def dataframe() -> pd.DataFrame:
+    data = {"Name": ["Example"]}
+    df = pd.DataFrame(data)
+    yield df
+
+
 @pytest.mark.asyncio
 async def test_it_can_be_instantiated(chat_service):
     skill = DataSkill(chat_service)
@@ -41,29 +49,23 @@ def test_it_can_be_imported(chat_service):
     assert kernel.import_skill(skill, "data")
     assert kernel.skills.has_native_function("data", "queryAsync")
 
-def test_add_data_and_clear_data(chat_service):
+
+def test_add_data_and_clear_data(chat_service, dataframe):
     skill = DataSkill(chat_service)
     data_param = "text.csv"
     try:
         skill.add_data(data_param)
     except FileNotFoundError:
         pass
-    data = {
-        "Name": ["Example"]
-    }
-    df = pd.DataFrame(data)
-    skill.add_data(df)
+    skill.add_data(dataframe)
     assert isinstance(skill.data, List)
     skill.clear_data()
     assert isinstance(skill.data, List)
 
-def test_get_df_data(chat_service):
+
+def test_get_df_data(chat_service, dataframe):
     skill = DataSkill(chat_service)
-    data2 = {
-        "Name": ["Example"]
-    }
-    df = pd.DataFrame(data2)
-    skill.add_data(df)
+    skill.add_data(dataframe)
     prompt = skill.get_df_data()
     assert isinstance(prompt, str)
 
