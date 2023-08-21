@@ -84,6 +84,7 @@ class SKFunction(SKFunctionBase):
         if (
             hasattr(method, "__sk_function_input_description__")
             and method.__sk_function_input_description__ is not None
+            and method.__sk_function_input_description__ != ""
         ):
             input_param = ParameterView(
                 "input",
