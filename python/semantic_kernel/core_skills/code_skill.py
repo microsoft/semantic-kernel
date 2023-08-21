@@ -16,6 +16,7 @@ from semantic_kernel.skill_definition import sk_function, sk_function_context_pa
 
 CODE_BLOCK_PATTERN = r"```(?:.*\n)?([\s\S]*?)(?:```*)"
 DEFAULT_PROMPT = "Generate plain Python code with no extra explanation nor decoration: "
+ON_SUCCESS = "Execution success."
 
 
 class CodeSkill:
@@ -117,12 +118,15 @@ class CodeSkill:
             [("user", prompt)], self._chat_settings
         )
 
-        # Parse if there is Markdown syntax
-        code_block = re.findall(pattern=CODE_BLOCK_PATTERN, string=result)
-        if code_block and len(code_block[0]):
-            return str(code_block[0]).lstrip("python\n")
+        if len(result):
+            # Parse if there is Markdown syntax
+            code_block = re.findall(pattern=CODE_BLOCK_PATTERN, string=result)
+            if code_block and len(code_block[0]):
+                return str(code_block[0]).lstrip("python\n")
+            else:
+                return result
         else:
-            return result
+            raise AssertionError(f"Error: unable to generate code from query: {prompt}")
 
     async def custom_execute_async(
         self,
@@ -141,6 +145,6 @@ class CodeSkill:
 
         try:
             exec(code, global_vars, local_vars)
-            return "SUCCESS"
+            return ON_SUCCESS
         except Exception as e:
             raise Exception(f"Error with attempting code execution: '{e}'")
