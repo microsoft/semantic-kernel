@@ -107,3 +107,14 @@ def context_factory() -> t.Callable[[ContextVariables], SKContext]:
         )
 
     return create_context
+
+
+@pytest.fixture(scope="session")
+def get_gp_config():
+    if "Python_Integration_Tests" in os.environ:
+        api_key = os.environ["GOOGLE_PALM_API_KEY"]
+    else:
+        # Load credentials from .env file
+        api_key = sk.google_palm_settings_from_dot_env()
+
+    return api_key

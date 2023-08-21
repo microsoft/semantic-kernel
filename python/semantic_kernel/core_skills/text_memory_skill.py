@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import json
 import typing as t
 
 from semantic_kernel.sk_pydantic import PydanticField
@@ -12,8 +13,10 @@ class TextMemorySkill(PydanticField):
     COLLECTION_PARAM = "collection"
     RELEVANCE_PARAM = "relevance"
     KEY_PARAM = "key"
+    LIMIT_PARAM = "limit"
     DEFAULT_COLLECTION = "generic"
     DEFAULT_RELEVANCE = 0.75
+    DEFAULT_LIMIT = 1
 
     # @staticmethod
     @sk_function(
@@ -31,6 +34,11 @@ class TextMemorySkill(PydanticField):
         description="The relevance score, from 0.0 to 1.0; 1.0 means perfect match",
         default_value=DEFAULT_RELEVANCE,
     )
+    @sk_function_context_parameter(
+        name=LIMIT_PARAM,
+        description="The maximum number of relevant memories to recall.",
+        default_value=DEFAULT_LIMIT,
+    )
     async def recall_async(self, ask: str, context: "SKContext") -> str:
         """
         Recall a fact from the long term memory.
@@ -42,10 +50,11 @@ class TextMemorySkill(PydanticField):
         Args:
             ask -- The question to ask the memory
             context -- Contains the 'collection' to search for information
-                and the 'relevance' score to use when searching
+                , the 'relevance' score to use when searching
+                and the 'limit' of relevant memories to retrieve.
 
         Returns:
-            The nearest item from the memory store
+            The nearest item from the memory store as a string or empty string if not found.
         """
         if context.variables is None:
             raise ValueError("Context has no variables")
@@ -68,15 +77,25 @@ class TextMemorySkill(PydanticField):
         if relevance is None or str(relevance).strip() == "":
             relevance = TextMemorySkill.DEFAULT_RELEVANCE
 
+        limit = (
+            context.variables[TextMemorySkill.LIMIT_PARAM]
+            if context.variables.contains_key(TextMemorySkill.LIMIT_PARAM)
+            else TextMemorySkill.DEFAULT_LIMIT
+        )
+        if limit is None or str(limit).strip() == "":
+            limit = TextMemorySkill.DEFAULT_LIMIT
+
         results = await context.memory.search_async(
-            collection, ask, min_relevance_score=float(relevance)
+            collection=collection,
+            query=ask,
+            limit=int(limit),
+            min_relevance_score=float(relevance),
         )
         if results is None or len(results) == 0:
             if context.log is not None:
                 context.log.warning(f"Memory not found in collection: {collection}")
             return ""
-
-        return results[0].text if results[0].text is not None else ""
+        return results[0].text if limit == 1 else json.dumps([r.text for r in results])
 
     @sk_function(
         description="Save information to semantic memory",
