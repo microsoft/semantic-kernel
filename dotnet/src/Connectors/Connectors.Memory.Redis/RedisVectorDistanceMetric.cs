@@ -6,7 +6,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
 /// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
 /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/"/>
 /// </summary>
-public enum VectorDistanceMetrics
+public enum VectorDistanceMetric
 {
     /// <summary>
     /// Euclidean distance between two vectors

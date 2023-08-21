@@ -14,6 +14,7 @@ using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using NRedisStack.Search.Literals.Enums;
 using StackExchange.Redis;
+using static NRedisStack.Search.Schema.VectorField;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
 
@@ -35,24 +36,21 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
     public RedisMemoryStore(
         IDatabase database,
-        int vectorSize = VectorSize,
-        VectorIndexAlgorithms vectorIndexAlgorithm = VectorIndexAlgorithm,
-        VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
-        int queryDialect = QueryDialect)
+        int vectorSize = DefaultVectorSize,
+        VectorAlgo vectorIndexAlgorithm = DefaultIndexAlgorithm,
+        VectorDistanceMetric vectorDistanceMetric = DefaultDistanceMetric,
+        int queryDialect = DefaultQueryDialect)
     {
         if (vectorSize <= 0)
         {
-            throw new ArgumentException("Vector size must be a positive integer.");
-        }
-
-        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
-        {
-            throw new ArgumentException("Unsupported vector indexing algorithm.");
+            throw new ArgumentException(
+                $"Invalid vector size: {vectorSize}. Vector size must be a positive integer.", nameof(vectorSize));
         }
 
         this._database = database;
         this._vectorSize = vectorSize;
         this._ft = database.FT();
+        this._vectorIndexAlgorithm = vectorIndexAlgorithm;
         this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
     }
@@ -67,25 +65,22 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     /// <param name="queryDialect">Query dialect, must be 2 or greater for vector similarity searching, defaults to 2</param>
     public RedisMemoryStore(
         string connectionString,
-        int vectorSize = VectorSize,
-        VectorIndexAlgorithms vectorIndexAlgorithm = VectorIndexAlgorithm,
-        VectorDistanceMetrics vectorDistanceMetric = VectorDistanceMetric,
-        int queryDialect = QueryDialect)
+        int vectorSize = DefaultVectorSize,
+        VectorAlgo vectorIndexAlgorithm = DefaultIndexAlgorithm,
+        VectorDistanceMetric vectorDistanceMetric = DefaultDistanceMetric,
+        int queryDialect = DefaultQueryDialect)
     {
         if (vectorSize <= 0)
         {
-            throw new ArgumentException("Vector size must be a positive integer.");
-        }
-
-        if (!Enum.TryParse<Schema.VectorField.VectorAlgo>(vectorIndexAlgorithm.ToString(), out this._vectorIndexAlgorithm))
-        {
-            throw new ArgumentException("Unsupported vector indexing algorithm.");
+            throw new ArgumentException(
+                $"Invalid vector size: {vectorSize}. Vector size must be a positive integer.", nameof(vectorSize));
         }
 
         this._connection = ConnectionMultiplexer.Connect(connectionString);
         this._database = this._connection.GetDatabase();
         this._vectorSize = vectorSize;
         this._ft = this._database.FT();
+        this._vectorIndexAlgorithm = vectorIndexAlgorithm;
         this._vectorDistanceMetric = vectorDistanceMetric.ToString();
         this._queryDialect = queryDialect;
     }
@@ -108,7 +103,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             .AddTextField("metadata")
             .AddNumericField("timestamp")
             .AddVectorField("embedding", this._vectorIndexAlgorithm, new Dictionary<string, object> {
-                    {"TYPE", VectorType},
+                    {"TYPE", DefaultVectorType},
                     {"DIM", this._vectorSize},
                     {"DISTANCE_METRIC", this._vectorDistanceMetric},
                 });
@@ -271,29 +266,29 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     /// Vector similarity index algorithm. Supported algorithms are {FLAT, HNSW}. The default value is "HNSW".
     /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#create-a-vector-field"/>
     /// </summary>
-    private const VectorIndexAlgorithms VectorIndexAlgorithm = VectorIndexAlgorithms.HNSW;
+    private const VectorAlgo DefaultIndexAlgorithm = VectorAlgo.HNSW;
 
     /// <summary>
     /// Vector type. Available values are {FLOAT32, FLOAT64}.
     /// Value "FLOAT32" is used by default based on <see cref="MemoryRecord.Embedding"/> <see cref="float"/> type.
     /// </summary>
-    private const string VectorType = "FLOAT32";
+    private const string DefaultVectorType = "FLOAT32";
 
     /// <summary>
     /// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
     /// </summary>
-    private const VectorDistanceMetrics VectorDistanceMetric = VectorDistanceMetrics.COSINE;
+    private const VectorDistanceMetric DefaultDistanceMetric = VectorDistanceMetric.COSINE;
 
     /// <summary>
     /// Query dialect. To use a vector similarity query, specify DIALECT 2 or higher. The default value is "2".
     /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/#querying-vector-fields"/>
     /// </summary>
-    private const int QueryDialect = 2;
+    private const int DefaultQueryDialect = 2;
 
     /// <summary>
     /// Embedding vector size.
     /// </summary>
-    private const int VectorSize = 1536;
+    private const int DefaultVectorSize = 1536;
 
     /// <summary>
     /// Message when index does not exist.
