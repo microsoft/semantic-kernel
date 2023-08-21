@@ -6,7 +6,8 @@ import sys
 
 import pytest
 
-import semantic_kernel.connectors.ai.google_palm as sk_gp
+if sys.version_info >= (3, 9):
+    import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
