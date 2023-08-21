@@ -66,3 +66,15 @@ def test_get_df_data(chat_service):
     skill.add_data(df)
     prompt = skill.get_df_data()
     assert isinstance(prompt, str)
+
+async def test_query_async(chat_service):
+    skill = DataSkill(chat_service)
+    data2 = {
+        "Name": ["Example"]
+    }
+    df = pd.DataFrame(data2)
+    skill.add_data(df)
+    
+
+
+
