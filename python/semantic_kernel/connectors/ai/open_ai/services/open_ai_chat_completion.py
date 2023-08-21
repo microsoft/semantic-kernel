@@ -20,7 +20,6 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.semantic_functions.chat_prompt_template import ChatMessage
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -71,7 +70,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._has_function_completion = has_function_completion
 
     async def complete_chat_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+        self, messages: List[Dict[str, str]], request_settings: ChatRequestSettings
     ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(messages, request_settings, False)
@@ -83,7 +82,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
     async def complete_chat_with_functions_async(
         self,
-        messages: List[ChatMessage],
+        messages: List[Dict[str, str]],
         functions: List[Dict[str, Any]],
         request_settings: ChatRequestSettings,
         logger: Optional[Logger] = None,
@@ -110,7 +109,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
     async def complete_chat_stream_async(
         self,
-        messages: List[ChatMessage],
+        messages: List[Dict[str, str]],
         request_settings: ChatRequestSettings,
     ):
         # TODO: enable function calling
@@ -144,9 +143,16 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings.from_completion_config(request_settings)
-
+        prompt_to_message = [{"role": "user", "content": prompt}]
+        chat_settings = ChatRequestSettings(
+            temperature=request_settings.temperature,
+            top_p=request_settings.top_p,
+            presence_penalty=request_settings.presence_penalty,
+            frequency_penalty=request_settings.frequency_penalty,
+            max_tokens=request_settings.max_tokens,
+            number_of_responses=request_settings.number_of_responses,
+            token_selection_biases=request_settings.token_selection_biases,
+        )
         response = await self._send_chat_request(
             prompt_to_message, chat_settings, False
         )
@@ -162,7 +168,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         request_settings: CompleteRequestSettings,
         logger: Optional[Logger] = None,
     ):
-        prompt_to_message = [("user", prompt)]
+        prompt_to_message = [{"role": "user", "content": prompt}]
         chat_settings = ChatRequestSettings(
             temperature=request_settings.temperature,
             top_p=request_settings.top_p,
@@ -189,7 +195,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
     async def _send_chat_request(
         self,
-        messages: List[ChatMessage],
+        messages: List[Dict[str, str]],
         request_settings: ChatRequestSettings,
         stream: bool,
         functions: Optional[List[Dict[str, Any]]] = None,

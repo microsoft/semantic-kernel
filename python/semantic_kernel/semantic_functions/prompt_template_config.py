@@ -24,6 +24,8 @@ class PromptTemplateConfig:
         name: str = ""
         description: str = ""
         default_value: str = ""
+        type_: str = "string"
+        required: bool = True
 
     @dataclass
     class InputConfig:
@@ -37,6 +39,7 @@ class PromptTemplateConfig:
     completion: "PromptTemplateConfig.CompletionConfig" = field(
         default_factory=CompletionConfig
     )
+    function_completion_enabled: bool = False
     default_services: List[str] = field(default_factory=list)
     input: "PromptTemplateConfig.InputConfig" = field(default_factory=InputConfig)
 
@@ -93,11 +96,16 @@ class PromptTemplateConfig:
                         f"Input parameter '{name}' doesn't have a default value (function: {config.description})"
                     )
 
+                type_ = parameter.get("type")
+                required = parameter.get("required")
+
                 config.input.parameters.append(
                     PromptTemplateConfig.InputParameter(
                         name,
                         description,
                         defaultValue,
+                        type_,
+                        required,
                     )
                 )
         return config

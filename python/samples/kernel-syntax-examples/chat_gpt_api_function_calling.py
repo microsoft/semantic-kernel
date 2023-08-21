@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
@@ -32,6 +33,9 @@ kernel.add_chat_service(
 )
 
 kernel.import_skill(MathSkill(), skill_name="math")
+
+skills_directory = os.path.join(__file__, "../../../../samples/skills")
+kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     max_tokens=2000, temperature=0.7, top_p=0.8, function_call="auto"

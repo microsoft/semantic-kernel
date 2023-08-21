@@ -182,12 +182,15 @@ class SKFunction(SKFunctionBase):
                             name=function_call["name"],
                             content=context.variables.input,
                         )
-                        messages = await as_chat_prompt.render_messages_async(context)
-                        request_settings.function_call = None
-                        completion = await client.complete_chat_async(
-                            messages, request_settings
+                        return await _local_func(
+                            client, request_settings, context, functions=functions
                         )
-                        as_chat_prompt.add_assistant_message(completion)
+                        # messages = await as_chat_prompt.render_messages_async(context)
+                        # request_settings.function_call = None
+                        # completion = await client.complete_chat_async(
+                        #     messages, request_settings
+                        # )
+                        # as_chat_prompt.add_assistant_message(completion)
                     except Exception as e:
                         context.fail(str(e), e)
 
@@ -251,6 +254,7 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=function_name,
             is_semantic=True,
+            function_completion_enabled=function_config.prompt_template_config.function_completion_enabled,
             log=log,
         )
 
@@ -495,7 +499,11 @@ class SKFunction(SKFunctionBase):
         service = (
             self._ai_service if self._ai_service is not None else self._chat_service
         )
-        if service._has_function_completion and functions:
+        if (
+            hasattr(service, "_has_function_completion")
+            and service._has_function_completion
+            and functions
+        ):
             new_context = await self._function(
                 service, settings, context, functions=functions
             )
