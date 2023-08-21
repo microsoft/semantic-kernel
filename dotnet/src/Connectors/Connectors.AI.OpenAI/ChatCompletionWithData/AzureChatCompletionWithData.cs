@@ -152,8 +152,8 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         ChatRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
-        using var response = await this.GetResponse(request, cancellationToken).ConfigureAwait(false);
+        using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
+        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         this.EnsureSuccessStatusCode(response);
 
@@ -169,8 +169,8 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         ChatRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
-        using var response = await this.GetResponse(request, cancellationToken).ConfigureAwait(false);
+        using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
+        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         this.EnsureSuccessStatusCode(response);
 
@@ -180,16 +180,14 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         }
     }
 
-    private async Task<HttpResponseMessage> GetResponse(
-        ChatWithDataRequest request,
+    private async Task<HttpResponseMessage> SendRequestAsync(
+        HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), request);
+        request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        request.Headers.Add("Api-Key", this._config.CompletionApiKey);
 
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-        httpRequestMessage.Headers.Add("Api-Key", this._config.CompletionApiKey);
-
-        return await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        return await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
     private void EnsureSuccessStatusCode(HttpResponseMessage response)
@@ -255,12 +253,12 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         return response;
     }
 
-    private ChatWithDataRequest GetRequest(
+    private HttpRequestMessage GetRequest(
         ChatHistory chat,
         ChatRequestSettings requestSettings,
         bool isStreamEnabled)
     {
-        return new ChatWithDataRequest
+        var payload = new ChatWithDataRequest
         {
             Temperature = requestSettings.Temperature,
             TopP = requestSettings.TopP,
@@ -273,6 +271,8 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             DataSources = this.GetDataSources(),
             Messages = this.GetMessages(chat)
         };
+
+        return HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
     }
 
     private List<ChatWithDataSource> GetDataSources()
