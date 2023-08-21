@@ -31,7 +31,6 @@ kernel.add_chat_service(
         endpoint,
         api_key,
         api_version=api_version,
-        # has_function_completion=True,
     ),
 )
 
@@ -42,7 +41,7 @@ kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
 # the math skill is a core skill and has the function calling enabled.
 kernel.import_skill(MathSkill(), skill_name="math")
 
-# enabling or disabling function calling is done by setting the has_function_completion parameter in the service.
+# enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # if the model or api version do not support this you will get an error.
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     max_tokens=2000, temperature=0.7, top_p=0.8, function_call="auto"
