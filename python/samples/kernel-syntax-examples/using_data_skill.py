@@ -38,32 +38,31 @@ async def main() -> None:
 
     instance = DataSkill(
         sources=[df1, df2], service=openai_chat_completion, verbose=True
-        )
-    data_skill = kernel.import_skill(
-        instance, skill_name="data"
     )
+    data_skill = kernel.import_skill(instance, skill_name="data")
     query_async = data_skill["queryAsync"]
-    prompt = "How old is Bob and what city does Francis live in?"
-    result = await query_async.invoke_async(prompt)
-    print(result)
-    # Output: Bob is 32 years old and Francis lives in Savannah.
 
-    prompt = "What is Emily's income?"
-    result = await query_async.invoke_async(prompt)
-    print(result)
-    # Output: Emily's income is $67,000.
+    prompts = [
+        "How old is Bob and what city does Francis live in?",
+        "What is Emily's income?",
+        "Which group has a higher average salary and what is the difference?",
+        "Explain the correlation between age and income with two decimal places.",
+    ]
+    for prompt in prompts:
+        result = await query_async.invoke_async(prompt)
+        print(result)
+    """
+    Output:
+        Bob is 32 years old and Francis lives in Savannah.
 
-    prompt = "Which group has a higher average salary and what is the difference?"
-    result = await query_async.invoke_async(prompt)
-    print(result)
-    # Output: The group with the higher average salary is 'df2'.
-    #         The difference in average salary between the two groups is $3600.
+        Emily's income is $67,000.
 
-    prompt = "Explain the correlation between age and income with two decimal places."
-    result = await query_async.invoke_async(prompt)
-    print(result)
-    # Output: The correlation between age and income is 0.83, which indicates a strong positive relationship. 
-    #         This means that as age increases, income tends to increase as well.
+        The group with the higher average salary is 'df2'. 
+            The difference in average salary between the two groups is $3600.
+
+        The correlation between age and income is 0.83, which indicates a strong positive relationship.
+            This means that as age increases, income tends to increase as well.
+    """
 
     prompt = """Add a new Job column to the second dataframe with values
     accountant, software engineer, paralegal, lab tech, HR manager, web developer."""
@@ -79,6 +78,7 @@ async def main() -> None:
     4      Emily   30         Denver   67000         HR manager
     5    Francis   33       Savannah   70000      web developer
     """
+
 
 if __name__ == "__main__":
     asyncio.run(main())
