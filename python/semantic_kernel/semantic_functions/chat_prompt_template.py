@@ -55,14 +55,6 @@ class ChatPromptTemplate(PromptTemplate):
             )
         )
 
-    # def add_assistant_message(self, message: str) -> None:
-    #     self.add_message(
-    #         ChatMessage(
-    #             role="assistant",
-    #             message=message,
-    #         )
-    #     )
-
     def add_function_response_message(self, name: str, content: Any) -> None:
         self.add_message(ChatMessage(role="function", name=name, content=str(content)))
 

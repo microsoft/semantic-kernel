@@ -10,7 +10,7 @@ class ParameterView(SKBaseModel):
     description: str
     default_value: str
     type_: str = "string"
-    required: bool = False
+    required: bool = True
 
     def __init__(
         self,
@@ -18,7 +18,7 @@ class ParameterView(SKBaseModel):
         description: str,
         default_value: str,
         type: str = "string",
-        required: bool = False,
+        required: bool = True,
     ) -> None:
         validate_function_param_name(name)
         super().__init__(
@@ -30,6 +30,6 @@ class ParameterView(SKBaseModel):
         )
 
     @property
-    def function_completion_repr(self) -> Dict[str, str]:
+    def function_completion_object(self) -> Dict[str, str]:
         """Return the parameter, ready for a function call setup."""
         return {"description": self.description, "type": self.type_}

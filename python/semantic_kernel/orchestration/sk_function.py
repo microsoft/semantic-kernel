@@ -122,7 +122,7 @@ class SKFunction(SKFunctionBase):
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context, functions):
+        async def _local_func(client, request_settings, context, **kwargs):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -135,6 +135,8 @@ class SKFunction(SKFunctionBase):
             except Exception as e:
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)
+
+            functions = kwargs.get("functions")
 
             try:
                 as_chat_prompt = cast(
@@ -189,8 +191,8 @@ class SKFunction(SKFunctionBase):
                     except Exception as e:
                         context.fail(str(e), e)
 
-                    # Update context
-                    context.variables.update(completion)
+                # Update context
+                context.variables.update(completion)
             except Exception as e:
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)
@@ -363,7 +365,7 @@ class SKFunction(SKFunctionBase):
 
     def describe_function_completion(self) -> List[Dict[str, Any]]:
         return [
-            func.function_completion_repr
+            func.function_completion_object
             for func in self._skill_collection.get_functions_view().function_completion_functions.values()
         ]
 
@@ -494,9 +496,12 @@ class SKFunction(SKFunctionBase):
             self._ai_service if self._ai_service is not None else self._chat_service
         )
         if service._has_function_completion and functions:
-            new_context = await self._function(service, settings, context, functions)
+            new_context = await self._function(
+                service, settings, context, functions=functions
+            )
         else:
-            new_context = await self._function(service, context, settings)
+            settings.function_call = None
+            new_context = await self._function(service, settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 

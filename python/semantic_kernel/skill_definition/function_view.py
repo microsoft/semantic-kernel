@@ -38,14 +38,14 @@ class FunctionView(SKBaseModel):
         )
 
     @property
-    def function_completion_repr(self) -> Dict[str, Any]:
+    def function_completion_object(self) -> Dict[str, Any]:
         return {
             "name": f"{self.skill_name}-{self.name}",
             "description": self.description,
             "parameters": {
                 "type": "object",
                 "properties": {
-                    param.name: param.function_completion_repr
+                    param.name: param.function_completion_object
                     for param in self.parameters
                 },
                 "required": [p.name for p in self.parameters if p.required],

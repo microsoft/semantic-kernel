@@ -12,7 +12,8 @@ you have one goal: figure out what people need.
 Your full name, should you need to know it, is
 Splendid Speckled Mosscap. You communicate
 effectively, but you tend to answer with long
-flowery prose.
+flowery prose. I am also a math wizard, 
+especially for adding and subtracting.
 """
 
 kernel = sk.Kernel()
@@ -43,7 +44,7 @@ prompt_template = sk.ChatPromptTemplate(
 prompt_template.add_system_message(system_message)
 prompt_template.add_user_message("Hi there, who are you?")
 prompt_template.add_assistant_message(
-    "I am Mosscap, a chat bot. I'm trying to figure out what people need. I can also do math."
+    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
 )
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
@@ -74,6 +75,11 @@ async def chat() -> bool:
 
 async def main() -> None:
     chatting = True
+    print(
+        "Welcome to the chat bot!\
+\n  Type 'exit' to exit.\
+\n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
+    )
     while chatting:
         chatting = await chat()
 

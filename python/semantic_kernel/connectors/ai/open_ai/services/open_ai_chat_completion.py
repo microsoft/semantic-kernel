@@ -102,9 +102,11 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         )
 
         if len(response.choices) == 1:
-            return _parse_message(response.choices[0].message)
+            return _parse_message(response.choices[0].message, self._log)
         else:
-            return [_parse_message(choice.message) for choice in response.choices]
+            return [
+                _parse_message(choice.message, self._log) for choice in response.choices
+            ]
 
     async def complete_chat_stream_async(
         self,
@@ -226,69 +228,37 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 "The last message must be from the user or a function output",
             )
 
-        model_args = {}
-        if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
-        else:
-            model_args["model"] = self._model_id
+        model_args = {
+            "api_key": self._api_key,
+            "api_type": self._api_type,
+            "api_base": self._endpoint,
+            "api_version": self._api_version,
+            "organization": self._org_id,
+            "engine"
+            if self._api_type in ["azure", "azure_ad"]
+            else "model": self._model_id,
+            "messages": messages,
+            "temperature": request_settings.temperature,
+            "top_p": request_settings.top_p,
+            "presence_penalty": request_settings.presence_penalty,
+            "frequency_penalty": request_settings.frequency_penalty,
+            "max_tokens": request_settings.max_tokens,
+            "n": request_settings.number_of_responses,
+            "stream": stream,
+            "logit_bias": (
+                request_settings.token_selection_biases
+                if request_settings.token_selection_biases is not None
+                and len(request_settings.token_selection_biases) > 0
+                else {}
+            ),
+        }
 
-        # formatted_messages = [message.json(exclude_none=True) for message in messages]
-
-        if functions and not request_settings.function_call:
-            request_settings.function_call = "auto"
-
-        if not functions and request_settings.function_call:
-            request_settings.function_call = None
+        if functions:
+            model_args["functions"] = functions
+            model_args["function_call"] = request_settings.function_call
 
         try:
-            if functions:
-                response: Any = await openai.ChatCompletion.acreate(
-                    **model_args,
-                    api_key=self._api_key,
-                    api_type=self._api_type,
-                    api_base=self._endpoint,
-                    api_version=self._api_version,
-                    organization=self._org_id,
-                    messages=messages,
-                    functions=functions,
-                    function_call=request_settings.function_call,
-                    temperature=request_settings.temperature,
-                    top_p=request_settings.top_p,
-                    presence_penalty=request_settings.presence_penalty,
-                    frequency_penalty=request_settings.frequency_penalty,
-                    max_tokens=request_settings.max_tokens,
-                    n=request_settings.number_of_responses,
-                    stream=stream,
-                    logit_bias=(
-                        request_settings.token_selection_biases
-                        if request_settings.token_selection_biases is not None
-                        and len(request_settings.token_selection_biases) > 0
-                        else {}
-                    ),
-                )
-            else:
-                response: Any = await openai.ChatCompletion.acreate(
-                    **model_args,
-                    api_key=self._api_key,
-                    api_type=self._api_type,
-                    api_base=self._endpoint,
-                    api_version=self._api_version,
-                    organization=self._org_id,
-                    messages=messages,
-                    temperature=request_settings.temperature,
-                    top_p=request_settings.top_p,
-                    presence_penalty=request_settings.presence_penalty,
-                    frequency_penalty=request_settings.frequency_penalty,
-                    max_tokens=request_settings.max_tokens,
-                    n=request_settings.number_of_responses,
-                    stream=stream,
-                    logit_bias=(
-                        request_settings.token_selection_biases
-                        if request_settings.token_selection_biases is not None
-                        and len(request_settings.token_selection_biases) > 0
-                        else {}
-                    ),
-                )
+            response: Any = await openai.ChatCompletion.acreate(**model_args)
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
@@ -331,7 +301,9 @@ def _parse_choices(chunk):
     return message, index
 
 
-def _parse_message(message: "OpenAIObject") -> Tuple[Optional[str], Optional[Dict]]:
+def _parse_message(
+    message: "OpenAIObject", logger: Logger | None = None
+) -> Tuple[Optional[str], Optional[Dict]]:
     """
     Parses the message.
 
@@ -349,10 +321,11 @@ def _parse_message(message: "OpenAIObject") -> Tuple[Optional[str], Optional[Dic
                 "name": function_call.name,
                 "arguments": json.loads(function_call.arguments),
             }
-    except json.JSONDecodeError as ex:
-        raise AIException(
-            AIException.ErrorCodes.InvalidResponseContent,
-            "The function call was not valid JSON",
-        ) from ex
+    except json.JSONDecodeError:
+        function_call = None
+        if logger:
+            logger.warning(
+                "The function call was not valid JSON: %s", function_call.arguments
+            )
 
     return (content, function_call)

@@ -10,8 +10,6 @@ if TYPE_CHECKING:
 
 
 class ChatCompletionClientBase(ABC):
-    _has_function_completion: bool = False
-
     @abstractmethod
     async def complete_chat_async(
         self,
