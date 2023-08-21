@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
@@ -114,30 +115,35 @@ public class CodeTokenizerTests
         Assert.Equal(BlockTypes.Value, blocks3[1].Type);
     }
 
-    //[Fact]
-    //public void ItParsesMultiNamedArgFunctionCalls()
-    //{
-    //    // Arrange
-    //    var template1 = "x.y first=$foo second = 'bar'";
+    // TODO implement test spaces between equals sign
 
-    //    // Act
-    //    var blocks1 = this._target.Tokenize(template1);
+    [Fact]
+    public void ItParsesMultiNamedArgFunctionCalls()
+    {
+        // Arrange
+        var template1 = "x.y first=$foo second='bar'";
+        var parameters = new ContextVariables();
+        parameters.Set("foo", "fooValue");
 
-    //    // Assert
-    //    Assert.Equal(5, blocks1.Count);
+        // Act
+        var blocks1 = this._target.Tokenize(template1);
 
-    //    var firstBlock = blocks1[0];
-    //    var secondBlock = blocks1[1];
-    //    var thirdBlock = blocks1[2];
-    //    Assert.Equal("x.y", firstBlock.Content);
-    //    Assert.Equal(BlockTypes.FunctionId, firstBlock.Type);
-    //    Assert.Equal("first=$foo", secondBlock.Content);
-    //    Assert.Equal(BlockTypes.NamedArg, secondBlock.Type);
+        // Assert
+        Assert.Equal(3, blocks1.Count);
 
-    //    var secondBlockParts = (NamedArgBlock secondBlock)..
-    //    Assert.Equal("second='bar'", thirdBlock.Content);
-    //    Assert.Equal(BlockTypes.NamedArg, thirdBlock.Type);
-    //}
+        var firstBlock = blocks1[0];
+        var secondBlock = blocks1[1] as NamedArgBlock;
+        var thirdBlock = blocks1[2] as NamedArgBlock;
+        Assert.Equal("x.y", firstBlock.Content);
+        Assert.Equal(BlockTypes.FunctionId, firstBlock.Type);
+        Assert.Equal("first=$foo", secondBlock?.Content);
+        Assert.Equal(BlockTypes.NamedArg, secondBlock?.Type);
+        Assert.Equal("first", secondBlock?.Name);
+        Assert.Equal("fooValue", secondBlock?.GetValue(parameters));
+        Assert.Equal(BlockTypes.NamedArg, thirdBlock?.Type);
+        Assert.Equal("second", thirdBlock?.Name);
+        Assert.Equal("bar", thirdBlock?.GetValue(parameters));
+    }
 
     [Fact]
     public void ItSupportsEscaping()

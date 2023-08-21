@@ -41,6 +41,7 @@ internal sealed class CodeTokenizer
         Value = 1,
         Variable = 2,
         FunctionId = 3,
+        NamedArg = 4,
     }
 
     private readonly ILogger _logger;
@@ -174,6 +175,11 @@ internal sealed class CodeTokenizer
                     blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._logger));
                     currentTokenContent.Clear();
                 }
+                else if (currentTokenType == TokenTypes.NamedArg)
+                {
+                    blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._logger));
+                    currentTokenContent.Clear();
+                }
 
                 spaceSeparatorFound = true;
                 currentTokenType = TokenTypes.None;
@@ -203,10 +209,15 @@ internal sealed class CodeTokenizer
                     // A variable starts here
                     currentTokenType = TokenTypes.Variable;
                 }
-                else
+                else if (blocks.Count == 0)
                 {
                     // A function Id starts here
                     currentTokenType = TokenTypes.FunctionId;
+                }
+                else
+                {
+                    // A named arg starts here
+                    currentTokenType = TokenTypes.NamedArg;
                 }
             }
         }
@@ -225,6 +236,10 @@ internal sealed class CodeTokenizer
 
             case TokenTypes.FunctionId:
                 blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._logger));
+                break;
+
+            case TokenTypes.NamedArg:
+                blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._logger));
                 break;
 
             case TokenTypes.None:
