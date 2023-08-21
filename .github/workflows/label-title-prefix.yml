@@ -18,7 +18,7 @@ jobs:
       - uses: actions/github-script@v6
         name: "Issue/PR: update title"
         with:
-          github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             let prefixLabels = {
               "python": "Python",
