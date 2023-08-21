@@ -78,7 +78,7 @@ public static class Example54_AzureChatCompletionWithData
 
         // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine(result);
-        Console.Write(Environment.NewLine);
+        Console.WriteLine();
 
         // Second question based on uploaded content.
         result = await kernel.RunAsync("What are Emily and David studying?", semanticFunction);
