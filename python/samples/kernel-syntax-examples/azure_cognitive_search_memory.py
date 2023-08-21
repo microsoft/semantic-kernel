@@ -5,14 +5,13 @@ import os
 from typing import Tuple
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.memory.azure_cognitive_search import (
-    AzureCognitiveSearchMemoryStore,
-)
 from semantic_kernel.connectors.ai.open_ai import (
     AzureTextCompletion,
     AzureTextEmbedding,
 )
-
+from semantic_kernel.connectors.memory.azure_cognitive_search import (
+    AzureCognitiveSearchMemoryStore,
+)
 
 COLLECTION_NAME = "acs-index-sample"
 
