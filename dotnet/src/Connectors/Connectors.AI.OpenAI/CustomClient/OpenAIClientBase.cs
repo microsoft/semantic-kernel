@@ -26,11 +26,11 @@ public abstract class OpenAIClientBase
     /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
-    /// <param name="logger">The ILogger used for logging. If null, a NullLogger instance will be used.</param>
-    private protected OpenAIClientBase(HttpClient? httpClient, ILogger? logger = null)
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
+    private protected OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
     }
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>

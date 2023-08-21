@@ -14,9 +14,9 @@ public static class Example19_Qdrant
 
     public static async Task RunAsync()
     {
-        QdrantMemoryStore memoryStore = new(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.Logger);
+        QdrantMemoryStore memoryStore = new(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.LoggerFactory);
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)
