@@ -1,14 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-import asyncio
-from unittest.mock import patch, MagicMock
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
-)
+
 from semantic_kernel.connectors.ai.google_palm.services.gp_text_embedding import (
-    GooglePalmTextEmbedding
+    GooglePalmTextEmbedding,
 )
+
 
 def test_google_palm_text_embedding_init() -> None:
     model_id = "test_model_id"
@@ -24,9 +23,10 @@ def test_google_palm_text_embedding_init() -> None:
     assert gp_text_embed._api_key == api_key
     assert isinstance(gp_text_embed, GooglePalmTextEmbedding)
 
+
 def test_google_palm_text_embedding_init_with_empty_api_key() -> None:
     model_id = "test_model_id"
-    #api_key = "test_api_key"
+    # api_key = "test_api_key"
 
     with pytest.raises(
         ValueError, match="The Google PaLM API key cannot be `None` or empty"
@@ -35,6 +35,7 @@ def test_google_palm_text_embedding_init_with_empty_api_key() -> None:
             model_id=model_id,
             api_key="",
         )
+
 
 @pytest.mark.asyncio
 async def test_google_palm_text_embedding_calls_with_parameters() -> None:
@@ -47,13 +48,13 @@ async def test_google_palm_text_embedding_calls_with_parameters() -> None:
         model_id = "test_model_id"
         api_key = "test_api_key"
         texts = ["hello world"]
-        text="hello world"
+        text = "hello world"
 
         gp_text_embedding = GooglePalmTextEmbedding(
             model_id=model_id,
             api_key=api_key,
         )
-    
+
         await gp_text_embedding.generate_embeddings_async(texts)
 
         mock_gp.generate_embeddings.assert_called_once_with(

@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import semantic_kernel as sk
 import asyncio
+
+import semantic_kernel as sk
 import semantic_kernel.connectors.ai.google_palm as sk_gp
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+
 
 async def chat_request_example(api_key):
     palm_chat_completion = sk_gp.GooglePalmChatCompletion(
@@ -11,7 +13,7 @@ async def chat_request_example(api_key):
     )
     settings = ChatRequestSettings()
     settings.temperature = 1
-    
+
     chat_messages = list()
     user_mssg = "I'm planning a vacation. Which are some must-visit places in Europe?"
     chat_messages.append(("user", user_mssg))
@@ -31,14 +33,16 @@ async def chat_request_example(api_key):
         elif role == "assistant":
             context_vars["chat_history"] += f"ChatBot:> {mssg}\n"
             context_vars["chat_bot_ans"] += f"{mssg}\n"
-    
+
     return context_vars
+
 
 async def main() -> None:
     api_key = sk.google_palm_settings_from_dot_env()
     chat = await chat_request_example(api_key)
     print(chat["chat_history"])
     return
+
 
 if __name__ == "__main__":
     asyncio.run(main())

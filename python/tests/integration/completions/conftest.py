@@ -4,7 +4,6 @@ import pytest
 
 import semantic_kernel.connectors.ai.google_palm as sk_gp
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
-import semantic_kernel.connectors.ai.google_palm as sk_gp
 
 
 @pytest.fixture(

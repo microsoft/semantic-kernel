@@ -1,14 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 import asyncio
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from semantic_kernel.connectors.ai.chat_request_settings import (
     ChatRequestSettings,
 )
 from semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion import (
-    GooglePalmChatCompletion
+    GooglePalmChatCompletion,
 )
+
 
 def test_google_palm_chat_completion_init() -> None:
     model_id = "test_model_id"
@@ -23,9 +26,10 @@ def test_google_palm_chat_completion_init() -> None:
     assert gp_chat_completion._api_key == api_key
     assert isinstance(gp_chat_completion, GooglePalmChatCompletion)
 
+
 def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
     model_id = "test_model_id"
-    #api_key = "test_api_key"
+    # api_key = "test_api_key"
 
     with pytest.raises(
         ValueError, match="The Google PaLM API key cannot be `None` or empty"
@@ -35,6 +39,7 @@ def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
             api_key="",
         )
 
+
 @pytest.mark.asyncio
 async def test_google_palm_text_completion_complete_chat_async_call_with_parameters() -> None:
     mock_response = MagicMock()
@@ -42,7 +47,7 @@ async def test_google_palm_text_completion_complete_chat_async_call_with_paramet
     mock_response.last.set_result("Example response")
     mock_gp = MagicMock()
     mock_gp.chat.return_value = mock_response
-    with patch (
+    with patch(
         "semantic_kernel.connectors.ai.google_palm.services.gp_chat_completion.palm",
         new=mock_gp,
     ):
@@ -59,7 +64,7 @@ async def test_google_palm_text_completion_complete_chat_async_call_with_paramet
 
         mock_gp.chat.assert_called_once_with(
             model=model_id,
-            context='',
+            context="",
             examples=None,
             temperature=settings.temperature,
             candidate_count=settings.number_of_responses,

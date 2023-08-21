@@ -1,23 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+from typing import List
+
+import google.generativeai as palm
+from numpy import array, ndarray
+
+from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
 )
-from typing import List
-from semantic_kernel.connectors.ai.ai_exception import AIException
-import google.generativeai as palm
-from numpy import array, ndarray
+
 
 class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
     _model_id: str
     _api_key: str
 
-    def __init__(
-        self,
-        model_id: str,
-        api_key: str
-    ) -> None:
+    def __init__(self, model_id: str, api_key: str) -> None:
         """
         Initializes a new instance of the GooglePalmTextEmbedding class.
 
@@ -29,7 +28,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         """
         if not api_key:
             raise ValueError("The Google PaLM API key cannot be `None` or empty`")
-        
+
         self._model_id = model_id
         self._api_key = api_key
 
@@ -46,7 +45,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
         try:
             palm.configure(api_key=self._api_key)
         except Exception as ex:
-            raise PermissionError (
+            raise PermissionError(
                 "Google PaLM service failed to configure. Invalid API key provided.",
                 ex,
             )
@@ -63,5 +62,5 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
                     AIException.ErrorCodes.ServiceError,
                     "Google PaLM service failed to generate the embedding.",
                     ex,
-            )
+                )
         return array(embeddings)

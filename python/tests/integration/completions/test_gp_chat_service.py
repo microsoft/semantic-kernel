@@ -1,12 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
-import semantic_kernel as sk
-import semantic_kernel.connectors.ai.google_palm as sk_gp
 import asyncio
+import os
+import sys
 
-pytestmark = pytest.mark.skipif( "Python_Integration_Tests" in os.environ, 
-reason="Google Palm integration tests are only set up to run locally", )
+import pytest
+
+import semantic_kernel.connectors.ai.google_palm as sk_gp
+
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
+)
+
+pytestmark = pytest.mark.skipif(
+    "Python_Integration_Tests" in os.environ,
+    reason="Google Palm integration tests are only set up to run locally",
+)
+
 
 @pytest.mark.asyncio
 async def test_gp_chat_service_with_skills(
@@ -18,7 +28,7 @@ async def test_gp_chat_service_with_skills(
     print("* Service: Google PaLM Chat Completion")
     print("* Model: chat-bison-001")
     palm_chat_completion = sk_gp.GooglePalmChatCompletion(
-        "models/chat-bison-001", api_key  
+        "models/chat-bison-001", api_key
     )
     kernel.add_chat_service("models/chat-bison-001", palm_chat_completion)
 
@@ -39,7 +49,7 @@ async def test_gp_chat_service_with_skills(
                 "human" in output or "Human" in output or "preserve" in output
             )
             assert len(output) < 100
-            break 
+            break
         except Exception as e:
             print(f"Error occurred: {e}")
             await asyncio.sleep(retry_delay)  # Introduce a delay before the next retry
