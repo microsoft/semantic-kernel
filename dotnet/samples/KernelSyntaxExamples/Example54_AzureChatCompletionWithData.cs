@@ -89,8 +89,7 @@ public static class Example54_AzureChatCompletionWithData
         // a branch of geology that deals with the study of ice and its effects.
         Console.WriteLine(result);
 
-        Console.Write(Environment.NewLine);
-        Console.Write(Environment.NewLine);
+        Console.WriteLine(Environment.NewLine);
     }
 
     /// <summary>
