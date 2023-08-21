@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
-import static com.microsoft.semantickernel.ai.AIException.ErrorCodes.InvalidRequest;
 import static com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters.NO_DEFAULT_VALUE;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.ai.AIException;
+import com.microsoft.semantickernel.ai.AIException.ErrorCodes;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -302,7 +302,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                                             } catch (IllegalAccessException
                                                     | InvocationTargetException e) {
                                                 throw new AIException(
-                                                        InvalidRequest, e.getMessage());
+                                                        ErrorCodes.INVALID_REQUEST, e.getMessage());
                                             }
                                         })
                                 .subscribeOn(Schedulers.boundedElastic()));
