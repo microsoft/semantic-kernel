@@ -12,20 +12,29 @@ namespace Microsoft.SemanticKernel.Events;
 /// </summary>
 public sealed class FunctionInvokedEventArgs : EventArgs
 {
-    internal FunctionInvokedEventArgs(FunctionView functionView, SKContext context)
+    internal FunctionInvokedEventArgs(FunctionView functionView, SKContext context, string? prompt)
     {
         Verify.NotNull(context);
         this.FunctionView = functionView;
         this.SKContext = context;
+        this.Prompt = prompt;
     }
 
     /// <summary>
-    /// Function view details of the function that was executed.
+    /// Function view details.
     /// </summary>
     public FunctionView FunctionView { get; }
 
     /// <summary>
-    /// Current SKContext changes after the function was executed.
+    /// SKContext after function was executed.
     /// </summary>
     public SKContext SKContext { get; }
+
+    /// <summary>
+    /// Prompt that was rendered prior to the function execution.
+    /// </summary>
+    /// <remarks>
+    /// May be null for native functions.
+    /// </remarks>
+    public string? Prompt { get; }
 }

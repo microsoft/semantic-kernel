@@ -27,12 +27,12 @@ public sealed class FunctionInvokingEventArgs : CancelEventArgs
     public FunctionView FunctionView { get; }
 
     /// <summary>
-    /// Current SKContext prior to executing the function.
+    /// SKContext prior function execution.
     /// </summary>
     public SKContext SKContext { get; }
 
     /// <summary>
-    /// Prompt that was generated prior to sending to the LLM.
+    /// Prompt that was rendered prior to the function execution.
     /// </summary>
     /// <remarks>
     /// May be null for native functions.

@@ -214,7 +214,7 @@ public sealed class Kernel : IKernel, IDisposable
 
                 if (!this.OnFunctionInvoking(functionDetails, context, renderedPrompt))
                 {
-                    this.Logger.LogInformation("Function invocation was cancelled {0}: {1}.{2}.", pipelineStepCount, f.SkillName, f.Name);
+                    this.Logger.LogInformation("Function invocation was cancelled during pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, f.SkillName, f.Name);
                     break;
                 }
 
@@ -234,7 +234,7 @@ public sealed class Kernel : IKernel, IDisposable
                     return context;
                 }
 
-                this.OnFunctionInvoked(functionDetails, context);
+                this.OnFunctionInvoked(functionDetails, context, renderedPrompt);
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
@@ -362,13 +362,13 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="functionView">Function view details</param>
     /// <param name="context">SKContext before function invocation</param>
-    /// <param name="prompt">Generated prompt when using semantic functions</param>
+    /// <param name="renderedPrompt">Rendered prompt prior to semantic function invocation</param>
     /// <returns>Returns true if no cancellation was attempted.</returns>
-    private bool OnFunctionInvoking(FunctionView functionView, SKContext context, string? prompt)
+    private bool OnFunctionInvoking(FunctionView functionView, SKContext context, string? renderedPrompt)
     {
         if (this.FunctionInvoking is not null)
         {
-            var args = new FunctionInvokingEventArgs(functionView, context, prompt);
+            var args = new FunctionInvokingEventArgs(functionView, context, renderedPrompt);
             this.FunctionInvoking.Invoke(this, args);
 
             return !args.Cancel;
@@ -382,9 +382,10 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="functionView">Function view details</param>
     /// <param name="context">SKContext after function invocation</param>
-    private void OnFunctionInvoked(FunctionView functionView, SKContext context)
+    /// <param name="renderedPrompt">Rendered prompt prior to semantic function invocation</param>
+    private void OnFunctionInvoked(FunctionView functionView, SKContext context, string? renderedPrompt)
     {
-        this.FunctionInvoked?.Invoke(this, new FunctionInvokedEventArgs(functionView, context));
+        this.FunctionInvoked?.Invoke(this, new FunctionInvokedEventArgs(functionView, context, renderedPrompt));
     }
 
     #endregion
