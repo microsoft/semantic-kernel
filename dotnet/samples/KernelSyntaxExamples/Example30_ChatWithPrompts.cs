@@ -63,7 +63,7 @@ public static class Example30_ChatWithPrompts
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 

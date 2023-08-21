@@ -21,9 +21,9 @@ internal sealed class ValBlock : Block, ITextRendering
     /// Create an instance
     /// </summary>
     /// <param name="quotedValue">Block content, including the delimiting chars</param>
-    /// <param name="logger">Optional logger</param>
-    public ValBlock(string? quotedValue, ILogger? logger = null)
-        : base(quotedValue?.Trim(), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public ValBlock(string? quotedValue, ILoggerFactory? loggerFactory = null)
+        : base(quotedValue?.Trim(), loggerFactory)
     {
         if (this.Content.Length < 2)
         {

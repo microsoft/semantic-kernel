@@ -10,5 +10,5 @@ namespace Microsoft.SemanticKernel.Reliability;
 /// </summary>
 public interface IDelegatingHandlerFactory
 {
-    DelegatingHandler Create(ILogger? logger);
+    DelegatingHandler Create(ILoggerFactory? loggerFactory);
 }

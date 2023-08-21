@@ -19,7 +19,7 @@ public sealed class KernelBuilder
 {
     private KernelConfig _config = new();
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
-    private ILogger _logger = NullLogger.Instance;
+    private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
@@ -47,12 +47,12 @@ public sealed class KernelBuilder
         }
 
         var instance = new Kernel(
-            new SkillCollection(this._logger),
+            new SkillCollection(this._loggerFactory),
             this._aiServices.Build(),
-            this._promptTemplateEngine ?? new PromptTemplateEngine(this._logger),
+            this._promptTemplateEngine ?? new PromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),
             this._config,
-            this._logger
+            this._loggerFactory
         );
 
         // TODO: decouple this from 'UseMemory' kernel extension
@@ -67,12 +67,12 @@ public sealed class KernelBuilder
     /// <summary>
     /// Add a logger to the kernel to be built.
     /// </summary>
-    /// <param name="logger">Logger to add.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>Updated kernel builder including the logger.</returns>
-    public KernelBuilder WithLogger(ILogger logger)
+    public KernelBuilder WithLoggerFactory(ILoggerFactory loggerFactory)
     {
-        Verify.NotNull(logger);
-        this._logger = logger;
+        Verify.NotNull(loggerFactory);
+        this._loggerFactory = loggerFactory;
         return this;
     }
 
@@ -93,10 +93,10 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The store factory.</param>
     /// <returns>Updated kernel builder including the semantic text memory entity.</returns>
-    public KernelBuilder WithMemory<TStore>(Func<(ILogger Logger, KernelConfig Config), TStore> factory) where TStore : ISemanticTextMemory
+    public KernelBuilder WithMemory<TStore>(Func<ILoggerFactory, KernelConfig, TStore> factory) where TStore : ISemanticTextMemory
     {
         Verify.NotNull(factory);
-        this._memoryFactory = () => factory((this._logger, this._config));
+        this._memoryFactory = () => factory(this._loggerFactory, this._config);
         return this;
     }
 
@@ -117,10 +117,10 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The storage factory.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
-    public KernelBuilder WithMemoryStorage<TStore>(Func<(ILogger Logger, KernelConfig Config), TStore> factory) where TStore : IMemoryStore
+    public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, KernelConfig, TStore> factory) where TStore : IMemoryStore
     {
         Verify.NotNull(factory);
-        this._memoryStorageFactory = () => factory((this._logger, this._config));
+        this._memoryStorageFactory = () => factory(this._loggerFactory, this._config);
         return this;
     }
 
@@ -201,9 +201,9 @@ public sealed class KernelBuilder
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
     /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
-    public KernelBuilder WithDefaultAIService<TService>(Func<ILogger, TService> factory) where TService : IAIService
+    public KernelBuilder WithDefaultAIService<TService>(Func<ILoggerFactory, TService> factory) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(() => factory(this._logger));
+        this._aiServices.SetService<TService>(() => factory(this._loggerFactory));
         return this;
     }
 
@@ -215,10 +215,10 @@ public sealed class KernelBuilder
     /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
     public KernelBuilder WithAIService<TService>(
         string? serviceId,
-        Func<(ILogger Logger, KernelConfig Config), TService> factory,
+        Func<ILoggerFactory, KernelConfig, TService> factory,
         bool setAsDefault = false) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(serviceId, () => factory((this._logger, this._config)), setAsDefault);
+        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._config), setAsDefault);
         return this;
     }
 }

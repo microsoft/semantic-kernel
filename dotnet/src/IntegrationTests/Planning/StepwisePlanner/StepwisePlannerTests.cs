@@ -24,7 +24,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
     public StepwisePlannerTests(ITestOutputHelper output)
     {
-        this._logger = NullLogger.Instance; //new XunitLogger<object>(output);
+        this._loggerFactory = NullLoggerFactory.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -104,7 +104,7 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder.WithLogger(this._logger);
+        var builder = Kernel.Builder.WithLoggerFactory(this._loggerFactory);
 
         if (useChatModel)
         {
@@ -135,7 +135,7 @@ public sealed class StepwisePlannerTests : IDisposable
         return kernel;
     }
 
-    private readonly ILogger _logger;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
@@ -154,7 +154,7 @@ public sealed class StepwisePlannerTests : IDisposable
     {
         if (disposing)
         {
-            if (this._logger is IDisposable ld)
+            if (this._loggerFactory is IDisposable ld)
             {
                 ld.Dispose();
             }

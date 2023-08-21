@@ -27,9 +27,9 @@ public class ChromaMemoryStore : IMemoryStore
     /// Initializes a new instance of the <see cref="ChromaMemoryStore"/> class.
     /// </summary>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public ChromaMemoryStore(string endpoint, ILogger? logger = null)
-        : this(new ChromaClient(endpoint, logger), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public ChromaMemoryStore(string endpoint, ILoggerFactory? loggerFactory = null)
+        : this(new ChromaClient(endpoint, loggerFactory), loggerFactory)
     {
     }
 
@@ -38,9 +38,9 @@ public class ChromaMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public ChromaMemoryStore(HttpClient httpClient, string? endpoint = null, ILogger? logger = null)
-        : this(new ChromaClient(httpClient, endpoint, logger), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public ChromaMemoryStore(HttpClient httpClient, string? endpoint = null, ILoggerFactory? loggerFactory = null)
+        : this(new ChromaClient(httpClient, endpoint, loggerFactory), loggerFactory)
     {
     }
 
@@ -48,11 +48,11 @@ public class ChromaMemoryStore : IMemoryStore
     /// Initializes a new instance of the <see cref="ChromaMemoryStore"/> class.
     /// </summary>
     /// <param name="client">Instance of <see cref="IChromaClient"/> implementation.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public ChromaMemoryStore(IChromaClient client, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public ChromaMemoryStore(IChromaClient client, ILoggerFactory? loggerFactory = null)
     {
         this._chromaClient = client;
-        this._logger = logger ?? NullLogger<ChromaMemoryStore>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ChromaMemoryStore)) : NullLogger.Instance;
     }
 
     /// <inheritdoc />

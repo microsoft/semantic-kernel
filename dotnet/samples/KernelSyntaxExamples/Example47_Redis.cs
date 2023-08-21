@@ -17,7 +17,7 @@ public static class Example47_Redis
         using RedisMemoryStore memoryStore = new(TestConfiguration.Redis.Configuration, vectorSize: 1536);
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)

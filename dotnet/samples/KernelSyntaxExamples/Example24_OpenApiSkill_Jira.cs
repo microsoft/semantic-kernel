@@ -22,7 +22,7 @@ public static class Example24_OpenApiSkill_Jira
 {
     public static async Task RunAsync()
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
+        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         var contextVariables = new ContextVariables();
 
         // Change <your-domain> to a jira instance you have access to with your authentication credentials

@@ -13,9 +13,9 @@ public static class StepwisePlannerExtensions
     /// Returns decorated instance of <see cref="IStepwisePlanner"/> with enabled instrumentation.
     /// </summary>
     /// <param name="planner">Instance of <see cref="IStepwisePlanner"/> to decorate.</param>
-    /// <param name="logger">Optional logger.</param>
-    public static IStepwisePlanner WithInstrumentation(this IStepwisePlanner planner, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public static IStepwisePlanner WithInstrumentation(this IStepwisePlanner planner, ILoggerFactory? loggerFactory = null)
     {
-        return new InstrumentedStepwisePlanner(planner, logger);
+        return new InstrumentedStepwisePlanner(planner, loggerFactory);
     }
 }

@@ -13,7 +13,7 @@ public class FunctionIdBlockTests
     public void ItHasTheCorrectType()
     {
         // Act
-        var target = new FunctionIdBlock("", NullLogger.Instance);
+        var target = new FunctionIdBlock("", NullLoggerFactory.Instance);
 
         // Assert
         Assert.Equal(BlockTypes.FunctionId, target.Type);
@@ -23,7 +23,7 @@ public class FunctionIdBlockTests
     public void ItTrimsSpaces()
     {
         // Act + Assert
-        Assert.Equal("aa", new FunctionIdBlock("  aa  ", NullLogger.Instance).Content);
+        Assert.Equal("aa", new FunctionIdBlock("  aa  ", NullLoggerFactory.Instance).Content);
     }
 
     [Theory]

@@ -26,9 +26,9 @@ public abstract class ClientBase
     private const int MaxResultsPerPrompt = 128;
 
     // Prevent external inheritors
-    private protected ClientBase(ILogger? logger = null)
+    private protected ClientBase(ILoggerFactory? loggerFactory = null)
     {
-        this.Logger = logger ?? NullLogger.Instance;
+        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
     }
 
     /// <summary>

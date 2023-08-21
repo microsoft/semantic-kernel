@@ -36,11 +36,11 @@ public static class HuggingFaceKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
             new HuggingFaceTextCompletion(
                 model,
                 apiKey,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
                 endpoint),
                 setAsDefault);
 
@@ -62,10 +62,10 @@ public static class HuggingFaceKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, config) =>
             new HuggingFaceTextEmbeddingGeneration(
                 model,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient: null, parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient: null, loggerFactory),
                 endpoint),
                 setAsDefault);
 
@@ -89,10 +89,10 @@ public static class HuggingFaceKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, config) =>
             new HuggingFaceTextEmbeddingGeneration(
                 model,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
                 endpoint),
                 setAsDefault);
 

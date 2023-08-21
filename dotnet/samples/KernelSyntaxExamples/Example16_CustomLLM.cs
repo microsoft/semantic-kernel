@@ -99,11 +99,11 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM - Text Completion - SKFunction ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your text completion service as a singleton instance
             .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
             // Add your text completion service as a factory method
-            .WithAIService<ITextCompletion>("myService2", (_) => new MyTextCompletionService())
+            .WithAIService<ITextCompletion>("myService2", (log, config) => new MyTextCompletionService())
             .Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";
@@ -134,7 +134,7 @@ public static class Example16_CustomLLM
     {
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
-        IKernel kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
+        IKernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         ITextCompletion textCompletion = new MyTextCompletionService();
 
         var prompt = "Write one paragraph why AI is awesome";

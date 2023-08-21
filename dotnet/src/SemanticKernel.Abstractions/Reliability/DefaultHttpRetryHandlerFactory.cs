@@ -12,9 +12,9 @@ public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
         this.Config = config;
     }
 
-    public DelegatingHandler Create(ILogger? logger)
+    public DelegatingHandler Create(ILoggerFactory? loggerFactory)
     {
-        return new DefaultHttpRetryHandler(this.Config, logger);
+        return new DefaultHttpRetryHandler(this.Config, loggerFactory);
     }
 
     public HttpRetryConfig? Config { get; }

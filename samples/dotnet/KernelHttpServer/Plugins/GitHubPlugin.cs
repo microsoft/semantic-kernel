@@ -35,7 +35,7 @@ public class GitHubPlugin
 
     private readonly ISKFunction _summarizeCodeFunction;
     private readonly IKernel _kernel;
-    private readonly ILogger<GitHubPlugin> _logger;
+    private readonly ILogger _logger;
     private static readonly char[] s_trimChars = new char[] { ' ', '/' };
 
     internal const string SummarizeCodeSnippetDefinition =
@@ -55,10 +55,10 @@ BEGIN SUMMARY:
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
     /// <param name="logger">Optional logger</param>
-    public GitHubPlugin(IKernel kernel, ILogger<GitHubPlugin>? logger = null)
+    public GitHubPlugin(IKernel kernel, ILoggerFactory? loggerFactory = null)
     {
         this._kernel = kernel;
-        this._logger = logger ?? NullLogger<GitHubPlugin>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger<GitHubPlugin>() : NullLogger.Instance;
 
         this._summarizeCodeFunction = kernel.CreateSemanticFunction(
             SummarizeCodeSnippetDefinition,

@@ -56,10 +56,10 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
-    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILogger? logger = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, logger)
+    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -77,10 +77,10 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
-    public AzureOpenAIImageGeneration(string apiKey, HttpClient httpClient, string? endpoint = null, ILogger? logger = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, logger)
+    public AzureOpenAIImageGeneration(string apiKey, HttpClient httpClient, string? endpoint = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, loggerFactory)
     {
         Verify.NotNull(httpClient);
         Verify.NotNullOrWhiteSpace(apiKey);

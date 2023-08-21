@@ -31,13 +31,13 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// Initializes a new instance of the <see cref="PineconeMemoryStore"/> class.
     /// </summary>
     /// <param name="pineconeClient">Instance of Pinecone client which implements <see cref="IPineconeClient"/> interface.</param>
-    /// <param name="logger">Instance of logger.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public PineconeMemoryStore(
         IPineconeClient pineconeClient,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = pineconeClient;
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(PineconeMemoryStore)) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -45,14 +45,14 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// </summary>
     /// <param name="pineconeEnvironment">Pinecone project environment, see https://docs.pinecone.io/docs/projects#project-environment.</param>
     /// <param name="apiKey">Pinecone API key.</param>
-    /// <param name="logger">Instance of logger.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public PineconeMemoryStore(
         string pineconeEnvironment,
         string apiKey,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
-        this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, logger);
-        this._logger = logger ?? NullLogger.Instance;
+        this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, loggerFactory);
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(PineconeMemoryStore)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>

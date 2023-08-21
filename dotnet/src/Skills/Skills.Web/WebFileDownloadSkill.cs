@@ -29,9 +29,9 @@ public sealed class WebFileDownloadSkill
     /// <summary>
     /// Initializes a new instance of the <see cref="WebFileDownloadSkill"/> class.
     /// </summary>
-    /// <param name="logger">An optional logger to log skill-related information.</param>
-    public WebFileDownloadSkill(ILogger<WebFileDownloadSkill>? logger = null) :
-        this(new HttpClient(NonDisposableHttpClientHandler.Instance, false), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public WebFileDownloadSkill(ILoggerFactory? loggerFactory = null) :
+        this(new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
     {
     }
 
@@ -39,11 +39,11 @@ public sealed class WebFileDownloadSkill
     /// Initializes a new instance of the <see cref="WebFileDownloadSkill"/> class.
     /// </summary>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
-    /// <param name="logger">An optional logger to log skill-related information.</param>
-    public WebFileDownloadSkill(HttpClient httpClient, ILogger<WebFileDownloadSkill>? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public WebFileDownloadSkill(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient;
-        this._logger = logger ?? NullLogger<WebFileDownloadSkill>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(WebFileDownloadSkill)) : NullLogger.Instance;
     }
 
     /// <summary>

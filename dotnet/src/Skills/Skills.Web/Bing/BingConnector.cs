@@ -53,7 +53,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         Verify.NotNull(httpClient);
 
         this._apiKey = apiKey;
-        this._logger = logger ?? NullLogger<BingConnector>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(BingConnector)) : NullLogger.Instance;
         this._httpClient = httpClient;
         this._uri = string.IsNullOrEmpty(uri) ? BingConnector.DefaultUri : uri;
     }

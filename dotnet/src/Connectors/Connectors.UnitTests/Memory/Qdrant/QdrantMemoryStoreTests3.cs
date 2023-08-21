@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
@@ -27,7 +26,7 @@ public class QdrantMemoryStoreTests3
     private readonly string _text = "text";
     private readonly string _description = "description";
     private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
-    private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory = new();
 
     [Fact]
     public async Task GetNearestMatchesAsyncCallsDoNotReturnVectorsUnlessSpecifiedAsync()
@@ -45,7 +44,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLoggerFactory.Object);
 
         // Act
         _ = await vectorStore.GetNearestMatchAsync(
@@ -124,7 +123,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLoggerFactory.Object);
 
         // Act
         var similarityResult = await vectorStore.GetNearestMatchAsync(
@@ -176,7 +175,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<CancellationToken>()))
             .Returns(new[] { (qdrantVectorRecord, 0.5) }.ToAsyncEnumerable());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLoggerFactory.Object);
 
         // Act
         var similarityResult = await vectorStore.GetNearestMatchAsync(
@@ -218,7 +217,7 @@ public class QdrantMemoryStoreTests3
                 It.IsAny<CancellationToken>()))
             .Returns(AsyncEnumerable.Empty<(QdrantVectorRecord, double)>());
 
-        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLogger.Object);
+        var vectorStore = new QdrantMemoryStore(mockQdrantClient.Object, this._mockLoggerFactory.Object);
 
         // Act
         var similarityResults = await vectorStore.GetNearestMatchesAsync(

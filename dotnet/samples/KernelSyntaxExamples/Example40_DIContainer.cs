@@ -42,7 +42,7 @@ public static class Example40_DIContainer
         collection.AddTransient<IKernel>((serviceProvider) =>
         {
             return Kernel.Builder
-            .WithLogger(serviceProvider.GetRequiredService<ILogger>())
+            .WithLoggerFactory(serviceProvider.GetRequiredService<LoggerFactory>())
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
         });

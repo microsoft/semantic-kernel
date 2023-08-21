@@ -48,7 +48,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         DefaultHttpRetryHandlerFactory defaultHttpRetryHandlerFactory = new(httpRetryConfig);
 
         var target = new KernelBuilder()
-             .WithLogger(this._logger)
+             .WithLoggerFactory(this._logger)
              .WithAzureChatCompletionService(configuration.ChatDeploymentName!, configuration.Endpoint, configuration.ApiKey)
              .WithRetryHandlerFactory(defaultHttpRetryHandlerFactory)
              .Build();
@@ -77,7 +77,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         var openAIClient = new OpenAIClient(new Uri(configuration.Endpoint), new AzureKeyCredential(configuration.ApiKey), clientOptions);
 
         var target = new KernelBuilder()
-             .WithLogger(this._logger)
+             .WithLoggerFactory(this._logger)
              .WithAzureChatCompletionService(configuration.ChatDeploymentName!, openAIClient)
              .Build();
 

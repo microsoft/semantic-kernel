@@ -22,7 +22,7 @@ public class SKContextExtensionsTests
         // Arrange
         var variables = new ContextVariables();
         var skills = new SkillCollection();
-        var logger = TestConsoleLogger.Log;
+        var loggerFactory = TestConsoleLogger.LoggerFactory;
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -43,7 +43,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills, logger);
+        var context = new SKContext(variables, skills, loggerFactory);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -62,7 +62,7 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var logger = TestConsoleLogger.Log;
+        var loggerFactory = TestConsoleLogger.LoggerFactory;
         var cancellationToken = default(CancellationToken);
 
         // Arrange FunctionView
@@ -97,7 +97,7 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills.Object, logger);
+        var context = new SKContext(variables, skills.Object, loggerFactory);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -127,7 +127,7 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var logger = TestConsoleLogger.Log;
+        var loggerFactory = TestConsoleLogger.LoggerFactory;
         var cancellationToken = default(CancellationToken);
 
         // Arrange FunctionView
@@ -162,7 +162,7 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills.Object, logger);
+        var context = new SKContext(variables, skills.Object, loggerFactory);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -193,7 +193,7 @@ public class SKContextExtensionsTests
         // Arrange
         var variables = new ContextVariables();
         var skills = new SkillCollection();
-        var logger = TestConsoleLogger.Log;
+        var loggerFactory = TestConsoleLogger.LoggerFactory;
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -215,7 +215,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(variables, skills, logger);
+        var context = new SKContext(variables, skills, loggerFactory);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 

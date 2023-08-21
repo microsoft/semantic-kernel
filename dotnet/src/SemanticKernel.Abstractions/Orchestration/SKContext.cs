@@ -59,22 +59,22 @@ public sealed class SKContext
     /// <summary>
     /// App logger
     /// </summary>
-    public ILogger Logger { get; }
+    public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="skills">Skills to include in context.</param>
-    /// <param name="logger">Logger for operations in context.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public SKContext(
         ContextVariables? variables = null,
         IReadOnlySkillCollection? skills = null,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.Variables = variables ?? new();
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.Logger = logger ?? NullLogger.Instance;
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = CultureInfo.CurrentCulture;
     }
 
@@ -98,7 +98,7 @@ public sealed class SKContext
         return new SKContext(
             variables: this.Variables.Clone(),
             skills: this.Skills,
-            logger: this.Logger)
+            loggerFactory: this.LoggerFactory)
         {
             Culture = this.Culture,
             LastException = this.LastException
@@ -160,7 +160,7 @@ public sealed class SKContext
     /// </summary>
     [Obsolete("Use SKContext.Logger instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogger Log => this.Logger;
+    public ILogger Log => this.LoggerFactory.CreateLogger<SKContext>();
 
     /// <summary>
     /// The token to monitor for cancellation requests.

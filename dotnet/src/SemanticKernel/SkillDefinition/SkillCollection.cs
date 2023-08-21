@@ -23,9 +23,9 @@ public class SkillCollection : ISkillCollection
 {
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
-    public SkillCollection(ILogger? logger = null)
+    public SkillCollection(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(SkillCollection)) : NullLogger.Instance;
 
         // Important: names are case insensitive
         this._skillCollection = new(StringComparer.OrdinalIgnoreCase);

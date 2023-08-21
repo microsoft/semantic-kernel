@@ -14,13 +14,13 @@ internal static class HttpClientProvider
     /// </summary>
     /// <param name="config">The kernel configuration.</param>
     /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
-    /// <param name="logger">An optional logger.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>An instance of HttpClient.</returns>
-    public static HttpClient GetHttpClient(KernelConfig config, HttpClient? httpClient, ILogger? logger)
+    public static HttpClient GetHttpClient(KernelConfig config, HttpClient? httpClient, ILoggerFactory? loggerFactory)
     {
         if (httpClient == null)
         {
-            var retryHandler = config.HttpHandlerFactory.Create(logger);
+            var retryHandler = config.HttpHandlerFactory.Create(loggerFactory);
             retryHandler.InnerHandler = NonDisposableHttpClientHandler.Instance;
             return new HttpClient(retryHandler, false); // We should refrain from disposing the underlying SK default HttpClient handler as it would impact other HTTP clients that utilize the same handler.
         }

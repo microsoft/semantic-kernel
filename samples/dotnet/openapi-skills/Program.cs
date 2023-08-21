@@ -46,7 +46,7 @@ internal sealed class Program
                 .AddConsole()
                 .AddDebug());
 
-        ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
+        ILogger logger = loggerFactory.CreateLogger<Program>();
 
         // Initialize semantic kernel
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()

@@ -16,7 +16,7 @@ public static class Example35_GrpcSkills
 {
     public static async Task RunAsync()
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
+        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
         // Import a gRPC skill using one of the following Kernel extension methods
         // kernel.RegisterGrpcSkill

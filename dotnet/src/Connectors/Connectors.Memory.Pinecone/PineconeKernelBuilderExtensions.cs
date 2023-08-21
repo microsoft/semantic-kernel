@@ -25,15 +25,15 @@ public static class PineconeKernelBuilderExtensions
         string apiKey,
         HttpClient? httpClient = null)
     {
-        builder.WithMemoryStorage((parameters) =>
+        builder.WithMemoryStorage((loggerFactory, config) =>
         {
             var client = new PineconeClient(
                 environment,
                 apiKey,
-                parameters.Logger,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger));
+                loggerFactory,
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory));
 
-            return new PineconeMemoryStore(client, parameters.Logger);
+            return new PineconeMemoryStore(client, loggerFactory);
         });
 
         return builder;

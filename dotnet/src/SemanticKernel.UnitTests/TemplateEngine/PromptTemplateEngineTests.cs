@@ -25,7 +25,7 @@ public sealed class PromptTemplateEngineTests
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
-        this._target = new PromptTemplateEngine(TestConsoleLogger.Logger);
+        this._target = new PromptTemplateEngine(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
     }
@@ -268,6 +268,6 @@ public sealed class PromptTemplateEngineTests
         return new SKContext(
             this._variables,
             skills: this._skills.Object,
-            logger: TestConsoleLogger.Logger);
+            loggerFactory: TestConsoleLogger.LoggerFactory);
     }
 }

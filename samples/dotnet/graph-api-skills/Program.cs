@@ -50,7 +50,7 @@ public sealed class Program
                 .AddDebug();
         });
 
-        ILogger<Program> logger = loggerFactory.CreateLogger<Program>();
+        ILogger logger = loggerFactory.CreateLogger<Program>();
 
         MsGraphConfiguration? candidateGraphApiConfig = configuration.GetRequiredSection("MsGraph").Get<MsGraphConfiguration>()
                                                         ?? throw new InvalidOperationException("Missing configuration for Microsoft Graph API.");
