@@ -19,6 +19,8 @@ import com.azure.search.documents.models.QueryLanguage;
 import com.azure.search.documents.models.QueryType;
 import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.util.SearchPagedResponse;
+import com.microsoft.semantickernel.memory.MemoryException;
+import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import com.microsoft.semantickernel.memory.MemoryRecordMetadata;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
@@ -91,6 +93,15 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
         return new AzureCognitiveSearchMemory(this._adminClient);
     }
 
+    /**
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
+     */
     @Override
     public Mono<String> saveInformationAsync(
             @Nonnull String collection,
@@ -106,6 +117,15 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
         return this.upsertRecordAsync(collection, record);
     }
 
+    /**
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
+     */
     @Override
     public Mono<String> saveReferenceAsync(
             @Nonnull String collection,
@@ -127,6 +147,15 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
         return this.upsertRecordAsync(collection, record);
     }
 
+    /**
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
+     */
     @Override
     public Mono<MemoryQueryResult> getAsync(
             @Nonnull String collection, @Nonnull String key, boolean withEmbedding) {
@@ -137,14 +166,23 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                 .map(
                         (response) -> {
                             if (response.getStatusCode() == 404 || response.getValue() == null) {
-                                throw new AzureCognitiveSearchMemoryException(
-                                        "Memory read returned null");
+                                throw new MemoryException(
+                                        ErrorCodes.MEMORY_NOT_FOUND, "Memory read returned null");
                             }
                             return new MemoryQueryResult(
                                     toMemoryRecordMetadata(response.getValue()), 1);
                         });
     }
 
+    /**
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
+     */
     @Override
     public Mono<Void> removeAsync(@Nonnull String collection, @Nonnull String key) {
 
@@ -162,8 +200,8 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                     ArrayList::new,
                     (list, response) -> {
                         if (response.getStatusCode() == 404 || response.getValue() == null) {
-                            throw new AzureCognitiveSearchMemoryException(
-                                    "Memory read returned null");
+                            throw new MemoryException(
+                                    ErrorCodes.MEMORY_NOT_FOUND, "Memory read returned null");
                         }
                         response.getValue().stream()
                                 .map(
@@ -181,6 +219,15 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         return left;
                     });
 
+    /**
+     * @throws IllegalArgumentException if the collection name does not conform to Azure Cognitive
+     *     Search
+     *     <a href="https://learn.microsoft.com/en-us/rest/api/searchservice/naming-rules#chart-of-naming-rules">Index naming rules</a>.
+     *     The name must be lower-case, start with a letter or number,
+     *     have no slashes or dots, and be 2 to 128 characters in length. After starting the name
+     *     with a letter or number, the rest of the name can include any letter, number and dashes,
+     *     as long as the dashes aren't consecutive.
+     */
     @Override
     public Mono<List<MemoryQueryResult>> searchAsync(
             @Nonnull String collection,
@@ -283,7 +330,8 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                             || response.getValue() == null
                             || response.getValue().getResults() == null
                             || response.getValue().getResults().isEmpty()) {
-                        throw new AzureCognitiveSearchMemoryException(
+                        throw new MemoryException(
+                                ErrorCodes.MEMORY_NOT_FOUND,
                                 "Memory write returned null or an empty set");
                     }
                     return response.getValue().getResults().get(0).getKey();
@@ -317,14 +365,14 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
     }
 
     // Normalize index name to match ACS rules.
+    // See https://learn.microsoft.com/en-us/rest/api/searchservice/Create-Index
     // The method doesn't handle all the error scenarios, leaving it to the service
     // to throw an error for edge cases not handled locally.
     // <param name="indexName">Value to normalize</param>
     // <returns>Normalized name</returns>
     private static String normalizeIndexName(String indexName) {
         if (indexName.length() > 128) {
-            throw new AzureCognitiveSearchMemoryException(
-                    "The collection name is too long, it cannot exceed 128 chars");
+            throw new IllegalArgumentException("The collection name cannot exceed 128 chars");
         }
 
         indexName = indexName.toLowerCase(Locale.ROOT);

@@ -138,7 +138,7 @@ public class SequentialPlanParser {
 
         } catch (RuntimeException | ParserConfigurationException | IOException | SAXException e) {
             throw new PlanningException(
-                    PlanningException.ErrorCodes.InvalidPlan, "Failed to parse plan xml.", e);
+                    PlanningException.ErrorCodes.INVALID_PLAN, "Failed to parse plan xml.", e);
         }
     }
 

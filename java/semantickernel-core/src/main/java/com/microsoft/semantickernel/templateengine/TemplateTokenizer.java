@@ -147,7 +147,7 @@ public class TemplateTokenizer {
                                 case Variable:
                                     if (codeBlocks.size() > 1) {
                                         throw new TemplateException(
-                                                TemplateException.ErrorCodes.SyntaxError,
+                                                TemplateException.ErrorCodes.SYNTAX_ERROR,
                                                 "Invalid token detected after the variable: "
                                                         + contentWithoutDelimiters);
                                     }
@@ -158,7 +158,7 @@ public class TemplateTokenizer {
                                 case Value:
                                     if (codeBlocks.size() > 1) {
                                         throw new TemplateException(
-                                                TemplateException.ErrorCodes.SyntaxError,
+                                                TemplateException.ErrorCodes.SYNTAX_ERROR,
                                                 "Invalid token detected after the value: "
                                                         + contentWithoutDelimiters);
                                     }
@@ -169,7 +169,7 @@ public class TemplateTokenizer {
                                 case FunctionId:
                                     if (codeBlocks.size() > 2) {
                                         throw new TemplateException(
-                                                TemplateException.ErrorCodes.SyntaxError,
+                                                TemplateException.ErrorCodes.SYNTAX_ERROR,
                                                 "Functions support only one parameter: "
                                                         + contentWithoutDelimiters);
                                     }
@@ -182,7 +182,7 @@ public class TemplateTokenizer {
                                 case Undefined:
                                 default:
                                     throw new TemplateException(
-                                            TemplateException.ErrorCodes.UnexpectedBlockType,
+                                            TemplateException.ErrorCodes.UNEXPECTED_BLOCK_TYPE,
                                             "Code tokenizer returned an incorrect first token type "
                                                     + codeBlocks.get(0).getType());
                             }

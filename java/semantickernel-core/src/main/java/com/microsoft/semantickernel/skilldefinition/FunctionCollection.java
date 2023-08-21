@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.skilldefinition;
 
 import com.microsoft.semantickernel.exceptions.SkillsNotFoundException;
+import com.microsoft.semantickernel.exceptions.SkillsNotFoundException.ErrorCodes;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,7 +52,8 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
     public SKFunction<?> getFunction(String functionName) {
         SKFunction<?> func = functionCollection.get(functionName.toLowerCase(Locale.ROOT));
         if (func == null) {
-            throw new FunctionNotFound(functionName);
+            throw new FunctionNotFound(
+                    FunctionNotFound.ErrorCodes.FUNCTION_NOT_FOUND, functionName);
         }
         return func;
     }
@@ -75,6 +77,7 @@ public class FunctionCollection implements ReadOnlyFunctionCollection {
             return (T) func;
         } else {
             throw new SkillsNotFoundException(
+                    ErrorCodes.SKILLS_NOT_FOUND,
                     "Incorrect type requested, expected type of "
                             + clazz.getName()
                             + " found class of type "

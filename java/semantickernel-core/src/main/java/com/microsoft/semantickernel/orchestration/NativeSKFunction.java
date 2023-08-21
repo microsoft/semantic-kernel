@@ -365,7 +365,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                         }
 
                         throw new AIException(
-                                AIException.ErrorCodes.InvalidConfiguration,
+                                AIException.ErrorCodes.INVALID_CONFIGURATION,
                                 "Attempted to invoke function "
                                         + method.getDeclaringClass().getName()
                                         + "."
@@ -386,11 +386,11 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
         if (NO_DEFAULT_VALUE.equals(arg)) {
             if (parameter.getName().matches("arg\\d")) {
                 throw new AIException(
-                        AIException.ErrorCodes.InvalidConfiguration,
+                        AIException.ErrorCodes.INVALID_CONFIGURATION,
                         formErrorMessage(method, parameter));
             } else {
                 throw new AIException(
-                        AIException.ErrorCodes.InvalidConfiguration,
+                        AIException.ErrorCodes.INVALID_CONFIGURATION,
                         "Unknown arg " + parameter.getName());
             }
         }
@@ -412,7 +412,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                 value = converter.apply(arg);
             } catch (NumberFormatException nfe) {
                 throw new AIException(
-                        AIException.ErrorCodes.InvalidConfiguration,
+                        AIException.ErrorCodes.INVALID_CONFIGURATION,
                         "Invalid value for "
                                 + parameter.getName()
                                 + " expected "

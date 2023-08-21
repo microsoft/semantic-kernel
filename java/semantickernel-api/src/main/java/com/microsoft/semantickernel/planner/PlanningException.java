@@ -36,7 +36,7 @@ public class PlanningException extends SKException {
             @Nonnull ErrorCodes errorCode,
             @Nullable String message,
             @Nullable Throwable innerException) {
-        super(getDefaultMessage(errorCode, message), innerException);
+        super(formatDefaultMessage(errorCode.getMessage(), message), innerException);
         this.errorCode = errorCode;
     }
 
@@ -49,22 +49,16 @@ public class PlanningException extends SKException {
         return errorCode;
     }
 
-    /* Translate the error code into a default message */
-    private static String getDefaultMessage(
-            @Nonnull ErrorCodes errorCode, @Nullable String message) {
-        return String.format("%s: %s", errorCode.getMessage(), message);
-    }
-
     /** Error codes for PlanningException */
     public enum ErrorCodes {
-        UnknownError("Unknown error"),
+        UNKNOWN_ERROR("Unknown error"),
 
-        InvalidGoal("Invalid goal"),
+        INVALID_GOAL("Invalid goal"),
 
-        InvalidPlan("Invalid plan"),
+        INVALID_PLAN("Invalid plan"),
 
-        InvalidConfiguration("Invalid configuration"),
-        PlanExecutionProducedNoResults("Plan execution produced no result values");
+        INVALID_CONFIGURATION("Invalid configuration"),
+        PLAN_EXECUTION_PRODUCED_NO_RESULTS("Plan execution produced no result values");
 
         private final String message;
 
