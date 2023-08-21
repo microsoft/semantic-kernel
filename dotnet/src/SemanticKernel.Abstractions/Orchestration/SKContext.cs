@@ -24,25 +24,6 @@ public sealed class SKContext
     /// The culture currently associated with this context.
     /// </summary>
     private CultureInfo _culture;
-    private string? _renderedPrompt;
-
-    /// <summary>
-    /// Get the prompt that was rendered for the current context cleaning it's value after.
-    /// </summary>
-    internal string? GetAndForgetRenderedPrompt()
-    {
-        var result = this._renderedPrompt;
-
-        // Forget behavior is necessary as SKContext is mutable and can be reused in subsequent functions calls.
-        this._renderedPrompt = null;
-
-        return result;
-    }
-
-    internal void SetRenderedPrompt(string renderedPrompt)
-    {
-        this._renderedPrompt = renderedPrompt;
-    }
 
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.

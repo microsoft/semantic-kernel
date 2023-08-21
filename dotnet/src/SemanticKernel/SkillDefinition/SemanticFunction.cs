@@ -93,21 +93,21 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalInvokeAsync(context, settings, addDefaultValues: true, cancellationToken);
+        return this.InternalInvokeAsync(context, settings, null, cancellationToken);
     }
 
     internal async Task<SKContext> InternalInvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
-        bool addDefaultValues = true,
+        string? renderedPrompt = null,
         CancellationToken cancellationToken = default)
     {
-        if (addDefaultValues)
+        if (renderedPrompt is null)
         {
             this.AddDefaultValues(context.Variables);
         }
 
-        return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, renderedPrompt, cancellationToken).ConfigureAwait(false);
     }
     /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
@@ -211,6 +211,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         ITextCompletion? client,
         CompleteRequestSettings? requestSettings,
         SKContext context,
+        string? renderedPrompt,
         CancellationToken cancellationToken)
     {
         Verify.NotNull(client);
@@ -218,7 +219,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         try
         {
-            var renderedPrompt = context.GetAndForgetRenderedPrompt();
             if (renderedPrompt is null)
             {
                 renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);

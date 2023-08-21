@@ -210,7 +210,6 @@ public sealed class Kernel : IKernel, IDisposable
                 {
                     semanticFunction.AddDefaultValues(context.Variables);
                     renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-                    context.SetRenderedPrompt(renderedPrompt);
                 }
 
                 if (!this.OnFunctionInvoking(functionDetails, context, renderedPrompt))
@@ -221,7 +220,7 @@ public sealed class Kernel : IKernel, IDisposable
 
                 if (semanticFunction is not null)
                 {
-                    context = await semanticFunction.InternalInvokeAsync(context, addDefaultValues: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    context = await semanticFunction.InternalInvokeAsync(context, renderedPrompt: renderedPrompt, cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
