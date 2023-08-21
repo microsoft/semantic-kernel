@@ -39,7 +39,12 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
 
     public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        yield return await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+        var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(message.Content))
+        {
+            yield return message;
+        }
     }
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

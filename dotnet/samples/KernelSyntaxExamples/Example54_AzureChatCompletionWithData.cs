@@ -47,12 +47,15 @@ public static class Example54_AzureChatCompletionWithData
         chatHistory.AddUserMessage("What are Emily and David studying?");
 
         // Chat Completion Streaming example
-        await foreach (var message in chatCompletion.GenerateMessagesStreamAsync(chatHistory))
+        await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
         {
-            // Output:
-            // They are passionate scientists who study glaciology,
-            // a branch of geology that deals with the study of ice and its effects.
-            Console.Write(message);
+            await foreach (var message in result.GetStreamingChatMessageAsync())
+            {
+                // Output:
+                // They are passionate scientists who study glaciology,
+                // a branch of geology that deals with the study of ice and its effects.
+                Console.Write(message.Content);
+            }
         }
 
         Console.Write(Environment.NewLine);
