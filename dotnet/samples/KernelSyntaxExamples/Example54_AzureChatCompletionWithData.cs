@@ -72,14 +72,14 @@ public static class Example54_AzureChatCompletionWithData
         var semanticFunction = kernel.CreateSemanticFunction("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var result = await semanticFunction.InvokeAsync("How did Emily and David meet?");
+        var result = await kernel.RunAsync("How did Emily and David meet?", semanticFunction);
 
         // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine(result);
         Console.Write(Environment.NewLine);
 
         // Second question based on uploaded content.
-        result = await semanticFunction.InvokeAsync("What are Emily and David studying?");
+        result = await kernel.RunAsync("What are Emily and David studying?", semanticFunction);
 
         // Output:
         // They are passionate scientists who study glaciology,
