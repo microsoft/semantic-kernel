@@ -85,8 +85,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange Mocks
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -123,8 +122,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -161,8 +159,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -199,8 +196,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -236,8 +232,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -273,7 +268,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -330,7 +325,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -400,7 +395,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -484,8 +479,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -542,7 +536,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
