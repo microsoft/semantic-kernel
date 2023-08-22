@@ -169,7 +169,7 @@ jobs:
 
       - name: Fail workflow if tests failed
         id: check_tests_failed
-        if: contains(join(needs.*.result, ','), 'failed')
+        if: contains(join(needs.*.result, ','), 'failure')
         uses: actions/github-script@v6
         with:
           script: core.setFailed('Integration Tests Failed!')
