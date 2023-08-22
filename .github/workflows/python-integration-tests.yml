@@ -77,6 +77,7 @@ jobs:
           poetry run pytest ./tests/integration/completions/test_hf_local_text_completions.py -v
           poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
           poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
+          poetry run pytest ./tests/integration/connectors/memory/test_redis.py -v
           poetry run pytest ./tests/integration/planning -v
           poetry run pytest ./tests/integration/embeddings -v
 
@@ -131,6 +132,7 @@ jobs:
           Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
           Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
           Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          Redis__Configuration: ${{ secrets.REDIS__CONFIGURATION }}
           AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
