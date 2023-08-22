@@ -13,9 +13,9 @@ public static class SequentialPlannerExtensions
     /// Returns decorated instance of <see cref="ISequentialPlanner"/> with enabled instrumentation.
     /// </summary>
     /// <param name="planner">Instance of <see cref="ISequentialPlanner"/> to decorate.</param>
-    /// <param name="logger">Optional logger.</param>
-    public static ISequentialPlanner WithInstrumentation(this ISequentialPlanner planner, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public static ISequentialPlanner WithInstrumentation(this ISequentialPlanner planner, ILoggerFactory? loggerFactory = null)
     {
-        return new InstrumentedSequentialPlanner(planner, logger);
+        return new InstrumentedSequentialPlanner(planner, loggerFactory);
     }
 }

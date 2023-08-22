@@ -38,7 +38,7 @@ public sealed class Kernel : IKernel, IDisposable
     public KernelConfig Config { get; }
 
     /// <inheritdoc/>
-    public ILogger Logger { get; }
+    public ILoggerFactory LoggerFactory { get; }
 
     /// <inheritdoc/>
     public ISemanticTextMemory Memory => this._memory;
@@ -68,22 +68,24 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="promptTemplateEngine"></param>
     /// <param name="memory"></param>
     /// <param name="config"></param>
-    /// <param name="logger"></param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         KernelConfig config,
-        ILogger logger)
+        ILoggerFactory loggerFactory)
     {
-        this.Logger = logger;
+        this.LoggerFactory = loggerFactory;
         this.Config = config;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
+
+        this._logger = loggerFactory.CreateLogger(nameof(Kernel));
     }
 
     /// <inheritdoc/>
@@ -113,17 +115,18 @@ public sealed class Kernel : IKernel, IDisposable
         if (string.IsNullOrWhiteSpace(skillName))
         {
             skillName = SkillCollection.GlobalSkill;
-            this.Logger.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
+            this._logger.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
         }
         else
         {
-            this.Logger.LogTrace("Importing skill {0}", skillName);
+            this._logger.LogTrace("Importing skill {0}", skillName);
         }
 
         Dictionary<string, ISKFunction> skill = ImportSkill(
             skillInstance,
             skillName!,
-            this.Logger
+            this._logger,
+            this.LoggerFactory
         );
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
@@ -183,14 +186,14 @@ public sealed class Kernel : IKernel, IDisposable
         var context = new SKContext(
             variables,
             this._skillCollection,
-            this.Logger);
+            this.LoggerFactory);
 
         int pipelineStepCount = -1;
         foreach (ISKFunction f in pipeline)
         {
             if (context.ErrorOccurred)
             {
-                this.Logger.LogError(
+                this._logger.LogError(
                     context.LastException,
                     "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastException?.Message);
                 return context;
@@ -229,7 +232,7 @@ public sealed class Kernel : IKernel, IDisposable
 
                 if (context.ErrorOccurred)
                 {
-                    this.Logger.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
+                    this._logger.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
                         pipelineStepCount, f.SkillName, f.Name, context.LastException?.Message);
                     return context;
                 }
@@ -238,7 +241,7 @@ public sealed class Kernel : IKernel, IDisposable
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
-                this.Logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
+                this._logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
                     pipelineStepCount, f.SkillName, f.Name, e.Message);
                 context.LastException = e;
                 return context;
@@ -259,7 +262,7 @@ public sealed class Kernel : IKernel, IDisposable
     {
         return new SKContext(
             skills: this._skillCollection,
-            logger: this.Logger);
+            loggerFactory: this.LoggerFactory);
     }
 
     /// <inheritdoc/>
@@ -292,6 +295,7 @@ public sealed class Kernel : IKernel, IDisposable
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
+    private readonly ILogger _logger;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
@@ -309,7 +313,7 @@ public sealed class Kernel : IKernel, IDisposable
             skillName,
             functionName,
             functionConfig,
-            this.Logger
+            this.LoggerFactory
         );
 
         // Connect the function to the current kernel skill collection, in case the function
@@ -330,8 +334,9 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="skillInstance">Skill class instance</param>
     /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
     /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger logger)
+    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger logger, ILoggerFactory loggerFactory)
     {
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         logger.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
@@ -342,7 +347,7 @@ public sealed class Kernel : IKernel, IDisposable
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, logger);
+                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, loggerFactory);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new SKException("Function overloads are not supported, please differentiate function names");
@@ -395,7 +400,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     [Obsolete("Use Logger instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogger Log => this.Logger;
+    public ILogger Log => this._logger;
 
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.

@@ -51,14 +51,14 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="functionConfig">Semantic function configuration.</param>
-    /// <param name="logger">Optional logger for the function.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
         string skillName,
         string functionName,
         SemanticFunctionConfig functionConfig,
-        ILogger? logger = null,
+        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(functionConfig);
@@ -68,7 +68,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             description: functionConfig.PromptTemplateConfig.Description,
             skillName: skillName,
             functionName: functionName,
-            logger: logger
+            loggerFactory: loggerFactory
         );
 
         return func;
@@ -160,13 +160,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         string skillName,
         string functionName,
         string description,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
 
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(SemanticFunction)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this.Parameters = template.GetParameters();

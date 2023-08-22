@@ -29,7 +29,7 @@ public interface IKernel
     /// <summary>
     /// App logger
     /// </summary>
-    ILogger Logger { get; }
+    ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
     /// Semantic memory instance
