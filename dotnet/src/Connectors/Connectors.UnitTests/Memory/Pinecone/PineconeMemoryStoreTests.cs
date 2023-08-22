@@ -34,21 +34,21 @@ public class PineconeMemoryStoreTests
     private readonly ReadOnlyMemory<float> _embedding3 = new float[] { 3, 3, 3 };
 
     private readonly Mock<IPineconeClient> _mockPineconeClient;
-    private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory = new();
 
     private readonly PineconeMemoryStore _pineconeMemoryStore;
 
     public PineconeMemoryStoreTests()
     {
         this._mockPineconeClient = new Mock<IPineconeClient>();
-        this._pineconeMemoryStore = new PineconeMemoryStore(this._mockPineconeClient.Object, this._mockLogger.Object);
+        this._pineconeMemoryStore = new PineconeMemoryStore(this._mockPineconeClient.Object, this._mockLoggerFactory.Object);
     }
 
     [Fact]
     public void ConnectionCanBeInitialized()
     {
         // Arrange & Act
-        PineconeMemoryStore memoryStore = new(this._mockPineconeClient.Object, this._mockLogger.Object);
+        PineconeMemoryStore memoryStore = new(this._mockPineconeClient.Object, this._mockLoggerFactory.Object);
 
         // Assert
         Assert.NotNull(memoryStore);
