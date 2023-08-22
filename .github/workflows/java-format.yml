@@ -4,15 +4,37 @@ on:
     types: [ created ]
 
 jobs:
+  get-user-membership:
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      isTeamMember: ${{ steps.checkUserMember.outputs.isTeamMember }}
+
+    steps:
+      - name: Check user membership
+        id: checkUserMember
+        uses: tspascoal/get-user-teams-membership@v2
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          username: ${{ github.event.comment.user.login }}
+          team: OCTO-SemanticKernel-PR-Java
+
   comment-driven-automation:
     if: |
       github.event.issue.pull_request &&
       (
         startsWith(github.event.comment.body, '/spotless') ||
         startsWith(github.event.comment.body, '/help')
+      ) && 
+      (
+        github.event.comment.user.login == github.event.issue.user.login || 
+        needs.get-user-membership.outputs.isTeamMember == 'true'
       )
 
     runs-on: ubuntu-latest
+
+    needs: get-user-membership
     
     permissions:
       issues: write
