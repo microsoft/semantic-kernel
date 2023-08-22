@@ -60,7 +60,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._messages = []
 
     async def complete_chat_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+        self,
+        messages: List[Tuple[str, str]],
+        request_settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(messages, request_settings, False)
@@ -71,7 +74,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             return [choice.message.content for choice in response.choices]
 
     async def complete_chat_stream_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+        self,
+        messages: List[Tuple[str, str]],
+        request_settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         response = await self._send_chat_request(messages, request_settings, True)
 
@@ -88,7 +94,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 yield text
 
     async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         """
         Completes the given prompt.
@@ -120,7 +129,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             return [choice.message.content for choice in response.choices]
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         prompt_to_message = [("user", prompt)]
         chat_settings = ChatRequestSettings(
