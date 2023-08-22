@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
+
+from dotenv import dotenv_values
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import (
@@ -54,37 +55,34 @@ async def search_acs_memory_questions(kernel: sk.Kernel) -> None:
 async def main() -> None:
     kernel = sk.Kernel()
 
-    # Add OpenAI services
-    (
-        open_ai_deployment,
-        open_api_key,
-        open_ai_endpoint,
-    ) = sk.azure_openai_settings_from_dot_env()
+    config = dotenv_values(".env")
+
+    AZURE_COGNITIVE_SEARCH_ENDPOINT = config["AZURE_COGNITIVE_SEARCH_ENDPOINT"]
+    AZURE_COGNITIVE_SEARCH_ADMIN_KEY = config["AZURE_COGNITIVE_SEARCH_ADMIN_KEY"]
+    AZURE_OPENAI_API_KEY = config["AZURE_OPENAI_API_KEY"]
+    AZURE_OPENAI_ENDPOINT = config["AZURE_OPENAI_ENDPOINT"]
+    vector_size = 1536
 
     # Setting up OpenAI services for text completion and text embedding
     kernel.add_text_completion_service(
         "dv",
         AzureTextCompletion(
-            deployment_name=open_ai_deployment,
-            endpoint=open_ai_endpoint,
-            api_key=open_api_key,
+            deployment_name="text-embedding-ada-002",
+            endpoint=AZURE_OPENAI_ENDPOINT,
+            api_key=AZURE_OPENAI_API_KEY,
         ),
     )
     kernel.add_text_embedding_generation_service(
         "ada",
         AzureTextEmbedding(
-            deployment_name=open_ai_deployment,
-            endpoint=open_ai_endpoint,
-            api_key=open_api_key,
+            deployment_name="text-embedding-ada-002",
+            endpoint=AZURE_OPENAI_ENDPOINT,
+            api_key=AZURE_OPENAI_API_KEY,
         ),
     )
 
-    ACS_ENDPOINT = os.environ["AZURE_ACS_ENDPOINT"]
-    ACS_ADMIN_KEY = os.environ["AZURE_ACS_ADMIN_KEY"]
-    vector_size = 1536
-
     connector = AzureCognitiveSearchMemoryStore(
-        vector_size, ACS_ENDPOINT, ACS_ADMIN_KEY
+        vector_size, AZURE_COGNITIVE_SEARCH_ENDPOINT, AZURE_COGNITIVE_SEARCH_ADMIN_KEY
     )
 
     # Register the memory store with the kernel
