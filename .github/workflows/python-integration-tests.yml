@@ -161,7 +161,7 @@ jobs:
         run: |
           echo "run_type=Manual" >> "$GITHUB_ENV"
 
-      - name: Run Type is Other
+      - name: Run Type is ${{ github.event_name }}
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
         shell: bash
         run: |
@@ -183,7 +183,7 @@ jobs:
 
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' 
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
