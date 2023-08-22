@@ -490,7 +490,7 @@ public abstract class ClientBase
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
         this.Logger.LogInformation(
-            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}",
+            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
             usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
 
         s_promptTokensCounter.Add(usage.PromptTokens);
