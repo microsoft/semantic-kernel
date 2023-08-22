@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Flow;
@@ -22,7 +23,7 @@ public sealed class FlowPlannerTests : IDisposable
 
     public FlowPlannerTests(ITestOutputHelper output)
     {
-        this._logger = new XunitLogger<object>(output);
+        this._logger = NullLoggerFactory.Instance;
         this._testOutputHelper = new RedirectOutput(output);
 
         // Load configuration
@@ -103,7 +104,7 @@ steps:
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var builder = Kernel.Builder.WithLogger(this._logger);
+        var builder = Kernel.Builder.WithLoggerFactory(this._logger);
 
         builder.WithAzureChatCompletionService(
             deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
@@ -114,7 +115,7 @@ steps:
         return builder;
     }
 
-    private readonly ILogger _logger;
+    private readonly ILoggerFactory _logger;
     private readonly RedirectOutput _testOutputHelper;
     private readonly IConfigurationRoot _configuration;
 
