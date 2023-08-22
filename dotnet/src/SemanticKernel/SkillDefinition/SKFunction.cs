@@ -22,14 +22,14 @@ public static class SKFunction
     /// <param name="method">Signature of the method to invoke</param>
     /// <param name="target">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
         MethodInfo method,
         object? target = null,
         string? skillName = null,
-        ILogger? logger = null)
-            => NativeFunction.FromNativeMethod(method, target, skillName, logger);
+        ILoggerFactory? loggerFactory = null)
+            => NativeFunction.FromNativeMethod(method, target, skillName, loggerFactory);
 
     /// <summary>
     /// Create a native function instance, wrapping a delegate function
@@ -39,7 +39,7 @@ public static class SKFunction
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
         Delegate nativeFunction,
@@ -47,8 +47,8 @@ public static class SKFunction
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
-        ILogger? logger = null)
-            => NativeFunction.FromNativeFunction(nativeFunction, skillName, functionName, description, parameters, logger);
+        ILoggerFactory? loggerFactory = null)
+            => NativeFunction.FromNativeFunction(nativeFunction, skillName, functionName, description, parameters, loggerFactory);
 
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
@@ -56,14 +56,14 @@ public static class SKFunction
     /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="functionConfig">Semantic function configuration.</param>
-    /// <param name="logger">Optional logger for the function.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
         string skillName,
         string functionName,
         SemanticFunctionConfig functionConfig,
-        ILogger? logger = null,
+        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
-            => SemanticFunction.FromSemanticConfig(skillName, functionName, functionConfig, logger, cancellationToken);
+            => SemanticFunction.FromSemanticConfig(skillName, functionName, functionConfig, loggerFactory, cancellationToken);
 }
