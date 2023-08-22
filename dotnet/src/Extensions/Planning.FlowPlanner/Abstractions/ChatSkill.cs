@@ -11,9 +11,13 @@ using Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Chat skill which encapsulates the interface to get latest chat input and history from context maintained by orchestrator.
 /// It is recommended to use this class as base class for chat skills and functions.
-///
-/// Each skill should either have a parameter-less constructor or a constructor with single <see cref="SKContext"/> parameter.
 /// </summary>
+/// <remarks>
+/// # Create skills
+/// There are two ways to instantiate a chat skill:
+/// 1. Reflection by planner. To support that the skill should either have a parameter-less constructor or a constructor with single <see cref="SKContext"/> parameter.
+/// 2. Register in global skill collection and pass to the Planner.
+/// </remarks>
 public abstract class ChatSkill
 {
     /// <summary>

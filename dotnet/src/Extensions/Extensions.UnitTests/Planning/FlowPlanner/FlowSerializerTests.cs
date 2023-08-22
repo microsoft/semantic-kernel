@@ -43,10 +43,15 @@ public class FlowSerializerTests
         Assert.NotEmpty(flow.Steps);
         Assert.False(string.IsNullOrEmpty(flow.Goal));
         Assert.Equal("breakfast", flow.Provides.Single());
-        Assert.Equal(3, flow.Steps.Count);
+        Assert.Equal(4, flow.Steps.Count);
 
-        var firstStep = flow.Steps.First(step => step.Goal == "Make coffee");
-        Assert.Equal("coffee_bean", firstStep.Requires.Single());
-        Assert.Equal("coffee", firstStep.Provides.Single());
+        var makeCoffeeStep = flow.Steps.First(step => step.Goal == "Make coffee");
+        Assert.Equal("coffee_bean", makeCoffeeStep.Requires.Single());
+        Assert.Equal("coffee", makeCoffeeStep.Provides.Single());
+        Assert.Equal(CompletionType.Once, makeCoffeeStep.CompletionType);
+
+        var recipeStep = flow.Steps.First(step => step.Goal == "Recipe");
+        Assert.Equal("ingredients", recipeStep.Provides.Single());
+        Assert.Equal(CompletionType.AtLeastOnce, recipeStep.CompletionType);
     }
 }

@@ -78,7 +78,7 @@ public class FlowPlanner
         }
         catch (Exception ex)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "Invalid flow", ex);
+            throw new SKException("Invalid flow", ex);
         }
 
         FlowExecutor executor = new(this._kernelBuilder, this._flowStatusProvider, this._globalSkillCollection, this._config);

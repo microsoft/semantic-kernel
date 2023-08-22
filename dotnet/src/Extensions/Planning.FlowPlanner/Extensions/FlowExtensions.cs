@@ -7,6 +7,7 @@ namespace Microsoft.SemanticKernel.Planning.Flow;
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel.Diagnostics;
 
 internal static class FlowExtensions
 {
@@ -21,8 +22,7 @@ internal static class FlowExtensions
 
             if (independentSteps.Count == 0)
             {
-                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
-                    "The plan contains circular dependencies.");
+                throw new SKException("The plan contains circular dependencies.");
             }
 
             sortedSteps.AddRange(independentSteps);

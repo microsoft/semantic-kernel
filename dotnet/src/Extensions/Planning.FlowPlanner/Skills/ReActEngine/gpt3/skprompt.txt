@@ -57,7 +57,7 @@ I should use Calculator.Divide function to calculate the result.
     "action": "Calculator.Divide",
     "action_variables": {
         "param1": "80",
-        "param2": "20"
+        "param2": "2"
     }
 }
 

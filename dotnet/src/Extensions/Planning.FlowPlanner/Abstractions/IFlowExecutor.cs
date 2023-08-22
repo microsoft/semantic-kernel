@@ -20,7 +20,7 @@ public interface IFlowExecutor
     /// <param name="flow">Flow</param>
     /// <param name="sessionId">Session id, which is used to track the execution status.</param>
     /// <param name="input">The input from client to continue the execution.</param>
-    /// <param name="contextVariables">The key value pair of contextVariable </param>
+    /// <param name="contextVariables">The request context variables </param>
     /// <returns>The execution context</returns>
     Task<SKContext> ExecuteAsync(Flow flow, string sessionId, string input, ContextVariables contextVariables);
 }

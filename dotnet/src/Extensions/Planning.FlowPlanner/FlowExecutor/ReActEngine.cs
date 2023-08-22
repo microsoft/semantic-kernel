@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -67,7 +68,7 @@ internal sealed class ReActEngine
     /// The regex for parsing the action response
     /// </summary>
     private static readonly Regex s_actionRegex =
-        new(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline);
+        new(@"(?<=\[ACTION\])[^{}]*(\{.*?\})(?=\n\[)", RegexOptions.Singleline);
 
     /// <summary>
     /// The regex for parsing the final action response
@@ -109,8 +110,6 @@ internal sealed class ReActEngine
             {
                 promptConfig.Completion.MaxTokens = config.MaxTokens;
             }
-
-            promptConfig.Completion.MaxTokens = config.MaxTokens;
         }
 
         var promptTemplate = config.ReActPromptTemplate;
@@ -125,18 +124,20 @@ internal sealed class ReActEngine
     internal async Task<ReActStep?> GetNextStepAsync(SKContext context, string question, List<ReActStep> previousSteps)
     {
         context.Variables.Set("question", question);
-        var scratchPad = this.CreateScratchPad(question, previousSteps);
+        var scratchPad = this.CreateScratchPad(previousSteps);
         context.Variables.Set("agentScratchPad", scratchPad);
-        context.Variables.Set("functionDescriptions", this.GetFunctionDescriptions(context));
+        var functionDesc = this.GetFunctionDescriptions(context);
+        context.Variables.Set("functionDescriptions", functionDesc);
 
-        this._logger?.LogDebug("question: {Question}", question);
-        this._logger?.LogDebug("Scratchpad: {ScratchPad}", scratchPad);
+        this._logger?.LogInformation("question: {Question}", question);
+        this._logger?.LogInformation("functionDescriptions: {FunctionDescriptions}", functionDesc);
+        this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
         var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
         if (llmResponse.ErrorOccurred)
         {
             string message = $"Error occurred while executing action step: {llmResponse.LastException?.Message}";
-            throw new PlanningException(PlanningException.ErrorCodes.UnknownError, message, llmResponse.LastException);
+            throw new SKException(message, llmResponse.LastException);
         }
 
         string llmResponseText = llmResponse.Result.Trim();
@@ -219,7 +220,7 @@ internal sealed class ReActEngine
         return kernel.RegisterSemanticFunction(RestrictedSkillName, functionName, functionConfig);
     }
 
-    private string CreateScratchPad(string question, List<ReActStep> stepsTaken)
+    private string CreateScratchPad(List<ReActStep> stepsTaken)
     {
         if (stepsTaken.Count == 0)
         {
@@ -303,7 +304,7 @@ internal sealed class ReActEngine
 
         // Extract action
         string actionStepJson = input;
-        Match actionMatch = s_actionRegex.Match(input);
+        Match actionMatch = s_actionRegex.Match(input + "\n[");
         if (actionMatch.Success)
         {
             actionStepJson = actionMatch.Groups[1].Value.Trim();

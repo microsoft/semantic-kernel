@@ -14,17 +14,25 @@
       ]
     },
     {
+      "goal": "Select coffee been",
+      "skills": [
+        "CoffeeRecommendationSkill"
+      ],
+      "provides": [
+        "coffee_bean"
+      ]
+    },
+    {
       "goal": "Recipe",
       "skills": [
         "WebSearchSkill",
         "CalorieCalculatorSkill",
-        "HealthCheckSkill",
-        "CoffeeRecommendationSkill"
+        "HealthCheckSkill"
       ],
       "provides": [
-        "ingredients",
-        "coffee_bean"
-      ]
+        "ingredients"
+      ],
+      "completionType": "AtLeastOnce"
     },
     {
       "goal": "Cook",
