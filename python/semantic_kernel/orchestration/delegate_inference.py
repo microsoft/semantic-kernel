@@ -16,6 +16,15 @@ def _infers(delegate_type):
     return decorator
 
 
+def _is_annotation_of_type(annotation, type_to_match) -> bool:
+    return (annotation is type_to_match) or (
+        # Handle cases where the annotation is provided as a string to avoid circular imports
+        # for example: `async def read_async(self, context: "SKContext"):` in file_io_skill.py
+        isinstance(annotation, str)
+        and annotation == type_to_match.__name__
+    )
+
+
 def _has_no_params(signature: Signature) -> bool:
     return len(signature.parameters) == 0
 
@@ -27,20 +36,11 @@ def _return_is_str(signature: Signature) -> bool:
 def _return_is_context(signature: Signature) -> bool:
     from semantic_kernel.orchestration.sk_context import SKContext
 
-    return signature.return_annotation is SKContext
+    return _is_annotation_of_type(signature.return_annotation, SKContext)
 
 
 def _no_return(signature: Signature) -> bool:
     return signature.return_annotation is Signature.empty
-
-
-def _is_annotation_of_type(annotation, type_to_match) -> bool:
-    return (annotation is type_to_match) or (
-        # Handle cases where the annotation is provided as a string to avoid circular imports
-        # for example: `async def read_async(self, context: "SKContext"):` in file_io_skill.py
-        isinstance(annotation, str)
-        and annotation == type_to_match.__name__
-    )
 
 
 def _has_first_param_with_type(
