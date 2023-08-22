@@ -16,9 +16,9 @@ public static class Example46_Weaviate
     {
         string endpoint = TestConfiguration.Weaviate.Endpoint;
         string apiKey = TestConfiguration.Weaviate.ApiKey;
-        WeaviateMemoryStore memoryStore = new(endpoint, apiKey, ConsoleLogger.Logger);
+        WeaviateMemoryStore memoryStore = new(endpoint, apiKey, ConsoleLogger.LoggerFactory);
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
