@@ -79,7 +79,7 @@ class ChatPromptTemplate(PromptTemplate):
         prompt_config: PromptTemplateConfig,
         log: Optional[Logger] = None,
     ) -> "ChatPromptTemplate":
-        """Restore a ChatPromptTemplate from a list of tuples of role and message."""
+        """Restore a ChatPromptTemplate from a list of role and message pairs."""
         chat_template = cls(template, template_engine, prompt_config, log)
         for message in messages:
             chat_template.add_message(message["role"], message["message"])
