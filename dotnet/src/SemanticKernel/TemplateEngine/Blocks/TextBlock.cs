@@ -9,13 +9,13 @@ internal sealed class TextBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Text;
 
-    public TextBlock(string? text, ILogger? logger = null)
-        : base(text, logger)
+    public TextBlock(string? text, ILoggerFactory? loggerFactory = null)
+        : base(text, loggerFactory)
     {
     }
 
-    public TextBlock(string text, int startIndex, int stopIndex, ILogger logger)
-        : base(text.Substring(startIndex, stopIndex - startIndex), logger)
+    public TextBlock(string text, int startIndex, int stopIndex, ILoggerFactory? loggerFactory)
+        : base(text.Substring(startIndex, stopIndex - startIndex), loggerFactory)
     {
     }
 
