@@ -28,14 +28,14 @@ public sealed class PineconeClient : IPineconeClient
     /// </summary>
     /// <param name="pineconeEnvironment">The environment for Pinecone.</param>
     /// <param name="apiKey">The API key for accessing Pinecone services.</param>
-    /// <param name="logger">An optional logger instance for logging.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="httpClient">An optional HttpClient instance for making HTTP requests.</param>
-    public PineconeClient(string pineconeEnvironment, string apiKey, ILogger? logger = null, HttpClient? httpClient = null)
+    public PineconeClient(string pineconeEnvironment, string apiKey, ILoggerFactory? loggerFactory = null, HttpClient? httpClient = null)
     {
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
-        this._logger = logger ?? NullLogger<PineconeClient>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(PineconeClient)) : NullLogger.Instance;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
@@ -146,7 +146,7 @@ public sealed class PineconeClient : IPineconeClient
     /// <inheritdoc />
     public async IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
         string indexName,
-        IEnumerable<float> vector,
+        ReadOnlyMemory<float> vector,
         double threshold,
         int topK,
         bool includeValues,

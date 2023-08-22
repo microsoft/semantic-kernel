@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Reliability;
 using Moq;
 using Moq.Protected;
@@ -25,7 +25,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task NoMaxRetryCountCallsOnceForStatusAsync(HttpStatusCode statusCode)
     {
         // Arrange
-        using var retry = new DefaultHttpRetryHandler(new HttpRetryConfig() { MaxRetryCount = 0 }, Mock.Of<ILogger>());
+        using var retry = new DefaultHttpRetryHandler(new HttpRetryConfig() { MaxRetryCount = 0 }, NullLoggerFactory.Instance);
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -653,7 +653,8 @@ public class DefaultHttpRetryHandlerTests
     {
         delayProvider ??= new Mock<DefaultHttpRetryHandler.IDelayProvider>();
         timeProvider ??= new Mock<DefaultHttpRetryHandler.ITimeProvider>();
-        var retry = new DefaultHttpRetryHandler(config ?? new HttpRetryConfig(), Mock.Of<ILogger>(), delayProvider.Object, timeProvider.Object);
+
+        var retry = new DefaultHttpRetryHandler(config ?? new HttpRetryConfig(), null, delayProvider.Object, timeProvider.Object);
         return retry;
     }
 
