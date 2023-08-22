@@ -53,12 +53,28 @@ public abstract class ClientBase
     private static Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
 
     /// <summary>
-    /// Instance of <see cref="Counter{T}"/> to keep track of the number of tokens used.
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
     /// </summary>
-    private static Counter<int> s_tokenAmountCounter =
+    private static Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
-            name: "SK.Connectors.OpenAI.TokenAmount",
-            description: "Number of tokens used");
+            name: "SK.Connectors.OpenAI.PromptTokens",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.CompletionTokens",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.TotalTokens",
+            description: "Total number of tokens used");
 
     /// <summary>
     /// Creates completions for the prompt and settings.
@@ -473,8 +489,12 @@ public abstract class ClientBase
     /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
-        this.Logger.LogInformation("Token amount: {TokenAmount}", usage.TotalTokens);
+        this.Logger.LogInformation(
+            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}",
+            usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
 
-        s_tokenAmountCounter.Add(usage.TotalTokens);
+        s_promptTokensCounter.Add(usage.PromptTokens);
+        s_completionTokensCounter.Add(usage.CompletionTokens);
+        s_totalTokensCounter.Add(usage.TotalTokens);
     }
 }
