@@ -317,15 +317,14 @@ public class CodeBlockTests
         const string BobValue = "bob's value";
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
+        variables.Set("input", Value);
         var context = new SKContext(variables: variables, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
-        var valBlock = new ValBlock($"'{Value}'");
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");
 
         var foo = string.Empty;
         var baz = string.Empty;
-        var input = string.Empty;
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
@@ -333,7 +332,6 @@ public class CodeBlockTests
             {
                 foo = context!.Variables["foo"];
                 baz = context!.Variables["baz"];
-                input = context!.Variables["input"];
             })
             .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
 
@@ -342,13 +340,12 @@ public class CodeBlockTests
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock, namedArgBlock1, namedArgBlock2 }, "", NullLogger.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLogger.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
         Assert.Equal(FooValue, foo);
         Assert.Equal(BobValue, baz);
-        Assert.Equal(Value, input);
         Assert.Equal(Value, result);
     }
 }
