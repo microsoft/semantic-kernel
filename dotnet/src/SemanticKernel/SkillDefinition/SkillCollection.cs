@@ -26,10 +26,10 @@ public class SkillCollection : ISkillCollection
     /// <summary>
     /// Initializes a new instance of the <see cref="SkillCollection"/> class.
     /// </summary>
-    /// <param name="logger">An optional logger instance.</param>
-    public SkillCollection(ILogger? logger = null)
+    /// <param name="loggerFactory">The logger factory.</param>
+    public SkillCollection(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(SkillCollection)) : NullLogger.Instance;
 
         // Important: names are case insensitive
         this._skillCollection = new(StringComparer.OrdinalIgnoreCase);

@@ -17,7 +17,7 @@ public static class Example27_SemanticFunctionsUsingChatGPT
         Console.WriteLine("======== Using Chat GPT model for text completion ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, "https://....openai.azure.com/", "...API KEY...")
             .Build();
 

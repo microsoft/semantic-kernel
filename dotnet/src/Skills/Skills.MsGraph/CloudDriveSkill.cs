@@ -30,19 +30,19 @@ public sealed class CloudDriveSkill
     }
 
     private readonly ICloudDriveConnector _connector;
-    private readonly ILogger<CloudDriveSkill> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CloudDriveSkill"/> class.
     /// </summary>
     /// <param name="connector">The cloud drive connector.</param>
-    /// <param name="logger">The logger (optional).</param>
-    public CloudDriveSkill(ICloudDriveConnector connector, ILogger<CloudDriveSkill>? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public CloudDriveSkill(ICloudDriveConnector connector, ILoggerFactory? loggerFactory = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = logger ?? new NullLogger<CloudDriveSkill>();
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(CloudDriveSkill)) : NullLogger.Instance;
     }
 
     /// <summary>

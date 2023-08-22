@@ -49,6 +49,7 @@ public static class ChatCompletionExtensions
             {
                 yield return chatMessageStream.Content;
             }
+
             yield break;
         }
     }

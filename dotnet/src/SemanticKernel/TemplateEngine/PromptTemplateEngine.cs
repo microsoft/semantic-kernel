@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -24,18 +25,19 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// </summary>
 public class PromptTemplateEngine : IPromptTemplateEngine
 {
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-
     private readonly TemplateTokenizer _tokenizer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateEngine"/> class.
     /// </summary>
-    /// <param name="logger">An optional <see cref="ILogger"/> instance to log messages. If not provided, a <see cref="NullLogger"/> instance will be used.</param>
-    public PromptTemplateEngine(ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public PromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
-        this._tokenizer = new TemplateTokenizer(this._logger);
+        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this._logger = this._loggerFactory.CreateLogger(nameof(PromptTemplateEngine));
+        this._tokenizer = new TemplateTokenizer(loggerFactory);
     }
 
     /// <inheritdoc/>
@@ -50,7 +52,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
             {
                 if (!block.IsValid(out var error))
                 {
-                    throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
+                    throw new SKException(error);
                 }
             }
         }
@@ -92,7 +94,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
                 default:
                     const string Error = "Unexpected block type, the block doesn't have a rendering method";
                     this._logger.LogError(Error);
-                    throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, Error);
+                    throw new SKException(Error);
             }
         }
 
@@ -119,6 +121,6 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         this._logger.LogTrace("Rendering variables");
         return blocks.Select(block => block.Type != BlockTypes.Variable
             ? block
-            : new TextBlock(((ITextRendering)block).Render(variables), this._logger)).ToList();
+            : new TextBlock(((ITextRendering)block).Render(variables), this._loggerFactory)).ToList();
     }
 }

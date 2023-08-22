@@ -34,13 +34,13 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleConnector"/> class.
     /// </summary>
-    /// <param name="apiKey">Google Custom Search API key (looks like "ABcdEfG1...").</param>
-    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...").</param>
-    /// <param name="logger">Optional logger.</param>
+    /// <param name="apiKey">Google Custom Search API (looks like "ABcdEfG1...")</param>
+    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public GoogleConnector(
         string apiKey,
         string searchEngineId,
-        ILogger<GoogleConnector>? logger = null) : this(new BaseClientService.Initializer { ApiKey = apiKey }, searchEngineId, logger)
+        ILoggerFactory? loggerFactory = null) : this(new BaseClientService.Initializer { ApiKey = apiKey }, searchEngineId, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(apiKey);
     }
@@ -48,20 +48,20 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="GoogleConnector"/> class.
     /// </summary>
-    /// <param name="initializer">The connector initializer.</param>
-    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...").</param>
-    /// <param name="logger">Optional logger.</param>
+    /// <param name="initializer">The connector initializer</param>
+    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public GoogleConnector(
         BaseClientService.Initializer initializer,
         string searchEngineId,
-        ILogger<GoogleConnector>? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(initializer);
         Verify.NotNullOrWhiteSpace(searchEngineId);
 
         this._search = new CustomSearchAPIService(initializer);
         this._searchEngineId = searchEngineId;
-        this._logger = logger ?? NullLogger<GoogleConnector>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(GoogleConnector)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>

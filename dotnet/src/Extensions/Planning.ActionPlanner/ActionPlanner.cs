@@ -63,15 +63,15 @@ public sealed class ActionPlanner : IActionPlanner
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="prompt">Optional prompt override</param>
-    /// <param name="logger">Optional logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public ActionPlanner(
         IKernel kernel,
         string? prompt = null,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(kernel);
 
-        this._logger = logger ?? new NullLogger<ActionPlanner>();
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ActionPlanner)) : NullLogger.Instance;
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
@@ -92,7 +92,7 @@ public sealed class ActionPlanner : IActionPlanner
     {
         if (string.IsNullOrEmpty(goal))
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+            throw new SKException("The goal specified is empty");
         }
 
         this._context.Variables.Update(goal);
@@ -102,7 +102,7 @@ public sealed class ActionPlanner : IActionPlanner
 
         if (planData == null)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, "The plan deserialized to a null object");
+            throw new SKException("The plan deserialized to a null object");
         }
 
         // Build and return plan
@@ -266,13 +266,12 @@ Goal: tell me a joke.
             }
             catch (Exception e)
             {
-                throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan,
-                    "Plan parsing error, invalid JSON", e);
+                throw new SKException("Plan parsing error, invalid JSON", e);
             }
         }
         else
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidPlan, $"Failed to extract valid json string from planner result: '{plannerResult}'");
+            throw new SKException($"Failed to extract valid json string from planner result: '{plannerResult}'");
         }
     }
 

@@ -54,7 +54,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromFilePath(
@@ -93,7 +93,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromUri(
@@ -132,7 +132,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);
@@ -184,7 +184,7 @@ public static class KernelAIPluginExtensions
         string pluginJson,
         CancellationToken cancellationToken)
     {
-        var parser = new OpenApiDocumentParser(kernel.Logger);
+        var parser = new OpenApiDocumentParser(kernel.LoggerFactory);
 
         using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
         {
@@ -194,18 +194,19 @@ public static class KernelAIPluginExtensions
 
             var skill = new Dictionary<string, ISKFunction>();
 
+            ILogger logger = kernel.LoggerFactory.CreateLogger(nameof(KernelAIPluginExtensions));
             foreach (var operation in operations)
             {
                 try
                 {
-                    kernel.Logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                    logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
                     var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
                     skill[function.Name] = function;
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
                 {
                     //Logging the exception and keep registering other Rest functions
-                    kernel.Logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                    logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
                         skillName, operation.Id, ex.Message);
                 }
             }
@@ -248,7 +249,7 @@ public static class KernelAIPluginExtensions
             throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
         }
 
-        kernel.Logger.LogTrace("Importing AI Plugin from {0}", filePath);
+        kernel.LoggerFactory.CreateLogger(nameof(KernelAIPluginExtensions)).LogTrace("Importing AI Plugin from {0}", filePath);
 
         using (var sr = File.OpenText(filePath))
         {
@@ -316,7 +317,7 @@ public static class KernelAIPluginExtensions
     {
         var restOperationParameters = operation.GetParameters(serverUrlOverride);
 
-        var logger = kernel.Logger ?? NullLogger.Instance;
+        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(nameof(KernelAIPluginExtensions)) : NullLogger.Instance;
 
         async Task<SKContext> ExecuteAsync(SKContext context)
         {
@@ -379,7 +380,7 @@ public static class KernelAIPluginExtensions
             description: operation.Description,
             skillName: skillName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            logger: logger);
+            loggerFactory: kernel.LoggerFactory);
 
         return kernel.RegisterCustomFunction(function);
     }

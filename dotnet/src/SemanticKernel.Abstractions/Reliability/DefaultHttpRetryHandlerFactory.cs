@@ -30,11 +30,11 @@ public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
     /// <summary>
     /// Creates a new instance of <see cref="DefaultHttpRetryHandler"/> with the specified logger.
     /// </summary>
-    /// <param name="logger">An optional <see cref="ILogger"/> instance to log retry events. If not provided, no logging will occur.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A new instance of <see cref="DefaultHttpRetryHandler"/>.</returns>
-    public DelegatingHandler Create(ILogger? logger)
+    public DelegatingHandler Create(ILoggerFactory? loggerFactory)
     {
-        return new DefaultHttpRetryHandler(this.Config, logger);
+        return new DefaultHttpRetryHandler(this.Config, loggerFactory);
     }
 
     /// <summary>

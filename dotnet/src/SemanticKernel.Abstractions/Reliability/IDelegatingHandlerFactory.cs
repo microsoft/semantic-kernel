@@ -21,7 +21,7 @@ public interface IDelegatingHandlerFactory
     /// <summary>
     /// Creates a new <see cref="DelegatingHandler"/> instance with the specified logger.
     /// </summary>
-    /// <param name="logger">The <see cref="ILogger"/> instance to be used by the created <see cref="DelegatingHandler"/>, or null if no logger is required.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>A new <see cref="DelegatingHandler"/> instance.</returns>
-    DelegatingHandler Create(ILogger? logger);
+    DelegatingHandler Create(ILoggerFactory? loggerFactory);
 }
