@@ -98,8 +98,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
-        var renderedPrompt = await this.RenderPromptTemplateAsync(context, cancellationToken).ConfigureAwait(false);
-        return await this.InternalInvokeAsync(context, settings, renderedPrompt, cancellationToken).ConfigureAwait(false);
+        return await this.InternalInvokeAsync(context, settings, null, cancellationToken).ConfigureAwait(false);
     }
 
     internal async Task<SKContext> InternalInvokeAsync(
@@ -111,6 +110,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         if (renderedPrompt is null)
         {
             this.AddDefaultValues(context.Variables);
+            renderedPrompt = await this.RenderPromptTemplateAsync(context, cancellationToken).ConfigureAwait(false);
         }
 
         return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, renderedPrompt, cancellationToken).ConfigureAwait(false);
@@ -214,7 +214,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     internal Task<string> RenderPromptTemplateAsync(SKContext context, CancellationToken cancellationToken)
     {
-        return this.PromptTemplate.RenderAsync(context, cancellationToken);
+        return this.PromptTemplate!.RenderAsync(context, cancellationToken);
     }
 
     internal async Task<SKContext> RunPromptAsync(
