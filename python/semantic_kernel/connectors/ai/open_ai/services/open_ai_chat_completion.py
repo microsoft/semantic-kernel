@@ -199,9 +199,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 messages=formatted_messages,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
-                presence_penalty=request_settings.presence_penalty,
-                frequency_penalty=request_settings.frequency_penalty,
-                max_tokens=request_settings.max_tokens,
                 n=request_settings.number_of_responses,
                 stream=stream,
                 stop=(
@@ -210,6 +207,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                     and len(request_settings.stop_sequences) > 0
                     else None
                 ),
+                max_tokens=request_settings.max_tokens,
+                presence_penalty=request_settings.presence_penalty,
+                frequency_penalty=request_settings.frequency_penalty,
                 logit_bias=(
                     request_settings.token_selection_biases
                     if request_settings.token_selection_biases is not None

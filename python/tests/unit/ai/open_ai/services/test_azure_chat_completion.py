@@ -148,12 +148,13 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
             organization=None,
             messages=messages,
             temperature=complete_request_settings.temperature,
-            max_tokens=complete_request_settings.max_tokens,
             top_p=complete_request_settings.top_p,
-            presence_penalty=complete_request_settings.presence_penalty,
-            frequency_penalty=complete_request_settings.frequency_penalty,
             n=complete_request_settings.number_of_responses,
             stream=False,
+            stop=None,
+            max_tokens=complete_request_settings.max_tokens,
+            presence_penalty=complete_request_settings.presence_penalty,
+            frequency_penalty=complete_request_settings.frequency_penalty,
             logit_bias={},
         )
 
@@ -197,11 +198,61 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
             organization=None,
             messages=messages,
             temperature=complete_request_settings.temperature,
-            max_tokens=complete_request_settings.max_tokens,
             top_p=complete_request_settings.top_p,
-            presence_penalty=complete_request_settings.presence_penalty,
-            frequency_penalty=complete_request_settings.frequency_penalty,
             n=complete_request_settings.number_of_responses,
             stream=False,
+            stop=None,
+            max_tokens=complete_request_settings.max_tokens,
+            presence_penalty=complete_request_settings.presence_penalty,
+            frequency_penalty=complete_request_settings.frequency_penalty,
             logit_bias=token_bias,
+        )
+
+@pytest.mark.asyncio
+async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> None:
+    mock_openai = AsyncMock()
+    with patch(
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion.openai",
+        new=mock_openai,
+    ):
+        deployment_name = "test_deployment"
+        endpoint = "https://test-endpoint.com"
+        api_key = "test_api_key"
+        api_type = "azure"
+        api_version = "2023-03-15-preview"
+        logger = Logger("test_logger")
+        prompt = "hello world"
+        messages = [{"role": "user", "content": prompt}]
+        complete_request_settings = CompleteRequestSettings()
+
+        stop = ["!"]
+        complete_request_settings.stop_sequences = stop
+
+        azure_chat_completion = AzureChatCompletion(
+            deployment_name=deployment_name,
+            endpoint=endpoint,
+            api_key=api_key,
+            api_version=api_version,
+            logger=logger,
+        )
+
+        await azure_chat_completion.complete_async(prompt, complete_request_settings)
+
+        mock_openai.ChatCompletion.acreate.assert_called_once_with(
+            engine=deployment_name,
+            api_key=api_key,
+            api_type=api_type,
+            api_base=endpoint,
+            api_version=api_version,
+            organization=None,
+            messages=messages,
+            temperature=complete_request_settings.temperature,
+            top_p=complete_request_settings.top_p,
+            n=complete_request_settings.number_of_responses,
+            stream=False,
+            stop=complete_request_settings.stop_sequences,
+            max_tokens=complete_request_settings.max_tokens,
+            presence_penalty=complete_request_settings.presence_penalty,
+            frequency_penalty=complete_request_settings.frequency_penalty,
+            logit_bias={},
         )
