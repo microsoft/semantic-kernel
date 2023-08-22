@@ -31,18 +31,18 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// </summary>
     /// <param name="config">Instance of <see cref="AzureChatCompletionWithDataConfig"/> class with completion configuration.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Optional logger.</param>
+    /// <param name="loggerFactory">Instance of <see cref="ILoggerFactory"/> to use for logging.</param>
     public AzureChatCompletionWithData(
         AzureChatCompletionWithDataConfig config,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this.ValidateConfig(config);
 
         this._config = config;
 
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>

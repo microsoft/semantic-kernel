@@ -344,10 +344,10 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletionWithData Factory((ILogger Logger, KernelConfig Config) parameters) => new(
+        AzureChatCompletionWithData Factory(ILoggerFactory loggerFactory, KernelConfig kernelConfig) => new(
             config,
-            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-            parameters.Logger);
+            HttpClientProvider.GetHttpClient(kernelConfig, httpClient, loggerFactory),
+            loggerFactory);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
