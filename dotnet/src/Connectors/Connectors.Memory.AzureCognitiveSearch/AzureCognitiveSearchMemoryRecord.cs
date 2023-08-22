@@ -12,14 +12,49 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 /// Azure Cognitive Search record and index definition.
 /// Note: once defined, index cannot be modified.
 /// </summary>
+///
+/// <example>
+/// <code>
+/// var record = new AzureCognitiveSearchMemoryRecord("myId")
+/// {
+///     Text = "This is a sample text",
+///     Embedding = new ReadOnlyMemory&lt;float&gt;(new float[] { 0.1f, 0.2f, 0.3f }),
+///     Description = "Sample description",
+///     AdditionalMetadata = "{\"key\": \"value\"}",
+///     ExternalSourceName = "ExternalSource",
+///     IsReference = false
+/// };
+/// </code>
+/// </example>
 public class AzureCognitiveSearchMemoryRecord
 {
+    /// <summary>
+    /// ID field name.
+    /// </summary>
     public const string IdField = "Id";
+    /// <summary>
+    /// Text field name.
+    /// </summary>
     public const string TextField = "Text";
+    /// <summary>
+    /// Embedding field name.
+    /// </summary>
     public const string EmbeddingField = "Embedding";
+    /// <summary>
+    /// External source name field name.
+    /// </summary>
     public const string ExternalSourceNameField = "ExternalSourceName";
+    /// <summary>
+    /// Description field name.
+    /// </summary>
     public const string DescriptionField = "Description";
+    /// <summary>
+    /// Additional metadata field name.
+    /// </summary>
     public const string AdditionalMetadataField = "AdditionalMetadata";
+    /// <summary>
+    /// IsReference field name.
+    /// </summary>
     public const string IsReferenceField = "IsReference";
 
     /// <summary>
@@ -70,17 +105,32 @@ public class AzureCognitiveSearchMemoryRecord
     public bool IsReference { get; set; } = false;
 
     /// <summary>
-    /// Ctor required by JSON deserializer
+    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class.
+    /// Required by JSON deserializer.
     /// </summary>
     public AzureCognitiveSearchMemoryRecord()
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class with the specified Id.
+    /// </summary>
+    /// <param name="id">The record Id.</param>
     public AzureCognitiveSearchMemoryRecord(string id)
     {
         this.Id = EncodeId(id);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class with the specified parameters.
+    /// </summary>
+    /// <param name="id">The record Id.</param>
+    /// <param name="text">The content stored in the record.</param>
+    /// <param name="externalSourceName">The name of the external source.</param>
+    /// <param name="isReference">Whether the record references external information.</param>
+    /// <param name="embedding">The content embedding.</param>
+    /// <param name="description">The optional description of the content.</param>
+    /// <param name="additionalMetadata">The additional metadata.</param>
     public AzureCognitiveSearchMemoryRecord(
         string id,
         string text,
@@ -99,6 +149,10 @@ public class AzureCognitiveSearchMemoryRecord
         this.AdditionalMetadata = additionalMetadata;
     }
 
+    /// <summary>
+    /// Converts the current instance to a <see cref="MemoryRecordMetadata"/> object.
+    /// </summary>
+    /// <returns>A <see cref="MemoryRecordMetadata"/> object.</returns>
     public MemoryRecordMetadata ToMemoryRecordMetadata()
     {
         return new MemoryRecordMetadata(
@@ -110,6 +164,11 @@ public class AzureCognitiveSearchMemoryRecord
             additionalMetadata: this.AdditionalMetadata ?? string.Empty);
     }
 
+    /// <summary>
+    /// Creates a new <see cref="AzureCognitiveSearchMemoryRecord"/> object from the specified <see cref="MemoryRecord"/>.
+    /// </summary>
+    /// <param name="record">The <see cref="MemoryRecord"/> object.</param>
+    /// <returns>A new <see cref="AzureCognitiveSearchMemoryRecord"/> object.</returns>
     public static AzureCognitiveSearchMemoryRecord FromMemoryRecord(MemoryRecord record)
     {
         return new AzureCognitiveSearchMemoryRecord(
@@ -123,6 +182,11 @@ public class AzureCognitiveSearchMemoryRecord
         );
     }
 
+    /// <summary>
+    /// Converts the current instance to a <see cref="MemoryRecord"/> object.
+    /// </summary>
+    /// <param name="withEmbeddings">Whether to include embeddings in the resulting <see cref="MemoryRecord"/>.</param>
+    /// <returns>A <see cref="MemoryRecord"/> object.</returns>
     public MemoryRecord ToMemoryRecord(bool withEmbeddings = true)
     {
         return new MemoryRecord(
@@ -132,17 +196,23 @@ public class AzureCognitiveSearchMemoryRecord
     }
 
     /// <summary>
+    /// Encodes the specified Id using a URL-safe algorithm.
     /// ACS keys can contain only letters, digits, underscore, dash, equal sign, recommending
     /// to encode values with a URL-safe algorithm.
     /// </summary>
-    /// <param name="realId">Original Id</param>
-    /// <returns>Encoded id</returns>
+    /// <param name="realId">The original Id.</param>
+    /// <returns>The encoded Id.</returns>
     protected internal static string EncodeId(string realId)
     {
         var bytes = Encoding.UTF8.GetBytes(realId);
         return Convert.ToBase64String(bytes);
     }
 
+    /// <summary>
+    /// Decodes the specified encoded Id.
+    /// </summary>
+    /// <param name="encodedId">The encoded Id.</param>
+    /// <returns>The decoded Id.</returns>
     private protected static string DecodeId(string encodedId)
     {
         var bytes = Convert.FromBase64String(encodedId);

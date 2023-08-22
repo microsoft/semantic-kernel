@@ -9,7 +9,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Reliability;
-
+/// <summary>
+/// A delegating handler that provides retry logic for HTTP requests.
+/// </summary>
+/// <example>
+/// <code>
+/// var httpClient = new HttpClient(new DefaultHttpRetryHandler());
+/// var response = await httpClient.GetAsync("https://example.com");
+/// </code>
+/// </example>
 public sealed class DefaultHttpRetryHandler : DelegatingHandler
 {
     /// <summary>

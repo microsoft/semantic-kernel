@@ -6,10 +6,24 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
 /// Attribute to describe additional parameters used by a native function that aren't part of its method signature.
+/// <example>
+/// <code>
+/// [SKParameterAttribute("paramName", "Description of the parameter")]
+/// public void MyFunction(int input)
+/// {
+///     // ...
+/// }
+/// </code>
+/// </example>
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class SKParameterAttribute : Attribute
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SKParameterAttribute"/> class with the specified name and description.
+    /// </summary>
+    /// <param name="name">The name of the parameter.</param>
+    /// <param name="description">The description of the parameter.</param>
     public SKParameterAttribute(string name, string description)
     {
         this.Name = name;
@@ -17,12 +31,12 @@ public sealed class SKParameterAttribute : Attribute
     }
 
     /// <summary>
-    /// Gets or sets the name of the parameter.
+    /// Gets the name of the parameter.
     /// </summary>
     public string Name { get; }
 
     /// <summary>
-    /// Gets the context parameter description.
+    /// Gets the description of the parameter.
     /// </summary>
     public string Description { get; }
 

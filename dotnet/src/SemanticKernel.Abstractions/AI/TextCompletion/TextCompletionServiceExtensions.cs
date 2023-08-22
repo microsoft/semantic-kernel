@@ -9,6 +9,15 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
+/// <summary>
+/// Provides extension methods for working with <see cref="ITextCompletion"/> services.
+/// </summary>
+/// <example>
+/// <code>
+/// IAIServiceProvider serviceProvider = ...;
+/// ITextCompletion textCompletionService = serviceProvider.GetTextCompletionServiceOrDefault();
+/// </code>
+/// </example>
 public static class TextCompletionServiceExtensions
 {
     /// <summary>

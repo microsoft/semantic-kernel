@@ -8,15 +8,25 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 
 /// <summary>
-/// HTTP Schema for embedding response.
+/// Represents the response from the Hugging Face text embedding API.
 /// </summary>
+/// <example>
+/// Usage:
+/// <code>
+/// TextEmbeddingResponse response = GetTextEmbeddingResponse();
+/// IList&lt;TextEmbeddingResponse.EmbeddingVector&gt; embeddings = response.Embeddings;
+/// </code>
+/// </example>
 public sealed class TextEmbeddingResponse
 {
     /// <summary>
-    /// Model containing embedding.
+    /// Represents the embedding vector for a given text.
     /// </summary>
     public sealed class EmbeddingVector
     {
+        /// <summary>
+        /// The embedding vector as a ReadOnlyMemory of float values.
+        /// </summary>
         [JsonPropertyName("embedding")]
         [JsonConverter(typeof(ReadOnlyMemoryConverter))]
         public ReadOnlyMemory<float> Embedding { get; set; }

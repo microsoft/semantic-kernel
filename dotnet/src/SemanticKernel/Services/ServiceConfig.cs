@@ -4,16 +4,30 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Services;
 
+/// <summary>
+/// Represents a base class for service configurations.
+/// </summary>
+/// <remarks>
+/// Example usage:
+/// <code>
+/// public class MyServiceConfig : ServiceConfig
+/// {
+///     public MyServiceConfig() : base("MyServiceId")
+///     {
+///     }
+/// }
+/// </code>
+/// </remarks>
 public abstract class ServiceConfig : IServiceConfig
 {
     /// <summary>
-    /// An identifier used to map semantic functions to AI services,
+    /// Gets the identifier used to map semantic functions to AI services,
     /// decoupling prompts configurations from the actual provider and model used.
     /// </summary>
     public string ServiceId { get; }
 
     /// <summary>
-    /// Creates a new <see cref="ServiceConfig" /> with supplied values.
+    /// Initializes a new instance of the <see cref="ServiceConfig" /> class with the supplied values.
     /// </summary>
     /// <param name="serviceId">An identifier used to map semantic functions to AI services and models.</param>
     protected ServiceConfig(string serviceId)

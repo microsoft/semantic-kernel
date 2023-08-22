@@ -35,6 +35,10 @@ public sealed class Program
     /// </remarks>
     private static LogLevel LogLevel = LogLevel.Information;
 
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task Main()
     {
         var serviceProvider = GetServiceProvider();

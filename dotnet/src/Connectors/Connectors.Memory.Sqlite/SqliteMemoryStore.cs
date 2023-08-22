@@ -178,7 +178,10 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     #region protected ================================================================================
-
+    /// <summary>
+    /// Releases the unmanaged resources used by the SqliteMemoryStore and optionally releases the managed resources.
+    /// </summary>
+    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (!this._disposedValue)

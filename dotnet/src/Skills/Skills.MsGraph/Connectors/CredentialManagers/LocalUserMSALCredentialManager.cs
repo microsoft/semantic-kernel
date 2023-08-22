@@ -18,6 +18,12 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 /// <remarks>
 /// https://learn.microsoft.com/azure/active-directory/develop/msal-net-token-cache-serialization?tabs=desktop
 /// </remarks>
+/// <example>
+/// <code>
+/// var credentialManager = await LocalUserMSALCredentialManager.CreateAsync();
+/// string token = await credentialManager.GetTokenAsync(clientId, tenantId, scopes, redirectUri);
+/// </code>
+/// </example>
 public sealed class LocalUserMSALCredentialManager
 {
     /// <summary>
@@ -46,6 +52,10 @@ public sealed class LocalUserMSALCredentialManager
         this._cacheHelper.VerifyPersistence();
     }
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="LocalUserMSALCredentialManager"/> class.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the created <see cref="LocalUserMSALCredentialManager"/>.</returns>
     public static async Task<LocalUserMSALCredentialManager> CreateAsync()
     {
         // Initialize persistent storage for the token cache
@@ -71,6 +81,11 @@ public sealed class LocalUserMSALCredentialManager
     /// <summary>
     /// Acquires an access token for the specified client ID, tenant ID, scopes, and redirect URI.
     /// </summary>
+    /// <param name="clientId">The client ID of the application.</param>
+    /// <param name="tenantId">The tenant ID of the application.</param>
+    /// <param name="scopes">The scopes for which the access token is requested.</param>
+    /// <param name="redirectUri">The redirect URI of the application.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the access token.</returns>
     public async Task<string> GetTokenAsync(string clientId, string tenantId, string[] scopes, Uri redirectUri)
     {
         Ensure.NotNullOrWhitespace(clientId, nameof(clientId));

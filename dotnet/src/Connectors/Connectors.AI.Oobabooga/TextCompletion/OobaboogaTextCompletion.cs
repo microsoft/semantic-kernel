@@ -23,8 +23,19 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// Oobabooga text completion service API.
 /// Adapted from <see href="https://github.com/oobabooga/text-generation-webui/tree/main/api-examples"/>
 /// </summary>
+/// <example>
+/// <code>
+/// var endpoint = new Uri("https://api.oobabooga.com");
+/// var oobaboogaTextCompletion = new OobaboogaTextCompletion(endpoint);
+/// var requestSettings = new CompleteRequestSettings { MaxTokens = 50, Temperature = 0.7 };
+/// var completions = await oobaboogaTextCompletion.GetCompletionsAsync("Once upon a time", requestSettings);
+/// </code>
+/// </example>
 public sealed class OobaboogaTextCompletion : ITextCompletion
 {
+    /// <summary>
+    /// The URI path for blocking API requests.
+    /// </summary>
     public const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
 
@@ -42,7 +53,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private long _lastCallTicks = long.MaxValue;
 
     /// <summary>
-    /// Controls the size of the buffer used to received websocket packets
+    /// Controls the size of the buffer used to receive websocket packets.
     /// </summary>
     public int WebSocketBufferSize { get; set; } = 2048;
 

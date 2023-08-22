@@ -11,7 +11,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-
+/// <summary>
+/// Base class for Azure OpenAI clients.
+/// </summary>
+/// <example>
+/// <code>
+/// var client = new CustomAzureOpenAIClient("modelId", "endpoint", "apiKey");
+/// </code>
+/// </example>
 public abstract class AzureOpenAIClientBase : ClientBase
 {
     /// <summary>
@@ -20,7 +27,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     private protected override OpenAIClient Client { get; }
 
     /// <summary>
-    /// Creates a new Azure OpenAI client instance using API Key auth
+    /// Initializes a new instance of the <see cref="AzureOpenAIClientBase"/> class using API Key authentication.
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -50,7 +57,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     }
 
     /// <summary>
-    /// Creates a new Azure OpenAI client instance supporting AAD auth
+    /// Initializes a new instance of the <see cref="AzureOpenAIClientBase"/> class supporting AAD authentication.
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
@@ -79,8 +86,8 @@ public abstract class AzureOpenAIClientBase : ClientBase
     }
 
     /// <summary>
-    /// Creates a new Azure OpenAI client instance using the specified OpenAIClient
-    /// Note: instances created this way might not have the  default diagnostics settings,
+    /// Initializes a new instance of the <see cref="AzureOpenAIClientBase"/> class using the specified OpenAIClient.
+    /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
@@ -101,6 +108,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <summary>
     /// Options used by the Azure OpenAI client, e.g. User Agent.
     /// </summary>
+    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
     private static OpenAIClientOptions GetClientOptions()
     {
         return new OpenAIClientOptions

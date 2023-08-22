@@ -15,6 +15,15 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.Orchestration;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// Provides extension methods for the <see cref="SKContext"/> class to work with sequential planners.
+/// </summary>
+/// <example>
+/// <code>
+/// var context = new SKContext();
+/// var manual = await context.GetFunctionsManualAsync();
+/// </code>
+/// </example>
 public static class SKContextSequentialPlannerExtensions
 {
     internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";

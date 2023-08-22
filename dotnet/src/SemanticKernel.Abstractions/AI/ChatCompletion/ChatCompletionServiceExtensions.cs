@@ -9,6 +9,15 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
+/// <summary>
+/// Provides extension methods for working with chat completion services.
+/// </summary>
+/// <example>
+/// <code>
+/// IAIServiceProvider serviceProvider = ...;
+/// IChatCompletion chatCompletionService = serviceProvider.GetChatCompletionService();
+/// </code>
+/// </example>
 public static class ChatCompletionServiceExtensions
 {
     /// <summary>

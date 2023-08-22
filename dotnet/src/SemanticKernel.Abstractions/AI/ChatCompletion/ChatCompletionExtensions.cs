@@ -6,18 +6,37 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
-
+/// <summary>
+/// Provides extension methods for the IChatCompletion interface.
+/// </summary>
+/// <example>
+/// <code>
+/// IChatCompletion chatCompletion = ...;
+/// ChatHistory chatHistory = ...;
+/// ChatRequestSettings requestSettings = ...;
+/// CancellationToken cancellationToken = ...;
+///
+/// // Generate a single chat message
+/// string message = await chatCompletion.GenerateMessageAsync(chatHistory, requestSettings, cancellationToken);
+///
+/// // Generate a stream of chat messages
+/// await foreach (string messageStream in chatCompletion.GenerateMessageStreamAsync(chatHistory, requestSettings, cancellationToken))
+/// {
+///     Console.WriteLine(messageStream);
+/// }
+/// </code>
+/// </example>
 public static class ChatCompletionExtensions
 {
     /// <summary>
-    /// Generate a new chat message
+    /// Generates a new chat message as an asynchronous stream.
     /// </summary>
-    /// <param name="chatCompletion">Target interface to extend</param>
-    /// <param name="chat">Chat history</param>
-    /// <param name="requestSettings">AI request settings</param>
-    /// <param name="cancellationToken">Async cancellation token</param>
-    /// <remarks>This extension does not support multiple prompt results (Only the first will be returned)</remarks>
-    /// <returns>Stream the generated chat message in string format</returns>
+    /// <param name="chatCompletion">The target IChatCompletion interface to extend.</param>
+    /// <param name="chat">The chat history.</param>
+    /// <param name="requestSettings">The AI request settings (optional).</param>
+    /// <param name="cancellationToken">The asynchronous cancellation token (optional).</param>
+    /// <remarks>This extension does not support multiple prompt results (only the first will be returned).</remarks>
+    /// <returns>An asynchronous stream of the generated chat message in string format.</returns>
     public static async IAsyncEnumerable<string> GenerateMessageStreamAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
@@ -35,14 +54,14 @@ public static class ChatCompletionExtensions
     }
 
     /// <summary>
-    /// Generate a new chat message
+    /// Generates a new chat message asynchronously.
     /// </summary>
-    /// <param name="chatCompletion">Target interface to extend</param>
-    /// <param name="chat">Chat history</param>
-    /// <param name="requestSettings">AI request settings</param>
-    /// <param name="cancellationToken">Async cancellation token</param>
-    /// <remarks>This extension does not support multiple prompt results (Only the first will be returned)</remarks>
-    /// <returns>Generated chat message in string format</returns>
+    /// <param name="chatCompletion">The target IChatCompletion interface to extend.</param>
+    /// <param name="chat">The chat history.</param>
+    /// <param name="requestSettings">The AI request settings (optional).</param>
+    /// <param name="cancellationToken">The asynchronous cancellation token (optional).</param>
+    /// <remarks>This extension does not support multiple prompt results (only the first will be returned).</remarks>
+    /// <returns>A task representing the generated chat message in string format.</returns>
     public static async Task<string> GenerateMessageAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,

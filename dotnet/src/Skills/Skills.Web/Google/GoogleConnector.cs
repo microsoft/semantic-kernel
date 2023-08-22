@@ -15,7 +15,16 @@ namespace Microsoft.SemanticKernel.Skills.Web.Google;
 
 /// <summary>
 /// Google search connector.
+/// Provides methods to search using Google Custom Search API.
 /// </summary>
+/// <example>
+/// <code>
+/// var apiKey = "your_api_key";
+/// var searchEngineId = "your_search_engine_id";
+/// var googleConnector = new GoogleConnector(apiKey, searchEngineId);
+/// var searchResults = await googleConnector.SearchAsync("example query", 10, 0, CancellationToken.None);
+/// </code>
+/// </example>
 public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
     private readonly ILogger _logger;
@@ -23,11 +32,11 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     private readonly string? _searchEngineId;
 
     /// <summary>
-    /// Google search connector.
+    /// Initializes a new instance of the <see cref="GoogleConnector"/> class.
     /// </summary>
-    /// <param name="apiKey">Google Custom Search API (looks like "ABcdEfG1...")</param>
-    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
-    /// <param name="logger">Optional logger</param>
+    /// <param name="apiKey">Google Custom Search API key (looks like "ABcdEfG1...").</param>
+    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...").</param>
+    /// <param name="logger">Optional logger.</param>
     public GoogleConnector(
         string apiKey,
         string searchEngineId,
@@ -37,11 +46,11 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <summary>
-    /// Google search connector.
+    /// Initializes a new instance of the <see cref="GoogleConnector"/> class.
     /// </summary>
-    /// <param name="initializer">The connector initializer</param>
-    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
-    /// <param name="logger">Optional logger</param>
+    /// <param name="initializer">The connector initializer.</param>
+    /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...").</param>
+    /// <param name="logger">Optional logger.</param>
     public GoogleConnector(
         BaseClientService.Initializer initializer,
         string searchEngineId,
@@ -79,6 +88,10 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         return results.Items.Select(item => item.Snippet);
     }
 
+    /// <summary>
+    /// Releases the unmanaged resources used by the GoogleConnector and optionally releases the managed resources.
+    /// </summary>
+    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     private void Dispose(bool disposing)
     {
         if (disposing)
@@ -87,6 +100,9 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         }
     }
 
+    /// <summary>
+    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+    /// </summary>
     public void Dispose()
     {
         this.Dispose(disposing: true);

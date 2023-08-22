@@ -164,16 +164,31 @@ public static class GPT3Tokenizer
         }
     }
 
+    /// <summary>
+    /// Tokenizes the text in the provided StringBuilder.
+    /// </summary>
+    /// <param name="stringBuilder">StringBuilder containing the text to tokenize</param>
+    /// <returns>List of token IDs</returns>
     public static List<int> Encode(StringBuilder? stringBuilder) =>
         stringBuilder is not null
             ? Encode(stringBuilder.ToString())
             : new List<int>();
 
+    /// <summary>
+    /// Tokenizes the text in the provided char array.
+    /// </summary>
+    /// <param name="chars">Char array containing the text to tokenize</param>
+    /// <returns>List of token IDs</returns>
     public static List<int> Encode(char[]? chars) =>
         chars is not null
             ? Encode(new string(chars))
             : new List<int>();
 
+    /// <summary>
+    /// Tokenizes the text in the provided IEnumerable of chars.
+    /// </summary>
+    /// <param name="chars">IEnumerable of chars containing the text to tokenize</param>
+    /// <returns>List of token IDs</returns>
     public static List<int> Encode(IEnumerable<char>? chars) =>
         chars is not null
             ? Encode(string.Concat(chars))

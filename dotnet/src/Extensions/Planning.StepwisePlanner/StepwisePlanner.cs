@@ -23,9 +23,9 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// A planner that creates a Stepwise plan using Mrkl systems.
 /// </summary>
-/// <remark>
+/// <remarks>
 /// An implementation of a Mrkl system as described in https://arxiv.org/pdf/2205.00445.pdf
-/// </remark>
+/// </remarks>
 public class StepwisePlanner : IStepwisePlanner
 {
     /// <summary>
@@ -94,6 +94,13 @@ public class StepwisePlanner : IStepwisePlanner
         return plan;
     }
 
+    /// <summary>
+    /// Execute a plan asynchronously.
+    /// </summary>
+    /// <param name="question">The question to answer.</param>
+    /// <param name="functionDescriptions">List of tool descriptions.</param>
+    /// <param name="context">The context for the execution.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [SKFunction, SKName("ExecutePlan"), Description("Execute a plan")]
     public async Task<SKContext> ExecutePlanAsync(
         [Description("The question to answer")]
@@ -187,6 +194,11 @@ public class StepwisePlanner : IStepwisePlanner
         return context;
     }
 
+    /// <summary>
+    /// Parse the result of the stepwise plan execution.
+    /// </summary>
+    /// <param name="input">The input string to parse.</param>
+    /// <returns>A <see cref="SystemStep"/> object containing the parsed result.</returns>
     public virtual SystemStep ParseResult(string input)
     {
         var result = new SystemStep

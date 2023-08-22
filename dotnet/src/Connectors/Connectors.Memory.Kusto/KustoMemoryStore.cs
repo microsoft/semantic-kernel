@@ -297,12 +297,19 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes the KustoMemoryStore instance.
+    /// </summary>
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Disposes the KustoMemoryStore instance.
+    /// </summary>
+    /// <param name="disposing">Indicates whether the method call comes from a Dispose method (its value is true) or from a finalizer (its value is false).</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
