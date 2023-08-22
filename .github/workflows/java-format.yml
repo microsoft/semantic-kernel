@@ -17,6 +17,7 @@ jobs:
     permissions:
       issues: write
       pull-requests: write
+      contents: write
 
     steps:
       - name: Check for command
