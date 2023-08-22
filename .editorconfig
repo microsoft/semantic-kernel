@@ -163,7 +163,6 @@ dotnet_diagnostic.CA1032.severity = none # We're using RCS1194 which seems to co
 dotnet_diagnostic.CA1034.severity = none # Do not nest type. Alternatively, change its accessibility so that it is not externally visible
 dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for us
 dotnet_diagnostic.CA1303.severity = none # Do not pass literals as localized parameters
-dotnet_diagnostic.CS1591.severity = warning # Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
