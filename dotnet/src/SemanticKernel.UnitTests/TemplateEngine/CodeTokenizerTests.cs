@@ -132,12 +132,16 @@ public class CodeTokenizerTests
         var firstBlock = blocks1[0];
         var secondBlock = blocks1[1] as NamedArgBlock;
         var thirdBlock = blocks1[2] as NamedArgBlock;
+
         Assert.Equal("x.y", firstBlock.Content);
         Assert.Equal(BlockTypes.FunctionId, firstBlock.Type);
+
         Assert.Equal("first=$foo", secondBlock?.Content);
         Assert.Equal(BlockTypes.NamedArg, secondBlock?.Type);
         Assert.Equal("first", secondBlock?.Name);
         Assert.Equal("fooValue", secondBlock?.GetValue(parameters));
+
+        Assert.Equal("second='bar'", thirdBlock?.Content);
         Assert.Equal(BlockTypes.NamedArg, thirdBlock?.Type);
         Assert.Equal("second", thirdBlock?.Name);
         Assert.Equal("bar", thirdBlock?.GetValue(parameters));
