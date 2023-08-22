@@ -22,8 +22,12 @@ pre-commit = "3.3.3"
 black = {version = "23.7.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
 pytest = "7.4.0"
-ruff = "0.0.283"
+ruff = "0.0.285"
 pytest-asyncio = "0.21.1"
+
+[tool.poetry.group.google_palm.dependencies]
+google-generativeai = { version = "^0.1.0", markers = "python_version >= '3.9'" }
+grpcio-status = { version = "^1.53.0", markers = "python_version >= '3.9'" }
 
 [tool.poetry.group.hugging_face.dependencies]
 transformers = "^4.28.1"
@@ -52,7 +56,7 @@ psycopg = "^3.1.9"
 psycopg-binary = "^3.1.9"
 
 [tool.poetry.group.azure_cognitive_search.dependencies]
-azure-search-documents = {version = "11.4.0b6", allow-prereleases = true}
+azure-search-documents = {version = "11.4.0b8", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
 

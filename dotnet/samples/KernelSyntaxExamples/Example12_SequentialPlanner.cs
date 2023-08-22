@@ -37,7 +37,7 @@ internal static class Example12_SequentialPlanner
         {
             await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
         }
-        catch (PlanningException e)
+        catch (SKException e)
         {
             Console.WriteLine(e.Message);
             // Create plan error: Not possible to create plan for goal with available functions.
@@ -69,7 +69,7 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Poetry Plan ========");
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
@@ -260,7 +260,7 @@ internal static class Example12_SequentialPlanner
     private static IKernel InitializeKernelAndPlanner(out SequentialPlanner planner, int maxTokens = 1024)
     {
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
@@ -277,7 +277,7 @@ internal static class Example12_SequentialPlanner
         // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
         // use these to generate and store embeddings for the function descriptions.
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,
