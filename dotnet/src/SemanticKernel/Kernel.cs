@@ -212,12 +212,13 @@ public sealed class Kernel : IKernel, IDisposable
                 if (semanticFunction is not null)
                 {
                     semanticFunction.AddDefaultValues(context.Variables);
-                    renderedPrompt = await semanticFunction._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+                    renderedPrompt = await semanticFunction.RenderPromptTemplateAsync(context, cancellationToken).ConfigureAwait(false);
                 }
 
-                if (!this.OnFunctionInvoking(functionDetails, context, renderedPrompt))
+                var cancelled = this.OnFunctionInvoking(functionDetails, context, renderedPrompt);
+                if (cancelled)
                 {
-                    this.Logger.LogInformation("Function invocation was cancelled during pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, f.SkillName, f.Name);
+                    this._logger.LogInformation("Execution was cancelled during pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, f.SkillName, f.Name);
                     break;
                 }
 
@@ -363,12 +364,12 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <summary>
-    /// Execute the FunctionInvoking event handlers and returns true if no cancellation was attempted.
+    /// Execute the FunctionInvoking event handlers and returns true if cancellation was attempted.
     /// </summary>
     /// <param name="functionView">Function view details</param>
     /// <param name="context">SKContext before function invocation</param>
     /// <param name="renderedPrompt">Rendered prompt prior to semantic function invocation</param>
-    /// <returns>Returns true if no cancellation was attempted.</returns>
+    /// <returns>Returns true if cancellation was attempted.</returns>
     private bool OnFunctionInvoking(FunctionView functionView, SKContext context, string? renderedPrompt)
     {
         if (this.FunctionInvoking is not null)
@@ -376,10 +377,10 @@ public sealed class Kernel : IKernel, IDisposable
             var args = new FunctionInvokingEventArgs(functionView, context, renderedPrompt);
             this.FunctionInvoking.Invoke(this, args);
 
-            return !args.Cancel;
+            return args.Cancel;
         }
 
-        return true;
+        return false;
     }
 
     /// <summary>

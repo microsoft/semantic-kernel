@@ -46,6 +46,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public IList<ParameterView> Parameters { get; }
 
     /// <summary>
+    /// Prompt template engine.
+    /// </summary>
+    public IPromptTemplate PromptTemplate { get; }
+
+    /// <summary>
     /// Create a native function instance, given a semantic function configuration.
     /// </summary>
     /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
@@ -88,12 +93,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> InvokeAsync(
+    public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InternalInvokeAsync(context, settings, null, cancellationToken);
+        var renderedPrompt = await this.RenderPromptTemplateAsync(context, cancellationToken).ConfigureAwait(false);
+        return await this.InternalInvokeAsync(context, settings, renderedPrompt, cancellationToken).ConfigureAwait(false);
     }
 
     internal async Task<SKContext> InternalInvokeAsync(
@@ -168,7 +174,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(SemanticFunction)) : NullLogger.Instance;
 
-        this._promptTemplate = template;
+        this.PromptTemplate = template;
         this.Parameters = template.GetParameters();
         Verify.ParametersUniqueness(this.Parameters);
 
@@ -184,7 +190,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private readonly ILogger _logger;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
-    public IPromptTemplate _promptTemplate { get; }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
@@ -207,11 +212,16 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
     }
 
-    private async Task<SKContext> RunPromptAsync(
+    internal Task<string> RenderPromptTemplateAsync(SKContext context, CancellationToken cancellationToken)
+    {
+        return this.PromptTemplate.RenderAsync(context, cancellationToken);
+    }
+
+    internal async Task<SKContext> RunPromptAsync(
         ITextCompletion? client,
         CompleteRequestSettings? requestSettings,
         SKContext context,
-        string? renderedPrompt,
+        string renderedPrompt,
         CancellationToken cancellationToken)
     {
         Verify.NotNull(client);
@@ -219,10 +229,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         try
         {
-            if (renderedPrompt is null)
-            {
-                renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            }
             var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
