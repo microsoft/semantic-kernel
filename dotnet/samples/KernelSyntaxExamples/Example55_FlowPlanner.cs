@@ -28,7 +28,7 @@ using Microsoft.SemanticKernel.Skills.Web.Bing;
 public static class Example55_FlowPlanner
 {
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
-name: Example53_FlowPlanner_Flow
+name: FlowPlanner_Example_Flow
 goal: answer question and send email
 steps:
   - goal: Who is the current president of the United States? What is his current age divided by 2
@@ -51,7 +51,59 @@ steps:
     provides:
       - email
 ");
-    public static async Task RunAsync()
+
+    public static Task RunAsync()
+    {
+        return RunExampleAsync();
+        // return RunInteractiveAsync();
+    }
+
+    public static async Task RunInteractiveAsync()
+    {
+        var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
+        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        Dictionary<object, string?> skills = new()
+        {
+            { webSearchEngineSkill, "WebSearch" },
+            { new TimeSkill(), "time" }
+        };
+
+        FlowPlanner planner = new(GetKernelBuilder(), new FlowStatusProvider(new VolatileMemoryStore()), skills);
+        var sessionId = Guid.NewGuid().ToString();
+
+        Console.WriteLine("*****************************************************");
+        Stopwatch sw = new();
+        sw.Start();
+        Console.WriteLine("Flow: " + s_flow.Name);
+        SKContext? result = null;
+        string? input = null;// "Execute the flow";// can this be empty?
+        do
+        {
+            if (result is not null)
+            {
+                Console.WriteLine("Assistant: " + result.Result);
+            }
+
+            if (input is null)
+            {
+                input = string.Empty;
+            }
+            else if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("User: ");
+                input = Console.ReadLine() ?? string.Empty;
+            }
+
+            result = await planner.ExecuteFlowAsync(s_flow, sessionId, input);
+        } while (!string.IsNullOrEmpty(result.Result) && result.Result != "[]");
+
+        Console.WriteLine("Assistant: " + result.Variables["answer"]);
+
+        Console.WriteLine("Time Taken: " + sw.Elapsed);
+        Console.WriteLine("*****************************************************");
+    }
+
+    public static async Task RunExampleAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
@@ -205,7 +257,7 @@ If I cannot answer, say that I don't know.
     }
 }
 //*****************************************************
-//Flow: Example55_FlowPlanner_Flow
+//Flow: FlowPlanner_Example_Flow
 //Assistant: ["Please provide a valid email address in the following format: example@example.com"]
 //        Answer: The current president of the United States is Joe Biden. His current age divided by 2 is 39.
 //User: my email is bad*email&address
