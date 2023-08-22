@@ -115,8 +115,6 @@ public class CodeTokenizerTests
         Assert.Equal(BlockTypes.Value, blocks3[1].Type);
     }
 
-    // TODO implement test spaces between equals sign
-
     [Fact]
     public void ItParsesMultiNamedArgFunctionCalls()
     {
