@@ -18,9 +18,9 @@ internal static class DictionaryExtensions
     /// <param name="key">The name.</param>
     /// <param name="value">The value.</param>
     /// <returns>The final value.</returns>
-    public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+    public static TValue? GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
     {
-        if (dictionary.TryGetValue(key, out TValue foundValue))
+        if (dictionary.TryGetValue(key, out TValue? foundValue))
         {
             return foundValue;
         }
