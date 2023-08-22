@@ -15,12 +15,11 @@ class WriterSkillFake:
     def translate(self, language: str) -> str:
         return f"Translate: {language}"
 
-    @sk_function(
-        description="Write an outline for a novel",
-        name="NovelOutline")
+    @sk_function(description="Write an outline for a novel", name="NovelOutline")
     @sk_function_context_parameter(
         name="endMarker",
-        description="The marker to use to end each chapter.",default_value="<!--===ENDPART===-->"
-        )
+        description="The marker to use to end each chapter.",
+        default_value="<!--===ENDPART===-->",
+    )
     def write_novel_outline(self, input: str) -> str:
         return f"Novel outline: {input}"
