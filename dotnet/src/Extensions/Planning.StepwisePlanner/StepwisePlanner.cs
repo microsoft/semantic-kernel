@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -95,6 +96,7 @@ public class StepwisePlanner : IStepwisePlanner
     }
 
     [SKFunction, SKName("ExecutePlan"), Description("Execute a plan")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design.")]
     public async Task<SKContext> ExecutePlanAsync(
         [Description("The question to answer")]
         string question,
@@ -146,7 +148,6 @@ public class StepwisePlanner : IStepwisePlanner
                     this._logger?.LogTrace("Action: {Action}({ActionVariables}). Iteration: {Iteration}.",
                         nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables), i + 1);
 
-#pragma warning disable CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
                     try
                     {
                         await Task.Delay(this.Config.MinIterationTimeMs).ConfigureAwait(false);
@@ -166,7 +167,6 @@ public class StepwisePlanner : IStepwisePlanner
                         nextStep.Observation = $"Error invoking action {nextStep.Action} : {ex.Message}";
                         this._logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Action);
                     }
-#pragma warning restore CA1031 // Do not catch general exception types. The code will change in one of the next PRs to allow SK to throw exceptions instead of swallowing them. As a result, this suppression will be removed as well.
 
                     this._logger?.LogTrace("Observation: {Observation}", nextStep.Observation);
                 }
