@@ -118,6 +118,27 @@
         "cwd": "${workspaceFolder}/python"
       }
     },
+    // Formatting
+    {
+      "label": "format (contributing-python-ruff)",
+      "command": "poetry",
+      "type": "shell",
+      "group":"build",
+      "args": ["run", "ruff", "check", "."],
+      "options": {
+        "cwd": "${workspaceFolder}/python"
+      }
+    },
+    {
+      "label": "validate (contributing-python)",
+      "command": "poetry",
+      "type": "shell",
+      "group":"build",
+      "args": ["run", "pre-commit", "run", "-c", ".conf/.pre-commit-config.yaml", "-a"],
+      "options": {
+        "cwd": "${workspaceFolder}/python"
+      }
+    },
     // ***************
     // Kernel (dotnet)
     // ***************
