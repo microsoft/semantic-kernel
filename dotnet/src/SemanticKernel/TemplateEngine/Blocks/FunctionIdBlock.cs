@@ -16,8 +16,8 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
     internal string FunctionName { get; } = string.Empty;
 
-    public FunctionIdBlock(string? text, ILogger? logger = null)
-        : base(text?.Trim(), logger)
+    public FunctionIdBlock(string? text, ILoggerFactory? loggerFactory = null)
+        : base(text?.Trim(), loggerFactory)
     {
         var functionNameParts = this.Content.Split('.');
         if (functionNameParts.Length > 2)
