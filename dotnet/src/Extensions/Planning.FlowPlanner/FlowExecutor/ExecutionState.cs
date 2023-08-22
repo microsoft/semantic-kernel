@@ -58,7 +58,7 @@ public sealed class ExecutionState
         public void AddOrUpdateVariable(int executionIndex, string key, string value)
         {
             var output = this.Output.GetOrAdd(key, new List<string>());
-            if (output.Count <= executionIndex)
+            if (output!.Count <= executionIndex)
             {
                 output.Add(value);
             }
