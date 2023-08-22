@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -10,7 +9,7 @@ namespace Microsoft.SemanticKernel.Events;
 /// <summary>
 /// Event arguments available to the Kernel.FunctionInvoking event.
 /// </summary>
-public sealed class FunctionInvokingEventArgs : EventArgs
+public sealed class FunctionInvokingEventArgs : CancelEventArgs
 {
     internal FunctionInvokingEventArgs(FunctionView functionView, SKContext context, string? prompt)
     {
@@ -19,23 +18,6 @@ public sealed class FunctionInvokingEventArgs : EventArgs
         this.FunctionView = functionView;
         this.SKContext = context;
         this.Prompt = prompt;
-    }
-
-    /// <summary>
-    /// Set to true to cancel all further execution.
-    /// </summary>
-    public bool Cancel
-    {
-        get { return this._cancel; }
-        set
-        {
-            if (this._cancel && !value)
-            {
-                // Cannot unskip
-                throw new SKException("Cancel cannot be unset by further handlers.");
-            }
-            this._cancel = value;
-        }
     }
 
     /// <summary>
@@ -55,6 +37,4 @@ public sealed class FunctionInvokingEventArgs : EventArgs
     /// May be null for native functions.
     /// </remarks>
     public string? Prompt { get; }
-
-    private bool _cancel;
 }

@@ -377,7 +377,7 @@ public sealed class Kernel : IKernel, IDisposable
             var args = new FunctionInvokingEventArgs(functionView, context, renderedPrompt);
             this.FunctionInvoking.Invoke(this, args);
 
-            return args.Cancel;
+            return args.CancelToken.IsCancellationRequested;
         }
 
         return false;

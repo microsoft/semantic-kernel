@@ -51,7 +51,7 @@ public static class Example55_FunctionEventHandlers
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
             Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
-            e.Cancel = true;
+            e.Cancel();
         }
 
         void MyPreHandler2(object? sender, FunctionInvokingEventArgs e)
@@ -81,7 +81,7 @@ public static class Example55_FunctionEventHandlers
         {
             Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Cancel function execution");
 
-            e.Cancel = true;
+            e.Cancel();
         };
 
         result = await kernel.RunAsync(input, excuseFunction);
