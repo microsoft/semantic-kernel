@@ -35,7 +35,7 @@ const InteractWithGraph: FC<IData> = ({ uri, config, onBack }) => {
                     inputs: [{ key: 'filePath', value: path }],
                 },
                 'documentskill',
-                'appendtextasync',
+                'appendtext',
             );
 
             //upload to onedrive
@@ -46,7 +46,7 @@ const InteractWithGraph: FC<IData> = ({ uri, config, onBack }) => {
                     inputs: [{ key: 'destinationPath', value: destinationPath }],
                 },
                 'clouddriveskill',
-                'uploadfileasync',
+                'uploadfile',
             );
         } catch (e) {
             alert('Something went wrong.\n\nDetails:\n' + e);
@@ -59,9 +59,9 @@ const InteractWithGraph: FC<IData> = ({ uri, config, onBack }) => {
                 config,
                 { value: destinationPath },
                 'clouddriveskill',
-                'createlinkasync',
+                'createlink',
             );
-            var myEmail = await sk.invokeAsync(config, { value: '' }, 'emailskill', 'getmyemailaddressasync');
+            var myEmail = await sk.invokeAsync(config, { value: '' }, 'emailskill', 'getmyemailaddress');
 
             await sk.invokeAsync(
                 config,
@@ -79,7 +79,7 @@ const InteractWithGraph: FC<IData> = ({ uri, config, onBack }) => {
                     ],
                 },
                 'emailskill',
-                'sendemailasync',
+                'sendemail',
             );
         } catch (e) {
             alert('Something went wrong.\n\nDetails:\n' + e);
@@ -103,7 +103,7 @@ const InteractWithGraph: FC<IData> = ({ uri, config, onBack }) => {
                     ],
                 },
                 'tasklistskill',
-                'addtaskasync',
+                'addtask',
             );
         } catch (e) {
             alert('Something went wrong.\n\nDetails:\n' + e);
