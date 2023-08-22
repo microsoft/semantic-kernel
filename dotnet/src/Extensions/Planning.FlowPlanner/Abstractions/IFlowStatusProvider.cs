@@ -15,19 +15,19 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 public interface IFlowStatusProvider
 {
     /// <summary>
-    /// Get the variables available in current execution session.
+    /// Get the state of current execution session.
     /// </summary>
     /// <param name="sessionId">The session id</param>
     /// <returns>The variables</returns>
-    Task<Dictionary<string, string>> GetVariables(string sessionId);
+    Task<ExecutionState> GetExecutionStateAsync(string sessionId);
 
     /// <summary>
-    /// Save the variables for current execution session.
+    /// Save the state for current execution session.
     /// </summary>
     /// <param name="sessionId">The session id</param>
-    /// <param name="variables">The variables</param>
+    /// <param name="state">The execution state</param>
     /// <returns>Task</returns>
-    Task SaveVariables(string sessionId, Dictionary<string, string> variables);
+    Task SaveExecutionStateAsync(string sessionId, ExecutionState state);
 
     /// <summary>
     /// Get the chat history for current execution session.

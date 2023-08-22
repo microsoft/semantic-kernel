@@ -30,38 +30,37 @@ public class FlowStatusProvider : IFlowStatusProvider
         }
     }
 
-    public async Task<Dictionary<string, string>> GetVariables(string sessionId)
+    public async Task<ExecutionState> GetExecutionStateAsync(string sessionId)
     {
-        var result = await (this._memoryStore.GetAsync(this._collectionName, this.GetFlowStatusStorageKey(sessionId))).ConfigureAwait(false);
+        var result = await (this._memoryStore.GetAsync(this._collectionName, this.GetExecutionStateStorageKey(sessionId))).ConfigureAwait(false);
         var text = result?.Metadata.Text ?? string.Empty;
 
         if (!string.IsNullOrEmpty(text))
         {
             try
             {
-                return JsonSerializer.Deserialize<Dictionary<string, string>>(text) ??
-                       new Dictionary<string, string>();
+                return JsonSerializer.Deserialize<ExecutionState>(text) ?? new ExecutionState();
             }
             catch
             {
                 throw new InvalidOperationException(
-                    $"Failed to deserialize flow status for session {sessionId}, data={text}");
+                    $"Failed to deserialize execution state for sessionId={sessionId}, data={text}");
             }
         }
         else
         {
-            return new Dictionary<string, string>();
+            return new ExecutionState();
         }
     }
 
-    public async Task SaveVariables(string sessionId, Dictionary<string, string> variables)
+    public async Task SaveExecutionStateAsync(string sessionId, ExecutionState state)
     {
-        var json = JsonSerializer.Serialize(variables);
-        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetFlowStatusStorageKey(sessionId), json))
+        var json = JsonSerializer.Serialize(state);
+        await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetExecutionStateStorageKey(sessionId), json))
             .ConfigureAwait(false);
     }
 
-    private string GetFlowStatusStorageKey(string sessionId)
+    private string GetExecutionStateStorageKey(string sessionId)
     {
         return $"FlowStatus_{sessionId}";
     }
@@ -137,6 +136,6 @@ public class FlowStatusProvider : IFlowStatusProvider
 
     private MemoryRecord CreateMemoryRecord(string key, string text)
     {
-        return MemoryRecord.LocalRecord(key, text, null, Embedding<float>.Empty);
+        return MemoryRecord.LocalRecord(key, text, null, ReadOnlyMemory<float>.Empty);
     }
 }

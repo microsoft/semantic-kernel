@@ -1,4 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Text.Json.Serialization;
+
 namespace Microsoft.SemanticKernel.Planning.Flow;
 
 using System.IO;
@@ -24,6 +27,7 @@ public static class FlowSerializer
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
         };
 
         return JsonSerializer.Deserialize<Flow>(json, options);

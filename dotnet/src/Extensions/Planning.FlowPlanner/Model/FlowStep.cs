@@ -42,6 +42,11 @@ public class FlowStep
     public string Goal { get; set; }
 
     /// <summary>
+    /// <see cref="CompletionType"/> of the step
+    /// </summary>
+    public CompletionType CompletionType { get; set; } = CompletionType.Once;
+
+    /// <summary>
     /// Parameters required for executing the step
     /// </summary>
     public List<string> Requires
@@ -106,6 +111,12 @@ public class FlowStep
                 return this._skillTypes.Select(kvp =>
                 {
                     var skillName = kvp.Key;
+                    var globalSkill = globalSkills.FirstOrDefault(_ => _.Key.GetType().Name.Contains(skillName)).Key;
+                    if (globalSkill != null)
+                    {
+                        return globalSkill;
+                    }
+
                     var type = kvp.Value;
                     if (type != null)
                     {
@@ -125,8 +136,8 @@ public class FlowStep
                         }
                     }
 
-                    return globalSkills.FirstOrDefault(_ => _.Key.GetType().Name.Contains(skillName)).Key;
-                }).Where(skill => skill != null).ToList();
+                    return null;
+                }).Where(skill => skill != null).ToList()!;
             };
         }
     }
