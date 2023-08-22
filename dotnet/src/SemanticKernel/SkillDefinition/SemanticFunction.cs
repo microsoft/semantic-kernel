@@ -48,7 +48,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <summary>
     /// Prompt template engine.
     /// </summary>
-    public IPromptTemplate PromptTemplate { get; }
+    public IPromptTemplate? PromptTemplate { get; }
 
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
