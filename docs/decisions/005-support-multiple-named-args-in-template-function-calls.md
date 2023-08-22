@@ -3,7 +3,7 @@
 status: proposed
 date: 6/16/2023
 deciders: shawncal, hario90
-consulted: dmytrostruk, #matthewbolanos {list everyone whose opinions are sought (typically subject-matter experts); and with whom there is a two-way communication}
+consulted: dmytrostruk, matthewbolanos 
 informed: lemillermicrosoft
 ---
 # Add support for multiple named arguments in template function calls
