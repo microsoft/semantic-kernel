@@ -27,7 +27,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         task: Optional[str] = None,
         log: Optional[Logger] = None,
         model_kwargs: Dict[str, Any] = None,
-        pipeline_kwargs: Dict[str, Any] = None,
+        pipeline_kwargs: Dict[str, Any] = {},
     ) -> None:
         """
         Initializes a new instance of the HuggingFaceTextCompletion class.
