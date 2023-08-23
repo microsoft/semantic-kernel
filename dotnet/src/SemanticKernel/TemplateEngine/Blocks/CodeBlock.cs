@@ -54,6 +54,13 @@ internal sealed class CodeBlock : Block, ICodeRendering
             }
         }
 
+        if (this._tokens.Count > 0 && this._tokens[0].Type == BlockTypes.NamedArg)
+        {
+            errorMsg = "Unexpected named argument found. Expected function name first.";
+            this.Logger.LogError(errorMsg);
+            return false;
+        }
+
         if (this._tokens.Count > 1 && !this.IsValidFunctionCall(out errorMsg))
         {
             return false;
