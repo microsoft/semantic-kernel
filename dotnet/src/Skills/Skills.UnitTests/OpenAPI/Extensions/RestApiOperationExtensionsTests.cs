@@ -235,7 +235,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true, namespaceOperationPayloadParams: true);
+        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true, enablePayloadNamespacing: true);
 
         //Assert
         Assert.NotNull(parameters);
@@ -282,7 +282,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, null);
 
         //Act
-        Assert.Throws<SKException>(() => operation.GetParameters(addPayloadParamsFromMetadata: true, namespaceOperationPayloadParams: true));
+        Assert.Throws<SKException>(() => operation.GetParameters(addPayloadParamsFromMetadata: true, enablePayloadNamespacing: true));
     }
 
     [Fact]

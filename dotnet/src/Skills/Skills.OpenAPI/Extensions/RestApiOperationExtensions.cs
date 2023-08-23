@@ -25,14 +25,14 @@ internal static class RestApiOperationExtensions
     /// <param name="addPayloadParamsFromMetadata">Determines whether to include the operation payload parameters from payload metadata.
     /// If false, the 'payload' and 'content-type' artificial parameters are added instead.
     /// </param>
-    /// <param name="namespaceOperationPayloadParams">Determines whether parameter names are augmented with namespaces.
+    /// <param name="enablePayloadNamespacing">Determines whether parameter names are augmented with namespaces.
     /// Namespaces are created by prefixing parameter names with their root parameter names.
     /// For instance, without namespaces, the 'email' parameter for both the 'sender' and 'receiver' parent parameters
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, Uri? serverUrlOverride = null, bool addPayloadParamsFromMetadata = false, bool namespaceOperationPayloadParams = false)
+    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, Uri? serverUrlOverride = null, bool addPayloadParamsFromMetadata = false, bool enablePayloadNamespacing = false)
     {
         var parameters = new List<RestApiOperationParameter>(operation.Parameters)
         {
@@ -49,7 +49,7 @@ internal static class RestApiOperationExtensions
         //Add payload parameters
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
         {
-            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, namespaceOperationPayloadParams));
+            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing));
         }
 
         // Create a property alternative name without special symbols that are not supported by SK template language.
@@ -67,9 +67,9 @@ internal static class RestApiOperationExtensions
     /// <param name="operation">The REST API operation to retrieve parameters for.</param>
     /// <param name="useParametersFromMetadata">Flag indicating whether to include parameters from metadata.
     /// If false or not specified, the 'payload' and 'content-type' parameters are added instead.</param>
-    /// <param name="namespacePayloadParamNames">Flag indicating whether to namespace payload parameter names.</param>
+    /// <param name="enableNamespacing">Flag indicating whether to namespace payload parameter names.</param>
     /// <returns>A list of <see cref="RestApiOperationParameter"/> representing the payload parameters.</returns>
-    private static List<RestApiOperationParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool namespacePayloadParamNames)
+    private static List<RestApiOperationParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing)
     {
         if (useParametersFromMetadata is true)
         {
@@ -85,7 +85,7 @@ internal static class RestApiOperationExtensions
                 return new List<RestApiOperationParameter> { CreatePayloadArtificialParameter(operation) };
             }
 
-            return GetParametersFromPayloadMetadata(operation.Payload, namespacePayloadParamNames);
+            return GetParametersFromPayloadMetadata(operation.Payload, enableNamespacing);
         }
 
         //Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
@@ -131,11 +131,11 @@ internal static class RestApiOperationExtensions
     /// Retrieves parameters from the metadata of a REST API operation payload metadata.
     /// </summary>
     /// <param name="payload">The REST API operation payload.</param>
-    /// <param name="namespaceParamNames">Determines whether property names are augmented with namespaces.
+    /// <param name="enableNamespacing">Determines whether property names are augmented with namespaces.
     /// Namespaces are created by prefixing property names with their root property names.
     /// </param>
     /// <returns>The list of payload parameters.</returns>
-    private static List<RestApiOperationParameter> GetParametersFromPayloadMetadata(RestApiOperationPayload payload, bool namespaceParamNames = false)
+    private static List<RestApiOperationParameter> GetParametersFromPayloadMetadata(RestApiOperationPayload payload, bool enableNamespacing = false)
     {
         List<RestApiOperationParameter> RetrieveLeafAndArrayProperties(IList<RestApiOperationPayloadProperty> properties, string? rootPropertyName = null)
         {
@@ -143,7 +143,7 @@ internal static class RestApiOperationExtensions
 
             foreach (var property in properties)
             {
-                var parameterName = GetPropertyName(property, rootPropertyName, namespaceParamNames);
+                var parameterName = GetPropertyName(property, rootPropertyName, enableNamespacing);
 
                 if (!property.Properties.Any())
                 {
@@ -170,11 +170,11 @@ internal static class RestApiOperationExtensions
     /// </summary>
     /// <param name="property">The property.</param>
     /// <param name="rootPropertyName">The root property name to be used for constructing the full property name.</param>
-    /// <param name="namespaceProperty">Determines whether to add namespace to property name or not.</param>
+    /// <param name="enableNamespacing">Determines whether to add namespace to property name or not.</param>
     /// <returns>The property name.</returns>
-    private static string GetPropertyName(RestApiOperationPayloadProperty property, string? rootPropertyName, bool namespaceProperty = false)
+    private static string GetPropertyName(RestApiOperationPayloadProperty property, string? rootPropertyName, bool enableNamespacing = false)
     {
-        if (namespaceProperty is true)
+        if (enableNamespacing is true)
         {
             return string.IsNullOrEmpty(rootPropertyName) ? property.Name : $"{rootPropertyName}.{property.Name}";
         }

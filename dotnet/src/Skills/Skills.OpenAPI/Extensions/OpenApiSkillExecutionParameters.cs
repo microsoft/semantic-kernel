@@ -43,16 +43,16 @@ public class OpenApiSkillExecutionParameters
     /// Determines whether the operation payload is constructed dynamically based on operation payload metadata.
     /// If false, the operation payload must be provided via the 'payload' context variable.
     /// </summary>
-    public bool BuildOperationPayloadDynamically { get; set; }
+    public bool EnableDynamicPayload { get; set; }
 
     /// <summary>
-    /// Determines whether parameter names are augmented with namespaces.
+    /// Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.
     /// For instance, without namespaces, the 'email' parameter for both the 'sender' and 'receiver' parent parameters
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'sender.receiver' will be correctly resolved from arguments with the same names.
     /// </summary>
-    public bool NamespacePayloadParameters { get; set; }
+    public bool EnablePayloadNamespacing { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiSkillExecutionParameters"/> class.
@@ -64,9 +64,9 @@ public class OpenApiSkillExecutionParameters
     /// <param name="ignoreNonCompliantErrors">A flag indicating whether to ignore non-compliant errors or not
     /// If set to true, the operation execution will not throw exceptions for non-compliant documents.
     /// Please note that enabling this option may result in incomplete or inaccurate execution results.</param>
-    /// <param name="buildOperationPayloadDynamically">Determines whether the operation payload is constructed dynamically based on operation payload metadata.
+    /// <param name="enableDynamicOperationPayload">Determines whether the operation payload is constructed dynamically based on operation payload metadata.
     /// If false, the operation payload must be provided via the 'payload' context variable.</param>
-    /// <param name="namespacePayloadParameters">Determines whether parameter names are augmented with namespaces.
+    /// <param name="enablePayloadNamespacing">Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.</param>
     public OpenApiSkillExecutionParameters(
         HttpClient? httpClient = null,
@@ -74,15 +74,15 @@ public class OpenApiSkillExecutionParameters
         Uri? serverUrlOverride = null,
         string userAgent = Telemetry.HttpUserAgent,
         bool ignoreNonCompliantErrors = false,
-        bool buildOperationPayloadDynamically = false,
-        bool namespacePayloadParameters = false)
+        bool enableDynamicOperationPayload = false,
+        bool enablePayloadNamespacing = false)
     {
         this.HttpClient = httpClient;
         this.AuthCallback = authCallback;
         this.ServerUrlOverride = serverUrlOverride;
         this.UserAgent = userAgent;
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
-        this.BuildOperationPayloadDynamically = buildOperationPayloadDynamically;
-        this.NamespacePayloadParameters = namespacePayloadParameters;
+        this.EnableDynamicPayload = enableDynamicOperationPayload;
+        this.EnablePayloadNamespacing = enablePayloadNamespacing;
     }
 }

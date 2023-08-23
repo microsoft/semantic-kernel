@@ -284,7 +284,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("name", "fake-name-value");
         arguments.Add("enabled", "true");
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, buildPayloadDynamically: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -351,7 +351,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("count", "1");
         arguments.Add("params", "[1,2,3]");
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, buildPayloadDynamically: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -440,8 +440,8 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(
             this._httpClient,
             this._authenticationHandlerMock.Object,
-            buildPayloadDynamically: true,
-            resolvePayloadArgumentsByFullName: true);
+            enableDynamicPayload: true,
+            enablePayloadNamespacing: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -505,7 +505,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(
             this._httpClient,
             this._authenticationHandlerMock.Object,
-            buildPayloadDynamically: true);
+            enableDynamicPayload: true);
 
         // Act
         var exception = await Assert.ThrowsAsync<SKException>(async () => await sut.RunAsync(operation, arguments));
@@ -533,7 +533,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(
             this._httpClient,
             this._authenticationHandlerMock.Object,
-            buildPayloadDynamically: false);
+            enableDynamicPayload: false);
 
         // Act
         var exception = await Assert.ThrowsAsync<SKException>(async () => await sut.RunAsync(operation, arguments));
@@ -565,7 +565,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "payload", "fake-input-value" },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, buildPayloadDynamically: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -607,7 +607,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", $"{contentType}" },
         };
 
-        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, buildPayloadDynamically: false);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
