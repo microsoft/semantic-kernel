@@ -374,7 +374,10 @@ public sealed class Kernel : IKernel, IDisposable
     {
         if (this.FunctionInvoking is not null)
         {
-            var args = new FunctionInvokingEventArgs(functionView, context, renderedPrompt);
+            var args = (renderedPrompt is not null)
+                    ? new SemanticFunctionInvokingEventArgs(functionView, context, renderedPrompt)
+                    : new FunctionInvokingEventArgs(functionView, context);
+
             this.FunctionInvoking.Invoke(this, args);
 
             return args.CancelToken.IsCancellationRequested;
@@ -391,7 +394,10 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="renderedPrompt">Rendered prompt prior to semantic function invocation</param>
     private void OnFunctionInvoked(FunctionView functionView, SKContext context, string? renderedPrompt)
     {
-        this.FunctionInvoked?.Invoke(this, new FunctionInvokedEventArgs(functionView, context, renderedPrompt));
+        this.FunctionInvoked?.Invoke(this, (renderedPrompt is not null)
+            ? new SemanticFunctionInvokedEventArgs(functionView, context, renderedPrompt)
+            : new FunctionInvokedEventArgs(functionView, context)
+            );
     }
 
     #endregion

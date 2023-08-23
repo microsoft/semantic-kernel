@@ -45,7 +45,10 @@ public static class Example55_FunctionEventHandlers
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Prompt: {e.Prompt}");
+            if (e is SemanticFunctionInvokingEventArgs se)
+            {
+                Console.WriteLine($"{se.FunctionView.SkillName}.{se.FunctionView.Name} : Pre Execution Handler - Rendered Prompt: {se.RenderedPrompt}");
+            }
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
@@ -56,7 +59,10 @@ public static class Example55_FunctionEventHandlers
 
         void MyPreHandler2(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler 2 - Prompt Token: {GPT3Tokenizer.Encode(e.Prompt!).Count}");
+            if (e is SemanticFunctionInvokingEventArgs se)
+            {
+                Console.WriteLine($"{se.FunctionView.SkillName}.{se.FunctionView.Name} : Pre Execution Handler 2 - Rendered Prompt Token: {GPT3Tokenizer.Encode(se.RenderedPrompt!).Count}");
+            }
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
