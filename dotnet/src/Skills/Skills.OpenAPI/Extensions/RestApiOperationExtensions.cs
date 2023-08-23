@@ -85,7 +85,7 @@ internal static class RestApiOperationExtensions
                 return new List<RestApiOperationParameter> { CreatePayloadArtificialParameter(operation) };
             }
 
-            return GetParametersFromPayloadMetadata(operation.Payload, enableNamespacing);
+            return GetParametersFromPayloadMetadata(operation.Payload.Properties, enableNamespacing);
         }
 
         //Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
@@ -128,41 +128,37 @@ internal static class RestApiOperationExtensions
     }
 
     /// <summary>
-    /// Retrieves parameters from the metadata of a REST API operation payload metadata.
+    /// Retrieves parameters from REST API operation payload metadata.
     /// </summary>
-    /// <param name="payload">The REST API operation payload.</param>
+    /// <param name="properties">The REST API operation payload properties.</param>
     /// <param name="enableNamespacing">Determines whether property names are augmented with namespaces.
     /// Namespaces are created by prefixing property names with their root property names.
     /// </param>
+    /// <param name="rootPropertyName">The root property name.</param>
     /// <returns>The list of payload parameters.</returns>
-    private static List<RestApiOperationParameter> GetParametersFromPayloadMetadata(RestApiOperationPayload payload, bool enableNamespacing = false)
+    private static List<RestApiOperationParameter> GetParametersFromPayloadMetadata(IList<RestApiOperationPayloadProperty> properties, bool enableNamespacing = false, string? rootPropertyName = null)
     {
-        List<RestApiOperationParameter> RetrieveLeafAndArrayProperties(IList<RestApiOperationPayloadProperty> properties, string? rootPropertyName = null)
+        var parameters = new List<RestApiOperationParameter>();
+
+        foreach (var property in properties)
         {
-            var parameters = new List<RestApiOperationParameter>();
+            var parameterName = GetPropertyName(property, rootPropertyName, enableNamespacing);
 
-            foreach (var property in properties)
+            if (!property.Properties.Any())
             {
-                var parameterName = GetPropertyName(property, rootPropertyName, enableNamespacing);
-
-                if (!property.Properties.Any())
-                {
-                    parameters.Add(new RestApiOperationParameter(
-                        parameterName,
-                        property.Type,
-                        property.IsRequired,
-                        RestApiOperationParameterLocation.Body,
-                        RestApiOperationParameterStyle.Simple,
-                        description: property.Description));
-                }
-
-                parameters.AddRange(RetrieveLeafAndArrayProperties(property.Properties, parameterName));
+                parameters.Add(new RestApiOperationParameter(
+                    parameterName,
+                    property.Type,
+                    property.IsRequired,
+                    RestApiOperationParameterLocation.Body,
+                    RestApiOperationParameterStyle.Simple,
+                    description: property.Description));
             }
 
-            return parameters;
+            parameters.AddRange(GetParametersFromPayloadMetadata(property.Properties, enableNamespacing, parameterName));
         }
 
-        return RetrieveLeafAndArrayProperties(payload.Properties);
+        return parameters;
     }
 
     /// <summary>

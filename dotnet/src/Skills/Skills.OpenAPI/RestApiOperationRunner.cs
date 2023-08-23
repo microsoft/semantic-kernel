@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -25,7 +26,7 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// List of payload builders/factories.
     /// </summary>
-    private readonly Dictionary<string, Func<RestApiOperationPayload?, IDictionary<string, string>, HttpContent>> _payloadFactoryByMediaType;
+    private readonly Dictionary<string, HttpContentFactory> _payloadFactoryByMediaType;
 
     /// <summary>
     /// An instance of the HttpClient class.
@@ -89,7 +90,7 @@ internal sealed class RestApiOperationRunner
 
         this._payloadFactoryByMediaType = new()
         {
-            { MediaTypeApplicationJson, this.BuildAppJsonPayload },
+            { MediaTypeApplicationJson, this.BuildJsonPayload },
             { MediaTypeTextPlain, this.BuildPlainTextPayload }
         };
     }
@@ -203,7 +204,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payloadMetadata">The payload meta-data.</param>
     /// <param name="arguments">The payload arguments.</param>
     /// <returns>The HttpContent representing the payload.</returns>
-    private HttpContent BuildAppJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
+    private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
     {
         //Build operation payload dynamically
         if (this._enableDynamicPayload is true)
@@ -213,88 +214,7 @@ internal sealed class RestApiOperationRunner
                 throw new SKException("Payload can't be built dynamically due to the missing payload metadata.");
             }
 
-            JsonNode BuildJsonNode(IList<RestApiOperationPayloadProperty> properties, string? @namespace = null)
-            {
-                var result = new JsonObject();
-
-                foreach (var propertyMetadata in properties)
-                {
-                    var argumentName = this.GetArgumentNameForPayload(propertyMetadata.Name, @namespace);
-
-                    if (propertyMetadata.Type == "object")
-                    {
-                        var node = BuildJsonNode(propertyMetadata.Properties, argumentName);
-                        result.Add(propertyMetadata.Name, node);
-                        continue;
-                    }
-
-                    if (!arguments.TryGetValue(argumentName, out var propertyValue))
-                    {
-                        throw new SKException($"No argument is found for the '{propertyMetadata.Name}' payload property.");
-                    }
-
-                    //Converting OpenAPI types to JSON ones.
-                    switch (propertyMetadata.Type)
-                    {
-                        case "number":
-                        {
-                            if (long.TryParse(propertyValue, out var intValue))
-                            {
-                                result.Add(propertyMetadata.Name, JsonValue.Create(intValue));
-                            }
-                            else if (double.TryParse(propertyValue, out var doubleValue))
-                            {
-                                result.Add(propertyMetadata.Name, JsonValue.Create(doubleValue));
-                            }
-                            break;
-                        }
-
-                        case "boolean":
-                        {
-                            if (bool.TryParse(propertyValue, out var boolValue))
-                            {
-                                result.Add(propertyMetadata.Name, JsonValue.Create(boolValue));
-                            }
-                            break;
-                        }
-
-                        case "integer":
-                        {
-                            if (int.TryParse(propertyValue, out var intValue))
-                            {
-                                result.Add(propertyMetadata.Name, JsonValue.Create(intValue));
-                            }
-                            break;
-                        }
-
-                        case "array":
-                        {
-                            if (JsonArray.Parse(propertyValue) is JsonArray array)
-                            {
-                                result.Add(propertyMetadata.Name, array);
-                                break;
-                            }
-
-                            throw new SKException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array.");
-                        }
-
-                        case "string":
-                        {
-                            result.Add(propertyMetadata.Name, JsonValue.Create(propertyValue));
-                            break;
-                        }
-
-                        default:
-                        {
-                            throw new SKException($"Unexpected OpenAPI data type - {propertyMetadata.Type}");
-                        }
-                    }
-                }
-
-                return result;
-            }
-
-            var payload = BuildJsonNode(payloadMetadata.Properties);
+            var payload = this.BuildJsonObject(payloadMetadata.Properties, arguments);
 
             return new StringContent(payload.ToJsonString(), Encoding.UTF8, MediaTypeApplicationJson);
         }
@@ -306,6 +226,91 @@ internal sealed class RestApiOperationRunner
         }
 
         return new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson);
+    }
+
+    /// <summary>
+    /// Builds a JSON object from a list of RestAPI operation payload properties.
+    /// </summary>
+    /// <param name="properties">The properties.</param>
+    /// <param name="arguments">The arguments.</param>
+    /// <param name="propertyNamespace">The namespace to add to the property name.</param>
+    /// <returns>The JSON object.</returns>
+    private JsonObject BuildJsonObject(IList<RestApiOperationPayloadProperty> properties, IDictionary<string, string> arguments, string? propertyNamespace = null)
+    {
+        var result = new JsonObject();
+
+        foreach (var propertyMetadata in properties)
+        {
+            var argumentName = this.GetArgumentNameForPayload(propertyMetadata.Name, propertyNamespace);
+
+            if (propertyMetadata.Type == "object")
+            {
+                var node = this.BuildJsonObject(propertyMetadata.Properties, arguments, argumentName);
+                result.Add(propertyMetadata.Name, node);
+                continue;
+            }
+
+            if (!arguments.TryGetValue(argumentName, out var propertyValue))
+            {
+                throw new SKException($"No argument is found for the '{propertyMetadata.Name}' payload property.");
+            }
+
+            result.Add(propertyMetadata.Name, ConvertJsonPropertyValueType(propertyValue, propertyMetadata));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Converts the JSON property value to the REST API type specified in metadata.
+    /// </summary>
+    /// <param name="propertyValue">The value of the property to be converted.</param>
+    /// <param name="propertyMetadata">The metadata of the property.</param>
+    /// <returns>A JsonNode representing the converted property value.</returns>
+    private static JsonNode? ConvertJsonPropertyValueType(string propertyValue, RestApiOperationPayloadProperty propertyMetadata)
+    {
+        switch (propertyMetadata.Type)
+        {
+            case "number":
+            {
+                if (long.TryParse(propertyValue, out var intValue))
+                {
+                    return JsonValue.Create(intValue);
+                }
+
+                return JsonValue.Create(double.Parse(propertyValue, CultureInfo.InvariantCulture));
+            }
+
+            case "boolean":
+            {
+                return JsonValue.Create(bool.Parse(propertyValue));
+            }
+
+            case "integer":
+            {
+                return JsonValue.Create(int.Parse(propertyValue, CultureInfo.InvariantCulture));
+            }
+
+            case "array":
+            {
+                if (JsonArray.Parse(propertyValue) is JsonArray array)
+                {
+                    return array;
+                }
+
+                throw new SKException($"Can't convert OpenAPI property - {propertyMetadata.Name} value - {propertyValue} of 'array' type to JSON array.");
+            }
+
+            case "string":
+            {
+                return JsonValue.Create(propertyValue);
+            }
+
+            default:
+            {
+                throw new SKException($"Unexpected OpenAPI data type - {propertyMetadata.Type}");
+            }
+        }
     }
 
     /// <summary>
