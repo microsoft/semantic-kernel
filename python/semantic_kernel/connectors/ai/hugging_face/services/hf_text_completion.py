@@ -67,7 +67,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             else "cpu"
         )
         self.generator = transformers.pipeline(
-            task=self._task, model=self._model_id, device=self.device, model_kwargs=self._model_kwargs, **self._pipeline_kwargs
+            task=self._task, model=self._model_id, model_kwargs=self._model_kwargs, **self._pipeline_kwargs
         )
 
     async def complete_async(
