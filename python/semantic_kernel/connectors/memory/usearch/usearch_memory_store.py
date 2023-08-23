@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import itertools
 import os
 from dataclasses import dataclass
