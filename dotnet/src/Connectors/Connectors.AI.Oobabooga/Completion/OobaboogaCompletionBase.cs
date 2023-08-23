@@ -138,7 +138,7 @@ public abstract class OobaboogaCompletionBase
 
                 if (responseObject is null)
                 {
-                    throw new OobaboogaInvalidResponseException<string>(messageText, "Unexpected response from Oobabooga API");
+                    throw new SKException($"Unexpected response from Oobabooga API: {messageText}");
                 }
 
                 switch (responseObject.Event)

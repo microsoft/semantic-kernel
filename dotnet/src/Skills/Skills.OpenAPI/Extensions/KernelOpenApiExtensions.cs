@@ -41,6 +41,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromUrlAsync(
         this IKernel kernel,
         string skillName,
@@ -51,7 +52,7 @@ public static class KernelOpenApiExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
@@ -80,6 +81,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromResourceAsync(
         this IKernel kernel,
         string skillName,
@@ -110,6 +112,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
@@ -130,7 +133,7 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
         }
 
-        kernel.Logger.LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
+        kernel.LoggerFactory.CreateLogger(nameof(KernelOpenApiExtensions)).LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
 
         var skill = new Dictionary<string, ISKFunction>();
 
@@ -148,6 +151,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> ImportOpenApiSkillFromFileAsync(
         this IKernel kernel,
         string skillName,
@@ -160,7 +164,7 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
         }
 
-        kernel.Logger.LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
+        kernel.LoggerFactory.CreateLogger(nameof(KernelOpenApiExtensions)).LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -176,6 +180,7 @@ public static class KernelOpenApiExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
+    [Obsolete("OpenApi specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
     public static async Task<IDictionary<string, ISKFunction>> RegisterOpenApiSkillAsync(
         this IKernel kernel,
         Stream documentStream,
@@ -187,29 +192,30 @@ public static class KernelOpenApiExtensions
         Verify.ValidSkillName(skillName);
 
         // Parse
-        var parser = new OpenApiDocumentParser(kernel.Logger);
+        var parser = new OpenApiDocumentParser(kernel.LoggerFactory);
 
         var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
 
         var userAgent = executionParameters?.UserAgent ?? Telemetry.HttpUserAgent;
         var runner = new RestApiOperationRunner(internalHttpClient, executionParameters?.AuthCallback, userAgent);
 
         var skill = new Dictionary<string, ISKFunction>();
 
+        ILogger logger = kernel.LoggerFactory.CreateLogger(nameof(KernelOpenApiExtensions));
         foreach (var operation in operations)
         {
             try
             {
-                kernel.Logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
+                logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
                 var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters?.ServerUrlOverride, cancellationToken);
                 skill[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other Rest functions
-                kernel.Logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
+                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
                     skillName, operation.Id, ex.Message);
             }
         }
@@ -239,7 +245,7 @@ public static class KernelOpenApiExtensions
     {
         var restOperationParameters = operation.GetParameters(serverUrlOverride);
 
-        var logger = kernel.Logger ?? NullLogger.Instance;
+        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(nameof(KernelOpenApiExtensions)) : NullLogger.Instance;
 
         async Task<SKContext> ExecuteAsync(SKContext context)
         {
@@ -301,7 +307,7 @@ public static class KernelOpenApiExtensions
             description: operation.Description,
             skillName: skillName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
-            logger: logger);
+            loggerFactory: kernel.LoggerFactory);
 
         return kernel.RegisterCustomFunction(function);
     }
@@ -320,7 +326,7 @@ public static class KernelOpenApiExtensions
             Verify.ValidFunctionName(operationId);
             return operationId;
         }
-        catch (KernelException)
+        catch (SKException)
         {
         }
 

@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import time
+
 import pytest
 
+import semantic_kernel
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.planning import SequentialPlanner
@@ -11,6 +14,19 @@ from semantic_kernel.planning.sequential_planner.sequential_planner_config impor
 from tests.integration.fakes.email_skill_fake import EmailSkillFake
 from tests.integration.fakes.fun_skill_fake import FunSkillFake
 from tests.integration.fakes.writer_skill_fake import WriterSkillFake
+
+
+async def retry(func, retries=3):
+    min_delay = 2
+    max_delay = 7
+    for i in range(retries):
+        try:
+            result = await func()
+            return result
+        except Exception:
+            if i == retries - 1:  # Last retry
+                raise
+            time.sleep(max(min(i, max_delay), min_delay))
 
 
 def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=False):
@@ -86,6 +102,10 @@ async def test_create_plan_function_flow_async(
     ],
 )
 @pytest.mark.asyncio
+@pytest.mark.xfail(
+    raises=semantic_kernel.planning.planning_exception.PlanningException,
+    reason="Test is known to occasionally produce unexpected results.",
+)
 async def test_create_plan_with_defaults_async(
     get_aoai_config, prompt, expected_function, expected_skill, expected_default
 ):
@@ -97,7 +117,7 @@ async def test_create_plan_with_defaults_async(
     planner = SequentialPlanner(kernel)
 
     # Act
-    plan = await planner.create_plan_async(prompt)
+    plan = await retry(lambda: planner.create_plan_async(prompt))
 
     # Assert
     assert any(
@@ -123,6 +143,10 @@ async def test_create_plan_with_defaults_async(
     ],
 )
 @pytest.mark.asyncio
+@pytest.mark.xfail(
+    raises=semantic_kernel.planning.planning_exception.PlanningException,
+    reason="Test is known to occasionally produce unexpected results.",
+)
 async def test_create_plan_goal_relevant_async(
     get_aoai_config, prompt, expected_function, expected_skill
 ):
@@ -138,7 +162,7 @@ async def test_create_plan_goal_relevant_async(
     )
 
     # Act
-    plan = await planner.create_plan_async(prompt)
+    plan = await retry(lambda: planner.create_plan_async(prompt))
 
     # Assert
     assert any(

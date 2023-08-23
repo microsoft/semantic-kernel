@@ -18,7 +18,7 @@ public static class Example06_TemplateLanguage
     {
         Console.WriteLine("======== TemplateLanguage ========");
 
-        string openAIModelId = TestConfiguration.OpenAI.ModelId;
+        string openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         string openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
@@ -28,8 +28,8 @@ public static class Example06_TemplateLanguage
         }
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService(
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
             .Build();
@@ -59,7 +59,7 @@ Is it weekend time (weekend/not weekend)?
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kindOfDay.InvokeAsync();
+        var result = await kernel.RunAsync(kindOfDay);
         Console.WriteLine(result);
 
         /* OUTPUT:

@@ -6,26 +6,26 @@ name: Python Integration Tests
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches: ["main"]
-    paths:
-      - "python/**"
+  merge_group:
+    branches: ["main"]
   schedule:
-    - cron: "0 */12 * * *" # Run every 12 hours: midnight UTC and noon UTC
+    - cron: "0 0 * * *" # Run at midnight UTC daily
 
 permissions:
   contents: read
 
 jobs:
-  python-integration-tests:
+  python-merge-gate:
+    if: ${{ github.event_name != 'pull_request' && github.event_name != 'schedule'}}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
+        python-version: ["3.11"]
+        os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -44,8 +44,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
-          cd python && poetry install
+          cd python
+          poetry install --without azure_cognitive_search --without weaviate --without pinecone --without postgres
       - name: Run Integration Tests
+        id: run_tests
         shell: bash
         env: # Set Azure credentials secret as an input
           HNSWLIB_NO_NATIVE: 1
@@ -54,7 +56,7 @@ jobs:
           AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
           AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
           AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
-          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
           AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
           AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
@@ -68,4 +70,133 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          poetry run pytest ./tests/integration
+          poetry run pytest ./tests/integration/completions/test_azure_oai_chat_service.py -v
+          poetry run pytest ./tests/integration/completions/test_oai_chat_service.py -v
+          poetry run pytest ./tests/integration/completions/test_hf_local_text_completions.py -v
+          poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
+          poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
+          poetry run pytest ./tests/integration/planning -v
+          poetry run pytest ./tests/integration/embeddings -v
+
+  python-integration-tests:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies with hnswlib native disabled
+        if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
+        run: |
+          export HNSWLIB_NO_NATIVE=1
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install poetry pytest
+          cd python && poetry install
+
+      - name: Install dependencies with hnswlib native enabled
+        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install poetry pytest
+          cd python && poetry install
+
+      - name: Run Integration Tests
+        id: run_tests
+        shell: bash
+        env: # Set Azure credentials secret as an input
+          HNSWLIB_NO_NATIVE: 1
+          Python_Integration_Tests: Python_Integration_Tests
+          AzureOpenAI__Label: azure-text-davinci-003
+          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAIChat__DeploymentName: ${{ vars.AZUREOPENAI__CHAT__DEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDINGS__DEPLOYMENTNAME2 }}
+          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+          Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
+          Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
+          Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
+          AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
+          AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
+        run: |
+          cd python
+          poetry run pytest ./tests/integration -v
+
+  # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
+  python-integration-tests-check:
+    if: always()
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+    needs: [python-merge-gate, python-integration-tests]
+    steps:
+      - name: Get Date
+        shell: bash
+        run: |
+          echo "date=$(date +'%m/%d/%Y %H:%M:%S')" >> "$GITHUB_ENV"
+
+      - name: Run Type is Daily
+        if: ${{ github.event_name == 'schedule' }}
+        shell: bash
+        run: |
+          echo "run_type=Daily" >> "$GITHUB_ENV"
+
+      - name: Run Type is Manual
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        run: |
+          echo "run_type=Manual" >> "$GITHUB_ENV"
+
+      - name: Run Type is ${{ github.event_name }}
+        if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
+        shell: bash
+        run: |
+          echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
+
+      - name: Fail workflow if tests failed
+        id: check_tests_failed
+        if: contains(join(needs.*.result, ','), 'failure')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Failed!')
+
+      - name: Fail workflow if tests cancelled
+        id: check_tests_cancelled
+        if: contains(join(needs.*.result, ','), 'cancelled')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Cancelled!')
+
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@master
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' 
+        with:
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
+          dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+
+      - name: Microsoft Teams Notification (Dry Run)
+        uses: skitionek/notify-microsoft-teams@master
+        if: github.ref != 'refs/heads/main'
+        with:
+          webhook_url: NONE
+          dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"

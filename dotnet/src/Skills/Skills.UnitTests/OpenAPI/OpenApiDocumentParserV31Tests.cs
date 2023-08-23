@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -216,6 +217,58 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var properties = payload.Properties;
         Assert.NotNull(properties);
         Assert.Equal(0, properties.Count);
+    }
+
+    [Fact]
+    public async Task ItCanWorkWithDocumentsWithoutServersAttributeAsync()
+    {
+        //Arrange
+        using var stream = ModifyOpenApiDocument(this._openApiDocument, (yaml) =>
+        {
+            yaml.Remove("servers");
+        });
+
+        //Act
+        var operations = await this._sut.ParseAsync(stream);
+
+        //Assert
+        Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
+    }
+
+    [Fact]
+    public async Task ItCanWorkWithDocumentsWithEmptyServersAttributeAsync()
+    {
+        //Arrange
+        using var stream = ModifyOpenApiDocument(this._openApiDocument, (yaml) =>
+        {
+            yaml["servers"] = Array.Empty<string>();
+        });
+
+        //Act
+        var operations = await this._sut.ParseAsync(stream);
+
+        //Assert
+        Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
+    }
+
+    private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
+    {
+        var serializer = new SharpYaml.Serialization.Serializer();
+
+        //Deserialize yaml
+        var yaml = serializer.Deserialize<ExpandoObject>(openApiDocument);
+
+        //Modify yaml
+        transformer(yaml!);
+
+        //Serialize yaml
+        var stream = new MemoryStream();
+
+        serializer.Serialize(stream, yaml);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        return stream;
     }
 
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiOperationParameterLocation location, string name)

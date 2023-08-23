@@ -111,14 +111,19 @@ public static class SKContextSequentialPlannerExtensions
         IAsyncEnumerable<MemoryQueryResult> memories,
         CancellationToken cancellationToken = default)
     {
+        ILogger? logger = null;
         var relevantFunctions = new ConcurrentBag<FunctionView>();
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
             if (function != null)
             {
-                context.Logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance,
-                    function.ToFullyQualifiedName());
+                logger ??= context.LoggerFactory.CreateLogger(nameof(SKContext));
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFullyQualifiedName());
+                }
+
                 relevantFunctions.Add(function);
             }
         }
@@ -130,7 +135,7 @@ public static class SKContextSequentialPlannerExtensions
     /// Saves all available functions to memory.
     /// </summary>
     /// <param name="context">The SKContext to save the functions to.</param>
-    /// <param name="memory">The memory provide to store the functions to..</param>
+    /// <param name="memory">The memory provided to store the functions to.</param>
     /// <param name="availableFunctions">The available functions to save.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     internal static async Task RememberFunctionsAsync(

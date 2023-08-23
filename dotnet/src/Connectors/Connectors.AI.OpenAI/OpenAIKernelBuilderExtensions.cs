@@ -1,17 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
+using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core;
+using Azure.Core.Pipeline;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.ImageGeneration;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Reliability;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -45,14 +50,11 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
-            new AzureTextCompletion(
-                deploymentName,
-                endpoint,
-                apiKey,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
-            setAsDefault);
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
+        {
+            var client = CreateAzureOpenAIClient(loggerFactory, config, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
+            return new AzureTextCompletion(deploymentName, client, loggerFactory);
+        }, setAsDefault);
 
         return builder;
     }
@@ -77,14 +79,11 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
-            new AzureTextCompletion(
-                deploymentName,
-                endpoint,
-                credentials,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
-            setAsDefault);
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
+        {
+            var client = CreateAzureOpenAIClient(loggerFactory, config, deploymentName, endpoint, credentials, httpClient);
+            return new AzureTextCompletion(deploymentName, client, loggerFactory);
+        }, setAsDefault);
 
         return builder;
     }
@@ -105,11 +104,11 @@ public static class OpenAIKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
             new AzureTextCompletion(
                 deploymentName,
                 openAIClient,
-                parameters.Logger),
+                loggerFactory),
             setAsDefault);
 
         return builder;
@@ -135,13 +134,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
             new OpenAITextCompletion(
                 modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                loggerFactory),
             setAsDefault);
         return builder;
     }
@@ -170,13 +169,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, config) =>
             new AzureTextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 apiKey,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                loggerFactory),
             setAsDefault);
         return builder;
     }
@@ -201,13 +200,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, config) =>
             new AzureTextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 credential,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                loggerFactory),
             setAsDefault);
         return builder;
     }
@@ -232,13 +231,13 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, config) =>
             new OpenAITextEmbeddingGeneration(
                 modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                loggerFactory),
             setAsDefault);
         return builder;
     }
@@ -269,12 +268,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new(
-            deploymentName,
-            endpoint,
-            apiKey,
-            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-            parameters.Logger);
+        AzureChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config)
+        {
+            OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, config, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
+
+            return new(deploymentName, client, loggerFactory);
+        };
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
@@ -309,17 +308,50 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new(
-            deploymentName,
-            endpoint,
-            credentials,
-            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-            parameters.Logger);
+        AzureChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config)
+        {
+            OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, config, deploymentName, endpoint, credentials, httpClient);
+
+            return new(deploymentName, client, loggerFactory);
+        };
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
         if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        {
+            builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the Azure OpenAI chat completion with data service to the list.
+    /// More information: <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/use-your-data-quickstart"/>
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance.</param>
+    /// <param name="config">Required configuration for Azure OpenAI chat completion with data.</param>
+    /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported.</param>
+    /// <param name="serviceId">A local identifier for the given AI service.</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithAzureChatCompletionService(this KernelBuilder builder,
+        AzureChatCompletionWithDataConfig config,
+        bool alsoAsTextCompletion = true,
+        string? serviceId = null,
+        bool setAsDefault = false,
+        HttpClient? httpClient = null)
+    {
+        AzureChatCompletionWithData Factory(ILoggerFactory loggerFactory, KernelConfig kernelConfig) => new(
+            config,
+            HttpClientProvider.GetHttpClient(kernelConfig, httpClient, loggerFactory),
+            loggerFactory);
+
+        builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
+
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletionWithData)))
         {
             builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
         }
@@ -349,17 +381,85 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        OpenAIChatCompletion Factory((ILogger Logger, KernelConfig Config) parameters) => new(
+        OpenAIChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config) => new(
             modelId,
             apiKey,
             orgId,
-            HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-            parameters.Logger);
+            HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+            loggerFactory);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
 
         // If the class implements the text completion interface, allow to use it also for semantic functions
         if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(OpenAIChatCompletion)))
+        {
+            builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the Azure OpenAI ChatGPT completion service to the list.
+    /// See https://platform.openai.com/docs for service details.
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithAzureChatCompletionService(this KernelBuilder builder,
+        string deploymentName,
+        OpenAIClient openAIClient,
+        bool alsoAsTextCompletion = true,
+        string? serviceId = null,
+        bool setAsDefault = false)
+    {
+        AzureChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config)
+        {
+            return new(deploymentName, openAIClient, loggerFactory);
+        };
+
+        builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
+
+        // If the class implements the text completion interface, allow to use it also for semantic functions
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
+        {
+            builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the OpenAI ChatGPT completion service to the list.
+    /// See https://platform.openai.com/docs for service details.
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="deploymentName">Azure OpenAI deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
+    /// <param name="openAIClient">Custom <see cref="OpenAIClient"/> for HTTP requests.</param>
+    /// <param name="alsoAsTextCompletion">Whether to use the service also for text completion, if supported</param>
+    /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="setAsDefault">Whether the service should be the default for its type.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithOpenAIChatCompletionService(this KernelBuilder builder,
+        string deploymentName,
+        OpenAIClient openAIClient,
+        bool alsoAsTextCompletion = true,
+        string? serviceId = null,
+        bool setAsDefault = false)
+    {
+        OpenAIChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config)
+        {
+            return new(deploymentName, openAIClient, loggerFactory);
+        };
+
+        builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
+
+        // If the class implements the text completion interface, allow to use it also for semantic functions
+        if (alsoAsTextCompletion && typeof(ITextCompletion).IsAssignableFrom(typeof(AzureChatCompletion)))
         {
             builder.WithAIService<ITextCompletion>(serviceId, Factory, setAsDefault);
         }
@@ -388,12 +488,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<IImageGeneration>(serviceId, ((ILogger Logger, KernelConfig Config) parameters) =>
+        builder.WithAIService<IImageGeneration>(serviceId, (ILoggerFactory loggerFactory, KernelConfig config) =>
             new OpenAIImageGeneration(
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                loggerFactory),
             setAsDefault);
 
         return builder;
@@ -418,12 +518,12 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null,
         int maxRetryCount = 5)
     {
-        builder.WithAIService<IImageGeneration>(serviceId, ((ILogger Logger, KernelConfig Config) parameters) =>
+        builder.WithAIService<IImageGeneration>(serviceId, (ILoggerFactory loggerFactory, KernelConfig config) =>
             new AzureOpenAIImageGeneration(
                 endpoint,
                 apiKey,
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
-                parameters.Logger,
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                loggerFactory,
                 maxRetryCount),
             setAsDefault);
 
@@ -431,4 +531,34 @@ public static class OpenAIKernelBuilderExtensions
     }
 
     #endregion
+
+    private static OpenAIClient CreateAzureOpenAIClient(ILoggerFactory loggerFactory, KernelConfig config, string deploymentName, string endpoint, AzureKeyCredential credentials, HttpClient? httpClient)
+    {
+        OpenAIClientOptions options = CreateOpenAIClientOptions(loggerFactory, config, httpClient);
+
+        return new(new Uri(endpoint), credentials, options);
+    }
+
+    private static OpenAIClient CreateAzureOpenAIClient(ILoggerFactory loggerFactory, KernelConfig config, string deploymentName, string endpoint, TokenCredential credentials, HttpClient? httpClient)
+    {
+        OpenAIClientOptions options = CreateOpenAIClientOptions(loggerFactory, config, httpClient);
+
+        return new(new Uri(endpoint), credentials, options);
+    }
+
+    private static OpenAIClientOptions CreateOpenAIClientOptions(ILoggerFactory loggerFactory, KernelConfig config, HttpClient? httpClient)
+    {
+        OpenAIClientOptions options = new();
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory));
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+        if (config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
+        {
+            options.Retry.MaxRetries = factory.Config.MaxRetryCount;
+            options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
+        }
+
+        return options;
+    }
 }

@@ -13,7 +13,7 @@ using Resources;
 /**
  * Scenario:
  *  - the user is reading a wikipedia page, they select a piece of text and they ask AI to extract some information.
- *  - the app explicitly uses the Chat model to get a result from gpt-3.5-turbo.
+ *  - the app explicitly uses the Chat model to get a result.
  *
  * The following example shows how to:
  *
@@ -62,10 +62,9 @@ public static class Example30_ChatWithPrompts
         var selectedText = EmbeddedResource.Read("30-user-context.txt");
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
-        // Usual kernel initialization, with GPT 3.5 Turbo
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
         // As an example, we import the time skill, which is used in system prompt to read the current date.
@@ -100,7 +99,7 @@ public static class Example30_ChatWithPrompts
         string userMessage = await promptRenderer.RenderAsync(userPromptTemplate, context);
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
-        // Client used to request answers to gpt-3.5-turbo
+        // Client used to request answers
         var chatGPT = kernel.GetService<IChatCompletion>();
 
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,

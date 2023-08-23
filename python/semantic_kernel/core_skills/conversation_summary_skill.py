@@ -16,21 +16,23 @@ class ConversationSummarySkill:
     _max_tokens = 1024
 
     _summarize_conversation_prompt_template = (
-        "BEGIN CONTENT TO SUMMARIZE:\n"
-        "{{" + "$INPUT" + "}}\n"
-        "END CONTENT TO SUMMARIZE.\n"
-        "Summarize the conversation in 'CONTENT TO SUMMARIZE',\
-            identifying main points of discussion and any conclusions that were reached.\n"
-        "Do not incorporate other general knowledge.\n"
-        "Summary is in plain text, in complete sentences, with no markup or tags.\n"
-        "\nBEGIN SUMMARY:\n"
+        "BEGIN CONTENT TO SUMMARIZE:\n{{"
+        + "$INPUT"
+        + "}}\nEND CONTENT TO SUMMARIZE.\nSummarize the conversation in 'CONTENT TO"
+        " SUMMARIZE',            identifying main points of discussion and any"
+        " conclusions that were reached.\nDo not incorporate other general"
+        " knowledge.\nSummary is in plain text, in complete sentences, with no markup"
+        " or tags.\n\nBEGIN SUMMARY:\n"
     )
 
     def __init__(self, kernel: Kernel):
         self._summarizeConversationFunction = kernel.create_semantic_function(
             ConversationSummarySkill._summarize_conversation_prompt_template,
             skill_name=ConversationSummarySkill.__name__,
-            description="Given a section of a conversation transcript, summarize the part of the conversation.",
+            description=(
+                "Given a section of a conversation transcript, summarize the part of"
+                " the conversation."
+            ),
             max_tokens=ConversationSummarySkill._max_tokens,
             temperature=0.1,
             top_p=0.5,

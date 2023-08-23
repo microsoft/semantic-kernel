@@ -28,7 +28,7 @@ public interface IKernel
     /// <summary>
     /// App logger
     /// </summary>
-    ILogger Logger { get; }
+    ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
     /// Semantic memory instance
@@ -93,10 +93,12 @@ public interface IKernel
     /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
     /// </summary>
     /// <param name="skFunction">A Semantic Kernel function to run</param>
+    /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function composition</returns>
+    /// <returns>Result of the function</returns>
     Task<SKContext> RunAsync(
         ISKFunction skFunction,
+        ContextVariables? variables = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
