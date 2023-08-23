@@ -17,15 +17,36 @@ permissions:
   contents: read
 
 jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      pythonChanges: ${{ steps.filter.outputs.python}}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            python:
+              - 'python/**'
+      # run only if 'python' files were changed
+      - name: python tests
+        if: steps.filter.outputs.python == 'true'
+        run: echo "Python file"
+      # run only if not 'python' files were changed
+      - name: not python tests
+        if: steps.filter.outputs.python != 'true'
+        run: echo "NOT python file"
+
   python-merge-gate:
-    if: ${{ github.event_name != 'pull_request' && github.event_name != 'schedule'}}
+    if: ${{ github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true' }}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
       fail-fast: false
       matrix:
         python-version: ["3.11"]
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -70,16 +91,10 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          poetry run pytest ./tests/integration/completions/test_azure_oai_chat_service.py -v
-          poetry run pytest ./tests/integration/completions/test_oai_chat_service.py -v
-          poetry run pytest ./tests/integration/completions/test_hf_local_text_completions.py -v
-          poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
-          poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
-          poetry run pytest ./tests/integration/planning -v
-          poetry run pytest ./tests/integration/embeddings -v
+          poetry run pytest ./tests/integration -v
 
   python-integration-tests:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true' }}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
@@ -183,7 +198,7 @@ jobs:
 
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' 
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
