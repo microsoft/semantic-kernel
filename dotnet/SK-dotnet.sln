@@ -156,6 +156,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.Memory", "src\Plugi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.Memory.UnitTests", "src\Plugins\Plugins.Memory.UnitTests\Plugins.Memory.UnitTests.csproj", "{8A6352DA-A208-43E2-B00D-D9EC35FB58F1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Kusto", "src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj", "{E07608CC-D710-4655-BB9E-D22CF3CDD193}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -379,6 +381,12 @@ Global
 		{8A6352DA-A208-43E2-B00D-D9EC35FB58F1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{8A6352DA-A208-43E2-B00D-D9EC35FB58F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A6352DA-A208-43E2-B00D-D9EC35FB58F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E07608CC-D710-4655-BB9E-D22CF3CDD193}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -434,6 +442,7 @@ Global
 		{05F3A204-145B-4A6C-9608-3C13C3A4E43F} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{AADF0591-547F-44F0-ACFD-99ABAA90C157} = {05F3A204-145B-4A6C-9608-3C13C3A4E43F}
 		{8A6352DA-A208-43E2-B00D-D9EC35FB58F1} = {05F3A204-145B-4A6C-9608-3C13C3A4E43F}
+		{E07608CC-D710-4655-BB9E-D22CF3CDD193} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

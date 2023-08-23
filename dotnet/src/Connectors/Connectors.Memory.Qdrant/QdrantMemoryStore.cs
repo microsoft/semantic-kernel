@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
@@ -25,18 +25,18 @@ public class QdrantMemoryStore : IMemoryStore
     /// <summary>
     /// The Qdrant Vector Database memory store logger.
     /// </summary>
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
     /// </summary>
     /// <param name="endpoint">The Qdrant Vector Database endpoint.</param>
     /// <param name="vectorSize">The size of the vectors used.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public QdrantMemoryStore(string endpoint, int vectorSize, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public QdrantMemoryStore(string endpoint, int vectorSize, ILoggerFactory? loggerFactory = null)
     {
-        this._qdrantClient = new QdrantVectorDbClient(endpoint, vectorSize, logger);
-        this._logger = logger;
+        this._qdrantClient = new QdrantVectorDbClient(endpoint, vectorSize, loggerFactory);
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantMemoryStore)) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -45,22 +45,22 @@ public class QdrantMemoryStore : IMemoryStore
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="vectorSize">The size of the vectors used in the Qdrant Vector Database.</param>
     /// <param name="endpoint">The optional endpoint URL for the Qdrant Vector Database. If not specified, the base address of the HTTP client is used.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public QdrantMemoryStore(HttpClient httpClient, int vectorSize, string? endpoint = null, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public QdrantMemoryStore(HttpClient httpClient, int vectorSize, string? endpoint = null, ILoggerFactory? loggerFactory = null)
     {
-        this._qdrantClient = new QdrantVectorDbClient(httpClient, vectorSize, endpoint, logger);
-        this._logger = logger;
+        this._qdrantClient = new QdrantVectorDbClient(httpClient, vectorSize, endpoint, loggerFactory);
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantMemoryStore)) : NullLogger.Instance;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantMemoryStore"/> class.
     /// </summary>
     /// <param name="client">The Qdrant Db client for interacting with Qdrant Vector Database.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public QdrantMemoryStore(IQdrantVectorDbClient client, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public QdrantMemoryStore(IQdrantVectorDbClient client, ILoggerFactory? loggerFactory = null)
     {
         this._qdrantClient = client;
-        this._logger = logger;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantMemoryStore)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -153,7 +153,7 @@ public class QdrantMemoryStore : IMemoryStore
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
+                embedding: vectorData.Embedding,
                 key: vectorData.PointId);
         }
         catch (HttpRequestException ex)
@@ -199,7 +199,7 @@ public class QdrantMemoryStore : IMemoryStore
 
             return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true));
+                embedding: vectorData.Embedding);
         }
         catch (HttpRequestException ex)
         {
@@ -228,7 +228,7 @@ public class QdrantMemoryStore : IMemoryStore
         {
             yield return MemoryRecord.FromJsonMetadata(
                 json: vectorData.GetSerializedPayload(),
-                embedding: new Embedding<float>(vectorData.Embedding, transferOwnership: true),
+                embedding: vectorData.Embedding,
                 key: vectorData.PointId);
         }
     }
@@ -293,7 +293,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -302,7 +302,7 @@ public class QdrantMemoryStore : IMemoryStore
         IAsyncEnumerator<(QdrantVectorRecord, double)> enumerator = this._qdrantClient
             .FindNearestInCollectionAsync(
                 collectionName: collectionName,
-                target: embedding.Vector,
+                target: embedding,
                 threshold: minRelevanceScore,
                 top: limit,
                 withVectors: withEmbeddings,
@@ -328,7 +328,7 @@ public class QdrantMemoryStore : IMemoryStore
             }
             catch (HttpRequestException ex) when (ex.Message.Contains("404"))
             {
-                this._logger?.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet",
+                this._logger.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet",
                     nameof(QdrantMemoryStore), collectionName);
                 hasResult = false;
             }
@@ -338,7 +338,7 @@ public class QdrantMemoryStore : IMemoryStore
                 yield return (
                     MemoryRecord.FromJsonMetadata(
                         json: result.Value.Item1.GetSerializedPayload(),
-                        embedding: new Embedding<float>(result.Value.Item1.Embedding, transferOwnership: true)),
+                        embedding: result.Value.Item1.Embedding),
                     result.Value.Item2);
             }
         } while (hasResult);
@@ -347,7 +347,7 @@ public class QdrantMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
@@ -408,7 +408,7 @@ public class QdrantMemoryStore : IMemoryStore
 
         var vectorData = QdrantVectorRecord.FromJsonMetadata(
             pointId: pointId,
-            embedding: record.Embedding.Vector,
+            embedding: record.Embedding,
             json: record.GetSerializedMetadata());
 
         if (vectorData == null)

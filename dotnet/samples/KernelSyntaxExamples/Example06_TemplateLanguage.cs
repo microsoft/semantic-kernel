@@ -28,7 +28,7 @@ public static class Example06_TemplateLanguage
         }
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)
@@ -59,7 +59,7 @@ Is it weekend time (weekend/not weekend)?
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kindOfDay.InvokeAsync();
+        var result = await kernel.RunAsync(kindOfDay);
         Console.WriteLine(result);
 
         /* OUTPUT:

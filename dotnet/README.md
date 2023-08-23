@@ -41,7 +41,7 @@ var prompt = @"{{$input}}
 
 One line TLDR with the fewest words.";
 
-var summarize = kernel.CreateSemanticFunction(prompt);
+var summarize = kernel.CreateSemanticFunction(prompt, maxTokens: 100);
 
 string text1 = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -80,8 +80,8 @@ string summarizePrompt = @"{{$input}}
 
 Give me a TLDR with the fewest words.";
 
-var translator = kernel.CreateSemanticFunction(translationPrompt);
-var summarize = kernel.CreateSemanticFunction(summarizePrompt);
+var translator = kernel.CreateSemanticFunction(translationPrompt, maxTokens: 200);
+var summarize = kernel.CreateSemanticFunction(summarizePrompt, maxTokens: 100);
 
 string inputText = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -101,18 +101,18 @@ Console.WriteLine(output);
 The repository contains also a few C# Jupyter notebooks that demonstrates
 how to get started with the Semantic Kernel.
 
-See [here](../samples/notebooks/dotnet/README.md) for the full list, with
+See [here](./notebooks/README.md) for the full list, with
 requirements and setup instructions.
 
-1. [Getting started](../samples/notebooks//dotnet/00-getting-started.ipynb)
-2. [Loading and configuring Semantic Kernel](../samples/notebooks//dotnet/01-basic-loading-the-kernel.ipynb)
-3. [Running AI prompts from file](../samples/notebooks//dotnet/02-running-prompts-from-file.ipynb)
-4. [Creating Semantic Functions at runtime (i.e. inline functions)](../samples/notebooks//dotnet/03-semantic-function-inline.ipynb)
-5. [Using Context Variables to Build a Chat Experience](../samples/notebooks//dotnet/04-context-variables-chat.ipynb)
-6. [Creating and Executing Plans](../samples/notebooks//dotnet/05-using-the-planner.ipynb)
-7. [Building Memory with Embeddings](../samples/notebooks//dotnet/06-memory-and-embeddings.ipynb)
-8. [Creating images with DALL-E 2](../samples/notebooks//dotnet/07-DALL-E-2.ipynb)
-9. [Chatting with ChatGPT and Images](../samples/notebooks//dotnet/08-chatGPT-with-DALL-E-2.ipynb)
+1. [Getting started](./notebooks/00-getting-started.ipynb)
+2. [Loading and configuring Semantic Kernel](./notebooks/01-basic-loading-the-kernel.ipynb)
+3. [Running AI prompts from file](./notebooks/02-running-prompts-from-file.ipynb)
+4. [Creating Semantic Functions at runtime (i.e. inline functions)](./notebooks/03-semantic-function-inline.ipynb)
+5. [Using Context Variables to Build a Chat Experience](./notebooks/04-context-variables-chat.ipynb)
+6. [Creating and Executing Plans](./notebooks/05-using-the-planner.ipynb)
+7. [Building Memory with Embeddings](./notebooks/06-memory-and-embeddings.ipynb)
+8. [Creating images with DALL-E 2](./notebooks/07-DALL-E-2.ipynb)
+9. [Chatting with ChatGPT and Images](./notebooks/08-chatGPT-with-DALL-E-2.ipynb)
 
 # Nuget packages
 
@@ -121,7 +121,7 @@ more features, such as connectors to services and Skills to perform specific act
 Unless you need to optimize which packages to include in your app, you will usually
 start by installing this meta-package first:
 
-* **Microsoft.SemanticKernel**
+- **Microsoft.SemanticKernel**
 
 This meta package includes core packages and OpenAI connectors, allowing to run
 most samples and build apps with OpenAI and Azure OpenAI.
@@ -129,12 +129,12 @@ most samples and build apps with OpenAI and Azure OpenAI.
 Packages included in **Microsoft.SemanticKernel**:
 
 1. **Microsoft.SemanticKernel.Abstractions**: contains common interfaces and classes
-  used by the core and other SK components.
+   used by the core and other SK components.
 1. **Microsoft.SemanticKernel.Core**: contains the core logic of SK, such as prompt
-  engineering, semantic memory and semantic functions definition and orchestration.
+   engineering, semantic memory and semantic functions definition and orchestration.
 1. **Microsoft.SemanticKernel.Connectors.AI.OpenAI**: connectors to OpenAI and Azure
-  OpenAI, allowing to run semantic functions, chats, image generation with GPT3,
-  GPT3.5, GPT4, DALL-E2. Includes also GPT tokenizers.
+   OpenAI, allowing to run semantic functions, chats, image generation with GPT3,
+   GPT3.5, GPT4, DALL-E2. Includes also GPT tokenizers.
 
 Other SK packages available at nuget.org:
 

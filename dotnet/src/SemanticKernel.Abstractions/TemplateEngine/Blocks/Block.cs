@@ -22,18 +22,17 @@ public abstract class Block
     /// <summary>
     /// App logger
     /// </summary>
-    protected ILogger Logger { get; } = NullLogger.Instance;
+    private protected ILogger Logger { get; }
 
     /// <summary>
-    /// Base constructor
+    /// Base constructor. Prevent external instantiation.
     /// </summary>
     /// <param name="content">Block content</param>
-    /// <param name="logger">App logger</param>
-    protected Block(string? content, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    private protected Block(string? content, ILoggerFactory? loggerFactory)
     {
-        if (logger != null) { this.Logger = logger; }
-
         this.Content = content ?? string.Empty;
+        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
     }
 
     /// <summary>
