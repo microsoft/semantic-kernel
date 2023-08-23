@@ -21,7 +21,7 @@ public class NullHttpRetryHandlerFactory : IDelegatingHandlerFactory
     /// Creates a new instance of <see cref="NullHttpRetryHandler"/>.
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>A new instance of <see cref="NullHttpRetryHandler"/>.</returns>   
+    /// <returns>A new instance of <see cref="NullHttpRetryHandler"/>.</returns>
     public DelegatingHandler Create(ILoggerFactory? loggerFactory)
     {
         return new NullHttpRetryHandler();
