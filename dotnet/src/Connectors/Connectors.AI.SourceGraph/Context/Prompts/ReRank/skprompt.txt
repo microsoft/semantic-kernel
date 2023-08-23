@@ -1,0 +1,9 @@
+I am a professional computer programmer and need help deciding which of these files to read first to answer my question. My question is: 
+{{$userQuery}}. 
+
+Select the files from the following list that I should read to answer my question, ranked by most relevant first. 
+
+Format the result as XML, like this: <list><item><filename>filename 1</filename><explanation>this is why 
+I chose this item</explanation></item><item><filename>filename 2</filename><explanation>why I chose this item</explanation></item></list>\n
+
+{{$results}}
