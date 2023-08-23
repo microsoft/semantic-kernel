@@ -24,6 +24,7 @@ ipykernel = "^6.21.1"
 pytest = "7.4.0"
 ruff = "0.0.285"
 pytest-asyncio = "0.21.1"
+snoop = "0.4.3"
 
 [tool.poetry.group.google_palm.dependencies]
 google-generativeai = { version = "^0.1.0", markers = "python_version >= '3.9'" }
@@ -70,4 +71,3 @@ line-length = 120
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
