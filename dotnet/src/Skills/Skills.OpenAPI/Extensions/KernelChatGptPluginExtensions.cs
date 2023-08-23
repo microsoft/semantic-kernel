@@ -34,7 +34,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromUrlAsync(
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
+    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginFromUrlAsync(
         this IKernel kernel,
         string skillName,
         Uri url,
@@ -44,7 +45,7 @@ public static class KernelChatGptPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.Logger);
+        var internalHttpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
@@ -72,7 +73,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillFromResourceAsync(
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
+    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginFromResourceAsync(
         this IKernel kernel,
         string skillName,
         OpenApiSkillExecutionParameters? executionParameters = null,
@@ -106,7 +108,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromDirectoryAsync(
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
+    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginFromDirectoryAsync(
         this IKernel kernel,
         string parentDirectory,
         string skillDirectoryName,
@@ -126,7 +129,7 @@ public static class KernelChatGptPluginExtensions
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {chatGptPluginPath} is found");
         }
 
-        kernel.Logger.LogTrace("Registering Rest functions from {0} ChatGPT Plugin", chatGptPluginPath);
+        kernel.LoggerFactory.CreateLogger(nameof(KernelChatGptPluginExtensions)).LogTrace("Registering Rest functions from {0} ChatGPT Plugin", chatGptPluginPath);
 
         using var stream = File.OpenRead(chatGptPluginPath);
 
@@ -144,7 +147,8 @@ public static class KernelChatGptPluginExtensions
     /// <param name="executionParameters">Skill execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginSkillSkillFromFileAsync(
+    [Obsolete("ChatGPT specific extensions will be removed in a future version. Use KernelAIPluginExtensions.ImportAIPluginAsync instead")]
+    public static async Task<IDictionary<string, ISKFunction>> ImportChatGptPluginFromFileAsync(
         this IKernel kernel,
         string skillName,
         string filePath,
@@ -156,7 +160,7 @@ public static class KernelChatGptPluginExtensions
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {filePath} is found");
         }
 
-        kernel.Logger.LogTrace("Registering Rest functions from {0} ChatGPT Plugin", filePath);
+        kernel.LoggerFactory.CreateLogger(nameof(KernelChatGptPluginExtensions)).LogTrace("Registering Rest functions from {0} ChatGPT Plugin", filePath);
 
         using var stream = File.OpenRead(filePath);
 

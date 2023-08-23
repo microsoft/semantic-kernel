@@ -16,6 +16,8 @@ from semantic_kernel.semantic_functions.semantic_function_config import (
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import (
     azure_openai_settings_from_dot_env,
+    bing_search_settings_from_dot_env,
+    google_palm_settings_from_dot_env,
     openai_settings_from_dot_env,
     pinecone_settings_from_dot_env,
     postgres_settings_from_dot_env,
@@ -28,6 +30,8 @@ __all__ = [
     "azure_openai_settings_from_dot_env",
     "postgres_settings_from_dot_env",
     "pinecone_settings_from_dot_env",
+    "bing_search_settings_from_dot_env",
+    "google_palm_settings_from_dot_env",
     "PromptTemplateConfig",
     "PromptTemplate",
     "ChatPromptTemplate",

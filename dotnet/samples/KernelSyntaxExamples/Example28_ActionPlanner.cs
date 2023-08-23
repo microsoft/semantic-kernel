@@ -14,8 +14,8 @@ public static class Example28_ActionPlanner
     {
         Console.WriteLine("======== Action Planner ========");
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAITextCompletionService("text-davinci-002", TestConfiguration.OpenAI.ApiKey)// Note: Action Planner works with old models like text-davinci-002
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -27,14 +28,14 @@ public sealed class PineconeClient : IPineconeClient
     /// </summary>
     /// <param name="pineconeEnvironment">The environment for Pinecone.</param>
     /// <param name="apiKey">The API key for accessing Pinecone services.</param>
-    /// <param name="logger">An optional logger instance for logging.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="httpClient">An optional HttpClient instance for making HTTP requests.</param>
-    public PineconeClient(string pineconeEnvironment, string apiKey, ILogger? logger = null, HttpClient? httpClient = null)
+    public PineconeClient(string pineconeEnvironment, string apiKey, ILoggerFactory? loggerFactory = null, HttpClient? httpClient = null)
     {
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
-        this._logger = logger ?? NullLogger<PineconeClient>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(PineconeClient)) : NullLogger.Instance;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }
@@ -145,7 +146,7 @@ public sealed class PineconeClient : IPineconeClient
     /// <inheritdoc />
     public async IAsyncEnumerable<(PineconeDocument, double)> GetMostRelevantAsync(
         string indexName,
-        IEnumerable<float> vector,
+        ReadOnlyMemory<float> vector,
         double threshold,
         int topK,
         bool includeValues,
@@ -258,9 +259,7 @@ public sealed class PineconeClient : IPineconeClient
     {
         if (ids == null && string.IsNullOrEmpty(indexNamespace) && filter == null && !deleteAll)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.FailedToRemoveVectorData,
-                "Must provide at least one of ids, filter, or deleteAll");
+            throw new SKException("Must provide at least one of ids, filter, or deleteAll");
         }
 
         ids = ids?.ToList();
@@ -583,16 +582,12 @@ public sealed class PineconeClient : IPineconeClient
 
         if (pineconeIndex == null)
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.IndexNotFound,
-                "Index not found in Pinecone. Create index to perform operations with vectors.");
+            throw new SKException("Index not found in Pinecone. Create index to perform operations with vectors.");
         }
 
         if (string.IsNullOrWhiteSpace(pineconeIndex.Status.Host))
         {
-            throw new PineconeMemoryException(
-                PineconeMemoryException.ErrorCodes.UnknownIndexHost,
-                $"Host of index {indexName} is unknown.");
+            throw new SKException($"Host of index {indexName} is unknown.");
         }
 
         this._logger.LogDebug("Found host {0} for index {1}", pineconeIndex.Status.Host, indexName);

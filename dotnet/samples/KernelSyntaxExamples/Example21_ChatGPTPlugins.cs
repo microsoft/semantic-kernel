@@ -18,15 +18,11 @@ public static class Example21_ChatGptPlugins
 
     private static async Task RunChatGptPluginAsync()
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
+        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
         using HttpClient httpClient = new();
 
-        //Import a ChatGPT plugin using one of the following Kernel extension methods
-        //kernel.ImportChatGptPluginSkillFromResourceAsync
-        //kernel.ImportChatGptPluginSkillSkillFromDirectory
-        //kernel.ImportChatGptPluginSkillSkillFromFile
-        //kernel.ImportChatGptPluginSkillFromUrlAsync
-        var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient));
+        //Import a ChatGPT plugin via URI
+        var skill = await kernel.ImportAIPluginAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient));
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -40,9 +36,9 @@ public static class Example21_ChatGptPlugins
 
         //--------------- Example of using Klarna ChatGPT plugin ------------------------
 
-        //var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
+        //var kernel = new KernelBuilder().WithLogger(ConsoleLogger.LoggerFactory).Build();
 
-        //var skill = await kernel.ImportChatGptPluginSkillFromUrlAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters(httpClient));
+        //var skill = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters(httpClient));
 
         //var contextVariables = new ContextVariables();
         //contextVariables.Set("q", "Laptop");      // A precise query that matches one very small category or product that needs to be searched for to find the products the user is looking for. If the user explicitly stated what they want, use that as a query. The query is as specific as possible to the product name or category mentioned by the user in its singular form, and don't contain any clarifiers like latest, newest, cheapest, budget, premium, expensive or similar. The query is always taken from the latest topic, if there is a new topic a new query is started.

@@ -16,8 +16,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -61,14 +59,14 @@ public class WeaviateMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="endpoint">The Weaviate server endpoint URL.</param>
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public WeaviateMemoryStore(string endpoint, string? apiKey = null, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public WeaviateMemoryStore(string endpoint, string? apiKey = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(endpoint);
 
         this._endpoint = new Uri(endpoint);
         this._apiKey = apiKey;
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
 
@@ -78,8 +76,8 @@ public class WeaviateMemoryStore : IMemoryStore
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
     /// <param name="endpoint">The optional Weaviate server endpoint URL. If not specified, the base address of the HTTP client is used.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public WeaviateMemoryStore(HttpClient httpClient, string? apiKey = null, string? endpoint = null, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public WeaviateMemoryStore(HttpClient httpClient, string? apiKey = null, string? endpoint = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
@@ -92,7 +90,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
         this._apiKey = apiKey;
         this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = httpClient;
     }
 
@@ -116,16 +114,14 @@ public class WeaviateMemoryStore : IMemoryStore
 
             if (result == null || result.Description != description)
             {
-                throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.CollectionNameConflict,
-                    $"Name conflict for collection: {collectionName} with class name: {className}");
+                throw new SKException($"Name conflict for collection: {collectionName} with class name: {className}");
             }
 
             this._logger.LogDebug("Created collection: {0}, with class name: {1}", collectionName, className);
         }
         catch (HttpRequestException e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToCreateCollection,
-                $"Unable to create collection: {collectionName}, with class name: {className}", e);
+            throw new SKException($"Unable to create collection: {collectionName}, with class name: {className}", e);
         }
     }
 
@@ -160,7 +156,7 @@ public class WeaviateMemoryStore : IMemoryStore
                     // For example a collectionName of '__this_collection' and 'this_collection' are
                     // both transformed to the class name of <classNamePrefix>thiscollection - even though the external
                     // system could consider them as unique collection names.
-                    throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.CollectionNameConflict, $"Unable to verify existing collection: {collectionName} with class name: {className}");
+                    throw new SKException($"Unable to verify existing collection: {collectionName} with class name: {className}");
                 }
             }
 
@@ -168,7 +164,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (Exception e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToGetClass, "Unable to get class from Weaviate", e);
+            throw new SKException("Unable to get class from Weaviate", e);
         }
     }
 
@@ -186,13 +182,13 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (Exception e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToListCollections, "Unable to list collections", e);
+            throw new SKException("Unable to list collections", e);
         }
 
         GetSchemaResponse? getSchemaResponse = JsonSerializer.Deserialize<GetSchemaResponse>(responseContent, s_jsonSerializerOptions);
         if (getSchemaResponse == null)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToListCollections, "Unable to deserialize list collections response");
+            throw new SKException("Unable to deserialize list collections response");
         }
 
         foreach (GetClassResponse? @class in getSchemaResponse.Classes!)
@@ -220,7 +216,7 @@ public class WeaviateMemoryStore : IMemoryStore
             }
             catch (Exception e)
             {
-                throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToDeleteCollection, "Collection deletion failed", e);
+                throw new SKException("Collection deletion failed", e);
             }
         }
     }
@@ -258,14 +254,14 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (HttpRequestException e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToUpsertVectors, e);
+            throw new SKException("Failed to upsert vectors", e);
         }
 
         BatchResponse[]? result = JsonSerializer.Deserialize<BatchResponse[]>(responseContent, s_jsonSerializerOptions);
 
         if (result == null)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToUpsertVectors, "Unable to deserialize batch response");
+            throw new SKException("Unable to deserialize batch response");
         }
 
         foreach (BatchResponse batchResponse in result)
@@ -314,7 +310,7 @@ public class WeaviateMemoryStore : IMemoryStore
         MemoryRecord record = new(
             key: weaviateObject.Id!,
             timestamp: timestamp,
-            embedding: new(weaviateObject.Vector ?? Array.Empty<float>()),
+            embedding: weaviateObject.Vector,
             metadata: ToMetadata(weaviateObject));
 
         this._logger.LogDebug("Vector found with key: {0}", key);
@@ -367,7 +363,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (HttpRequestException e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToRemoveVectorData, "Vector delete request failed", e);
+            throw new SKException("Vector delete request failed", e);
         }
     }
 
@@ -380,7 +376,7 @@ public class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -395,7 +391,7 @@ public class WeaviateMemoryStore : IMemoryStore
         using HttpRequestMessage request = new CreateGraphRequest
         {
             Class = className,
-            Vector = embedding.Vector,
+            Vector = embedding,
             Distance = minRelevanceScore,
             Limit = limit,
             WithVector = withEmbeddings
@@ -426,7 +422,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (Exception e)
         {
-            throw new WeaviateMemoryException(WeaviateMemoryException.ErrorCodes.FailedToGetVectorData, "Unable to deserialize Weaviate object", e);
+            throw new SKException("Unable to deserialize Weaviate object", e);
         }
 
         foreach ((MemoryRecord, double) kv in result)
@@ -438,11 +434,10 @@ public class WeaviateMemoryStore : IMemoryStore
     private static MemoryRecord DeserializeToMemoryRecord(JsonNode? json)
     {
         string id = json!["_additional"]!["id"]!.GetValue<string>();
-        Embedding<float> vector = Embedding<float>.Empty;
-        if (json["_additional"]!["vector"] != null)
+        ReadOnlyMemory<float> vector = ReadOnlyMemory<float>.Empty;
+        if (json["_additional"]!["vector"] is JsonArray jsonArray)
         {
-            IEnumerable<float> floats = json["_additional"]!["vector"]!.AsArray().Select(a => a!.GetValue<float>());
-            vector = new(floats);
+            vector = jsonArray.Select(a => a!.GetValue<float>()).ToArray();
         }
 
         string text = json["sk_text"]!.GetValue<string>();
@@ -467,7 +462,7 @@ public class WeaviateMemoryStore : IMemoryStore
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         double minRelevanceScore = 0,
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)

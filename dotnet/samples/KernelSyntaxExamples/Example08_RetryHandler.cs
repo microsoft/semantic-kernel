@@ -35,7 +35,7 @@ public static class Example08_RetryHandler
 
     private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? httpConfig = null)
     {
-        var kernelBuilder = Kernel.Builder.WithLogger(InfoLogger.Logger);
+        var kernelBuilder = Kernel.Builder.WithLoggerFactory(InfoLogger.LoggerFactory);
         if (httpConfig != null)
         {
             kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(httpConfig));
@@ -47,7 +47,7 @@ public static class Example08_RetryHandler
         kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
 
         // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY");
+        kernelBuilder = kernelBuilder.WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
 
         var kernel = kernelBuilder.Build();
 
@@ -57,9 +57,9 @@ public static class Example08_RetryHandler
     private static IKernel InitializeKernel()
     {
         var kernel = Kernel.Builder
-            .WithLogger(InfoLogger.Logger)
+            .WithLoggerFactory(InfoLogger.LoggerFactory)
             // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-            .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY")
             .Build();
 
         return kernel;
@@ -73,10 +73,10 @@ public static class Example08_RetryHandler
 
     private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
     {
-        var kernel = Kernel.Builder.WithLogger(InfoLogger.Logger)
+        var kernel = Kernel.Builder.WithLoggerFactory(InfoLogger.LoggerFactory)
             .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
             // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-            .WithOpenAITextCompletionService("text-davinci-003", "BAD_KEY")
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY")
             .Build();
 
         await ImportAndExecuteSkillAsync(kernel);
@@ -103,13 +103,13 @@ public static class Example08_RetryHandler
 
     private static class InfoLogger
     {
-        internal static ILogger Logger => LogFactory.CreateLogger<object>();
-        private static ILoggerFactory LogFactory => s_loggerFactory.Value;
+        internal static ILogger Logger => LoggerFactory.CreateLogger<object>();
+        internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
         private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
 
         private static ILoggerFactory LogBuilder()
         {
-            return LoggerFactory.Create(builder =>
+            return Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
             {
                 builder.SetMinimumLevel(LogLevel.Information);
                 builder.AddFilter("Microsoft", LogLevel.Information);

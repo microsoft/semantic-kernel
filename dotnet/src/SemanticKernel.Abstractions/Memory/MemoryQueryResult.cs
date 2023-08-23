@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -24,7 +25,8 @@ public class MemoryQueryResult
     /// <summary>
     /// Nullable embedding associated with the metadata returned for by a query.
     /// </summary>
-    public Embedding<float>? Embedding { get; }
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float>? Embedding { get; }
 
     /// <summary>
     /// Create a new instance of MemoryQueryResult
@@ -39,7 +41,7 @@ public class MemoryQueryResult
     public MemoryQueryResult(
         MemoryRecordMetadata metadata,
         double relevance,
-        Embedding<float>? embedding)
+        ReadOnlyMemory<float>? embedding)
     {
         this.Metadata = metadata;
         this.Relevance = relevance;

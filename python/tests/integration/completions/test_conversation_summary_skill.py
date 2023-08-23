@@ -15,6 +15,7 @@ from semantic_kernel.core_skills.conversation_summary_skill import (
 @pytest.mark.asyncio
 async def test_azure_summarize_conversation_using_skill(
     setup_summarize_conversation_using_skill,
+    get_aoai_config
 ):
     kernel, chatTranscript = setup_summarize_conversation_using_skill
 
@@ -24,7 +25,7 @@ async def test_azure_summarize_conversation_using_skill(
         endpoint = os.environ["AzureOpenAI__Endpoint"]
     else:
         # Load credentials from .env file
-        deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+        deployment_name, api_key, endpoint = get_aoai_config
         deployment_name = "text-davinci-003"
 
     kernel.add_text_completion_service(

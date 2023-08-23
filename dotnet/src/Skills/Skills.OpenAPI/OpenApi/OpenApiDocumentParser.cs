@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Text;
 
@@ -29,10 +30,10 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiDocumentParser"/> class.
     /// </summary>
-    /// <param name="logger">Optional logger instance.</param>
-    public OpenApiDocumentParser(ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(OpenApiDocumentParser)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -94,7 +95,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         if (jsonObject == null)
         {
             // The document is malformed.
-            throw new OpenApiDocumentParsingException("Parsing of OpenAPI document failed.");
+            throw new SKException("Parsing of OpenAPI document failed.");
         }
 
         if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
@@ -211,12 +212,12 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         {
             if (parameter.In == null)
             {
-                throw new OpenApiDocumentParsingException($"Parameter location of {parameter.Name} parameter of {operationId} operation is undefined.");
+                throw new SKException($"Parameter location of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
 
             if (parameter.Style == null)
             {
-                throw new OpenApiDocumentParsingException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
+                throw new SKException($"Parameter style of {parameter.Name} parameter of {operationId} operation is undefined.");
             }
 
             var restParameter = new RestApiOperationParameter(
@@ -262,7 +263,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
         var mediaType = s_supportedMediaTypes.FirstOrDefault(smt => requestBody.Content.ContainsKey(smt));
         if (mediaType == null)
         {
-            throw new OpenApiDocumentParsingException($"Neither of the media types of {operationId} is supported.");
+            throw new SKException($"Neither of the media types of {operationId} is supported.");
         }
 
         var mediaTypeMetadata = requestBody.Content[mediaType];
@@ -290,7 +291,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         if (level > PayloadPropertiesHierarchyMaxDepth)
         {
-            throw new OpenApiDocumentParsingException($"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
+            throw new SKException($"Max level {PayloadPropertiesHierarchyMaxDepth} of traversing payload properties of {operationId} operation is exceeded.");
         }
 
         var result = new List<RestApiOperationPayloadProperty>();
@@ -375,7 +376,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 return passwordValue.Value.ToString(CultureInfo.InvariantCulture);
 
             default:
-                throw new OpenApiDocumentParsingException($"The value type - {value.PrimitiveType} is not supported.");
+                throw new SKException($"The value type - {value.PrimitiveType} is not supported.");
         }
     }
 
@@ -397,7 +398,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
             if (!ignoreNonCompliantErrors)
             {
-                throw new OpenApiDocumentParsingException(message);
+                throw new SKException(message);
             }
         }
     }
