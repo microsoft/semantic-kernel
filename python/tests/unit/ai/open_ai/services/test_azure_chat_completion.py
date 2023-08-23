@@ -208,6 +208,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
             logit_bias=token_bias,
         )
 
+
 @pytest.mark.asyncio
 async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> None:
     mock_openai = AsyncMock()

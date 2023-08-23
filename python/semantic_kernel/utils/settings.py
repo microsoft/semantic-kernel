@@ -93,7 +93,7 @@ def bing_search_settings_from_dot_env() -> str:
     api_key = config.get("BING_API_KEY", None)
 
     assert api_key is not None, "Bing Search API key not found in .env file"
-    
+
     return api_key
 
 
