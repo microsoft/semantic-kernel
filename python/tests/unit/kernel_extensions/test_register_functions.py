@@ -2,6 +2,7 @@
 
 
 import pytest
+
 from semantic_kernel import Kernel
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
