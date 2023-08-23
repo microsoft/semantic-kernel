@@ -16,12 +16,12 @@ namespace SemanticKernel.UnitTests.SkillDefinition;
 public class SKContextTests
 {
     private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly Mock<ILogger> _logger;
+    private readonly Mock<ILoggerFactory> _logger;
 
     public SKContextTests()
     {
         this._skills = new Mock<IReadOnlySkillCollection>();
-        this._logger = new Mock<ILogger>();
+        this._logger = new Mock<ILoggerFactory>();
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(variables, skills: this._skills.Object, logger: this._logger.Object);
+        var target = new SKContext(variables, skills: this._skills.Object, loggerFactory: this._logger.Object);
         variables.Set("foo1", "bar1");
 
         // Act
