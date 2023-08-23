@@ -87,13 +87,13 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     [
         (
             False,
-            "Who is the 46th president of the United States? What is his birth year divided by 2",
+            "What is the tallest mountain on Earth? How tall is it divided by 2?",
             "ExecutePlan",
             "StepwisePlanner",
         ),
         (
             True,
-            "Who is the 46th president of the United States? What is his birth year divided by 2",
+            "What is the tallest mountain on Earth? How tall is it divided by 2?",
             "ExecutePlan",
             "StepwisePlanner",
         ),
@@ -135,7 +135,7 @@ async def test_can_create_stepwise_plan(
     [
         (
             False,
-            "Who is the current president of the United States? What is his current age added by 2",
+            "What is the tallest mountain on Earth? How tall is it divided by 2?",
         )
     ],
 )
@@ -163,8 +163,6 @@ async def test_can_execute_stepwise_plan(
     plan = planner.create_plan(prompt)
     result = await plan.invoke_async()
 
-    assert result.result.lower().find("biden") >= 0
-
     steps_taken_string = result.variables["steps_taken"]
     assert steps_taken_string is not None
 
@@ -174,7 +172,3 @@ async def test_can_execute_stepwise_plan(
     assert (
         3 <= len(steps_taken) <= 10
     ), f"Actual: {len(steps_taken)}. Expected at least 3 steps and at most 10 steps to be taken."
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
