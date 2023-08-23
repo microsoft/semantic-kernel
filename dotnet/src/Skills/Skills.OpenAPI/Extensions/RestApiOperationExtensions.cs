@@ -121,7 +121,7 @@ internal static class RestApiOperationExtensions
         return new RestApiOperationParameter(
             RestApiOperation.PayloadArgumentName,
             operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object",
-            true,
+            isRequired: true,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
             description: operation.Payload?.Description ?? "REST API request body.");
