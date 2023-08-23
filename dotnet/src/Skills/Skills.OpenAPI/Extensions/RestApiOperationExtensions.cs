@@ -105,7 +105,7 @@ internal static class RestApiOperationExtensions
         return new RestApiOperationParameter(
             RestApiOperation.ContentTypeArgumentName,
             "string",
-            false,
+            isRequired: false,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
             description: "Content type of REST API request body.");
