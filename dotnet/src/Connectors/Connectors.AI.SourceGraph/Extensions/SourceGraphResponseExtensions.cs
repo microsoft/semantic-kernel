@@ -2,14 +2,14 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.SourceGraph.Extensions;
 
 using System.Text.Json;
-using global::Connectors.AI.SourceGraph;
+using Models;
 using StrawberryShake;
 
 
 /// <summary>
 ///  Extensions for converting GraphQL responses to SourceGraphResponse objects.
 /// </summary>
-public static class SourceGraphResponseExtensions
+internal static class SourceGraphResponseExtensions
 {
     /// <summary>
     ///  Converts a GraphQL response to a SourceGraphResponse object.
@@ -45,4 +45,16 @@ public static class SourceGraphResponseExtensions
         }
         return SearchResult.FromSearchResults(queryResponse.Data.Search.Results);
     }
+
+
+    public static string ToJson(this SourceGraphResponse self) => JsonSerializer.Serialize(self, Settings);
+
+    public static readonly JsonSerializerOptions Settings = new(JsonSerializerDefaults.General)
+    {
+        Converters =
+        {
+            IsoDateTimeOffsetConverter.Singleton
+        }
+    };
+
 }
