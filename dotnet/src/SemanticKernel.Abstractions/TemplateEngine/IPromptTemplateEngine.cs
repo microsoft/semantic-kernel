@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
@@ -14,14 +13,12 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 public interface IPromptTemplateEngine
 {
     /// <summary>
-    /// Given a prompt template string, extract all the blocks (text, variables, function calls)
+    /// Given a prompt template string, extract all the variable names
     /// </summary>
     /// <param name="templateText">Prompt template (see skprompt.txt files)</param>
-    /// <param name="validate">Whether to validate the blocks syntax, or just return the blocks found, which could contain invalid code</param>
-    /// <returns>A list of all the blocks, ie the template tokenized in text, variables and function calls</returns>
-    IList<Block> ExtractBlocks(
-        string? templateText,
-        bool validate = true);
+    /// <returns>A list of all the variable names</returns>
+    IList<string> ExtractVariableNames(
+        string? templateText);
 
     /// <summary>
     /// Given a prompt template, replace the variables with their values and execute the functions replacing their
