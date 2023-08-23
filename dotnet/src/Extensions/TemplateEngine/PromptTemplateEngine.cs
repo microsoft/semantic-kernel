@@ -37,7 +37,28 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     }
 
     /// <inheritdoc/>
-    public IList<Block> ExtractBlocks(string? templateText, bool validate = true)
+    public IList<string> ExtractVariableNames(string? templateText)
+    {
+        this._logger.LogTrace("Extracting variable names from string template: {0}", templateText);
+        var blocks = this.ExtractBlocks(templateText);
+        return blocks.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
+    }
+
+    /// <inheritdoc/>
+    public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
+    {
+        this._logger.LogTrace("Rendering string template: {0}", templateText);
+        var blocks = this.ExtractBlocks(templateText);
+        return await this.RenderAsync(blocks, context, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Given a prompt template string, extract all the blocks (text, variables, function calls)
+    /// </summary>
+    /// <param name="templateText">Prompt template (see skprompt.txt files)</param>
+    /// <param name="validate">Whether to validate the blocks syntax, or just return the blocks found, which could contain invalid code</param>
+    /// <returns>A list of all the blocks, ie the template tokenized in text, variables and function calls</returns>
+    internal IList<Block> ExtractBlocks(string? templateText, bool validate = true)
     {
         this._logger.LogTrace("Extracting blocks from template: {0}", templateText);
         var blocks = this._tokenizer.Tokenize(templateText);
@@ -54,14 +75,6 @@ public class PromptTemplateEngine : IPromptTemplateEngine
         }
 
         return blocks;
-    }
-
-    /// <inheritdoc/>
-    public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
-    {
-        this._logger.LogTrace("Rendering string template: {0}", templateText);
-        var blocks = this.ExtractBlocks(templateText);
-        return await this.RenderAsync(blocks, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
