@@ -25,13 +25,13 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureTextCompletion(
         string modelId,
         string endpoint,
         string apiKey,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(modelId, endpoint, apiKey, httpClient, logger)
+        ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, apiKey, httpClient, loggerFactory)
     {
     }
 
@@ -42,13 +42,13 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="credential">Token credentials, e.g. DefaultAzureCredential, ManagedIdentityCredential, EnvironmentCredential, etc.</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureTextCompletion(
         string modelId,
         string endpoint,
         TokenCredential credential,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(modelId, endpoint, credential, httpClient, logger)
+        ILoggerFactory? loggerFactory = null) : base(modelId, endpoint, credential, httpClient, loggerFactory)
     {
     }
 
@@ -57,11 +57,11 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     /// </summary>
     /// <param name="modelId">Azure OpenAI model ID or deployment name, see https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource</param>
     /// <param name="openAIClient">Custom <see cref="OpenAIClient"/>.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public AzureTextCompletion(
         string modelId,
         OpenAIClient openAIClient,
-        ILogger? logger = null) : base(modelId, openAIClient, logger)
+        ILoggerFactory? loggerFactory = null) : base(modelId, openAIClient, loggerFactory)
     {
     }
 

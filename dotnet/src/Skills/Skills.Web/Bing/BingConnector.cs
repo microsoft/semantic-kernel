@@ -28,9 +28,9 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// Initializes a new instance of the <see cref="BingConnector"/> class.
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
-    /// <param name="logger">An optional logger to log connector-related information.</param>
-    public BingConnector(string apiKey, ILogger<BingConnector>? logger = null) :
-        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public BingConnector(string apiKey, ILoggerFactory? loggerFactory = null) :
+        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
     {
     }
 
@@ -39,13 +39,13 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
-    /// <param name="logger">An optional logger to log connector-related information.</param>
-    public BingConnector(string apiKey, HttpClient httpClient, ILogger<BingConnector>? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public BingConnector(string apiKey, HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
         this._apiKey = apiKey;
-        this._logger = logger ?? NullLogger<BingConnector>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(BingConnector)) : NullLogger.Instance;
         this._httpClient = httpClient;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", Telemetry.HttpUserAgent);
     }

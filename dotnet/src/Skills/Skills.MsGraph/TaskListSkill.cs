@@ -37,19 +37,19 @@ public sealed class TaskListSkill
     }
 
     private readonly ITaskManagementConnector _connector;
-    private readonly ILogger<TaskListSkill> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TaskListSkill"/> class.
     /// </summary>
     /// <param name="connector">Task list connector.</param>
-    /// <param name="logger">Logger.</param>
-    public TaskListSkill(ITaskManagementConnector connector, ILogger<TaskListSkill>? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public TaskListSkill(ITaskManagementConnector connector, ILoggerFactory? loggerFactory = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = logger ?? new NullLogger<TaskListSkill>();
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(TaskListSkill)) : NullLogger.Instance;
     }
 
     /// <summary>
