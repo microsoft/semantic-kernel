@@ -1,10 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -36,6 +41,11 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
+    /// Default prompt template engine to be used when constructing a Kernel.
+    /// </summary>
+    public static IPromptTemplateEngine DefaultPromptTemplateEngine { get; set; } = new DefaultPromptTemplateEngine();
+
+    /// <summary>
     /// Build a new kernel instance using the settings passed so far.
     /// </summary>
     /// <returns>Kernel instance</returns>
@@ -49,7 +59,7 @@ public sealed class KernelBuilder
         var instance = new Kernel(
             new SkillCollection(this._loggerFactory),
             this._aiServices.Build(),
-            this._promptTemplateEngine ?? new PromptTemplateEngine(this._loggerFactory),
+            this._promptTemplateEngine ?? KernelBuilder.DefaultPromptTemplateEngine,
             this._memoryFactory.Invoke(),
             this._config,
             this._loggerFactory
@@ -220,5 +230,21 @@ public sealed class KernelBuilder
     {
         this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._config), setAsDefault);
         return this;
+    }
+}
+
+/// <summary>
+/// Default IPromptTemplateEngine which performs no rendering of the template.
+/// </summary>
+internal class DefaultPromptTemplateEngine : IPromptTemplateEngine
+{
+    public IList<string> ExtractVariableNames(string? templateText)
+    {
+        return Enumerable.Empty<string>().ToList();
+    }
+
+    public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(templateText);
     }
 }

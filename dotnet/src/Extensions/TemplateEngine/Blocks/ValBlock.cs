@@ -2,7 +2,6 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
@@ -69,8 +68,8 @@ internal sealed class ValBlock : Block, ITextRendering
 
     public static bool HasValPrefix(string? text)
     {
-        return !text.IsNullOrEmpty()
-               && text.Length > 0
+        return !string.IsNullOrEmpty(text)
+               && text!.Length > 0
                && (text[0] is Symbols.DblQuote or Symbols.SglQuote);
     }
 }

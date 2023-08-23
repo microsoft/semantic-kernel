@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,6 +12,8 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
+#pragma warning disable CA1031 // IsCriticalException is an internal utility and should not be used by extensions
+
 // ReSharper disable TemplateIsNotCompileTimeConstantProblem
 internal sealed class CodeBlock : Block, ICodeRendering
 {
@@ -139,22 +140,24 @@ internal sealed class CodeBlock : Block, ICodeRendering
             contextClone.Variables.Update(input);
         }
 
+        Exception? localException = null;
         try
         {
-            contextClone = await function.InvokeAsync(contextClone).ConfigureAwait(false);
+            contextClone = await function!.InvokeAsync(contextClone).ConfigureAwait(false);
         }
-        catch (Exception ex) when (!ex.IsCriticalException())
+        catch (Exception ex)
         {
             this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
-                function.SkillName, function.Name, ex.Message);
-            contextClone.LastException = ex;
+                function!.SkillName, function.Name, ex.Message);
+            localException = ex;
         }
 
         if (contextClone.ErrorOccurred)
         {
-            var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
+            var lastException = localException ?? contextClone.LastException;
+            var errorMsg = $"Function `{fBlock.Content}` execution failed. {lastException?.GetType().FullName}: {lastException?.Message}";
             this.Logger.LogError(errorMsg);
-            throw new SKException(errorMsg, contextClone.LastException);
+            throw new SKException(errorMsg, lastException);
         }
 
         return contextClone.Result;
@@ -163,7 +166,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     private bool GetFunctionFromSkillCollection(
         IReadOnlySkillCollection skills,
         FunctionIdBlock fBlock,
-        [NotNullWhen(true)] out ISKFunction? function)
+        out ISKFunction? function)
     {
         if (string.IsNullOrEmpty(fBlock.SkillName))
         {
