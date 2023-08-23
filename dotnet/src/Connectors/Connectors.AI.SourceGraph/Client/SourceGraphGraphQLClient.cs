@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.SourceGraph.Client;
 
 using System.Runtime.CompilerServices;
 using Extensions;
-using global::Connectors.AI.SourceGraph;
 using Models;
 using StrawberryShake;
 
@@ -12,7 +11,7 @@ using StrawberryShake;
 /// <summary>
 ///   This class is used to make GraphQL requests to the SourceGraph Graph API.
 /// </summary>
-public class SourceGraphGraphQLClient : ISourceGraphQLClient
+internal class SourceGraphGraphQLClient : ISourceGraphQLClient
 {
     private readonly ISourceGraphClient _sourceGraphClient;
 

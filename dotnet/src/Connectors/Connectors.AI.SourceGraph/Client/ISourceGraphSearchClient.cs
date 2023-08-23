@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Connectors.AI.SourceGraph.Client;
 
-using global::Connectors.AI.SourceGraph;
+using Models;
 
 
 /// <summary>
@@ -36,7 +36,7 @@ public interface ISourceGraphSearchClient
     /// <param name="textResultsCount"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<EmbeddingsSearch?> SearchEmbeddingsAsync(string repoId, string query, int codeResultsCount, int textResultsCount, CancellationToken cancellationToken = default);
+    Task<EmbeddingsSearch?> EmbeddingsSearchAsync(string repoId, string query, int codeResultsCount, int textResultsCount, CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -48,5 +48,5 @@ public interface ISourceGraphSearchClient
     /// <param name="textResultsCount"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<EmbeddingsSearch?> EmbeddingsSearchAsync(IEnumerable<string> repoIds, string query, int codeResultsCount, int textResultsCount, CancellationToken cancellationToken = default);
+    Task<EmbeddingsSearch?> MultiEmbeddingsSearchAsync(IEnumerable<string> repoIds, string query, int codeResultsCount, int textResultsCount, CancellationToken cancellationToken = default);
 }

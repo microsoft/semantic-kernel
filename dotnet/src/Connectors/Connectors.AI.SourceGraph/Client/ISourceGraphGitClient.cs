@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Connectors.AI.SourceGraph.Client;
 
-using global::Connectors.AI.SourceGraph;
+using Models;
 
 
 public interface ISourceGraphGitClient
