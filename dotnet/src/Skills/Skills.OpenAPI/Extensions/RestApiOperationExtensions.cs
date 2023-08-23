@@ -88,7 +88,7 @@ internal static class RestApiOperationExtensions
             return GetParametersFromPayloadMetadata(operation.Payload.Properties, enableNamespacing);
         }
 
-        //Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
+        // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
         return new List<RestApiOperationParameter> {
             CreatePayloadArtificialParameter(operation),
             CreateContentTypeArtificialParameter(operation)
@@ -96,7 +96,7 @@ internal static class RestApiOperationExtensions
     }
 
     /// <summary>
-    /// Creates artificial 'content-type' parameter for a REST API operation.
+    /// Creates the 'content-type' artificial parameter for a REST API operation.
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
     /// <returns>The 'content-type' artificial parameter.</returns>
@@ -105,7 +105,7 @@ internal static class RestApiOperationExtensions
         return new RestApiOperationParameter(
             RestApiOperation.ContentTypeArgumentName,
             "string",
-            false,
+            isRequired: false,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
             description: "Content type of REST API request body.");
@@ -121,7 +121,7 @@ internal static class RestApiOperationExtensions
         return new RestApiOperationParameter(
             RestApiOperation.PayloadArgumentName,
             operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object",
-            true,
+            isRequired: true,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
             description: operation.Payload?.Description ?? "REST API request body.");
