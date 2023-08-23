@@ -96,7 +96,7 @@ internal static class RestApiOperationExtensions
     }
 
     /// <summary>
-    /// Creates artificial 'content-type' parameter for a REST API operation.
+    /// Creates the 'content-type' artificial parameter for a REST API operation.
     /// </summary>
     /// <param name="operation">The REST API operation.</param>
     /// <returns>The 'content-type' artificial parameter.</returns>
