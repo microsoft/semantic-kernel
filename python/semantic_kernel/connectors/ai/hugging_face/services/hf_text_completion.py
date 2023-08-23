@@ -2,7 +2,7 @@
 
 from logging import Logger
 from threading import Thread
-from typing import List, Optional, Union, Any, Dict
+from typing import Any, Dict, List, Optional, Union
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -71,7 +71,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         )
         
         self.generator = transformers.pipeline(
-            task=self._task, model=self._model_id, device=self.device, model_kwargs=self._model_kwargs, **self._pipeline_kwargs
+            task=self._task, model=self._model_id, device=self.device, model_kwargs=self._model_kwargs,
+            **self._pipeline_kwargs
         )
 
     async def complete_async(
