@@ -113,7 +113,7 @@ public class CodeBlockTests
         var codeBlock4 = new CodeBlock(new List<Block> { funcId, varBlock, varBlock }, "", NullLogger.Instance);
         var codeBlock5 = new CodeBlock(new List<Block> { funcId, varBlock, namedArgBlock }, "", NullLogger.Instance);
         var codeBlock6 = new CodeBlock(new List<Block> { varBlock, valBlock }, "", NullLogger.Instance);
-        var codeBlock7 = new CodeBlock(new List<Block> { varBlock, valBlock }, "", NullLogger.Instance);
+        var codeBlock7 = new CodeBlock(new List<Block> { namedArgBlock }, "", NullLogger.Instance);
 
         // Assert
         Assert.True(codeBlock1.IsValid(out _));
@@ -137,8 +137,7 @@ public class CodeBlockTests
 
         // Assert - Can't use a named argument without a function block
         Assert.False(codeBlock7.IsValid(out var errorMessage7));
-        Assert.Equal(errorMessage6, "Unexpected named argument found. Expected function name first.");
-
+        Assert.Equal(errorMessage7, "Unexpected named argument found. Expected function name first.");
     }
 
     [Fact]
