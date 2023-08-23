@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
@@ -162,15 +163,12 @@ public class CodeTokenizerTests
         Assert.Equal("'f\'oo'", blocks[1].Content);
     }
 
-    [Fact]
-    public void ItThrowsWhenSeparatorsAreMissing()
+    [Theory]
+    [InlineData(@"call 'f\\'xy'")]
+    [InlineData(@"call 'f\\'x")]
+    public void ItThrowsWhenSeparatorsAreMissing(string template)
     {
-        // Arrange
-        var template1 = @"call 'f\\'xy'";
-        var template2 = @"call 'f\\'x";
-
-        // Act
-        Assert.Throws<TemplateException>(() => this._target.Tokenize(template1));
-        Assert.Throws<TemplateException>(() => this._target.Tokenize(template2));
+        // Act & Assert
+        Assert.Throws<SKException>(() => this._target.Tokenize(template));
     }
 }

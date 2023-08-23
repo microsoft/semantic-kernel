@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Microsoft.SemanticKernel.Text;
 
@@ -44,11 +45,11 @@ internal sealed class CodeTokenizer
         NamedArg = 4,
     }
 
-    private readonly ILogger _logger;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public CodeTokenizer(ILogger? logger = null)
+    public CodeTokenizer(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
+        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
 
     /// <summary>
@@ -84,16 +85,16 @@ internal sealed class CodeTokenizer
             switch (nextChar)
             {
                 case Symbols.VarPrefix:
-                    blocks.Add(new VarBlock(text, this._logger));
+                    blocks.Add(new VarBlock(text, this._loggerFactory));
                     break;
 
                 case Symbols.DblQuote:
                 case Symbols.SglQuote:
-                    blocks.Add(new ValBlock(text, this._logger));
+                    blocks.Add(new ValBlock(text, this._loggerFactory));
                     break;
 
                 default:
-                    blocks.Add(new FunctionIdBlock(text, this._logger));
+                    blocks.Add(new FunctionIdBlock(text, this._loggerFactory));
                     break;
             }
 
@@ -152,7 +153,7 @@ internal sealed class CodeTokenizer
                 // When we reach the end of the value
                 if (currentChar == textValueDelimiter)
                 {
-                    blocks.Add(new ValBlock(currentTokenContent.ToString(), this._logger));
+                    blocks.Add(new ValBlock(currentTokenContent.ToString(), this._loggerFactory));
                     currentTokenContent.Clear();
                     currentTokenType = TokenTypes.None;
                     spaceSeparatorFound = false;
@@ -167,12 +168,12 @@ internal sealed class CodeTokenizer
             {
                 if (currentTokenType == TokenTypes.Variable)
                 {
-                    blocks.Add(new VarBlock(currentTokenContent.ToString(), this._logger));
+                    blocks.Add(new VarBlock(currentTokenContent.ToString(), this._loggerFactory));
                     currentTokenContent.Clear();
                 }
                 else if (currentTokenType == TokenTypes.FunctionId)
                 {
-                    blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._logger));
+                    blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
                     currentTokenContent.Clear();
                 }
                 else if (currentTokenType == TokenTypes.NamedArg)
@@ -194,8 +195,7 @@ internal sealed class CodeTokenizer
             {
                 if (!spaceSeparatorFound)
                 {
-                    throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                        "Tokens must be separated by one space least");
+                    throw new SKException("Tokens must be separated by one space least");
                 }
 
                 if (IsQuote(currentChar))
@@ -227,15 +227,15 @@ internal sealed class CodeTokenizer
         switch (currentTokenType)
         {
             case TokenTypes.Value:
-                blocks.Add(new ValBlock(currentTokenContent.ToString(), this._logger));
+                blocks.Add(new ValBlock(currentTokenContent.ToString(), this._loggerFactory));
                 break;
 
             case TokenTypes.Variable:
-                blocks.Add(new VarBlock(currentTokenContent.ToString(), this._logger));
+                blocks.Add(new VarBlock(currentTokenContent.ToString(), this._loggerFactory));
                 break;
 
             case TokenTypes.FunctionId:
-                blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._logger));
+                blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
                 break;
 
             case TokenTypes.NamedArg:
@@ -243,8 +243,7 @@ internal sealed class CodeTokenizer
                 break;
 
             case TokenTypes.None:
-                throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-                    "Tokens must be separated by one space least");
+                throw new SKException("Tokens must be separated by one space least");
         }
 
         return blocks;
