@@ -44,15 +44,15 @@ internal sealed class RestApiOperationRunner
 
     /// <summary>
     /// Determines whether the operation payload is constructed dynamically based on operation payload metadata.
-    /// If false or not specified, the operation payload must be provided via the 'payload' property.
+    /// If false, the operation payload must be provided via the 'payload' property.
     /// </summary>
-    private readonly bool? _buildPayloadDynamically;
+    private readonly bool _buildPayloadDynamically;
 
     /// <summary>
     /// Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).
     /// </summary>
-    private readonly bool? _resolvePayloadArgumentsByFullName;
+    private readonly bool _resolvePayloadArgumentsByFullName;
 
     /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
@@ -61,7 +61,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="userAgent">Optional request-header field containing information about the user agent originating the request.</param>
     /// <param name="buildPayloadDynamically">Determines whether the operation payload is constructed dynamically based on operation payload metadata.
-    /// If false or not specified, the operation payload must be provided via the 'payload' property.
+    /// If false, the operation payload must be provided via the 'payload' property.
     /// </param>
     /// <param name="resolvePayloadArgumentsByFullName">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
@@ -69,8 +69,8 @@ internal sealed class RestApiOperationRunner
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = null,
-        bool? buildPayloadDynamically = null,
-        bool? resolvePayloadArgumentsByFullName = null)
+        bool buildPayloadDynamically = false,
+        bool resolvePayloadArgumentsByFullName = false)
     {
         this._httpClient = httpClient;
         this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
@@ -332,7 +332,7 @@ internal sealed class RestApiOperationRunner
     /// <returns>The argument name for the payload property.</returns>
     private string GetArgumentNameForPayload(string propertyName, string? @namespace)
     {
-        if (this._resolvePayloadArgumentsByFullName is not true)
+        if (this._resolvePayloadArgumentsByFullName is false)
         {
             return propertyName;
         }

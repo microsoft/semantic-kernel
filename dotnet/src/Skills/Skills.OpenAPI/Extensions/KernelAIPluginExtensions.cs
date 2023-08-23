@@ -183,8 +183,8 @@ public static class KernelAIPluginExtensions
                 httpClient,
                 executionParameters?.AuthCallback,
                 executionParameters?.UserAgent,
-                executionParameters?.BuildOperationPayloadDynamically,
-                executionParameters?.NamespacePayloadParameters);
+                executionParameters?.BuildOperationPayloadDynamically ?? false,
+                executionParameters?.NamespacePayloadParameters ?? false);
 
             var skill = new Dictionary<string, ISKFunction>();
 
@@ -310,8 +310,8 @@ public static class KernelAIPluginExtensions
     {
         var restOperationParameters = operation.GetParameters(
             executionParameters?.ServerUrlOverride,
-            executionParameters?.BuildOperationPayloadDynamically,
-            executionParameters?.NamespacePayloadParameters
+            executionParameters?.BuildOperationPayloadDynamically ?? false,
+            executionParameters?.NamespacePayloadParameters ?? false
         );
 
         var logger = kernel.Logger ?? NullLogger.Instance;

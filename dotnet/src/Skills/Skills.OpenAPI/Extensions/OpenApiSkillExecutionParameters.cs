@@ -32,18 +32,18 @@ public class OpenApiSkillExecutionParameters
     /// If set to true, the operation execution will not throw exceptions for non-compliant documents.
     /// Please note that enabling this option may result in incomplete or inaccurate execution results.
     /// </summary>
-    public bool? IgnoreNonCompliantErrors { get; set; }
+    public bool IgnoreNonCompliantErrors { get; set; }
 
     /// <summary>
     /// Optional user agent header value.
     /// </summary>
-    public string? UserAgent { get; set; }
+    public string UserAgent { get; set; }
 
     /// <summary>
     /// Determines whether the operation payload is constructed dynamically based on operation payload metadata.
     /// If false, the operation payload must be provided via the 'payload' context variable.
     /// </summary>
-    public bool? BuildOperationPayloadDynamically { get; set; }
+    public bool BuildOperationPayloadDynamically { get; set; }
 
     /// <summary>
     /// Determines whether parameter names are augmented with namespaces.
@@ -52,7 +52,7 @@ public class OpenApiSkillExecutionParameters
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'sender.receiver' will be correctly resolved from arguments with the same names.
     /// </summary>
-    public bool? NamespacePayloadParameters { get; set; }
+    public bool NamespacePayloadParameters { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiSkillExecutionParameters"/> class.
@@ -72,10 +72,10 @@ public class OpenApiSkillExecutionParameters
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,
         Uri? serverUrlOverride = null,
-        string? userAgent = Telemetry.HttpUserAgent,
-        bool? ignoreNonCompliantErrors = false,
-        bool? buildOperationPayloadDynamically = false,
-        bool? namespacePayloadParameters = false)
+        string userAgent = Telemetry.HttpUserAgent,
+        bool ignoreNonCompliantErrors = false,
+        bool buildOperationPayloadDynamically = false,
+        bool namespacePayloadParameters = false)
     {
         this.HttpClient = httpClient;
         this.AuthCallback = authCallback;

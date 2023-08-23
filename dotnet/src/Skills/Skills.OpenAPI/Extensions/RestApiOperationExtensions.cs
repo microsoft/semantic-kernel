@@ -23,7 +23,7 @@ internal static class RestApiOperationExtensions
     /// <param name="operation">The REST API operation.</param>
     /// <param name="serverUrlOverride">The server URL override.</param>
     /// <param name="addPayloadParamsFromMetadata">Determines whether to include the operation payload parameters from payload metadata.
-    /// If false or not specified, the 'payload' and 'content-type' artificial parameters are added instead.
+    /// If false, the 'payload' and 'content-type' artificial parameters are added instead.
     /// </param>
     /// <param name="namespaceOperationPayloadParams">Determines whether parameter names are augmented with namespaces.
     /// Namespaces are created by prefixing parameter names with their root parameter names.
@@ -32,7 +32,7 @@ internal static class RestApiOperationExtensions
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, Uri? serverUrlOverride = null, bool? addPayloadParamsFromMetadata = false, bool? namespaceOperationPayloadParams = false)
+    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, Uri? serverUrlOverride = null, bool addPayloadParamsFromMetadata = false, bool namespaceOperationPayloadParams = false)
     {
         var parameters = new List<RestApiOperationParameter>(operation.Parameters)
         {
@@ -49,7 +49,7 @@ internal static class RestApiOperationExtensions
         //Add payload parameters
         if (operation.Method == HttpMethod.Put || operation.Method == HttpMethod.Post)
         {
-            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata ?? false, namespaceOperationPayloadParams ?? false));
+            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, namespaceOperationPayloadParams));
         }
 
         // Create a property alternative name without special symbols that are not supported by SK template language.
