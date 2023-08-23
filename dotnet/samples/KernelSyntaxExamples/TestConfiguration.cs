@@ -50,8 +50,9 @@ public sealed class TestConfiguration
         {
             throw new ArgumentNullException(nameof(caller));
         }
+
         return s_instance._configRoot.GetSection(caller).Get<T>() ??
-            throw new ConfigurationNotFoundException(section: caller);
+               throw new ConfigurationNotFoundException(section: caller);
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.

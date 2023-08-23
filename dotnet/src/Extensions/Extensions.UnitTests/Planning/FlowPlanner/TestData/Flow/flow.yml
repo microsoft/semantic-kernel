@@ -1,0 +1,38 @@
+name: flow
+goal: Make breakfast
+steps:
+  - goal: Make coffee
+    skills:
+      - MakeCoffeeSkill
+    requires:
+      - coffee_bean
+    provides:
+      - coffee
+
+  - goal: Select coffee been
+    skills:
+      - CoffeeRecommendationSkill
+    provides:
+      - coffee_bean
+    completionType: AtLeastOnce
+
+  - goal: Recipe
+    skills:
+      - WebSearchSkill
+      - CalorieCalculatorSkill
+      - HealthCheckSkill
+    provides:
+      - ingredients
+    completionType: AtLeastOnce
+
+  - goal: Cook
+    skills:
+      - CookSkill
+      - WebSearchSkill
+    requires:
+      - coffee
+      - ingredients
+    provides:
+        - breakfast
+provides:
+  - breakfast
