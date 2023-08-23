@@ -4,7 +4,6 @@
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace Microsoft.SemanticKernel.Connectors.AI.SourceGraph.Client;
 
-using global::Connectors.AI.SourceGraph;
 using Models;
 
 

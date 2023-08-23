@@ -2,9 +2,9 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.SourceGraph.Client;
 
 using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextCompletion;
 
 
-public interface ISourceGraphCompletionsClient : IChatCompletion
+public interface ISourceGraphCompletionsClient : IChatCompletion, ITextCompletion
 {
-
 }

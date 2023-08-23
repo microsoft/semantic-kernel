@@ -2,11 +2,11 @@
 namespace Microsoft.SemanticKernel.Connectors.AI.SourceGraph.Client;
 
 using Extensions;
-using global::Connectors.AI.SourceGraph;
+using Models;
 using StrawberryShake;
 
 
-public class SourceGraphGitClient : ISourceGraphGitClient
+internal class SourceGraphGitClient : ISourceGraphGitClient
 {
     private readonly ISourceGraphClient _sourceGraphClient;
 

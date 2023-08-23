@@ -11,7 +11,11 @@ using Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
-    public const string SourceGraphGraphAPI = "https://sourcegraph.com/.api/graphql";
+    public const string SourceGraphBaseUrl = "https://sourcegraph.com/.api";
+    public const string SourceGraphGraphAPIEndpoint = "/graphql";
+    public const string SourceGraphStreamingSearchAPIEndpoint = "/search/stream";
+    public const string SourceGraphStreamingCompletionsAPIEndpoint = "/completions/stream";
+    public const string SourceGraphCodeCompletionsEndpoint = "/completions/code";
 
 
     /// <summary>
@@ -19,17 +23,21 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services"></param>
     /// <param name="accessToken"></param>
+    /// <param name="endpoint"></param>
+    /// <param name="withStreaming"></param>
     /// <returns></returns>
-    public static IServiceCollection AddSourceGraphClient(this IServiceCollection services, string accessToken = "")
+    public static IServiceCollection AddSourceGraphClient(this IServiceCollection services, SourceGraphClientOptions options, bool withStreaming = false)
     {
-        SourceGraphClientServiceCollectionExtensions.AddSourceGraphClient(services)
+        services.AddSourceGraphClient()
             .ConfigureHttpClient(client =>
             {
-                client.BaseAddress = new Uri(SourceGraphGraphAPI);
-                client.DefaultRequestHeaders.Add("Authorization", $"token {accessToken}");
+                client.BaseAddress = new Uri(options.ServerEndpoint + SourceGraphGraphAPIEndpoint);
+                client.DefaultRequestHeaders.Add("Authorization", $"token {options.AccessToken}");
+                client.DefaultRequestHeaders.Add("Connection", "keep-alive");
                 client.MaxResponseContentBufferSize = 1_000_000;
+                client.Timeout = TimeSpan.FromMinutes(3);
             });
-
+        services.AddSingleton<ISourceGraphStreamClient, SourceGraphStreamingClient>(provider => new SourceGraphStreamingClient(options));
         services.AddSingleton<ISourceGraphQLClient, SourceGraphGraphQLClient>(provider =>
         {
             var sourceGraphClient = provider.GetRequiredService<ISourceGraphClient>();
@@ -48,6 +56,12 @@ public static class ServiceCollectionExtensions
             return new SourceGraphGitClient(sourceGraphClient);
         });
 
+        services.AddSingleton<ISourceGraphCompletionsClient, SourceGraphCompletionsClient>(provider =>
+        {
+            var sourceGraphClient = provider.GetRequiredService<ISourceGraphClient>();
+            var sourceGraphStreamClient = provider.GetRequiredService<ISourceGraphStreamClient>();
+            return new SourceGraphCompletionsClient("anthropic", options.AccessToken, sourceGraphClient, sourceGraphStreamClient);
+        });
         return services;
     }
 

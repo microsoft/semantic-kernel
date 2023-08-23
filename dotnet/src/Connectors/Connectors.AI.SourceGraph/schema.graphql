@@ -1484,6 +1484,38 @@ type CloningProgress {
     message: String!
 }
 
+"A specific code host, like github.com."
+type CodeHost implements Node {
+    "The id of the code host."
+    id: ID!
+    "The type of code host, e.g. GITHUB."
+    kind: ExternalServiceKind!
+    "The url for the code host, e.g. github.com."
+    url: String!
+    "A amount of API requests Sourcegraph can send to the code host."
+    apiRateLimitQuota: Int
+    "How often API rate limits get reset. Defined in seconds."
+    apiRateLimitIntervalSeconds: Int
+    "A amount of git requests Sourcegraph can send to the code host."
+    gitRateLimitQuota: Int
+    "How often git rate limits get reset. Defined in seconds."
+    gitRateLimitIntervalSeconds: Int
+    "All external services that refer to this code host."
+    externalServices(first: Int = 50 after: String): ExternalServiceConnection!
+}
+
+"A list of code hosts."
+type CodeHostConnection {
+    "Only when this flag is true, the connection can be trusted to be complete.\nThis will stop existing in Sourcegraph 5.3 when the migration is ensured\nto be complete."
+    isMigrationDone: Boolean!
+    "A list of code hosts."
+    nodes: [CodeHost!]!
+    "Pagination information."
+    pageInfo: PageInfo!
+    "The total number of records in this result set."
+    totalCount: Int!
+}
+
 "Describes the state of a provider (code host) during a permission sync job."
 type CodeHostState {
     "ID of a permissions provider (code host)."
@@ -4213,6 +4245,28 @@ type LanguageStatistics {
     totalLines: Int!
 }
 
+"License feature info type."
+type LicenseFeature {
+    "License feature name."
+    name: String!
+    "Whether feature is enabled or not by the license."
+    enabled: Boolean!
+}
+
+"License basic info type."
+type LicenseInfo {
+    "License plan."
+    plan: String!
+    "License expiration date."
+    expiresAt: DateTime!
+    "The number of users allowed by the license."
+    userCount: Int!
+    "Whether license restricts number of users or not."
+    userCountRestricted: Boolean!
+    "All license features."
+    features: [LicenseFeature!]!
+}
+
 "Options for a line chart data series"
 input LineChartDataSeriesOptionsInput {
     "The label for the data series."
@@ -6435,6 +6489,8 @@ type Query {
     accessRequests(status: AccessRequestStatus "Returns the first n access requests from the list." first: Int last: Int after: String before: String): AccessRequestConnection!
     "Repository key-value pair metadata"
     repoMeta: RepoMetadata
+    "List of all configured code hosts on this instance.\n\nSite-admin only."
+    codeHosts(first: Int = 50 after: String search: String): CodeHostConnection!
     "Returns the outbound webhooks registered within Sourcegraph, optionally filtered by\nevent type and scope. To filter by scope, event type is also required. If the event\ntype and scope are both omitted, all webhooks are returned.\n\nOnly site admins have access to this query."
     outboundWebhooks(first: Int = 50 after: String eventType: String scope: String): OutboundWebhookConnection!
     "Returns all possible outbound webhook event types.\n\nOnly site admins have access to this query."
@@ -6521,6 +6577,8 @@ type Query {
     gitHubAppByAppID(appID: Int! baseURL: String!): GitHubApp
     "Checks whether the given feature is enabled on Sourcegraph."
     enterpriseLicenseHasFeature(feature: String!): Boolean!
+    "Parse license key and returns features alongside its availability.\nIf licenseKey is omitted, uses current instance license."
+    licenseInfo(licenseKey: String): LicenseInfo!
     "Queries that are only used on Sourcegraph.com.\n\nFOR INTERNAL USE ONLY."
     dotcom: DotcomQuery!
     "All available user-defined search contexts. Excludes auto-defined contexts."
