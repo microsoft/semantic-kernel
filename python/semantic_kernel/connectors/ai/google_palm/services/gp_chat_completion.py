@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from logging import Logger
 from typing import List, Optional, Tuple, Union
 
 import google.generativeai as palm
@@ -80,7 +81,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         )
 
     async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         prompt_to_message = [("user", prompt)]
         chat_settings = ChatRequestSettings(
@@ -108,7 +112,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 return response.last
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"

@@ -65,7 +65,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         )
 
     async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         try:
             import transformers
@@ -112,7 +115,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             raise AIException("Hugging Face completion failed", e)
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         """
         Streams a text completion using a Hugging Face model.
