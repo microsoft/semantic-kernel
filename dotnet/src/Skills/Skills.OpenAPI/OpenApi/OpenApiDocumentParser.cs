@@ -30,10 +30,10 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiDocumentParser"/> class.
     /// </summary>
-    /// <param name="logger">Optional logger instance.</param>
-    public OpenApiDocumentParser(ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(OpenApiDocumentParser)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
