@@ -44,7 +44,9 @@ def read_file(file_path: str) -> str:
 
 # TODO: Original C# uses "StepwisePlanner_Excluded" for RESTRICTED_SKILL_NAME
 RESTRICTED_SKILL_NAME = "StepwisePlanner"
-S_FINAL_ANSWER_REGEX = re.compile(r"\[FINAL ANSWER\](?P<final_answer>.+)", re.DOTALL)
+S_FINAL_ANSWER_REGEX = re.compile(
+    r"\[FINAL[_\s\-]ANSWER\](?P<final_answer>.+)", re.DOTALL
+)
 S_THOUGHT_REGEX = re.compile(
     r"(\[THOUGHT\])?(?P<thought>.+?)(?=\[ACTION\]|$)", re.DOTALL
 )
