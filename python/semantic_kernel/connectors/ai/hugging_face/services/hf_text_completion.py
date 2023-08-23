@@ -42,8 +42,11 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 - text2text-generation (default): takes an input prompt and returns a completion.
                 text2text-generation is the default as it behaves more like GPT-3+.
             log {Optional[Logger]} -- Logger instance.
-            model_kwargs {Optional[Dict[str, Any]]} -- Additional dictionary of keyword arguments passed along to the model's `from_pretrained(..., **model_kwargs)` function.
-            pipeline_kwargs {Optional[Dict[str, Any]]} -- Additional keyword arguments passed along to the specific pipeline init (see the documentation for the corresponding pipeline class for possible values).
+            model_kwargs {Optional[Dict[str, Any]]} -- Additional dictionary of keyword arguments
+                passed along to the model's `from_pretrained(..., **model_kwargs)` function.
+            pipeline_kwargs {Optional[Dict[str, Any]]} -- Additional keyword arguments passed along
+                to the specific pipeline init (see the documentation for the corresponding pipeline class
+                for possible values).
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
