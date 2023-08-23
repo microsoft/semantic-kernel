@@ -39,7 +39,7 @@ jobs:
         run: echo "NOT python file"
 
   python-merge-gate:
-    if: ${{ github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true' }}
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
@@ -96,7 +96,7 @@ jobs:
           poetry run pytest ./tests/integration -v
 
   python-integration-tests:
-    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true' }}
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
