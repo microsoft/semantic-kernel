@@ -88,7 +88,7 @@ internal static class RestApiOperationExtensions
             return GetParametersFromPayloadMetadata(operation.Payload, enableNamespacing);
         }
 
-        //Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
+        // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
         return new List<RestApiOperationParameter> {
             CreatePayloadArtificialParameter(operation),
             CreateContentTypeArtificialParameter(operation)
