@@ -82,7 +82,7 @@ public class Database {
                                             + " )";
 
                             String createIndex =
-                                    "CREATE INDEX "
+                                    "CREATE INDEX IF NOT EXISTS "
                                             + INDEX_NAME
                                             + " ON "
                                             + TABLE_NAME
