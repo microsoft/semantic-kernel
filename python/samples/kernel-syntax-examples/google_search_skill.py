@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import OpenAITextCompletion
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.connectors.search_engine import GoogleConnector
 from semantic_kernel.core_skills import WebSearchEngineSkill
 
@@ -15,8 +15,8 @@ load_dotenv()
 async def main():
     kernel = sk.Kernel()
     api_key, org_id = sk.openai_settings_from_dot_env()
-    kernel.add_text_completion_service(
-        "dv", OpenAITextCompletion("text-davinci-003", api_key, org_id)
+    kernel.add_chat_service(
+        "chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
     )
 
     """
