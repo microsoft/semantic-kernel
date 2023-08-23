@@ -8,7 +8,7 @@ package com.microsoft.semantickernel.samples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.builders.SKBuilders;
+import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.connectors.ai.openai.util.OpenAIClientProvider;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
@@ -31,7 +31,7 @@ import java.io.IOException;
  * started with Azure OpenAI</a>
  * <a href="https://openai.com/product">Get started with OpenAI</a>
  */
-public class Example06_UseMultipleModels {
+public class Example11_UseMultipleModels {
 
     /**
      * Returns a Semantic Kernel with Text Completion.
