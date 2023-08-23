@@ -328,16 +328,16 @@ internal sealed class RestApiOperationRunner
     /// Retrieves the argument name for a payload property.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
-    /// <param name="namespace">The namespace to add to the property name (optional).</param>
+    /// <param name="propertyNamespace">The namespace to add to the property name (optional).</param>
     /// <returns>The argument name for the payload property.</returns>
-    private string GetArgumentNameForPayload(string propertyName, string? @namespace)
+    private string GetArgumentNameForPayload(string propertyName, string? propertyNamespace)
     {
         if (this._enablePayloadNamespacing is false)
         {
             return propertyName;
         }
 
-        return string.IsNullOrEmpty(@namespace) ? propertyName : $"{@namespace}.{propertyName}";
+        return string.IsNullOrEmpty(propertyNamespace) ? propertyName : $"{propertyNamespace}.{propertyName}";
     }
 
     #endregion
