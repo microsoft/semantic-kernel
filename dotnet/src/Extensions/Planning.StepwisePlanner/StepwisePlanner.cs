@@ -65,7 +65,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._nativeFunctions = this._kernel.ImportSkill(this, RestrictedSkillName);
 
         this._context = this._kernel.CreateNewContext();
-        this._logger = this._kernel.Logger;
+        this._logger = this._kernel.LoggerFactory.CreateLogger(nameof(StepwisePlanner));
     }
 
     /// <inheritdoc />
@@ -73,7 +73,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (string.IsNullOrEmpty(goal))
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+            throw new SKException("The goal specified is empty");
         }
 
         string functionDescriptions = this.GetFunctionDescriptions();
@@ -115,7 +115,7 @@ public class StepwisePlanner : IStepwisePlanner
 
                 if (llmResponse.ErrorOccurred)
                 {
-                    throw new PlanningException(PlanningException.ErrorCodes.UnknownError, $"Error occurred while executing stepwise plan: {llmResponse.LastException?.Message}", llmResponse.LastException);
+                    throw new SKException($"Error occurred while executing stepwise plan: {llmResponse.LastException?.Message}", llmResponse.LastException);
                 }
 
                 string actionText = llmResponse.Result.Trim();
@@ -337,7 +337,7 @@ public class StepwisePlanner : IStepwisePlanner
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
         if (targetFunction == null)
         {
-            throw new PlanningException(PlanningException.ErrorCodes.UnknownError, $"The function '{actionName}' was not found.");
+            throw new SKException($"The function '{actionName}' was not found.");
         }
 
         try

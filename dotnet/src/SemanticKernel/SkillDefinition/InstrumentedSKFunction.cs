@@ -36,13 +36,13 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
     /// </summary>
     /// <param name="function">Instance of <see cref="ISKFunction"/> to decorate.</param>
-    /// <param name="logger">Optional logger.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public InstrumentedSKFunction(
         ISKFunction function,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._function = function;
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(InstrumentedSKFunction)) : NullLogger.Instance;
 
         this._executionTimeHistogram = s_meter.CreateHistogram<double>(
             name: $"SK.{this.SkillName}.{this.Name}.ExecutionTime",
@@ -74,17 +74,6 @@ public sealed class InstrumentedSKFunction : ISKFunction
     {
         return await this.InvokeWithInstrumentationAsync(() =>
             this._function.InvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
-        string? input = null,
-        CompleteRequestSettings? settings = null,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default)
-    {
-        return await this.InvokeWithInstrumentationAsync(() =>
-            this._function.InvokeAsync(input, settings, logger ?? this._logger, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

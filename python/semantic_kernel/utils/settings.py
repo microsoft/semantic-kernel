@@ -17,7 +17,7 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     api_key = config.get("OPENAI_API_KEY", None)
     org_id = config.get("OPENAI_ORG_ID", None)
 
-    assert api_key is not None, "OpenAI API key not found in .env file"
+    assert api_key, "OpenAI API key not found in .env file"
 
     # It's okay if the org ID is not found (not required)
     return api_key, org_id
@@ -40,15 +40,26 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
 
     # Azure requires the deployment name, the API key and the endpoint URL.
     if include_deployment:
-        assert (
-            deployment is not None
-        ), "Azure OpenAI deployment name not found in .env file"
+        assert deployment, "Azure OpenAI deployment name not found in .env file"
 
-    assert api_key is not None, "Azure OpenAI API key not found in .env file"
-    assert endpoint is not None, "Azure OpenAI endpoint not found in .env file"
+    assert api_key, "Azure OpenAI API key not found in .env file"
+    assert endpoint, "Azure OpenAI endpoint not found in .env file"
 
     return deployment or "", api_key, endpoint
+    
+def postgres_settings_from_dot_env() -> str:
+    """Reads the Postgres connection string from the .env file.
 
+    Returns:
+        str: The Postgres connection string
+    """
+    connection_string = None
+    config = dotenv_values(".env")
+    connection_string = config.get("POSTGRES_CONNECTION_STRING", None)
+
+    assert connection_string, "Postgres connection string not found in .env file"
+
+    return connection_string
 
 def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
@@ -72,8 +83,8 @@ def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
                 environment = "=".join(parts).strip().strip('"')
                 continue
 
-    assert api_key is not None, "Pinecone API key not found in .env file"
-    assert environment is not None, "Pinecone environment not found in .env file"
+    assert api_key, "Pinecone API key not found in .env file"
+    assert environment, "Pinecone environment not found in .env file"
 
     return api_key, environment
 
@@ -94,3 +105,34 @@ def weaviate_settings_from_dot_env() -> Tuple[Optional[str], str]:
     assert url is not None, "Weaviate instance URL not found in .env file"
 
     return api_key, url
+    
+def bing_search_settings_from_dot_env() -> str:
+    """Reads the Bing Search API key from the .env file.
+
+    Returns:
+        Tuple[str, str]: The Bing Search API key, the Bing Search endpoint
+    """
+
+    api_key = None
+    config = dotenv_values(".env")
+    api_key = config.get("BING_API_KEY", None)
+
+    assert api_key is not None, "Bing Search API key not found in .env file"
+
+    return api_key
+
+
+def google_palm_settings_from_dot_env() -> str:
+    """
+    Reads the Google PaLM API key from the .env file.
+
+    Returns:
+        str: The Google PaLM API key
+    """
+
+    config = dotenv_values(".env")
+    api_key = config.get("GOOGLE_PALM_API_KEY", None)
+
+    assert api_key is not None, "Google PaLM API key not found in .env file"
+
+    return api_key

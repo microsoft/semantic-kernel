@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma.Http.ApiSchema.Internal;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 
@@ -27,12 +28,12 @@ public class ChromaClient : IChromaClient
     /// Initializes a new instance of the <see cref="ChromaClient"/> class.
     /// </summary>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public ChromaClient(string endpoint, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public ChromaClient(string endpoint, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._endpoint = endpoint;
-        this._logger = logger ?? NullLogger<ChromaClient>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ChromaClient)) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -40,18 +41,18 @@ public class ChromaClient : IChromaClient
     /// </summary>
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    /// <exception cref="ChromaClientException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
-    public ChromaClient(HttpClient httpClient, string? endpoint = null, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <exception cref="SKException">Occurs when <see cref="HttpClient"/> doesn't have base address and endpoint parameter is not provided.</exception>
+    public ChromaClient(HttpClient httpClient, string? endpoint = null, ILoggerFactory? loggerFactory = null)
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new ChromaClientException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
         this._httpClient = httpClient;
         this._endpoint = endpoint;
-        this._logger = logger ?? NullLogger<ChromaClient>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ChromaClient)) : NullLogger.Instance;
     }
 
     /// <inheritdoc />
@@ -106,7 +107,7 @@ public class ChromaClient : IChromaClient
     }
 
     /// <inheritdoc />
-    public async Task UpsertEmbeddingsAsync(string collectionId, string[] ids, float[][] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
+    public async Task UpsertEmbeddingsAsync(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Upserting embeddings to collection with id: {0}", collectionId);
 
@@ -140,7 +141,7 @@ public class ChromaClient : IChromaClient
     }
 
     /// <inheritdoc />
-    public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, float[][] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default)
+    public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, ReadOnlyMemory<float>[] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default)
     {
         this._logger.LogDebug("Query embeddings in collection with id: {0}", collectionId);
 
@@ -183,7 +184,7 @@ public class ChromaClient : IChromaClient
         catch (HttpRequestException e)
         {
             this._logger.LogError(e, "{0} {1} operation failed: {2}, {3}", request.Method.Method, operationName, e.Message, responseContent);
-            throw new ChromaClientException($"{request.Method.Method} {operationName} operation failed: {e.Message}, {responseContent}", e);
+            throw new SKException($"{request.Method.Method} {operationName} operation failed: {e.Message}, {responseContent}", e);
         }
 
         return (response, responseContent);

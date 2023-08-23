@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -19,10 +20,10 @@ internal sealed class GetVectorsResponse : QdrantResponse
 
         [JsonPropertyName("vector")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public IEnumerable<float>? Vector { get; set; }
+        public ReadOnlyMemory<float>? Vector { get; set; }
 
         [JsonConstructor]
-        public Record(string id, Dictionary<string, object>? payload, IEnumerable<float>? vector)
+        public Record(string id, Dictionary<string, object>? payload, ReadOnlyMemory<float>? vector)
         {
             this.Id = id;
             this.Payload = payload;

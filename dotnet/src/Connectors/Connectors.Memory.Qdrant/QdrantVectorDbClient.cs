@@ -30,16 +30,16 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     /// </summary>
     /// <param name="endpoint">The Qdrant Vector Database endpoint.</param>
     /// <param name="vectorSize">The size of the vectors used in the Qdrant Vector Database.</param>
-    /// <param name="logger">Optional logger instance.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public QdrantVectorDbClient(
         string endpoint,
         int vectorSize,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._vectorSize = vectorSize;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._httpClient.BaseAddress = SanitizeEndpoint(endpoint);
-        this._logger = logger ?? NullLogger<QdrantVectorDbClient>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantVectorDbClient)) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -48,12 +48,12 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="vectorSize">The size of the vectors used in the Qdrant Vector Database.</param>
     /// <param name="endpoint">The optional endpoint URL for the Qdrant Vector Database. If not specified, the base address of the HTTP client is used.</param>
-    /// <param name="logger">Optional logger instance.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public QdrantVectorDbClient(
         HttpClient httpClient,
         int vectorSize,
         string? endpoint = null,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
@@ -65,7 +65,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         this._httpClient = httpClient;
         this._vectorSize = vectorSize;
         this._endpointOverride = string.IsNullOrEmpty(endpoint) ? null : SanitizeEndpoint(endpoint!);
-        this._logger = logger ?? NullLogger<QdrantVectorDbClient>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantVectorDbClient)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -112,7 +112,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             yield return new QdrantVectorRecord(
                 pointId: record.Id,
-                embedding: record.Vector ?? Array.Empty<float>(),
+                embedding: record.Vector ?? default,
                 record.Payload,
                 tags: null);
         }
@@ -159,7 +159,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
 
         var record = new QdrantVectorRecord(
             pointId: point.Id,
-            embedding: point.Vector ?? Array.Empty<float>(),
+            embedding: point.Vector,
             payload: point.Payload,
             tags: null);
         this._logger.LogDebug("Vector found}");
@@ -272,7 +272,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     /// <inheritdoc/>
     public async IAsyncEnumerable<(QdrantVectorRecord, double)> FindNearestInCollectionAsync(
         string collectionName,
-        IEnumerable<float> target,
+        ReadOnlyMemory<float> target,
         double threshold,
         int top = 1,
         bool withVectors = false,
@@ -323,7 +323,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         {
             var record = new QdrantVectorRecord(
                 pointId: v.Id,
-                embedding: v.Vector ?? Array.Empty<float>(),
+                embedding: v.Vector,
                 payload: v.Payload);
 
             result.Add((record, v.Score ?? 0.0));

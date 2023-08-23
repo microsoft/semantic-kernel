@@ -35,17 +35,20 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         var retryConfig = new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true };
 
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
             .Build();
 
-        // Import a OpenApi skill using one of the following Kernel extension methods
-        // kernel.ImportOpenApiSkillFromResource
-        // kernel.ImportOpenApiSkillFromDirectory
-        // kernel.ImportOpenApiSkillFromFile
-        // kernel.ImportOpenApiSkillFromUrlAsync
-        // kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+        var type = typeof(SkillResourceNames);
+        var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";
+
+        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
+
+        // Import AI Plugin
+        var skill = await kernel.ImportAIPluginAsync(
+            SkillResourceNames.AzureKeyVault,
+            stream!,
+            new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -61,15 +64,18 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
     public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
+        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        // Import a OpenApi skill using one of the following Kernel extension methods
-        // kernel.ImportOpenApiSkillFromResource
-        // kernel.ImportOpenApiSkillFromDirectory
-        // kernel.ImportOpenApiSkillFromFile
-        // kernel.ImportOpenApiSkillFromUrlAsync
-        // kernel.RegisterOpenApiSkill
-        var skill = await kernel.ImportOpenApiSkillFromResourceAsync(SkillResourceNames.AzureKeyVault, new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+        var type = typeof(SkillResourceNames);
+        var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";
+
+        var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
+
+        // Import AI Plugin
+        var skill = await kernel.ImportAIPluginAsync(
+            SkillResourceNames.AzureKeyVault,
+            stream!,
+            new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
