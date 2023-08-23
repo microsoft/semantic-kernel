@@ -79,3 +79,35 @@ def pinecone_settings_from_dot_env() -> Tuple[str, str]:
     assert environment, "Pinecone environment not found in .env file"
 
     return api_key, environment
+
+
+def bing_search_settings_from_dot_env() -> str:
+    """Reads the Bing Search API key from the .env file.
+
+    Returns:
+        Tuple[str, str]: The Bing Search API key, the Bing Search endpoint
+    """
+
+    api_key = None
+    config = dotenv_values(".env")
+    api_key = config.get("BING_API_KEY", None)
+
+    assert api_key is not None, "Bing Search API key not found in .env file"
+
+    return api_key
+
+
+def google_palm_settings_from_dot_env() -> str:
+    """
+    Reads the Google PaLM API key from the .env file.
+
+    Returns:
+        str: The Google PaLM API key
+    """
+
+    config = dotenv_values(".env")
+    api_key = config.get("GOOGLE_PALM_API_KEY", None)
+
+    assert api_key is not None, "Google PaLM API key not found in .env file"
+
+    return api_key

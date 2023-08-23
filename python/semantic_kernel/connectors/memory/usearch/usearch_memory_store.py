@@ -189,7 +189,7 @@ class USearchMemoryStore(MemoryStoreBase):
         """Create a new collection.
 
         Args:
-            collection_name (str): Name of the collection. Case-insentive.
+            collection_name (str): Name of the collection. Case-insensitive.
                 Must have name that is valid file name for the current OS environment.
             ndim (int, optional): Number of dimensions. Defaults to 0.
             metric (Union[str, MetricKind, CompiledMetric], optional): Metric kind. Defaults to MetricKind.IP.

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
@@ -96,8 +96,7 @@ public class VarBlockTests
         var target = new VarBlock(" $ ");
 
         // Act + Assert
-        var ex = Assert.Throws<TemplateException>(() => target.Render(variables));
-        Assert.Equal(TemplateException.ErrorCodes.SyntaxError, ex.ErrorCode);
+        Assert.Throws<SKException>(() => target.Render(variables));
     }
 
     [Theory]
