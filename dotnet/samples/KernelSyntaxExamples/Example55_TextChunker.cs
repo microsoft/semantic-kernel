@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Text;
 // ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
 {
-    private static readonly string text = @"The city of Venice, located in the northeastern part of Italy,
+    private const string text = @"The city of Venice, located in the northeastern part of Italy,
 is renowned for its unique geographical features. Built on more than 100 small islands in a lagoon in the
 Adriatic Sea, it has no roads, just canals including the Grand Canal thoroughfare lined with Renaissance and
 Gothic palaces. The central square, Piazza San Marco, contains St. Mark's Basilica, which is tiled with Byzantine
