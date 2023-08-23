@@ -20,12 +20,12 @@ public static class ChromaKernelBuilderExtensions
     /// <returns>Self instance.</returns>
     public static KernelBuilder WithChromaMemoryStore(this KernelBuilder builder, string endpoint)
     {
-        builder.WithMemoryStorage((parameters) =>
+        builder.WithMemoryStorage((loggerFactory, config) =>
         {
             return new ChromaMemoryStore(
-                HttpClientProvider.GetHttpClient(parameters.Config, null, parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, null, loggerFactory),
                 endpoint,
-                parameters.Logger);
+                loggerFactory);
         });
 
         return builder;
@@ -42,12 +42,12 @@ public static class ChromaKernelBuilderExtensions
         HttpClient httpClient,
         string? endpoint = null)
     {
-        builder.WithMemoryStorage((parameters) =>
+        builder.WithMemoryStorage((loggerFactory, config) =>
         {
             return new ChromaMemoryStore(
-                HttpClientProvider.GetHttpClient(parameters.Config, httpClient, parameters.Logger),
+                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
                 endpoint,
-                parameters.Logger);
+                loggerFactory);
         });
 
         return builder;

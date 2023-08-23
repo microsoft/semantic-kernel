@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -21,9 +22,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
     /// </summary>
     /// <param name="content">Block content</param>
-    /// <param name="logger">App logger</param>
-    public CodeBlock(string? content, ILogger logger)
-        : this(new CodeTokenizer(logger).Tokenize(content), content?.Trim(), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public CodeBlock(string? content, ILoggerFactory? loggerFactory)
+        : this(new CodeTokenizer(loggerFactory).Tokenize(content), content?.Trim(), loggerFactory)
     {
     }
 
@@ -32,9 +33,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
     /// </summary>
     /// <param name="tokens">A list of blocks</param>
     /// <param name="content">Block content</param>
-    /// <param name="logger">App logger</param>
-    public CodeBlock(List<Block> tokens, string? content, ILogger logger)
-        : base(content?.Trim(), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public CodeBlock(List<Block> tokens, string? content, ILoggerFactory? loggerFactory)
+        : base(content?.Trim(), loggerFactory)
     {
         this._tokens = tokens;
     }
@@ -87,7 +88,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (!this._validated && !this.IsValid(out var error))
         {
-            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, error);
+            throw new SKException(error);
         }
 
         this.Logger.LogTrace("Rendering code: `{0}`", this.Content);
@@ -102,8 +103,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
                 return await this.RenderFunctionCallAsync((FunctionIdBlock)this._tokens[0], context).ConfigureAwait(false);
         }
 
-        throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType,
-            $"Unexpected first token type: {this._tokens[0].Type:G}");
+        throw new SKException($"Unexpected first token type: {this._tokens[0].Type:G}");
     }
 
     #region private ================================================================================
@@ -115,16 +115,14 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (context.Skills == null)
         {
-            throw new KernelException(
-                KernelException.ErrorCodes.SkillCollectionNotSet,
-                "Skill collection not found in the context");
+            throw new SKException("Skill collection not found in the context");
         }
 
         if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
         {
             var errorMsg = $"Function `{fBlock.Content}` not found";
             this.Logger.LogError(errorMsg);
-            throw new TemplateException(TemplateException.ErrorCodes.FunctionNotFound, errorMsg);
+            throw new SKException(errorMsg);
         }
 
         SKContext contextClone = context.Clone();
@@ -156,7 +154,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         {
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {contextClone.LastException?.GetType().FullName}: {contextClone.LastException?.Message}";
             this.Logger.LogError(errorMsg);
-            throw new TemplateException(TemplateException.ErrorCodes.RuntimeError, errorMsg, contextClone.LastException);
+            throw new SKException(errorMsg, contextClone.LastException);
         }
 
         return contextClone.Result;

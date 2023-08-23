@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -33,7 +32,7 @@ public class QdrantMemoryStoreTests
     private readonly ReadOnlyMemory<float> _embedding = new float[] { 1, 1, 1 };
     private readonly ReadOnlyMemory<float> _embedding2 = new float[] { 2, 2, 2 };
     private readonly ReadOnlyMemory<float> _embedding3 = new float[] { 3, 3, 3 };
-    private readonly Mock<ILogger<PineconeMemoryStore>> _mockLogger = new();
+    private readonly Mock<ILoggerFactory> _mockLogger = new();
 
     [Fact]
     public async Task ItCreatesNewCollectionAsync()
