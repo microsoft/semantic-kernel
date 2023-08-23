@@ -35,11 +35,11 @@ public static class MultiConnectorKernelBuilderExtensions
         bool setAsDefault = false,
         params NamedTextCompletion[]? otherCompletions)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (parameters) => new MultiTextCompletion(
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) => new MultiTextCompletion(
             settings,
             mainTextCompletion,
             analysisTaskCancellationToken,
-            logger: parameters.Logger,
+            logger: loggerFactory?.CreateLogger(nameof(MultiTextCompletion)),
             otherCompletions: otherCompletions), setAsDefault);
         return builder;
     }
