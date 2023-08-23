@@ -55,7 +55,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         self._log = log if log is not None else NullLogger()
         self._model_kwargs = model_kwargs
         self._pipeline_kwargs = pipeline_kwargs
-        
+
         try:
             import torch
             import transformers
@@ -69,9 +69,12 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             if device >= 0 and torch.cuda.is_available()
             else "cpu"
         )
-        
+
         self.generator = transformers.pipeline(
-            task=self._task, model=self._model_id, device=self.device, model_kwargs=self._model_kwargs,
+            task=self._task,
+            model=self._model_id,
+            device=self.device,
+            model_kwargs=self._model_kwargs,
             **self._pipeline_kwargs
         )
 
