@@ -138,7 +138,7 @@ public sealed class SKContext
     /// <summary>
     /// When an error occurs, this is the most recent exception.
     /// </summary>
-    public Exception? LastException { get; set; }
+    public Exception? LastException { get; internal set; }
 
     #endregion
 
