@@ -28,7 +28,7 @@ public static class Example06_TemplateLanguage
         }
 
         IKernel kernel = Kernel.Builder
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)

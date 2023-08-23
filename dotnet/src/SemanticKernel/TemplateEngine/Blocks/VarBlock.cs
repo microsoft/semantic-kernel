@@ -2,6 +2,7 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -12,7 +13,7 @@ internal sealed class VarBlock : Block, ITextRendering
 
     internal string Name { get; } = string.Empty;
 
-    public VarBlock(string? content, ILogger? logger = null) : base(content?.Trim(), logger)
+    public VarBlock(string? content, ILoggerFactory? loggerFactory = null) : base(content?.Trim(), loggerFactory)
     {
         if (this.Content.Length < 2)
         {
@@ -70,7 +71,7 @@ internal sealed class VarBlock : Block, ITextRendering
         {
             const string ErrMsg = "Variable rendering failed, the variable name is empty";
             this.Logger.LogError(ErrMsg);
-            throw new TemplateException(TemplateException.ErrorCodes.SyntaxError, ErrMsg);
+            throw new SKException(ErrMsg);
         }
 
         if (variables.TryGetValue(this.Name, out string? value))

@@ -133,6 +133,39 @@ class Kernel:
 
         return function
 
+    def register_native_function(
+        self,
+        skill_name: Optional[str],
+        sk_function: Callable,
+    ) -> SKFunctionBase:
+        if not hasattr(sk_function, "__sk_function__"):
+            raise KernelException(
+                KernelException.ErrorCodes.InvalidFunctionType,
+                "sk_function argument must be decorated with @sk_function",
+            )
+        function_name = sk_function.__sk_function_name__
+
+        if skill_name is None or skill_name == "":
+            skill_name = SkillCollection.GLOBAL_SKILL
+        assert skill_name is not None  # for type checker
+
+        validate_skill_name(skill_name)
+        validate_function_name(function_name)
+
+        function = SKFunction.from_native_method(sk_function, skill_name, self.logger)
+
+        if self.skills.has_function(skill_name, function_name):
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                "Overloaded functions are not supported, "
+                "please differentiate function names.",
+            )
+
+        function.set_default_skill_collection(self.skills)
+        self._skill_collection.add_native_function(function)
+
+        return function
+
     async def run_stream_async(
         self,
         *functions: Any,
