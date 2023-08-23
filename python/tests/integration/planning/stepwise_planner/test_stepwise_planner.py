@@ -4,7 +4,6 @@ import json
 import os
 
 import pytest
-
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.search_engine import BingConnector
@@ -44,7 +43,7 @@ class TempWebSearchEngineSkill:
     )
     async def search_async(self, query: str, context: SKContext) -> str:
         query = query or context.variables.get("query")[1]
-        result = await self._connector.search_async(query, num_results=1, offset=0)
+        result = await self._connector.search_async(query, num_results=5, offset=0)
         return str(result)
 
 
@@ -87,13 +86,13 @@ def initialize_kernel(get_aoai_config, use_embeddings=False, use_chat_model=Fals
     [
         (
             False,
-            "Who is the current president of the United States? What is his current age divided by 2",
+            "Who is the 46th president of the United States? What is his birth year divided by 2",
             "ExecutePlan",
             "StepwisePlanner",
         ),
         (
             True,
-            "Who is the current president of the United States? What is his current age divided by 2",
+            "Who is the 46th president of the United States? What is his birth year divided by 2",
             "ExecutePlan",
             "StepwisePlanner",
         ),
