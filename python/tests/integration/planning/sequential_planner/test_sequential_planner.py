@@ -123,11 +123,7 @@ async def test_create_plan_with_defaults_async(
     assert any(
         step.name == expected_function
         and step.skill_name == expected_skill
-        and step.parameters["input"] == expected_default
-        # TODO: current sk_function decorator only support default values ["input"] key
-        # TODO: current version of fake skills used inline sk_function but actually most of them already in samples dir.
-        #           add test helper for python to import skills from samples dir. C# already has it.
-        # and step.parameters["endMarker"] == expected_default
+        and step.parameters["endMarker"] == expected_default
         for step in plan._steps
     )
 
