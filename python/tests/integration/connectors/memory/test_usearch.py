@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 from datetime import datetime
 from typing import List
 
