@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 
@@ -100,7 +101,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
 
             if (completionResponse is null)
             {
-                throw new OobaboogaInvalidResponseException<string>(body, "Unexpected response from Oobabooga API");
+                throw new SKException($"Unexpected response from Oobabooga API:\n{body}");
             }
 
             return completionResponse.Results.ConvertAll(result => new ChatCompletionResult(result));

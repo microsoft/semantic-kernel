@@ -92,7 +92,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
 
             if (completionResponse is null)
             {
-                throw new OobaboogaInvalidResponseException<string>(body, "Unexpected response from Oobabooga API");
+                throw new SKException($"Unexpected response from Oobabooga API:\n{body}");
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
