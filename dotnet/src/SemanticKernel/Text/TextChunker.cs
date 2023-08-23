@@ -26,7 +26,7 @@ public static class TextChunker
     /// </summary>
     /// <param name="text">Text to split</param>
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
-    /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter (input length divided by 4) will be used.</param>
+    /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
     public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
     {
@@ -40,7 +40,7 @@ public static class TextChunker
     /// </summary>
     /// <param name="text">Text to split</param>
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
-    /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter (input length divided by 4) will be used.</param>
+    /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of lines.</returns>
     public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
     {
@@ -55,7 +55,7 @@ public static class TextChunker
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
     /// <param name="overlapTokens">Number of tokens to overlap between paragraphs.</param>
-    /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter (input length divided by 4) will be used.</param>
+    /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of paragraphs.</returns>
     public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, TokenCounter? tokenCounter = null)
     {
@@ -70,7 +70,7 @@ public static class TextChunker
     /// <param name="lines">Lines of text.</param>
     /// <param name="maxTokensPerParagraph">Maximum number of tokens per paragraph.</param>
     /// <param name="overlapTokens">Number of tokens to overlap between paragraphs.</param>
-    /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter (input length divided by 4) will be used.</param>
+    /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
     /// <returns>List of paragraphs.</returns>
     public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, TokenCounter? tokenCounter = null)
     {
