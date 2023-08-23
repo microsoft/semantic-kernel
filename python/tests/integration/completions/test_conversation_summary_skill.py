@@ -14,8 +14,7 @@ from semantic_kernel.core_skills.conversation_summary_skill import (
 
 @pytest.mark.asyncio
 async def test_azure_summarize_conversation_using_skill(
-    setup_summarize_conversation_using_skill,
-    get_aoai_config
+    setup_summarize_conversation_using_skill, get_aoai_config
 ):
     kernel, chatTranscript = setup_summarize_conversation_using_skill
 
