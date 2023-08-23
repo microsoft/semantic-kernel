@@ -7,14 +7,15 @@ import pytest
 
 import semantic_kernel as sk
 
-pytestmark = pytest.mark.skipif(
-    sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
-)
-
-pytestmark = pytest.mark.skipif(
-    "Python_Integration_Tests" in os.environ,
-    reason="Google Palm integration tests are only set up to run locally",
-)
+pytestmark = [
+    pytest.mark.skipif(
+        sys.version_info < (3, 9), reason="Google Palm requires Python 3.9 or greater"
+    ),
+    pytest.mark.skipif(
+        "Python_Integration_Tests" in os.environ,
+        reason="Google Palm integration tests are only set up to run locally",
+    ),
+]
 
 
 @pytest.mark.asyncio
