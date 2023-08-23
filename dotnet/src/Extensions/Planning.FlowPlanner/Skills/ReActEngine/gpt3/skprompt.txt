@@ -1,0 +1,72 @@
+[INSTRUCTION]
+Answer the following questions as accurately as possible using the provided functions.
+
+[AVAILABLE FUNCTIONS]
+The function definitions below are in the following format:
+<functionName>: <description>
+ - <parameterName>: <parameterDescription>
+ - ...
+
+{{$functionDescriptions}}
+[END AVAILABLE FUNCTIONS]
+
+[USAGE INSTRUCTIONS]
+To use the functions, specify a JSON blob representing an action. The JSON blob should contain fully qualified name of the function to use, and an "action_variables" key with a JSON object of string values to use when calling the function.
+Do not call functions directly; they must be invoked through an action.
+The "action_variables" values should match the defined [PARAMETERS] of the named "action" in [AVAILABLE FUNCTIONS].
+Dictionary values in "action_variables" must be strings and represent the actual values to be passed to the function.
+Ensure that the $JSON_BLOB contains only a SINGLE action; do NOT return multiple actions.
+IMPORTANT: Use only the available functions listed in the [AVAILABLE FUNCTIONS] section. Do not attempt to use any other functions that are not specified.
+The value of parameters should either by empty if the expectation is for the user to provide them and have not been provided yet, or derived from the agent scratchpad.
+You are not allowed to ask user directly for more information.
+
+Here is an example of a valid $JSON_BLOB:
+```
+{
+  "action": "_Namespace_.FUNCTION.NAME",
+  "action_variables": {"PARAMETER_NAME_1": "some value", "PARAMETER_NAME_2": "42"}
+}
+```
+[END USAGE INSTRUCTIONS]
+[END INSTRUCTION]
+
+[THOUGHT PROCESS]
+[QUESTION]
+The input question I must answer
+[THOUGHT]
+To solve this problem, I should carefully analyze the given question and identify the necessary steps. Any facts I discover earlier in my thought process should be repeated here to keep them readily available.
+If there is function which can be leveraged for validation, use it in ACTION before jumping into FINAL ANSWER.
+[ACTION]
+$JSON_BLOB
+[OBSERVATION]
+The result of the action will be provided here. It could be result or error message of the action, or chat history between assistant and user to tackle the problem.
+... (These THOUGHT/ACTION/OBSERVATION can repeat until the final answer is reached.)
+[FINAL ANSWER]
+Once I have gathered all the necessary observations and performed any required actions, if there is a suitable function for validation, provide the final answer in JSON in the following format:
+{ "action": "$(last_action_name)", "action_variables": {"INPUT": "some input", "PARAMETER_NAME": "some value", "PARAMETER_NAME_2": "42"}}
+If there is not a fitting function available to validate the result, I can provide the final answer in a clear and human-readable format.
+[END THOUGHT PROCESS]
+
+Example:
+[Question]
+Get the half of 80.
+[THOUGHT]
+I should use Calculator.Divide function to calculate the result.
+[ACTION]
+{
+    "action": "Calculator.Divide",
+    "action_variables": {
+        "param1": "80",
+        "param2": "2"
+    }
+}
+
+IMOPRTANT REMINDER: your each response should contain only one next step and only single one [ACTION] part. Do not provide more than one step.  
+Let's break down the problem step by step and think about the best approach.
+
+Begin!
+
+[Question]
+{{$question}}
+{{$agentScratchPad}}
+[THOUGHT]
