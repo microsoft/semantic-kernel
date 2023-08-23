@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Planning.PowerShell</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning.PowerShell</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="PowerShellStandard.Library" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" />
   </ItemGroup>
 
   <ItemGroup>
