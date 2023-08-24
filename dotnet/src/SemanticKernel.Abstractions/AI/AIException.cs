@@ -75,16 +75,11 @@ public class AIException : SKException
     {
         string description = errorCode switch
         {
-            ErrorCodes.NoResponse => "No response",
             ErrorCodes.AccessDenied => "Access denied",
             ErrorCodes.InvalidRequest => "Invalid request",
-            ErrorCodes.InvalidResponseContent => "Invalid response content",
             ErrorCodes.Throttling => "Throttling",
             ErrorCodes.RequestTimeout => "Request timeout",
             ErrorCodes.ServiceError => "Service error",
-            ErrorCodes.ModelNotAvailable => "Model not available",
-            ErrorCodes.InvalidConfiguration => "Invalid configuration",
-            ErrorCodes.FunctionTypeNotSupported => "Function type not supported",
             _ => $"Unknown error ({errorCode:G})",
         };
 
@@ -102,11 +97,6 @@ public class AIException : SKException
         UnknownError = -1,
 
         /// <summary>
-        /// No response.
-        /// </summary>
-        NoResponse,
-
-        /// <summary>
         /// Access is denied.
         /// </summary>
         AccessDenied,
@@ -115,11 +105,6 @@ public class AIException : SKException
         /// The request was invalid.
         /// </summary>
         InvalidRequest,
-
-        /// <summary>
-        /// The content of the response was invalid.
-        /// </summary>
-        InvalidResponseContent,
 
         /// <summary>
         /// The request was throttled.
@@ -135,20 +120,5 @@ public class AIException : SKException
         /// There was an error in the service.
         /// </summary>
         ServiceError,
-
-        /// <summary>
-        /// The requested model is not available.
-        /// </summary>
-        ModelNotAvailable,
-
-        /// <summary>
-        /// The supplied configuration was invalid.
-        /// </summary>
-        InvalidConfiguration,
-
-        /// <summary>
-        /// The function is not supported.
-        /// </summary>
-        FunctionTypeNotSupported,
     }
 }
