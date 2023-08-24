@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
@@ -22,11 +21,6 @@ internal sealed class ChatCompletionResult : IChatResult
     }
 
     public ModelResult ModelResult => this._responseData;
-
-    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(this._responseData.GetResult<TextCompletionResponseText>().Text ?? string.Empty);
-    }
 
     public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
