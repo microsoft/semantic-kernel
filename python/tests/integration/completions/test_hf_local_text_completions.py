@@ -107,30 +107,32 @@ async def test_text2text_generation_input_context_with_vars_and_str(
     )
     assert len(output) > 0
 
-
 @pytest.mark.asyncio
-async def test_text_generation_with_kwargs(
-    setup_hf_text_completion_function,
-):
-    _, _, simple_input = setup_hf_text_completion_function
+async def test_text_generation_with_kwargs():
 
-    model_name = "tiiuae/falcon-7b-instruct"
-
+    simple_input =  "sleeping and "
+    model_name = "google/flan-t5-base"
+    
     tokenizer = AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path=model_name, trust_remote_code=True
-    )
-
+        pretrained_model_name_or_path=model_name,
+        trust_remote_code=True)
+    
     hf_model = sk_hf.HuggingFaceTextCompletion(
         model_name,
-        task="text-generation",
-        model_kwargs={"torch_dtype": torch.bfloat16},
-        pipeline_kwargs={"tokenizer": tokenizer, "trust_remote_code": True},
+        task="text2text-generation",
+        model_kwargs={
+            "repetition_penalty": .2
+        },
+        pipeline_kwargs={
+            "tokenizer": tokenizer,
+            "trust_remote_code": True
+        }
     )
 
     kernel = sk.Kernel()
 
     # Configure LLM service
-    kernel.add_text_completion_service("falcon-7b", hf_model)
+    kernel.add_text_completion_service("hf-local", hf_model)
 
     # Define semantic function using SK prompt template language
     sk_prompt = "Hello, I like {{$input}}{{$input2}}"
