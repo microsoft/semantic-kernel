@@ -63,15 +63,6 @@ public sealed class PromptTemplate : IPromptTemplate
             result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
         }
 
-        // Parameters from the template
-        foreach (var variableName in this._templateEngine.ExtractInputParameterNames(this._template))
-        {
-            if (!string.IsNullOrEmpty(variableName) && !result.ContainsKey(variableName!))
-            {
-                result.Add(variableName!, new ParameterView(variableName!));
-            }
-        }
-
         return result.Values.ToList();
     }
 

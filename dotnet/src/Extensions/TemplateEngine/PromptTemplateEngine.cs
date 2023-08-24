@@ -37,14 +37,6 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     }
 
     /// <inheritdoc/>
-    public IList<string> ExtractInputParameterNames(string? templateText)
-    {
-        this._logger.LogTrace("Extracting variable names from string template: {0}", templateText);
-        var blocks = this.ExtractBlocks(templateText);
-        return blocks.Where(block => block.Type == BlockTypes.Variable).Select(block => ((VarBlock)block).Name).ToList();
-    }
-
-    /// <inheritdoc/>
     public async Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {
         this._logger.LogTrace("Rendering string template: {0}", templateText);

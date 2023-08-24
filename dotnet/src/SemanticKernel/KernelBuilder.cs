@@ -294,11 +294,6 @@ public sealed class KernelBuilder
 /// </summary>
 internal class NoopPromptTemplateEngine : IPromptTemplateEngine
 {
-    public IList<string> ExtractInputParameterNames(string? templateText)
-    {
-        return Enumerable.Empty<string>().ToList();
-    }
-
     public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(templateText);

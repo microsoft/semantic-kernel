@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
@@ -12,14 +11,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// </summary>
 public interface IPromptTemplateEngine
 {
-    /// <summary>
-    /// Given a prompt template string, extract all the input parameter names
-    /// </summary>
-    /// <param name="templateText">Prompt template (see skprompt.txt files)</param>
-    /// <returns>A list of all the input parameter names</returns>
-    IList<string> ExtractInputParameterNames(
-        string? templateText);
-
     /// <summary>
     /// Given a prompt template, replace the variables with their values and execute the functions replacing their
     /// reference with the function result.
