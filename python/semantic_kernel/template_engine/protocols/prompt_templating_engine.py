@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List, Optional, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, List, Optional, Protocol, runtime_checkable
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.template_engine.blocks.block import Block
+
+if TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 
 @runtime_checkable
@@ -28,7 +30,7 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_async(self, template_text: str, context: SKContext) -> str:
+    async def render_async(self, template_text: str, context: "SKContext") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -40,7 +42,9 @@ class PromptTemplatingEngine(Protocol):
         """
         ...
 
-    async def render_blocks_async(self, blocks: List[Block], context: SKContext) -> str:
+    async def render_blocks_async(
+        self, blocks: List[Block], context: "SKContext"
+    ) -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -65,7 +69,7 @@ class PromptTemplatingEngine(Protocol):
         ...
 
     async def render_code_async(
-        self, blocks: List[Block], execution_context: SKContext
+        self, blocks: List[Block], execution_context: "SKContext"
     ) -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the

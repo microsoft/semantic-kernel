@@ -67,9 +67,9 @@ public sealed class StepwisePlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2")]
-    // [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2")] // Chat tests take long
-    public async void CanExecuteStepwisePlan(bool useChatModel, string prompt)
+    [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
+    // [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2")] // Chat tests take long
+    public async void CanExecuteStepwisePlan(bool useChatModel, string prompt, string partialExpectedAnswer)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -85,10 +85,8 @@ public sealed class StepwisePlannerTests : IDisposable
         var plan = planner.CreatePlan(prompt);
         var result = await plan.InvokeAsync();
 
-        // Assert
-        // Loose assertion -- we just want to make sure that the plan was executed and that the result contains the name of the current president.
-        // Calculations often wrong.
-        Assert.Contains("Biden", result.Result, StringComparison.InvariantCultureIgnoreCase);
+        // Assert - should contain the expected answer
+        Assert.Contains(partialExpectedAnswer, result.Result, StringComparison.InvariantCultureIgnoreCase);
 
         Assert.True(result.Variables.TryGetValue("stepsTaken", out string? stepsTakenString));
         var stepsTaken = JsonSerializer.Deserialize<List<SystemStep>>(stepsTakenString!);
