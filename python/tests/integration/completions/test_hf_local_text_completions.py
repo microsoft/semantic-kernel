@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+from transformers import AutoTokenizer
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
-from transformers import AutoTokenizer
 
 
 @pytest.mark.asyncio
