@@ -130,6 +130,21 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     }
 
     [Fact]
+    public async Task ItCanUseOperationSummaryAsync()
+    {
+        // Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        Assert.NotNull(operations);
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "Excuses");
+        Assert.NotNull(operation);
+        Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Description);
+    }
+
+    [Fact]
     public async Task ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfullyAsync()
     {
         // Act

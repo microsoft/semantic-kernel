@@ -186,7 +186,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 string.IsNullOrEmpty(serverUrl) ? null : new Uri(serverUrl),
                 path,
                 new HttpMethod(method),
-                operationItem.Description,
+                string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationHeaders(operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody)
