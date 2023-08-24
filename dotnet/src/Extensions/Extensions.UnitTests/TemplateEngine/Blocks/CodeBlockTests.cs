@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Blocks;
 
 public class CodeBlockTests
 {
