@@ -23,7 +23,7 @@ class MathSkill(PydanticField):
         description="Adds value to a value",
         name="Add",
         input_description="The value to add",
-        function_completion_enabled=True,
+        function_calling_enabled=True,
     )
     @sk_function_context_parameter(
         name="Amount",
@@ -45,7 +45,7 @@ class MathSkill(PydanticField):
         description="Subtracts value to a value",
         name="Subtract",
         input_description="The value to subtract",
-        function_completion_enabled=True,
+        function_calling_enabled=True,
     )
     @sk_function_context_parameter(
         name="Amount",

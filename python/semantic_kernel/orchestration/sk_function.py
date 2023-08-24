@@ -108,7 +108,7 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=method.__sk_function_name__,
             is_semantic=False,
-            function_completion_enabled=method.__sk_function_function_completion_enabled__,
+            function_calling_enabled=method.__sk_function_function_calling_enabled__,
             log=log,
         )
 
@@ -173,10 +173,8 @@ class SKFunction(SKFunctionBase):
 
             if function_call is not None:
                 skill_name, name = function_call["name"].split("-")
-                if context._skill_collection.has_function_completion_function(
-                    skill_name, name
-                ):
-                    func = context._skill_collection.get_function_completion_function(
+                if context._skill_collection.has_callable_function(skill_name, name):
+                    func = context._skill_collection.get_callable_function(
                         skill_name, name
                     )
                 else:
@@ -258,7 +256,7 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=function_name,
             is_semantic=True,
-            function_completion_enabled=function_config.prompt_template_config.function_completion_enabled,
+            function_calling_enabled=function_config.prompt_template_config.function_calling_enabled,
             log=log,
         )
 
@@ -287,8 +285,8 @@ class SKFunction(SKFunctionBase):
         return not self._is_semantic
 
     @property
-    def function_completion_enabled(self) -> bool:
-        return self._function_completion_enabled
+    def function_calling_enabled(self) -> bool:
+        return self._function_calling_enabled
 
     @property
     def request_settings(self) -> CompleteRequestSettings:
@@ -303,7 +301,7 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         is_semantic: bool,
-        function_completion_enabled: bool = False,
+        function_calling_enabled: bool = False,
         log: Optional[Logger] = None,
         delegate_stream_function: Optional[Callable[..., Any]] = None,
     ) -> None:
@@ -314,7 +312,7 @@ class SKFunction(SKFunctionBase):
         self._skill_name = skill_name
         self._name = function_name
         self._is_semantic = is_semantic
-        self._function_completion_enabled = function_completion_enabled
+        self._function_calling_enabled = function_calling_enabled
         self._log = log if log is not None else NullLogger()
         self._stream_function = delegate_stream_function
         self._skill_collection = None
@@ -367,14 +365,14 @@ class SKFunction(SKFunctionBase):
             skill_name=self.skill_name,
             description=self.description,
             is_semantic=self.is_semantic,
-            function_completion_enabled=self._function_completion_enabled,
+            function_calling_enabled=self._function_calling_enabled,
             parameters=self._parameters,
         )
 
-    def describe_function_completion(self) -> List[Dict[str, Any]]:
+    def describe_callable_functions(self) -> List[Dict[str, Any]]:
         return [
-            func.function_completion_object
-            for func in self._skill_collection.get_functions_view().function_completion_functions.values()
+            func.callabe_function_object
+            for func in self._skill_collection.get_functions_view().callable_functions.values()
         ]
 
     def __call__(
@@ -498,7 +496,7 @@ class SKFunction(SKFunctionBase):
                     "Semantic functions must have either an AI service or Chat service",
                 )
 
-        functions = self.describe_function_completion()
+        functions = self.describe_callable_functions()
 
         service = (
             self._ai_service if self._ai_service is not None else self._chat_service

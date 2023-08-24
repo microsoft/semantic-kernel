@@ -28,7 +28,7 @@ class ReadOnlySkillCollectionBase(PydanticField, ABC):
         pass
 
     @abstractmethod
-    def has_function_completion_function(
+    def has_callable_function(
         self, skill_name: Optional[str], function_name: str
     ) -> bool:
         pass
@@ -46,7 +46,7 @@ class ReadOnlySkillCollectionBase(PydanticField, ABC):
         pass
 
     @abstractmethod
-    def get_function_completion_function(
+    def get_callable_function(
         self, skill_name: Optional[str], function_name: str
     ) -> "SKFunctionBase":
         pass

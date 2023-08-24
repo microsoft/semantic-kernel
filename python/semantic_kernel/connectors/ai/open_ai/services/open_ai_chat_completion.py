@@ -56,7 +56,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             org_id {Optional[str]} -- OpenAI organization ID.
                 This is usually optional unless your
                 account belongs to multiple organizations.
-            has_function_completion {bool} -- Whether or not the model supports function calling.
         """
         self._model_id = model_id
         self._api_key = api_key

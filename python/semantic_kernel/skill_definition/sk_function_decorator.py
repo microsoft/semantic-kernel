@@ -7,7 +7,7 @@ def sk_function(
     name: str = "",
     input_description: str = "",
     input_default_value: str = "",
-    function_completion_enabled: bool = False,
+    function_calling_enabled: bool = False,
 ):
     """
     Decorator for SK functions.
@@ -17,7 +17,7 @@ def sk_function(
         name -- The name of the function
         input_description -- The description of the input
         input_default_value -- The default value of the input
-        function_completion_enabled -- Whether the function is enabled for a function completion
+        function_calling_enabled -- Whether the function is enabled for a function completion
     """
 
     def decorator(func):
@@ -26,8 +26,8 @@ def sk_function(
         func.__sk_function_name__ = name or func.__name__
         func.__sk_function_input_description__ = input_description or ""
         func.__sk_function_input_default_value__ = input_default_value or ""
-        func.__sk_function_function_completion_enabled__ = (
-            function_completion_enabled or False
+        func.__sk_function_function_calling_enabled__ = (
+            function_calling_enabled or False
         )
         return func
 

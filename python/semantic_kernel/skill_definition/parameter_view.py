@@ -30,6 +30,6 @@ class ParameterView(SKBaseModel):
         )
 
     @property
-    def function_completion_object(self) -> Dict[str, str]:
+    def callable_function_object(self) -> Dict[str, str]:
         """Return the parameter, ready for a function call setup."""
         return {"description": self.description, "type": self.type_}

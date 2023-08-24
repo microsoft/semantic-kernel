@@ -84,7 +84,7 @@ class SKFunctionBase(PydanticField):
 
     @property
     @abstractmethod
-    def function_completion_enabled(self) -> bool:
+    def function_calling_enabled(self) -> bool:
         """
         Whether the function can be used as a function call that is passed to the API.
         """

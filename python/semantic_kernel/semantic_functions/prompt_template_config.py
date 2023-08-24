@@ -39,7 +39,7 @@ class PromptTemplateConfig:
     completion: "PromptTemplateConfig.CompletionConfig" = field(
         default_factory=CompletionConfig
     )
-    function_completion_enabled: bool = False
+    function_calling_enabled: bool = False
     default_services: List[str] = field(default_factory=list)
     input: "PromptTemplateConfig.InputConfig" = field(default_factory=InputConfig)
 
