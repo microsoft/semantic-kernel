@@ -13,5 +13,5 @@ public sealed class ChatCompletionStreamingResponse : CompletionStreamingRespons
     /// A field used by Oobabooga with the text chunk sent in the websocket message.
     /// </summary>
     [JsonPropertyName("history")]
-    public ChatHistory History { get; set; } = new();
+    public OobaboogaChatHistory History { get; set; } = new();
 }

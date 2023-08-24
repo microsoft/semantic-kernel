@@ -21,7 +21,7 @@ public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
     /// The chat history.
     /// </summary>
     [JsonPropertyName("history")]
-    public ChatHistory History { get; set; } = new ChatHistory();
+    public OobaboogaChatHistory History { get; set; } = new OobaboogaChatHistory();
 
     /// <summary>
     /// Creates a new ChatCompletionRequest with the given Chat history, oobabooga settings and semantic-kernel settings.
@@ -32,7 +32,7 @@ public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
         var toReturn = new ChatCompletionRequest()
         {
             UserInput = chat.Messages.Last().Content,
-            History = new ChatHistory()
+            History = new OobaboogaChatHistory()
             {
                 Internal = chatMessages.Count > 1 ? new() { chatMessages } : new(),
                 Visible = chatMessages.Count > 1 ? new() { chatMessages } : new(),

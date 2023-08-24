@@ -13,5 +13,5 @@ public sealed class ChatCompletionResponseHistory
     /// Completed text.
     /// </summary>
     [JsonPropertyName("history")]
-    public ChatHistory History { get; set; } = new();
+    public OobaboogaChatHistory History { get; set; } = new();
 }

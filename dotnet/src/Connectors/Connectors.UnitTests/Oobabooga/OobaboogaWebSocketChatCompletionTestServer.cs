@@ -29,7 +29,7 @@ internal sealed class OobaboogaWebSocketChatCompletionTestServer : OobaboogaWebS
         {
             Event = "text_stream",
             MessageNum = messageNum,
-            History = new ChatHistory { Internal = new() { new List<string> { strMessage } }, Visible = new() { new List<string> { strMessage } } }
+            History = new OobaboogaChatHistory { Internal = new() { new List<string> { strMessage } }, Visible = new() { new List<string> { strMessage } } }
         };
         return responseObj;
     }

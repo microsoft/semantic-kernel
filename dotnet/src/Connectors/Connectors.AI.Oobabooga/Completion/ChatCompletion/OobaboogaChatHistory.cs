@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 /// <summary>
 /// Represents the chat history.
 /// </summary>
-public class ChatHistory
+public class OobaboogaChatHistory
 {
     /// <summary>
     /// The internal chat history.
