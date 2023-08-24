@@ -31,6 +31,7 @@ class CompleteRequestSettings:
         self.max_tokens = completion_config.max_tokens
         self.stop_sequences = completion_config.stop_sequences
         self.number_of_responses = completion_config.number_of_responses
+        self.token_selection_biases = completion_config.token_selection_biases
 
     @staticmethod
     def from_completion_config(

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass, field
-from typing import List
+from typing import Dict, List
 
 
 @dataclass
@@ -15,6 +15,7 @@ class PromptTemplateConfig:
         max_tokens: int = 256
         number_of_responses: int = 1
         stop_sequences: List[str] = field(default_factory=list)
+        token_selection_biases: Dict[int, int] = field(default_factory=dict)
 
     @dataclass
     class InputParameter:
@@ -56,6 +57,10 @@ class PromptTemplateConfig:
             "number_of_responses"
         )
         config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
+        config.token_selection_biases = completion_dict.get(
+            "token_selection_biases", {}
+        )
+
         config.default_services = data.get("default_services", [])
 
         # Some skills may not have input parameters defined
@@ -108,6 +113,7 @@ class PromptTemplateConfig:
         max_tokens: int = 256,
         number_of_responses: int = 1,
         stop_sequences: List[str] = [],
+        token_selection_biases: Dict[int, int] = {},
     ) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature
@@ -117,4 +123,5 @@ class PromptTemplateConfig:
         config.completion.max_tokens = max_tokens
         config.completion.number_of_responses = number_of_responses
         config.completion.stop_sequences = stop_sequences
+        config.token_selection_biases = token_selection_biases
         return config
