@@ -71,7 +71,7 @@ public class ChatCompletionOobaboogaSettings : CompletionOobaboogaSettings
     public string ContextInstruct { get; set; } = "";
 
     /// <summary>
-    /// Imports the settings from the given ChatCompletionRequestSettings object.
+    /// Imports the settings from the given <see cref="ChatCompletionOobaboogaSettings"/> object.
     /// </summary>
     public void Apply(ChatCompletionOobaboogaSettings settings)
     {

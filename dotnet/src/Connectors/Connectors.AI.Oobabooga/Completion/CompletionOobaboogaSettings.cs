@@ -196,7 +196,7 @@ public class CompletionOobaboogaSettings
     public List<string> StoppingStrings { get; set; } = new List<string>();
 
     /// <summary>
-    /// Imports the settings from the given CompletionRequestSettings object.
+    /// Imports the settings from the given <see cref="CompletionOobaboogaSettings"/> object.
     /// </summary>
     public void Apply(CompletionOobaboogaSettings settings)
     {
