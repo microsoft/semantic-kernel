@@ -62,8 +62,6 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         return func;
     }
 
-
-
     /// <inheritdoc/>
     public override async Task<SKContext> InvokeAsync(
         SKContext context,
@@ -159,7 +157,6 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
         return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
     }
-
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";
