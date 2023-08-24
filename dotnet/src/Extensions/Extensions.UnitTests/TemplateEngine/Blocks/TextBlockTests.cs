@@ -3,7 +3,7 @@
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Blocks;
 
 public class TextBlockTests
 {
