@@ -112,7 +112,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
             if (completionResponse is null)
             {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+                throw new SKException("Unexpected response from model")
                 {
                     Data = { { "ResponseData", body } },
                 };
@@ -120,7 +120,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
             return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (Exception e) when (e is not SKException && !e.IsCriticalException())
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
