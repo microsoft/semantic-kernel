@@ -189,7 +189,7 @@ public sealed class Kernel : IKernel, IDisposable
             this.LoggerFactory);
 
         int pipelineStepCount = -1;
-        foreach (ISKFunction f in pipeline)
+        foreach (ISKFunction skFunction in pipeline)
         {
             if (context.ErrorOccurred)
             {
@@ -204,46 +204,34 @@ public sealed class Kernel : IKernel, IDisposable
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var functionDetails = f.Describe();
-                string? renderedPrompt = null;
 
-                SemanticFunction? semanticFunction = f as SemanticFunction;
-
-                if (semanticFunction is not null)
+                var functionInvokingArgs = await this.OnFunctionInvokingAsync(skFunction, context).ConfigureAwait(false);
+                if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
-                    semanticFunction.AddDefaultValues(context.Variables);
-                    renderedPrompt = await semanticFunction.RenderPromptTemplateAsync(context, cancellationToken).ConfigureAwait(false);
-                }
-
-                var cancelled = this.OnFunctionInvoking(functionDetails, context, renderedPrompt);
-                if (cancelled)
-                {
-                    this._logger.LogInformation("Execution was cancelled during pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, f.SkillName, f.Name);
+                    this._logger.LogInformation("Execution was cancelled during function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
                     break;
                 }
 
-                if (semanticFunction is not null)
-                {
-                    context = await semanticFunction.InternalInvokeAsync(context, renderedPrompt: renderedPrompt, cancellationToken: cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
-                }
+                context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
                 {
                     this._logger.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
-                        pipelineStepCount, f.SkillName, f.Name, context.LastException?.Message);
+                        pipelineStepCount, skFunction.SkillName, skFunction.Name, context.LastException?.Message);
                     return context;
                 }
 
-                this.OnFunctionInvoked(functionDetails, context, renderedPrompt);
+                var functionInvokedArgs = await this.OnFunctionInvokedAsync(skFunction, context).ConfigureAwait(false);
+                if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
+                {
+                    this._logger.LogInformation("Execution was cancelled during function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    break;
+                }
             }
             catch (Exception e) when (!e.IsCriticalException())
             {
                 this._logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
-                    pipelineStepCount, f.SkillName, f.Name, e.Message);
+                    pipelineStepCount, skFunction.SkillName, skFunction.Name, e.Message);
                 context.LastException = e;
                 return context;
             }
@@ -366,25 +354,21 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Execute the FunctionInvoking event handlers and returns true if cancellation was attempted.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
-    /// <param name="context">SKContext before function invocation</param>
-    /// <param name="renderedPrompt">Rendered prompt prior to semantic function invocation</param>
-    /// <returns>Returns true if cancellation was attempted.</returns>
-    private bool OnFunctionInvoking(FunctionView functionView, SKContext context, string? renderedPrompt)
+    /// <param name="function">Target invoking function</param>
+    /// <param name="context">Context to pass to the invoking handlers</param>
+    /// <returns>Returns the resulting EventArgs state after the event was triggered.</returns>
+    private async Task<FunctionInvokingEventArgs?> OnFunctionInvokingAsync(ISKFunction function, SKContext context)
     {
+        FunctionInvokingEventArgs? args = null;
         if (this.FunctionInvoking is not null)
         {
-            var args = (renderedPrompt is not null)
-                    ? new SemanticFunctionInvokingEventArgs(functionView, context, renderedPrompt)
-                    : new FunctionInvokingEventArgs(functionView, context);
-
-            this.FunctionInvoking.Invoke(this, args);
-
-            return args.CancelToken.IsCancellationRequested;
+            args = await function.PrepareFunctionInvokingEventArgsAsync(context).ConfigureAwait(false);
+            this.FunctionInvoking.Invoke(this, args!);
         }
 
-        return false;
+        return args;
     }
+
 
     /// <summary>
     /// Execute the OnFunctionInvoked event handlers.
@@ -392,12 +376,16 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="functionView">Function view details</param>
     /// <param name="context">SKContext after function invocation</param>
     /// <param name="renderedPrompt">Rendered prompt prior to semantic function invocation</param>
-    private void OnFunctionInvoked(FunctionView functionView, SKContext context, string? renderedPrompt)
+    private async Task<FunctionInvokedEventArgs?> OnFunctionInvokedAsync(ISKFunction function, SKContext context)
     {
-        this.FunctionInvoked?.Invoke(this, (renderedPrompt is not null)
-            ? new SemanticFunctionInvokedEventArgs(functionView, context, renderedPrompt)
-            : new FunctionInvokedEventArgs(functionView, context)
-            );
+        FunctionInvokedEventArgs? args = null;
+        if (this.FunctionInvoked is not null)
+        {
+            args = await function.PrepareFunctionInvokedEventArgsAsync(context).ConfigureAwait(false);
+            this.FunctionInvoked.Invoke(this, args!);
+        }
+
+        return args;
     }
 
     #endregion

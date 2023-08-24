@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -73,6 +74,12 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
         this._plan.SetDefaultSkillCollection(skills);
+
+    public Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context) =>
+        this._plan.PrepareFunctionInvokingEventArgsAsync(context);
+
+    public Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context) =>
+        this._plan.PrepareFunctionInvokedEventArgsAsync(context);
 
     #region private ================================================================================
 

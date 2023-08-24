@@ -10,14 +10,20 @@ namespace Microsoft.SemanticKernel.Events;
 /// </summary>
 public sealed class SemanticFunctionInvokedEventArgs : FunctionInvokedEventArgs
 {
-    internal SemanticFunctionInvokedEventArgs(FunctionView functionView, SKContext context, string? renderedPrompt)
+    internal SemanticFunctionInvokedEventArgs(FunctionView functionView, SKContext context)
         : base(functionView, context)
     {
-        this.RenderedPrompt = renderedPrompt;
     }
 
     /// <summary>
     /// Prompt rendered from template prior to the function execution.
     /// </summary>
-    public string? RenderedPrompt { get; }
+    public string? RenderedPrompt
+    {
+        get
+        {
+            this.SKContext.InternalVariables.TryGetValue(SemanticFunction.RenderedPromptKey, out string? renderedPrompt);
+            return renderedPrompt;
+        }
+    }
 }

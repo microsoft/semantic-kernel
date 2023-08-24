@@ -4,6 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -80,4 +81,7 @@ public interface ISKFunction
     /// <param name="settings">LLM completion settings</param>
     /// <returns>Self instance</returns>
     ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+
+    Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context);
+    Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context);
 }

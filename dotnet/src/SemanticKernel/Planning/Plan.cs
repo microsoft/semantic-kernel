@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -11,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -358,6 +360,20 @@ public sealed class Plan : IPlan
         return this.Function is null
             ? throw new NotImplementedException()
             : this.Function.SetAIConfiguration(settings);
+    }
+
+    public Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context)
+    {
+        return this.Function is null
+            ? Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context))
+            : this.Function.PrepareFunctionInvokingEventArgsAsync(context);
+    }
+
+    public Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context)
+    {
+        return this.Function is null
+            ? Task.FromResult(new FunctionInvokedEventArgs(this.Describe(), context))
+            : this.Function.PrepareFunctionInvokedEventArgsAsync(context);
     }
 
     #endregion ISKFunction implementation

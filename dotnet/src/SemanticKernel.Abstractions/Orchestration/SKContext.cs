@@ -26,6 +26,11 @@ public sealed class SKContext
     private CultureInfo _culture;
 
     /// <summary>
+    /// Internal variables for Kernel use only.
+    /// </summary>
+    internal ContextVariables InternalVariables { get; }
+
+    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
@@ -51,6 +56,7 @@ public sealed class SKContext
     /// </summary>
     public ContextVariables Variables { get; }
 
+
     /// <summary>
     /// Read only skills collection
     /// </summary>
@@ -73,6 +79,7 @@ public sealed class SKContext
         ILoggerFactory? loggerFactory = null)
     {
         this.Variables = variables ?? new();
+        this.InternalVariables = new();
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = CultureInfo.CurrentCulture;

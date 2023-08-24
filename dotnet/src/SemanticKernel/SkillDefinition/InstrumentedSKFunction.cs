@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -87,6 +88,12 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
         this._function.SetDefaultSkillCollection(skills);
+
+    public Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context) =>
+        this._function.PrepareFunctionInvokingEventArgsAsync(context);
+
+    public Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context) =>
+        this._function.PrepareFunctionInvokedEventArgsAsync(context);
 
     #region private ================================================================================
 
