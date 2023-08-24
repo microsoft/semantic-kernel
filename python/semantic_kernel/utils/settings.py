@@ -95,3 +95,16 @@ def google_palm_settings_from_dot_env() -> str:
     assert api_key is not None, "Google PaLM API key not found in .env file"
 
     return api_key
+
+
+def azure_cosmos_mongodb_settings_from_dot_env() -> str:
+    """Reads the Azure CosmosDB MongoDB connection string from the .env file.
+    Returns:
+        str: The Azure CosmoDBs MongoDB connection string
+    """
+    config = dotenv_values(".env")
+    connection_string = config.get("AZURE_COSMODB_MONGO_CONNECTION_STRING", None)
+
+    assert connection_string is not None, " connection string not found in .env file"
+
+    return connection_string
