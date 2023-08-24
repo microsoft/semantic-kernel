@@ -78,6 +78,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
         try
         {
             await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
@@ -127,6 +128,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
         await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
 
         var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);

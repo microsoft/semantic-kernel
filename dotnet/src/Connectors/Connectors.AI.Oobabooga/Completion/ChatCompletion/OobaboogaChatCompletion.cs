@@ -76,8 +76,10 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         }
     }
 
+    /// <inheritdoc/>
     public ChatHistory CreateNewChat(string? instructions = null)
     {
+        this.LogActionDetails();
         var toReturn = new ChatHistory();
         if (!string.IsNullOrWhiteSpace(instructions))
         {
@@ -87,6 +89,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         return toReturn;
     }
 
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
@@ -96,6 +99,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         return await this.InternalGetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
@@ -108,6 +112,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         }
     }
 
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -117,6 +122,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
             .ToList();
     }
 
+    /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
