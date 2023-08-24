@@ -35,13 +35,13 @@ public static class Example43_GetModelResult
         var textResult = await myFunction.InvokeAsync("Sci-fi",
             settings: new CompleteRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
         Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAITextResult()).AsJson());
+        Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAIChatResult()).AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
         textResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
         Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAITextResult()?.Usage.AsJson());
+        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly

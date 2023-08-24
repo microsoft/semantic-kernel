@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -47,6 +48,35 @@ public abstract class ClientBase
     private protected ILogger Logger { get; set; }
 
     /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.PromptTokens",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.CompletionTokens",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.TotalTokens",
+            description: "Total number of tokens used");
+
+    /// <summary>
     /// Creates completions for the prompt and settings.
     /// </summary>
     /// <param name="text">The prompt to complete.</param>
@@ -77,6 +107,8 @@ public abstract class ClientBase
         {
             throw new SKException("Text completions not found");
         }
+
+        this.CaptureUsageDetails(responseData.Usage);
 
         return responseData.Choices.Select(choice => new TextResult(responseData, choice)).ToList();
     }
@@ -168,12 +200,16 @@ public abstract class ClientBase
             throw new SKException("Chat completions null response");
         }
 
-        if (response.Value.Choices.Count == 0)
+        var responseData = response.Value;
+
+        if (responseData.Choices.Count == 0)
         {
             throw new SKException("Chat completions not found");
         }
 
-        return response.Value.Choices.Select(chatChoice => new ChatResult(response.Value, chatChoice)).ToList();
+        this.CaptureUsageDetails(responseData.Usage);
+
+        return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
     }
 
     /// <summary>
@@ -443,5 +479,20 @@ public abstract class ClientBase
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
         }
+    }
+
+    /// <summary>
+    /// Captures usage details, including token information.
+    /// </summary>
+    /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
+    private void CaptureUsageDetails(CompletionsUsage usage)
+    {
+        this.Logger.LogInformation(
+            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+            usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
+
+        s_promptTokensCounter.Add(usage.PromptTokens);
+        s_completionTokensCounter.Add(usage.CompletionTokens);
+        s_totalTokensCounter.Add(usage.TotalTokens);
     }
 }
