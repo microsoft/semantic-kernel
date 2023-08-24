@@ -85,9 +85,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var plan = planner.CreatePlan(prompt);
         var result = await plan.InvokeAsync();
 
-        // Assert
-        // Loose assertion -- we just want to make sure that the plan was executed and that the result contains the name of the current president.
-        // Calculations often wrong.
+        // Assert - should contain the expected answer
         Assert.Contains(partialExpectedAnswer, result.Result, StringComparison.InvariantCultureIgnoreCase);
 
         Assert.True(result.Variables.TryGetValue("stepsTaken", out string? stepsTakenString));
