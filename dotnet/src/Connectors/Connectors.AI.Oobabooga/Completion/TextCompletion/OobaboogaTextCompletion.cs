@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 
@@ -70,10 +71,8 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
 
             var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
 
-            using var stringContent = new StringContent(
-                JsonSerializer.Serialize(completionRequest),
-                Encoding.UTF8,
-                "application/json");
+            var jsonRequest = Json.Serialize(completionRequest);
+            using var stringContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 
             using var httpRequestMessage = new HttpRequestMessage()
             {
