@@ -221,7 +221,7 @@ public sealed class Kernel : IKernel, IDisposable
                 }
 
                 var functionInvokedArgs = await this.OnFunctionInvokedAsync(skFunction, context).ConfigureAwait(false);
-                if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
+                if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled during function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
                     break;
