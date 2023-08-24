@@ -7,10 +7,11 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 
-internal sealed class ChatCompletionStreamingResult : CompletionStreamingResultBase, IChatStreamingResult
+internal sealed class ChatCompletionStreamingResult : CompletionStreamingResultBase, IChatStreamingResult, ITextStreamingResult
 {
     private readonly Channel<ChatMessageBase> _chatMessageChannel;
 
@@ -57,5 +58,20 @@ internal sealed class ChatCompletionStreamingResult : CompletionStreamingResultB
                 yield return chunk;
             }
         }
+    }
+
+    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken))
+        {
+            yield return result.Content;
+        }
+    }
+
+    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    {
+        var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+
+        return message.Content;
     }
 }
