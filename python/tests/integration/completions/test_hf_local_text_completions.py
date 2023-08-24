@@ -140,7 +140,9 @@ async def test_text_generation_with_kwargs(
         hf_model
     )
     
-    text2text_function = kernel.create_semantic_function(prompt, max_tokens=25, temperature=0.2, top_p=0.5)
+    # Define semantic function using SK prompt template language
+    sk_prompt = "Hello, I like {{$input}}{{$input2}}"
+    text2text_function = kernel.create_semantic_function(sk_prompt, max_tokens=25, temperature=0.2, top_p=0.5)
 
     # Complete input context with additional variables and string and print
     context = kernel.create_new_context()
