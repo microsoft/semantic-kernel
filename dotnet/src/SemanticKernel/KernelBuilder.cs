@@ -255,7 +255,7 @@ public sealed class KernelBuilder
             }
         }
 
-        return new DefaultPromptTemplateEngine();
+        return new NoopPromptTemplateEngine();
     }
 
     /// <summary>
@@ -290,11 +290,11 @@ public sealed class KernelBuilder
 }
 
 /// <summary>
-/// Default IPromptTemplateEngine which performs no rendering of the template.
+/// No-operation IPromptTemplateEngine which performs no rendering of the template.
 /// </summary>
-internal class DefaultPromptTemplateEngine : IPromptTemplateEngine
+internal class NoopPromptTemplateEngine : IPromptTemplateEngine
 {
-    public IList<string> ExtractVariableNames(string? templateText)
+    public IList<string> ExtractInputParameterNames(string? templateText)
     {
         return Enumerable.Empty<string>().ToList();
     }

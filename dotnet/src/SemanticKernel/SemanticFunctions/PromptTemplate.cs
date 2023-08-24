@@ -64,7 +64,7 @@ public sealed class PromptTemplate : IPromptTemplate
         }
 
         // Parameters from the template
-        foreach (var variableName in this._templateEngine.ExtractVariableNames(this._template))
+        foreach (var variableName in this._templateEngine.ExtractInputParameterNames(this._template))
         {
             if (!string.IsNullOrEmpty(variableName) && !result.ContainsKey(variableName!))
             {

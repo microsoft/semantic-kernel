@@ -37,7 +37,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     }
 
     /// <inheritdoc/>
-    public IList<string> ExtractVariableNames(string? templateText)
+    public IList<string> ExtractInputParameterNames(string? templateText)
     {
         this._logger.LogTrace("Extracting variable names from string template: {0}", templateText);
         var blocks = this.ExtractBlocks(templateText);

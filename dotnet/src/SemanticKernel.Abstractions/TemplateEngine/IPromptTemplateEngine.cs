@@ -13,11 +13,11 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 public interface IPromptTemplateEngine
 {
     /// <summary>
-    /// Given a prompt template string, extract all the variable names
+    /// Given a prompt template string, extract all the input parameter names
     /// </summary>
     /// <param name="templateText">Prompt template (see skprompt.txt files)</param>
-    /// <returns>A list of all the variable names</returns>
-    IList<string> ExtractVariableNames(
+    /// <returns>A list of all the input parameter names</returns>
+    IList<string> ExtractInputParameterNames(
         string? templateText);
 
     /// <summary>
