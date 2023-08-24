@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
+using static System.Net.WebRequestMethods;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 
@@ -22,7 +23,7 @@ public class ChatCompletionOobaboogaSettings : CompletionOobaboogaSettings
     public string Character { get; set; } = "Example";
 
     /// <summary>
-    /// The instruction template for the chat completion.
+    /// The instruction template for instruct mode chat completion. Instruction following models usually require a specific format that they were specifically trained or fine-tuned to follow. You can find default templates in the <see href="https://github.com/oobabooga/text-generation-webui/tree/main/instruction-templates">corresponding directory</see> and default mappings between models and templates in the <see href="https://github.com/oobabooga/text-generation-webui/blob/main/models/config.yaml">config.yaml file</see>.
     /// </summary>
     [JsonPropertyName("instruction_template")]
     public string InstructionTemplate { get; set; } = "Vicuna-v1.1";
