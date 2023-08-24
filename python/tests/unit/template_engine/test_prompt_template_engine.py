@@ -126,10 +126,9 @@ def test_it_renders_variables(
 async def test_it_renders_code_using_input_async(
     target: PromptTemplateEngine,
     variables: ContextVariables,
-    skills: Mock,
-    context: SKContext,
+    context_factory,
 ):
-    @sk_function(name="test")
+    @sk_function(name="function")
     def my_function_async(cx: SKContext) -> str:
         return f"F({cx.variables.input})"
 
@@ -138,11 +137,7 @@ async def test_it_renders_code_using_input_async(
 
     variables.update("INPUT-BAR")
     template = "foo-{{function}}-baz"
-    skills.configure_mock(
-        **{"has_function.return_value": True, "get_function.return_value": func}
-    )
-
-    result = await target.render_async(template, context)
+    result = await target.render_async(template, context_factory(variables, func))
 
     assert result == "foo-F(INPUT-BAR)-baz"
 
@@ -151,10 +146,9 @@ async def test_it_renders_code_using_input_async(
 async def test_it_renders_code_using_variables_async(
     target: PromptTemplateEngine,
     variables: ContextVariables,
-    skills: Mock,
-    context: SKContext,
+    context_factory,
 ):
-    @sk_function(name="test")
+    @sk_function(name="function")
     def my_function_async(cx: SKContext) -> str:
         return f"F({cx.variables.input})"
 
@@ -163,11 +157,7 @@ async def test_it_renders_code_using_variables_async(
 
     variables.set("myVar", "BAR")
     template = "foo-{{function $myVar}}-baz"
-    skills.configure_mock(
-        **{"has_function.return_value": True, "get_function.return_value": func}
-    )
-
-    result = await target.render_async(template, context)
+    result = await target.render_async(template, context_factory(variables, func))
 
     assert result == "foo-F(BAR)-baz"
 
@@ -176,10 +166,9 @@ async def test_it_renders_code_using_variables_async(
 async def test_it_renders_async_code_using_variables_async(
     target: PromptTemplateEngine,
     variables: ContextVariables,
-    skills: Mock,
-    context: SKContext,
+    context_factory,
 ):
-    @sk_function(name="test")
+    @sk_function(name="function")
     async def my_function_async(cx: SKContext) -> str:
         return cx.variables.input
 
@@ -189,10 +178,7 @@ async def test_it_renders_async_code_using_variables_async(
     variables.set("myVar", "BAR")
 
     template = "foo-{{function $myVar}}-baz"
-    skills.configure_mock(
-        **{"has_function.return_value": True, "get_function.return_value": func}
-    )
 
-    result = await target.render_async(template, context)
+    result = await target.render_async(template, context_factory(variables, func))
 
     assert result == "foo-BAR-baz"
