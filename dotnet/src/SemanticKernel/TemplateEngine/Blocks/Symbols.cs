@@ -8,6 +8,7 @@ internal static class Symbols
     internal const char BlockEnder = '}';
 
     internal const char VarPrefix = '$';
+    internal const char NamedArgBlockSeparator = '=';
 
     internal const char DblQuote = '"';
     internal const char SglQuote = '\'';

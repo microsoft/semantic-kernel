@@ -8,8 +8,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 internal sealed class NamedArgBlock : Block, ITextRendering
 {
-    internal static char Separator = '=';
-
     internal override BlockTypes Type => BlockTypes.NamedArg;
 
     internal string Name { get; } = string.Empty;
@@ -57,7 +55,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         }
 
         this.Logger.LogError("Invalid named argument `{0}`", this.Content);
-        throw new SKException($"A function named argument must contain a name and value separated by a '{NamedArgBlock.Separator}'");
+        throw new SKException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}'");
     }
 
     // TODO delete this comment once you confirm this Render method
@@ -112,7 +110,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         switch (trimmedParts?.Length)
         {
             case (2):
-                return $"{trimmedParts[0]}{NamedArgBlock.Separator}{trimmedParts[1]}";
+                return $"{trimmedParts[0]}{Symbols.NamedArgBlockSeparator}{trimmedParts[1]}";
             case (1):
                 return trimmedParts[0];
             default:
@@ -127,7 +125,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return System.Array.Empty<string>();
         }
 
-        string[] parts = text.Split(new char[] { NamedArgBlock.Separator }, 2);
+        string[] parts = text.Split(new char[] { Symbols.NamedArgBlockSeparator }, 2);
         string[] result = new string[parts.Length];
         if (parts.Length > 0)
         {

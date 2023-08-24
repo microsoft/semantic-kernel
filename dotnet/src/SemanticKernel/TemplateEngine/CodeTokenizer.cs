@@ -183,8 +183,9 @@ internal sealed class CodeTokenizer
                     }
                     else
                     {
-                        blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
+                        blocks.Add(new FunctionIdBlock(tokenContent, this._loggerFactory));
                     }
+                    currentTokenContent.Clear();
                 }
                 else if (currentTokenType == TokenTypes.NamedArg)
                 {
