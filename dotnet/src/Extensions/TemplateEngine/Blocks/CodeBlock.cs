@@ -152,7 +152,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             localException = ex;
         }
 
-        if (contextClone.ErrorOccurred)
+        if (contextClone.ErrorOccurred || localException is not null)
         {
             var lastException = localException ?? contextClone.LastException;
             var errorMsg = $"Function `{fBlock.Content}` execution failed. {lastException?.GetType().FullName}: {lastException?.Message}";
