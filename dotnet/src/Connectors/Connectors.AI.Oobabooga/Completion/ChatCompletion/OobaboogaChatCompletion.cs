@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 
@@ -27,6 +28,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
 
     public const string ChatBlockingUriPath = "/api/v1/chat";
     public const string ChatStreamingUriPath = "/api/v1/chat-stream";
+    private const string ChatHistoryMustContainAtLeastOneUserMessage = "Chat history must contain at least one user message";
 
     public ChatCompletionOobaboogaSettings ChatCompletionOobaboogaSettings { get; set; }
 
@@ -59,18 +61,26 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         }
     }
 
-    public SemanticKernel.AI.ChatCompletion.ChatHistory CreateNewChat(string? instructions = null)
+    public ChatHistory CreateNewChat(string? instructions = null)
     {
-        return new SemanticKernel.AI.ChatCompletion.ChatHistory();
+        var toReturn = new ChatHistory();
+        if (!string.IsNullOrWhiteSpace(instructions))
+        {
+            toReturn.AddSystemMessage(instructions!);
+        }
+
+        return toReturn;
     }
 
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
-        SemanticKernel.AI.ChatCompletion.ChatHistory chat,
+        ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
+            Verify.NotEmptyList(chat, ChatHistoryMustContainAtLeastOneUserMessage, nameof(chat));
+
             await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
 
             var completionRequest = this.CreateOobaboogaChatRequest(chat, requestSettings);
@@ -96,7 +106,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
             ChatCompletionResponse? completionResponse = null;
             if (!string.IsNullOrEmpty(body))
             {
-                completionResponse = JsonSerializer.Deserialize<ChatCompletionResponse>(body);
+                completionResponse = Json.Deserialize<ChatCompletionResponse>(body);
             }
 
             if (completionResponse is null)
@@ -119,10 +129,12 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
     }
 
     public async IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
-        SemanticKernel.AI.ChatCompletion.ChatHistory chat,
+        ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotEmptyList(chat, ChatHistoryMustContainAtLeastOneUserMessage, nameof(chat));
+
         await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
 
         var completionRequest = this.CreateOobaboogaChatRequest(chat, requestSettings);
@@ -175,17 +187,9 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         }
     }
 
-    private ChatCompletionRequest CreateOobaboogaChatRequest(SemanticKernel.AI.ChatCompletion.ChatHistory chat, ChatRequestSettings? requestSettings)
+    private ChatCompletionRequest CreateOobaboogaChatRequest(ChatHistory chat, ChatRequestSettings? requestSettings)
     {
-        if (chat is null)
-        {
-            throw new ArgumentNullException(nameof(chat));
-        }
-
-        if (requestSettings is null)
-        {
-            requestSettings = new ChatRequestSettings();
-        }
+        requestSettings ??= new ChatRequestSettings();
 
         var completionRequest = ChatCompletionRequest.Create(chat, this.ChatCompletionOobaboogaSettings, requestSettings);
         return completionRequest;

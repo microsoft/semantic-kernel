@@ -114,6 +114,23 @@ internal static class Verify
         }
     }
 
+    /// <summary>
+    /// Verifies that the provided list is not empty.
+    /// </summary>
+    /// <typeparam name="T">Type of items in the list.</typeparam>
+    /// <param name="list">The list to check.</param>
+    /// <param name="details">Details on what is expected</param>
+    /// <param name="paramName">The name of the parameter (optional, for exception messaging).</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void NotEmptyList<T>([NotNull] IList<T>? list, string details, [CallerArgumentExpression("list")] string? paramName = null)
+    {
+        NotNull(list, paramName);
+        if (list.Count == 0)
+        {
+            ThrowListEmptyException(paramName);
+        }
+    }
+
     [DoesNotReturn]
     private static void ThrowInvalidName(string kind, string name) =>
         throw new SKException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
@@ -129,4 +146,8 @@ internal static class Verify
     [DoesNotReturn]
     internal static void ThrowArgumentOutOfRangeException<T>(string? paramName, T actualValue, string message) =>
         throw new ArgumentOutOfRangeException(paramName, actualValue, message);
+
+    [DoesNotReturn]
+    private static void ThrowListEmptyException(string? paramName) =>
+        throw new ArgumentException("The list cannot be empty.", paramName);
 }

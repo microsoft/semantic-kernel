@@ -26,7 +26,7 @@ public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
     /// <summary>
     /// Creates a new ChatCompletionRequest with the given Chat history, oobabooga settings and semantic-kernel settings.
     /// </summary>
-    public static ChatCompletionRequest Create(SemanticKernel.AI.ChatCompletion.ChatHistory chat, ChatCompletionOobaboogaSettings settings, ChatRequestSettings requestSettings)
+    public static ChatCompletionRequest Create(ChatHistory chat, ChatCompletionOobaboogaSettings settings, ChatRequestSettings requestSettings)
     {
         var chatMessages = chat.Messages.Take(chat.Messages.Count - 1).Select(@base => @base.Content).ToList();
         var toReturn = new ChatCompletionRequest()

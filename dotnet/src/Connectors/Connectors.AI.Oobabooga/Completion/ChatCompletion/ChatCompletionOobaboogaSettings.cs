@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json.Serialization;
-using static System.Net.WebRequestMethods;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 

@@ -195,7 +195,7 @@ internal class WebSocketTestServer : IDisposable
         {
             if (client.Socket?.State == WebSocketState.Open)
             {
-                await client.Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", this._mainCancellationTokenSource.Token);
+                await client.Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", this._mainCancellationTokenSource.Token).ConfigureAwait(false);
             }
         }
     }
