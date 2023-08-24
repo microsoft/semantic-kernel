@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.9.dev"
+version = "0.3.10.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -60,6 +60,10 @@ psycopg-binary = "^3.1.9"
 azure-search-documents = {version = "11.4.0b8", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
+
+[tool.poetry.group.usearch.dependencies]
+usearch = "^1.1.1"
+pyarrow = "^12.0.1"
 
 [tool.isort]
 profile = "black"
