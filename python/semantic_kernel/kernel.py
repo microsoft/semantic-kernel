@@ -190,13 +190,13 @@ class Kernel:
             if input_context is not None:
                 context = input_context
                 if input_vars is not None:
-                    context._variables = input_vars.merge_or_overwrite(
-                        new_vars=context._variables, overwrite=False
+                    context.variables = input_vars.merge_or_overwrite(
+                        new_vars=context.variables, overwrite=False
                     )
 
                 if input_str is not None:
-                    context._variables = ContextVariables(input_str).merge_or_overwrite(
-                        new_vars=context._variables, overwrite=False
+                    context.variables = ContextVariables(input_str).merge_or_overwrite(
+                        new_vars=context.variables, overwrite=False
                     )
 
             # if the user did not pass in a context, prioritize an input string,
@@ -233,9 +233,9 @@ class Kernel:
         except Exception as ex:
             # TODO: "critical exceptions"
             self._log.error(
-                f"Something went wrong in stream function."
-                f"During function invocation: '{stream_function.skill_name}.{stream_function.name}'. "
-                f"Error description: '{str(ex)}'"
+                "Something went wrong in stream function. During function invocation:"
+                f" '{stream_function.skill_name}.{stream_function.name}'. Error"
+                f" description: '{str(ex)}'"
             )
             raise KernelException(
                 KernelException.ErrorCodes.FunctionInvokeError,
@@ -253,13 +253,13 @@ class Kernel:
         if input_context is not None:
             context = input_context
             if input_vars is not None:
-                context._variables = input_vars.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = input_vars.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
 
             if input_str is not None:
-                context._variables = ContextVariables(input_str).merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = ContextVariables(input_str).merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
 
         # if the user did not pass in a context, prioritize an input string,
@@ -395,8 +395,10 @@ class Kernel:
         if len(function_names) != len(set(function_names)):
             raise KernelException(
                 KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                "Overloaded functions are not supported, "
-                "please differentiate function names.",
+                (
+                    "Overloaded functions are not supported, "
+                    "please differentiate function names."
+                ),
             )
 
         skill = {}
@@ -678,9 +680,11 @@ class Kernel:
             if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load chat service, unable to prepare semantic function. "
-                    "Function description: "
-                    "{function_config.prompt_template_config.description}",
+                    (
+                        "Could not load chat service, unable to prepare semantic"
+                        " function. Function description:"
+                        " {function_config.prompt_template_config.description}"
+                    ),
                 )
 
             function.set_chat_service(lambda: service(self))
@@ -701,9 +705,11 @@ class Kernel:
             if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load text service, unable to prepare semantic function. "
-                    "Function description: "
-                    "{function_config.prompt_template_config.description}",
+                    (
+                        "Could not load text service, unable to prepare semantic"
+                        " function. Function description:"
+                        " {function_config.prompt_template_config.description}"
+                    ),
                 )
 
             function.set_ai_service(lambda: service(self))

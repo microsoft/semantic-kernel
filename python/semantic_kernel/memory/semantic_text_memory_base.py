@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import ABC, abstractmethod
-from typing import List, Optional
+from abc import abstractmethod
+from typing import List, Optional, TypeVar
 
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
+from semantic_kernel.sk_pydantic import PydanticField
+
+SemanticTextMemoryT = TypeVar("SemanticTextMemoryT", bound="SemanticTextMemoryBase")
 
 
-class SemanticTextMemoryBase(ABC):
+class SemanticTextMemoryBase(PydanticField):
     @abstractmethod
     async def save_information_async(
         self,

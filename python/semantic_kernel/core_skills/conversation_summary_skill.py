@@ -1,16 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
+from typing import TYPE_CHECKING
 
-from semantic_kernel.kernel import Kernel
-from semantic_kernel.orchestration.sk_context import SKContext
-from semantic_kernel.skill_definition import sk_function
-from semantic_kernel.text import text_chunker
-from semantic_kernel.text.function_extension import aggregate_chunked_results_async
+if TYPE_CHECKING:
+    from semantic_kernel.kernel import Kernel
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 
 class ConversationSummarySkill:
     """
     Semantic skill that enables conversations summarization.
     """
+
+    from semantic_kernel.skill_definition import sk_function
 
     # The max tokens to process in a single semantic function call.
     _max_tokens = 1024
@@ -25,7 +26,7 @@ class ConversationSummarySkill:
         " or tags.\n\nBEGIN SUMMARY:\n"
     )
 
-    def __init__(self, kernel: Kernel):
+    def __init__(self, kernel: "Kernel"):
         self._summarizeConversationFunction = kernel.create_semantic_function(
             ConversationSummarySkill._summarize_conversation_prompt_template,
             skill_name=ConversationSummarySkill.__name__,
@@ -44,8 +45,8 @@ class ConversationSummarySkill:
         input_description="A long conversation transcript.",
     )
     async def summarize_conversation_async(
-        self, input: str, context: SKContext
-    ) -> SKContext:
+        self, input: str, context: "SKContext"
+    ) -> "SKContext":
         """
         Given a long conversation transcript, summarize the conversation.
 
@@ -53,6 +54,11 @@ class ConversationSummarySkill:
         :param context: The SKContext for function execution.
         :return: SKContext with the summarized conversation result.
         """
+        from semantic_kernel.text import text_chunker
+        from semantic_kernel.text.function_extension import (
+            aggregate_chunked_results_async,
+        )
+
         lines = text_chunker._split_text_lines(
             input, ConversationSummarySkill._max_tokens, True
         )
