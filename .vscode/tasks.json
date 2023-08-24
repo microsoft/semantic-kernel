@@ -77,7 +77,7 @@
       }
     },
     {
-      "label": "validate - (contributing-Format-Build-Test-Run)",
+      "label": "validate (contributing-Format-Build-Test-Run)",
       "detail": "Runs tasks to validate changes before checking in.",
       "group": "build",
       "dependsOn": [
@@ -119,16 +119,6 @@
       }
     },
     // Formatting
-    {
-      "label": "format (contributing-python-ruff)",
-      "command": "poetry",
-      "type": "shell",
-      "group":"build",
-      "args": ["run", "ruff", "check", "."],
-      "options": {
-        "cwd": "${workspaceFolder}/python"
-      }
-    },
     {
       "label": "validate (contributing-python)",
       "command": "poetry",
