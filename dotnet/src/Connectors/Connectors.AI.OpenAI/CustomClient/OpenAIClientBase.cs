@@ -55,9 +55,7 @@ public abstract class OpenAIClientBase
         var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         if (result.Embeddings is not { Count: >= 1 })
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidResponseContent,
-                "Embeddings not found");
+            throw new SKException("Embeddings not found");
         }
 
         return result.Embeddings.Select(e => e.Values).ToList();
@@ -120,7 +118,7 @@ public abstract class OpenAIClientBase
             T result = this.JsonDeserialize<T>(responseJson);
             return result;
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not SKException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
@@ -133,7 +131,7 @@ public abstract class OpenAIClientBase
         var result = Json.Deserialize<T>(responseJson);
         if (result is null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
+            throw new SKException("Response JSON parse error");
         }
 
         return result;
@@ -231,7 +229,7 @@ public abstract class OpenAIClientBase
                         errorDetail);
             }
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not SKException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

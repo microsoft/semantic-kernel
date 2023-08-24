@@ -11,9 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+using Microsoft.SemanticKernel.Diagnostics;
+using Verify = Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Diagnostics.Verify;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
 
@@ -57,9 +57,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     {
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
         this._httpClient = httpClient;

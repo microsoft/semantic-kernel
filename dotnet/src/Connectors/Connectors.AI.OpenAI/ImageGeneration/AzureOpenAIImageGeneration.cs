@@ -87,9 +87,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
         endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient.BaseAddress!.AbsoluteUri;
@@ -148,7 +146,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (result == null || string.IsNullOrWhiteSpace(result.Id))
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response not contains result");
+            throw new SKException("Response not contains result");
         }
 
         return result.Id;
@@ -171,7 +169,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             {
                 if (this._maxRetryCount == retryCount)
                 {
-                    throw new AIException(AIException.ErrorCodes.RequestTimeout, "Reached maximum retry attempts");
+                    throw new SKException("Reached maximum retry attempts");
                 }
 
                 using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
@@ -196,7 +194,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                 retryCount++;
             }
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not SKException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
