@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextComple
 
 public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
 {
-    public const string BlockingUriPath = "/api/v1/generate";
+    private const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
 
     private readonly UriBuilder _blockingUri;

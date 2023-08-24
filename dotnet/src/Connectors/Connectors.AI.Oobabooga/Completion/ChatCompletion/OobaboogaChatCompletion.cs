@@ -28,8 +28,8 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
     private readonly UriBuilder _chatBlockingUri;
     private readonly UriBuilder _chatStreamingUri;
 
-    public const string ChatBlockingUriPath = "/api/v1/chat";
-    public const string ChatStreamingUriPath = "/api/v1/chat-stream";
+    private const string ChatBlockingUriPath = "/api/v1/chat";
+    private const string ChatStreamingUriPath = "/api/v1/chat-stream";
     private const string ChatHistoryMustContainAtLeastOneUserMessage = "Chat history must contain at least one user message";
 
     public ChatCompletionOobaboogaSettings ChatCompletionOobaboogaSettings { get; set; }

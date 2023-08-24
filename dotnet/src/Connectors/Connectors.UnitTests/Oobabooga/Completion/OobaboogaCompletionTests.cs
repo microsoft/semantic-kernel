@@ -106,7 +106,7 @@ public sealed class OobaboogaCompletionTests : IDisposable
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
         var expectedUri = new UriBuilder(this._endPointUri)
         {
-            Path = OobaboogaTextCompletion.BlockingUriPath,
+            Path = "/api/v1/generate",
             Port = BlockingPort
         };
 
