@@ -106,26 +106,21 @@ async def test_text2text_generation_input_context_with_vars_and_str(
     )
     assert len(output) > 0
 
+
 @pytest.mark.asyncio
 async def test_text_generation_with_kwargs():
-
-    simple_input =  "sleeping and "
+    simple_input = "sleeping and "
     model_name = "google/flan-t5-base"
-    
+
     tokenizer = AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path=model_name,
-        trust_remote_code=True)
-    
+        pretrained_model_name_or_path=model_name, trust_remote_code=True
+    )
+
     hf_model = sk_hf.HuggingFaceTextCompletion(
         model_name,
         task="text2text-generation",
-        model_kwargs={
-            "repetition_penalty": .2
-        },
-        pipeline_kwargs={
-            "tokenizer": tokenizer,
-            "trust_remote_code": True
-        }
+        model_kwargs={"repetition_penalty": 0.2},
+        pipeline_kwargs={"tokenizer": tokenizer, "trust_remote_code": True},
     )
 
     kernel = sk.Kernel()
