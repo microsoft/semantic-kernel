@@ -371,7 +371,7 @@ class SKFunction(SKFunctionBase):
 
     def describe_callable_functions(self) -> List[Dict[str, Any]]:
         return [
-            func.callabe_function_object
+            func.callable_function_object
             for func in self._skill_collection.get_functions_view().callable_functions.values()
         ]
 

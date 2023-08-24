@@ -38,7 +38,7 @@ class FunctionView(SKBaseModel):
         )
 
     @property
-    def callabe_function_object(self) -> Dict[str, Any]:
+    def callable_function_object(self) -> Dict[str, Any]:
         return {
             "name": f"{self.skill_name}-{self.name}",
             "description": self.description,
