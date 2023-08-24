@@ -99,14 +99,6 @@ public abstract class OobaboogaCompletionBase
     }
 
     /// <summary>
-    /// Sets the options for the <paramref name="clientWebSocket"/>, either persistent and provided by the ctor, or transient if none provided.
-    /// </summary>
-    private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
-    {
-        clientWebSocket.Options.SetRequestHeader("User-Agent", Telemetry.HttpUserAgent);
-    }
-
-    /// <summary>
     /// That method is responsible for processing the websocket messages that build a streaming response object. It is crucial that it is run asynchronously to prevent a deadlock with results iteration
     /// </summary>
     protected async Task ProcessWebSocketMessagesAsync(ClientWebSocket clientWebSocket, CompletionStreamingResultBase streamingResult, CancellationToken cancellationToken)
@@ -191,20 +183,6 @@ public abstract class OobaboogaCompletionBase
     }
 
     /// <summary>
-    /// Gets the number of concurrent calls, either by reading the semaphore count or by reading the active connections stack count
-    /// </summary>
-    /// <returns></returns>
-    private int GetCurrentConcurrentCallsNb()
-    {
-        if (this._concurrentSemaphore != null)
-        {
-            return this._maxNbConcurrentWebSockets - this._concurrentSemaphore!.CurrentCount;
-        }
-
-        return this._activeConnections!.Count;
-    }
-
-    /// <summary>
     /// Ends a concurrent call, either by releasing a semaphore slot or by popping a value from the active connections stack
     /// </summary>
     protected void FinishConcurrentCall()
@@ -219,6 +197,55 @@ public abstract class OobaboogaCompletionBase
         }
 
         Interlocked.Exchange(ref this._lastCallTicks, DateTime.UtcNow.Ticks);
+    }
+
+    /// <summary>
+    /// Closes and disposes of a client web socket after use
+    /// </summary>
+    protected async Task DisposeClientGracefullyAsync(ClientWebSocket clientWebSocket)
+    {
+        try
+        {
+            if (clientWebSocket.State == WebSocketState.Open)
+            {
+                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException exception)
+        {
+            this._logger?.LogTrace(message: "Closing client web socket before disposal was cancelled", exception: exception);
+        }
+        catch (WebSocketException exception)
+        {
+            this._logger?.LogTrace(message: "Closing client web socket before disposal raised web socket exception", exception: exception);
+        }
+        finally
+        {
+            clientWebSocket.Dispose();
+        }
+    }
+
+    #region private ================================================================================
+
+    /// <summary>
+    /// Sets the options for the <paramref name="clientWebSocket"/>, either persistent and provided by the ctor, or transient if none provided.
+    /// </summary>
+    private void SetWebSocketOptions(ClientWebSocket clientWebSocket)
+    {
+        clientWebSocket.Options.SetRequestHeader("User-Agent", Telemetry.HttpUserAgent);
+    }
+
+    /// <summary>
+    /// Gets the number of concurrent calls, either by reading the semaphore count or by reading the active connections stack count
+    /// </summary>
+    private int GetCurrentConcurrentCallsNb()
+    {
+        if (this._concurrentSemaphore != null)
+        {
+            return this._maxNbConcurrentWebSockets - this._concurrentSemaphore!.CurrentCount;
+        }
+
+        return this._activeConnections!.Count;
     }
 
     private void StartCleanupTask(CancellationToken cancellationToken)
@@ -239,7 +266,6 @@ public abstract class OobaboogaCompletionBase
     /// <summary>
     /// Flushes the web socket clients that have been idle for too long
     /// </summary>
-    /// <returns></returns>
     private async Task FlushWebSocketClientsAsync(CancellationToken cancellationToken)
     {
         // In the cleanup task, make sure you handle OperationCanceledException appropriately
@@ -272,29 +298,5 @@ public abstract class OobaboogaCompletionBase
         }
     }
 
-    /// <summary>
-    /// Closes and disposes of a client web socket after use
-    /// </summary>
-    protected async Task DisposeClientGracefullyAsync(ClientWebSocket clientWebSocket)
-    {
-        try
-        {
-            if (clientWebSocket.State == WebSocketState.Open)
-            {
-                await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing client before disposal", CancellationToken.None).ConfigureAwait(false);
-            }
-        }
-        catch (OperationCanceledException exception)
-        {
-            this._logger?.LogTrace(message: "Closing client web socket before disposal was cancelled", exception: exception);
-        }
-        catch (WebSocketException exception)
-        {
-            this._logger?.LogTrace(message: "Closing client web socket before disposal raised web socket exception", exception: exception);
-        }
-        finally
-        {
-            clientWebSocket.Dispose();
-        }
-    }
+    #endregion
 }
