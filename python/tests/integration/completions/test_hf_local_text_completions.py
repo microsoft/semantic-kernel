@@ -113,36 +113,30 @@ async def test_text_generation_with_kwargs(
     setup_hf_text_completion_function,
 ):
     _, _, simple_input = setup_hf_text_completion_function
-    
+
     model_name = "tiiuae/falcon-7b-instruct"
-    
+
     tokenizer = AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path=model_name,
-        trust_remote_code=True)
-    
+        pretrained_model_name_or_path=model_name, trust_remote_code=True
+    )
+
     hf_model = sk_hf.HuggingFaceTextCompletion(
         model_name,
         task="text-generation",
-        model_kwargs={
-            "torch_dtype": torch.bfloat16
-        },
-        pipeline_kwargs={
-            "tokenizer": tokenizer,
-            "trust_remote_code": True
-        }
+        model_kwargs={"torch_dtype": torch.bfloat16},
+        pipeline_kwargs={"tokenizer": tokenizer, "trust_remote_code": True},
     )
-    
+
     kernel = sk.Kernel()
-    
+
     # Configure LLM service
-    kernel.add_text_completion_service(
-        "falcon-7b",
-        hf_model
-    )
-    
+    kernel.add_text_completion_service("falcon-7b", hf_model)
+
     # Define semantic function using SK prompt template language
     sk_prompt = "Hello, I like {{$input}}{{$input2}}"
-    text2text_function = kernel.create_semantic_function(sk_prompt, max_tokens=25, temperature=0.2, top_p=0.5)
+    text2text_function = kernel.create_semantic_function(
+        sk_prompt, max_tokens=25, temperature=0.2, top_p=0.5
+    )
 
     # Complete input context with additional variables and string and print
     context = kernel.create_new_context()
