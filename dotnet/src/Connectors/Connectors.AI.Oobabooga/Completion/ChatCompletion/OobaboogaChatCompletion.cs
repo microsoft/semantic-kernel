@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
@@ -12,16 +13,17 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 
 /// <summary>
-/// Oobabooga text completion service API.
+/// Oobabooga chat completion service API.
 /// Adapted from <see href="https://github.com/oobabooga/text-generation-webui/tree/main/api-examples"/>
 /// </summary>
-public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatCompletion
+public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatCompletion, ITextCompletion
 {
     private readonly UriBuilder _chatBlockingUri;
     private readonly UriBuilder _chatStreamingUri;
@@ -77,6 +79,62 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        this.LogActionDetails();
+        return await this.InternalGetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        this.LogActionDetails();
+        await foreach (var chatCompletionStreamingResult in this.InternalGetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken))
+        {
+            yield return chatCompletionStreamingResult;
+        }
+    }
+
+    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    {
+        this.LogActionDetails();
+        ChatHistory chat = this.PrepareChatHistory(text, requestSettings, out ChatRequestSettings chatSettings);
+        return (await this.InternalGetChatCompletionsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
+            .OfType<ITextResult>()
+            .ToList();
+    }
+
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        this.LogActionDetails();
+        ChatHistory chat = this.PrepareChatHistory(text, requestSettings, out ChatRequestSettings chatSettings);
+
+        await foreach (var chatCompletionStreamingResult in this.InternalGetStreamingChatCompletionsAsync(chat, chatSettings, cancellationToken))
+        {
+            yield return (ITextStreamingResult)chatCompletionStreamingResult;
+        }
+    }
+
+    #region private ================================================================================
+
+    private ChatCompletionRequest CreateOobaboogaChatRequest(ChatHistory chat, ChatRequestSettings? requestSettings)
+    {
+        requestSettings ??= new ChatRequestSettings();
+
+        var completionRequest = ChatCompletionRequest.Create(chat, this.ChatCompletionOobaboogaSettings, requestSettings);
+        return completionRequest;
+    }
+
+    protected override CompletionStreamingResponseBase? GetResponseObject(string messageText)
+    {
+        return Json.Deserialize<ChatCompletionStreamingResponse>(messageText);
+    }
+
+    private async Task<IReadOnlyList<IChatResult>> InternalGetChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
         try
         {
             Verify.NotEmptyList(chat, ChatHistoryMustContainAtLeastOneUserMessage, nameof(chat));
@@ -128,7 +186,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         }
     }
 
-    public async IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
+    private async IAsyncEnumerable<IChatStreamingResult> InternalGetStreamingChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -187,16 +245,24 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         }
     }
 
-    private ChatCompletionRequest CreateOobaboogaChatRequest(ChatHistory chat, ChatRequestSettings? requestSettings)
+    private ChatHistory PrepareChatHistory(string text, CompleteRequestSettings? requestSettings, out ChatRequestSettings settings)
     {
-        requestSettings ??= new ChatRequestSettings();
-
-        var completionRequest = ChatCompletionRequest.Create(chat, this.ChatCompletionOobaboogaSettings, requestSettings);
-        return completionRequest;
+        requestSettings ??= new();
+        var chat = this.CreateNewChat(requestSettings.ChatSystemPrompt);
+        chat.AddUserMessage(text);
+        settings = new ChatRequestSettings
+        {
+            MaxTokens = requestSettings.MaxTokens,
+            Temperature = requestSettings.Temperature,
+            TopP = requestSettings.TopP,
+            PresencePenalty = requestSettings.PresencePenalty,
+            FrequencyPenalty = requestSettings.FrequencyPenalty,
+            StopSequences = requestSettings.StopSequences,
+            ResultsPerPrompt = requestSettings.ResultsPerPrompt,
+            TokenSelectionBiases = requestSettings.TokenSelectionBiases,
+        };
+        return chat;
     }
 
-    protected override CompletionStreamingResponseBase? GetResponseObject(string messageText)
-    {
-        return JsonSerializer.Deserialize<ChatCompletionStreamingResponse>(messageText);
-    }
+    #endregion
 }

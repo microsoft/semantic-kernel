@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -296,6 +297,15 @@ public abstract class OobaboogaCompletionBase
                 await this.DisposeClientGracefullyAsync(clientToDispose).ConfigureAwait(false);
             }
         }
+    }
+
+    /// <summary>
+    /// Logs Oobabooga action details.
+    /// </summary>
+    /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
+    private protected void LogActionDetails([CallerMemberName] string? callerMemberName = default)
+    {
+        this._logger?.LogInformation("Oobabooga Action: {Action}.", callerMemberName);
     }
 
     #endregion
