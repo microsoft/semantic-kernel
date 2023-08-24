@@ -23,14 +23,6 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
     """
     A class representing a memory store for Azure Cosmos DB MongoDB API.
 
-    Attributes:
-        _mongodb_client: The MongoDB client instance.
-        _vector_size (int): The size of the vector.
-        _logger (Logger): The logger instance.
-        _database: The MongoDB database instance.
-        _embedding_key: The key used for embedding.
-        _batch_size: The batch size for inserting records.
-
     Args:
         vector_size (int): The size of the vector.
         connection_string (str, optional): The connection string for the MongoDB client.
@@ -40,8 +32,6 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
         logger (Optional[Logger], optional): The logger instance. Defaults to None.
     """
 
-
-class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
     _mongodb_client = None
     _vector_size: int = None
     _logger: Logger = None
