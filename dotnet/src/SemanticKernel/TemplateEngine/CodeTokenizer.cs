@@ -178,7 +178,7 @@ internal sealed class CodeTokenizer
                 }
                 else if (currentTokenType == TokenTypes.NamedArg)
                 {
-                    blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._logger));
+                    blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
                     currentTokenContent.Clear();
                 }
 
@@ -239,7 +239,7 @@ internal sealed class CodeTokenizer
                 break;
 
             case TokenTypes.NamedArg:
-                blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._logger));
+                blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
                 break;
 
             case TokenTypes.None:

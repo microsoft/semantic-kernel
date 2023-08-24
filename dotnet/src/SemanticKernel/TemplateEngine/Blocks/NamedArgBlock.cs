@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
@@ -34,7 +35,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     private readonly ValBlock? _valBlock;
     private readonly VarBlock? _argValueAsVarBlock;
 
-    public NamedArgBlock(string? text, ILogger? logger = null)
+    public NamedArgBlock(string? text, ILoggerFactory? logger = null)
         : base(NamedArgBlock.TrimWhitespace(text), logger)
     {
         var argParts = NamedArgBlock.GetTrimmedParts(text);
@@ -56,8 +57,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         }
 
         this.Logger.LogError("Invalid named argument `{0}`", this.Content);
-        throw new TemplateException(TemplateException.ErrorCodes.SyntaxError,
-            $"A function named argument must contain a name and value separated by a '{NamedArgBlock.Separator}'");
+        throw new SKException($"A function named argument must contain a name and value separated by a '{NamedArgBlock.Separator}'");
     }
 
     // TODO delete this comment once you confirm this Render method

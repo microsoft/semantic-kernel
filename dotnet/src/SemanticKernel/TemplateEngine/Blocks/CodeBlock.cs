@@ -215,7 +215,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             {
                 var errorMsg = "Functions support up to one positional argument";
                 this.Logger.LogError(errorMsg);
-                throw new TemplateException(TemplateException.ErrorCodes.UnexpectedBlockType, $"Unexpected first token type: {this._tokens[i].Type:G}");
+                throw new SKException($"Unexpected first token type: {this._tokens[i].Type:G}");
             }
 
             // Sensitive data, logging as trace, disabled by default

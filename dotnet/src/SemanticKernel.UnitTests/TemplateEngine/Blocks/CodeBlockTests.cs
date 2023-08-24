@@ -343,7 +343,7 @@ public class CodeBlockTests
         this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
-        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLogger.Instance);
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);
         string result = await codeBlock.RenderCodeAsync(context);
 
         // Assert
