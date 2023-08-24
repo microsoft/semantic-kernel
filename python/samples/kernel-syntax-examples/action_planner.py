@@ -13,7 +13,7 @@ async def main():
     api_key, org_id = sk.openai_settings_from_dot_env()
 
     kernel.add_chat_service(
-        "gpt-3.5", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
+        "chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
     )
     kernel.import_skill(MathSkill(), "math")
     kernel.import_skill(FileIOSkill(), "fileIO")
