@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
+import typing as t
 
-
-from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+
+if t.TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 
 class MathSkill(PydanticField):
@@ -26,7 +28,7 @@ class MathSkill(PydanticField):
         name="Amount",
         description="Amount to add",
     )
-    def add(self, initial_value_text: str, context: SKContext) -> str:
+    def add(self, initial_value_text: str, context: "SKContext") -> str:
         """
         Returns the Addition result of initial and amount values provided.
 
@@ -45,7 +47,7 @@ class MathSkill(PydanticField):
         name="Amount",
         description="Amount to subtract",
     )
-    def subtract(self, initial_value_text: str, context: SKContext) -> str:
+    def subtract(self, initial_value_text: str, context: "SKContext") -> str:
         """
         Returns the difference of numbers provided.
 
@@ -56,7 +58,9 @@ class MathSkill(PydanticField):
         return MathSkill.add_or_subtract(initial_value_text, context, add=False)
 
     @staticmethod
-    def add_or_subtract(initial_value_text: str, context: SKContext, add: bool) -> str:
+    def add_or_subtract(
+        initial_value_text: str, context: "SKContext", add: bool
+    ) -> str:
         """
         Helper function to perform addition or subtraction based on the add flag.
 

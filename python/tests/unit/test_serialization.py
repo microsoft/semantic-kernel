@@ -17,6 +17,13 @@ from semantic_kernel.core_skills.text_skill import TextSkill
 from semantic_kernel.core_skills.time_skill import TimeSkill
 from semantic_kernel.core_skills.wait_skill import WaitSkill
 from semantic_kernel.core_skills.web_search_engine_skill import WebSearchEngineSkill
+from semantic_kernel.memory.null_memory import NullMemory
+from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
+from semantic_kernel.orchestration.delegate_inference import DelegateInference
+from semantic_kernel.orchestration.sk_context import SKContext
+from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.sk_pydantic import PydanticField, SKBaseModel
 from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.functions_view import FunctionsView
@@ -27,6 +34,7 @@ from semantic_kernel.skill_definition.read_only_skill_collection import (
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
+from semantic_kernel.skill_definition.sk_function_decorator import sk_function
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.skill_definition.skill_collection_base import SkillCollectionBase
 from semantic_kernel.template_engine.blocks.block import Block
@@ -90,6 +98,22 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         )
         return result
 
+    def create_sk_function() -> SKFunction:
+        """Return an SKFunction."""
+
+        @sk_function(name="function")
+        def my_function_async(cx: SKContext) -> str:
+            return f"F({cx.variables.input})"
+
+        return SKFunction.from_native_method(my_function_async)
+
+    def create_context_variables() -> ContextVariables:
+        """Return a context variables object."""
+        return ContextVariables(
+            content="content",
+            variables={"foo": "bar"},
+        )
+
     def create_skill_collection() -> SkillCollection:
         """Return a skill collection."""
         # TODO: Add a few skills to this collection.
@@ -116,7 +140,17 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         ),
         FunctionsView: create_functions_view(),
         ReadOnlySkillCollection: create_skill_collection().read_only_skill_collection,
+        DelegateHandlers: DelegateHandlers(),
+        DelegateInference: DelegateInference(),
+        ContextVariables: create_context_variables(),
         SkillCollection: create_skill_collection(),
+        SKContext[NullMemory]: SKContext(
+            # TODO: Test serialization with different types of memories.
+            memory=NullMemory(),
+            variables=create_context_variables(),
+            skill_collection=create_skill_collection().read_only_skill_collection,
+        ),
+        NullMemory: NullMemory(),
     }
 
     def constructor(cls: t.Type[_Serializable]) -> _Serializable:
@@ -146,6 +180,7 @@ PROTOCOLS = [
 BASE_CLASSES = [
     ReadOnlySkillCollectionBase,
     SkillCollectionBase,
+    SemanticTextMemoryBase,
     SKFunctionBase,
 ]
 
@@ -158,9 +193,15 @@ STATELESS_CLASSES = [
     CodeTokenizer,
     PromptTemplateEngine,
     TemplateTokenizer,
+    DelegateHandlers,
+    DelegateInference,
+    NullMemory,
 ]
 
-ENUMS = [BlockTypes]
+ENUMS = [
+    BlockTypes,
+    DelegateInference,
+]
 
 PYDANTIC_MODELS = [
     Block,
@@ -174,6 +215,12 @@ PYDANTIC_MODELS = [
     FunctionsView,
     ReadOnlySkillCollection,
     SkillCollection,
+    ContextVariables,
+    SKContext[NullMemory],
+    pytest.param(
+        SKFunction,
+        marks=pytest.mark.xfail(reason="Need to implement Pickle serialization."),
+    ),
 ]
 
 
