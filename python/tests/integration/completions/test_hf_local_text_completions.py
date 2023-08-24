@@ -1,11 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
-import torch
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
-
+import torch
 from transformers import AutoTokenizer
 
 
