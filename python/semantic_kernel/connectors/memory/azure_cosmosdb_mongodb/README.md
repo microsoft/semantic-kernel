@@ -2,7 +2,7 @@
 
 This connector uses Azure CosmosDB MongoDB Vector Store to implement Semantic Memory.
 
-See the [offical documentation](https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search) for more information.
+See the [official documentation](https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search) for more information.
 
 ## Quick start
 
