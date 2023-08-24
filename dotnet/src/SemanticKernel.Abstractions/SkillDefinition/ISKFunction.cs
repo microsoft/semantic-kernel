@@ -82,6 +82,17 @@ public interface ISKFunction
     /// <returns>Self instance</returns>
     ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
 
+    /// <summary>
+    /// Prepare the event arguments related to the ISKFunction invoking event.
+    /// </summary>
+    /// <param name="context">SKContext state during function invoking</param>
+    /// <returns>Returns the event arguments that the handlers will get</returns>
     Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context);
+
+    /// <summary>
+    /// Prepare the event arguments related to the ISKFunction invoked event.
+    /// </summary>
+    /// <param name="context">SKContext state after the function was invoked</param>
+    /// <returns>Returns the event arguments that the handlers will get</returns>
     Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context);
 }

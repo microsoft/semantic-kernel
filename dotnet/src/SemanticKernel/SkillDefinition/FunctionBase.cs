@@ -89,12 +89,16 @@ internal abstract class FunctionBase : ISKFunction
         return Task.FromResult(new FunctionInvokedEventArgs(this.Describe(), context));
     }
 
+    /// <inheritdoc/>
     public abstract Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default);
 
+    /// <inheritdoc/>
     public abstract ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills);
 
+    /// <inheritdoc/>
     public abstract ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
 
+    /// <inheritdoc/>
     public abstract ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
 
     protected readonly ILogger _logger;

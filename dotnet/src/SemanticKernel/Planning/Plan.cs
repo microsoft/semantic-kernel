@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -362,6 +361,7 @@ public sealed class Plan : IPlan
             : this.Function.SetAIConfiguration(settings);
     }
 
+    /// <inheritdoc/>
     public Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context)
     {
         return this.Function is null
@@ -369,6 +369,7 @@ public sealed class Plan : IPlan
             : this.Function.PrepareFunctionInvokingEventArgsAsync(context);
     }
 
+    /// <inheritdoc/>
     public Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context)
     {
         return this.Function is null

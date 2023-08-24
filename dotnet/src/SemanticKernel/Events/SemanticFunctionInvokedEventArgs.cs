@@ -16,7 +16,7 @@ public sealed class SemanticFunctionInvokedEventArgs : FunctionInvokedEventArgs
     }
 
     /// <summary>
-    /// Prompt rendered from template prior to the function execution.
+    /// Prompt rendered from template after function invocation.
     /// </summary>
     public string? RenderedPrompt
     {

@@ -75,9 +75,11 @@ public sealed class InstrumentedPlan : IPlan
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
         this._plan.SetDefaultSkillCollection(skills);
 
+    /// <inheritdoc/>
     public Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context) =>
         this._plan.PrepareFunctionInvokingEventArgsAsync(context);
 
+    /// <inheritdoc/>
     public Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context) =>
         this._plan.PrepareFunctionInvokedEventArgsAsync(context);
 

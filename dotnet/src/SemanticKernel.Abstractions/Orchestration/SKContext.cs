@@ -56,7 +56,6 @@ public sealed class SKContext
     /// </summary>
     public ContextVariables Variables { get; }
 
-
     /// <summary>
     /// Read only skills collection
     /// </summary>

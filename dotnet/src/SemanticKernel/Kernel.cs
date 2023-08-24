@@ -369,13 +369,11 @@ public sealed class Kernel : IKernel, IDisposable
         return args;
     }
 
-
     /// <summary>
     /// Execute the OnFunctionInvoked event handlers.
     /// </summary>
-    /// <param name="functionView">Function view details</param>
+    /// <param name="function">Invoked function reference</param>
     /// <param name="context">SKContext after function invocation</param>
-    /// <param name="renderedPrompt">Rendered prompt prior to semantic function invocation</param>
     private async Task<FunctionInvokedEventArgs?> OnFunctionInvokedAsync(ISKFunction function, SKContext context)
     {
         FunctionInvokedEventArgs? args = null;

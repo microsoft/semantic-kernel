@@ -89,9 +89,11 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
         this._function.SetDefaultSkillCollection(skills);
 
+    /// <inheritdoc/>
     public Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context) =>
         this._function.PrepareFunctionInvokingEventArgsAsync(context);
 
+    /// <inheritdoc/>
     public Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context) =>
         this._function.PrepareFunctionInvokedEventArgsAsync(context);
 
