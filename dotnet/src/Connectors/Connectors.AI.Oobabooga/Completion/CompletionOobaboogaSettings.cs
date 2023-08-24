@@ -22,6 +22,18 @@ public class CompletionOobaboogaSettings
     public int? MaxNewTokens { get; set; }
 
     /// <summary>
+    /// If true, the model will automatically determine the maximum number of tokens to generate according to its own limits.
+    /// </summary>
+    [JsonPropertyName("auto_max_new_tokens")]
+    public int? AutoMaxNewTokens { get; set; }
+
+    /// <summary>
+    /// Determines whether to use a specific named Oobabooga preset with all generation parameters predefined. <see href="https://github.com/oobabooga/text-generation-webui/tree/main/presets">default Oobabooga presets</see> were crafted after the result of a <see href="https://github.com/oobabooga/oobabooga.github.io/blob/main/arena/results.md"> documented contest</see>
+    /// </summary>
+    [JsonPropertyName("preset")]
+    public string Preset { get; set; } = "None";
+
+    /// <summary>
     /// Determines whether or not to use sampling; use greedy decoding if false.
     /// </summary>
     [JsonPropertyName("do_sample")]
@@ -46,13 +58,13 @@ public class CompletionOobaboogaSettings
     public double TypicalP { get; set; } = 1;
 
     /// <summary>
-    /// Sets a probability floor below which tokens are excluded from being sampled.
+    /// Sets a probability floor below which tokens are excluded from being sampled, in units of 1e-4.
     /// </summary>
     [JsonPropertyName("epsilon_cutoff")]
     public double EpsilonCutoff { get; set; }
 
     /// <summary>
-    /// Used with top_p, top_k, and epsilon_cutoff set to 0. This parameter hybridizes locally typical sampling and epsilon sampling.
+    /// Used with top_p, top_k, and epsilon_cutoff set to 0. This parameter hybridizes locally typical sampling and epsilon sampling, in units of 1e-4.
     /// </summary>
     [JsonPropertyName("eta_cutoff")]
     public double EtaCutoff { get; set; }
@@ -79,7 +91,7 @@ public class CompletionOobaboogaSettings
     ///When using "top k", you select the top k most likely words to come next based on their probability of occurring, where k is a fixed number that you specify. You can use Top_K to control the amount of diversity in the model output​
     /// </summary>
     [JsonPropertyName("top_k")]
-    public int TopK { get; set; }
+    public int TopK { get; set; } = 20;
 
     /// <summary>
     /// Minimum length of the sequence to be generated.
@@ -136,6 +148,18 @@ public class CompletionOobaboogaSettings
     public double MirostatEta { get; set; } = 0.1;
 
     /// <summary>
+    /// Classifier-Free Guidance Scale, equivalent to the parameter commonly used in image generation diffusion models.
+    /// </summary>
+    [JsonPropertyName("guidance_scale")]
+    public double GuidanceScale { get; set; } = 1;
+
+    /// <summary>
+    /// Tokens to avoid during generation
+    /// </summary>
+    [JsonPropertyName("negative_prompt")]
+    public string NegativePrompt { get; set; } = "";
+
+    /// <summary>
     /// Random seed to control sampling, used when DoSample is True.
     /// </summary>
     [JsonPropertyName("seed")]
@@ -157,7 +181,7 @@ public class CompletionOobaboogaSettings
     /// Forces the model to never end the generation prematurely.
     /// </summary>
     [JsonPropertyName("ban_eos_token")]
-    public bool BanEosToken { get; set; } = true;
+    public bool BanEosToken { get; set; } = false;
 
     /// <summary>
     /// Some specific models need this unset.
@@ -177,21 +201,25 @@ public class CompletionOobaboogaSettings
     public void Apply(CompletionOobaboogaSettings settings)
     {
         this.AddBosToken = settings.AddBosToken;
+        this.AutoMaxNewTokens = settings.AutoMaxNewTokens;
         this.BanEosToken = settings.BanEosToken;
         this.DoSample = settings.DoSample;
         this.EarlyStopping = settings.EarlyStopping;
         this.EpsilonCutoff = settings.EpsilonCutoff;
         this.EtaCutoff = settings.EtaCutoff;
+        this.GuidanceScale = settings.GuidanceScale;
         this.LengthPenalty = settings.LengthPenalty;
         this.MaxNewTokens = settings.MaxNewTokens;
         this.MinLength = settings.MinLength;
         this.MirostatEta = settings.MirostatEta;
         this.MirostatMode = settings.MirostatMode;
         this.MirostatTau = settings.MirostatTau;
+        this.NegativePrompt = settings.NegativePrompt;
         this.NoRepeatNgramSize = settings.NoRepeatNgramSize;
         this.NumBeams = settings.NumBeams;
         this.OverrideSKSettings = settings.OverrideSKSettings;
         this.PenaltyAlpha = settings.PenaltyAlpha;
+        this.Preset = settings.Preset;
         this.RepetitionPenalty = settings.RepetitionPenalty;
         this.Seed = settings.Seed;
         this.SkipSpecialTokens = settings.SkipSpecialTokens;
