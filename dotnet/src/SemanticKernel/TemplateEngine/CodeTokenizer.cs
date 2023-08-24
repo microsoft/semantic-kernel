@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -173,8 +174,17 @@ internal sealed class CodeTokenizer
                 }
                 else if (currentTokenType == TokenTypes.FunctionId)
                 {
-                    blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
-                    currentTokenContent.Clear();
+                    var tokenContent = currentTokenContent.ToString();
+                    // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
+                    // a named arg is used without a function call
+                    if (CodeTokenizer.IsValidNamedArg(tokenContent))
+                    {
+                        blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
+                    }
+                    else
+                    {
+                        blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
+                    }
                 }
                 else if (currentTokenType == TokenTypes.NamedArg)
                 {
@@ -235,7 +245,17 @@ internal sealed class CodeTokenizer
                 break;
 
             case TokenTypes.FunctionId:
-                blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
+                var tokenContent = currentTokenContent.ToString();
+                // This isn't an expected block at this point but the TemplateTokenizer should throw an error when
+                // a named arg is used without a function call
+                if (CodeTokenizer.IsValidNamedArg(tokenContent))
+                {
+                    blocks.Add(new NamedArgBlock(tokenContent, this._loggerFactory));
+                }
+                else
+                {
+                    blocks.Add(new FunctionIdBlock(currentTokenContent.ToString(), this._loggerFactory));
+                }
                 break;
 
             case TokenTypes.NamedArg:
@@ -267,5 +287,20 @@ internal sealed class CodeTokenizer
     private static bool CanBeEscaped(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
+    }
+
+    [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
+    Justification = "Does not throw an exception by design.")]
+    private static bool IsValidNamedArg(string tokenContent)
+    {
+        try
+        {
+            var tokenContentAsNamedArg = new NamedArgBlock(tokenContent);
+            return tokenContentAsNamedArg.IsValid(out var error);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Xunit;
@@ -223,5 +224,39 @@ public class TemplateTokenizerTests
 
         Assert.Equal("and 'values'", blocks[7].Content);
         Assert.Equal(BlockTypes.Code, blocks[7].Type);
+    }
+
+    [Fact]
+    public void ItTokenizesAFunctionCallWithMultipleArguments()
+    {
+        // Arrange
+        var template = "this is a {{ function with='many' named=$arguments }}";
+
+        // Act
+        var blocks = this._target.Tokenize(template);
+
+        // Assert
+        Assert.Equal(2, blocks.Count);
+
+        Assert.Equal("this is a ", blocks[0].Content);
+        Assert.Equal(BlockTypes.Text, blocks[0].Type);
+
+        Assert.Equal("function with='many' named=$arguments", blocks[1].Content);
+        Assert.Equal(BlockTypes.Code, blocks[1].Type);
+    }
+
+    [Fact]
+    public void ItThrowsWhenCodeBlockStartsWithNamedArg()
+    {
+        // Arrange
+        var template = "{{ not='valid' }}";
+
+        // Assert
+        var ex = Assert.Throws<SKException>(() =>
+        {
+            // Act
+            this._target.Tokenize(template);
+        });
+        Assert.Equal(ex.Message, "Code tokenizer returned an incorrect first token type NamedArg");
     }
 }
