@@ -34,7 +34,20 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
 
     public ChatCompletionOobaboogaSettings ChatCompletionOobaboogaSettings { get; set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OobaboogaChatCompletion"/> class.
+    /// </summary>
+    /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
+    /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
+    /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
+    /// <param name="chatCompletionRequestSettings">An instance of <see cref="ChatCompletionOobaboogaSettings"/>, which are chat completion settings specific to Oobabooga api</param>
+    /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the either of the completion methods by providing a <see cref="SemaphoreSlim"/>. Calls in excess will wait for existing consumers to release the semaphore</param>
+    /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
+    /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
+    /// <param name="webSocketsCleanUpCancellationToken">if websocket pooling is enabled, you can provide an optional CancellationToken to properly dispose of the clean up tasks when disposing of the connector</param>
+    /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
+    /// <param name="webSocketFactory">The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
+    /// <param name="logger">Application logger</param>
     public OobaboogaChatCompletion(Uri endpoint, int blockingPort = 5000,
         int streamingPort = 5005,
         ChatCompletionOobaboogaSettings? chatCompletionRequestSettings = null,
