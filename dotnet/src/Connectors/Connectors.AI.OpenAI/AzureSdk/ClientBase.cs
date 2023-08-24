@@ -394,9 +394,7 @@ public abstract class ClientBase
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                $"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new SKException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
@@ -475,7 +473,7 @@ public abstract class ClientBase
                         e.Message, e);
             }
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not SKException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

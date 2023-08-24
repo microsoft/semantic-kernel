@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
@@ -14,7 +14,7 @@ class ChatCompletionClientBase(ABC):
         self,
         messages: List[Tuple[str, str]],
         settings: "ChatRequestSettings",
-        logger: Logger,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         """
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
@@ -35,7 +35,7 @@ class ChatCompletionClientBase(ABC):
         self,
         messages: List[Tuple[str, str]],
         settings: "ChatRequestSettings",
-        logger: Logger,
+        logger: Optional[Logger] = None,
     ):
         """
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
