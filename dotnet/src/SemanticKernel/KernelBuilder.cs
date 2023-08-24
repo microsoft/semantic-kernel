@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -30,6 +32,9 @@ public sealed class KernelBuilder
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
 
+    private static bool _promptTemplateEngineInit = false;
+    private static Type? _promptTemplateEngineType = null;
+
     /// <summary>
     /// Create a new kernel instance
     /// </summary>
@@ -39,11 +44,6 @@ public sealed class KernelBuilder
         var builder = new KernelBuilder();
         return builder.Build();
     }
-
-    /// <summary>
-    /// Default prompt template engine to be used when constructing a Kernel.
-    /// </summary>
-    public static IPromptTemplateEngine DefaultPromptTemplateEngine { get; set; } = new DefaultPromptTemplateEngine();
 
     /// <summary>
     /// Build a new kernel instance using the settings passed so far.
@@ -59,7 +59,7 @@ public sealed class KernelBuilder
         var instance = new Kernel(
             new SkillCollection(this._loggerFactory),
             this._aiServices.Build(),
-            this._promptTemplateEngine ?? KernelBuilder.DefaultPromptTemplateEngine,
+            this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),
             this._config,
             this._loggerFactory
@@ -230,6 +230,62 @@ public sealed class KernelBuilder
     {
         this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._config), setAsDefault);
         return this;
+    }
+
+    /// <summary>
+    /// Create a default prompt template engine.
+    /// </summary>
+    /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
+    /// <returns></returns>
+    private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
+    {
+        if (!_promptTemplateEngineInit)
+        {
+            _promptTemplateEngineType = this.GetPromptTemplateEngineType();
+            _promptTemplateEngineInit = true;
+        }
+
+        if (_promptTemplateEngineType is not null)
+        {
+            var constructor = _promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+            if (constructor is not null)
+            {
+#pragma warning disable CS8601 // Null logger factory is OK
+                return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
+            }
+        }
+
+        return new DefaultPromptTemplateEngine();
+    }
+
+    /// <summary>
+    /// Get the prompt template engine type if available
+    /// </summary>
+    /// <returns>The type for the prompt template engine if available</returns>
+    private Type? GetPromptTemplateEngineType()
+    {
+        try
+        {
+            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine");
+
+            return assembly.ExportedTypes.Single(type =>
+                type.Name.Equals("PromptTemplateEngine", StringComparison.Ordinal) &&
+                type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
+        }
+        catch (FileNotFoundException)
+        {
+            // Unable to load the Microsoft.SemanticKernel.TemplateEngine assembly
+        }
+        catch (InvalidOperationException)
+        {
+            // Assembly does not contain typed named PromptTemplateEngine
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            // Something unexpected by not critical
+        }
+
+        return null;
     }
 }
 
