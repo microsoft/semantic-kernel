@@ -9,11 +9,11 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 using Moq;
-using SemanticKernel.UnitTests.XunitHelpers;
+using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine;
 
 public sealed class PromptTemplateEngineTests
 {
