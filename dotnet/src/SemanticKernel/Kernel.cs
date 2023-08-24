@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
@@ -293,9 +292,7 @@ public sealed class Kernel : IKernel, IDisposable
     {
         if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
         {
-            throw new AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                $"Function type not supported: {functionConfig.PromptTemplateConfig}");
+            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
         }
 
         ISKFunction func = SemanticFunction.FromSemanticConfig(
