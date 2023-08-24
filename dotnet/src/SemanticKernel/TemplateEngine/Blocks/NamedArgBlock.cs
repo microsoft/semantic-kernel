@@ -58,8 +58,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         throw new SKException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}'");
     }
 
-    // TODO delete this comment once you confirm this Render method
-    // doesn't matter too much
     public string Render(ContextVariables? variables)
     {
         return this.Content;
