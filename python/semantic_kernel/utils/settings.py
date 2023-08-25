@@ -36,7 +36,7 @@ def azure_openai_settings_from_dot_env(
 
     Returns:
         Union[Tuple[str, str, str], Tuple[str, str, str, str]]: The deployment name (or empty), Azure OpenAI API key,
-          the endpoint and the api version
+          the endpoint and optionally the api version
     """
 
     deployment, api_key, endpoint, api_version = None, None, None, None
