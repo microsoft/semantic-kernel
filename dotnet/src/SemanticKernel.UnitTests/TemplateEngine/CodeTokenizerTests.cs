@@ -176,6 +176,9 @@ public class CodeTokenizerTests
         Assert.Equal(2, blocks.Count);
         Assert.Equal("func", blocks[0].Content);
         Assert.Equal("name='f\'oo'", blocks[1].Content);
+        var namedArg = blocks[1] as NamedArgBlock;
+        Assert.NotNull(namedArg);
+        Assert.Equal("f'oo", namedArg.GetValue(null));
     }
 
     [Theory]
