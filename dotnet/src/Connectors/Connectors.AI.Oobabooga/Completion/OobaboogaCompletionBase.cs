@@ -200,8 +200,6 @@ public abstract class OobaboogaCompletionBase
 
                         finishedProcessing = true;
                         break;
-                    default:
-                        break;
                 }
             }
             else if (result.MessageType == WebSocketMessageType.Close)

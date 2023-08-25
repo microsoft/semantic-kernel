@@ -14,11 +14,11 @@ public class OobaboogaChatHistory
     /// The internal chat history.
     /// </summary>
     [JsonPropertyName("internal")]
-    public List<List<string>> Internal { get; set; } = new List<List<string>>();
+    public List<List<string>> Internal { get; set; } = new();
 
     /// <summary>
     /// The visible chat history.
     /// </summary>
     [JsonPropertyName("visible")]
-    public List<List<string>> Visible { get; set; } = new List<List<string>>();
+    public List<List<string>> Visible { get; set; } = new();
 }

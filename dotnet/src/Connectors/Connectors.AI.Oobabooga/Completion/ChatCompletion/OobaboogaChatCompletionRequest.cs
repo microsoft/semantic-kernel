@@ -21,7 +21,7 @@ public sealed class OobaboogaChatCompletionRequest : OobaboogaChatCompletionPara
     /// The chat history.
     /// </summary>
     [JsonPropertyName("history")]
-    public OobaboogaChatHistory History { get; set; } = new OobaboogaChatHistory();
+    public OobaboogaChatHistory History { get; set; } = new();
 
     /// <summary>
     /// Creates a new ChatCompletionRequest with the given Chat history, oobabooga settings and semantic-kernel settings.

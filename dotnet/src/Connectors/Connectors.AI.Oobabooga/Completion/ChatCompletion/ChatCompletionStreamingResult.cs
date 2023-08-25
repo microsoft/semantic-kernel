@@ -13,19 +13,14 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 
 public sealed class ChatCompletionStreamingResult : CompletionStreamingResultBase, IChatStreamingResult, ITextStreamingResult
 {
-    private readonly Channel<ChatMessageBase> _chatMessageChannel;
-
-    public ChatCompletionStreamingResult()
+    private readonly Channel<ChatMessageBase> _chatMessageChannel = Channel.CreateUnbounded<ChatMessageBase>(new UnboundedChannelOptions()
     {
-        this._chatMessageChannel = Channel.CreateUnbounded<ChatMessageBase>(new UnboundedChannelOptions()
-        {
-            SingleReader = true,
-            SingleWriter = true,
-            AllowSynchronousContinuations = false
-        });
-    }
+        SingleReader = true,
+        SingleWriter = true,
+        AllowSynchronousContinuations = false
+    });
 
-    public void AppendResponse(ChatCompletionStreamingResponse response)
+    private void AppendResponse(ChatCompletionStreamingResponse response)
     {
         this.ModelResponses.Add(response);
         if (response.History.Visible.Count > 0)

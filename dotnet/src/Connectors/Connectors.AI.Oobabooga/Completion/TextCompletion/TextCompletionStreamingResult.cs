@@ -12,24 +12,19 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextComple
 
 public sealed class TextCompletionStreamingResult : CompletionStreamingResultBase, ITextStreamingResult
 {
-    private readonly Channel<string> _responseChannel;
-
-    public TextCompletionStreamingResult()
+    private readonly Channel<string> _responseChannel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions()
     {
-        this._responseChannel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions()
-        {
-            SingleReader = true,
-            SingleWriter = true,
-            AllowSynchronousContinuations = false
-        });
-    }
+        SingleReader = true,
+        SingleWriter = true,
+        AllowSynchronousContinuations = false
+    });
 
     public override void AppendResponse(CompletionStreamingResponseBase response)
     {
         this.AppendResponse((TextCompletionStreamingResponse)response);
     }
 
-    public void AppendResponse(TextCompletionStreamingResponse response)
+    private void AppendResponse(TextCompletionStreamingResponse response)
     {
         this.ModelResponses.Add(response);
         this._responseChannel.Writer.TryWrite(response.Text);

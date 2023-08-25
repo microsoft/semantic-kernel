@@ -95,7 +95,7 @@ public class OobaboogaCompletionParameters
     public int MinLength { get; set; }
 
     /// <summary>
-    /// If set to a value greater than 0, all ngrams of that size can only occur once.
+    /// If set to a value greater than 0, each ngram of that size can only occur once.
     /// </summary>
     [JsonPropertyName("no_repeat_ngram_size")]
     public int NoRepeatNgramSize { get; set; }
@@ -188,7 +188,7 @@ public class OobaboogaCompletionParameters
     /// In addition to the defaults. Written between "" and separated by commas. For instance: "\nYour Assistant:", "\nThe assistant:"
     /// </summary>
     [JsonPropertyName("stopping_strings")]
-    public List<string> StoppingStrings { get; set; } = new List<string>();
+    public List<string> StoppingStrings { get; set; } = new();
 
     /// <summary>
     /// Imports the settings from the given <see cref="OobaboogaCompletionSettings"/> object.
