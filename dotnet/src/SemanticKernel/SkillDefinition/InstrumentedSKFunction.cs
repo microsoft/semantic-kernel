@@ -92,11 +92,11 @@ public sealed class InstrumentedSKFunction : ISKFunction,
         this._function.SetDefaultSkillCollection(skills);
 
     /// <inheritdoc/>
-    public Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? _) =>
+    public Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs) =>
         this.InternalPrepareArgsAsync<FunctionInvokingEventArgs>(context);
 
     /// <inheritdoc/>
-    public Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? _) =>
+    public Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs) =>
         this.InternalPrepareArgsAsync<FunctionInvokedEventArgs>(context);
 
     #region private ================================================================================
