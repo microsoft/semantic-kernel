@@ -46,7 +46,8 @@ def azure_openai_settings_from_dot_env(include_deployment=True) -> Tuple[str, st
     assert endpoint, "Azure OpenAI endpoint not found in .env file"
 
     return deployment or "", api_key, endpoint
-    
+
+
 def postgres_settings_from_dot_env() -> str:
     """Reads the Postgres connection string from the .env file.
 
@@ -60,6 +61,7 @@ def postgres_settings_from_dot_env() -> str:
     assert connection_string, "Postgres connection string not found in .env file"
 
     return connection_string
+
 
 def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
     """
@@ -101,11 +103,12 @@ def weaviate_settings_from_dot_env() -> Tuple[Optional[str], str]:
     api_key = config.get("WEAVIATE_API_KEY", None)
     url = config.get("WEAVIATE_URL", None)
 
-    #API key not needed for local Weaviate deployment, URL still needed
+    # API key not needed for local Weaviate deployment, URL still needed
     assert url is not None, "Weaviate instance URL not found in .env file"
 
     return api_key, url
-    
+
+
 def bing_search_settings_from_dot_env() -> str:
     """Reads the Bing Search API key from the .env file.
 
