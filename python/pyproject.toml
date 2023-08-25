@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.9.dev"
+version = "0.3.10.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -24,6 +24,7 @@ ipykernel = "^6.21.1"
 pytest = "7.4.0"
 ruff = "0.0.285"
 pytest-asyncio = "0.21.1"
+snoop = "0.4.3"
 
 [tool.poetry.group.google_palm.dependencies]
 google-generativeai = { version = "^0.1.0", markers = "python_version >= '3.9'" }
@@ -60,6 +61,10 @@ azure-search-documents = {version = "11.4.0b8", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
 
+[tool.poetry.group.usearch.dependencies]
+usearch = "^1.1.1"
+pyarrow = "^12.0.1"
+
 [tool.isort]
 profile = "black"
 
@@ -70,4 +75,3 @@ line-length = 120
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
