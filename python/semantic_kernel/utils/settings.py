@@ -63,22 +63,50 @@ def postgres_settings_from_dot_env() -> str:
     return connection_string
 
 
-def pinecone_settings_from_dot_env() -> Tuple[str, str]:
-    """Reads the Pinecone API key and Environment from the .env file.
-
+def pinecone_settings_from_dot_env() -> Tuple[str, Optional[str]]:
+    """
+    Reads the Pinecone API key and Environment from the .env file.
     Returns:
         Tuple[str, str]: The Pinecone API key, the Pinecone Environment
     """
 
     api_key, environment = None, None
-    config = dotenv_values(".env")
-    api_key = config.get("PINECONE_API_KEY", None)
-    environment = config.get("PINECONE_ENVIRONMENT", None)
+    with open(".env", "r") as f:
+        lines = f.readlines()
+
+        for line in lines:
+            if line.startswith("PINECONE_API_KEY"):
+                parts = line.split("=")[1:]
+                api_key = "=".join(parts).strip().strip('"')
+                continue
+
+            if line.startswith("PINECONE_ENVIRONMENT"):
+                parts = line.split("=")[1:]
+                environment = "=".join(parts).strip().strip('"')
+                continue
 
     assert api_key, "Pinecone API key not found in .env file"
     assert environment, "Pinecone environment not found in .env file"
 
     return api_key, environment
+
+
+def weaviate_settings_from_dot_env() -> Tuple[Optional[str], str]:
+    """
+    Reads the Weaviate API key and URL from the .env file.
+
+    Returns:
+        Tuple[str, str]: The Weaviate API key, the Weaviate URL
+    """
+
+    config = dotenv_values(".env")
+    api_key = config.get("WEAVIATE_API_KEY", None)
+    url = config.get("WEAVIATE_URL", None)
+
+    # API key not needed for local Weaviate deployment, URL still needed
+    assert url is not None, "Weaviate instance URL not found in .env file"
+
+    return api_key, url
 
 
 def bing_search_settings_from_dot_env() -> str:
