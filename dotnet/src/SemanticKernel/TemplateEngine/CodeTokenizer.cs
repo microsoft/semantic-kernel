@@ -80,6 +80,11 @@ internal sealed class CodeTokenizer
         // Tokens must be separated by spaces, track their presence
         bool spaceSeparatorFound = false;
 
+        // Named args may contain string values that contain spaces. These are used
+        // to determine when a space occurs between quotes.
+        bool namedArgSeparatorFound = false;
+        char namedArgValuePrefix = '\0';
+
         // 1 char only edge case
         if (text.Length == 1)
         {
@@ -135,8 +140,30 @@ internal sealed class CodeTokenizer
                 continue;
             }
 
+            // If reading a named argument and either the '=' or the value prefix ($, ', or ") haven't been found
+            if (currentTokenType == TokenTypes.NamedArg && (!namedArgSeparatorFound || namedArgValuePrefix == 0))
+            {
+                if (!namedArgSeparatorFound)
+                {
+                    if (currentChar == Symbols.NamedArgBlockSeparator)
+                    {
+                        namedArgSeparatorFound = true;
+                    }
+                }
+                else
+                {
+                    namedArgValuePrefix = currentChar;
+                    if (!IsQuote((char)namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix)
+                    {
+                        throw new SKException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
+                    }
+                }
+                currentTokenContent.Append(currentChar);
+                continue;
+            }
+
             // While reading a values between quotes
-            if (currentTokenType == TokenTypes.Value)
+            if (currentTokenType == TokenTypes.Value || (currentTokenType == TokenTypes.NamedArg && IsQuote(namedArgValuePrefix)))
             {
                 // If the current char is escaping the next special char:
                 // - skip the current char (escape char)
@@ -152,12 +179,21 @@ internal sealed class CodeTokenizer
                 currentTokenContent.Append(currentChar);
 
                 // When we reach the end of the value
-                if (currentChar == textValueDelimiter)
+                if (currentChar == textValueDelimiter && currentTokenType == TokenTypes.Value)
                 {
                     blocks.Add(new ValBlock(currentTokenContent.ToString(), this._loggerFactory));
                     currentTokenContent.Clear();
                     currentTokenType = TokenTypes.None;
                     spaceSeparatorFound = false;
+                }
+                else if (currentChar == namedArgValuePrefix && currentTokenType == TokenTypes.NamedArg)
+                {
+                    blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
+                    currentTokenContent.Clear();
+                    currentTokenType = TokenTypes.None;
+                    spaceSeparatorFound = false;
+                    namedArgSeparatorFound = false;
+                    namedArgValuePrefix = '\0';
                 }
 
                 continue;
@@ -191,6 +227,8 @@ internal sealed class CodeTokenizer
                 {
                     blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
                     currentTokenContent.Clear();
+                    namedArgSeparatorFound = false;
+                    namedArgValuePrefix = '\0';
                 }
 
                 spaceSeparatorFound = true;

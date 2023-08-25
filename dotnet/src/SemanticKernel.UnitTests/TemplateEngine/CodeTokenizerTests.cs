@@ -163,6 +163,21 @@ public class CodeTokenizerTests
         Assert.Equal("'f\'oo'", blocks[1].Content);
     }
 
+    [Fact]
+    public void ItSupportsEscapingNamedArgs()
+    {
+        // Arrange
+        var template = "func name='f\\'oo'";
+
+        // Act
+        var blocks = this._target.Tokenize(template);
+
+        // Assert
+        Assert.Equal(2, blocks.Count);
+        Assert.Equal("func", blocks[0].Content);
+        Assert.Equal("name='f\'oo'", blocks[1].Content);
+    }
+
     [Theory]
     [InlineData(@"call 'f\\'xy'")]
     [InlineData(@"call 'f\\'x")]

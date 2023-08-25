@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
@@ -35,15 +36,15 @@ public sealed class PromptTemplateEngineTests
     {
         // Arrange
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
-                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}";
+                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c=$d}}";
 
         // Act
         var blocks = this._target.ExtractBlocks(template);
         var updatedBlocks = this._target.RenderVariables(blocks, this._variables);
 
         // Assert
-        Assert.Equal(9, blocks.Count);
-        Assert.Equal(9, updatedBlocks.Count);
+        Assert.Equal(10, blocks.Count);
+        Assert.Equal(10, updatedBlocks.Count);
 
         Assert.Equal("$x11", blocks[1].Content);
         Assert.Equal("", updatedBlocks[1].Content);
@@ -75,18 +76,24 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal(BlockTypes.Code, blocks[8].Type);
         Assert.Equal(BlockTypes.Code, updatedBlocks[8].Type);
 
+        Assert.Equal("food a='b' c=$d", blocks[9].Content);
+        Assert.Equal("food a='b' c=$d", updatedBlocks[9].Content);
+        Assert.Equal(BlockTypes.Code, blocks[9].Type);
+        Assert.Equal(BlockTypes.Code, updatedBlocks[9].Type);
+
         // Arrange
         this._variables.Set("x11", "x11 value");
         this._variables.Set("a", "a value");
         this._variables.Set("_a", "_a value");
+        this._variables.Set("c", "c value");
 
         // Act
         blocks = this._target.ExtractBlocks(template);
         updatedBlocks = this._target.RenderVariables(blocks, this._variables);
 
         // Assert
-        Assert.Equal(9, blocks.Count);
-        Assert.Equal(9, updatedBlocks.Count);
+        Assert.Equal(10, blocks.Count);
+        Assert.Equal(10, updatedBlocks.Count);
 
         Assert.Equal("$x11", blocks[1].Content);
         Assert.Equal("x11 value", updatedBlocks[1].Content);
@@ -117,6 +124,11 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal("yay $x11", updatedBlocks[8].Content);
         Assert.Equal(BlockTypes.Code, blocks[8].Type);
         Assert.Equal(BlockTypes.Code, updatedBlocks[8].Type);
+
+        Assert.Equal("food a='b' c=$d", blocks[9].Content);
+        Assert.Equal("food a='b' c=$d", updatedBlocks[9].Content);
+        Assert.Equal(BlockTypes.Code, blocks[9].Type);
+        Assert.Equal(BlockTypes.Code, updatedBlocks[9].Type);
     }
 
     [Fact]
@@ -175,6 +187,74 @@ public sealed class PromptTemplateEngineTests
 
         // Assert
         Assert.Equal("foo-F(BAR)-baz", result);
+    }
+
+    [Fact]
+    public async Task ItRendersCodeUsingNamedVariablesAsync()
+    {
+        // Arrange
+        string MyFunctionAsync(
+            [Description("Name"), SKName("input")] string name,
+            [Description("Age"), SKName("age")] int age,
+            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Date"), SKName("date")] DateTime date)
+        {
+            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
+            return $"[{date.ToShortDateString()}] {name} ({age}): \"{slogan}\"";
+        }
+
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        Assert.NotNull(func);
+
+        this._variables.Set("input", "Mario");
+        this._variables.Set("someDate", "2023-08-25T00:00:00");
+        var template = "foo-{{function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
+        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        var context = this.MockContext();
+
+        // Act
+        var result = await this._target.RenderAsync(template, context);
+
+        // Assert
+        Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
+    }
+
+    [Fact]
+    public async Task ItRendersCodeUsingImplicitInputAndNamedVariablesAsync()
+    {
+        // Arrange
+        string MyFunctionAsync(
+            [Description("Input"), SKName("input")] string name,
+            [Description("Age"), SKName("age")] int age,
+            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Date"), SKName("date")] DateTime date)
+        {
+            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
+            return $"[{date.ToShortDateString()}] {name} ({age}): \"{slogan}\"";
+        }
+
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        Assert.NotNull(func);
+
+        this._variables.Set("input", "Mario");
+        this._variables.Set("someDate", "2023-08-25T00:00:00");
+        var template = "foo-{{function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
+        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        var context = this.MockContext();
+
+        // Act
+        var result = await this._target.RenderAsync(template, context);
+
+        // Assert
+        Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
     }
 
     [Fact]
