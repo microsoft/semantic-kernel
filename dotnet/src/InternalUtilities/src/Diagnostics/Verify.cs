@@ -127,7 +127,7 @@ internal static class Verify
         NotNull(list, paramName);
         if (list.Count == 0)
         {
-            ThrowListEmptyException(paramName);
+            ThrowListEmptyException(details, paramName);
         }
     }
 
@@ -148,6 +148,6 @@ internal static class Verify
         throw new ArgumentOutOfRangeException(paramName, actualValue, message);
 
     [DoesNotReturn]
-    private static void ThrowListEmptyException(string? paramName) =>
-        throw new ArgumentException("The list cannot be empty.", paramName);
+    private static void ThrowListEmptyException(string details, string? paramName) =>
+        throw new ArgumentException($"The list cannot be empty. {details}", paramName);
 }

@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 /// </summary>
 public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistory, ChatRequestSettings, OobaboogaChatCompletionParameters, OobaboogaChatCompletionRequest, ChatCompletionResponse, ChatCompletionResult, ChatCompletionStreamingResult>, IChatCompletion, ITextCompletion
 {
-    private const string ChatHistoryMustContainAtLeastOneUserMessage = "Chat history must contain at least one User message";
+    private const string ChatHistoryMustContainAtLeastOneUserMessage = "Chat history must contain at least one User message with instructions.";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaChatCompletion"/> class.
