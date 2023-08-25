@@ -14,7 +14,7 @@ public static class Example28_ActionPlanner
     {
         Console.WriteLine("======== Action Planner ========");
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
