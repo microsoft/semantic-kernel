@@ -233,6 +233,10 @@ public sealed class KernelBuilder
 
     /// <summary>
     /// Create a default prompt template engine.
+    ///
+    /// This is a temporary solution to avoid breaking existing clients.
+    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
+    ///
     /// </summary>
     /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
     /// <returns></returns>
