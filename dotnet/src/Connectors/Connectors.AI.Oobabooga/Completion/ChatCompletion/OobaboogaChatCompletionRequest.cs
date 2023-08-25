@@ -39,7 +39,7 @@ public sealed class OobaboogaChatCompletionRequest : OobaboogaChatCompletionPara
             },
         };
         toReturn.Apply(settings.OobaboogaParameters);
-        if (!settings.OverrideSKSettings)
+        if (!settings.OverrideRequestSettings)
         {
             toReturn.MaxNewTokens = requestSettings.MaxTokens;
             toReturn.Temperature = requestSettings.Temperature;

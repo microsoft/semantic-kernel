@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Threading;
 using System;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -12,15 +11,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 
+/// <summary>
+/// This is the base class for all Oobabooga completion settings. It controls how oobabooga completion requests are made. Some parameters control the endpoint to which requests are sent, others control the behavior of the requests themselves. In particular, oobabooga offers a streaming API through websockets, and this class controls how websockets are managed for optimal resources management.
+/// </summary>
 public class OobaboogaCompletionSettings
 {
-    protected internal const string BlockingUriPath = "/api/v1/generate";
-    protected internal const string StreamingUriPath = "/api/v1/stream";
+    protected const string BlockingUriPath = "/api/v1/generate";
+    protected const string StreamingUriPath = "/api/v1/stream";
 
-    protected internal readonly HttpClient HttpClient;
     public ILogger? Logger { get; }
-    protected internal readonly Func<ClientWebSocket> WebSocketFactory;
-    protected internal readonly bool UseWebSocketsPooling;
 
     private readonly int _maxNbConcurrentWebSockets;
     private readonly SemaphoreSlim? _concurrentSemaphore;
@@ -30,22 +29,35 @@ public class OobaboogaCompletionSettings
 
     private long _lastCallTicks = long.MaxValue;
 
-    private readonly Uri _blockingUri;
-    private readonly Uri _streamingUri;
-
-    /// <summary>
-    /// Determines whether or not to use the overlapping SK settings for the completion request. Prompt is still provided by SK.
-    /// </summary>
-    public bool OverrideSKSettings { get; set; }
-
     /// <summary>
     /// Controls the size of the buffer used to received websocket packets
     /// </summary>
     public int WebSocketBufferSize { get; set; } = 2048;
 
-    public Uri BlockingUri => this._blockingUri;
+    /// <summary>
+    /// This is the API endpoint to which non streaming requests are sent, computed from base endpoint, port and relative path.
+    /// </summary>
+    public Uri BlockingUri { get; }
 
-    public Uri StreamingUri => this._streamingUri;
+    /// <summary>
+    /// This is the API endpoint to which streaming requests are sent, computed from base endpoint, port and relative path.
+    /// </summary>
+    public Uri StreamingUri { get; }
+
+    /// <summary>
+    /// The HttpClient used for making blocking API requests.
+    /// </summary>
+    public HttpClient HttpClient { get; }
+
+    /// <summary>
+    /// The factory used to create websockets for making streaming API requests.
+    /// </summary>
+    public Func<ClientWebSocket> WebSocketFactory { get; }
+
+    /// <summary>
+    /// Determines whether the connector should use websockets pooling to reuse websockets in order to prevent resource exhaustion in case of high load.
+    /// </summary>
+    public bool UseWebSocketsPooling { get; }
 
     /// <summary>
     ///  Initializes a new instance of the <see cref="OobaboogaCompletionSettings"/> class, which controls how oobabooga completion requests are made.
@@ -77,7 +89,7 @@ public class OobaboogaCompletionSettings
     {
         endpoint ??= new Uri("http://localhost/");
 
-        this._blockingUri = new UriBuilder(endpoint)
+        this.BlockingUri = new UriBuilder(endpoint)
         {
             Port = blockingPort,
             Path = blockingPath
@@ -92,7 +104,7 @@ public class OobaboogaCompletionSettings
             streamingUriBuilder.Scheme = streamingUriBuilder.Scheme == "https" ? "wss" : "ws";
         }
 
-        this._streamingUri = streamingUriBuilder.Uri;
+        this.StreamingUri = streamingUriBuilder.Uri;
 
         this.HttpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this.Logger = logger;
@@ -267,8 +279,27 @@ public class OobaboogaCompletionSettings
     }
 }
 
+/// <summary>
+/// This class inherits from the base settings controlling the general behavior of Oobabooga completion connectors and introduces a generic type parameter to allow for the use of a custom <see cref="OobaboogaCompletionParameters"/> type controlling the specific completion parameters, which differ between standard text completion and chat completion.
+/// </summary>
+/// <typeparam name="TParameters"></typeparam>
 public class OobaboogaCompletionSettings<TParameters> : OobaboogaCompletionSettings where TParameters : OobaboogaCompletionParameters, new()
 {
+    /// <summary>
+    ///  Initializes a new instance of the <see cref="OobaboogaCompletionSettings"/> class, which controls how oobabooga completion requests are made.
+    /// </summary>
+    /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
+    /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
+    /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
+    /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the either of the completion methods by providing a <see cref="SemaphoreSlim"/>. Calls in excess will wait for existing consumers to release the semaphore</param>
+    /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
+    /// <param name="webSocketsCleanUpCancellationToken">if websocket pooling is enabled, you can provide an optional CancellationToken to properly dispose of the clean up tasks when disposing of the connector</param>
+    /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
+    /// <param name="webSocketFactory">The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
+    /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
+    /// <param name="logger">Application logger</param>
+    /// <param name="blockingPath">the path for the blocking API relative to the Endpoint base path</param>
+    /// <param name="streamingPath">the path for the streaming API relative to the Endpoint base path</param>
     public OobaboogaCompletionSettings(Uri? endpoint = default,
         int blockingPort = 5000,
         int streamingPort = 5005,
@@ -284,40 +315,13 @@ public class OobaboogaCompletionSettings<TParameters> : OobaboogaCompletionSetti
     {
     }
 
+    /// <summary>
+    /// Determines whether or not to use the overlapping Semantic Kernel request settings for the completion request. Prompt is still provided by Semantic Kernel even if request settings are discarded.
+    /// </summary>
+    public bool OverrideRequestSettings { get; set; }
+
+    /// <summary>
+    /// Gets or sets the parameters controlling the specific completion request parameters, which differ between standard text completion and chat completion.
+    /// </summary>
     public TParameters OobaboogaParameters { get; set; } = new();
-}
-
-public class OobaboogaTextCompletionSettings : OobaboogaCompletionSettings<OobaboogaCompletionParameters>
-{
-    public OobaboogaTextCompletionSettings(Uri? endpoint = default,
-        int blockingPort = 5000,
-        int streamingPort = 5005,
-        SemaphoreSlim? concurrentSemaphore = null,
-        bool useWebSocketsPooling = true,
-        CancellationToken? webSocketsCleanUpCancellationToken = default,
-        int keepAliveWebSocketsDuration = 100,
-        Func<ClientWebSocket>? webSocketFactory = null,
-        HttpClient? httpClient = null,
-        ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, httpClient, logger)
-    {
-    }
-}
-
-public class OobaboogaChatCompletionSettings : OobaboogaCompletionSettings<OobaboogaChatCompletionParameters>
-{
-    private const string ChatBlockingUriPath = "/api/v1/chat";
-    private const string ChatStreamingUriPath = "/api/v1/chat-stream";
-
-    public OobaboogaChatCompletionSettings(Uri? endpoint = default,
-        int blockingPort = 5000,
-        int streamingPort = 5005,
-        SemaphoreSlim? concurrentSemaphore = null,
-        bool useWebSocketsPooling = true,
-        CancellationToken? webSocketsCleanUpCancellationToken = default,
-        int keepAliveWebSocketsDuration = 100,
-        Func<ClientWebSocket>? webSocketFactory = null,
-        HttpClient? httpClient = null,
-        ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, httpClient, logger, ChatBlockingUriPath, ChatStreamingUriPath)
-    {
-    }
 }

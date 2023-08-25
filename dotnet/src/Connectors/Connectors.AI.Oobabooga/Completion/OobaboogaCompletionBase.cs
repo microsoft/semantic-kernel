@@ -16,6 +16,9 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 
+/// <summary>
+/// Base class for Oobabooga completion with common scaffolding shared between Text and Chat completions and generic parameters corresponding to the various types used in Text and Chat completions.
+/// </summary>
 public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings, TOobaboogaParameters, TCompletionRequest, TCompletionResponse, TCompletionResult, TCompletionStreamingResult> : OobaboogaCompletionBase
     where TCompletionStreamingResult : CompletionStreamingResultBase, new()
     where TOobaboogaParameters : OobaboogaCompletionParameters, new()
@@ -132,6 +135,9 @@ public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings
     protected abstract TCompletionRequest CreateCompletionRequest(TCompletionInput input, TRequestSettings? requestSettings);
 }
 
+/// <summary>
+/// Base class for Oobabooga completion with common scaffolding shared between Text and Chat completion
+/// </summary>
 public abstract class OobaboogaCompletionBase
 {
     private protected readonly OobaboogaCompletionSettings OobaboogaSettings;
