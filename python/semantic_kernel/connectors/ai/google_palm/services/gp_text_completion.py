@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List, Union
+from logging import Logger
+from typing import List, Optional, Union
 
 import google.generativeai as palm
 
@@ -34,7 +35,10 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         self._api_key = api_key
 
     async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         response = await self._send_completion_request(prompt, request_settings)
 
@@ -44,7 +48,10 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             return response.result
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         raise NotImplementedError(
             "Google Palm API does not currently support streaming"

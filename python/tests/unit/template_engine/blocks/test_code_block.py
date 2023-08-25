@@ -25,8 +25,8 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_throws_if_a_function_doesnt_exist(self):
-        context = SKContext(
-            ContextVariables(),
+        context = SKContext.construct(
+            variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=self.skills,
             logger=self.log,
@@ -40,8 +40,8 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_throws_if_a_function_call_throws(self):
-        context = SKContext(
-            ContextVariables(),
+        context = SKContext.construct(
+            variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=self.skills,
             logger=self.log,
@@ -123,8 +123,11 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables["varName"] = "foo"
 
-        context = SKContext(
-            variables, memory=NullMemory(), skill_collection=None, logger=self.log
+        context = SKContext.construct(
+            variables=variables,
+            memory=NullMemory(),
+            skill_collection=None,
+            logger=self.log,
         )
 
         code_block = CodeBlock(content="$varName", log=self.log)
@@ -137,8 +140,11 @@ class TestCodeBlock:
         variables = ContextVariables()
         variables["varName"] = "bar"
 
-        context = SKContext(
-            variables, memory=NullMemory(), skill_collection=None, logger=self.log
+        context = SKContext.construct(
+            variables=variables,
+            memory=NullMemory(),
+            skill_collection=None,
+            logger=self.log,
         )
 
         code_block = CodeBlock(
@@ -150,8 +156,8 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block1(self):
-        context = SKContext(
-            ContextVariables(),
+        context = SKContext.construct(
+            variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=None,
             logger=self.log,
@@ -164,8 +170,8 @@ class TestCodeBlock:
 
     @mark.asyncio
     async def test_it_renders_code_block_consisting_of_just_a_val_block2(self):
-        context = SKContext(
-            ContextVariables(),
+        context = SKContext.construct(
+            variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=None,
             logger=self.log,
@@ -187,8 +193,8 @@ class TestCodeBlock:
         variables["var2"] = "due"
 
         # Create a context with the variables, memory, skill collection, and logger
-        context = SKContext(
-            variables,
+        context = SKContext.construct(
+            variables=variables,
             memory=NullMemory(),
             skill_collection=self.skills,
             logger=self.log,
@@ -252,8 +258,8 @@ class TestCodeBlock:
         variables[VAR_NAME] = VAR_VALUE
 
         # Create a context with the variables, memory, skill collection, and logger
-        context = SKContext(
-            variables,
+        context = SKContext.construct(
+            variables=variables,
             memory=NullMemory(),
             skill_collection=self.skills,
             logger=self.log,
@@ -303,8 +309,8 @@ class TestCodeBlock:
         VALUE = "value"
 
         # Create a context with empty variables, memory, skill collection, and logger
-        context = SKContext(
-            ContextVariables(),
+        context = SKContext.construct(
+            variables=ContextVariables(),
             memory=NullMemory(),
             skill_collection=self.skills,
             logger=self.log,
