@@ -85,10 +85,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
 
             var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
 
-            var jsonRequest = Json.Serialize(completionRequest);
-            using var stringContent = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this._blockingUri.Uri, stringContent);
+            using var httpRequestMessage = HttpRequest.CreatePostRequest(this._blockingUri.Uri, completionRequest);
             httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
             using var response = await this.HttpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);

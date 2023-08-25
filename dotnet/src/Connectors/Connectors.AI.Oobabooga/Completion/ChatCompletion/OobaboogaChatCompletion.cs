@@ -162,12 +162,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
 
             var completionRequest = this.CreateOobaboogaChatRequest(chat, requestSettings);
 
-            using var stringContent = new StringContent(
-                JsonSerializer.Serialize(completionRequest),
-                Encoding.UTF8,
-                "application/json");
-
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this._chatBlockingUri.Uri, stringContent);
+            using var httpRequestMessage = HttpRequest.CreatePostRequest(this._chatBlockingUri.Uri, completionRequest);
             httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
             using var response = await this.HttpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
