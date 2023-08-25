@@ -4,7 +4,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -81,18 +80,15 @@ public interface ISKFunction
     /// <param name="settings">LLM completion settings</param>
     /// <returns>Self instance</returns>
     ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+}
 
+public interface ISKFunctionHandles<TEventArgs> where TEventArgs : EventArgs
+{
     /// <summary>
-    /// Prepare the event arguments related to the ISKFunction invoking event.
+    /// Prepare the provided EventArguments type related to the ISKFunction event.
     /// </summary>
-    /// <param name="context">SKContext state during function invoking</param>
-    /// <returns>Returns the event arguments that the handlers will get</returns>
-    Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context);
-
-    /// <summary>
-    /// Prepare the event arguments related to the ISKFunction invoked event.
-    /// </summary>
-    /// <param name="context">SKContext state after the function was invoked</param>
-    /// <returns>Returns the event arguments that the handlers will get</returns>
-    Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context);
+    /// <param name="context">SKContext state</param>
+    /// <param name="eventArgs">Source EventArgs</param>
+    /// <returns>EventArguments that the handler caller will get</returns>
+    Task<TEventArgs> PrepareArgsAsync(SKContext context, TEventArgs? eventArgs = null);
 }

@@ -102,19 +102,8 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         return this;
     }
 
-    /// <summary>
-    /// Dispose of resources.
-    /// </summary>
-    public void Dispose()
-    {
-        if (this._aiService is { IsValueCreated: true } aiService)
-        {
-            (aiService.Value as IDisposable)?.Dispose();
-        }
-    }
-
     /// <inheritdoc/>
-    public override async Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context)
+    public override async Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
     {
         this.AddDefaultValues(context.Variables);
         var renderedPrompt = await this.RenderPromptTemplateAsync(context, CancellationToken.None).ConfigureAwait(false);
@@ -124,9 +113,20 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public override Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context)
+    public override Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
     {
         return Task.FromResult<FunctionInvokedEventArgs>(new SemanticFunctionInvokedEventArgs(this.Describe(), context));
+    }
+
+    /// <summary>
+    /// Dispose of resources.
+    /// </summary>
+    public void Dispose()
+    {
+        if (this._aiService is { IsValueCreated: true } aiService)
+        {
+            (aiService.Value as IDisposable)?.Dispose();
+        }
     }
 
     internal SemanticFunction(

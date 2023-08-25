@@ -12,7 +12,9 @@ using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
-internal abstract class FunctionBase : ISKFunction
+internal abstract class FunctionBase : ISKFunction,
+    ISKFunctionHandles<FunctionInvokingEventArgs>,
+    ISKFunctionHandles<FunctionInvokedEventArgs>
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -78,18 +80,6 @@ internal abstract class FunctionBase : ISKFunction
         => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
 
     /// <inheritdoc/>
-    public virtual Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context)
-    {
-        return Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context));
-    }
-
-    /// <inheritdoc/>
-    public virtual Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context)
-    {
-        return Task.FromResult(new FunctionInvokedEventArgs(this.Describe(), context));
-    }
-
-    /// <inheritdoc/>
     public abstract Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default);
 
     /// <inheritdoc/>
@@ -100,6 +90,18 @@ internal abstract class FunctionBase : ISKFunction
 
     /// <inheritdoc/>
     public abstract ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+
+    /// <inheritdoc/>
+    public virtual Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
+    {
+        return Task.FromResult(new FunctionInvokedEventArgs(this.Describe(), context));
+    }
+
+    /// <inheritdoc/>
+    public virtual Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
+    {
+        return Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context));
+    }
 
     protected readonly ILogger _logger;
 

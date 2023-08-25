@@ -19,7 +19,7 @@ public static class Example56_FunctionEventHandlers
 
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Using Function Execution Handlers ========\n");
+        Console.WriteLine("\n======== Using Function Execution Handlers ========\n");
 
         openAIModelId = TestConfiguration.OpenAI.ModelId;
         openAIApiKey = TestConfiguration.OpenAI.ApiKey;
@@ -41,7 +41,7 @@ public static class Example56_FunctionEventHandlers
 
     private static async Task GetPromptAndUsageAsync()
     {
-        Console.WriteLine("======== Get Rendered Prompt and Usage Data ========\n");
+        Console.WriteLine("\n======== Get Rendered Prompt and Usage Data ========\n");
 
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -102,7 +102,7 @@ public static class Example56_FunctionEventHandlers
 
     private static async Task ChangingResultAsync()
     {
-        Console.WriteLine("======== Changing/Filtering Function Result ========\n");
+        Console.WriteLine("\n======== Changing/Filtering Function Result ========\n");
 
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -140,7 +140,7 @@ public static class Example56_FunctionEventHandlers
 
     private static async Task CancellingFunctionAsync()
     {
-        Console.WriteLine("======== Cancelling Pipeline Execution ========\n");
+        Console.WriteLine("\n======== Cancelling Pipeline Execution ========\n");
 
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -179,7 +179,7 @@ public static class Example56_FunctionEventHandlers
 
     private static async Task SkippingFunctionAsync()
     {
-        Console.WriteLine("======== Skip Function in the Pipeline ========\n");
+        Console.WriteLine("\n======== Skip Function in the Pipeline ========\n");
 
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)

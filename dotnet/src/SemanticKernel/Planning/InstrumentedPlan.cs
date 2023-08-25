@@ -76,12 +76,12 @@ public sealed class InstrumentedPlan : IPlan
         this._plan.SetDefaultSkillCollection(skills);
 
     /// <inheritdoc/>
-    public Task<FunctionInvokingEventArgs> PrepareFunctionInvokingEventArgsAsync(SKContext context) =>
-        this._plan.PrepareFunctionInvokingEventArgsAsync(context);
+    public Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null) =>
+        this._plan.PrepareArgsAsync(context, eventArgs);
 
     /// <inheritdoc/>
-    public Task<FunctionInvokedEventArgs> PrepareFunctionInvokedEventArgsAsync(SKContext context) =>
-        this._plan.PrepareFunctionInvokedEventArgsAsync(context);
+    public Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null) =>
+        this._plan.PrepareArgsAsync(context, eventArgs);
 
     #region private ================================================================================
 

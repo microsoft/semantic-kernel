@@ -204,7 +204,7 @@ public sealed class Kernel : IKernel, IDisposable
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var functionInvokingArgs = await this.OnFunctionInvokingAsync(skFunction, context).ConfigureAwait(false);
+                var functionInvokingArgs = await this.TriggerEvent<FunctionInvokingEventArgs>(this.FunctionInvoking, skFunction, context).ConfigureAwait(false);
                 if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled during function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
@@ -226,7 +226,7 @@ public sealed class Kernel : IKernel, IDisposable
                     return context;
                 }
 
-                var functionInvokedArgs = await this.OnFunctionInvokedAsync(skFunction, context).ConfigureAwait(false);
+                var functionInvokedArgs = await this.TriggerEvent<FunctionInvokedEventArgs>(this.FunctionInvoked, skFunction, context).ConfigureAwait(false);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled during function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
@@ -321,6 +321,30 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <summary>
+    /// Triggers the provided event handler and returns the resulting state of EventArgs or null if there was no handler registered.
+    /// </summary>
+    /// <param name="eventHandler">Target eventHandler</param>
+    /// <param name="function">Target invoking function</param>
+    /// <param name="context">Context to pass to the invoking handlers</param>
+    /// <returns>Returns the resulting EventArgs state after the event was triggered or null if there was no handler registered.</returns>
+    private async Task<TEventArgs?> TriggerEvent<TEventArgs>(EventHandler<TEventArgs>? eventHandler, ISKFunction function, SKContext context) where TEventArgs : EventArgs
+    {
+        if (eventHandler is null)
+        {
+            return null;
+        }
+
+        if (function is ISKFunctionHandles<TEventArgs> supportedFunction)
+        {
+            var eventArgs = await supportedFunction.PrepareArgsAsync(context).ConfigureAwait(false);
+            eventHandler.Invoke(this, eventArgs);
+            return eventArgs;
+        }
+
+        throw new NotSupportedException($"The provided function \"{function.Name}\" does not supports and implements ISKFunctionHandles<{typeof(TEventArgs).Name}>");
+    }
+
+    /// <summary>
     /// Import a skill into the kernel skill collection, so that semantic functions and pipelines can consume its functions.
     /// </summary>
     /// <param name="skillInstance">Skill class instance</param>
@@ -352,41 +376,6 @@ public sealed class Kernel : IKernel, IDisposable
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
-    }
-
-    /// <summary>
-    /// Execute the FunctionInvoking event handlers and returns true if cancellation was attempted.
-    /// </summary>
-    /// <param name="function">Target invoking function</param>
-    /// <param name="context">Context to pass to the invoking handlers</param>
-    /// <returns>Returns the resulting EventArgs state after the event was triggered.</returns>
-    private async Task<FunctionInvokingEventArgs?> OnFunctionInvokingAsync(ISKFunction function, SKContext context)
-    {
-        FunctionInvokingEventArgs? args = null;
-        if (this.FunctionInvoking is not null)
-        {
-            args = await function.PrepareFunctionInvokingEventArgsAsync(context).ConfigureAwait(false);
-            this.FunctionInvoking.Invoke(this, args!);
-        }
-
-        return args;
-    }
-
-    /// <summary>
-    /// Execute the OnFunctionInvoked event handlers.
-    /// </summary>
-    /// <param name="function">Invoked function reference</param>
-    /// <param name="context">SKContext after function invocation</param>
-    private async Task<FunctionInvokedEventArgs?> OnFunctionInvokedAsync(ISKFunction function, SKContext context)
-    {
-        FunctionInvokedEventArgs? args = null;
-        if (this.FunctionInvoked is not null)
-        {
-            args = await function.PrepareFunctionInvokedEventArgsAsync(context).ConfigureAwait(false);
-            this.FunctionInvoked.Invoke(this, args!);
-        }
-
-        return args;
     }
 
     #endregion
