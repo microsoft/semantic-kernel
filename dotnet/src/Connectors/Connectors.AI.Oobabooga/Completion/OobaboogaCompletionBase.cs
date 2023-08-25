@@ -16,8 +16,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 
 public abstract class OobaboogaCompletionBase
 {
-    public const string HttpUserAgent = "Microsoft-Semantic-Kernel";
-
     internal readonly HttpClient HttpClient;
     internal readonly Func<ClientWebSocket> WebSocketFactory;
     internal readonly bool UseWebSocketsPooling;
