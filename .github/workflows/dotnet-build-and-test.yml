@@ -8,7 +8,7 @@ name: dotnet-build-and-test
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ "main", "feature*" ]
+    branches: ["main", "feature*"]
   merge_group:
     branches: ["main"]
 
@@ -20,57 +20,90 @@ permissions:
   contents: read
 
 jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      dotnetChanges: ${{ steps.filter.outputs.dotnet }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            dotnet:
+              - 'dotnet/**'
+              - '**/dotnet/**'
+              - 'samples/skills/**'
+      # run only if 'dotnet' files were changed
+      - name: dotnet tests
+        if: steps.filter.outputs.dotnet == 'true'
+        run: echo "Dotnet file"
+      # run only if not 'dotnet' files were changed
+      - name: not dotnet tests
+        if: steps.filter.outputs.dotnet != 'true'
+        run: echo "NOT dotnet file"
   dotnet-build-and-test:
+    needs: paths-filter
+    if: needs.paths-filter.outputs.dotnetChanges == 'true'
     strategy:
-        fail-fast: false
-        matrix:
-          include:
-          - { dotnet: '6.0-jammy', os: 'ubuntu', configuration: Debug }
-          - { dotnet: '7.0-jammy', os: 'ubuntu', configuration: Release }
-          - { dotnet: '8.0-preview-jammy', os: 'ubuntu', configuration: Release }
-          - { dotnet: '6.0', os: 'windows', configuration: Release }
-          - { dotnet: '7.0', os: 'windows', configuration: Debug, integration-tests: true }
-          - { dotnet: '8.0-preview', os: 'windows', configuration: Release }
-          
+      fail-fast: false
+      matrix:
+        include:
+          - { dotnet: "6.0-jammy", os: "ubuntu", configuration: Debug }
+          - { dotnet: "7.0-jammy", os: "ubuntu", configuration: Release }
+          - {
+              dotnet: "8.0-preview-jammy",
+              os: "ubuntu",
+              configuration: Release,
+            }
+          - { dotnet: "6.0", os: "windows", configuration: Release }
+          - {
+              dotnet: "7.0",
+              os: "windows",
+              configuration: Debug,
+              integration-tests: true,
+            }
+          - { dotnet: "8.0-preview", os: "windows", configuration: Release }
+
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/dotnet/sdk:${{ matrix.dotnet }}
       env:
         NUGET_CERT_REVOCATION_MODE: offline
-        GITHUB_ACTIONS: 'true'
+        GITHUB_ACTIONS: "true"
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Build dotnet solutions
-      run: |
-        export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
-        for solution in $SOLUTIONS; do
-          dotnet build -c ${{ matrix.configuration }} /warnaserror $solution
-        done
-      
-    - name: Run Unit Tests
-      run: |
-        export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
-        for project in $UT_PROJECTS; do
-          dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
-        done
+      - uses: actions/checkout@v3
 
-    - name: Run Integration Tests
-      if: github.event_name != 'pull_request' && matrix.integration-tests
-      run: |
-        export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
-        for project in $INTEGRATION_TEST_PROJECTS; do
-          dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
-        done
-      env:
-        AzureOpenAI__Label: azure-text-davinci-003
-        AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
-        AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
-        AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
-        AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-        AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
-        AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-        AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
-        Bing__ApiKey: ${{ secrets.BING__APIKEY }}
-        OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+      - name: Build dotnet solutions
+        run: |
+          export SOLUTIONS=$(find ./dotnet/ -type f -name "*.sln" | tr '\n' ' ')
+          for solution in $SOLUTIONS; do
+            dotnet build -c ${{ matrix.configuration }} /warnaserror $solution
+          done
+
+      - name: Run Unit Tests
+        run: |
+          export UT_PROJECTS=$(find ./dotnet -type f -name "*.UnitTests.csproj" | tr '\n' ' ')
+          for project in $UT_PROJECTS; do
+            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+          done
+
+      - name: Run Integration Tests
+        if: github.event_name != 'pull_request' && matrix.integration-tests
+        run: |
+          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | tr '\n' ' ')
+          for project in $INTEGRATION_TEST_PROJECTS; do
+            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+          done
+        env:
+          AzureOpenAI__Label: azure-text-davinci-003
+          AzureOpenAIEmbedding__Label: azure-text-embedding-ada-002
+          AzureOpenAI__DeploymentName: ${{ vars.AZUREOPENAI__DEPLOYMENTNAME }}
+          AzureOpenAIEmbeddings__DeploymentName: ${{ vars.AZUREOPENAIEMBEDDING__DEPLOYMENTNAME }}
+          AzureOpenAI__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAIEmbeddings__Endpoint: ${{ secrets.AZUREOPENAI__ENDPOINT }}
+          AzureOpenAI__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
+          Bing__ApiKey: ${{ secrets.BING__APIKEY }}
+          OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
