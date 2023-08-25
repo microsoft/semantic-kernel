@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -31,7 +30,7 @@ public sealed class KernelBuilder
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
 
-    private static bool _promptTemplateEngineInit = false;
+    private static bool _promptTemplateEngineInitialized = false;
     private static Type? _promptTemplateEngineType = null;
 
     /// <summary>
@@ -239,13 +238,13 @@ public sealed class KernelBuilder
     ///
     /// </summary>
     /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
-    /// <returns></returns>
+    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
     private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
-        if (!_promptTemplateEngineInit)
+        if (!_promptTemplateEngineInitialized)
         {
             _promptTemplateEngineType = this.GetPromptTemplateEngineType();
-            _promptTemplateEngineInit = true;
+            _promptTemplateEngineInitialized = true;
         }
 
         if (_promptTemplateEngineType is not null)
@@ -255,10 +254,11 @@ public sealed class KernelBuilder
             {
 #pragma warning disable CS8601 // Null logger factory is OK
                 return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
+#pragma warning restore CS8601
             }
         }
 
-        return new NoopPromptTemplateEngine();
+        return new NullPromptTemplateEngine();
     }
 
     /// <summary>
@@ -275,27 +275,19 @@ public sealed class KernelBuilder
                 type.Name.Equals("PromptTemplateEngine", StringComparison.Ordinal) &&
                 type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
         }
-        catch (FileNotFoundException)
-        {
-            // Unable to load the Microsoft.SemanticKernel.TemplateEngine assembly
-        }
-        catch (InvalidOperationException)
-        {
-            // Assembly does not contain typed named PromptTemplateEngine
-        }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            // Something unexpected by not critical
+            return null;
         }
-
-        return null;
     }
 }
 
 /// <summary>
 /// No-operation IPromptTemplateEngine which performs no rendering of the template.
+///
+/// This is a temporary solution to avoid breaking existing clients.
 /// </summary>
-internal class NoopPromptTemplateEngine : IPromptTemplateEngine
+internal class NullPromptTemplateEngine : IPromptTemplateEngine
 {
     public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {
