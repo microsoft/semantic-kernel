@@ -6,20 +6,22 @@ from typing import List, Optional
 
 from numpy import ndarray
 
-from semantic_kernel.memory.azure_cosmosdb_mongo_memory_store.utils import (
-    DEFAULT_INSERT_BATCH_SIZE,
-    SEARCH_FIELD_EMBEDDING,
-    SEARCH_FIELD_ID,
-    dict_to_memory_record,
-    get_mongodb_resources,
-    memory_record_to_mongodb_record,
-)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
 
+from .utils import (
+    DEFAULT_INSERT_BATCH_SIZE,
+    SEARCH_FIELD_ID,
+    dict_to_memory_record,
+    get_azuremongodb_similarity_query,
+    get_mongodb_resources,
+    get_mongodbatlas_similarity_query,
+    memory_record_to_mongodb_record,
+)
 
-class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
+
+class MongoDBMemoryStore(MemoryStoreBase):
     """
     A class representing a memory store for Azure Cosmos DB MongoDB API.
 
@@ -27,6 +29,7 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
         vector_size (int): The size of the vector.
         connection_string (str, optional): The connection string for the MongoDB client.
         database_name (str, optional): The name of the MongoDB database.
+        api_type (str, optional): The type of the MongoDB API. Defaults to "azuremongodb". Options are "azuremongodb" and "mongodbatlas".
         embedding_key (str, optional): The key used for embedding. Defaults to SEARCH_FIELD_EMBEDDING.
         batch_size (int, optional): The batch size for inserting records. Defaults to DEFAULT_INSERT_BATCH_SIZE.
         logger (Optional[Logger], optional): The logger instance. Defaults to None.
@@ -38,13 +41,19 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
     _database = None
     _embedding_key = None
     _batch_size = None
+    _api_type = None
+    _index_name = None
+    _collection_name = None
 
     def __init__(
         self,
         vector_size: int,
         connection_string: str = None,
         database_name: str = None,
-        embedding_key: str = SEARCH_FIELD_EMBEDDING,
+        api_type: str = "azuremongodb",
+        embedding_key: str = "embedding",
+        collection_name: str = None,
+        index_name: str = "vectorSearchIndex",  # Only for MongoDB Atlas
         batch_size: int = DEFAULT_INSERT_BATCH_SIZE,
         logger: Optional[Logger] = None,
     ) -> None:
@@ -57,9 +66,21 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
         if database_name is None:
             raise ValueError("database_name must be specified")
 
+        if collection_name is None:
+            raise ValueError("collection_name must be specified")
+
+        if not self.does_index_exist_async(
+            collection_name,
+            index_name=self._index_name and self._api_type == "mongodbatlas",
+        ):
+            raise ValueError("Index does not exist")
+
         self._mongodb_client, self._database = get_mongodb_resources(
             connection_string, database_name
         )
+        self._api_type = api_type
+        self._collection = self._database[collection_name]
+        self._index_name = index_name
         self._embedding_key = embedding_key
         self._vector_size = vector_size
         self.batch_size = batch_size
@@ -95,24 +116,31 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if collection_name not in self._database.list_collection_names():
-            self._database.command(
-                {
-                    "createIndexes": collection_name,
-                    "indexes": [
-                        {
-                            "name": "vectorSearchIndex",
-                            "key": {self._embedding_key: "cosmosSearch"},
-                            "cosmosSearchOptions": {
-                                "kind": "vector-ivf",
-                                "numLists": num_lists,
-                                "similarity": similarity,
-                                "dimensions": self._vector_size,
-                            },
-                        }
-                    ],
-                }
-            )
+        if self._api_type == "azuremongodb":
+            if not await self.does_collection_exist_async(collection_name):
+                self._database.command(
+                    {
+                        "createIndexes": collection_name,
+                        "indexes": [
+                            {
+                                "name": "vectorSearchIndex",
+                                "key": {self._embedding_key: "cosmosSearch"},
+                                "cosmosSearchOptions": {
+                                    "kind": "vector-ivf",
+                                    "numLists": num_lists,
+                                    "similarity": similarity,
+                                    "dimensions": self._vector_size,
+                                },
+                            }
+                        ],
+                    }
+                )
+        elif self._api_type == "mongodbatlas":
+            # Create the collection if it does not exist, Currently its not supported
+            # vector index creation through
+            #  Pymongo on MongoDB Atlas
+            if not await self.does_collection_exist_async(collection_name):
+                self._database.create_collection(collection_name)
 
     async def get_collections_async(self) -> List[str]:
         """Gets the list of collections.
@@ -134,6 +162,23 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
         """
         collection = self._database[collection_name]
         collection.drop()
+
+    async def does_index_exist_async(
+        self, collection_name: str, index_name: str
+    ) -> bool:
+        """Checks if a collection exists.
+
+        Arguments:
+            collection_name {str} -- The name of the collection to check.
+
+        Returns:
+            bool -- True if the collection exists; otherwise, False.
+        """
+        collection = self._database[collection_name]
+        if index_name in collection.list_indexes():
+            return True
+        else:
+            return False
 
     async def does_collection_exist_async(self, collection_name: str) -> bool:
         """Checks if a collection exists.
@@ -192,12 +237,18 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
                 # Update the existing document
                 update_result = collection.update_one(
                     {SEARCH_FIELD_ID: record._id},
-                    {"$set": memory_record_to_mongodb_record(record)},
+                    {
+                        "$set": memory_record_to_mongodb_record(
+                            record, self._embedding_key
+                        )
+                    },
                 )
                 if update_result.modified_count > 0:
                     print(f"Updated existing document with _id: {record._id}")
             else:
-                mongodb_record = memory_record_to_mongodb_record(record)
+                mongodb_record = memory_record_to_mongodb_record(
+                    record, self._embedding_key
+                )
                 mongodb_records.append(mongodb_record)
 
                 if len(mongodb_records) == DEFAULT_INSERT_BATCH_SIZE:
@@ -226,7 +277,7 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
         collection = self._database[collection_name]
 
         for doc in collection.find(query):
-            return dict_to_memory_record(doc)
+            return dict_to_memory_record(doc, self._embedding_key)
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str]
@@ -239,7 +290,7 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
             result_cursor = collection.find(query)
 
             for document in result_cursor:
-                memory_record = dict_to_memory_record(document)
+                memory_record = dict_to_memory_record(document, self._embedding_key)
                 search_results.append(memory_record)
 
         return search_results
@@ -297,24 +348,23 @@ class AzureCosmosDBMongoDBMemoryStore(MemoryStoreBase):
             corresponding similarity scores.
         """
 
-        search_pipeline = [
-            {
-                "$search": {
-                    "cosmosSearch": {
-                        "vector": embedding.tolist(),
-                        "path": self._embedding_key,
-                        "k": limit,
-                    },
-                    "returnStoredSource": True,
-                }
-            },
-        ]
+        if self._api_type == "azuremongodb":
+            search_pipeline = get_azuremongodb_similarity_query(
+                embeddings=embedding, embedding_key=self._embedding_key, limit=limit
+            )
+        else:
+            search_pipeline = get_mongodbatlas_similarity_query(
+                embeddings=embedding,
+                embedding_key=self._embedding_key,
+                collection_name=collection_name,
+                limit=limit,
+            )
 
         collection = self._database[collection_name]
         search_cursor = collection.aggregate(search_pipeline)
 
         matching_records = []
         for result in search_cursor:
-            matching_records.append(dict_to_memory_record(result))
+            matching_records.append(dict_to_memory_record(result, self._embedding_key))
 
         return matching_records
