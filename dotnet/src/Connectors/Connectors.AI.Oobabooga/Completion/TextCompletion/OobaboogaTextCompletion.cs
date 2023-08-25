@@ -26,7 +26,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
     private readonly UriBuilder _blockingUri;
     private readonly UriBuilder _streamingUri;
 
-    public CompletionOobaboogaSettings CompletionOobaboogaSettings { get; set; }
+    private readonly CompletionOobaboogaSettings _completionOobaboogaSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
@@ -54,7 +54,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         Func<ClientWebSocket>? webSocketFactory = null,
         ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
     {
-        this.CompletionOobaboogaSettings = completionRequestSettings ?? new CompletionOobaboogaSettings();
+        this._completionOobaboogaSettings = completionRequestSettings ?? new CompletionOobaboogaSettings();
         Verify.NotNull(endpoint);
         this._blockingUri = new UriBuilder(endpoint)
         {
@@ -191,7 +191,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         }
 
         // Prepare the request using the provided parameters.
-        var toReturn = CompletionRequest.Create(text, this.CompletionOobaboogaSettings, requestSettings);
+        var toReturn = CompletionRequest.Create(text, this._completionOobaboogaSettings, requestSettings);
         return toReturn;
     }
 

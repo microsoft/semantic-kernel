@@ -32,7 +32,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
     private const string ChatStreamingUriPath = "/api/v1/chat-stream";
     private const string ChatHistoryMustContainAtLeastOneUserMessage = "Chat history must contain at least one user message";
 
-    public ChatCompletionOobaboogaSettings ChatCompletionOobaboogaSettings { get; set; }
+    private readonly ChatCompletionOobaboogaSettings _chatCompletionOobaboogaSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaChatCompletion"/> class.
@@ -59,7 +59,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
         Func<ClientWebSocket>? webSocketFactory = null,
         ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
     {
-        this.ChatCompletionOobaboogaSettings = chatCompletionRequestSettings ?? new ChatCompletionOobaboogaSettings();
+        this._chatCompletionOobaboogaSettings = chatCompletionRequestSettings ?? new ChatCompletionOobaboogaSettings();
         this._chatBlockingUri = new(endpoint)
         {
             Port = blockingPort,
@@ -140,7 +140,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase, IChatComp
     {
         requestSettings ??= new ChatRequestSettings();
 
-        var completionRequest = ChatCompletionRequest.Create(chat, this.ChatCompletionOobaboogaSettings, requestSettings);
+        var completionRequest = ChatCompletionRequest.Create(chat, this._chatCompletionOobaboogaSettings, requestSettings);
         return completionRequest;
     }
 
