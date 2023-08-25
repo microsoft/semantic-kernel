@@ -31,6 +31,7 @@ known as coral polyps.";
     {
         RunExample();
         RunExampleWithCustomTokenCounter();
+        RunExampleWithHeader();
 
         return Task.CompletedTask;
     }
@@ -51,6 +52,16 @@ known as coral polyps.";
 
         var lines = TextChunker.SplitPlainTextLines(text, 40, TokenCounter);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: TokenCounter);
+
+        WriteParagraphsToConsole(paragraphs);
+    }
+
+    private static void RunExampleWithHeader()
+    {
+        Console.WriteLine("=== Text chunking with chunk header ===");
+
+        var lines = TextChunker.SplitPlainTextLines(text, 40);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 150, chunkHeader: "DOCUMENT NAME: test.txt\n\n");
 
         WriteParagraphsToConsole(paragraphs);
     }
