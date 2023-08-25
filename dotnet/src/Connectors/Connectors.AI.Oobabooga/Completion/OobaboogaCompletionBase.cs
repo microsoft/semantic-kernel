@@ -16,9 +16,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 
 public abstract class OobaboogaCompletionBase
 {
-    internal readonly HttpClient HttpClient;
-    internal readonly Func<ClientWebSocket> WebSocketFactory;
-    internal readonly bool UseWebSocketsPooling;
+    private protected readonly HttpClient HttpClient;
+    private protected readonly Func<ClientWebSocket> WebSocketFactory;
+    private protected readonly bool UseWebSocketsPooling;
     private readonly int _maxNbConcurrentWebSockets;
     private readonly SemaphoreSlim? _concurrentSemaphore;
     private readonly ConcurrentBag<bool>? _activeConnections;
