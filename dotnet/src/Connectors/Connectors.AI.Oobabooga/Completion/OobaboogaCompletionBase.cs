@@ -18,15 +18,15 @@ public abstract class OobaboogaCompletionBase
 {
     public const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
-    internal HttpClient HTTPClient;
-    internal Func<ClientWebSocket> WebSocketFactory;
-    internal bool UseWebSocketsPooling;
-    private int _maxNbConcurrentWebSockets;
-    private SemaphoreSlim? _concurrentSemaphore;
-    private ConcurrentBag<bool>? _activeConnections;
+    internal readonly HttpClient HttpClient;
+    internal readonly Func<ClientWebSocket> WebSocketFactory;
+    internal readonly bool UseWebSocketsPooling;
+    private readonly int _maxNbConcurrentWebSockets;
+    private readonly SemaphoreSlim? _concurrentSemaphore;
+    private readonly ConcurrentBag<bool>? _activeConnections;
     internal readonly ConcurrentBag<ClientWebSocket> WebSocketPool = new();
-    private int _keepAliveWebSocketsDuration;
-    private ILogger? _logger;
+    private readonly int _keepAliveWebSocketsDuration;
+    private readonly ILogger? _logger;
     private long _lastCallTicks = long.MaxValue;
 
     /// <summary>
@@ -58,7 +58,7 @@ public abstract class OobaboogaCompletionBase
         Func<ClientWebSocket>? webSocketFactory = null,
         ILogger? logger = null)
     {
-        this.HTTPClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this.HttpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this.UseWebSocketsPooling = useWebSocketsPooling;
         this._keepAliveWebSocketsDuration = keepAliveWebSocketsDuration;
         this._logger = logger;

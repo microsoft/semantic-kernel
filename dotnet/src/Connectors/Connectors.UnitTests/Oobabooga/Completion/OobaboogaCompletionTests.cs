@@ -40,10 +40,10 @@ public sealed class OobaboogaCompletionTests : IDisposable
 'm a
  writer";
 
-    private HttpMessageHandlerStub _messageHandlerStub;
-    private HttpClient _httpClient;
-    private Uri _endPointUri;
-    private string _streamCompletionResponseStub;
+    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly HttpClient _httpClient;
+    private readonly Uri _endPointUri;
+    private readonly string _streamCompletionResponseStub;
 
     public OobaboogaCompletionTests(ITestOutputHelper output)
     {
@@ -124,7 +124,7 @@ public sealed class OobaboogaCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
+        await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings()).ConfigureAwait(false);
 
         //Assert
         var requestPayload = JsonSerializer.Deserialize<CompletionRequest>(this._messageHandlerStub.RequestContent);
