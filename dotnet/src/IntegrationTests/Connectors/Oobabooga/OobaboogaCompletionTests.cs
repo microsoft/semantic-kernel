@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 using Xunit;
@@ -51,7 +52,9 @@ public sealed class OobaboogaCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionAsync()
     {
-        var oobaboogaLocal = new OobaboogaTextCompletion(
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings();
+
+        var oobaboogaLocal = new OobaboogaTextCompletion(oobaboogaSettings,
             endpoint: new Uri(Endpoint),
             blockingPort: BlockingPort);
 
@@ -69,10 +72,11 @@ public sealed class OobaboogaCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionStreamingAsync()
     {
-        var oobaboogaLocal = new OobaboogaTextCompletion(
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings(webSocketFactory: this._webSocketFactory);
+
+        var oobaboogaLocal = new OobaboogaTextCompletion(oobaboogaSettings,
             endpoint: new Uri(Endpoint),
-            streamingPort: StreamingPort,
-            webSocketFactory: this._webSocketFactory);
+            streamingPort: StreamingPort);
 
         // Act
         var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, new CompleteRequestSettings()
@@ -95,7 +99,10 @@ public sealed class OobaboogaCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalChatCompletionAsync()
     {
-        var oobaboogaLocal = new OobaboogaChatCompletion(
+
+        var oobaboogaSettings = new OobaboogaChatCompletionSettings();
+
+        var oobaboogaLocal = new OobaboogaChatCompletion(oobaboogaSettings,
             endpoint: new Uri(Endpoint),
             blockingPort: BlockingPort);
 
@@ -116,7 +123,9 @@ public sealed class OobaboogaCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalChatCompletionStreamingAsync()
     {
-        var oobaboogaLocal = new OobaboogaChatCompletion(
+        var oobaboogaSettings = new OobaboogaChatCompletionSettings(webSocketFactory: this._webSocketFactory);
+
+        var oobaboogaLocal = new OobaboogaChatCompletion(oobaboogaSettings,
             endpoint: new Uri(Endpoint),
             blockingPort: BlockingPort,
             streamingPort: StreamingPort);
