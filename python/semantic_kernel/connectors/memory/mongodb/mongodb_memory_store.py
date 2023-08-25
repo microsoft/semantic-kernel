@@ -29,7 +29,8 @@ class MongoDBMemoryStore(MemoryStoreBase):
         vector_size (int): The size of the vector.
         connection_string (str, optional): The connection string for the MongoDB client.
         database_name (str, optional): The name of the MongoDB database.
-        api_type (str, optional): The type of the MongoDB API. Defaults to "azuremongodb". Options are "azuremongodb" and "mongodbatlas".
+        api_type (str, optional): The type of the MongoDB API. Defaults to "azuremongodb".
+                                 Options are "azuremongodb" and "mongodbatlas".
         embedding_key (str, optional): The key used for embedding. Defaults to SEARCH_FIELD_EMBEDDING.
         batch_size (int, optional): The batch size for inserting records. Defaults to DEFAULT_INSERT_BATCH_SIZE.
         logger (Optional[Logger], optional): The logger instance. Defaults to None.

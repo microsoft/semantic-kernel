@@ -97,7 +97,8 @@ def get_mongodbatlas_similarity_query(
                 "knnBeta": knn_beta,
             }
         },
-        # TODO: Add mapping while serializing to get score {"$project": {"score": {"$meta": "searchScore"}, "full_document": "$$ROOT"}},
+        # TODO: Add mapping while serializing to get score
+        # {"$project": {"score": {"$meta": "searchScore"}, "full_document": "$$ROOT"}},
     ]
     return pipeline
 
