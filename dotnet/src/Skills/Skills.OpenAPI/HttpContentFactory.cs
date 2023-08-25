@@ -12,4 +12,4 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI;
 /// <param name="payload">The operation payload metadata.</param>
 /// <param name="arguments">The operation arguments.</param>
 /// <returns>The HTTP content representing the operation payload.</returns>
-public delegate HttpContent HttpContentFactory(RestApiOperationPayload? payload, IDictionary<string, string> arguments);
+internal delegate HttpContent HttpContentFactory(RestApiOperationPayload? payload, IDictionary<string, string> arguments);
