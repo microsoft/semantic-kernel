@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// The data is mutable, but changes do not affect the skill collection.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class FunctionView
+public class FunctionView
 {
     /// <summary>
     /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
