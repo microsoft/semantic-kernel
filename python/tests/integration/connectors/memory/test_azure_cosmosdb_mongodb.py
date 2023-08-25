@@ -50,7 +50,6 @@ def memory_record1():
         description="description",
         additional_metadata="additional metadata",
         external_source_name="external source",
-        timestamp=datetime.now(),
     )
 
 
@@ -64,7 +63,6 @@ def memory_record2():
         description="description",
         additional_metadata="additional metadata",
         external_source_name="external source",
-        timestamp=datetime.now(),
     )
 
 
@@ -78,7 +76,6 @@ def memory_record3():
         description="description",
         additional_metadata="additional metadata",
         external_source_name="external source",
-        timestamp=datetime.now(),
     )
 
 
