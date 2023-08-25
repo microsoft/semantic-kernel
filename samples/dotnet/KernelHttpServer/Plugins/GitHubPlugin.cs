@@ -89,13 +89,13 @@ BEGIN SUMMARY:
         string tempPath = Path.GetTempPath();
         string directoryPath = Path.Combine(tempPath, $"SK-{Guid.NewGuid()}");
         string filePath = Path.Combine(tempPath, $"SK-{Guid.NewGuid()}.zip");
+        Console.WriteLine("Path: " + directoryPath);
 
         try
         {
-            var repositoryUri = Regex.Replace(input.Trim(s_trimChars), "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
+            var originalUri = input.Trim(s_trimChars);
+            var repositoryUri = Regex.Replace(originalUri, "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
             var repoBundle = $"{repositoryUri}/zipball/{repositoryBranch}";
-
-            this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
 
             var headers = new Dictionary<string, string>();
             headers.Add("X-GitHub-Api-Version", "2022-11-28");
@@ -111,9 +111,9 @@ BEGIN SUMMARY:
 
             ZipFile.ExtractToDirectory(filePath, directoryPath);
 
-            await this.SummarizeCodeDirectoryAsync(directoryPath, searchPattern, repositoryUri, repositoryBranch, cancellationToken);
+            await this.SummarizeCodeDirectoryAsync(directoryPath, searchPattern, originalUri, repositoryBranch, cancellationToken);
 
-            return $"{repositoryUri}-{repositoryBranch}";
+            return $"{originalUri}-{repositoryBranch}";
         }
         finally
         {
@@ -196,10 +196,10 @@ BEGIN SUMMARY:
             else
             {
                 await this._kernel.Memory.SaveInformationAsync(
-                    $"{repositoryUri}-{repositoryBranch}",
-                    text: $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
-                    id: fileUri,
-                    cancellationToken: cancellationToken);
+                     $"{repositoryUri}-{repositoryBranch}",
+                     text: $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
+                     id: fileUri,
+                     cancellationToken: cancellationToken);
             }
         }
     }
@@ -213,8 +213,6 @@ BEGIN SUMMARY:
 
         if (filePaths != null && filePaths.Length > 0)
         {
-            this._logger.LogDebug("Found {0} files to summarize", filePaths.Length);
-
             foreach (string filePath in filePaths)
             {
                 var fileUri = this.BuildFileUri(directoryPath, filePath, repositoryUri, repositoryBranch);
