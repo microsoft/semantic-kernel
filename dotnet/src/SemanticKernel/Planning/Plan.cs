@@ -269,8 +269,14 @@ public sealed class Plan : IPlan
             // Update Plan Result in State with matching outputs (if any)
             if (this.Outputs.Intersect(step.Outputs).Any())
             {
-                this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult);
-                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult?.Trim(), resultValue));
+                if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
+                {
+                    this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
+                }
+                else
+                {
+                    this.State.Set(DefaultResultKey, resultValue);
+                }
             }
 
             // Update state with outputs (if any)
