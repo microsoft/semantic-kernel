@@ -34,9 +34,15 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     private readonly VarBlock? _argValueAsVarBlock;
 
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
-        : base(NamedArgBlock.TrimWhitespace(text), logger)
+        : base(text?.Trim(), logger)
     {
-        var argParts = NamedArgBlock.GetTrimmedParts(text);
+        var argParts = this.Content.Split(Symbols.NamedArgBlockSeparator);
+        if (argParts.Length > 2)
+        {
+            this.Logger.LogError("Invalid named argument `{NamedArg}`.", this.Content);
+            throw new SKException($"Invalid named argument `{this.Content}`. A named argument can contain at most one equals sign separating the arg name from the arg value.");
+        }
+
         if (argParts.Length == 2)
         {
             this.Name = argParts[0];
@@ -96,45 +102,4 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return isNameValid && isValueValid;
     }
 #pragma warning restore CA2254
-
-    private static string? TrimWhitespace(string? text)
-    {
-        if (text == null)
-        {
-            return text;
-        }
-
-        string[] trimmedParts = NamedArgBlock.GetTrimmedParts(text);
-        switch (trimmedParts?.Length)
-        {
-            case (2):
-                return $"{trimmedParts[0]}{Symbols.NamedArgBlockSeparator}{trimmedParts[1]}";
-            case (1):
-                return trimmedParts[0];
-            default:
-                return null;
-        }
-    }
-
-    private static string[] GetTrimmedParts(string? text)
-    {
-        if (text == null)
-        {
-            return System.Array.Empty<string>();
-        }
-
-        string[] parts = text.Split(new char[] { Symbols.NamedArgBlockSeparator }, 2);
-        string[] result = new string[parts.Length];
-        if (parts.Length > 0)
-        {
-            result[0] = parts[0].Trim();
-        }
-
-        if (parts.Length > 1)
-        {
-            result[1] = parts[1].Trim();
-        }
-
-        return result;
-    }
 }
