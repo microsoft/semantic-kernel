@@ -89,13 +89,14 @@ BEGIN SUMMARY:
         string tempPath = Path.GetTempPath();
         string directoryPath = Path.Combine(tempPath, $"SK-{Guid.NewGuid()}");
         string filePath = Path.Combine(tempPath, $"SK-{Guid.NewGuid()}.zip");
-        Console.WriteLine("Path: " + directoryPath);
 
         try
         {
             var originalUri = input.Trim(s_trimChars);
             var repositoryUri = Regex.Replace(originalUri, "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
             var repoBundle = $"{repositoryUri}/zipball/{repositoryBranch}";
+
+            this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
 
             var headers = new Dictionary<string, string>();
             headers.Add("X-GitHub-Api-Version", "2022-11-28");
