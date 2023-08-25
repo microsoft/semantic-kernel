@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -19,19 +18,13 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 /// </summary>
 public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistory, ChatRequestSettings, OobaboogaChatCompletionParameters, OobaboogaChatCompletionRequest, ChatCompletionResponse, ChatCompletionResult, ChatCompletionStreamingResult>, IChatCompletion, ITextCompletion
 {
-    private const string ChatBlockingUriPath = "/api/v1/chat";
-    private const string ChatStreamingUriPath = "/api/v1/chat-stream";
-    private const string ChatHistoryMustContainAtLeastOneUserMessage = "Chat history must contain at least one user message";
+    private const string ChatHistoryMustContainAtLeastOneUserMessage = "Chat history must contain at least one User message";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaChatCompletion"/> class.
     /// </summary>
     /// <param name="chatCompletionRequestSettings">An instance of <see cref="OobaboogaChatCompletionParameters"/>, which are chat completion settings specific to Oobabooga api</param>
-    /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
-    /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
-    /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
-    public OobaboogaChatCompletion(OobaboogaChatCompletionSettings? chatCompletionRequestSettings, Uri endpoint, int blockingPort = 5000,
-        int streamingPort = 5005) : base(endpoint, ChatBlockingUriPath, ChatStreamingUriPath, blockingPort, streamingPort, chatCompletionRequestSettings)
+    public OobaboogaChatCompletion(OobaboogaChatCompletionSettings? chatCompletionRequestSettings) : base(chatCompletionRequestSettings)
     {
     }
 
@@ -150,7 +143,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistor
 
     protected override OobaboogaChatCompletionRequest CreateCompletionRequest(ChatHistory input, ChatRequestSettings? requestSettings)
     {
-        requestSettings ??= new ChatRequestSettings();
+        requestSettings ??= new();
 
         var completionRequest = OobaboogaChatCompletionRequest.Create(input, (OobaboogaCompletionSettings<OobaboogaChatCompletionParameters>)this.OobaboogaSettings, requestSettings);
         return completionRequest;

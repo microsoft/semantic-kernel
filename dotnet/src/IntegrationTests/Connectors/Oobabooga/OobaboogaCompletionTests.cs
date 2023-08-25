@@ -52,11 +52,10 @@ public sealed class OobaboogaCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionAsync()
     {
-        var oobaboogaSettings = new OobaboogaTextCompletionSettings();
-
-        var oobaboogaLocal = new OobaboogaTextCompletion(oobaboogaSettings,
-            endpoint: new Uri(Endpoint),
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings(endpoint: new Uri(Endpoint),
             blockingPort: BlockingPort);
+
+        var oobaboogaLocal = new OobaboogaTextCompletion(oobaboogaSettings);
 
         // Act
         var localResponse = await oobaboogaLocal.CompleteAsync(Input, new CompleteRequestSettings()
@@ -72,11 +71,10 @@ public sealed class OobaboogaCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionStreamingAsync()
     {
-        var oobaboogaSettings = new OobaboogaTextCompletionSettings(webSocketFactory: this._webSocketFactory);
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings(endpoint: new Uri(Endpoint),
+            streamingPort: StreamingPort, webSocketFactory: this._webSocketFactory);
 
-        var oobaboogaLocal = new OobaboogaTextCompletion(oobaboogaSettings,
-            endpoint: new Uri(Endpoint),
-            streamingPort: StreamingPort);
+        var oobaboogaLocal = new OobaboogaTextCompletion(oobaboogaSettings);
 
         // Act
         var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, new CompleteRequestSettings()
@@ -99,12 +97,10 @@ public sealed class OobaboogaCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalChatCompletionAsync()
     {
-
-        var oobaboogaSettings = new OobaboogaChatCompletionSettings();
-
-        var oobaboogaLocal = new OobaboogaChatCompletion(oobaboogaSettings,
-            endpoint: new Uri(Endpoint),
+        var oobaboogaSettings = new OobaboogaChatCompletionSettings(endpoint: new Uri(Endpoint),
             blockingPort: BlockingPort);
+
+        var oobaboogaLocal = new OobaboogaChatCompletion(oobaboogaSettings);
 
         var history = new ChatHistory();
         history.AddUserMessage("What is your name?");
@@ -123,12 +119,11 @@ public sealed class OobaboogaCompletionTests : IDisposable
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalChatCompletionStreamingAsync()
     {
-        var oobaboogaSettings = new OobaboogaChatCompletionSettings(webSocketFactory: this._webSocketFactory);
-
-        var oobaboogaLocal = new OobaboogaChatCompletion(oobaboogaSettings,
-            endpoint: new Uri(Endpoint),
+        var oobaboogaSettings = new OobaboogaChatCompletionSettings(endpoint: new Uri(Endpoint),
             blockingPort: BlockingPort,
-            streamingPort: StreamingPort);
+            streamingPort: StreamingPort, webSocketFactory: this._webSocketFactory);
+
+        var oobaboogaLocal = new OobaboogaChatCompletion(oobaboogaSettings);
 
         var history = new ChatHistory();
         history.AddUserMessage("What is your name?");

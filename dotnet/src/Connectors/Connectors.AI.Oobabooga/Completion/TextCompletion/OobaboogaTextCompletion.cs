@@ -13,19 +13,11 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextComple
 
 public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteRequestSettings, OobaboogaCompletionParameters, OobaboogaCompletionRequest, TextCompletionResponse, TextCompletionResult, TextCompletionStreamingResult>, ITextCompletion
 {
-    private const string BlockingUriPath = "/api/v1/generate";
-    private const string StreamingUriPath = "/api/v1/stream";
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
     /// </summary>
     /// <param name="completionRequestSettings">An instance of <see cref="OobaboogaCompletionSettings"/>, which are text completion settings specific to Oobabooga api</param>
-    /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
-    /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
-    /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
-    public OobaboogaTextCompletion(OobaboogaTextCompletionSettings completionRequestSettings, Uri endpoint,
-        int blockingPort = 5000,
-        int streamingPort = 5005) : base(endpoint, BlockingUriPath, StreamingUriPath, blockingPort, streamingPort, completionRequestSettings)
+    public OobaboogaTextCompletion(OobaboogaTextCompletionSettings completionRequestSettings) : base(completionRequestSettings)
     {
     }
 

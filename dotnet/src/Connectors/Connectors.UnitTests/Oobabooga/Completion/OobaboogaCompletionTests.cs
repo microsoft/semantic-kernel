@@ -61,11 +61,11 @@ public sealed class OobaboogaCompletionTests : IDisposable
     public async Task UserAgentHeaderShouldBeUsedAsync()
     {
         //Arrange
-        var oobaboogaSettings = new OobaboogaTextCompletionSettings(httpClient: this._httpClient,
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings(endpoint: this._endPointUri,
+            blockingPort: BlockingPort, httpClient: this._httpClient,
             logger: this._logger);
 
-        var sut = new OobaboogaTextCompletion(oobaboogaSettings, endpoint: this._endPointUri,
-            blockingPort: BlockingPort);
+        var sut = new OobaboogaTextCompletion(oobaboogaSettings);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -84,11 +84,11 @@ public sealed class OobaboogaCompletionTests : IDisposable
     {
         //Arrange
 
-        var oobaboogaSettings = new OobaboogaTextCompletionSettings(httpClient: this._httpClient,
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings(endpoint: this._endPointUri,
+            blockingPort: BlockingPort, httpClient: this._httpClient,
             logger: this._logger);
 
-        var sut = new OobaboogaTextCompletion(oobaboogaSettings, endpoint: this._endPointUri,
-            blockingPort: BlockingPort);
+        var sut = new OobaboogaTextCompletion(oobaboogaSettings);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -102,11 +102,11 @@ public sealed class OobaboogaCompletionTests : IDisposable
     {
         //Arrange
 
-        var oobaboogaSettings = new OobaboogaTextCompletionSettings(httpClient: this._httpClient,
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings(endpoint: this._endPointUri,
+            blockingPort: BlockingPort, httpClient: this._httpClient,
             logger: this._logger);
 
-        var sut = new OobaboogaTextCompletion(oobaboogaSettings, endpoint: this._endPointUri,
-            blockingPort: BlockingPort);
+        var sut = new OobaboogaTextCompletion(oobaboogaSettings);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -125,11 +125,11 @@ public sealed class OobaboogaCompletionTests : IDisposable
     {
         //Arrange
 
-        var oobaboogaSettings = new OobaboogaTextCompletionSettings(httpClient: this._httpClient,
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings(endpoint: this._endPointUri,
+            blockingPort: BlockingPort, httpClient: this._httpClient,
             logger: this._logger);
 
-        var sut = new OobaboogaTextCompletion(oobaboogaSettings, endpoint: this._endPointUri,
-            blockingPort: BlockingPort);
+        var sut = new OobaboogaTextCompletion(oobaboogaSettings);
 
         //Act
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings()).ConfigureAwait(false);
@@ -146,11 +146,11 @@ public sealed class OobaboogaCompletionTests : IDisposable
     {
         //Arrange
 
-        var oobaboogaSettings = new OobaboogaTextCompletionSettings(httpClient: this._httpClient,
+        var oobaboogaSettings = new OobaboogaTextCompletionSettings(endpoint: this._endPointUri,
+            blockingPort: BlockingPort, httpClient: this._httpClient,
             logger: this._logger);
 
-        var sut = new OobaboogaTextCompletion(oobaboogaSettings, endpoint: this._endPointUri,
-            blockingPort: BlockingPort);
+        var sut = new OobaboogaTextCompletion(oobaboogaSettings);
 
         //Act
         var result = await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
@@ -330,29 +330,29 @@ public sealed class OobaboogaCompletionTests : IDisposable
 
         if (isChat)
         {
-            var oobaboogaSettings = new OobaboogaChatCompletionSettings(httpClient: this._httpClient,
+            var oobaboogaSettings = new OobaboogaChatCompletionSettings(endpoint: new Uri("http://localhost/"),
+                streamingPort: StreamingPort,
+                httpClient: this._httpClient,
                 webSocketsCleanUpCancellationToken: cleanupToken.Token,
                 webSocketFactory: webSocketFactory,
                 keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
                 concurrentSemaphore: enforcedConcurrentCallSemaphore,
                 logger: this._logger);
 
-            sut = new OobaboogaChatCompletion(oobaboogaSettings,
-                endpoint: new Uri("http://localhost/"),
-                streamingPort: StreamingPort);
+            sut = new OobaboogaChatCompletion(oobaboogaSettings);
         }
         else
         {
-            var oobaboogaSettings = new OobaboogaTextCompletionSettings(httpClient: this._httpClient,
+            var oobaboogaSettings = new OobaboogaTextCompletionSettings(endpoint: new Uri("http://localhost/"),
+                streamingPort: StreamingPort,
+                httpClient: this._httpClient,
                 webSocketsCleanUpCancellationToken: cleanupToken.Token,
                 webSocketFactory: webSocketFactory,
                 keepAliveWebSocketsDuration: keepAliveWebSocketsDuration,
                 concurrentSemaphore: enforcedConcurrentCallSemaphore,
                 logger: this._logger);
 
-            sut = new OobaboogaTextCompletion(oobaboogaSettings,
-                endpoint: new Uri("http://localhost/"),
-                streamingPort: StreamingPort);
+            sut = new OobaboogaTextCompletion(oobaboogaSettings);
         }
 
         OobaboogaWebSocketTestServerBase server;

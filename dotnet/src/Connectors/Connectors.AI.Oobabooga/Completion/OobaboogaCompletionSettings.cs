@@ -14,6 +14,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 
 public class OobaboogaCompletionSettings
 {
+    protected internal const string BlockingUriPath = "/api/v1/generate";
+    protected internal const string StreamingUriPath = "/api/v1/stream";
+
     protected internal readonly HttpClient HttpClient;
     public ILogger? Logger { get; }
     protected internal readonly Func<ClientWebSocket> WebSocketFactory;
@@ -27,6 +30,9 @@ public class OobaboogaCompletionSettings
 
     private long _lastCallTicks = long.MaxValue;
 
+    private readonly Uri _blockingUri;
+    private readonly Uri _streamingUri;
+
     /// <summary>
     /// Determines whether or not to use the overlapping SK settings for the completion request. Prompt is still provided by SK.
     /// </summary>
@@ -37,9 +43,16 @@ public class OobaboogaCompletionSettings
     /// </summary>
     public int WebSocketBufferSize { get; set; } = 2048;
 
+    public Uri BlockingUri => this._blockingUri;
+
+    public Uri StreamingUri => this._streamingUri;
+
     /// <summary>
     ///  Initializes a new instance of the <see cref="OobaboogaCompletionSettings"/> class, which controls how oobabooga completion requests are made.
     /// </summary>
+    /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
+    /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
+    /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
     /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the either of the completion methods by providing a <see cref="SemaphoreSlim"/>. Calls in excess will wait for existing consumers to release the semaphore</param>
     /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
     /// <param name="webSocketsCleanUpCancellationToken">if websocket pooling is enabled, you can provide an optional CancellationToken to properly dispose of the clean up tasks when disposing of the connector</param>
@@ -47,15 +60,40 @@ public class OobaboogaCompletionSettings
     /// <param name="webSocketFactory">The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
     /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
     /// <param name="logger">Application logger</param>
-    public OobaboogaCompletionSettings(
+    /// <param name="blockingPath">the path for the blocking API relative to the Endpoint base path</param>
+    /// <param name="streamingPath">the path for the streaming API relative to the Endpoint base path</param>
+    public OobaboogaCompletionSettings(Uri? endpoint = default,
+        int blockingPort = 5000,
+        int streamingPort = 5005,
         SemaphoreSlim? concurrentSemaphore = null,
         bool useWebSocketsPooling = true,
         CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null)
+        ILogger? logger = null,
+        string blockingPath = BlockingUriPath,
+        string streamingPath = StreamingUriPath)
     {
+        endpoint ??= new Uri("http://localhost/");
+
+        this._blockingUri = new UriBuilder(endpoint)
+        {
+            Port = blockingPort,
+            Path = blockingPath
+        }.Uri;
+        var streamingUriBuilder = new UriBuilder(endpoint)
+        {
+            Port = streamingPort,
+            Path = streamingPath
+        };
+        if (streamingUriBuilder.Uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            streamingUriBuilder.Scheme = streamingUriBuilder.Scheme == "https" ? "wss" : "ws";
+        }
+
+        this._streamingUri = streamingUriBuilder.Uri;
+
         this.HttpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this.Logger = logger;
 
@@ -231,15 +269,18 @@ public class OobaboogaCompletionSettings
 
 public class OobaboogaCompletionSettings<TParameters> : OobaboogaCompletionSettings where TParameters : OobaboogaCompletionParameters, new()
 {
-    /// <inheritdoc/>
-    public OobaboogaCompletionSettings(
+    public OobaboogaCompletionSettings(Uri? endpoint = default,
+        int blockingPort = 5000,
+        int streamingPort = 5005,
         SemaphoreSlim? concurrentSemaphore = null,
         bool useWebSocketsPooling = true,
         CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(concurrentSemaphore, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, httpClient, logger)
+        ILogger? logger = null,
+        string blockingPath = BlockingUriPath,
+        string streamingPath = StreamingUriPath) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, httpClient, logger, blockingPath, streamingPath)
     {
     }
 
@@ -248,30 +289,35 @@ public class OobaboogaCompletionSettings<TParameters> : OobaboogaCompletionSetti
 
 public class OobaboogaTextCompletionSettings : OobaboogaCompletionSettings<OobaboogaCompletionParameters>
 {
-    /// <inheritdoc/>
-    public OobaboogaTextCompletionSettings(
+    public OobaboogaTextCompletionSettings(Uri? endpoint = default,
+        int blockingPort = 5000,
+        int streamingPort = 5005,
         SemaphoreSlim? concurrentSemaphore = null,
         bool useWebSocketsPooling = true,
         CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(concurrentSemaphore, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, httpClient, logger)
+        ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, httpClient, logger)
     {
     }
 }
 
 public class OobaboogaChatCompletionSettings : OobaboogaCompletionSettings<OobaboogaChatCompletionParameters>
 {
-    /// <inheritdoc/>
-    public OobaboogaChatCompletionSettings(
+    private const string ChatBlockingUriPath = "/api/v1/chat";
+    private const string ChatStreamingUriPath = "/api/v1/chat-stream";
+
+    public OobaboogaChatCompletionSettings(Uri? endpoint = default,
+        int blockingPort = 5000,
+        int streamingPort = 5005,
         SemaphoreSlim? concurrentSemaphore = null,
         bool useWebSocketsPooling = true,
         CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
         HttpClient? httpClient = null,
-        ILogger? logger = null) : base(concurrentSemaphore, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, httpClient, logger)
+        ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, httpClient, logger, ChatBlockingUriPath, ChatStreamingUriPath)
     {
     }
 }

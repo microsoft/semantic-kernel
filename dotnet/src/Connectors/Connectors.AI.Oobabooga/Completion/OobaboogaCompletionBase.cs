@@ -21,41 +21,12 @@ public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings
     where TOobaboogaParameters : OobaboogaCompletionParameters, new()
 
 {
-    private readonly UriBuilder _blockingUri;
-    private readonly UriBuilder _streamingUri;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaCompletionBase"/> class.
     /// </summary>
-    /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
-    /// <param name="blockingPath">the path for the blocking API relative to the Endpoint base path</param>
-    /// <param name="streamingPath">the path for the streaming API relative to the Endpoint base path</param>
-    /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
-    /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
     /// <param name="oobaboogaSettings">The settings controlling how calls to the Oobabooga server are made</param>
-    protected OobaboogaCompletionBase(Uri endpoint,
-        string blockingPath,
-        string streamingPath,
-        int blockingPort = 5000,
-        int streamingPort = 5005,
-        OobaboogaCompletionSettings<TOobaboogaParameters>? oobaboogaSettings = default) : base(oobaboogaSettings ?? new())
+    protected OobaboogaCompletionBase(OobaboogaCompletionSettings<TOobaboogaParameters>? oobaboogaSettings = default) : base(oobaboogaSettings ?? new())
     {
-        Verify.NotNull(endpoint);
-
-        this._blockingUri = new UriBuilder(endpoint)
-        {
-            Port = blockingPort,
-            Path = blockingPath
-        };
-        this._streamingUri = new(endpoint)
-        {
-            Port = streamingPort,
-            Path = streamingPath
-        };
-        if (this._streamingUri.Uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-        {
-            this._streamingUri.Scheme = this._streamingUri.Scheme == "https" ? "wss" : "ws";
-        }
     }
 
     protected async Task<IReadOnlyList<TCompletionResult>> GetCompletionsBaseAsync(
@@ -69,7 +40,7 @@ public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings
 
             var completionRequest = this.CreateCompletionRequest(input, requestSettings);
 
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this._blockingUri.Uri, completionRequest);
+            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.OobaboogaSettings.BlockingUri, completionRequest);
             httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
             using var response = await this.OobaboogaSettings.HttpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
@@ -123,7 +94,7 @@ public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings
 #pragma warning restore CA2000 // Dispose objects before losing scope
             if (clientWebSocket.State == WebSocketState.None)
             {
-                await clientWebSocket.ConnectAsync(this._streamingUri.Uri, cancellationToken).ConfigureAwait(false);
+                await clientWebSocket.ConnectAsync(this.OobaboogaSettings.StreamingUri, cancellationToken).ConfigureAwait(false);
             }
 
             var sendSegment = new ArraySegment<byte>(requestBytes);
