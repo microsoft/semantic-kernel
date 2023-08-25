@@ -135,7 +135,7 @@ public sealed class InstrumentedSKFunction : ISKFunction,
     private Counter<int> _executionFailureCounter;
 
     /// <summary>
-    /// Generically handles PrepareAgs logic for ISKFunctionHandles.
+    /// Generically handles and prepare event arguments for <see cref="ISKFunctionHandles{TEventArgs}"/> support.
     /// </summary>
     /// <typeparam name="TEventArgs">EventArgs type</typeparam>
     /// <param name="context">Context to the event</param>
