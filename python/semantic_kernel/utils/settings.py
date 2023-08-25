@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 from dotenv import dotenv_values
 
@@ -25,12 +25,17 @@ def openai_settings_from_dot_env() -> Tuple[str, Optional[str]]:
 
 def azure_openai_settings_from_dot_env(
     include_deployment: bool = True, include_api_version: bool = False
-) -> Tuple[str, str, str, str]:
+) -> Union[Tuple[str, str, str], Tuple[str, str, str, str]]:
     """
     Reads the Azure OpenAI API key and endpoint from the .env file.
 
+    Arguments:
+        include_deployment {bool} -- Whether to include the deployment name in the return value
+        include_api_version {bool} -- Whether to include the API version in the return value,   
+            when set to True, this will also make the output a Tuple[str, str, str, str].
+
     Returns:
-        Tuple[str, str, str, str]: The deployment name (or empty), Azure OpenAI API key,
+        Union[Tuple[str, str, str], Tuple[str, str, str, str]]: The deployment name (or empty), Azure OpenAI API key,
           the endpoint and the api version
     """
 
@@ -54,7 +59,9 @@ def azure_openai_settings_from_dot_env(
     assert api_key, "Azure OpenAI API key not found in .env file"
     assert endpoint, "Azure OpenAI endpoint not found in .env file"
 
-    return deployment or "", api_key, endpoint, api_version or ""
+    if include_api_version:
+        return deployment or "", api_key, endpoint, api_version or ""
+    return deployment or "", api_key, endpoint
 
 
 def azure_openai_settings_from_dot_env_as_dict(
