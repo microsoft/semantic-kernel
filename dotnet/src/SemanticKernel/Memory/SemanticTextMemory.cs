@@ -17,6 +17,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 {
     private readonly ITextEmbeddingGeneration _embeddingGenerator;
     private readonly IMemoryStore _storage;
+    private HashSet<string>? _collections;
 
     public SemanticTextMemory(
         IMemoryStore storage,
@@ -39,7 +40,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         MemoryRecord data = MemoryRecord.LocalRecord(
             id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
 
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
+        if (!(await this.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
             await this._storage.CreateCollectionAsync(collection, cancellationToken).ConfigureAwait(false);
         }
@@ -61,7 +62,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         var data = MemoryRecord.ReferenceRecord(externalId: externalId, sourceName: externalSourceName, description: description,
             additionalMetadata: additionalMetadata, embedding: embedding);
 
-        if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
+        if (!(await this.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
             await this._storage.CreateCollectionAsync(collection, cancellationToken).ConfigureAwait(false);
         }
@@ -89,6 +90,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         string key,
         CancellationToken cancellationToken = default)
     {
+        // $$$ 
         await this._storage.RemoveAsync(collection, key, cancellationToken).ConfigureAwait(false);
     }
 
@@ -101,6 +103,12 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Do not proceed with embedding or query if index isn't present
+        if (!(await this.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
+        {
+            yield break;
+        }
+
         ReadOnlyMemory<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, cancellationToken).ConfigureAwait(false);
 
         IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
@@ -120,7 +128,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
     /// <inheritdoc/>
     public async Task<IList<string>> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
-        return await this._storage.GetCollectionsAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        IList<string> collections = await this._storage.GetCollectionsAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        this._collections = new HashSet<string>(collections); // Capture collections
+
+        return collections;
     }
 
     public void Dispose()
@@ -130,5 +142,17 @@ public sealed class SemanticTextMemory : ISemanticTextMemory, IDisposable
 
         // ReSharper disable once SuspiciousTypeConversion.Global
         if (this._storage is IDisposable storage) { storage.Dispose(); }
+    }
+
+    private async Task<bool> DoesCollectionExistAsync(string collection, CancellationToken cancellationToken = default)
+    {
+        // Search cached list of collections to avoid a round trip to storage.
+        if (this._collections == null || !this._collections.Contains(collection))
+        {
+            // Retrieve current list of collections
+            await this.GetCollectionsAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        return this._collections?.Contains(collection) ?? false;
     }
 }

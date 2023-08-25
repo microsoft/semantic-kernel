@@ -212,10 +212,10 @@ BEGIN SUMMARY:
     {
         string[] filePaths = Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories);
 
-        this._logger.LogDebug("Found {0} files to summarize", filePaths.Length);
-
         if (filePaths != null && filePaths.Length > 0)
         {
+            this._logger.LogDebug("Found {0} files to summarize", filePaths.Length);
+
             foreach (string filePath in filePaths)
             {
                 var fileUri = this.BuildFileUri(directoryPath, filePath, repositoryUri, repositoryBranch);
