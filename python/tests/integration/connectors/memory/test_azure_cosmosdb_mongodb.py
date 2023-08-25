@@ -6,7 +6,11 @@ import pytest
 import semantic_kernel as sk
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-from semantic_kernel.connectors.memory.mongodb.mongodb_memory_store import MongoDBMemoryStore
+from semantic_kernel.connectors.memory.mongodb.mongodb_memory_store import (
+    MongoDBMemoryStore,
+)
+
+import asyncio
 
 try:
     import pymongo  # noqa: F401
@@ -92,7 +96,7 @@ def memory_store(connection):
     yield mongodb_mem_store
 
     # Delete test collection after test
-    # asyncio.run(mongodb_mem_store.delete_collection_async(TEST_COLLECTION_NAME))
+    asyncio.run(mongodb_mem_store.delete_collection_async(TEST_COLLECTION_NAME))
 
 
 def test_constructor(memory_store):
