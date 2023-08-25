@@ -6,27 +6,18 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 
-public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
+public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteRequestSettings, CompletionOobaboogaSettings, CompletionRequest, TextCompletionResponse, TextCompletionResult, TextCompletionStreamingResult>, ITextCompletion
 {
     private const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
-
-    private readonly UriBuilder _blockingUri;
-    private readonly UriBuilder _streamingUri;
-
-    private readonly CompletionOobaboogaSettings _completionOobaboogaSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OobaboogaTextCompletion"/> class.
@@ -52,24 +43,8 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         CancellationToken? webSocketsCleanUpCancellationToken = default,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
-        ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
+        ILogger? logger = null) : base(endpoint, BlockingUriPath, StreamingUriPath, blockingPort, streamingPort, completionRequestSettings, concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
     {
-        this._completionOobaboogaSettings = completionRequestSettings ?? new CompletionOobaboogaSettings();
-        Verify.NotNull(endpoint);
-        this._blockingUri = new UriBuilder(endpoint)
-        {
-            Port = blockingPort,
-            Path = BlockingUriPath
-        };
-        this._streamingUri = new(endpoint)
-        {
-            Port = streamingPort,
-            Path = StreamingUriPath
-        };
-        if (this._streamingUri.Uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-        {
-            this._streamingUri.Scheme = this._streamingUri.Scheme == "https" ? "wss" : "ws";
-        }
     }
 
     /// <inheritdoc/>
@@ -79,39 +54,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        try
-        {
-            await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
-
-            var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
-
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this._blockingUri.Uri, completionRequest);
-            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-
-            using var response = await this.HttpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(body);
-
-            if (completionResponse is null)
-            {
-                throw new SKException($"Unexpected response from Oobabooga API:\n{body}");
-            }
-
-            return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
-        }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
-        }
-        finally
-        {
-            this.FinishConcurrentCall();
-        }
+        return await this.GetCompletionsBaseAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -120,76 +63,35 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase, ITextCompletion
         CompleteRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
-
-        var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
-
-        var requestJson = JsonSerializer.Serialize(completionRequest);
-
-        var requestBytes = Encoding.UTF8.GetBytes(requestJson);
-
-        ClientWebSocket? clientWebSocket = null;
-        try
+        await foreach (var chatCompletionStreamingResult in this.GetStreamingCompletionsBaseAsync(text, requestSettings, cancellationToken))
         {
-            // if pooling is enabled, web socket is going to be recycled for reuse, if not it will be properly disposed of after the call
-#pragma warning disable CA2000 // Dispose objects before losing scope
-            if (!this.UseWebSocketsPooling || !this.WebSocketPool.TryTake(out clientWebSocket))
-            {
-                clientWebSocket = this.WebSocketFactory();
-            }
-#pragma warning restore CA2000 // Dispose objects before losing scope
-            if (clientWebSocket.State == WebSocketState.None)
-            {
-                await clientWebSocket.ConnectAsync(this._streamingUri.Uri, cancellationToken).ConfigureAwait(false);
-            }
-
-            var sendSegment = new ArraySegment<byte>(requestBytes);
-            await clientWebSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
-
-            TextCompletionStreamingResult streamingResult = new();
-
-            var processingTask = this.ProcessWebSocketMessagesAsync(clientWebSocket, streamingResult, cancellationToken);
-
-            yield return streamingResult;
-
-            // Await the processing task to make sure it's finished before continuing
-            await processingTask.ConfigureAwait(false);
-        }
-        finally
-        {
-            if (clientWebSocket != null)
-            {
-                if (this.UseWebSocketsPooling && clientWebSocket.State == WebSocketState.Open)
-                {
-                    this.WebSocketPool.Add(clientWebSocket);
-                }
-                else
-                {
-                    await this.DisposeClientGracefullyAsync(clientWebSocket).ConfigureAwait(false);
-                }
-            }
-
-            this.FinishConcurrentCall();
+            yield return chatCompletionStreamingResult;
         }
     }
 
     /// <summary>
     /// Creates an Oobabooga request, mapping CompleteRequestSettings fields to their Oobabooga API counter parts
     /// </summary>
-    /// <param name="text">The text to complete.</param>
+    /// <param name="input">The text to complete.</param>
     /// <param name="requestSettings">The request settings.</param>
     /// <returns>An Oobabooga TextCompletionRequest object with the text and completion parameters.</returns>
-    private CompletionRequest CreateOobaboogaRequest(string text, CompleteRequestSettings requestSettings)
+    protected override CompletionRequest CreateCompletionRequest(string input, CompleteRequestSettings? requestSettings)
     {
-        if (string.IsNullOrWhiteSpace(text))
+        if (string.IsNullOrWhiteSpace(input))
         {
-            throw new ArgumentNullException(nameof(text));
+            throw new ArgumentNullException(nameof(input));
         }
 
+        requestSettings ??= new CompleteRequestSettings();
+
         // Prepare the request using the provided parameters.
-        var toReturn = CompletionRequest.Create(text, this._completionOobaboogaSettings, requestSettings);
+        var toReturn = CompletionRequest.Create(input, this.OobaboogaSettings, requestSettings);
         return toReturn;
+    }
+
+    protected override IReadOnlyList<TextCompletionResult> GetCompletionResults(TextCompletionResponse completionResponse)
+    {
+        return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
     }
 
     protected override CompletionStreamingResponseBase? GetResponseObject(string messageText)

@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 
-internal sealed class ChatCompletionStreamingResult : CompletionStreamingResultBase, IChatStreamingResult, ITextStreamingResult
+public sealed class ChatCompletionStreamingResult : CompletionStreamingResultBase, IChatStreamingResult, ITextStreamingResult
 {
     private readonly Channel<ChatMessageBase> _chatMessageChannel;
 

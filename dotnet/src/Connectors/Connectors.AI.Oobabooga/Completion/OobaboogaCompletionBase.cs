@@ -2,17 +2,166 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
+
+public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings, TOobaboogaSettings, TCompletionRequest, TCompletionResponse, TCompletionResult, TCompletionStreamingResult> : OobaboogaCompletionBase
+    where TCompletionStreamingResult : CompletionStreamingResultBase, new()
+    where TOobaboogaSettings : new()
+
+{
+    private readonly UriBuilder _blockingUri;
+    private readonly UriBuilder _streamingUri;
+    private protected readonly TOobaboogaSettings OobaboogaSettings;
+
+    protected OobaboogaCompletionBase(Uri endpoint,
+        string blockingPath,
+        string streamingPath,
+        int blockingPort = 5000,
+        int streamingPort = 5005,
+        TOobaboogaSettings? oobaboogaSettings = default,
+        SemaphoreSlim? concurrentSemaphore = null,
+        HttpClient? httpClient = null,
+        bool useWebSocketsPooling = true,
+        CancellationToken? webSocketsCleanUpCancellationToken = null,
+        int keepAliveWebSocketsDuration = 100,
+        Func<ClientWebSocket>? webSocketFactory = null,
+        ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
+    {
+        Verify.NotNull(endpoint);
+        this.OobaboogaSettings = oobaboogaSettings ?? new();
+
+        this._blockingUri = new UriBuilder(endpoint)
+        {
+            Port = blockingPort,
+            Path = blockingPath
+        };
+        this._streamingUri = new(endpoint)
+        {
+            Port = streamingPort,
+            Path = streamingPath
+        };
+        if (this._streamingUri.Uri.Scheme.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            this._streamingUri.Scheme = this._streamingUri.Scheme == "https" ? "wss" : "ws";
+        }
+    }
+
+    public async Task<IReadOnlyList<TCompletionResult>> GetCompletionsBaseAsync(
+        TCompletionInput input,
+        TRequestSettings? requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
+
+            var completionRequest = this.CreateCompletionRequest(input, requestSettings);
+
+            using var httpRequestMessage = HttpRequest.CreatePostRequest(this._blockingUri.Uri, completionRequest);
+            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+
+            using var response = await this.HttpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            TCompletionResponse? completionResponse = JsonSerializer.Deserialize<TCompletionResponse>(body);
+
+            if (completionResponse is null)
+            {
+                throw new SKException($"Unexpected response from Oobabooga API:\n{body}");
+            }
+
+            return this.GetCompletionResults(completionResponse);
+        }
+        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        {
+            throw new AIException(
+                AIException.ErrorCodes.UnknownError,
+                $"Something went wrong: {e.Message}", e);
+        }
+        finally
+        {
+            this.FinishConcurrentCall();
+        }
+    }
+
+    public async IAsyncEnumerable<TCompletionStreamingResult> GetStreamingCompletionsBaseAsync(
+        TCompletionInput input,
+        TRequestSettings? requestSettings,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
+
+        var completionRequest = this.CreateCompletionRequest(input, requestSettings);
+
+        var requestJson = JsonSerializer.Serialize(completionRequest);
+
+        var requestBytes = Encoding.UTF8.GetBytes(requestJson);
+
+        ClientWebSocket? clientWebSocket = null;
+        try
+        {
+            // if pooling is enabled, web socket is going to be recycled for reuse, if not it will be properly disposed of after the call
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            if (!this.UseWebSocketsPooling || !this.WebSocketPool.TryTake(out clientWebSocket))
+            {
+                clientWebSocket = this.WebSocketFactory();
+            }
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            if (clientWebSocket.State == WebSocketState.None)
+            {
+                await clientWebSocket.ConnectAsync(this._streamingUri.Uri, cancellationToken).ConfigureAwait(false);
+            }
+
+            var sendSegment = new ArraySegment<byte>(requestBytes);
+            await clientWebSocket.SendAsync(sendSegment, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+
+            TCompletionStreamingResult streamingResult = new();
+
+            var processingTask = this.ProcessWebSocketMessagesAsync(clientWebSocket, streamingResult, cancellationToken);
+
+            yield return streamingResult;
+
+            // Await the processing task to make sure it's finished before continuing
+            await processingTask.ConfigureAwait(false);
+        }
+        finally
+        {
+            if (clientWebSocket != null)
+            {
+                if (this.UseWebSocketsPooling && clientWebSocket.State == WebSocketState.Open)
+                {
+                    this.WebSocketPool.Add(clientWebSocket);
+                }
+                else
+                {
+                    await this.DisposeClientGracefullyAsync(clientWebSocket).ConfigureAwait(false);
+                }
+            }
+
+            this.FinishConcurrentCall();
+        }
+    }
+
+    protected abstract IReadOnlyList<TCompletionResult> GetCompletionResults([DisallowNull] TCompletionResponse completionResponse);
+
+    protected abstract TCompletionRequest CreateCompletionRequest(TCompletionInput input, TRequestSettings? requestSettings);
+}
 
 public abstract class OobaboogaCompletionBase
 {

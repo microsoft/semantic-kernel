@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 /// <summary>
 /// Oobabooga implementation of <see cref="IChatResult"/> and <see cref="ITextResult"/>. Actual response object is stored in a ModelResult instance, and completion text is simply passed forward.
 /// </summary>
-internal sealed class ChatCompletionResult : IChatResult, ITextResult
+public sealed class ChatCompletionResult : IChatResult, ITextResult
 {
     public ChatCompletionResult(ChatCompletionResponseHistory responseData)
     {

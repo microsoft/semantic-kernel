@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 
-internal sealed class TextCompletionStreamingResult : CompletionStreamingResultBase, ITextStreamingResult
+public sealed class TextCompletionStreamingResult : CompletionStreamingResultBase, ITextStreamingResult
 {
     private readonly Channel<string> _responseChannel;
 
