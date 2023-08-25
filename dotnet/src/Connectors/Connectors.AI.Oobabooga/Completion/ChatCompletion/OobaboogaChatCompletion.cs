@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 /// Oobabooga chat completion service API.
 /// Adapted from <see href="https://github.com/oobabooga/text-generation-webui/tree/main/api-examples"/>
 /// </summary>
-public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistory, ChatRequestSettings, ChatCompletionOobaboogaSettings, ChatCompletionRequest, ChatCompletionResponse, ChatCompletionResult, ChatCompletionStreamingResult>, IChatCompletion, ITextCompletion
+public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistory, ChatRequestSettings, OobaboogaChatCompletionParameters, OobaboogaChatCompletionRequest, ChatCompletionResponse, ChatCompletionResult, ChatCompletionStreamingResult>, IChatCompletion, ITextCompletion
 {
     private const string ChatBlockingUriPath = "/api/v1/chat";
     private const string ChatStreamingUriPath = "/api/v1/chat-stream";
@@ -32,7 +32,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistor
     /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
     /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
     /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
-    /// <param name="chatCompletionRequestSettings">An instance of <see cref="ChatCompletionOobaboogaSettings"/>, which are chat completion settings specific to Oobabooga api</param>
+    /// <param name="chatCompletionRequestSettings">An instance of <see cref="OobaboogaChatCompletionParameters"/>, which are chat completion settings specific to Oobabooga api</param>
     /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the either of the completion methods by providing a <see cref="SemaphoreSlim"/>. Calls in excess will wait for existing consumers to release the semaphore</param>
     /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
     /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
@@ -42,7 +42,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistor
     /// <param name="logger">Application logger</param>
     public OobaboogaChatCompletion(Uri endpoint, int blockingPort = 5000,
         int streamingPort = 5005,
-        ChatCompletionOobaboogaSettings? chatCompletionRequestSettings = null,
+        OobaboogaChatCompletionSettings? chatCompletionRequestSettings = null,
         SemaphoreSlim? concurrentSemaphore = null,
         HttpClient? httpClient = null,
         bool useWebSocketsPooling = true,
@@ -113,11 +113,11 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistor
 
     #region private ================================================================================
 
-    private ChatCompletionRequest CreateOobaboogaChatRequest(ChatHistory chat, ChatRequestSettings? requestSettings)
+    private OobaboogaChatCompletionRequest CreateOobaboogaChatRequest(ChatHistory chat, ChatRequestSettings? requestSettings)
     {
         requestSettings ??= new ChatRequestSettings();
 
-        var completionRequest = ChatCompletionRequest.Create(chat, this.OobaboogaSettings, requestSettings);
+        var completionRequest = OobaboogaChatCompletionRequest.Create(chat, this.OobaboogaSettings, requestSettings);
         return completionRequest;
     }
 
@@ -174,11 +174,11 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistor
         return completionResponse.Results.ConvertAll(result => new ChatCompletionResult(result));
     }
 
-    protected override ChatCompletionRequest CreateCompletionRequest(ChatHistory input, ChatRequestSettings? requestSettings)
+    protected override OobaboogaChatCompletionRequest CreateCompletionRequest(ChatHistory input, ChatRequestSettings? requestSettings)
     {
         requestSettings ??= new ChatRequestSettings();
 
-        var completionRequest = ChatCompletionRequest.Create(input, this.OobaboogaSettings, requestSettings);
+        var completionRequest = OobaboogaChatCompletionRequest.Create(input, this.OobaboogaSettings, requestSettings);
         return completionRequest;
     }
 }

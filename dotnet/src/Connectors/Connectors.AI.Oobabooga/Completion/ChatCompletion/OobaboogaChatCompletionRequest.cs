@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 /// <summary>
 /// HTTP schema to perform oobabooga chat completion request.
 /// </summary>
-public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
+public sealed class OobaboogaChatCompletionRequest : OobaboogaChatCompletionParameters
 {
     /// <summary>
     /// The user input for the chat completion.
@@ -26,10 +26,10 @@ public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
     /// <summary>
     /// Creates a new ChatCompletionRequest with the given Chat history, oobabooga settings and semantic-kernel settings.
     /// </summary>
-    public static ChatCompletionRequest Create(ChatHistory chat, ChatCompletionOobaboogaSettings settings, ChatRequestSettings requestSettings)
+    public static OobaboogaChatCompletionRequest Create(ChatHistory chat, OobaboogaCompletionSettings<OobaboogaChatCompletionParameters> settings, ChatRequestSettings requestSettings)
     {
         var chatMessages = chat.Messages.Take(chat.Messages.Count - 1).Select(@base => @base.Content).ToList();
-        var toReturn = new ChatCompletionRequest()
+        var toReturn = new OobaboogaChatCompletionRequest()
         {
             UserInput = chat.Messages.Last().Content,
             History = new OobaboogaChatHistory()
@@ -38,7 +38,7 @@ public sealed class ChatCompletionRequest : ChatCompletionOobaboogaSettings
                 Visible = chatMessages.Count > 1 ? new() { chatMessages } : new(),
             },
         };
-        toReturn.Apply(settings);
+        toReturn.Apply(settings.OobaboogaParameters);
         if (!settings.OverrideSKSettings)
         {
             toReturn.MaxNewTokens = requestSettings.MaxTokens;

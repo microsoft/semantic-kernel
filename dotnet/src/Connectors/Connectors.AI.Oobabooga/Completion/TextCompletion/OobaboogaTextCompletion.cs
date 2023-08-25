@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 
-public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteRequestSettings, CompletionOobaboogaSettings, CompletionRequest, TextCompletionResponse, TextCompletionResult, TextCompletionStreamingResult>, ITextCompletion
+public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteRequestSettings, OobaboogaCompletionParameters, OobaboogaCompletionRequest, TextCompletionResponse, TextCompletionResult, TextCompletionStreamingResult>, ITextCompletion
 {
     private const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
@@ -25,7 +25,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteR
     /// <param name="endpoint">The service API endpoint to which requests should be sent.</param>
     /// <param name="blockingPort">The port used for handling blocking requests. Default value is 5000</param>
     /// <param name="streamingPort">The port used for handling streaming requests. Default value is 5005</param>
-    /// <param name="completionRequestSettings">An instance of <see cref="CompletionOobaboogaSettings"/>, which are text completion settings specific to Oobabooga api</param>
+    /// <param name="completionRequestSettings">An instance of <see cref="OobaboogaCompletionSettings"/>, which are text completion settings specific to Oobabooga api</param>
     /// <param name="concurrentSemaphore">You can optionally set a hard limit on the max number of concurrent calls to the either of the completion methods by providing a <see cref="SemaphoreSlim"/>. Calls in excess will wait for existing consumers to release the semaphore</param>
     /// <param name="httpClient">Optional. The HTTP client used for making blocking API requests. If not specified, a default client will be used.</param>
     /// <param name="useWebSocketsPooling">If true, websocket clients will be recycled in a reusable pool as long as concurrent calls are detected</param>
@@ -36,7 +36,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteR
     public OobaboogaTextCompletion(Uri endpoint,
         int blockingPort = 5000,
         int streamingPort = 5005,
-        CompletionOobaboogaSettings? completionRequestSettings = null,
+        OobaboogaTextCompletionSettings? completionRequestSettings = null,
         SemaphoreSlim? concurrentSemaphore = null,
         HttpClient? httpClient = null,
         bool useWebSocketsPooling = true,
@@ -75,7 +75,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteR
     /// <param name="input">The text to complete.</param>
     /// <param name="requestSettings">The request settings.</param>
     /// <returns>An Oobabooga TextCompletionRequest object with the text and completion parameters.</returns>
-    protected override CompletionRequest CreateCompletionRequest(string input, CompleteRequestSettings? requestSettings)
+    protected override OobaboogaCompletionRequest CreateCompletionRequest(string input, CompleteRequestSettings? requestSettings)
     {
         if (string.IsNullOrWhiteSpace(input))
         {
@@ -85,7 +85,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteR
         requestSettings ??= new CompleteRequestSettings();
 
         // Prepare the request using the provided parameters.
-        var toReturn = CompletionRequest.Create(input, this.OobaboogaSettings, requestSettings);
+        var toReturn = OobaboogaCompletionRequest.Create(input, this.OobaboogaSettings, requestSettings);
         return toReturn;
     }
 

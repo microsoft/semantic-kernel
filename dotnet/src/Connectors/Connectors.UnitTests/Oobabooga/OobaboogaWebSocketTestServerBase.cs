@@ -21,7 +21,7 @@ internal abstract class OobaboogaWebSocketTestServerBase : WebSocketTestServer
     private List<ArraySegment<byte>> HandleRequest(ArraySegment<byte> request, Func<string, List<string>> stringHandler)
     {
         var requestString = Encoding.UTF8.GetString(request.ToArray());
-        var requestObj = JsonSerializer.Deserialize<CompletionRequest>(requestString);
+        var requestObj = JsonSerializer.Deserialize<OobaboogaCompletionRequest>(requestString);
 
         var responseList = stringHandler(requestObj?.Prompt ?? string.Empty);
 

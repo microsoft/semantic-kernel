@@ -18,21 +18,21 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 
-public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings, TOobaboogaSettings, TCompletionRequest, TCompletionResponse, TCompletionResult, TCompletionStreamingResult> : OobaboogaCompletionBase
+public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings, TOobaboogaParameters, TCompletionRequest, TCompletionResponse, TCompletionResult, TCompletionStreamingResult> : OobaboogaCompletionBase
     where TCompletionStreamingResult : CompletionStreamingResultBase, new()
-    where TOobaboogaSettings : new()
+    where TOobaboogaParameters : OobaboogaCompletionParameters, new()
 
 {
     private readonly UriBuilder _blockingUri;
     private readonly UriBuilder _streamingUri;
-    private protected readonly TOobaboogaSettings OobaboogaSettings;
+    private protected readonly OobaboogaCompletionSettings<TOobaboogaParameters> OobaboogaSettings;
 
     protected OobaboogaCompletionBase(Uri endpoint,
         string blockingPath,
         string streamingPath,
         int blockingPort = 5000,
         int streamingPort = 5005,
-        TOobaboogaSettings? oobaboogaSettings = default,
+        OobaboogaCompletionSettings<TOobaboogaParameters>? oobaboogaSettings = default,
         SemaphoreSlim? concurrentSemaphore = null,
         HttpClient? httpClient = null,
         bool useWebSocketsPooling = true,

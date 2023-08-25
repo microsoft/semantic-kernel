@@ -26,6 +26,7 @@ public sealed class OobaboogaCompletionTests : IDisposable
     private const string Endpoint = "http://localhost";
     private const int BlockingPort = 5000;
     private const int StreamingPort = 5005;
+    private const string Input = " My name is";
 
     private readonly IConfigurationRoot _configuration;
     private List<ClientWebSocket> _webSockets = new();
@@ -46,8 +47,6 @@ public sealed class OobaboogaCompletionTests : IDisposable
             return toReturn;
         };
     }
-
-    private const string Input = " My name is";
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task OobaboogaLocalTextCompletionAsync()

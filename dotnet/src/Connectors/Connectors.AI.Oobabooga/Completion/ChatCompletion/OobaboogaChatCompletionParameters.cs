@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatComple
 /// <summary>
 /// Settings to perform oobabooga chat completion request.
 /// </summary>
-public class ChatCompletionOobaboogaSettings : CompletionOobaboogaSettings
+public class OobaboogaChatCompletionParameters : OobaboogaCompletionParameters
 {
     /// <summary>
     /// The mode of chat completion. Valid options: 'chat', 'chat-instruct', 'instruct'.
@@ -70,20 +70,20 @@ public class ChatCompletionOobaboogaSettings : CompletionOobaboogaSettings
     public string ContextInstruct { get; set; } = "";
 
     /// <summary>
-    /// Imports the settings from the given <see cref="ChatCompletionOobaboogaSettings"/> object.
+    /// Imports the settings from the given <see cref="OobaboogaChatCompletionParameters"/> object.
     /// </summary>
-    public void Apply(ChatCompletionOobaboogaSettings settings)
+    public void Apply(OobaboogaChatCompletionParameters parameters)
     {
-        base.Apply(settings);
-        this.ChatInstructCommand = settings.ChatInstructCommand;
-        this.Character = settings.Character;
-        this.ChatGenerationAttempts = settings.ChatGenerationAttempts;
-        this.ContextInstruct = settings.ContextInstruct;
-        this.Continue = settings.Continue;
-        this.InstructionTemplate = settings.InstructionTemplate;
-        this.Mode = settings.Mode;
-        this.Regenerate = settings.Regenerate;
-        this.StopAtNewline = settings.StopAtNewline;
-        this.YourName = settings.YourName;
+        base.Apply(parameters);
+        this.ChatInstructCommand = parameters.ChatInstructCommand;
+        this.Character = parameters.Character;
+        this.ChatGenerationAttempts = parameters.ChatGenerationAttempts;
+        this.ContextInstruct = parameters.ContextInstruct;
+        this.Continue = parameters.Continue;
+        this.InstructionTemplate = parameters.InstructionTemplate;
+        this.Mode = parameters.Mode;
+        this.Regenerate = parameters.Regenerate;
+        this.StopAtNewline = parameters.StopAtNewline;
+        this.YourName = parameters.YourName;
     }
 }

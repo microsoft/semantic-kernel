@@ -8,13 +8,8 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 /// <summary>
 /// HTTP schema to perform oobabooga completion request, without the user input.
 /// </summary>
-public class CompletionOobaboogaSettings
+public class OobaboogaCompletionParameters
 {
-    /// <summary>
-    /// Determines whether or not to use the overlapping SK settings for the completion request. Prompt is still provided by SK.
-    /// </summary>
-    public bool OverrideSKSettings { get; set; }
-
     /// <summary>
     /// The maximum number of tokens to generate, ignoring the number of tokens in the prompt.
     /// </summary>
@@ -196,41 +191,40 @@ public class CompletionOobaboogaSettings
     public List<string> StoppingStrings { get; set; } = new List<string>();
 
     /// <summary>
-    /// Imports the settings from the given <see cref="CompletionOobaboogaSettings"/> object.
+    /// Imports the settings from the given <see cref="OobaboogaCompletionSettings"/> object.
     /// </summary>
-    public void Apply(CompletionOobaboogaSettings settings)
+    public void Apply(OobaboogaCompletionParameters parameters)
     {
-        this.AddBosToken = settings.AddBosToken;
-        this.AutoMaxNewTokens = settings.AutoMaxNewTokens;
-        this.BanEosToken = settings.BanEosToken;
-        this.DoSample = settings.DoSample;
-        this.EarlyStopping = settings.EarlyStopping;
-        this.EpsilonCutoff = settings.EpsilonCutoff;
-        this.EtaCutoff = settings.EtaCutoff;
-        this.GuidanceScale = settings.GuidanceScale;
-        this.LengthPenalty = settings.LengthPenalty;
-        this.MaxNewTokens = settings.MaxNewTokens;
-        this.MinLength = settings.MinLength;
-        this.MirostatEta = settings.MirostatEta;
-        this.MirostatMode = settings.MirostatMode;
-        this.MirostatTau = settings.MirostatTau;
-        this.NegativePrompt = settings.NegativePrompt;
-        this.NoRepeatNgramSize = settings.NoRepeatNgramSize;
-        this.NumBeams = settings.NumBeams;
-        this.OverrideSKSettings = settings.OverrideSKSettings;
-        this.PenaltyAlpha = settings.PenaltyAlpha;
-        this.Preset = settings.Preset;
-        this.RepetitionPenalty = settings.RepetitionPenalty;
-        this.Seed = settings.Seed;
-        this.SkipSpecialTokens = settings.SkipSpecialTokens;
-        this.StoppingStrings = settings.StoppingStrings;
-        this.Temperature = settings.Temperature;
-        this.Tfs = settings.Tfs;
-        this.TopA = settings.TopA;
-        this.TopK = settings.TopK;
-        this.TopP = settings.TopP;
-        this.TruncationLength = settings.TruncationLength;
-        this.TypicalP = settings.TypicalP;
+        this.AddBosToken = parameters.AddBosToken;
+        this.AutoMaxNewTokens = parameters.AutoMaxNewTokens;
+        this.BanEosToken = parameters.BanEosToken;
+        this.DoSample = parameters.DoSample;
+        this.EarlyStopping = parameters.EarlyStopping;
+        this.EpsilonCutoff = parameters.EpsilonCutoff;
+        this.EtaCutoff = parameters.EtaCutoff;
+        this.GuidanceScale = parameters.GuidanceScale;
+        this.LengthPenalty = parameters.LengthPenalty;
+        this.MaxNewTokens = parameters.MaxNewTokens;
+        this.MinLength = parameters.MinLength;
+        this.MirostatEta = parameters.MirostatEta;
+        this.MirostatMode = parameters.MirostatMode;
+        this.MirostatTau = parameters.MirostatTau;
+        this.NegativePrompt = parameters.NegativePrompt;
+        this.NoRepeatNgramSize = parameters.NoRepeatNgramSize;
+        this.NumBeams = parameters.NumBeams;
+        this.PenaltyAlpha = parameters.PenaltyAlpha;
+        this.Preset = parameters.Preset;
+        this.RepetitionPenalty = parameters.RepetitionPenalty;
+        this.Seed = parameters.Seed;
+        this.SkipSpecialTokens = parameters.SkipSpecialTokens;
+        this.StoppingStrings = parameters.StoppingStrings;
+        this.Temperature = parameters.Temperature;
+        this.Tfs = parameters.Tfs;
+        this.TopA = parameters.TopA;
+        this.TopK = parameters.TopK;
+        this.TopP = parameters.TopP;
+        this.TruncationLength = parameters.TruncationLength;
+        this.TypicalP = parameters.TypicalP;
     }
 
     /// <summary>

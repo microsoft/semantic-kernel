@@ -128,7 +128,7 @@ public sealed class OobaboogaCompletionTests : IDisposable
         await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings()).ConfigureAwait(false);
 
         //Assert
-        var requestPayload = JsonSerializer.Deserialize<CompletionRequest>(this._messageHandlerStub.RequestContent);
+        var requestPayload = JsonSerializer.Deserialize<OobaboogaCompletionRequest>(this._messageHandlerStub.RequestContent);
         Assert.NotNull(requestPayload);
 
         Assert.Equal(CompletionText, requestPayload.Prompt);

@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 /// See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/> and subsequent links for additional information.
 /// </summary>
 [Serializable]
-public class CompletionRequest : CompletionOobaboogaSettings
+public class OobaboogaCompletionRequest : OobaboogaCompletionParameters
 {
     /// <summary>
     /// The prompt text to complete.
@@ -23,13 +23,13 @@ public class CompletionRequest : CompletionOobaboogaSettings
     /// <summary>
     /// Creates a new CompletionRequest with the given prompt, oobabooga settings and semantic-kernel settings.
     /// </summary>
-    public static CompletionRequest Create(string prompt, CompletionOobaboogaSettings settings, CompleteRequestSettings requestSettings)
+    public static OobaboogaCompletionRequest Create(string prompt, OobaboogaCompletionSettings<OobaboogaCompletionParameters> settings, CompleteRequestSettings requestSettings)
     {
-        var toReturn = new CompletionRequest()
+        var toReturn = new OobaboogaCompletionRequest()
         {
             Prompt = prompt
         };
-        toReturn.Apply(settings);
+        toReturn.Apply(settings.OobaboogaParameters);
         if (!settings.OverrideSKSettings)
         {
             toReturn.MaxNewTokens = requestSettings.MaxTokens;
