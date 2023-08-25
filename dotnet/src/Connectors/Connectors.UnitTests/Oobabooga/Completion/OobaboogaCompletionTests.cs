@@ -375,7 +375,7 @@ public sealed class OobaboogaCompletionTests : IDisposable
                 {
                     var history = new Microsoft.SemanticKernel.AI.ChatCompletion.ChatHistory();
                     history.AddUserMessage("What is your name?");
-                    return Task.FromResult(this.GetStreamingMessagesAsync(sut, history, cleanupToken));
+                    return Task.FromResult(this.GetStreamingMessagesAsync((OobaboogaChatCompletion)sut, history, cleanupToken));
                 }, cleanupToken.Token));
             }
             else
@@ -452,10 +452,10 @@ public sealed class OobaboogaCompletionTests : IDisposable
         }
     }
 
-    private async IAsyncEnumerable<string> GetStreamingMessagesAsync(OobaboogaCompletionBase sut, ChatHistory history, CancellationTokenSource cleanupToken)
+    private async IAsyncEnumerable<string> GetStreamingMessagesAsync(OobaboogaChatCompletion sut, ChatHistory history, CancellationTokenSource cleanupToken)
     {
         IAsyncEnumerable<IChatStreamingResult> tempResponse;
-        tempResponse = ((OobaboogaChatCompletion)sut).GetStreamingChatCompletionsAsync(history, new ChatRequestSettings()
+        tempResponse = sut.GetStreamingChatCompletionsAsync(history, new ChatRequestSettings()
         {
             Temperature = 0.01,
             MaxTokens = 7,

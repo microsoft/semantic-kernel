@@ -85,7 +85,7 @@ public class OobaboogaTextCompletion : OobaboogaCompletionBase<string, CompleteR
         requestSettings ??= new CompleteRequestSettings();
 
         // Prepare the request using the provided parameters.
-        var toReturn = OobaboogaCompletionRequest.Create(input, this.OobaboogaSettings, requestSettings);
+        var toReturn = OobaboogaCompletionRequest.Create(input, (OobaboogaCompletionSettings<OobaboogaCompletionParameters>)this.OobaboogaSettings, requestSettings);
         return toReturn;
     }
 

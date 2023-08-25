@@ -25,7 +25,7 @@ public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings
 {
     private readonly UriBuilder _blockingUri;
     private readonly UriBuilder _streamingUri;
-    private protected readonly OobaboogaCompletionSettings<TOobaboogaParameters> OobaboogaSettings;
+    
 
     protected OobaboogaCompletionBase(Uri endpoint,
         string blockingPath,
@@ -39,10 +39,10 @@ public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings
         CancellationToken? webSocketsCleanUpCancellationToken = null,
         int keepAliveWebSocketsDuration = 100,
         Func<ClientWebSocket>? webSocketFactory = null,
-        ILogger? logger = null) : base(endpoint, blockingPort, streamingPort, concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
+        ILogger? logger = null) : base(oobaboogaSettings ?? new(), concurrentSemaphore, httpClient, useWebSocketsPooling, webSocketsCleanUpCancellationToken, keepAliveWebSocketsDuration, webSocketFactory, logger)
     {
         Verify.NotNull(endpoint);
-        this.OobaboogaSettings = oobaboogaSettings ?? new();
+        
 
         this._blockingUri = new UriBuilder(endpoint)
         {
@@ -166,6 +166,11 @@ public abstract class OobaboogaCompletionBase<TCompletionInput, TRequestSettings
 public abstract class OobaboogaCompletionBase
 {
     private protected readonly HttpClient HttpClient;
+    private readonly ILogger? _logger;
+
+    private protected readonly OobaboogaCompletionSettings OobaboogaSettings;
+
+
     private protected readonly Func<ClientWebSocket> WebSocketFactory;
     private protected readonly bool UseWebSocketsPooling;
     private readonly int _maxNbConcurrentWebSockets;
@@ -173,7 +178,7 @@ public abstract class OobaboogaCompletionBase
     private readonly ConcurrentBag<bool>? _activeConnections;
     internal readonly ConcurrentBag<ClientWebSocket> WebSocketPool = new();
     private readonly int _keepAliveWebSocketsDuration;
-    private readonly ILogger? _logger;
+
     private long _lastCallTicks = long.MaxValue;
 
     /// <summary>
@@ -194,9 +199,7 @@ public abstract class OobaboogaCompletionBase
     /// <param name="keepAliveWebSocketsDuration">When pooling is enabled, pooled websockets are flushed on a regular basis when no more connections are made. This is the time to keep them in pool before flushing</param>
     /// <param name="webSocketFactory">The WebSocket factory used for making streaming API requests. Note that only when pooling is enabled will websocket be recycled and reused for the specified duration. Otherwise, a new websocket is created for each call and closed and disposed afterwards, to prevent data corruption from concurrent calls.</param>
     /// <param name="logger">Application logger</param>
-    protected OobaboogaCompletionBase(Uri endpoint,
-        int blockingPort = 5000,
-        int streamingPort = 5005,
+    protected OobaboogaCompletionBase(OobaboogaCompletionSettings oobaboogaSettings /* = default*/,
         SemaphoreSlim? concurrentSemaphore = null,
         HttpClient? httpClient = null,
         bool useWebSocketsPooling = true,
@@ -205,6 +208,9 @@ public abstract class OobaboogaCompletionBase
         Func<ClientWebSocket>? webSocketFactory = null,
         ILogger? logger = null)
     {
+
+        this.OobaboogaSettings = oobaboogaSettings;
+
         this.HttpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this.UseWebSocketsPooling = useWebSocketsPooling;
         this._keepAliveWebSocketsDuration = keepAliveWebSocketsDuration;

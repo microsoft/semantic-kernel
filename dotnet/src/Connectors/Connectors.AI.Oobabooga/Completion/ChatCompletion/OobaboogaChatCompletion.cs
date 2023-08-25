@@ -113,14 +113,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistor
 
     #region private ================================================================================
 
-    private OobaboogaChatCompletionRequest CreateOobaboogaChatRequest(ChatHistory chat, ChatRequestSettings? requestSettings)
-    {
-        requestSettings ??= new ChatRequestSettings();
-
-        var completionRequest = OobaboogaChatCompletionRequest.Create(chat, this.OobaboogaSettings, requestSettings);
-        return completionRequest;
-    }
-
+   
     protected override CompletionStreamingResponseBase? GetResponseObject(string messageText)
     {
         return Json.Deserialize<ChatCompletionStreamingResponse>(messageText);
@@ -178,7 +171,7 @@ public sealed class OobaboogaChatCompletion : OobaboogaCompletionBase<ChatHistor
     {
         requestSettings ??= new ChatRequestSettings();
 
-        var completionRequest = OobaboogaChatCompletionRequest.Create(input, this.OobaboogaSettings, requestSettings);
+        var completionRequest = OobaboogaChatCompletionRequest.Create(input, (OobaboogaCompletionSettings<OobaboogaChatCompletionParameters>)this.OobaboogaSettings, requestSettings);
         return completionRequest;
     }
 }
