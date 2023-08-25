@@ -73,7 +73,6 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         {
             this.AddDefaultValues(context.Variables);
             renderedPrompt = await this.RenderPromptTemplateAsync(context, cancellationToken).ConfigureAwait(false);
-            context.InternalVariables.Set(RenderedPromptKey, renderedPrompt);
         }
 
         return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, renderedPrompt, cancellationToken).ConfigureAwait(false);
