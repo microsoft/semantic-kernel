@@ -229,7 +229,7 @@ public sealed class Plan : IPlan
         var context = new SKContext(
             variables,
             kernel.Skills,
-            kernel.Logger);
+            kernel.LoggerFactory);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -251,7 +251,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Skills, context.Logger);
+            var functionContext = new SKContext(functionVariables, context.Skills, context.LoggerFactory);
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
@@ -268,8 +268,14 @@ public sealed class Plan : IPlan
             // Update Plan Result in State with matching outputs (if any)
             if (this.Outputs.Intersect(step.Outputs).Any())
             {
-                this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult);
-                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult?.Trim(), resultValue));
+                if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
+                {
+                    this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
+                }
+                else
+                {
+                    this.State.Set(DefaultResultKey, resultValue);
+                }
             }
 
             // Update state with outputs (if any)
@@ -311,7 +317,7 @@ public sealed class Plan : IPlan
         {
             AddVariablesToContext(this.State, context);
             var result = await this.Function
-                .WithInstrumentation(context.Logger)
+                .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, settings, cancellationToken)
                 .ConfigureAwait(false);
 

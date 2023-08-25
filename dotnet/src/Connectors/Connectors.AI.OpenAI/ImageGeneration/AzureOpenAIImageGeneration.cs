@@ -56,10 +56,10 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
-    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILogger? logger = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, logger)
+    public AzureOpenAIImageGeneration(string endpoint, string apiKey, HttpClient? httpClient = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, loggerFactory)
     {
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.NotNullOrWhiteSpace(apiKey);
@@ -77,19 +77,17 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     /// <param name="apiKey">Azure OpenAI API key, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="endpoint">Azure OpenAI deployment URL, see https://learn.microsoft.com/azure/cognitive-services/openai/quickstart</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
     /// <param name="maxRetryCount"> Maximum number of attempts to retrieve the image generation operation result.</param>
     /// <param name="apiVersion">Azure OpenAI Endpoint ApiVersion</param>
-    public AzureOpenAIImageGeneration(string apiKey, HttpClient httpClient, string? endpoint = null, ILogger? logger = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, logger)
+    public AzureOpenAIImageGeneration(string apiKey, HttpClient httpClient, string? endpoint = null, ILoggerFactory? loggerFactory = null, int maxRetryCount = 5, string apiVersion = "2023-06-01-preview") : base(httpClient, loggerFactory)
     {
         Verify.NotNull(httpClient);
         Verify.NotNullOrWhiteSpace(apiKey);
 
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
         endpoint = !string.IsNullOrEmpty(endpoint) ? endpoint! : httpClient.BaseAddress!.AbsoluteUri;
@@ -148,7 +146,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 
         if (result == null || string.IsNullOrWhiteSpace(result.Id))
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response not contains result");
+            throw new SKException("Response not contains result");
         }
 
         return result.Id;
@@ -171,7 +169,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             {
                 if (this._maxRetryCount == retryCount)
                 {
-                    throw new AIException(AIException.ErrorCodes.RequestTimeout, "Reached maximum retry attempts");
+                    throw new SKException("Reached maximum retry attempts");
                 }
 
                 using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
@@ -196,7 +194,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
                 retryCount++;
             }
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not SKException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

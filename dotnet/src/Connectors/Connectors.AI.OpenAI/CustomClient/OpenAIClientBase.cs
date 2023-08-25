@@ -26,11 +26,11 @@ public abstract class OpenAIClientBase
     /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
-    /// <param name="logger">The ILogger used for logging. If null, a NullLogger instance will be used.</param>
-    private protected OpenAIClientBase(HttpClient? httpClient, ILogger? logger = null)
+    /// <param name="loggerFactory">The ILoggerFactory used to create a logger for logging. If null, no logging will be performed.</param>
+    private protected OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
     }
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
@@ -55,9 +55,7 @@ public abstract class OpenAIClientBase
         var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         if (result.Embeddings is not { Count: >= 1 })
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidResponseContent,
-                "Embeddings not found");
+            throw new SKException("Embeddings not found");
         }
 
         return result.Embeddings.Select(e => e.Values).ToList();
@@ -120,7 +118,7 @@ public abstract class OpenAIClientBase
             T result = this.JsonDeserialize<T>(responseJson);
             return result;
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not SKException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
@@ -133,7 +131,7 @@ public abstract class OpenAIClientBase
         var result = Json.Deserialize<T>(responseJson);
         if (result is null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
+            throw new SKException("Response JSON parse error");
         }
 
         return result;
@@ -231,7 +229,7 @@ public abstract class OpenAIClientBase
                         errorDetail);
             }
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not SKException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

@@ -199,13 +199,13 @@ async def test_invoke_multi_step_plan_async_with_variables():
     # setup context for step 1
     context1 = kernel.create_new_context()
     context1["amount"] = "10"
-    new_step = Plan(name="test", function=test_function, parameters=context1._variables)
+    new_step = Plan(name="test", function=test_function, parameters=context1.variables)
 
     # setup context for step 2
     context2 = kernel.create_new_context()
     context2["amount"] = "5"
     new_step2 = Plan(
-        name="test", function=test_function2, parameters=context2._variables
+        name="test", function=test_function2, parameters=context2.variables
     )
 
     plan.add_steps([new_step, new_step2])

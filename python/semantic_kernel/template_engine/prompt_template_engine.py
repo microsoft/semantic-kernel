@@ -1,18 +1,18 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from semantic_kernel.orchestration.context_variables import ContextVariables
-from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.template_engine.blocks.block import Block
 from semantic_kernel.template_engine.blocks.block_types import BlockTypes
-from semantic_kernel.template_engine.blocks.text_block import TextBlock
-from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
 from semantic_kernel.template_engine.protocols.text_renderer import TextRenderer
 from semantic_kernel.template_engine.template_tokenizer import TemplateTokenizer
 from semantic_kernel.utils.null_logger import NullLogger
+
+if TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 
 class PromptTemplateEngine(PydanticField):
@@ -44,7 +44,7 @@ class PromptTemplateEngine(PydanticField):
 
         return blocks
 
-    async def render_async(self, template_text: str, context: SKContext) -> str:
+    async def render_async(self, template_text: str, context: "SKContext") -> str:
         """
         Given a prompt template, replace the variables with their values
         and execute the functions replacing their reference with the
@@ -58,7 +58,9 @@ class PromptTemplateEngine(PydanticField):
         blocks = self.extract_blocks(template_text)
         return await self.render_blocks_async(blocks, context)
 
-    async def render_blocks_async(self, blocks: List[Block], context: SKContext) -> str:
+    async def render_blocks_async(
+        self, blocks: List[Block], context: "SKContext"
+    ) -> str:
         """
         Given a list of blocks render each block and compose the final result.
 
@@ -66,6 +68,8 @@ class PromptTemplateEngine(PydanticField):
         :param context: Access into the current kernel execution context
         :return: The prompt template ready to be used for an AI request
         """
+        from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
+
         self._logger.debug(f"Rendering list of {len(blocks)} blocks")
         rendered_blocks = []
         for block in blocks:
@@ -96,6 +100,8 @@ class PromptTemplateEngine(PydanticField):
         :return: An updated list of blocks where Variable Blocks have rendered to
             Text Blocks
         """
+        from semantic_kernel.template_engine.blocks.text_block import TextBlock
+
         self._logger.debug("Rendering variables")
 
         rendered_blocks = []
@@ -112,7 +118,7 @@ class PromptTemplateEngine(PydanticField):
         return rendered_blocks
 
     async def render_code_async(
-        self, blocks: List[Block], execution_context: SKContext
+        self, blocks: List[Block], execution_context: "SKContext"
     ) -> List[Block]:
         """
         Given a list of blocks, render the Code Blocks, executing the
@@ -123,6 +129,9 @@ class PromptTemplateEngine(PydanticField):
         :return: An updated list of blocks where Code Blocks have rendered to
             Text Blocks
         """
+        from semantic_kernel.template_engine.blocks.text_block import TextBlock
+        from semantic_kernel.template_engine.protocols.code_renderer import CodeRenderer
+
         self._logger.debug("Rendering code")
 
         rendered_blocks = []

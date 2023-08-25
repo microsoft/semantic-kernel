@@ -24,7 +24,7 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.Logger).Returns(new Mock<ILogger>().Object);
+        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var input = new List<(string name, string skillName, string description, bool isSemantic)>()
         {
@@ -64,13 +64,13 @@ public sealed class SequentialPlannerTests
         var context = new SKContext(
             new ContextVariables(),
             skills.Object,
-            new Mock<ILogger>().Object
+            new Mock<ILoggerFactory>().Object
         );
 
         var returnContext = new SKContext(
             new ContextVariables(),
             skills.Object,
-            new Mock<ILogger>().Object
+            new Mock<ILoggerFactory>().Object
         );
         var planString =
             @"
@@ -157,13 +157,13 @@ public sealed class SequentialPlannerTests
         var returnContext = new SKContext(
             new ContextVariables(planString),
             skills.Object,
-            new Mock<ILogger>().Object
+            new Mock<ILoggerFactory>().Object
         );
 
         var context = new SKContext(
             new ContextVariables(),
             skills.Object,
-            new Mock<ILogger>().Object
+            new Mock<ILoggerFactory>().Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
