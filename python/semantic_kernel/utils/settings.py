@@ -31,7 +31,7 @@ def azure_openai_settings_from_dot_env(
 
     Arguments:
         include_deployment {bool} -- Whether to include the deployment name in the return value
-        include_api_version {bool} -- Whether to include the API version in the return value,   
+        include_api_version {bool} -- Whether to include the API version in the return value,
             when set to True, this will also make the output a Tuple[str, str, str, str].
 
     Returns:
