@@ -12,8 +12,3 @@
 # directory at the root of the repository and any of its
 # subdirectories.
 /java/ @microsoft/octo-semantickernel-pr-java
-
-# @microsoft/octo-semantickernel-pr-apps owns any files in the samples
-# directory at the root of the repository and any of its
-# subdirectories.
-/samples/ @microsoft/octo-semantickernel-pr-apps
