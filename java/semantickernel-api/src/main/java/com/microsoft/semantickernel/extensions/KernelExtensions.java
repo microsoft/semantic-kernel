@@ -78,9 +78,9 @@ public class KernelExtensions {
 
                 PromptTemplate promptTemplate =
                         SKBuilders.promptTemplate()
-                                .setPromptTemplate(template)
-                                .setPromptTemplateConfig(config)
-                                .setPromptTemplateEngine(promptTemplateEngine)
+                                .withPromptTemplate(template)
+                                .withPromptTemplateConfig(config)
+                                .withPromptTemplateEngine(promptTemplateEngine)
                                 .build();
 
                 skills.put(dir.getName(), new SemanticFunctionConfig(config, promptTemplate));
@@ -112,9 +112,9 @@ public class KernelExtensions {
 
         PromptTemplate promptTemplate =
                 SKBuilders.promptTemplate()
-                        .setPromptTemplate(template)
-                        .setPromptTemplateConfig(config)
-                        .setPromptTemplateEngine(promptTemplateEngine)
+                        .withPromptTemplate(template)
+                        .withPromptTemplateConfig(config)
+                        .withPromptTemplateEngine(promptTemplateEngine)
                         .build();
 
         skills.put(functionName, new SemanticFunctionConfig(config, promptTemplate));

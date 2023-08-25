@@ -29,9 +29,9 @@ public class AbstractKernelTest {
         return SKBuilders.kernel()
                 .withDefaultAIService(textCompletion)
                 .withDefaultAIService(
-                        SKBuilders.textEmbeddingGenerationService()
+                        SKBuilders.textEmbeddingGeneration()
                                 .withOpenAIClient(openAIClient)
-                                .setModelId(model)
+                                .withModelId(model)
                                 .build())
                 .withMemoryStorage(new VolatileMemoryStore())
                 .build();

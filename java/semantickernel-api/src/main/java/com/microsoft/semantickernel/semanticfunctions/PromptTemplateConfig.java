@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import com.microsoft.semantickernel.builders.Buildable;
+import com.microsoft.semantickernel.builders.BuildersSingleton;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import reactor.util.annotation.Nullable;
 
 /** Prompt template configuration */
@@ -22,8 +25,9 @@ public class PromptTemplateConfig {
         return completionConfig;
     }
 
+
     /** Builder for CompletionConfig */
-    public static class CompletionConfigBuilder {
+    public static class CompletionConfigBuilder implements SemanticKernelBuilder<CompletionConfig> {
 
         private CompletionConfig completionConfig;
 
@@ -123,7 +127,7 @@ public class PromptTemplateConfig {
     }
 
     /** Completion configuration parameters */
-    public static class CompletionConfig {
+    public static class CompletionConfig implements Buildable {
         /*
         /// <summary>
         /// Sampling temperature to use, between 0 and 2. Higher values will make the output more random.
@@ -277,6 +281,10 @@ public class PromptTemplateConfig {
          */
         public String getUser() {
             return user;
+        }
+
+        public SemanticKernelBuilder<CompletionConfig> builder() {
+          return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
         }
     }
 

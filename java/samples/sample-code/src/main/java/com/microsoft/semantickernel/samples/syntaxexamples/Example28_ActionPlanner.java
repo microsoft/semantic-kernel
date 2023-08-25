@@ -15,8 +15,8 @@ public class Example28_ActionPlanner {
         System.out.println("======== Action Planner ========");
 
         var kernel = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.textCompletionService()
-                        .setModelId("text-davinci-002")
+                .withDefaultAIService(SKBuilders.textCompletion()
+                        .withModelId("text-davinci-002")
                         .withOpenAIClient(client)
                         .build())
                 .build();

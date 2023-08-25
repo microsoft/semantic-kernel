@@ -74,19 +74,19 @@ public class DefaultPromptTemplate implements PromptTemplate {
         @Nullable private PromptTemplateEngine promptTemplateEngine = null;
 
         @Override
-        public PromptTemplate.Builder setPromptTemplate(String promptTemplate) {
+        public PromptTemplate.Builder withPromptTemplate(String promptTemplate) {
             this.promptTemplate = promptTemplate;
             return this;
         }
 
         @Override
-        public PromptTemplate.Builder setPromptTemplateConfig(PromptTemplateConfig config) {
+        public PromptTemplate.Builder withPromptTemplateConfig(PromptTemplateConfig config) {
             this.config = config;
             return this;
         }
 
         @Override
-        public PromptTemplate.Builder setPromptTemplateEngine(
+        public PromptTemplate.Builder withPromptTemplateEngine(
                 PromptTemplateEngine promptTemplateEngine) {
             this.promptTemplateEngine = promptTemplateEngine;
             return this;

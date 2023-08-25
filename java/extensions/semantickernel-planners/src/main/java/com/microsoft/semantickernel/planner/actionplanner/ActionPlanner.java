@@ -69,16 +69,16 @@ public class ActionPlanner {
         this.plannerFunction =
                 SKBuilders.completionFunctions()
                         .withKernel(kernel)
-                        .setPromptTemplate(promptTemplate)
-                        .setSkillName(SkillName)
-                        .setCompletionConfig(
+                        .withPromptTemplate(promptTemplate)
+                        .withSkillName(SkillName)
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(0.0, 0.0, 0.0, 0.0, 1024))
                         .build();
 
         kernel.importSkill(this, SkillName);
 
         this.kernel = kernel;
-        this.context = SKBuilders.context().setSkills(kernel.getSkills()).build();
+        this.context = SKBuilders.context().withSkills(kernel.getSkills()).build();
     }
 
     public static String read(String file) {

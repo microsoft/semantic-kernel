@@ -34,8 +34,8 @@ public class SequentialPlanner_AnswerQuestion {
     public static void main(String[] args) throws IOException, ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
         var kernel = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.textCompletionService()
-                        .setModelId("text-davinci-003")
+                .withDefaultAIService(SKBuilders.textCompletion()
+                        .withModelId("text-davinci-003")
                         .withOpenAIClient(client)
                         .build())
                 .build();

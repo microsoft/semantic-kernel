@@ -22,8 +22,8 @@ public class Example06_TemplateLanguage {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
         Kernel kernel = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.textCompletionService()
-                        .setModelId("text-davinci-003")
+                .withDefaultAIService(SKBuilders.textCompletion()
+                        .withModelId("text-davinci-003")
                         .withOpenAIClient(client)
                         .build())
                 .build();
@@ -47,14 +47,14 @@ public class Example06_TemplateLanguage {
         System.out.println("--- Rendered Prompt");
 
         var promptRenderer = SKBuilders.promptTemplate()
-                .setPromptTemplateConfig(new PromptTemplateConfig())
-                .setPromptTemplate(functionDefinition)
-                .setPromptTemplateEngine(kernel.getPromptTemplateEngine())
+                .withPromptTemplateConfig(new PromptTemplateConfig())
+                .withPromptTemplate(functionDefinition)
+                .withPromptTemplateEngine(kernel.getPromptTemplateEngine())
                 .build();
 
         SKContext skContext = SKBuilders
                 .context()
-                .setSkills(kernel.getSkills())
+                .withSkills(kernel.getSkills())
                 .build();
 
         var renderedPrompt = promptRenderer.renderAsync(skContext);
@@ -63,8 +63,8 @@ public class Example06_TemplateLanguage {
         // Run the prompt / semantic function
         var kindOfDay = kernel
                 .getSemanticFunctionBuilder()
-                .setPromptTemplate(functionDefinition)
-                .setCompletionConfig(
+                .withPromptTemplate(functionDefinition)
+                .withCompletionConfig(
                         new PromptTemplateConfig.CompletionConfig(
                                 0, 0, 0, 0, 256))
                 .build();

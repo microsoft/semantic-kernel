@@ -51,13 +51,13 @@ public class SequentialPlanner {
         this.functionFlowFunction =
                 SKBuilders.completionFunctions()
                         .withKernel(kernel)
-                        .setPromptTemplate(promptTemplate)
-                        .setSkillName(RestrictedSkillName)
-                        .setDescription(
+                        .withPromptTemplate(promptTemplate)
+                        .withSkillName(RestrictedSkillName)
+                        .withDescription(
                                 "Given a request or command or goal generate a step by step plan to"
                                     + " fulfill the request using functions. This ability is also"
                                     + " known as decision making and function flow")
-                        .setCompletionConfig(
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(
                                         0.0, 0.0, 0.0, 0.0, this.config.getMaxTokens()))
                         .build();

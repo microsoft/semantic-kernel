@@ -19,14 +19,10 @@ public interface EmbeddingGeneration<TValue> extends AIService, Buildable {
      */
     Mono<List<Embedding>> generateEmbeddingsAsync(List<TValue> data);
 
-    static Builder builder() {
-        return BuildersSingleton.INST.getInstance(Builder.class);
-    }
+    interface Builder<T, E extends EmbeddingGeneration<T>> extends SemanticKernelBuilder<E> {
 
-    interface Builder<TValue> extends SemanticKernelBuilder<EmbeddingGeneration<TValue>> {
+        Builder<T, E> withOpenAIClient(OpenAIAsyncClient client);
 
-        Builder<TValue> withOpenAIClient(OpenAIAsyncClient client);
-
-        Builder<TValue> setModelId(String modelId);
+        Builder<T, E> withModelId(String modelId);
     }
 }

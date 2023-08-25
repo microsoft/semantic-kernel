@@ -34,8 +34,8 @@ public class Example05UsingThePlannerTest {
         Kernel kernel =
                 SKBuilders.kernel()
                         .withDefaultAIService(
-                                SKBuilders.textCompletionService()
-                                        .setModelId("text-davinci-003")
+                                SKBuilders.textCompletion()
+                                        .withModelId("text-davinci-003")
                                         .withOpenAIClient(client)
                                         .build())
                         .build();

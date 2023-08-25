@@ -27,7 +27,7 @@ public class Example33_StreamingChat {
 
         ChatCompletion chatCompletion = SKBuilders.chatCompletion()
                 .withOpenAIClient(client)
-                .setModelId("gpt-35-turbo")
+                .withModelId("gpt-35-turbo")
                 .build();
 
         System.out.println("Chat content:");

@@ -48,9 +48,9 @@ public class ContextVariableFunctionTest extends AbstractKernelTest {
 
         CompletionSKFunction chat =
                 kernel.getSemanticFunctionBuilder()
-                        .setPromptTemplate(prompt)
-                        .setFunctionName("ChatBot")
-                        .setCompletionConfig(
+                        .withPromptTemplate(prompt)
+                        .withFunctionName("ChatBot")
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000))
                         .build();
 
