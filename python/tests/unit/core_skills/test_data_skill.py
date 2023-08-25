@@ -2,6 +2,7 @@
 
 from logging import Logger
 from typing import List
+from unittest.mock import AsyncMock, patch
 
 import pandas as pd
 import pytest
@@ -11,7 +12,6 @@ from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import
     AzureChatCompletion,
 )
 from semantic_kernel.core_skills.data_skill import DataSkill
-from unittest.mock import AsyncMock, patch
 
 
 @pytest.fixture
@@ -70,43 +70,34 @@ def test_get_df_data(chat_service, dataframe):
     prompt = skill.get_df_data()
     assert isinstance(prompt, str)
 
+
 @pytest.mark.asyncio
 async def test_query_async(chat_service):
     mock_skill = AsyncMock()
-    with patch(
-        "semantic_kernel.core_skills.data_skill.DataSkill",
-        new=mock_skill
-    ):
-        service=chat_service
+    with patch("semantic_kernel.core_skills.data_skill.DataSkill", new=mock_skill):
+        service = chat_service
         data_skill = DataSkill(service)
-        prompt="hello world"
-        local_vars = {"df":"df"}
+        prompt = "hello world"
+        local_vars = {"df": "df"}
 
         try:
             await data_skill.query_async(prompt)
-            mock_skill._execute.assert_called_once_with(
-                local_vars, prompt
-            )
+            mock_skill._execute.assert_called_once_with(local_vars, prompt)
         except AssertionError:
             pass
+
 
 @pytest.mark.asyncio
 async def test_transform_async(chat_service):
     mock_skill = AsyncMock()
-    with patch(
-        "semantic_kernel.core_skills.data_skill.DataSkill",
-        new=mock_skill
-    ):
-        service=chat_service
+    with patch("semantic_kernel.core_skills.data_skill.DataSkill", new=mock_skill):
+        service = chat_service
         data_skill = DataSkill(service)
-        prompt="hello world"
-        local_vars = {"df":"df"}
+        prompt = "hello world"
+        local_vars = {"df": "df"}
 
         try:
             await data_skill.transform_async(prompt)
-            mock_skill._execute.assert_called_once_with(
-                local_vars, prompt
-            )
+            mock_skill._execute.assert_called_once_with(local_vars, prompt)
         except AssertionError:
             pass
-
