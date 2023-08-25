@@ -92,7 +92,8 @@ BEGIN SUMMARY:
 
         try
         {
-            var repositoryUri = Regex.Replace(input.Trim(s_trimChars), "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
+            var originalUri = input.Trim(s_trimChars);
+            var repositoryUri = Regex.Replace(originalUri, "github.com", "api.github.com/repos", RegexOptions.IgnoreCase);
             var repoBundle = $"{repositoryUri}/zipball/{repositoryBranch}";
 
             this._logger.LogDebug("Downloading {RepoBundle}", repoBundle);
@@ -111,9 +112,9 @@ BEGIN SUMMARY:
 
             ZipFile.ExtractToDirectory(filePath, directoryPath);
 
-            await this.SummarizeCodeDirectoryAsync(directoryPath, searchPattern, repositoryUri, repositoryBranch, cancellationToken);
+            await this.SummarizeCodeDirectoryAsync(directoryPath, searchPattern, originalUri, repositoryBranch, cancellationToken);
 
-            return $"{repositoryUri}-{repositoryBranch}";
+            return $"{originalUri}-{repositoryBranch}";
         }
         finally
         {
