@@ -29,6 +29,7 @@ jobs:
           filters: |
             python:
               - 'python/**'
+              - 'samples/skills/**'
       # run only if 'python' files were changed
       - name: python tests
         if: steps.filter.outputs.python == 'true'
