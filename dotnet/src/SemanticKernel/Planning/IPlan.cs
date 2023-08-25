@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Interface for standard Semantic Kernel callable plan.
 /// </summary>
 public interface IPlan : ISKFunction,
-    ISKFunctionHandles<FunctionInvokingEventArgs>,
-    ISKFunctionHandles<FunctionInvokedEventArgs>
+    ISKFunctionEventSupport<FunctionInvokingEventArgs>,
+    ISKFunctionEventSupport<FunctionInvokedEventArgs>
 {
 }

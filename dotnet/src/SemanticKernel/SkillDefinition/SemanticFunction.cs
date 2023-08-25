@@ -103,7 +103,7 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public override async Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
+    public override async Task<FunctionInvokingEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
     {
         this.AddDefaultValues(context.Variables);
         var renderedPrompt = await this.RenderPromptTemplateAsync(context, CancellationToken.None).ConfigureAwait(false);
@@ -113,7 +113,7 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public override Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
+    public override Task<FunctionInvokedEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
     {
         return Task.FromResult<FunctionInvokedEventArgs>(new SemanticFunctionInvokedEventArgs(this.Describe(), context));
     }

@@ -13,8 +13,8 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 internal abstract class FunctionBase : ISKFunction,
-    ISKFunctionHandles<FunctionInvokingEventArgs>,
-    ISKFunctionHandles<FunctionInvokedEventArgs>
+    ISKFunctionEventSupport<FunctionInvokingEventArgs>,
+    ISKFunctionEventSupport<FunctionInvokedEventArgs>
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -92,13 +92,13 @@ internal abstract class FunctionBase : ISKFunction,
     public abstract ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
 
     /// <inheritdoc/>
-    public virtual Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
+    public virtual Task<FunctionInvokedEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
     {
         return Task.FromResult(new FunctionInvokedEventArgs(this.Describe(), context));
     }
 
     /// <inheritdoc/>
-    public virtual Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
+    public virtual Task<FunctionInvokingEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
     {
         return Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context));
     }

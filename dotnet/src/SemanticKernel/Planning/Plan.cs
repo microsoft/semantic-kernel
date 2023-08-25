@@ -362,7 +362,7 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs)
+    public Task<FunctionInvokingEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs)
     {
         return this.Function is null
             ? Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context))
@@ -370,7 +370,7 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs)
+    public Task<FunctionInvokedEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs)
     {
         return this.Function is null
             ? Task.FromResult(new FunctionInvokedEventArgs(this.Describe(), context))
@@ -403,7 +403,7 @@ public sealed class Plan : IPlan
     }
 
     /// <summary>
-    /// Generically handles and prepare event arguments for <see cref="ISKFunctionHandles{TEventArgs}"/> support.
+    /// Generically handles and prepare event arguments for <see cref="ISKFunctionEventSupport{TEventArgs}"/> support.
     /// </summary>
     /// <typeparam name="TEventArgs">EventArgs type</typeparam>
     /// <param name="context">Context to the event</param>
@@ -411,9 +411,9 @@ public sealed class Plan : IPlan
     /// <exception cref="NotSupportedException">Throws when the underlying step don't support event handling</exception>
     private Task<TEventArgs> InternalPrepareArgsAsync<TEventArgs>(SKContext context) where TEventArgs : SKEventArgs
     {
-        if (this.Function is ISKFunctionHandles<TEventArgs> supportedFunction)
+        if (this.Function is ISKFunctionEventSupport<TEventArgs> supportedFunction)
         {
-            return supportedFunction.PrepareArgsAsync(context, (TEventArgs?)null);
+            return supportedFunction.PrepareEventArgsAsync(context, (TEventArgs?)null);
         }
 
         throw new NotSupportedException($"The instrumented function \"{this.Function!.Name}\" does not supports and implements ISKFunctionHandles<{nameof(TEventArgs)}>");

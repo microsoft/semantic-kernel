@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// Indicates to Kernel that a ISKFunction can handle the given an event associated to the SKEventArg specialized type provided
 /// </summary>
 /// <typeparam name="TEventArgs">EventArgs support signature</typeparam>
-public interface ISKFunctionHandles<TEventArgs> where TEventArgs : SKEventArgs
+public interface ISKFunctionEventSupport<TEventArgs> where TEventArgs : SKEventArgs
 {
     /// <summary>
     /// Prepare the provided EventArguments type related to the ISKFunction event.
@@ -18,5 +18,5 @@ public interface ISKFunctionHandles<TEventArgs> where TEventArgs : SKEventArgs
     /// <param name="context">SKContext state</param>
     /// <param name="eventArgs">Source EventArgs</param>
     /// <returns>EventArguments that the handler caller will get</returns>
-    Task<TEventArgs> PrepareArgsAsync(SKContext context, TEventArgs? eventArgs = null);
+    Task<TEventArgs> PrepareEventArgsAsync(SKContext context, TEventArgs? eventArgs = null);
 }

@@ -334,9 +334,9 @@ public sealed class Kernel : IKernel, IDisposable
             return null;
         }
 
-        if (function is ISKFunctionHandles<TEventArgs> supportedFunction)
+        if (function is ISKFunctionEventSupport<TEventArgs> supportedFunction)
         {
-            var eventArgs = await supportedFunction.PrepareArgsAsync(context).ConfigureAwait(false);
+            var eventArgs = await supportedFunction.PrepareEventArgsAsync(context).ConfigureAwait(false);
             eventHandler.Invoke(this, eventArgs);
             return eventArgs;
         }

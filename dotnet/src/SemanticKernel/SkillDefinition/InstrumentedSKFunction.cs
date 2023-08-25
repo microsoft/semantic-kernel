@@ -17,8 +17,8 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// Standard Semantic Kernel callable function with instrumentation.
 /// </summary>
 public sealed class InstrumentedSKFunction : ISKFunction,
-    ISKFunctionHandles<FunctionInvokingEventArgs>,
-    ISKFunctionHandles<FunctionInvokedEventArgs>
+    ISKFunctionEventSupport<FunctionInvokingEventArgs>,
+    ISKFunctionEventSupport<FunctionInvokedEventArgs>
 {
     /// <inheritdoc/>
     public string Name => this._function.Name;
@@ -92,11 +92,11 @@ public sealed class InstrumentedSKFunction : ISKFunction,
         this._function.SetDefaultSkillCollection(skills);
 
     /// <inheritdoc/>
-    public Task<FunctionInvokingEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs) =>
+    public Task<FunctionInvokingEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs) =>
         this.InternalPrepareArgsAsync<FunctionInvokingEventArgs>(context);
 
     /// <inheritdoc/>
-    public Task<FunctionInvokedEventArgs> PrepareArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs) =>
+    public Task<FunctionInvokedEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs) =>
         this.InternalPrepareArgsAsync<FunctionInvokedEventArgs>(context);
 
     #region private ================================================================================
@@ -135,7 +135,7 @@ public sealed class InstrumentedSKFunction : ISKFunction,
     private Counter<int> _executionFailureCounter;
 
     /// <summary>
-    /// Generically handles and prepare event arguments for <see cref="ISKFunctionHandles{TEventArgs}"/> support.
+    /// Generically handles and prepare event arguments for <see cref="ISKFunctionEventSupport{TEventArgs}"/> support.
     /// </summary>
     /// <typeparam name="TEventArgs">EventArgs type</typeparam>
     /// <param name="context">Context to the event</param>
@@ -143,9 +143,9 @@ public sealed class InstrumentedSKFunction : ISKFunction,
     /// <exception cref="NotSupportedException">Throws when the underlying function don't support event handling</exception>
     private Task<TEventArgs> InternalPrepareArgsAsync<TEventArgs>(SKContext context) where TEventArgs : SKEventArgs
     {
-        if (this._function is ISKFunctionHandles<TEventArgs> supportedFunction)
+        if (this._function is ISKFunctionEventSupport<TEventArgs> supportedFunction)
         {
-            return supportedFunction.PrepareArgsAsync(context, (TEventArgs?)null);
+            return supportedFunction.PrepareEventArgsAsync(context, (TEventArgs?)null);
         }
 
         throw new NotSupportedException($"The instrumented function \"{this._function.Name}\" does not supports and implements ISKFunctionHandles<{nameof(TEventArgs)}>");
