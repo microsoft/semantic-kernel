@@ -1,16 +1,14 @@
+import asyncio
 import os
 
 import numpy as np
 import pytest
 
 import semantic_kernel as sk
-from semantic_kernel.memory.memory_record import MemoryRecord
-
 from semantic_kernel.connectors.memory.mongodb.mongodb_memory_store import (
     MongoDBMemoryStore,
 )
-
-import asyncio
+from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
     import pymongo  # noqa: F401
