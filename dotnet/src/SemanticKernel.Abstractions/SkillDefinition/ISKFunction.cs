@@ -81,14 +81,3 @@ public interface ISKFunction
     /// <returns>Self instance</returns>
     ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
 }
-
-public interface ISKFunctionHandles<TEventArgs> where TEventArgs : EventArgs
-{
-    /// <summary>
-    /// Prepare the provided EventArguments type related to the ISKFunction event.
-    /// </summary>
-    /// <param name="context">SKContext state</param>
-    /// <param name="eventArgs">Source EventArgs</param>
-    /// <returns>EventArguments that the handler caller will get</returns>
-    Task<TEventArgs> PrepareArgsAsync(SKContext context, TEventArgs? eventArgs = null);
-}

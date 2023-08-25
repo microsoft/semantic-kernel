@@ -207,13 +207,13 @@ public sealed class Kernel : IKernel, IDisposable
                 var functionInvokingArgs = await this.TriggerEvent<FunctionInvokingEventArgs>(this.FunctionInvoking, skFunction, context).ConfigureAwait(false);
                 if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
-                    this._logger.LogInformation("Execution was cancelled during function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
                     break;
                 }
 
                 if (functionInvokingArgs?.IsSkipRequested ?? false)
                 {
-                    this._logger.LogInformation("Execution was skipped during function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
                     continue;
                 }
 
@@ -221,7 +221,7 @@ public sealed class Kernel : IKernel, IDisposable
 
                 if (context.ErrorOccurred)
                 {
-                    this._logger.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
+                    this._logger.LogError("Function call fail in pipeline step {0}: {1}.{2}. Error: {3}",
                         pipelineStepCount, skFunction.SkillName, skFunction.Name, context.LastException?.Message);
                     return context;
                 }
@@ -229,7 +229,7 @@ public sealed class Kernel : IKernel, IDisposable
                 var functionInvokedArgs = await this.TriggerEvent<FunctionInvokedEventArgs>(this.FunctionInvoked, skFunction, context).ConfigureAwait(false);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
-                    this._logger.LogInformation("Execution was cancelled during function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
                     break;
                 }
             }
@@ -327,7 +327,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="function">Target invoking function</param>
     /// <param name="context">Context to pass to the invoking handlers</param>
     /// <returns>Returns the resulting EventArgs state after the event was triggered or null if there was no handler registered.</returns>
-    private async Task<TEventArgs?> TriggerEvent<TEventArgs>(EventHandler<TEventArgs>? eventHandler, ISKFunction function, SKContext context) where TEventArgs : EventArgs
+    private async Task<TEventArgs?> TriggerEvent<TEventArgs>(EventHandler<TEventArgs>? eventHandler, ISKFunction function, SKContext context) where TEventArgs : SKEventArgs
     {
         if (eventHandler is null)
         {

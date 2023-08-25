@@ -34,9 +34,11 @@ public static class Example56_FunctionEventHandlers
 
         await ChangingResultAsync();
 
-        await CancellingFunctionAsync();
+        await BeforeInvokeCancellationAsync();
 
-        await SkippingFunctionAsync();
+        await AfterInvokeCancellationAsync();
+
+        await SkippingFunctionsAsync();
     }
 
     private static async Task GetPromptAndUsageAsync()
@@ -138,9 +140,9 @@ public static class Example56_FunctionEventHandlers
         Console.WriteLine($"Function Result: {result}");
     }
 
-    private static async Task CancellingFunctionAsync()
+    private static async Task BeforeInvokeCancellationAsync()
     {
-        Console.WriteLine("\n======== Cancelling Pipeline Execution ========\n");
+        Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoking event ========\n");
 
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -177,7 +179,42 @@ public static class Example56_FunctionEventHandlers
         Console.WriteLine($"Function Invocation Times: {functionInvokedCount}");
     }
 
-    private static async Task SkippingFunctionAsync()
+    private static async Task AfterInvokeCancellationAsync()
+    {
+        Console.WriteLine("\n======== Cancelling Pipeline Execution - Invoked event ========\n");
+
+        IKernel kernel = new KernelBuilder()
+           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+           .WithOpenAITextCompletionService(
+               modelId: openAIModelId!,
+               apiKey: openAIApiKey!)
+           .Build();
+
+        int functionInvokingCount = 0;
+        int functionInvokedCount = 0;
+
+        var firstFunction = kernel.CreateSemanticFunction("Write a phrase with Invoke.", functionName: "InvokePhrase");
+        var secondFunction = kernel.CreateSemanticFunction("Write a phrase with Cancellation.", functionName: "CancellationPhrase");
+
+        // Adding new inline handler to count invoking events
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            functionInvokingCount++;
+        };
+
+        // Invoked will never be called twice (for the secondFunction) since Invoked from the first is cancelling.
+        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            functionInvokedCount++;
+            e.Cancel();
+        };
+
+        var result = await kernel.RunAsync(secondFunction);
+        Console.WriteLine($"Function Invoked Times: {functionInvokedCount}");
+        Console.WriteLine($"Function Invoking Times: {functionInvokingCount}");
+    }
+
+    private static async Task SkippingFunctionsAsync()
     {
         Console.WriteLine("\n======== Skip Function in the Pipeline ========\n");
 

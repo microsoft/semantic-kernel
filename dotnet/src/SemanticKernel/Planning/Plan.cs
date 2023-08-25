@@ -403,13 +403,13 @@ public sealed class Plan : IPlan
     }
 
     /// <summary>
-    /// Generically handles PrepareAgs logic for ISKFunctionHandles.
+    /// Generically handles and prepare event arguments for <see cref="ISKFunctionHandles{TEventArgs}"/> support.
     /// </summary>
     /// <typeparam name="TEventArgs">EventArgs type</typeparam>
     /// <param name="context">Context to the event</param>
     /// <returns>New instance of eventArgs</returns>
     /// <exception cref="NotSupportedException">Throws when the underlying step don't support event handling</exception>
-    private Task<TEventArgs> InternalPrepareArgsAsync<TEventArgs>(SKContext context) where TEventArgs : EventArgs
+    private Task<TEventArgs> InternalPrepareArgsAsync<TEventArgs>(SKContext context) where TEventArgs : SKEventArgs
     {
         if (this.Function is ISKFunctionHandles<TEventArgs> supportedFunction)
         {

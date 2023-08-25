@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -9,7 +8,7 @@ namespace Microsoft.SemanticKernel.Events;
 /// <summary>
 /// Event arguments available to the Kernel.FunctionInvoking event.
 /// </summary>
-public class FunctionInvokingEventArgs : CancelEventArgs
+public class FunctionInvokingEventArgs : SKCancelEventArgs
 {
     /// <summary>
     /// Indicates if the function execution should be skipped.
@@ -21,23 +20,9 @@ public class FunctionInvokingEventArgs : CancelEventArgs
     /// </summary>
     /// <param name="functionView">Function view details</param>
     /// <param name="context">Context related to the event</param>
-    public FunctionInvokingEventArgs(FunctionView functionView, SKContext context)
+    public FunctionInvokingEventArgs(FunctionView functionView, SKContext context) : base(functionView, context)
     {
-        Verify.NotNull(context);
-
-        this.FunctionView = functionView;
-        this.SKContext = context;
     }
-
-    /// <summary>
-    /// Function view details.
-    /// </summary>
-    public FunctionView FunctionView { get; }
-
-    /// <summary>
-    /// SKContext prior function execution.
-    /// </summary>
-    public SKContext SKContext { get; }
 
     /// <summary>
     /// Skip the current function invoking attempt.

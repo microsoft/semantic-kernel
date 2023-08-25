@@ -141,7 +141,7 @@ public sealed class InstrumentedSKFunction : ISKFunction,
     /// <param name="context">Context to the event</param>
     /// <returns>New instance of eventArgs</returns>
     /// <exception cref="NotSupportedException">Throws when the underlying function don't support event handling</exception>
-    private Task<TEventArgs> InternalPrepareArgsAsync<TEventArgs>(SKContext context) where TEventArgs : EventArgs
+    private Task<TEventArgs> InternalPrepareArgsAsync<TEventArgs>(SKContext context) where TEventArgs : SKEventArgs
     {
         if (this._function is ISKFunctionHandles<TEventArgs> supportedFunction)
         {
