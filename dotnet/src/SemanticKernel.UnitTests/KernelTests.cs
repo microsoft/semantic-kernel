@@ -210,8 +210,8 @@ public class KernelTests
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
 
         var invoked = 0;
@@ -252,6 +252,45 @@ public class KernelTests
 
         // Assert
         Assert.Equal(0, invoked);
+    }
+
+    [Fact]
+    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandler()
+    {
+        // Arrange
+        var sut = Kernel.Builder.Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var semanticFunction1 = sut.CreateSemanticFunction("Write one phrase about UnitTests", functionName: "SkipMe");
+        var semanticFunction2 = sut.CreateSemanticFunction("Write two phrases about UnitTests", functionName: "DontSkipMe");
+        semanticFunction2.SetAIService(() => mockTextCompletion.Object);
+        var invoked = 0;
+        var invoking = 0;
+        string invokedFunction = string.Empty;
+
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            invoking++;
+            if (e.FunctionView.Name == "SkipMe")
+            {
+                e.Skip();
+            }
+        };
+
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            invokedFunction = e.FunctionView.Name;
+            invoked++;
+        };
+
+        // Act
+        var result = await sut.RunAsync(
+            semanticFunction1,
+            semanticFunction2);
+
+        // Assert
+        Assert.Equal(2, invoking);
+        Assert.Equal(1, invoked);
+        Assert.Equal("DontSkipMe", invokedFunction);
     }
 
     [Theory]

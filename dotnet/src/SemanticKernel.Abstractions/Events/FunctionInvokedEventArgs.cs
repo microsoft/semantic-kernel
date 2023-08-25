@@ -11,7 +11,12 @@ namespace Microsoft.SemanticKernel.Events;
 /// </summary>
 public class FunctionInvokedEventArgs : CancelEventArgs
 {
-    internal FunctionInvokedEventArgs(FunctionView functionView, SKContext context)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
+    /// </summary>
+    /// <param name="functionView">Function view details</param>
+    /// <param name="context">Context related to the event</param>
+    public FunctionInvokedEventArgs(FunctionView functionView, SKContext context)
     {
         Verify.NotNull(context);
         this.FunctionView = functionView;

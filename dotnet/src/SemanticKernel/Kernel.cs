@@ -211,6 +211,12 @@ public sealed class Kernel : IKernel, IDisposable
                     break;
                 }
 
+                if (functionInvokingArgs?.IsSkipRequested ?? false)
+                {
+                    this._logger.LogInformation("Execution was skipped during function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    continue;
+                }
+
                 context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 if (context.ErrorOccurred)
