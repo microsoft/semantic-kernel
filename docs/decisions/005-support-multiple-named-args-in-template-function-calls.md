@@ -12,12 +12,11 @@ informed: lemillermicrosoft
 
 Native functions now support multiple parameters, populated from context values with the same name. Semantic functions currently only support calling native functions with no more than 1 argument. The purpose of these changes is to add support for calling native functions within semantic functions with multiple named arguments.
 
-<!-- This is an optional element. Feel free to remove. -->
 ## Decision Drivers
 
 * Parity with Guidance
-* Similarity to languages familiar to SK developers  
 * Readability
+* Similarity to languages familiar to SK developers  
 * YAML compatibility
 
 ## Considered Options
