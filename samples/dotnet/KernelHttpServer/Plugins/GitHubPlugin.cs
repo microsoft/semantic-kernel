@@ -197,10 +197,10 @@ BEGIN SUMMARY:
             else
             {
                 await this._kernel.Memory.SaveInformationAsync(
-                     $"{repositoryUri}-{repositoryBranch}",
-                     text: $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
-                     id: fileUri,
-                     cancellationToken: cancellationToken);
+                    $"{repositoryUri}-{repositoryBranch}",
+                    text: $"{code} File:{repositoryUri}/blob/{repositoryBranch}/{fileUri}",
+                    id: fileUri,
+                    cancellationToken: cancellationToken);
             }
         }
     }
