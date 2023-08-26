@@ -200,7 +200,7 @@
     },
     "/FunSkill/Excuses": {
       "post": {
-        "description": "Turn a scenario into a creative or humorous excuse to send your boss",
+        "summary": "Turn a scenario into a creative or humorous excuse to send your boss",
         "operationId": "Excuses",
         "consumes": [
           "text/plain"
