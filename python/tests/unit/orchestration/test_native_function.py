@@ -34,9 +34,13 @@ def test_init_native_function_with_input_description():
     assert native_function._parameters[0].name == "input"
     assert native_function._parameters[0].description == "Mock input description"
     assert native_function._parameters[0].default_value == "default_input_value"
+    assert native_function._parameters[0].type_ == "string"
+    assert native_function._parameters[0].required is True
     assert native_function._parameters[1].name == "param1"
     assert native_function._parameters[1].description == "Param 1 description"
     assert native_function._parameters[1].default_value == "default_param1_value"
+    assert native_function._parameters[1].type_ == "string"
+    assert native_function._parameters[1].required is True
 
 
 def test_init_native_function_without_input_description():
@@ -62,6 +66,8 @@ def test_init_native_function_without_input_description():
     assert native_function._parameters[0].name == "param1"
     assert native_function._parameters[0].description == "Param 1 description"
     assert native_function._parameters[0].default_value == "default_param1_value"
+    assert native_function._parameters[0].type_ == "string"
+    assert native_function._parameters[0].required is True
 
 
 def test_init_native_function_from_sk_function_decorator():
@@ -70,6 +76,7 @@ def test_init_native_function_from_sk_function_decorator():
         name="test_function",
         input_description="Test input description",
         input_default_value="test_default_value",
+        function_calling_enabled=False,
     )
     def decorated_function() -> None:
         pass
@@ -90,6 +97,8 @@ def test_init_native_function_from_sk_function_decorator():
     assert native_function._parameters[0].name == "input"
     assert native_function._parameters[0].description == "Test input description"
     assert native_function._parameters[0].default_value == "test_default_value"
+    assert native_function._parameters[0].type_ == "string"
+    assert native_function._parameters[0].required is True
 
 
 def test_init_native_function_from_sk_function_decorator_defaults():
@@ -102,6 +111,7 @@ def test_init_native_function_from_sk_function_decorator_defaults():
     assert decorated_function.__sk_function_name__ == "decorated_function"
     assert decorated_function.__sk_function_input_description__ == ""
     assert decorated_function.__sk_function_input_default_value__ == ""
+    assert decorated_function.__sk_function_function_calling_enabled__ is False
 
     native_function = SKFunction.from_native_method(decorated_function, "MockSkill")
 
