@@ -1,26 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 from logging import Logger
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from semantic_kernel.models.chat.chat_message import ChatMessage
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
 )
-from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
     PromptTemplatingEngine,
 )
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
-
-
-class ChatMessage(SKBaseModel):
-    role: str
-    name: Optional[str] = None
-    content: Optional[str] = None
-    message: Optional[str] = None
 
 
 class ChatPromptTemplate(PromptTemplate):
@@ -44,76 +38,71 @@ class ChatPromptTemplate(PromptTemplate):
             "Use render_messages_async instead."
         )
 
-    def add_system_message(self, message: str) -> None:
-        self.add_message(ChatMessage(role="system", message=message))
+    def add_system_message(self, message: str, name: Optional[str] = None) -> None:
+        """Add a system message to the chat template."""
+        self.add_message("system", message, name)
 
-    def add_user_message(self, message: str) -> None:
-        self.add_message(
-            ChatMessage(
-                role="user",
-                message=message,
-            )
-        )
+    def add_user_message(self, message: str, name: Optional[str] = None) -> None:
+        """Add a user message to the chat template."""
+        self.add_message("user", message, name)
 
     def add_function_response_message(self, name: str, content: Any) -> None:
-        self.add_message(ChatMessage(role="function", name=name, content=str(content)))
+        """Add a function response message to the chat template."""
+        self.add_chat_message(
+            ChatMessage(role="function", name=name, fixed_content=str(content))
+        )
 
     def add_assistant_message(
         self,
         message: Optional[str] = None,
+        name: Optional[str] = None,
         function_call: Optional[Dict[str, str]] = None,
     ) -> None:
+        """Add an assistant message to the chat template."""
         name = None
         content = None
         if function_call:
             name = function_call.get("name")
             content = str(function_call.get("arguments"))
-        self.add_message(
-            ChatMessage(role="assistant", name=name, message=message, content=content)
+        self.add_chat_message(
+            ChatMessage(
+                role="assistant",
+                name=name,
+                content_template=PromptTemplate(
+                    message, self._template_engine, self._prompt_config
+                ),
+                fixed_content=content,
+            )
         )
 
-    def add_message(
-        self,
-        message: ChatMessage,
-    ) -> None:
+    def add_message(self, role: str, message: str, name: Optional[str] = None) -> None:
+        """Add a message to the chat template."""
+        self._messages.append(
+            ChatMessage(
+                role=role,
+                content_template=PromptTemplate(
+                    message, self._template_engine, self._prompt_config
+                ),
+                name=name,
+            )
+        )
+
+    def add_chat_message(self, message: ChatMessage) -> None:
+        """Add a message to the chat template."""
         self._messages.append(message)
 
     async def render_messages_async(self, context: "SKContext") -> List[Dict[str, str]]:
-        rendered_messages: List[Dict[str, str]] = []
-        # render_last_message = await self._template_engine.render_async(
-        #     self._template, context
-        # )
-        if self._messages[-1].role == "assistant":
-            self.add_user_message(message=self._template)
-        for mess in self._messages:
-            new_message = {"role": mess.role}
-            if mess.message:
-                new_message["content"] = await PromptTemplate(
-                    mess.message, self._template_engine, self._prompt_config
-                ).render_async(context)
-            if mess.name:
-                new_message["name"] = mess.name
-            if mess.content:
-                if "content" in new_message:
-                    new_message["content"] += f" {mess.content}"
-                else:
-                    new_message["content"] = mess.content
-            rendered_messages.append(new_message)
-
-        # latest_user_message = await self._template_engine.render_async(
-        #     self._template, context
-        # )
-        # rendered_messages.append({"role": "user", "content": latest_user_message})
-
-        return rendered_messages
+        """Render the content of the message in the chat template, based on the context."""
+        self.add_message(role="user", message=self._template)
+        await asyncio.gather(
+            *[message.render_message_async(context) for message in self._messages]
+        )
+        return [message.as_dict() for message in self._messages]
 
     @property
     def messages(self) -> List[Dict[str, str]]:
-        """Return the messages as a list of tuples of role and message."""
-        return [
-            {"role": role, "message": message._template}
-            for role, message in self._messages
-        ]
+        """Return the messages as a list of dicts with role, content, name."""
+        return [message.as_dict() for message in self._messages]
 
     @classmethod
     def restore(
@@ -124,7 +113,18 @@ class ChatPromptTemplate(PromptTemplate):
         prompt_config: PromptTemplateConfig,
         log: Optional[Logger] = None,
     ) -> "ChatPromptTemplate":
-        """Restore a ChatPromptTemplate from a list of role and message pairs."""
+        """Restore a ChatPromptTemplate.
+
+        Args:
+            messages (List[Dict[str, str]]): List of dicts with 'role', 'content', and optionally 'name'.
+            template (str): Template string.
+            template_engine (PromptTemplatingEngine): Template engine.
+            prompt_config (PromptTemplateConfig): Prompt config.
+            log (Optional[Logger], optional): Logger. Defaults to None.
+
+        Returns:
+            ChatPromptTemplate: ChatPromptTemplate restored from messages.
+        """
         chat_template = cls(template, template_engine, prompt_config, log)
 
         if prompt_config.chat_system_prompt:
@@ -133,6 +133,12 @@ class ChatPromptTemplate(PromptTemplate):
             )
 
         for message in messages:
-            chat_template.add_message(message["role"], message["message"])
+            chat_template.add_chat_message(
+                ChatMessage(
+                    role=message["role"],
+                    fixed_content=message["content"],
+                    name=message.get("name"),
+                )
+            )
 
         return chat_template
