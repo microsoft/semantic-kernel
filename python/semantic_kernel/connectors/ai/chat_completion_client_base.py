@@ -21,7 +21,8 @@ class ChatCompletionClientBase(ABC):
         This is the method that is called from the kernel to get a response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a set of messages, from system, user, assistant and function.
+            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+                set of messages, from system, user, assistant and function.
             settings {ChatRequestSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging.
 
@@ -41,7 +42,8 @@ class ChatCompletionClientBase(ABC):
         This is the method that is called from the kernel to get a stream response from a chat-optimized LLM.
 
         Arguments:
-            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a set of messages, from system, user, assistant and function.
+            messages {List[ChatMessage]} -- A list of chat messages, that can be rendered into a
+                set of messages, from system, user, assistant and function.
             settings {ChatRequestSettings} -- Settings for the request.
             logger {Logger} -- A logger to use for logging.
 
