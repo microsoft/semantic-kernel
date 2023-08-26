@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings

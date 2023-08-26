@@ -173,8 +173,8 @@ class SKFunction(SKFunctionBase):
 
             if function_call is not None:
                 skill_name, name = function_call["name"].split("-")
-                if context._skill_collection.has_callable_function(skill_name, name):
-                    func = context._skill_collection.get_callable_function(
+                if context.skill_collection.has_callable_function(skill_name, name):
+                    func = context.skill_collection.get_callable_function(
                         skill_name, name
                     )
                 else:
