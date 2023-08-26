@@ -77,11 +77,11 @@ class SKFunction(SKFunctionBase):
 
                 parameters.append(
                     ParameterView(
-                        param["name"],
-                        param["description"],
-                        param["default_value"],
-                        param.get("type"),
-                        param.get("required"),
+                        name=param["name"],
+                        description=param["description"],
+                        default_value=param["default_value"],
+                        type=param.get("type"),
+                        required=param.get("required"),
                     )
                 )
 
@@ -91,11 +91,11 @@ class SKFunction(SKFunctionBase):
             and method.__sk_function_input_description__ != ""
         ):
             input_param = ParameterView(
-                "input",
-                method.__sk_function_input_description__,
-                method.__sk_function_input_default_value__,
-                "string",
-                True,
+                name="input",
+                description=method.__sk_function_input_description__,
+                default_value=method.__sk_function_input_default_value__,
+                type="string",
+                required=True,
             )
             parameters = [input_param] + parameters
 

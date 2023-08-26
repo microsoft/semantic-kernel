@@ -84,6 +84,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
                 parameters=[],
                 is_semantic=False,
                 is_asynchronous=True,
+                function_calling_enabled=True,
             )
         )
         result.add_function(
@@ -94,6 +95,7 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
                 parameters=[],
                 is_semantic=True,
                 is_asynchronous=True,
+                function_calling_enabled=False,
             )
         )
         return result
@@ -129,12 +131,18 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
         CodeTokenizer: CodeTokenizer(log=logging.getLogger("test")),
         PromptTemplateEngine: PromptTemplateEngine(logger=logging.getLogger("test")),
         TemplateTokenizer: TemplateTokenizer(log=logging.getLogger("test")),
-        ParameterView: ParameterView("foo", "bar", default_value="baz"),
+        ParameterView: ParameterView(
+            name="foo",
+            description="bar",
+            default_value="baz",
+            type="string",
+            required=True,
+        ),
         FunctionView: FunctionView(
             "foo",
             "bar",
             "baz",
-            [ParameterView("qux", "bar", "baz")],
+            [ParameterView(name="qux", description="bar", default_value="baz")],
             True,
             False,
         ),
