@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import pytest
+
 from semantic_kernel import Kernel
 from semantic_kernel.core_skills import PythonREPLSkill
 
