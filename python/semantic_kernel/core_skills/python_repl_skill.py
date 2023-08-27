@@ -91,6 +91,11 @@ class PythonREPLSkill(PydanticField):
         module_end_str = ast.unparse(module_end)
 
         io_buffer = StringIO()
+
+        # TODO(joowon-dm-snu): Execution of the code should be done in a separate thread/process
+        #      1) to avoid blocking the main thread.
+        #      2) to avoid the possibility of malicious code execution. -> separate process is better but complicated.
+        #      3) to avoid the possibility of code execution that takes too long. -> Add timeout.
         try:
             with redirect_stdout(io_buffer):
                 ret = eval(module_end_str, __globals)
