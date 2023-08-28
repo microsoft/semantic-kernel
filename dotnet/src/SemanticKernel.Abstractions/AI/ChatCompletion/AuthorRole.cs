@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+
 using System;
 using System.ComponentModel;
-using Microsoft.SemanticKernel.Diagnostics;
+using Diagnostics;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
 /// <summary>
 /// A description of the intended purpose of a message within a chat completions interaction.
@@ -32,12 +33,18 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public static readonly AuthorRole Tool = new("tool");
 
     /// <summary>
+    ///  The role that is a function call.
+    /// </summary>
+    public static readonly AuthorRole FunctionCall = new("function");
+
+    /// <summary>
     /// Gets the label associated with this AuthorRole.
     /// </summary>
     /// <remarks>
     /// The label is what will be serialized into the "role" message field of the Chat Message format.
     /// </remarks>
     public string Label { get; }
+
 
     /// <summary>
     /// Creates a new AuthorRole instance with the provided label.
@@ -48,6 +55,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         Verify.NotNull(label, nameof(label));
         this.Label = label!;
     }
+
 
     /// <summary>
     /// Returns a value indicating whether two AuthorRole instances are equivalent, as determined by a
@@ -71,6 +79,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         return left.Equals(right);
     }
 
+
     /// <summary>
     /// Returns a value indicating whether two AuthorRole instances are not equivalent, as determined by a
     /// case-insensitive comparison of their labels.
@@ -81,20 +90,24 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     public static bool operator !=(AuthorRole left, AuthorRole right)
         => !(left == right);
 
+
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object obj)
         => obj is AuthorRole otherRole && this == otherRole;
+
 
     /// <inheritdoc/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode()
         => this.Label.GetHashCode();
 
+
     /// <inheritdoc/>
     public bool Equals(AuthorRole other)
         => !Object.ReferenceEquals(other, null)
-            && string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+           && string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+
 
     /// <inheritdoc/>
     public override string ToString() => this.Label;
