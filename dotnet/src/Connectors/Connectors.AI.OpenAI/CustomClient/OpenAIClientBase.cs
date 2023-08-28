@@ -30,7 +30,7 @@ public abstract class OpenAIClientBase
     private protected OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
