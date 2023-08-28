@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
 
 public class TemplateTokenizerTests
 {

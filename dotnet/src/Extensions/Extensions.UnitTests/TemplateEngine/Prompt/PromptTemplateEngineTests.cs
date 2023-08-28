@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Moq;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class PromptTemplateEngineTests
 {

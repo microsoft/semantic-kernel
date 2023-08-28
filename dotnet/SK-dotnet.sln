@@ -152,7 +152,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsightsExample"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Kusto", "src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj", "{E07608CC-D710-4655-BB9E-D22CF3CDD193}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine", "src\Extensions\TemplateEngine\TemplateEngine.csproj", "{10E4B697-D4E8-468D-872D-49670FD150FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine.PromptTemplateEngine", "src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj", "{10E4B697-D4E8-468D-872D-49670FD150FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

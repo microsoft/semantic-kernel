@@ -269,7 +269,7 @@ public sealed class KernelBuilder
     {
         try
         {
-            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine");
+            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.PromptTemplateEngine");
 
             return assembly.ExportedTypes.Single(type =>
                 type.Name.Equals("PromptTemplateEngine", StringComparison.Ordinal) &&

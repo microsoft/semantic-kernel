@@ -2,10 +2,10 @@
 
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class VarBlockTests
 {

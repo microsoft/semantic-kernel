@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.TemplateEngine</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.TemplateEngine</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.TemplateEngine.PromptTemplateEngine</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.TemplateEngine.Prompt</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
@@ -11,8 +11,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Template Engine</Title>
-    <Description>Semantic Kernel Template Engine</Description>
+    <Title>Semantic Kernel - Prompt Template Engine</Title>
+    <Description>Semantic Kernel Prompt Template Engine</Description>
   </PropertyGroup>
 
   <ItemGroup>

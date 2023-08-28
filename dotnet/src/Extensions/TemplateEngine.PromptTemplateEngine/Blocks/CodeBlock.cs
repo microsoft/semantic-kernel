@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
 #pragma warning disable CA1031 // IsCriticalException is an internal utility and should not be used by extensions

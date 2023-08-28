@@ -10,11 +10,11 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class CodeBlockTests
 {

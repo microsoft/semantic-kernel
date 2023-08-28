@@ -31,7 +31,7 @@
     <ProjectReference Include="..\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
     <ProjectReference Include="..\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
-    <ProjectReference Include="..\TemplateEngine\TemplateEngine.csproj" />
+    <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
   </ItemGroup>
 
 </Project>
