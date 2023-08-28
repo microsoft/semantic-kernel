@@ -1,33 +1,44 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Literal, Optional, Tuple, Union
+from typing import Any, Generic, Literal, Optional, Tuple, Union
+
+import pydantic as pdt
 
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.memory.semantic_text_memory_base import (
+    SemanticTextMemoryBase,
+    SemanticTextMemoryT,
+)
 from semantic_kernel.orchestration.context_variables import ContextVariables
+from semantic_kernel.sk_pydantic import SKGenericModel
+from semantic_kernel.skill_definition.read_only_skill_collection import (
+    ReadOnlySkillCollection,
+)
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 
 
-class SKContext:
+class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
     """Semantic Kernel context."""
 
-    _error_occurred: bool = False
-    _last_exception: Optional[Exception] = None
-    _last_error_description: str = ""
-    _logger: Logger
-    _memory: SemanticTextMemoryBase
-    _skill_collection: ReadOnlySkillCollectionBase
-    _variables: ContextVariables
+    memory: SemanticTextMemoryT
+    variables: ContextVariables
+    skill_collection: ReadOnlySkillCollection = pdt.Field(
+        default_factory=ReadOnlySkillCollection
+    )
+    _error_occurred: bool = pdt.PrivateAttr(False)
+    _last_exception: Optional[Exception] = pdt.PrivateAttr(None)
+    _last_error_description: str = pdt.PrivateAttr("")
+    _logger: Logger = pdt.PrivateAttr()
 
     def __init__(
         self,
         variables: ContextVariables,
         memory: SemanticTextMemoryBase,
-        skill_collection: ReadOnlySkillCollectionBase,
-        logger: Logger,
+        skill_collection: Union[ReadOnlySkillCollection, None],
+        logger: Optional[Logger] = None,
         # TODO: cancellation token?
     ) -> None:
         """
@@ -39,10 +50,16 @@ class SKContext:
             skill_collection {ReadOnlySkillCollectionBase} -- The skill collection.
             logger {Logger} -- The logger.
         """
-        self._variables = variables
-        self._memory = memory
-        self._skill_collection = skill_collection
-        self._logger = logger
+        # Local import to avoid circular dependency
+        from semantic_kernel import NullLogger
+
+        if skill_collection is None:
+            skill_collection = ReadOnlySkillCollection()
+
+        super().__init__(
+            variables=variables, memory=memory, skill_collection=skill_collection
+        )
+        self._logger = logger or NullLogger()
 
     def fail(self, error_description: str, exception: Optional[Exception] = None):
         """
@@ -69,7 +86,7 @@ class SKContext:
         Returns:
             str -- Processed input, aka result.
         """
-        return str(self._variables)
+        return str(self.variables)
 
     @property
     def error_occurred(self) -> bool:
@@ -102,26 +119,6 @@ class SKContext:
         return self._last_exception
 
     @property
-    def variables(self) -> ContextVariables:
-        """
-        User variables.
-
-        Returns:
-            ContextVariables -- The context variables.
-        """
-        return self._variables
-
-    @property
-    def memory(self) -> SemanticTextMemoryBase:
-        """
-        The semantic text memory.
-
-        Returns:
-            SemanticTextMemoryBase -- The semantic text memory.
-        """
-        return self._memory
-
-    @property
     def skills(self) -> ReadOnlySkillCollectionBase:
         """
         Read only skills collection.
@@ -129,14 +126,14 @@ class SKContext:
         Returns:
             ReadOnlySkillCollectionBase -- The skills collection.
         """
-        return self._skill_collection
+        return self.skill_collection
 
     @skills.setter
     def skills(self, value: ReadOnlySkillCollectionBase) -> None:
         """
         Set the value of skills collection
         """
-        self._skill_collection = value
+        self.skill_collection = value
 
     @property
     def log(self) -> Logger:
@@ -156,7 +153,7 @@ class SKContext:
             key {str} -- The variable name.
             value {Any} -- The variable value.
         """
-        self._variables[key] = value
+        self.variables[key] = value
 
     def __getitem__(self, key: str) -> Any:
         """
@@ -168,7 +165,7 @@ class SKContext:
         Returns:
             Any -- The variable value.
         """
-        return self._variables[key]
+        return self.variables[key]
 
     def func(self, skill_name: str, function_name: str):
         """
@@ -183,14 +180,14 @@ class SKContext:
         Returns:
             SKFunctionBase -- The function.
         """
-        if self._skill_collection is None:
+        if self.skill_collection is None:
             raise ValueError("The skill collection hasn't been set")
-        assert self._skill_collection is not None  # for type checker
+        assert self.skill_collection is not None  # for type checker
 
-        if self._skill_collection.has_native_function(skill_name, function_name):
-            return self._skill_collection.get_native_function(skill_name, function_name)
+        if self.skill_collection.has_native_function(skill_name, function_name):
+            return self.skill_collection.get_native_function(skill_name, function_name)
 
-        return self._skill_collection.get_semantic_function(skill_name, function_name)
+        return self.skill_collection.get_semantic_function(skill_name, function_name)
 
     def __str__(self) -> str:
         if self._error_occurred:
@@ -202,7 +199,7 @@ class SKContext:
         """
         Throws an exception if the skill collection hasn't been set.
         """
-        if self._skill_collection is None:
+        if self.skill_collection is None:
             raise KernelException(
                 KernelException.ErrorCodes.SkillCollectionNotSet,
                 "Skill collection not found in the context",
@@ -223,20 +220,20 @@ class SKContext:
             whether the function is registered and the function itself (or None).
         """
         self.throw_if_skill_collection_not_set()
-        assert self._skill_collection is not None  # for type checker
+        assert self.skill_collection is not None  # for type checker
 
-        if self._skill_collection.has_native_function(skill_name, function_name):
-            the_func = self._skill_collection.get_native_function(
+        if self.skill_collection.has_native_function(skill_name, function_name):
+            the_func = self.skill_collection.get_native_function(
                 skill_name, function_name
             )
             return True, the_func
 
-        if self._skill_collection.has_native_function(None, function_name):
-            the_func = self._skill_collection.get_native_function(None, function_name)
+        if self.skill_collection.has_native_function(None, function_name):
+            the_func = self.skill_collection.get_native_function(None, function_name)
             return True, the_func
 
-        if self._skill_collection.has_semantic_function(skill_name, function_name):
-            the_func = self._skill_collection.get_semantic_function(
+        if self.skill_collection.has_semantic_function(skill_name, function_name):
+            the_func = self.skill_collection.get_semantic_function(
                 skill_name, function_name
             )
             return True, the_func
