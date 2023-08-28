@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
@@ -18,6 +19,7 @@ namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public sealed class PromptTemplateEngineTests
 {
+    private const string DateFormat = "M/d/yyyy";
     private readonly PromptTemplateEngine _target;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySkillCollection> _skills;
@@ -199,8 +201,9 @@ public sealed class PromptTemplateEngineTests
             [Description("Slogan"), SKName("slogan")] string slogan,
             [Description("Date"), SKName("date")] DateTime date)
         {
+            var dateStr = date.ToString(PromptTemplateEngineTests.DateFormat, CultureInfo.InvariantCulture);
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
-            return $"[{date.ToShortDateString()}] {name} ({age}): \"{slogan}\"";
+            return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
         ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
@@ -234,7 +237,8 @@ public sealed class PromptTemplateEngineTests
             [Description("Date"), SKName("date")] DateTime date)
         {
             this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
-            return $"[{date.ToShortDateString()}] {name} ({age}): \"{slogan}\"";
+            var dateStr = date.ToString(PromptTemplateEngineTests.DateFormat, CultureInfo.InvariantCulture);
+            return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
         ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
