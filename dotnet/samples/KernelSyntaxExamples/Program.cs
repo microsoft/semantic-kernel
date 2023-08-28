@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Reliability;
 using RepoUtils;
 
+
 public static class Program
 {
     // ReSharper disable once InconsistentNaming
@@ -75,7 +76,9 @@ public static class Program
         await Example53_Kusto.RunAsync().SafeWaitAsync(cancelToken);
         await Example54_AzureChatCompletionWithData.RunAsync().SafeWaitAsync(cancelToken);
         await Example55_TextChunker.RunAsync().SafeWaitAsync(cancelToken);
+        await Example56_OpenAIChatCompletionWithFunctionCalling.RunAsync().SafeWaitAsync(cancelToken);
     }
+
 
     private static void LoadUserSecrets()
     {
@@ -85,6 +88,7 @@ public static class Program
             .Build();
         TestConfiguration.Initialize(configRoot);
     }
+
 
     private static CancellationToken ConsoleCancellationToken(this CancellationTokenSource tokenSource)
     {
@@ -98,7 +102,9 @@ public static class Program
         return tokenSource.Token;
     }
 
-    private static async Task SafeWaitAsync(this Task task,
+
+    private static async Task SafeWaitAsync(
+        this Task task,
         CancellationToken cancellationToken = default)
     {
         try
