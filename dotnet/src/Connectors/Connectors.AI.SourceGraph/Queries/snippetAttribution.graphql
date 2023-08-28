@@ -1,8 +1,0 @@
-query SearchAttributionQuery($snippet: String!) {
-    snippetAttribution(snippet: $snippet) {
-        limitHit
-        nodes {
-            repositoryName
-        }
-    }
-}

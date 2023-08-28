@@ -1,8 +1,0 @@
-query RepositoryIdsQuery($names: [String!]!, $first: Int!) {
-    repositories(names: $names, first: $first) {
-        nodes {
-            id
-            name
-        }
-    }
-}
