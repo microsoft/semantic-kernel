@@ -231,7 +231,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         Assert.NotNull(actual);
         Assert.Equal(testRecord.Metadata.Id, key);
         Assert.Equal(testRecord2.Metadata.Id, actual.Key);
-        Assert.True(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
+        Assert.False(testRecord.Embedding.Span.SequenceEqual(actual.Embedding.Span));
         Assert.True(testRecord2.Embedding.Span.SequenceEqual(actual.Embedding.Span));
         Assert.NotEqual(testRecord.Metadata.Text, actual.Metadata.Text);
         Assert.Equal(testRecord2.Metadata.Description, actual.Metadata.Description);
