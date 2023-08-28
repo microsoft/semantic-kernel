@@ -12,8 +12,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import org.sqlite.SQLiteErrorCode;
-import org.sqlite.SQLiteException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -97,13 +95,6 @@ public class JDBCConnector implements SQLConnector {
                                     this.connection.prepareStatement(query)) {
                                 statement.setString(1, collectionName);
                                 statement.executeUpdate();
-                            } catch (SQLiteException e) {
-                                if (e.getResultCode() != SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE) {
-                                    throw new SQLConnectorException(
-                                            SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                            "\"INSERT INTO\" failed",
-                                            e);
-                                }
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
                                         SQLConnectorException.ErrorCodes.SQL_ERROR,

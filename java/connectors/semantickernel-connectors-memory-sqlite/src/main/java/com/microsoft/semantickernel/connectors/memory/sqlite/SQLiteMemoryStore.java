@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.sqlite;
 
-import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore;
+import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLMemoryStoreBuilder;
 import com.microsoft.semantickernel.memory.MemoryStore;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import javax.annotation.Nonnull;
 import reactor.core.publisher.Mono;
 
 public class SQLiteMemoryStore extends JDBCMemoryStore {
@@ -22,16 +20,15 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
         return super.connectAsync();
     }
 
-    /**
-     * Builds an SQLiteMemoryStore.
-     */
+    /** Builds an SQLiteMemoryStore. */
     public static class Builder implements SQLMemoryStoreBuilder {
         private Connection connection;
 
         /**
          * Builds and returns an SQLiteMemoryStore instance with the specified database connection.
          *
-         * @return An SQLiteMemoryStore instance configured with the provided SQLite database connection.
+         * @return An SQLiteMemoryStore instance configured with the provided SQLite database
+         *     connection.
          */
         @Override
         public MemoryStore build() {
@@ -42,7 +39,8 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
          * Sets the SQLite database connection to be used by the SQLite memory store being built.
          *
          * @param connection The Connection object representing the SQLite database connection.
-         * @return The updated Builder instance to continue the building process for an SQLiteMemoryStore.
+         * @return The updated Builder instance to continue the building process for an
+         *     SQLiteMemoryStore.
          */
         @Override
         public Builder withConnection(Connection connection) {
@@ -61,6 +59,4 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
             return withConnection(DriverManager.getConnection("jdbc:sqlite:" + filename));
         }
     }
-
-
 }

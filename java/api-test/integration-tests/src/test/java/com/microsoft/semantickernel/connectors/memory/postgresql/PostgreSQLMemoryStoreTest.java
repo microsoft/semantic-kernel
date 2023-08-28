@@ -1,20 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.postgresql;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
-
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -23,13 +15,17 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
 
 @Testcontainers
 public class PostgreSQLMemoryStoreTest {
-    @Container
-    private static final PostgreSQLContainer CONTAINER = new PostgreSQLContainer();
+    @Container private static final PostgreSQLContainer CONTAINER = new PostgreSQLContainer();
     private static MemoryStore _db;
     private static int _collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -38,9 +34,11 @@ public class PostgreSQLMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        _db = new PostgreSQLMemoryStore.Builder()
-                .withConnection(DriverManager.getConnection(CONTAINER.getJdbcUrl(), "test", "test"))
-                .build();
+        _db =
+                new PostgreSQLMemoryStore.Builder()
+                        .withConnection(
+                                DriverManager.getConnection(CONTAINER.getJdbcUrl(), "test", "test"))
+                        .build();
         ((PostgreSQLMemoryStore) _db).connectAsync().block();
     }
 
@@ -403,9 +401,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(
-                                collection, compareEmbedding, topN, threshold, false)
+                _db.getNearestMatchesAsync(collection, compareEmbedding, topN, threshold, false)
                         .block();
 
         // Assert
@@ -489,9 +485,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(
-                                collection, compareEmbedding, i / 2, threshold, false)
+                _db.getNearestMatchesAsync(collection, compareEmbedding, i / 2, threshold, false)
                         .block();
 
         // Assert
@@ -569,8 +563,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
+                _db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
 
         // Assert
@@ -589,8 +582,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(
+                _db.getNearestMatchesAsync(
                                 collection, compareEmbedding, Integer.MAX_VALUE, threshold, false)
                         .block();
 
@@ -670,13 +662,9 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = 0.75;
         Tuple2<MemoryRecord, Float> topNResultDefault =
-                _db
-                        .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
-                        .block();
+                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
         Tuple2<MemoryRecord, Float> topNResultWithEmbedding =
-                _db
-                        .getNearestMatchAsync(collection, compareEmbedding, threshold, true)
-                        .block();
+                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, true).block();
 
         // Assert
         assertNotNull(topNResultDefault);
@@ -760,9 +748,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = 0.75;
         Tuple2<MemoryRecord, Float> topNResult =
-                _db
-                        .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
-                        .block();
+                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
 
         // Assert
         assertNotNull(topNResult);
@@ -782,9 +768,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = -1;
         Tuple2<MemoryRecord, Float> topNResults =
-                _db
-                        .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
-                        .block();
+                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
 
         // Assert
         assertNull(topNResults);
@@ -814,9 +798,7 @@ public class PostgreSQLMemoryStoreTest {
 
         // Act
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true)
-                        .block();
+                _db.getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true).block();
         Collection<String> topNKeys =
                 topNResults.stream()
                         .map(tuple -> tuple.getT1().getKey())
@@ -846,8 +828,7 @@ public class PostgreSQLMemoryStoreTest {
 
         // Act
         Collection<String> keys = _db.upsertBatchAsync(collection, records).block();
-        Collection<MemoryRecord> resultRecords =
-                _db.getBatchAsync(collection, keys, false).block();
+        Collection<MemoryRecord> resultRecords = _db.getBatchAsync(collection, keys, false).block();
 
         // Assert
         assertNotNull(keys);
@@ -938,8 +919,7 @@ public class PostgreSQLMemoryStoreTest {
         _collectionNum++;
 
         // Act
-        assertThrows(
-                MemoryException.class, () -> _db.deleteCollectionAsync(collection).block());
+        assertThrows(MemoryException.class, () -> _db.deleteCollectionAsync(collection).block());
     }
 
     @Test

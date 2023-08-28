@@ -1,16 +1,16 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.postgresql;
 
-import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector;
+import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnectorException;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.ZonedDateTime;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
     public PostgreSQLConnector(Connection connection) {
@@ -58,7 +58,8 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
                                         SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                        "\"CREATE TABLE\" failed", e);
+                                        "\"CREATE TABLE\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
@@ -80,7 +81,8 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                             + " (collection, key, metadata, embedding, timestamp)"
                                             + " VALUES (?, ?, ?, ?, ?)"
                                             + " ON CONFLICT (collection, key) DO NOTHING";
-                            try (PreparedStatement statement = this.connection.prepareStatement(query)) {
+                            try (PreparedStatement statement =
+                                    this.connection.prepareStatement(query)) {
                                 statement.setString(1, collection);
                                 statement.setString(2, key);
                                 statement.setString(3, metadata != null ? metadata : "");
@@ -90,7 +92,8 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
                                         SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                        "\"INSERT INTO\" failed", e);
+                                        "\"INSERT INTO\" failed",
+                                        e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
