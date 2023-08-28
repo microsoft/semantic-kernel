@@ -5,9 +5,9 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Config;
+using Microsoft.SemanticKernel.Reliability.Polly.Config;
 using Microsoft.SemanticKernel.Skills.Core;
-using Reliability;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -24,7 +24,7 @@ public static class Example08_RetryHandler
         await RunRetryPolicyBuilderAsync(typeof(RetryThreeTimesWithRetryAfterBackoffFactory));
 
         InfoLogger.Logger.LogInformation("==================================== NoRetryPolicy =====================================");
-        await RunRetryPolicyBuilderAsync(typeof(NullHttpRetryHandlerFactory));
+        await RunRetryPolicyBuilderAsync(typeof(NullHttpHandlerFactory));
 
         InfoLogger.Logger.LogInformation("=============================== DefaultHttpRetryHandler ================================");
         await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
@@ -38,13 +38,13 @@ public static class Example08_RetryHandler
         var kernelBuilder = Kernel.Builder.WithLoggerFactory(InfoLogger.LoggerFactory);
         if (httpConfig != null)
         {
-            kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(httpConfig));
-        }
+            // Add 401 to the list of retryable status codes
+            // Typically 401 would not be something we retry but for demonstration
+            // purposes we are doing so as it's easy to trigger when using an invalid key.
+            httpConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
 
-        // Add 401 to the list of retryable status codes
-        // Typically 401 would not be something we retry but for demonstration
-        // purposes we are doing so as it's easy to trigger when using an invalid key.
-        kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
+            kernelBuilder = kernelBuilder.Configure(c => c.SetHttpRetryConfig(httpConfig));
+        }
 
         // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
         kernelBuilder = kernelBuilder.WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
@@ -67,14 +67,14 @@ public static class Example08_RetryHandler
 
     private static async Task RunRetryPolicyAsync(IKernel kernel, IDelegatingHandlerFactory retryHandlerFactory)
     {
-        kernel.Config.SetHttpRetryHandlerFactory(retryHandlerFactory);
+        kernel.Config.SetHttpHandlerFactory(retryHandlerFactory);
         await ImportAndExecuteSkillAsync(kernel);
     }
 
     private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
     {
         var kernel = Kernel.Builder.WithLoggerFactory(InfoLogger.LoggerFactory)
-            .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
+            .WithHttpHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
             // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY")
             .Build();

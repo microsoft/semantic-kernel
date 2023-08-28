@@ -3,7 +3,7 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Reliability;
+namespace Microsoft.SemanticKernel.Config;
 
 /// <summary>
 /// Factory for creating <see cref="DelegatingHandler"/> instances.

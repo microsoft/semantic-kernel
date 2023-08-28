@@ -15,15 +15,16 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Config;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Polly;
+using Microsoft.SemanticKernel.Reliability.Polly.Config;
 using Polly.Retry;
+using Polly;
 
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
@@ -80,7 +81,7 @@ public static class Example42_KernelBuilder
         var templateEngine = new PromptTemplateEngine(loggerFactory);
         var kernelConfig = new KernelConfig();
 
-        using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), loggerFactory);
+        using var httpHandler = new Microsoft.SemanticKernel.Reliability.Polly.Config.DefaultHttpRetryHandler(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(
@@ -140,7 +141,7 @@ public static class Example42_KernelBuilder
         // AI requests (when using the kernel).
 
         var kernel8 = Kernel.Builder
-            .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
+            .Configure(c => c.SetHttpRetryConfig(new HttpRetryConfig
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
@@ -153,10 +154,10 @@ public static class Example42_KernelBuilder
             .Build();
 
         var kernel9 = Kernel.Builder
-            .Configure(c => c.SetHttpRetryHandlerFactory(new NullHttpRetryHandlerFactory()))
+            .Configure(c => c.SetHttpHandlerFactory(new NullHttpHandlerFactory()))
             .Build();
 
-        var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
+        var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new RetryThreeTimesFactory()).Build();
 
         return Task.CompletedTask;
     }

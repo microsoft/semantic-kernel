@@ -13,7 +13,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Reliability;
+namespace SemanticKernel.Extensions.UnitTests.Reliability.Polly;
 
 public class DefaultHttpRetryHandlerTests
 {

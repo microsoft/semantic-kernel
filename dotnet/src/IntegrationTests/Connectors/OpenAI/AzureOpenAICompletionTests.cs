@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Reliability.Polly.Config;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -50,7 +50,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         var target = new KernelBuilder()
              .WithLoggerFactory(this._logger)
              .WithAzureChatCompletionService(configuration.ChatDeploymentName!, configuration.Endpoint, configuration.ApiKey)
-             .WithRetryHandlerFactory(defaultHttpRetryHandlerFactory)
+             .WithHttpHandlerFactory(defaultHttpRetryHandlerFactory)
              .Build();
 
         // Act

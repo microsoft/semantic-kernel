@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Reliability;
 
+[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated")]
 public sealed class DefaultHttpRetryHandler : DelegatingHandler
 {
     /// <summary>

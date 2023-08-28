@@ -6,12 +6,11 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Reliability;
+namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
 
 /// <summary>
-/// Retry configuration for IHttpRetryPolicy that uses RetryAfter header when present.
+/// Retry configuration for DefaultKernelRetryHandler that uses RetryAfter header when present.
 /// </summary>
-[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated")]
 public sealed class HttpRetryConfig
 {
     /// <summary>

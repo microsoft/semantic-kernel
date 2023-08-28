@@ -9,11 +9,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.SemanticKernel.Reliability.Polly.Config;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 
@@ -153,7 +153,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = Kernel.Builder
             .WithLoggerFactory(this._testOutputHelper)
-            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
+            .Configure(c => c.SetHttpRetryConfig(retryConfig))
             .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
@@ -180,7 +180,7 @@ public sealed class OpenAICompletionTests : IDisposable
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
         KernelBuilder builder = Kernel.Builder
             .WithLoggerFactory(this._testOutputHelper)
-            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig));
+            .Configure(c => c.SetHttpRetryConfig(retryConfig));
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
