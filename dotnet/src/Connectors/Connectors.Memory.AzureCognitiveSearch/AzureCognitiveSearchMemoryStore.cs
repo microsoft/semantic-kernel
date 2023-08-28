@@ -72,7 +72,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         string normalizeIndexName = this.NormalizeIndexName(collectionName);
 
-        return this._adminClient.DeleteIndexAsync(normalizeIndexName, cancellationToken);
+        return RunMemoryStoreOperation(() => this._adminClient.DeleteIndexAsync(normalizeIndexName, cancellationToken));
     }
 
     /// <inheritdoc />
@@ -107,6 +107,10 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             // Index not found, no data to return
             return null;
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
         }
 
         if (result?.Value == null)
@@ -176,6 +180,10 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             // Index not found, no data to return
         }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
+        }
 
         if (searchResult == null) { yield break; }
 
@@ -210,6 +218,10 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         catch (RequestFailedException e) when (e.Status == 404)
         {
             // Index not found, no data to delete
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
         }
     }
 
@@ -275,12 +287,12 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             }
         };
 
-        return this._adminClient.CreateIndexAsync(newIndex, cancellationToken);
+        return RunMemoryStoreOperation(() => this._adminClient.CreateIndexAsync(newIndex, cancellationToken));
     }
 
     private async IAsyncEnumerable<string> GetIndexesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var indexes = this._adminClient.GetIndexesAsync(cancellationToken).ConfigureAwait(false);
+        var indexes = RunMemoryStoreOperation<AsyncPageable<SearchIndex>>(() => this._adminClient.GetIndexesAsync(cancellationToken));
         await foreach (SearchIndex? index in indexes)
         {
             yield return index.Name;
@@ -326,6 +338,10 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             await this.CreateIndexAsync(indexName, embeddingSize, cancellationToken).ConfigureAwait(false);
             result = await UpsertCode().ConfigureAwait(false);
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
         }
 
         if (result == null || result.Value.Results.Count == 0)
@@ -389,6 +405,24 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
                 ApplicationId = Telemetry.HttpUserAgent,
             },
         };
+    }
+
+    /// <summary>
+    /// Executes a memory store operation by invoking the provided operation delegate.
+    /// </summary>
+    /// <typeparam name="T">The return type of the operation.</typeparam>
+    /// <param name="operation">The operation delegate to be executed.</param>
+    /// <returns>The result of the memory store operation.</returns>
+    private static T RunMemoryStoreOperation<T>(Func<T> operation)
+    {
+        try
+        {
+            return operation.Invoke();
+        }
+        catch (RequestFailedException e)
+        {
+            throw e.ToHttpOperationException();
+        }
     }
 
     #endregion
