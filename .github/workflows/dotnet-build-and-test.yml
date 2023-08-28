@@ -107,3 +107,46 @@ jobs:
           AzureOpenAIEmbeddings__ApiKey: ${{ secrets.AZUREOPENAI__APIKEY }}
           Bing__ApiKey: ${{ secrets.BING__APIKEY }}
           OpenAI__ApiKey: ${{ secrets.OPENAI__APIKEY }}
+
+  # This final job is required to satisfy the merge queue. It must only run (or succeed) if no tests failed
+  dotnet-build-and-test-check:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: [dotnet-build-and-test]
+    steps:
+      - name: Get Date
+        shell: bash
+        run: |
+          echo "date=$(date +'%m/%d/%Y %H:%M:%S')" >> "$GITHUB_ENV"
+
+      - name: Run Type is Daily
+        if: ${{ github.event_name == 'schedule' }}
+        shell: bash
+        run: |
+          echo "run_type=Daily" >> "$GITHUB_ENV"
+
+      - name: Run Type is Manual
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        run: |
+          echo "run_type=Manual" >> "$GITHUB_ENV"
+
+      - name: Run Type is ${{ github.event_name }}
+        if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
+        shell: bash
+        run: |
+          echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
+
+      - name: Fail workflow if tests failed
+        id: check_tests_failed
+        if: contains(join(needs.*.result, ','), 'failure')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Failed!')
+
+      - name: Fail workflow if tests cancelled
+        id: check_tests_cancelled
+        if: contains(join(needs.*.result, ','), 'cancelled')
+        uses: actions/github-script@v6
+        with:
+          script: core.setFailed('Integration Tests Cancelled!')
