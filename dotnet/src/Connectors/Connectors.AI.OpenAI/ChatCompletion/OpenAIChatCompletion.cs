@@ -1,22 +1,24 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using AzureSdk;
+using AzureSdk.FunctionCalling;
+using Extensions.Logging;
+using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /// <summary>
 /// OpenAI chat completion client.
 /// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, ITextCompletion
+public sealed class OpenAIChatCompletion : OpenAIClientBase, IOpenAIChatCompletion
 {
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
@@ -35,6 +37,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     {
     }
 
+
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
@@ -48,15 +51,33 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     {
     }
 
+
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
+        LogActionDetails();
+        return InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
+
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+        ChatHistory chat,
+        ChatRequestSettings? requestSettings = null,
+        FunctionDefinition? functionCall = null,
+        FunctionDefinition[]? functionCalls = null,
+        CancellationToken cancellationToken = default)
+    {
+        LogActionDetails();
+        return SupportsOpenAIFunctions()
+            ? InternalGetChatResultsWithFunctionCallsAsync(chat, requestSettings, functionCall, functionCalls, cancellationToken)
+            : InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
+
+    }
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
@@ -64,15 +85,14 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         ChatRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
+        LogActionDetails();
+        return InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
     }
 
+
     /// <inheritdoc/>
-    public ChatHistory CreateNewChat(string? instructions = null)
-    {
-        return InternalCreateNewChat(instructions);
-    }
+    public ChatHistory CreateNewChat(string? instructions = null) => InternalCreateNewChat(instructions);
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
@@ -80,9 +100,10 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
+        LogActionDetails();
+        return InternalGetChatStreamingResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
@@ -90,7 +111,7 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
         CompleteRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        this.LogActionDetails();
-        return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
+        LogActionDetails();
+        return InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
     }
 }
