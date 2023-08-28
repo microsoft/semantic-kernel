@@ -69,5 +69,11 @@
             <artifactId>sample-code</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

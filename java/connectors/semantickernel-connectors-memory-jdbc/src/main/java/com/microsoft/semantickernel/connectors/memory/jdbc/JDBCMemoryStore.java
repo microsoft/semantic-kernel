@@ -9,8 +9,6 @@ import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -20,47 +18,43 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 public class JDBCMemoryStore implements MemoryStore {
+    protected final SQLConnector dbConnector;
 
-    protected Connector dbConnector;
-    protected Connection dbConnection;
-
-    public JDBCMemoryStore() {
-        this.dbConnector = new JDBCConnector();
+    public JDBCMemoryStore(SQLConnector connector) {
+        this.dbConnector = connector;
     }
 
-    public Mono<Void> connectAsync(@Nonnull String url) throws SQLException {
-        Objects.requireNonNull(url);
-        this.dbConnection = DriverManager.getConnection(url);
-        return this.dbConnector.createTableAsync(this.dbConnection);
-    }
-
-    public Mono<Void> connectAsync(@Nonnull Connection connection) throws SQLException {
-        Objects.requireNonNull(connection);
-        this.dbConnection = connection;
-        return this.dbConnector.createTableAsync(this.dbConnection);
+    /**
+     * Establishes an asynchronous connection to the database.
+     *
+     * @return A Mono representing the completion of the table creation operation, indicating the
+     *     successful establishment of the database connection.
+     */
+    public Mono<Void> connectAsync() {
+        return this.dbConnector.createTableAsync();
     }
 
     @Override
     public Mono<Void> createCollectionAsync(@Nonnull String collectionName) {
         Objects.requireNonNull(collectionName);
-        return this.dbConnector.createCollectionAsync(this.dbConnection, collectionName);
+        return this.dbConnector.createCollectionAsync(collectionName);
     }
 
     @Override
     public Mono<List<String>> getCollectionsAsync() {
-        return this.dbConnector.getCollectionsAsync(this.dbConnection);
+        return this.dbConnector.getCollectionsAsync();
     }
 
     @Override
     public Mono<Boolean> doesCollectionExistAsync(@Nonnull String collectionName) {
         Objects.requireNonNull(collectionName);
-        return this.dbConnector.doesCollectionExistsAsync(this.dbConnection, collectionName);
+        return this.dbConnector.doesCollectionExistsAsync(collectionName);
     }
 
     @Override
     public Mono<Void> deleteCollectionAsync(@Nonnull String collectionName) {
         Objects.requireNonNull(collectionName);
-        return this.dbConnector.deleteCollectionAsync(this.dbConnection, collectionName);
+        return this.dbConnector.deleteCollectionAsync(collectionName);
     }
 
     @Override
@@ -83,14 +77,10 @@ public class JDBCMemoryStore implements MemoryStore {
                 .then(internalUpsertAsync(collectionName, record));
     }
 
-    private Mono<String> internalUpsertAsync(
-            @Nonnull String collectionName, @Nonnull MemoryRecord record) {
-        Objects.requireNonNull(collectionName);
-        Objects.requireNonNull(record);
+    private Mono<String> internalUpsertAsync(String collectionName, MemoryRecord record) {
         try {
             Mono<Void> update =
                     this.dbConnector.updateAsync(
-                            this.dbConnection,
                             collectionName,
                             record.getMetadata().getId(),
                             record.getSerializedMetadata(),
@@ -99,7 +89,6 @@ public class JDBCMemoryStore implements MemoryStore {
 
             Mono<Void> insert =
                     this.dbConnector.insertOrIgnoreAsync(
-                            this.dbConnection,
                             collectionName,
                             record.getMetadata().getId(),
                             record.getSerializedMetadata(),
@@ -108,7 +97,10 @@ public class JDBCMemoryStore implements MemoryStore {
 
             return update.then(insert).then(Mono.just(record.getMetadata().getId()));
         } catch (JsonProcessingException e) {
-            throw new SQLConnectorException("Error serializing MemoryRecord", e);
+            throw new SQLConnectorException(
+                    SQLConnectorException.ErrorCodes.SQL_ERROR,
+                    "Error serializing MemoryRecord",
+                    e);
         }
     }
 
@@ -145,11 +137,10 @@ public class JDBCMemoryStore implements MemoryStore {
     }
 
     private Mono<MemoryRecord> internalGetAsync(
-            @Nonnull String collectionName, @Nonnull String key, boolean withEmbedding) {
+            String collectionName, String key, boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(key);
-        Mono<DatabaseEntry> entry =
-                this.dbConnector.readAsync(this.dbConnection, collectionName, key);
+        Mono<DatabaseEntry> entry = this.dbConnector.readAsync(collectionName, key);
 
         return entry.hasElement()
                 .flatMap(
@@ -179,7 +170,9 @@ public class JDBCMemoryStore implements MemoryStore {
                                                     databaseEntry.getTimestamp());
                                         } catch (JsonProcessingException e) {
                                             throw new SQLConnectorException(
-                                                    "Error deserializing database entry", e);
+                                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                                    "Error deserializing database entry",
+                                                    e);
                                         }
                                     });
                         });
@@ -201,7 +194,7 @@ public class JDBCMemoryStore implements MemoryStore {
     public Mono<Void> removeAsync(@Nonnull String collectionName, @Nonnull String key) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(key);
-        return this.dbConnector.deleteAsync(this.dbConnection, collectionName, key);
+        return this.dbConnector.deleteAsync(collectionName, key);
     }
 
     @Override
@@ -210,8 +203,7 @@ public class JDBCMemoryStore implements MemoryStore {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(keys);
         return Flux.fromIterable(keys)
-                .flatMap(
-                        key -> this.dbConnector.deleteAsync(this.dbConnection, collectionName, key))
+                .flatMap(key -> this.dbConnector.deleteAsync(collectionName, key))
                 .then();
     }
 
@@ -224,8 +216,7 @@ public class JDBCMemoryStore implements MemoryStore {
             boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
-        Mono<List<DatabaseEntry>> entries =
-                this.dbConnector.readAllAsync(this.dbConnection, collectionName);
+        Mono<List<DatabaseEntry>> entries = this.dbConnector.readAllAsync(collectionName);
 
         return entries.flatMap(
                 databaseEntries -> {
@@ -250,7 +241,9 @@ public class JDBCMemoryStore implements MemoryStore {
                             }
                         } catch (JsonProcessingException e) {
                             throw new SQLConnectorException(
-                                    "Error deserializing database entry", e);
+                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                    "Error deserializing database entry",
+                                    e);
                         }
                     }
                     List<Tuple2<MemoryRecord, Float>> results =
@@ -284,10 +277,30 @@ public class JDBCMemoryStore implements MemoryStore {
                         });
     }
 
-    public static class Builder implements MemoryStore.Builder {
+    /** Builds an JDBCMemoryStore. */
+    public static class Builder implements SQLMemoryStoreBuilder {
+        private Connection connection;
+
+        /**
+         * Builds and returns a MemoryStore instance with the specified database connection.
+         *
+         * @return A MemoryStore instance configured with the provided database connection.
+         */
         @Override
         public MemoryStore build() {
-            return new JDBCMemoryStore();
+            return new JDBCMemoryStore(new JDBCConnector(connection));
+        }
+
+        /**
+         * Sets the database connection to be used by the JDBCMemoryStore being built.
+         *
+         * @param connection The Connection object representing the database connection.
+         * @return The updated Builder instance to continue the building process.
+         */
+        @Override
+        public Builder withConnection(Connection connection) {
+            this.connection = connection;
+            return this;
         }
     }
 }

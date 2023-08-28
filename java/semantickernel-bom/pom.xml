@@ -155,6 +155,7 @@
             <distributionManagement>
                 <repository>
                     <id>${releaseRepoId}</id>
+                    <!--suppress UnresolvedMavenProperty -->
                     <url>${releaseRepoUrl}</url>
                     <name>${releaseRepoName}</name>
                 </repository>

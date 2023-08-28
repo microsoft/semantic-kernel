@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.SKException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Exception thrown by the SQLite connector. */
+/** Exception thrown by the SQL connector. */
 public class SQLConnectorException extends SKException {
 
     private final ErrorCodes errorCode;

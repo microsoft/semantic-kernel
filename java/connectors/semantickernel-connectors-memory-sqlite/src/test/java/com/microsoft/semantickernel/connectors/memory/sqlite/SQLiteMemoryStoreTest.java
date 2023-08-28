@@ -13,6 +13,8 @@ import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
+
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -40,8 +42,12 @@ public class SQLiteMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        _db = new SQLiteMemoryStore.Builder().build();
-        ((SQLiteMemoryStore) _db).connectAsync(":memory:").block();
+        _db = new SQLiteMemoryStore
+                .Builder()
+                .withFilename(":memory:")
+                .build();
+
+        ((SQLiteMemoryStore) _db).connectAsync().block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {

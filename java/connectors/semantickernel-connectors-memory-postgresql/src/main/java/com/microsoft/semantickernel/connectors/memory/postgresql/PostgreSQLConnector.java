@@ -1,6 +1,6 @@
 package com.microsoft.semantickernel.connectors.memory.postgresql;
 
-import com.microsoft.semantickernel.connectors.memory.jdbc.Connector;
+import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnectorException;
 import reactor.core.publisher.Mono;
@@ -12,30 +12,33 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.ZonedDateTime;
 
-public class PostgreSQLConnector extends JDBCConnector implements Connector {
+public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
+    public PostgreSQLConnector(Connection connection) {
+        super(connection);
+    }
+
     @Override
-    public Mono<Void> createTableAsync(Connection connection) {
+    public Mono<Void> createTableAsync() {
         return Mono.fromRunnable(
                         () -> {
                             String createCollectionKeyTable =
                                     "CREATE TABLE IF NOT EXISTS "
                                             + COLLECTIONS_TABLE_NAME
                                             + " ("
-                                            + "id SERIAL PRIMARY KEY, "
-                                            + "name TEXT NOT NULL UNIQUE"
+                                            + "id TEXT PRIMARY KEY"
                                             + " )";
 
                             String createSKMemoryTable =
                                     "CREATE TABLE IF NOT EXISTS "
                                             + TABLE_NAME
                                             + " ("
-                                            + "collection INTEGER, "
+                                            + "collection TEXT, "
                                             + "key TEXT, "
                                             + "metadata TEXT, "
                                             + "embedding TEXT, "
                                             + "timestamp TEXT, "
-                                            + "UNIQUE (collection, key), "
-                                            + "FOREIGN KEY(collection) REFERENCES "
+                                            + "PRIMARY KEY (collection, key), "
+                                            + "FOREIGN KEY (collection) REFERENCES "
                                             + COLLECTIONS_TABLE_NAME
                                             + "(id)"
                                             + " )";
@@ -47,7 +50,7 @@ public class PostgreSQLConnector extends JDBCConnector implements Connector {
                                             + TABLE_NAME
                                             + "(collection)";
 
-                            try (Statement statement = connection.createStatement()) {
+                            try (Statement statement = this.connection.createStatement()) {
                                 statement.addBatch(createCollectionKeyTable);
                                 statement.addBatch(createSKMemoryTable);
                                 statement.addBatch(createIndex);
@@ -64,7 +67,6 @@ public class PostgreSQLConnector extends JDBCConnector implements Connector {
 
     @Override
     public Mono<Void> insertOrIgnoreAsync(
-            Connection connection,
             String collection,
             String key,
             String metadata,
@@ -76,11 +78,9 @@ public class PostgreSQLConnector extends JDBCConnector implements Connector {
                                     "INSERT INTO "
                                             + TABLE_NAME
                                             + " (collection, key, metadata, embedding, timestamp)"
-                                            + " VALUES ((SELECT id FROM "
-                                            + COLLECTIONS_TABLE_NAME
-                                            + " WHERE name = ?), ?, ?, ?, ?)"
+                                            + " VALUES (?, ?, ?, ?, ?)"
                                             + " ON CONFLICT (collection, key) DO NOTHING";
-                            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                            try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                                 statement.setString(1, collection);
                                 statement.setString(2, key);
                                 statement.setString(3, metadata != null ? metadata : "");

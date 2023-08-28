@@ -13,6 +13,8 @@ import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import java.awt.*;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -23,15 +25,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
 public class JDBCMemoryStoreTest {
-    
+
     private static MemoryStore _db;
     private static int _collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -40,8 +40,12 @@ public class JDBCMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        _db = new JDBCMemoryStore.Builder().build();
-        ((JDBCMemoryStore) _db).connectAsync("jdbc:sqlite::memory:").block();
+        _db =
+                new JDBCMemoryStore.Builder()
+                        .withConnection(DriverManager.getConnection("jdbc:sqlite::memory:"))
+                        .build();
+
+        ((JDBCMemoryStore) _db).connectAsync().block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -403,9 +407,7 @@ public class JDBCMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(
-                                collection, compareEmbedding, topN, threshold, false)
+                _db.getNearestMatchesAsync(collection, compareEmbedding, topN, threshold, false)
                         .block();
 
         // Assert
@@ -489,9 +491,7 @@ public class JDBCMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(
-                                collection, compareEmbedding, i / 2, threshold, false)
+                _db.getNearestMatchesAsync(collection, compareEmbedding, i / 2, threshold, false)
                         .block();
 
         // Assert
@@ -569,8 +569,7 @@ public class JDBCMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
+                _db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
 
         // Assert
@@ -589,8 +588,7 @@ public class JDBCMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(
+                _db.getNearestMatchesAsync(
                                 collection, compareEmbedding, Integer.MAX_VALUE, threshold, false)
                         .block();
 
@@ -670,13 +668,9 @@ public class JDBCMemoryStoreTest {
         // Act
         double threshold = 0.75;
         Tuple2<MemoryRecord, Float> topNResultDefault =
-                _db
-                        .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
-                        .block();
+                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
         Tuple2<MemoryRecord, Float> topNResultWithEmbedding =
-                _db
-                        .getNearestMatchAsync(collection, compareEmbedding, threshold, true)
-                        .block();
+                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, true).block();
 
         // Assert
         assertNotNull(topNResultDefault);
@@ -760,9 +754,7 @@ public class JDBCMemoryStoreTest {
         // Act
         double threshold = 0.75;
         Tuple2<MemoryRecord, Float> topNResult =
-                _db
-                        .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
-                        .block();
+                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
 
         // Assert
         assertNotNull(topNResult);
@@ -782,9 +774,7 @@ public class JDBCMemoryStoreTest {
         // Act
         double threshold = -1;
         Tuple2<MemoryRecord, Float> topNResults =
-                _db
-                        .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
-                        .block();
+                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
 
         // Assert
         assertNull(topNResults);
@@ -814,9 +804,7 @@ public class JDBCMemoryStoreTest {
 
         // Act
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db
-                        .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true)
-                        .block();
+                _db.getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true).block();
         Collection<String> topNKeys =
                 topNResults.stream()
                         .map(tuple -> tuple.getT1().getKey())
@@ -846,8 +834,7 @@ public class JDBCMemoryStoreTest {
 
         // Act
         Collection<String> keys = _db.upsertBatchAsync(collection, records).block();
-        Collection<MemoryRecord> resultRecords =
-                _db.getBatchAsync(collection, keys, false).block();
+        Collection<MemoryRecord> resultRecords = _db.getBatchAsync(collection, keys, false).block();
 
         // Assert
         assertNotNull(keys);
@@ -938,8 +925,7 @@ public class JDBCMemoryStoreTest {
         _collectionNum++;
 
         // Act
-        assertThrows(
-                MemoryException.class, () -> _db.deleteCollectionAsync(collection).block());
+        assertThrows(MemoryException.class, () -> _db.deleteCollectionAsync(collection).block());
     }
 
     @Test
