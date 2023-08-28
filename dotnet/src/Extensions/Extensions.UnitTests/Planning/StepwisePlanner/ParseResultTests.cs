@@ -19,6 +19,9 @@ public sealed class ParseResultTests
     [InlineData("I think I have everything I need.\n[FINAL ANSWER] 42\n\n", "42")]
     [InlineData("I think I have everything I need.\n[FINAL ANSWER]42\n\n\n", "42")]
     [InlineData("I think I have everything I need.\n[FINAL ANSWER]\n 42\n\n\n", "42")]
+    [InlineData("I think I have everything I need.\n\n[FINALANSWER]\n 42\n\n\n", "42")]
+    [InlineData("I think I have everything I need.\n[FINAL_ANSWER]\n 42\n\n\n", "42")]
+    [InlineData("I think I have everything I need.\n[FINAL-ANSWER]\n 42\n\n\n", "42")]
     public void WhenInputIsFinalAnswerReturnsFinalAnswer(string input, string expected)
     {
         // Arrange
@@ -35,11 +38,12 @@ public sealed class ParseResultTests
     }
 
     [Theory]
-    [InlineData("To answer the first part of the question, I need to search for Leo DiCaprio's girlfriend on the web. To answer the second part, I need to find her current age and use a calculator to raise it to the 0.43 power.\n[ACTION]\n{\n  \"action\": \"Search\",\n  \"action_variables\": {\"input\": \"Leo DiCaprio's girlfriend\"}\n}", "Search", "input", "Leo DiCaprio's girlfriend")]
-    [InlineData("To answer the first part of the question, I need to search the web for Leo DiCaprio's girlfriend. To answer the second part, I need to find her current age and use the calculator tool to raise it to the 0.43 power.\n[ACTION]\n```\n{\n  \"action\": \"Search\",\n  \"action_variables\": {\"input\": \"Leo DiCaprio's girlfriend\"}\n}\n```", "Search", "input", "Leo DiCaprio's girlfriend")]
-    [InlineData("The web search result is a snippet from a Wikipedia article that says Leo DiCaprio's girlfriend is Camila Morrone, an Argentine-American model and actress. I need to find out her current age, which might be in the same article or another source. I can use the WebSearch.Search function again to search for her name and age.\n\n[ACTION] {\n  \"action\": \"WebSearch.Search\",\n \"action_variables\": {\"input\": \"Camila Morrone age\", \"count\": \"1\"}\n}", "WebSearch.Search", "input",
-        "Camila Morrone age", "count", "1")]
-    public void ParseActionReturnsAction(string input, string expectedAction, params string[] expectedVariables)
+    [InlineData("To answer the first part of the question, I need to search.\n[ACTION]\n{\n  \"action\": \"Search\",\n  \"action_variables\": {\"input\": \"something to search\"}\n}", "To answer the first part of the question, I need to search.", "Search", "input", "something to search")]
+    [InlineData("To answer the first part of the question, I need to search.\n[ACTION]\n```\n{\n  \"action\": \"Search\",\n  \"action_variables\": {\"input\": \"something to search\"}\n}\n```", "To answer the first part of the question, I need to search.", "Search", "input", "something to search")]
+    [InlineData("The web search result is a snippet from a Wikipedia article that says something.\n\n[ACTION] {\n  \"action\": \"WebSearch.Search\",\n \"action_variables\": {\"input\": \"another search\", \"count\": \"1\"}\n}", "The web search result is a snippet from a Wikipedia article that says something.", "WebSearch.Search", "input",
+        "another search", "count", "1")]
+    [InlineData("[ACTION] {\"action\": \"time.Year\", \"action_variables\": {\"input\": \"\"}}", null, "time.Year", "input", "")]
+    public void ParseActionReturnsAction(string input, string expectedThought, string expectedAction, params string[] expectedVariables)
     {
         Dictionary<string, string>? expectedDictionary = null;
         for (int i = 0; i < expectedVariables.Length; i += 2)
@@ -60,6 +64,7 @@ public sealed class ParseResultTests
         // Assert
         Assert.Equal(expectedAction, result.Action);
         Assert.Equal(expectedDictionary, result.ActionVariables);
+        Assert.Equal(expectedThought, result.Thought);
     }
 
     // Method to create Mock<ISKFunction> objects
