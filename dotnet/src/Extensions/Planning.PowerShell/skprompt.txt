@@ -14,7 +14,9 @@ To create PowerShell script, follow these rules:
 5. Function name should be used as Uri parameter of Invoke-RestMethod using following format: "sk://kernel/{FunctionName}".
 6. If necessary, Invoke-RestMethod can return string result, which should be passed to the next functions to achieve the goal.
 7. Return plain script, do not use markdown to indicate that it is PowerShell script or any other annotations.
-8. DO NOT declare variables for -Body parameters, assign values to cmdlet parameters inline.
+
+Example of valid syntax:
+$result = Invoke-RestMethod -Uri "sk://kernel/SkillName.FunctionName" -Method Post -Body @{input="test"}
 
 Begin!
 
