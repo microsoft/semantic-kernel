@@ -37,7 +37,7 @@ public class DefaultSKContext extends AbstractSKContext {
 
         private ContextVariables variables;
         private ReadOnlySkillCollection skills;
-        private SemanticTextMemory memory = NullMemory.getInstance();
+        private SemanticTextMemory memory;
 
         @Override
         public SKContext build() {
