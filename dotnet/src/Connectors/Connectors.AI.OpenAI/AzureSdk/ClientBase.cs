@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -26,9 +27,9 @@ public abstract class ClientBase
     private const int MaxResultsPerPrompt = 128;
 
     // Prevent external inheritors
-    private protected ClientBase(ILogger? logger = null)
+    private protected ClientBase(ILoggerFactory? loggerFactory = null)
     {
-        this.Logger = logger ?? NullLogger.Instance;
+        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -45,6 +46,35 @@ public abstract class ClientBase
     /// Logger instance
     /// </summary>
     private protected ILogger Logger { get; set; }
+
+    /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.PromptTokens",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.CompletionTokens",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.TotalTokens",
+            description: "Total number of tokens used");
 
     /// <summary>
     /// Creates completions for the prompt and settings.
@@ -66,17 +96,19 @@ public abstract class ClientBase
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
             () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null)
+        if (response is null)
         {
-            throw new OpenAIInvalidResponseException<Completions>(null, "Text completions null response");
+            throw new SKException("Text completions null response");
         }
 
         var responseData = response.Value;
 
         if (responseData.Choices.Count == 0)
         {
-            throw new OpenAIInvalidResponseException<Completions>(responseData, "Text completions not found");
+            throw new SKException("Text completions not found");
         }
+
+        this.CaptureUsageDetails(responseData.Usage);
 
         return responseData.Choices.Select(choice => new TextResult(responseData, choice)).ToList();
     }
@@ -126,14 +158,14 @@ public abstract class ClientBase
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
                 () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-            if (response == null)
+            if (response is null)
             {
-                throw new OpenAIInvalidResponseException<Embeddings>(null, "Text embedding null response");
+                throw new SKException("Text embedding null response");
             }
 
             if (response.Value.Data.Count == 0)
             {
-                throw new OpenAIInvalidResponseException<Embeddings>(response.Value, "Text embedding not found");
+                throw new SKException("Text embedding not found");
             }
 
             result.Add(response.Value.Data[0].Embedding.ToArray());
@@ -163,17 +195,21 @@ public abstract class ClientBase
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
 
-        if (response == null)
+        if (response is null)
         {
-            throw new OpenAIInvalidResponseException<ChatCompletions>(null, "Chat completions null response");
+            throw new SKException("Chat completions null response");
         }
 
-        if (response.Value.Choices.Count == 0)
+        var responseData = response.Value;
+
+        if (responseData.Choices.Count == 0)
         {
-            throw new OpenAIInvalidResponseException<ChatCompletions>(response.Value, "Chat completions not found");
+            throw new SKException("Chat completions not found");
         }
 
-        return response.Value.Choices.Select(chatChoice => new ChatResult(response.Value, chatChoice)).ToList();
+        this.CaptureUsageDetails(responseData.Usage);
+
+        return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
     }
 
     /// <summary>
@@ -200,7 +236,7 @@ public abstract class ClientBase
 
         if (response is null)
         {
-            throw new OpenAIInvalidResponseException<StreamingChatCompletions>(null, "Chat completions null response");
+            throw new SKException("Chat completions null response");
         }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;
@@ -358,9 +394,7 @@ public abstract class ClientBase
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                $"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new SKException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
@@ -439,11 +473,26 @@ public abstract class ClientBase
                         e.Message, e);
             }
         }
-        catch (Exception e) when (e is not AIException)
+        catch (Exception e) when (e is not SKException)
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
                 $"Something went wrong: {e.Message}", e);
         }
+    }
+
+    /// <summary>
+    /// Captures usage details, including token information.
+    /// </summary>
+    /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
+    private void CaptureUsageDetails(CompletionsUsage usage)
+    {
+        this.Logger.LogInformation(
+            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+            usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
+
+        s_promptTokensCounter.Add(usage.PromptTokens);
+        s_completionTokensCounter.Add(usage.CompletionTokens);
+        s_totalTokensCounter.Add(usage.TotalTokens);
     }
 }

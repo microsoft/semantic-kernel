@@ -21,7 +21,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Polly;
 using Polly.Retry;
 
@@ -68,19 +68,19 @@ public static class Example42_KernelBuilder
         // a correct dependency injection.
 
         // Manually setup all the dependencies used internally by the kernel
-        var logger = NullLogger.Instance;
+        var loggerFactory = NullLoggerFactory.Instance;
         var memoryStorage = new VolatileMemoryStore();
         var textEmbeddingGenerator = new AzureTextEmbeddingGeneration(
             modelId: azureOpenAIEmbeddingDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
-            logger: logger);
+            loggerFactory: loggerFactory);
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var skills = new SkillCollection();
-        var templateEngine = new PromptTemplateEngine(logger);
+        var templateEngine = new PromptTemplateEngine(loggerFactory);
         var kernelConfig = new KernelConfig();
 
-        using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
+        using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(
@@ -88,12 +88,12 @@ public static class Example42_KernelBuilder
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
             httpClient,
-            logger);
+            loggerFactory);
         aiServices.SetService("foo", Factory);
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, logger);
+        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, loggerFactory);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies
@@ -101,7 +101,7 @@ public static class Example42_KernelBuilder
 
         // Example: how to use a custom memory and configure Azure OpenAI
         var kernel4 = Kernel.Builder
-            .WithLogger(NullLogger.Instance)
+            .WithLoggerFactory(NullLoggerFactory.Instance)
             .WithMemory(memory)
             .WithAzureChatCompletionService(
                 deploymentName: azureOpenAIChatCompletionDeployment,
@@ -111,7 +111,7 @@ public static class Example42_KernelBuilder
 
         // Example: how to use a custom memory storage
         var kernel6 = Kernel.Builder
-            .WithLogger(NullLogger.Instance)
+            .WithLoggerFactory(NullLoggerFactory.Instance)
             .WithMemoryStorage(memoryStorage) // Custom memory storage
             .WithAzureChatCompletionService(
                 deploymentName: azureOpenAIChatCompletionDeployment,
@@ -164,9 +164,9 @@ public static class Example42_KernelBuilder
     // Example of a basic custom retry handler
     public class RetryThreeTimesFactory : IDelegatingHandlerFactory
     {
-        public DelegatingHandler Create(ILogger? logger)
+        public DelegatingHandler Create(ILoggerFactory? loggerFactory)
         {
-            return new RetryThreeTimes(logger);
+            return new RetryThreeTimes(loggerFactory);
         }
     }
 
@@ -174,9 +174,11 @@ public static class Example42_KernelBuilder
     {
         private readonly AsyncRetryPolicy _policy;
 
-        public RetryThreeTimes(ILogger? logger = null)
+        public RetryThreeTimes(ILoggerFactory? loggerFactory = null)
         {
-            this._policy = GetPolicy(logger ?? NullLogger.Instance);
+            this._policy = GetPolicy(loggerFactory is not null ?
+                loggerFactory.CreateLogger(nameof(RetryThreeTimes)) :
+                NullLogger.Instance);
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

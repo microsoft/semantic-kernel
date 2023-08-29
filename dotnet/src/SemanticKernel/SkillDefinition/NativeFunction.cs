@@ -18,7 +18,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -58,13 +57,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <param name="method">Signature of the method to invoke</param>
     /// <param name="target">Object containing the method to invoke</param>
     /// <param name="skillName">SK skill name</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
         MethodInfo method,
         object? target = null,
         string? skillName = null,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         if (!method.IsStatic && target is null)
         {
@@ -75,6 +74,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         {
             skillName = SkillCollection.GlobalSkill;
         }
+
+        ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
 
         MethodDetails methodDetails = GetMethodDetails(method, target, logger);
 
@@ -95,7 +96,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
-    /// <param name="logger">Application logger</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeFunction(
         Delegate nativeFunction,
@@ -103,8 +104,10 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
+        ILogger logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ISKFunction)) : NullLogger.Instance;
+
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, logger);
 
         functionName ??= nativeFunction.Method.Name;
@@ -123,23 +126,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             functionName: functionName,
             logger: logger);
     }
-
-    /// <summary>
-    /// Create a native function instance, given a semantic function configuration.
-    /// </summary>
-    /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
-    /// <param name="functionName">Name of the function to create.</param>
-    /// <param name="functionConfig">Semantic function configuration.</param>
-    /// <param name="logger">Optional logger for the function.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>SK function instance.</returns>
-    public static ISKFunction FromSemanticConfig(
-        string skillName,
-        string functionName,
-        SemanticFunctionConfig functionConfig,
-        ILogger? logger = null,
-        CancellationToken cancellationToken = default) =>
-            SemanticFunction.FromSemanticConfig(skillName, functionName, functionConfig, logger, cancellationToken);
 
     /// <inheritdoc/>
     public FunctionView Describe()
@@ -241,14 +227,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         string skillName,
         string functionName,
         string description,
-        ILogger? logger = null)
+        ILogger logger)
     {
         Verify.NotNull(delegateFunction);
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
         Verify.ParametersUniqueness(parameters);
 
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = logger;
 
         this._function = delegateFunction;
         this.Parameters = parameters;
@@ -261,14 +247,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <summary>
     /// Throw an exception if the function is not semantic, use this method when some logic makes sense only for semantic functions.
     /// </summary>
-    /// <exception cref="KernelException"></exception>
+    /// <exception cref="SKException"></exception>
     [DoesNotReturn]
     private void ThrowNotSemantic()
     {
         this._logger.LogError("The function is not semantic");
-        throw new KernelException(
-            KernelException.ErrorCodes.InvalidFunctionType,
-            "Invalid operation, the method requires a semantic function");
+        throw new SKException("Invalid operation, the method requires a semantic function");
     }
 
     private static MethodDetails GetMethodDetails(
@@ -408,10 +392,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return (static (SKContext context, CancellationToken _) => context, null);
         }
 
-        if (type == typeof(ILogger))
+        if (type == typeof(ILogger) || type == typeof(ILoggerFactory))
         {
-            TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)} parameter is permitted.");
-            return (static (SKContext context, CancellationToken _) => context.Logger, null);
+            TrackUniqueParameterType(ref hasLoggerParam, method, $"At most one {nameof(ILogger)}/{nameof(ILoggerFactory)} parameter is permitted.");
+            return type == typeof(ILogger) ?
+                ((SKContext context, CancellationToken _) => context.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(SKFunction)), null) :
+                ((SKContext context, CancellationToken _) => context.LoggerFactory, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
@@ -495,7 +481,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                 }
 
                 // 4. Otherwise, fail.
-                throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError, $"Missing value for parameter '{name}'");
+                throw new SKException($"Missing value for parameter '{name}'");
 
                 object? Process(string value)
                 {
@@ -662,15 +648,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         // Throws an exception if a result is found to be null unexpectedly
         static object ThrowIfNullResult(object? result) =>
             result ??
-            throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError, "Function returned null unexpectedly.");
+            throw new SKException("Function returned null unexpectedly.");
     }
 
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]
     private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
-        throw new KernelException(
-            KernelException.ErrorCodes.FunctionTypeNotSupported,
-            $"Function '{method.Name}' is not supported by the kernel. {reason}");
+        throw new SKException($"Function '{method.Name}' is not supported by the kernel. {reason}");
 
     /// <summary>Throws an exception indicating an invalid SKFunction signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)

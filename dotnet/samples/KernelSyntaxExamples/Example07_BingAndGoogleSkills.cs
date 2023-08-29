@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.Skills.Web.Google;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
 
 /// <summary>
@@ -30,7 +30,7 @@ public static class Example07_BingAndGoogleSkills
         }
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
                 modelId: openAIModelId,
                 apiKey: openAIApiKey)

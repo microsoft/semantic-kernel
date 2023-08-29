@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -84,8 +85,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange Mocks
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -122,8 +122,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -160,8 +159,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -198,8 +196,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -235,8 +232,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -272,7 +268,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -329,7 +325,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -399,7 +395,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -483,8 +479,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -541,7 +536,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
@@ -563,7 +558,7 @@ public sealed class PlanSerializationTests
         if (requireFunctions)
         {
             // Act + Assert
-            Assert.Throws<KernelException>(() => Plan.FromJson(serializedPlan, returnContext));
+            Assert.Throws<SKException>(() => Plan.FromJson(serializedPlan, returnContext));
         }
         else
         {

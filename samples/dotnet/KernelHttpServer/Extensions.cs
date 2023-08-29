@@ -135,8 +135,6 @@ internal static class Extensions
         _ = kernel.ImportSkill(new TextMemorySkill(kernel.Memory), nameof(TextMemorySkill));
     }
 
-    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The caller invokes native skills during a request and the skill instances must remain alive for those requests to be successful.")]
     internal static void RegisterNativeSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
     {
         if (ShouldLoad(nameof(DocumentSkill), skillsToLoad))

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
@@ -27,7 +27,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
     {
         var builder = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
-                .WithLogger(this._logger);
+                .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
         var emailSkill = target.ImportSkill(new EmailSkillFake());
@@ -48,7 +48,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
     {
         var builder = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
-                .WithLogger(this._logger);
+                .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
         var emailSkill = target.ImportSkill(new EmailSkillFake());
