@@ -18,7 +18,7 @@
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.StepwisePlanner.UnitTests" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Skills/**/*" />
