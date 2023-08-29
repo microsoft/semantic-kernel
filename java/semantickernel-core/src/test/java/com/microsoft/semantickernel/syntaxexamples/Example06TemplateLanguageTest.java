@@ -26,8 +26,8 @@ public class Example06TemplateLanguageTest {
         Kernel kernel =
                 SKBuilders.kernel()
                         .withDefaultAIService(
-                                SKBuilders.textCompletionService()
-                                        .setModelId("text-davinci-003")
+                                SKBuilders.textCompletion()
+                                        .withModelId("text-davinci-003")
                                         .withOpenAIClient(client)
                                         .build())
                         .build();
@@ -52,12 +52,12 @@ public class Example06TemplateLanguageTest {
 
         PromptTemplate promptRenderer =
                 SKBuilders.promptTemplate()
-                        .setPromptTemplateConfig(new PromptTemplateConfig())
-                        .setPromptTemplate(functionDefinition)
-                        .setPromptTemplateEngine(kernel.getPromptTemplateEngine())
+                        .withPromptTemplateConfig(new PromptTemplateConfig())
+                        .withPromptTemplate(functionDefinition)
+                        .withPromptTemplateEngine(kernel.getPromptTemplateEngine())
                         .build();
 
-        SKContext skContext = SKBuilders.context().setSkills(kernel.getSkills()).build();
+        SKContext skContext = SKBuilders.context().withSkills(kernel.getSkills()).build();
 
         Mono<String> renderedPrompt = promptRenderer.renderAsync(skContext);
 
@@ -70,8 +70,8 @@ public class Example06TemplateLanguageTest {
         CompletionSKFunction kindOfDay =
                 kernel.getSemanticFunctionBuilder()
                         .withKernel(kernel)
-                        .setPromptTemplate(functionDefinition)
-                        .setCompletionConfig(
+                        .withPromptTemplate(functionDefinition)
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256))
                         .build();
 

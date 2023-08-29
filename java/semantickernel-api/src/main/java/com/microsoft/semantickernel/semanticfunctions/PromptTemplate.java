@@ -33,10 +33,10 @@ public interface PromptTemplate extends Buildable {
 
     interface Builder extends SemanticKernelBuilder<PromptTemplate> {
 
-        Builder setPromptTemplate(String promptTemplate);
+        Builder withPromptTemplate(String promptTemplate);
 
-        Builder setPromptTemplateConfig(PromptTemplateConfig config);
+        Builder withPromptTemplateConfig(PromptTemplateConfig config);
 
-        Builder setPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine);
+        Builder withPromptTemplateEngine(PromptTemplateEngine promptTemplateEngine);
     }
 }

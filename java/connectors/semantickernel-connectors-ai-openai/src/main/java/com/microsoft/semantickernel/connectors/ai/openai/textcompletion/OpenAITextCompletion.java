@@ -81,7 +81,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
             return this;
         }
 
-        public Builder setModelId(String modelId) {
+        public Builder withModelId(String modelId) {
             this.modelId = modelId;
             return this;
         }

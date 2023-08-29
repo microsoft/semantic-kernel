@@ -24,7 +24,7 @@ public class Example17_ChatGPT {
                         "chat-test",
                         SKBuilders.chatCompletion()
                                 .withOpenAIClient(client)
-                                .setModelId("chat-test")
+                                .withModelId("chat-test")
                                 .build(),
                         true,
                         ChatCompletion.class

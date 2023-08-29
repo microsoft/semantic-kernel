@@ -78,8 +78,8 @@ public class Example12SequentialPlannerTest {
         Kernel kernel =
                 SKBuilders.kernel()
                         .withDefaultAIService(
-                                SKBuilders.textCompletionService()
-                                        .setModelId("text-davinci-002")
+                                SKBuilders.textCompletion()
+                                        .withModelId("text-davinci-002")
                                         .withOpenAIClient(client)
                                         .build())
                         .build();

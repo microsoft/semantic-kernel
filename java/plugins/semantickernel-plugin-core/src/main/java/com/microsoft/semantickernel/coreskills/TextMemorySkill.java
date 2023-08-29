@@ -126,9 +126,9 @@ public class TextMemorySkill {
                         it -> {
                             context.setVariable(TextMemorySkill.KEY_PARAM, it);
                             return SKBuilders.context()
-                                    .setVariables(context.getVariables())
-                                    .setSkills(context.getSkills())
-                                    .setMemory(context.getSemanticMemory())
+                                    .withVariables(context.getVariables())
+                                    .withSkills(context.getSkills())
+                                    .withMemory(context.getSemanticMemory())
                                     .build();
                         });
     }

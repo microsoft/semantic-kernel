@@ -21,9 +21,9 @@ public interface CompletionFunctionFactory {
                 String name,
                 PromptTemplateConfig.CompletionConfig completionConfig) {
             return kernel.getSemanticFunctionBuilder()
-                    .setPromptTemplate(prompt)
-                    .setFunctionName(name)
-                    .setCompletionConfig(completionConfig)
+                    .withPromptTemplate(prompt)
+                    .withFunctionName(name)
+                    .withCompletionConfig(completionConfig)
                     .build();
         }
     }

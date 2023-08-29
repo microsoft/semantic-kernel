@@ -37,7 +37,7 @@ public class DefaultSKContext extends AbstractSKContext {
 
         private ContextVariables variables;
         private ReadOnlySkillCollection skills;
-        private SemanticTextMemory memory = NullMemory.getInstance();
+        private SemanticTextMemory memory;
 
         @Override
         public SKContext build() {
@@ -48,13 +48,13 @@ public class DefaultSKContext extends AbstractSKContext {
         }
 
         @Override
-        public SKContext.Builder setVariables(ContextVariables variables) {
+        public SKContext.Builder withVariables(ContextVariables variables) {
             this.variables = variables;
             return this;
         }
 
         @Override
-        public SKContext.Builder setSkills(@Nullable ReadOnlySkillCollection skills) {
+        public SKContext.Builder withSkills(@Nullable ReadOnlySkillCollection skills) {
             if (skills != null) {
                 this.skills = skills;
             }
@@ -62,7 +62,7 @@ public class DefaultSKContext extends AbstractSKContext {
         }
 
         @Override
-        public SKContext.Builder setMemory(@Nullable SemanticTextMemory memory) {
+        public SKContext.Builder withMemory(@Nullable SemanticTextMemory memory) {
             if (memory != null) {
                 this.memory = memory.copy();
             }
@@ -71,9 +71,9 @@ public class DefaultSKContext extends AbstractSKContext {
 
         @Override
         public SKContext.Builder clone(SKContext context) {
-            return setVariables(context.getVariables())
-                    .setSkills(context.getSkills())
-                    .setMemory(context.getSemanticMemory());
+            return withVariables(context.getVariables())
+                    .withSkills(context.getSkills())
+                    .withMemory(context.getSemanticMemory());
         }
 
         @Override

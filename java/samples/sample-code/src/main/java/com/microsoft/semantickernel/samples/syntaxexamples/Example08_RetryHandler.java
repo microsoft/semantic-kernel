@@ -69,8 +69,8 @@ public class Example08_RetryHandler {
 
         String prompt = "{{$input}}\nSummarize the content above.";
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService()
-                .setModelId("text-davinci-003")
+        TextCompletion textCompletion = SKBuilders.textCompletion()
+                .withModelId("text-davinci-003")
                 .withOpenAIClient(client)
                 .build();
 
@@ -82,9 +82,9 @@ public class Example08_RetryHandler {
         CompletionSKFunction summarizeFunc = SKBuilders
                 .completionFunctions()
                 .withKernel(kernel)
-                .setPromptTemplate(prompt)
-                .setFunctionName("summarize")
-                .setCompletionConfig(
+                .withPromptTemplate(prompt)
+                .withFunctionName("summarize")
+                .withCompletionConfig(
                         new PromptTemplateConfig.CompletionConfig(
                                 0.2, 0.5, 0, 0, 2000))
                 .build();
