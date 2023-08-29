@@ -69,7 +69,7 @@ public class StepwisePlanner : IStepwisePlanner
 
         // Create context and logger
         this._context = this._kernel.CreateNewContext();
-        this._logger = this._kernel.LoggerFactory.CreateLogger(typeof(StepwisePlanner));
+        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
     /// <inheritdoc />

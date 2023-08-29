@@ -78,9 +78,4 @@ public sealed class StepwisePlannerConfig
 
 Continue the thought process!";
     #endregion Execution configuration
-
-    /// <summary>
-    /// A logger factory to use for logging.
-    /// </summary>
-    public ILoggerFactory? LoggerFactory { get; set; } = null;
 }
