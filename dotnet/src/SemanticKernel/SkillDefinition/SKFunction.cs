@@ -48,7 +48,7 @@ public static class SKFunction
         ILoggerFactory? loggerFactory = null)
             => NativeFunction.FromNativeFunction(nativeFunction, skillName, functionName, description, parameters, loggerFactory);
 
-    /* TODO Move or delete this
+    /* TODO Mark: Move or delete this
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
     /// </summary>

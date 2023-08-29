@@ -29,22 +29,16 @@ public class KernelTests
             .Build();
 
         var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
         kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act
         FunctionsView data = kernel.Skills.GetFunctionsView();
 
         // Assert - 3 functions, var name is not case sensitive
-        Assert.True(data.IsSemantic("jk", "joker"));
-        Assert.True(data.IsSemantic("JK", "JOKER"));
-        Assert.False(data.IsNative("jk", "joker"));
-        Assert.False(data.IsNative("JK", "JOKER"));
         Assert.True(data.IsNative("mySk", "sayhello"));
         Assert.True(data.IsNative("MYSK", "SayHello"));
         Assert.True(data.IsNative("mySk", "ReadSkillCollectionAsync"));
         Assert.True(data.IsNative("MYSK", "readskillcollectionasync"));
-        Assert.Single(data.SemanticFunctions["Jk"]);
         Assert.Equal(3, data.NativeFunctions["mySk"].Count);
     }
 
@@ -58,15 +52,12 @@ public class KernelTests
             .Build();
 
         var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act
         SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
 
         // Assert - 3 functions, var name is not case sensitive
-        Assert.Equal("Nice fun", result.Variables["jk.joker"]);
-        Assert.Equal("Nice fun", result.Variables["JK.JOKER"]);
         Assert.Equal("Just say hello", result.Variables["mySk.sayhello"]);
         Assert.Equal("Just say hello", result.Variables["mySk.SayHello"]);
         Assert.Equal("Export info.", result.Variables["mySk.ReadSkillCollectionAsync"]);

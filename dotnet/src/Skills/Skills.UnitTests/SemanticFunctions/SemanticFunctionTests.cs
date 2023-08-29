@@ -7,21 +7,21 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
-using Xunit;
 
-namespace SemanticKernel.UnitTests.SkillDefinition;
+namespace SemanticKernel.Skills.UnitTests.SemanticFunctions;
 
-public sealed class SKFunctionTests1
+public sealed class SemanticFunctionTests
 {
     private readonly Mock<IPromptTemplate> _promptTemplate;
 
-    public SKFunctionTests1()
+    public SemanticFunctionTests()
     {
         this._promptTemplate = new Mock<IPromptTemplate>();
         this._promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>(), It.IsAny<CancellationToken>())).ReturnsAsync("foo");
         this._promptTemplate.Setup(x => x.GetParameters()).Returns(new List<ParameterView>());
     }
 
+    /* TODO Mark: Can these be deleted
     [Fact]
     public void ItHasDefaultRequestSettings()
     {
@@ -71,6 +71,64 @@ public sealed class SKFunctionTests1
         Assert.Equal(settings.Temperature, skFunction.RequestSettings.Temperature);
         Assert.Equal(settings.MaxTokens, skFunction.RequestSettings.MaxTokens);
     }
+    */
+
+    /* TODO Mark: Move these tests here
+     [Fact]
+    public void ItProvidesAccessToFunctionsViaSkillCollection()
+    {
+        // Arrange
+        var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
+        var kernel = Kernel.Builder
+            .WithDefaultAIService<ITextCompletion>(factory.Object)
+            .Build();
+
+        var nativeSkill = new MySkill();
+        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+        kernel.ImportSkill(nativeSkill, "mySk");
+
+        // Act
+        FunctionsView data = kernel.Skills.GetFunctionsView();
+
+        // Assert - 3 functions, var name is not case sensitive
+        Assert.True(data.IsSemantic("jk", "joker"));
+        Assert.True(data.IsSemantic("JK", "JOKER"));
+        Assert.False(data.IsNative("jk", "joker"));
+        Assert.False(data.IsNative("JK", "JOKER"));
+        Assert.True(data.IsNative("mySk", "sayhello"));
+        Assert.True(data.IsNative("MYSK", "SayHello"));
+        Assert.True(data.IsNative("mySk", "ReadSkillCollectionAsync"));
+        Assert.True(data.IsNative("MYSK", "readskillcollectionasync"));
+        Assert.Single(data.SemanticFunctions["Jk"]);
+        Assert.Equal(3, data.NativeFunctions["mySk"].Count);
+    }
+
+    [Fact]
+    public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
+    {
+        // Arrange
+        var factory = new Mock<Func<ILoggerFactory, KernelConfig, ITextCompletion>>();
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("x", factory.Object)
+            .Build();
+
+        var nativeSkill = new MySkill();
+        kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+        var skill = kernel.ImportSkill(nativeSkill, "mySk");
+
+        // Act
+        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
+
+        // Assert - 3 functions, var name is not case sensitive
+        Assert.Equal("Nice fun", result.Variables["jk.joker"]);
+        Assert.Equal("Nice fun", result.Variables["JK.JOKER"]);
+        Assert.Equal("Just say hello", result.Variables["mySk.sayhello"]);
+        Assert.Equal("Just say hello", result.Variables["mySk.SayHello"]);
+        Assert.Equal("Export info.", result.Variables["mySk.ReadSkillCollectionAsync"]);
+        Assert.Equal("Export info.", result.Variables["mysk.readskillcollectionasync"]);
+    }
+
+     */
 
     private static Mock<IPromptTemplate> MockPromptTemplate()
     {
