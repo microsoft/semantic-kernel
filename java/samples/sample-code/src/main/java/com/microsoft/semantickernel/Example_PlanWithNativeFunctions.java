@@ -16,8 +16,8 @@ public class Example_PlanWithNativeFunctions {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = OpenAIClientProvider.getClient();
 
-        TextCompletion textCompletionService = SKBuilders.textCompletionService()
-                .setModelId("text-davinci-003")
+        TextCompletion textCompletionService = SKBuilders.textCompletion()
+                .withModelId("text-davinci-003")
                 .withOpenAIClient(client)
                 .build();
 

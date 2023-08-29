@@ -38,14 +38,15 @@ public interface ChatCompletion<ChatHistoryType extends ChatHistory>
     Flux<ChatCompletions> getStreamingChatCompletionsAsync(
             ChatHistoryType chat, ChatRequestSettings requestSettings);
 
-    static Builder builder() {
-        return BuildersSingleton.INST.getInstance(Builder.class);
+    @SuppressWarnings("unchecked")
+    static <ChatHistoryType extends ChatHistory, E extends ChatCompletion<ChatHistoryType>> Builder<ChatHistoryType> builder() {
+        return (Builder<ChatHistoryType>)BuildersSingleton.INST.getInstance(Builder.class);
     }
 
-    interface Builder extends SemanticKernelBuilder<ChatCompletion> {
+    interface Builder<ChatHistoryType extends ChatHistory> extends SemanticKernelBuilder<ChatCompletion<ChatHistoryType>> {
 
-        Builder withOpenAIClient(OpenAIAsyncClient client);
+        Builder<ChatHistoryType> withOpenAIClient(OpenAIAsyncClient client);
 
-        Builder setModelId(String modelId);
+        Builder<ChatHistoryType> withModelId(String modelId);
     }
 }

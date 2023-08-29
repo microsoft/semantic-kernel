@@ -26,8 +26,8 @@ public class Example04_CombineLLMPromptsAndNativeCode {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService()
-                .setModelId("text-davinci-003")
+        TextCompletion textCompletion = SKBuilders.textCompletion()
+                .withModelId("text-davinci-003")
                 .withOpenAIClient(client)
                 .build();
 

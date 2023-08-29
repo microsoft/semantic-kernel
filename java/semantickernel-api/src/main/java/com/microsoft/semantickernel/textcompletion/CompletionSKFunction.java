@@ -35,18 +35,18 @@ public interface CompletionSKFunction extends SKFunction<CompletionRequestSettin
 
         Builder withKernel(Kernel kernel);
 
-        Builder setPromptTemplate(String promptTemplate);
+        Builder withPromptTemplate(String promptTemplate);
 
-        Builder setPromptTemplateConfig(PromptTemplateConfig config);
+        Builder withPromptTemplateConfig(PromptTemplateConfig config);
 
-        Builder setCompletionConfig(PromptTemplateConfig.CompletionConfig completionConfig);
+        Builder withCompletionConfig(PromptTemplateConfig.CompletionConfig completionConfig);
 
-        Builder setSemanticFunctionConfig(SemanticFunctionConfig functionConfig);
+        Builder withSemanticFunctionConfig(SemanticFunctionConfig functionConfig);
 
-        Builder setSkillName(@Nullable String skillName);
+        Builder withSkillName(@Nullable String skillName);
 
-        Builder setFunctionName(@Nullable String functionName);
+        Builder withFunctionName(@Nullable String functionName);
 
-        Builder setDescription(String description);
+        Builder withDescription(String description);
     }
 }

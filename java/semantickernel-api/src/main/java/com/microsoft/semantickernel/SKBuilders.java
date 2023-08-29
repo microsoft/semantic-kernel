@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
+import com.microsoft.semantickernel.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.orchestration.ContextVariables;
@@ -19,12 +20,12 @@ public class SKBuilders {
     // Prevent creating object
     private SKBuilders() {}
 
-    public static TextCompletion.Builder textCompletionService() {
+    public static TextCompletion.Builder textCompletion() {
         return BuildersSingleton.INST.getInstance(TextCompletion.Builder.class);
     }
 
-    public static EmbeddingGeneration.Builder<String> textEmbeddingGenerationService() {
-        return BuildersSingleton.INST.getTextEmbeddingGenerationBuilder();
+    public static TextEmbeddingGeneration.Builder textEmbeddingGeneration() {
+        return BuildersSingleton.INST.getInstance(TextEmbeddingGeneration.Builder.class);
     }
 
     public static Kernel.Builder kernel() {
@@ -32,43 +33,44 @@ public class SKBuilders {
     }
 
     public static KernelConfig.Builder kernelConfig() {
-        return new KernelConfig.Builder();
+        return BuildersSingleton.INST.getInstance(KernelConfig.Builder.class);
     }
 
     public static SemanticTextMemory.Builder semanticTextMemory() {
-        return BuildersSingleton.INST.getSemanticTextMemoryBuilder();
+        return BuildersSingleton.INST.getInstance(SemanticTextMemory.Builder.class);
     }
 
     public static ReadOnlySkillCollection.Builder skillCollection() {
-        return BuildersSingleton.INST.getReadOnlySkillCollection();
+        return BuildersSingleton.INST.getInstance(ReadOnlySkillCollection.Builder.class);
     }
 
     public static PromptTemplate.Builder promptTemplate() {
-        return BuildersSingleton.INST.getPromptTemplateBuilder();
+        return BuildersSingleton.INST.getInstance(PromptTemplate.Builder.class);
     }
 
     public static PromptTemplateEngine.Builder promptTemplateEngine() {
-        return BuildersSingleton.INST.getPromptTemplateEngineBuilder();
+        return BuildersSingleton.INST.getInstance(PromptTemplateEngine.Builder.class);
     }
 
     public static ContextVariables.Builder variables() {
-        return BuildersSingleton.INST.variables();
+        return BuildersSingleton.INST.getInstance(ContextVariables.Builder.class);
     }
 
     public static SKContext.Builder context() {
-        return BuildersSingleton.INST.context();
+        return BuildersSingleton.INST.getInstance(SKContext.Builder.class);
     }
 
     public static PromptTemplateConfig.CompletionConfigBuilder completionConfig() {
-        return new PromptTemplateConfig.CompletionConfigBuilder();
+        return BuildersSingleton.INST.getInstance(PromptTemplateConfig.CompletionConfigBuilder.class);
     }
 
-    public static ChatCompletion.Builder chatCompletion() {
-        return BuildersSingleton.INST.getChatCompletion();
+    @SuppressWarnings("unchecked")
+    public static <ChatHistoryType extends ChatHistory> ChatCompletion.Builder<ChatHistoryType> chatCompletion() {
+        return (ChatCompletion.Builder<ChatHistoryType>)BuildersSingleton.INST.getInstance(ChatCompletion.Builder.class);
     }
 
     public static MemoryStore.Builder memoryStore() {
-        return BuildersSingleton.INST.getMemoryStoreBuilder();
+        return BuildersSingleton.INST.getInstance(MemoryStore.Builder.class);
     }
 
     public static CompletionSKFunction.Builder completionFunctions() {

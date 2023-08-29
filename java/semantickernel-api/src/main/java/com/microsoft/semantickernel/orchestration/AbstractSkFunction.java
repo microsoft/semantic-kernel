@@ -89,8 +89,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
 
             context =
                     SKBuilders.context()
-                            .setMemory(NullMemory.getInstance())
-                            .setSkills(skillsSupplier == null ? null : skillsSupplier.get())
+                            .withMemory(NullMemory.getInstance())
+                            .withSkills(skillsSupplier == null ? null : skillsSupplier.get())
                             .build();
         } else {
             context = context.copy();
@@ -114,8 +114,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
         if (context == null) {
             context =
                     SKBuilders.context()
-                            .setVariables(SKBuilders.variables().build())
-                            .setMemory(NullMemory.getInstance())
+                            .withVariables(SKBuilders.variables().build())
+                            .withMemory(NullMemory.getInstance())
                             .build();
         } else {
             context = context.copy();
@@ -225,9 +225,9 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             @Nullable ReadOnlySkillCollection skills) {
         SKContext tmpContext =
                 SKBuilders.context()
-                        .setVariables(variables)
-                        .setMemory(semanticMemory)
-                        .setSkills(skills)
+                        .withVariables(variables)
+                        .withMemory(semanticMemory)
+                        .withSkills(skills)
                         .build();
         return invokeAsync(tmpContext, null);
     }

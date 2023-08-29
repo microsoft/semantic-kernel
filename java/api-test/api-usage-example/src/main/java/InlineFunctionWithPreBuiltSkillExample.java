@@ -98,9 +98,9 @@ public class InlineFunctionWithPreBuiltSkillExample {
                         .buildAsyncClient();
 
         TextCompletion textCompletion =
-                SKBuilders.textCompletionService()
+                SKBuilders.textCompletion()
                         .withOpenAIClient(client)
-                        .setModelId(MODEL)
+                        .withModelId(MODEL)
                         .build();
         String prompt = "{{$input}}\nSummarize the content above.";
 
@@ -109,9 +109,9 @@ public class InlineFunctionWithPreBuiltSkillExample {
         CompletionSKFunction summarize =
                 SKBuilders.completionFunctions()
                         .withKernel(kernel)
-                        .setPromptTemplate(prompt)
-                        .setFunctionName("summarize")
-                        .setCompletionConfig(
+                        .withPromptTemplate(prompt)
+                        .withFunctionName("summarize")
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
                         .build();
 

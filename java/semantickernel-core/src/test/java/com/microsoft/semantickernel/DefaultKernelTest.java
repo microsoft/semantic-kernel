@@ -47,9 +47,9 @@ public class DefaultKernelTest {
         CompletionSKFunction chat =
                 kernel.getSemanticFunctionBuilder()
                         .withKernel(kernel)
-                        .setPromptTemplate(prompt)
-                        .setFunctionName("ChatBot")
-                        .setCompletionConfig(
+                        .withPromptTemplate(prompt)
+                        .withFunctionName("ChatBot")
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(0.7, 0.5, 0, 0, 2000))
                         .build();
 
@@ -316,9 +316,9 @@ public class DefaultKernelTest {
         CompletionSKFunction summarize =
                 SKBuilders.completionFunctions()
                         .withKernel(kernel)
-                        .setPromptTemplate(prompt)
-                        .setFunctionName("summarize")
-                        .setCompletionConfig(
+                        .withPromptTemplate(prompt)
+                        .withFunctionName("summarize")
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
                         .build();
 

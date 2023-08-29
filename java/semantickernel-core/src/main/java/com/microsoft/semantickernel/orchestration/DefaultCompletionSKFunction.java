@@ -98,8 +98,8 @@ public class DefaultCompletionSKFunction
     private SKContext buildContext() {
         assertSkillSupplierRegistered();
         return SKBuilders.context()
-                .setVariables(SKBuilders.variables().build())
-                .setSkills(getSkillsSupplier() == null ? null : getSkillsSupplier().get())
+                .withVariables(SKBuilders.variables().build())
+                .withSkills(getSkillsSupplier() == null ? null : getSkillsSupplier().get())
                 .build();
     }
 
@@ -305,9 +305,9 @@ public class DefaultCompletionSKFunction
 
                 PromptTemplate template =
                         SKBuilders.promptTemplate()
-                                .setPromptTemplateConfig(promptTemplateConfig)
-                                .setPromptTemplate(promptTemplate)
-                                .setPromptTemplateEngine(kernel.getPromptTemplateEngine())
+                                .withPromptTemplateConfig(promptTemplateConfig)
+                                .withPromptTemplate(promptTemplate)
+                                .withPromptTemplateEngine(kernel.getPromptTemplateEngine())
                                 .build();
 
                 // Prepare lambda wrapping AI logic
@@ -341,46 +341,46 @@ public class DefaultCompletionSKFunction
         }
 
         @Override
-        public CompletionSKFunction.Builder setPromptTemplate(String promptTemplate) {
+        public CompletionSKFunction.Builder withPromptTemplate(String promptTemplate) {
             this.promptTemplate = promptTemplate;
             return this;
         }
 
         @Override
-        public CompletionSKFunction.Builder setPromptTemplateConfig(
+        public CompletionSKFunction.Builder withPromptTemplateConfig(
                 PromptTemplateConfig promptTemplateConfig) {
             this.promptTemplateConfig = promptTemplateConfig;
             return this;
         }
 
         @Override
-        public CompletionSKFunction.Builder setCompletionConfig(
+        public CompletionSKFunction.Builder withCompletionConfig(
                 PromptTemplateConfig.CompletionConfig completionConfig) {
             this.completionConfig = completionConfig;
             return this;
         }
 
         @Override
-        public CompletionSKFunction.Builder setSemanticFunctionConfig(
+        public CompletionSKFunction.Builder withSemanticFunctionConfig(
                 SemanticFunctionConfig functionConfig) {
             this.functionConfig = functionConfig;
             return this;
         }
 
         @Override
-        public CompletionSKFunction.Builder setSkillName(@Nullable String skillName) {
+        public CompletionSKFunction.Builder withSkillName(@Nullable String skillName) {
             this.skillName = skillName;
             return this;
         }
 
         @Override
-        public CompletionSKFunction.Builder setFunctionName(@Nullable String functionName) {
+        public CompletionSKFunction.Builder withFunctionName(@Nullable String functionName) {
             this.functionName = functionName;
             return this;
         }
 
         @Override
-        public CompletionSKFunction.Builder setDescription(String description) {
+        public CompletionSKFunction.Builder withDescription(String description) {
             this.description = description;
             return this;
         }

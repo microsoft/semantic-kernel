@@ -60,7 +60,7 @@
 
   <Match>
     <Class name="com.microsoft.semantickernel.memory.DefaultSemanticTextMemory$Builder"/>
-    <Method name="setStorage"/>
+    <Method name="withStorage"/>
     <Bug pattern="EI_EXPOSE_REP2"/>
   </Match>
 

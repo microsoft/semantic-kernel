@@ -190,9 +190,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         // Execute the step
         SKContext initialContext =
                 SKBuilders.context()
-                        .setVariables(context.getVariables().writableClone())
-                        .setMemory(context.getSemanticMemory())
-                        .setSkills(context.getSkills())
+                        .withVariables(context.getVariables().writableClone())
+                        .withMemory(context.getSemanticMemory())
+                        .withSkills(context.getSkills())
                         .build();
 
         return Flux.fromIterable(this.steps)
@@ -226,9 +226,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                     // Execute the step
                     SKContext functionContext =
                             SKBuilders.context()
-                                    .setVariables(functionVariables)
-                                    .setMemory(context.getSemanticMemory())
-                                    .setSkills(context.getSkills())
+                                    .withVariables(functionVariables)
+                                    .withMemory(context.getSemanticMemory())
+                                    .withSkills(context.getSkills())
                                     .build();
 
                     return step.invokeAsync(functionContext, settings)
@@ -281,7 +281,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                                         return Mono.just(
                                                 SKBuilders.context()
                                                         .clone(context)
-                                                        .setVariables(updatedContext)
+                                                        .withVariables(updatedContext)
                                                         .build());
                                     });
                 });
@@ -302,9 +302,9 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
         SKContext context =
                 SKBuilders.context()
-                        .setVariables(variables)
-                        .setMemory(memory)
-                        .setSkills(skillsSupplier == null ? null : skillsSupplier.get())
+                        .withVariables(variables)
+                        .withMemory(memory)
+                        .withSkills(skillsSupplier == null ? null : skillsSupplier.get())
                         .build();
 
         return this.invokeAsync(context, settings);
@@ -322,8 +322,8 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         if (context == null) {
             context =
                     SKBuilders.context()
-                            .setVariables(state)
-                            .setSkills(
+                            .withVariables(state)
+                            .withSkills(
                                     getSkillsSupplier() == null ? null : getSkillsSupplier().get())
                             .build();
         } else {
@@ -387,7 +387,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                             }
                         });
 
-        return SKBuilders.context().clone(context).setVariables(clone).build();
+        return SKBuilders.context().clone(context).withVariables(clone).build();
     }
 
     /**

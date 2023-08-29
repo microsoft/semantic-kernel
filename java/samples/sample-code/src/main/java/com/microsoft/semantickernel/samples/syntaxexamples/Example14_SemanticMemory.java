@@ -57,9 +57,9 @@ public class Example14_SemanticMemory {
         var openAIAsyncClient = SamplesConfig.getClient();
 
         var kernelWithCustomDb = SKBuilders.kernel()
-                .withDefaultAIService(SKBuilders.textEmbeddingGenerationService()
+                .withDefaultAIService(SKBuilders.textEmbeddingGeneration()
                         .withOpenAIClient(openAIAsyncClient)
-                        .setModelId("text-embedding-ada-002")
+                        .withModelId("text-embedding-ada-002")
                         .build())
                 .withMemoryStorage(SKBuilders.memoryStore().build())
                 .build();

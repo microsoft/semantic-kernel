@@ -243,7 +243,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
                         .setQueryType(QueryType.SEMANTIC)
                         .setSemanticConfigurationName("default")
                         .setQueryLanguage(QueryLanguage.EN_US)
-                        .setAnswersCount(limit);
+                        .setTop(limit);
 
         return client.search(query, options).byPage().collect(toMemoryQueryResultList);
     }

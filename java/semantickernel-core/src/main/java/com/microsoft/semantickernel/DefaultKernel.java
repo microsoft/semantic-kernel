@@ -137,9 +137,9 @@ public class DefaultKernel implements Kernel {
                         (entry) -> {
                             return SKBuilders.completionFunctions()
                                     .withKernel(this)
-                                    .setSkillName(skillName)
-                                    .setFunctionName(entry.getKey())
-                                    .setSemanticFunctionConfig(entry.getValue())
+                                    .withSkillName(skillName)
+                                    .withFunctionName(entry.getKey())
+                                    .withSemanticFunctionConfig(entry.getValue())
                                     .build();
                         })
                 .forEach(this::registerSemanticFunction);
@@ -274,8 +274,8 @@ public class DefaultKernel implements Kernel {
         Mono<SKContext> pipelineBuilder =
                 Mono.just(
                         SKBuilders.context()
-                                .setVariables(variables)
-                                .setSkills(getSkills())
+                                .withVariables(variables)
+                                .withSkills(getSkills())
                                 .build());
 
         for (SKFunction f : Arrays.asList(pipeline)) {
@@ -286,17 +286,17 @@ public class DefaultKernel implements Kernel {
                                             () -> {
                                                 // Previous pipeline did not produce a result
                                                 return SKBuilders.context()
-                                                        .setVariables(variables)
-                                                        .setSkills(getSkills())
+                                                        .withVariables(variables)
+                                                        .withSkills(getSkills())
                                                         .build();
                                             }))
                             .flatMap(
                                     newContext -> {
                                         SKContext context =
                                                 SKBuilders.context()
-                                                        .setVariables(newContext.getVariables())
-                                                        .setMemory(newContext.getSemanticMemory())
-                                                        .setSkills(newContext.getSkills())
+                                                        .withVariables(newContext.getVariables())
+                                                        .withMemory(newContext.getSemanticMemory())
+                                                        .withSkills(newContext.getSkills())
                                                         .build();
                                         return f.invokeAsync(context, null);
                                     });
@@ -455,8 +455,8 @@ public class DefaultKernel implements Kernel {
             this.memoryFactory =
                     () ->
                             SKBuilders.semanticTextMemory()
-                                    .setEmbeddingGenerator(embeddingGenerator)
-                                    .setStorage(storage)
+                                    .withEmbeddingGenerator(embeddingGenerator)
+                                    .withStorage(storage)
                                     .build();
             return this;
         }
