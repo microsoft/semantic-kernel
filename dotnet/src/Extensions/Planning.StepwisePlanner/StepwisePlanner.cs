@@ -19,7 +19,7 @@ using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -56,7 +56,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._questionTemplate = EmbeddedResource.Read("Skills.RenderQuestion.skprompt.txt");
 
         // Load or use default PromptConfig
-        this._promptConfig = this.Config.PromptUserConfig ?? this.LoadPromptConfigFromResource();
+        this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
         this._promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
@@ -209,7 +209,7 @@ public class StepwisePlanner : IStepwisePlanner
                 context.Variables.Update(nextStep.FinalAnswer);
 
                 // Add additional results to the context
-                this.AddExecutionStatsToContext(stepsTaken, context, i + 1);
+                AddExecutionStatsToContext(stepsTaken, context, i + 1);
 
                 return context;
             }
@@ -281,7 +281,7 @@ public class StepwisePlanner : IStepwisePlanner
             await Task.Delay(this.Config.MinIterationTimeMs, token).ConfigureAwait(false);
         }
 
-        this.AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
+        AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
         context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
 
         return context;
@@ -289,7 +289,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     #region setup helpers
     // Function to load PromptConfig from embedded resource
-    private PromptTemplateConfig LoadPromptConfigFromResource()
+    private static PromptTemplateConfig LoadPromptConfigFromResource()
     {
         string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
@@ -301,8 +301,8 @@ public class StepwisePlanner : IStepwisePlanner
         var chatCompletion = aiService as IChatCompletion;
         var textCompletion = aiService as ITextCompletion;
 
-        string userManual = await this.GetUserManual(context).ConfigureAwait(false);
-        string userQuestion = await this.GetUserQuestion(context).ConfigureAwait(false);
+        string userManual = await this.GetUserManualAsync(context).ConfigureAwait(false);
+        string userQuestion = await this.GetUserQuestionAsync(context).ConfigureAwait(false);
 
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods that take one -- the method is obsolete and to be removed.
         var systemContext = this._kernel.CreateNewContext();
@@ -360,13 +360,14 @@ public class StepwisePlanner : IStepwisePlanner
         return false;
     }
 
-    private Task<string> GetUserManual(SKContext context)
+    private async Task<string> GetUserManualAsync(SKContext context)
     {
-        context.Variables.Set("functionDescriptions", this.GetFunctionDescriptions());
-        return this._promptRenderer.RenderAsync(this._manualTemplate, context);
+        var descriptions = await this.GetFunctionDescriptionsAsync().ConfigureAwait(false);
+        context.Variables.Set("functionDescriptions", descriptions);
+        return await this._promptRenderer.RenderAsync(this._manualTemplate, context).ConfigureAwait(false);
     }
 
-    private Task<string> GetUserQuestion(SKContext context)
+    private Task<string> GetUserQuestionAsync(SKContext context)
     {
         return this._promptRenderer.RenderAsync(this._questionTemplate, context);
     }
@@ -453,7 +454,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private async Task<string> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables)
     {
-        var availableFunctions = this.GetAvailableFunctions();
+        var availableFunctions = await this.GetAvailableFunctionsAsync().ConfigureAwait(false);
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
         if (targetFunction == null)
         {
@@ -497,15 +498,15 @@ public class StepwisePlanner : IStepwisePlanner
         return function;
     }
 
-    private string GetFunctionDescriptions()
+    private async Task<string> GetFunctionDescriptionsAsync()
     {
         // Use configured function provider if available, otherwise use the default SKContext function provider.
-        var availableFunctions = this.GetAvailableFunctions();
+        var availableFunctions = await this.GetAvailableFunctionsAsync().ConfigureAwait(false);
         var functionDescriptions = string.Join("\n\n", availableFunctions.Select(x => ToManualString(x)));
         return functionDescriptions;
     }
 
-    private IEnumerable<FunctionView> GetAvailableFunctions()
+    private Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync()
     {
         if (this.Config.GetAvailableFunctionsAsync is null)
         {
@@ -521,10 +522,11 @@ public class StepwisePlanner : IStepwisePlanner
                     .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
                     .OrderBy(x => x.SkillName)
                     .ThenBy(x => x.Name);
-            return availableFunctions;
+
+            return Task.FromResult(availableFunctions);
         }
 
-        return this.Config.GetAvailableFunctionsAsync(this.Config, null, CancellationToken.None).GetAwaiter().GetResult();
+        return this.Config.GetAvailableFunctionsAsync(this.Config, null, CancellationToken.None);
     }
 
     private static string ToManualString(FunctionView function)
@@ -564,7 +566,7 @@ public class StepwisePlanner : IStepwisePlanner
         return actionContext;
     }
 
-    private void AddExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context, int iterations)
+    private static void AddExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context, int iterations)
     {
         context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
         context.Variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
