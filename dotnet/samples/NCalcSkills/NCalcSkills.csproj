@@ -6,9 +6,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\src\Skills\Skills.Core\Skills.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoreCLR-NCalc"/>
+    <PackageReference Include="CoreCLR-NCalc" />
   </ItemGroup>
 </Project>
