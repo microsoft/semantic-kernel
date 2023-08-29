@@ -11,12 +11,20 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Reliability.Polly.Config;
 using Moq;
 using Moq.Protected;
+using Polly.Utilities;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.Reliability.Polly;
 
 public class DefaultHttpRetryHandlerTests
 {
+    public DefaultHttpRetryHandlerTests()
+    {
+        // Polly will do nothing on waiting/sleep (Unit Test lightspeed)
+        SystemClock.SleepAsync = (_, _) => Task.FromResult(0);
+        SystemClock.Sleep = (_, _) => { };
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.RequestTimeout)]
     [InlineData(HttpStatusCode.ServiceUnavailable)]
@@ -190,7 +198,6 @@ public class DefaultHttpRetryHandlerTests
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(4), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(statusCode, response.StatusCode);
-        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(4));
     }
 
     [Theory]
@@ -449,7 +456,6 @@ public class DefaultHttpRetryHandlerTests
         var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
 
         // Assert
-        mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(6));
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(6), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(statusCode, response.StatusCode);

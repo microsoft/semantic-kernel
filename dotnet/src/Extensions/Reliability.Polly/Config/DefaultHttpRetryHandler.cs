@@ -33,6 +33,8 @@ public class DefaultHttpRetryHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         return await this._policy.ExecuteAsync(async () =>
         {
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -58,6 +60,10 @@ public class DefaultHttpRetryHandler : DelegatingHandler
 
         policyBuilder = policyBuilder.Or<Exception>(e => this._config.RetryableExceptionTypes.Contains(e.GetType()));
 
+        if (this._config.UseExponentialBackoff)
+        {
+            return policyBuilder.WaitAndRetryAsync(Backoff.)
+        }
         return policyBuilder.WaitAndRetryAsync(
             retryCount: this._config.MaxRetryCount,
             sleepDurationProvider: (retryCount, context, timeSpan) =>
