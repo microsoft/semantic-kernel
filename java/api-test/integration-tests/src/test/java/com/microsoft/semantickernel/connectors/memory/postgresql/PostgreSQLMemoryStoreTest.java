@@ -26,6 +26,9 @@ import reactor.util.function.Tuple2;
 @Testcontainers
 public class PostgreSQLMemoryStoreTest {
     @Container private static final PostgreSQLContainer CONTAINER = new PostgreSQLContainer();
+    private static final String POSTGRES_USER = "test";
+    private static final String POSTGRES_PASSWORD = "test";
+
     private static MemoryStore _db;
     private static int _collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -37,7 +40,7 @@ public class PostgreSQLMemoryStoreTest {
         _db =
                 new PostgreSQLMemoryStore.Builder()
                         .withConnection(
-                                DriverManager.getConnection(CONTAINER.getJdbcUrl(), "test", "test"))
+                                DriverManager.getConnection(CONTAINER.getJdbcUrl(), POSTGRES_USER, POSTGRES_PASSWORD))
                         .build();
         ((PostgreSQLMemoryStore) _db).connectAsync().block();
     }
@@ -572,7 +575,7 @@ public class PostgreSQLMemoryStoreTest {
         assertEquals(topN, topNResults.size());
         assertEquals(topN, topNKeys.size());
         for (Iterator<Tuple2<MemoryRecord, Float>> iterator = topNResults.iterator();
-                iterator.hasNext(); ) {
+             iterator.hasNext(); ) {
             Tuple2<MemoryRecord, Float> tuple = iterator.next();
             int compare = Float.compare(tuple.getT2(), 0.75f);
             assertTrue(topNKeys.contains(tuple.getT1().getKey()));
