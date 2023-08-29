@@ -104,7 +104,7 @@ public static class Example51_StepwisePlanner
         await RunWithQuestion(kernel, currentExecutionResult, question, ChatMaxTokens);
     }
 
-    private static async Task RunWithQuestion(IKernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null, bool useChatStep = false, bool preferText = false)
+    private static async Task RunWithQuestion(IKernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
     {
         currentExecutionResult.question = question;
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
