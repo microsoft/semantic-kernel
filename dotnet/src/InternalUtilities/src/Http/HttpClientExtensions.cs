@@ -4,7 +4,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.Extensions.Logging;
 
 internal static class HttpClientExtensions
 {
@@ -15,9 +14,9 @@ internal static class HttpClientExtensions
     /// <param name="client">The <see cref="HttpClient"/> instance to use for sending the request.</param>
     /// <param name="request">The <see cref="HttpRequestMessage"/> to send.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> for canceling the request.</param>
-    /// <param name="logger">An optional <see cref="ILogger"/> instance for logging errors. (Default is null)</param>
     /// <returns>The <see cref="HttpResponseMessage"/> representing the response.</returns>
-    public static async Task<HttpResponseMessage> SendAndCheckSuccessAsync(this HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken, ILogger? logger = null)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
+    public static async Task<HttpResponseMessage> SendAndCheckSuccessAsync(this HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken)
     {
         HttpResponseMessage? response = null;
 
@@ -31,9 +30,13 @@ internal static class HttpClientExtensions
         }
         catch (HttpRequestException e)
         {
-            var responseContent = await response!.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string? responseContent = null;
 
-            logger?.LogError(e, "HTTP request failed: {StatusCode} {Message} {Content}", response!.StatusCode, e.Message, responseContent);
+            try
+            {
+                responseContent = await response!.Content.ReadAsStringAsync().ConfigureAwait(false);
+            }
+            catch { } // We want to suppress any exceptions that occur while reading the content, ensuring that an HttpOperationException is thrown instead.
 
             throw new HttpOperationException(response!.StatusCode, responseContent, e.Message, e);
         }
