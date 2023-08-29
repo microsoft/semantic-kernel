@@ -63,24 +63,4 @@ public class CompleteRequestSettings
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
-
-    /*
-    /// <summary>
-    /// Create a new settings object with the values from another settings object.
-    /// </summary>
-    /// <param name="config"></param>
-    /// <returns>An instance of <see cref="CompleteRequestSettings"/> </returns>
-    public static CompleteRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
-    {
-        return new CompleteRequestSettings
-        {
-            Temperature = config.Temperature,
-            TopP = config.TopP,
-            PresencePenalty = config.PresencePenalty,
-            FrequencyPenalty = config.FrequencyPenalty,
-            MaxTokens = config.MaxTokens,
-            StopSequences = config.StopSequences,
-        };
-    }
-    */
 }
