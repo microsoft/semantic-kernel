@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Concurrent;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
-using System;
-using Microsoft.Extensions.Logging;
-using System.Net.Http;
-using Microsoft.SemanticKernel.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 
