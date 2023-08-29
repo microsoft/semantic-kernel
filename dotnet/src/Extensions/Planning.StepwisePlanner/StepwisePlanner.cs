@@ -319,25 +319,10 @@ public class StepwisePlanner : IStepwisePlanner
 #pragma warning restore CA2016
 
         systemContext.Variables.Set("suffix", this.Config.Suffix);
-
-        // NOTE:
-        // Only render the userManual in the system message when not using ChatCompletion
-        // So far there is less hallucination if the functions are supplied from the user
-        // rather than the system message. This may be anecdotal though and should be tested further.
-        if (chatCompletion is null)
-        {
-            systemContext.Variables.Set("functionDescriptions", userManual);
-        }
+        systemContext.Variables.Set("functionDescriptions", userManual);
         string systemMessage = await this.GetSystemMessage(systemContext).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
-
-        // NOTE:
-        // See above re: userManual and systemMessage
-        if (chatCompletion is not null)
-        {
-            chatHistory.AddUserMessage(userManual);
-        }
         chatHistory.AddUserMessage(userQuestion);
 
         return chatHistory;
