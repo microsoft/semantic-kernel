@@ -375,7 +375,6 @@ public class StepwisePlanner : IStepwisePlanner
     {
         return this._promptRenderer.RenderAsync(this._promptTemplate, context);
     }
-
     #endregion setup helpers
 
     #region execution helpers
