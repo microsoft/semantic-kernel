@@ -2,13 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
-
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
 
@@ -28,8 +27,6 @@ internal struct DatabaseEntry
 internal sealed class Database
 {
     private const string TableName = "SKMemoryTable";
-
-    public Database() { }
 
     public Task CreateFunctionsAsync(DuckDBConnection conn, CancellationToken cancellationToken)
     {
@@ -76,20 +73,20 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private static string EncodeFloatArrayToString(float[] data)
+    private static string EncodeFloatArrayToString(float[]? data)
     {
-        var dataArrayString = $"[{string.Join(", ", (data ?? Array.Empty<float>()).Select(n => n.ToString("F10")))}]";
+        var dataArrayString = $"[{string.Join(", ", (data ?? Array.Empty<float>()).Select(n => n.ToString("F10", CultureInfo.InvariantCulture)))}]";
         return dataArrayString;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method sserializing array of float and numbers")]
     public async Task UpdateOrInsertAsync(DuckDBConnection conn,
         string collection, string key, string? metadata, float[]? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
+        await this.DeleteAsync(conn, collection, key, cancellationToken).ConfigureAwait(true);
         var embeddingArrayString = EncodeFloatArrayToString(embedding ?? Array.Empty<float>());
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-             INSERT INTO {TableName} VALUES(?1, ?2, ?3, {embeddingArrayString}, ?4)
-             ON CONFLICT (collection, key) DO UPDATE SET metadata=?3, embedding={embeddingArrayString}, timestamp=?4; ";
+        cmd.CommandText = $"INSERT INTO {TableName} VALUES(?1, ?2, ?3, {embeddingArrayString}, ?4)";
         cmd.Parameters.Add(new DuckDBParameter(collection));
         cmd.Parameters.Add(new DuckDBParameter(key));
         cmd.Parameters.Add(new DuckDBParameter(metadata ?? string.Empty));
@@ -120,10 +117,11 @@ internal sealed class Database
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method sserializing array of float and numbers")]
     public async IAsyncEnumerable<DatabaseEntry> GetNearestMatchesAsync(
         DuckDBConnection conn,
         string collectionName,
-        float[] embedding,
+        float[]? embedding,
         int limit,
         double minRelevanceScore = 0,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -133,7 +131,7 @@ internal sealed class Database
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
             SELECT key, metadata, timestamp, cast(embedding as string) as embeddingAsString, cast(cosine_similarity(embedding,{embeddingArrayString}) as FLOAT) as score FROM {TableName}
-            WHERE collection=?1 AND score >= {minRelevanceScore:F12}
+            WHERE collection=?1 AND score >= {minRelevanceScore.ToString("F12", CultureInfo.InvariantCulture)}
             ORDER BY score DESC
             LIMIT {limit};";
         cmd.Parameters.Add(new DuckDBParameter(collectionName));
