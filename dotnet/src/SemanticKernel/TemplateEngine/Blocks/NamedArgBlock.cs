@@ -29,10 +29,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return string.Empty;
     }
 
-    private readonly VarBlock _argNameAsVarBlock;
-    private readonly ValBlock? _valBlock;
-    private readonly VarBlock? _argValueAsVarBlock;
-
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
         : base(text?.Trim(), logger)
     {
@@ -102,4 +98,12 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return isNameValid && isValueValid;
     }
 #pragma warning restore CA2254
+
+    #region private ================================================================================
+
+    private readonly VarBlock _argNameAsVarBlock;
+    private readonly ValBlock? _valBlock;
+    private readonly VarBlock? _argValueAsVarBlock;
+
+    #endregion
 }
