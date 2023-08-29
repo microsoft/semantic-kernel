@@ -23,7 +23,11 @@ plugins with AI. With Semantic Kernel
 can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards,
 Semantic Kernel will execute the plan for the user.
 
+#### Please star the repo to show your support for this projoect!
+
 ![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
+
+
 
 ## Getting started with Semantic Kernel
 
