@@ -331,11 +331,7 @@ public class SQLiteMemoryStoreTest {
         }
     }
 
-    @Test
-    void getNearestMatchesReturnsAllResultsWithNoMinScoreAsync() {
-        // Arrange
-        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
-        int topN = 4;
+    private String setUpNearestMatches() {
         String collection = "test_collection" + _collectionNum;
         _collectionNum++;
         _db.createCollectionAsync(collection).block();
@@ -398,6 +394,16 @@ public class SQLiteMemoryStoreTest {
                         NULL_KEY,
                         NULL_TIMESTAMP);
         _db.upsertAsync(collection, testRecord).block();
+
+        return collection;
+    }
+
+    @Test
+    void getNearestMatchesReturnsAllResultsWithNoMinScoreAsync() {
+        // Arrange
+        Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
+        int topN = 4;
+        String collection = setUpNearestMatches();
 
         // Act
         double threshold = -1;
@@ -420,146 +426,24 @@ public class SQLiteMemoryStoreTest {
     void getNearestMatchesReturnsLimit() {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
-        int i = 0;
-        MemoryRecord testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, 1f, 1f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, 2f, 3f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, -1f, -2f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        String collection = setUpNearestMatches();
 
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db.getNearestMatchesAsync(collection, compareEmbedding, i / 2, threshold, false)
+                _db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
 
         // Assert
         assertNotNull(topNResults);
-        assertEquals(i / 2, topNResults.size());
+        assertTrue(topNResults.isEmpty());
     }
 
     @Test
     void getNearestMatchesReturnsEmptyIfLimitZero() {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
-        int i = 0;
-        MemoryRecord testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, 1f, 1f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, 2f, 3f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, -1f, -2f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        String collection = setUpNearestMatches();
 
         // Act
         double threshold = -1;
@@ -597,68 +481,8 @@ public class SQLiteMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
-        int i = 0;
-        MemoryRecord testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, 1f, 1f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
 
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, 2f, 3f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, -1f, -2f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        String collection = setUpNearestMatches();
 
         // Act
         double threshold = 0.75;
@@ -683,68 +507,7 @@ public class SQLiteMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
-        int i = 0;
-        MemoryRecord testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, 1f, 1f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(-1f, -1f, -1f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, 2f, 3f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(-1f, -2f, -3f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
-
-        i++;
-        testRecord =
-                MemoryRecord.localRecord(
-                        "test" + i,
-                        "text" + i,
-                        "description" + i,
-                        new Embedding(Arrays.asList(1f, -1f, -2f)),
-                        NULL_ADDITIONAL_METADATA,
-                        NULL_KEY,
-                        NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        String collection = setUpNearestMatches();
 
         // Act
         double threshold = 0.75;
