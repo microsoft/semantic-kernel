@@ -123,7 +123,6 @@ public static class Example51_StepwisePlanner
         plannerConfig.ExcludedFunctions.Add("DaysAgo");
         plannerConfig.ExcludedFunctions.Add("DateMatchingLastDayName");
         plannerConfig.MinIterationTimeMs = 1500;
-        plannerConfig.LoggerFactory = ConsoleLogger.LoggerFactory;
 
         if (!string.IsNullOrEmpty(Suffix))
         {
