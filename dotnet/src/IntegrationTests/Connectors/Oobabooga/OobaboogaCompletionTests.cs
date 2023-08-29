@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.Oobabooga.Completion.TextCompletion;
 using Xunit;
@@ -30,8 +29,8 @@ public sealed class OobaboogaCompletionTests : IDisposable
     private const string Input = " My name is";
 
     private readonly IConfigurationRoot _configuration;
-    private List<ClientWebSocket> _webSockets = new();
-    private Func<ClientWebSocket> _webSocketFactory;
+    private readonly List<ClientWebSocket> _webSockets = new();
+    private readonly Func<ClientWebSocket> _webSocketFactory;
 
     public OobaboogaCompletionTests()
     {
