@@ -136,6 +136,22 @@ public class JDBCMemoryStore implements MemoryStore {
         return this.internalGetAsync(collectionName, key, withEmbedding);
     }
 
+    private MemoryRecord memoryRecordFromDatabaseEntry(DatabaseEntry entry, boolean withEmbedding) {
+        try {
+            Embedding embedding =
+                    withEmbedding
+                            ? new ObjectMapper().readValue(entry.getEmbedding(), Embedding.class)
+                            : Embedding.empty();
+            return MemoryRecord.fromJsonMetadata(
+                    entry.getMetadata(), embedding, entry.getKey(), entry.getTimestamp());
+        } catch (JsonProcessingException e) {
+            throw new SQLConnectorException(
+                    SQLConnectorException.ErrorCodes.SQL_ERROR,
+                    "Error deserializing database entry",
+                    e);
+        }
+    }
+
     private Mono<MemoryRecord> internalGetAsync(
             String collectionName, String key, boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
@@ -150,31 +166,9 @@ public class JDBCMemoryStore implements MemoryStore {
                             }
 
                             return entry.map(
-                                    databaseEntry -> {
-                                        try {
-                                            if (withEmbedding) {
-                                                return MemoryRecord.fromJsonMetadata(
-                                                        databaseEntry.getMetadata(),
-                                                        new ObjectMapper()
-                                                                .readValue(
-                                                                        databaseEntry
-                                                                                .getEmbedding(),
-                                                                        Embedding.class),
-                                                        databaseEntry.getKey(),
-                                                        databaseEntry.getTimestamp());
-                                            }
-                                            return MemoryRecord.fromJsonMetadata(
-                                                    databaseEntry.getMetadata(),
-                                                    Embedding.empty(),
-                                                    databaseEntry.getKey(),
-                                                    databaseEntry.getTimestamp());
-                                        } catch (JsonProcessingException e) {
-                                            throw new SQLConnectorException(
-                                                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                                    "Error deserializing database entry",
-                                                    e);
-                                        }
-                                    });
+                                    databaseEntry ->
+                                            memoryRecordFromDatabaseEntry(
+                                                    databaseEntry, withEmbedding));
                         });
     }
 
@@ -186,7 +180,7 @@ public class JDBCMemoryStore implements MemoryStore {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(keys);
         return Flux.fromIterable(keys)
-                .flatMap(key -> internalGetAsync(collectionName, key, withEmbeddings))
+                .concatMap(key -> internalGetAsync(collectionName, key, withEmbeddings))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -203,7 +197,7 @@ public class JDBCMemoryStore implements MemoryStore {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(keys);
         return Flux.fromIterable(keys)
-                .flatMap(key -> this.dbConnector.deleteAsync(collectionName, key))
+                .concatMap(key -> this.dbConnector.deleteAsync(collectionName, key))
                 .then();
     }
 

@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.connectors.memory.jdbc;
 
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,10 +13,11 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-public class JDBCConnector implements SQLConnector {
+public class JDBCConnector implements SQLConnector, Closeable {
     protected final Connection connection;
 
     public JDBCConnector(Connection connection) {
@@ -23,13 +25,13 @@ public class JDBCConnector implements SQLConnector {
     }
 
     // Convenience method to format a ZonedDateTime in a format acceptable to SQL
-    protected static String formatDatetime(ZonedDateTime datetime) {
+    protected static String formatDatetime(@Nullable ZonedDateTime datetime) {
         if (datetime == null) return "";
         return datetime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     // Convenience method to parse a SQL datetime string into a ZonedDateTime
-    protected static ZonedDateTime parseDatetime(String datetime) {
+    protected static ZonedDateTime parseDatetime(@Nullable String datetime) {
         if (datetime == null || datetime.isEmpty()) return null;
         return ZonedDateTime.parse(datetime, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
@@ -348,5 +350,15 @@ public class JDBCConnector implements SQLConnector {
                         })
                 .subscribeOn(Schedulers.boundedElastic())
                 .then();
+    }
+
+    @Override
+    public void close() {
+        try {
+            this.connection.close();
+        } catch (SQLException e) {
+            throw new SQLConnectorException(
+                    SQLConnectorException.ErrorCodes.SQL_ERROR, "Failed to close connection", e);
+        }
     }
 }
