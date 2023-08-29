@@ -150,6 +150,8 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
+        this.EnsureSuccessStatusCode(response);
+
         var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
@@ -165,6 +167,8 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
+        this.EnsureSuccessStatusCode(response);
+
         await foreach (var result in this.GetStreamingResultsAsync(response))
         {
             yield return result;
@@ -178,13 +182,20 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
         request.Headers.Add("Api-Key", this._config.CompletionApiKey);
 
+        return await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    private void EnsureSuccessStatusCode(HttpResponseMessage response)
+    {
         try
         {
-            return await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
         }
         catch (HttpRequestException ex)
         {
-            this._logger.LogError("Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
+            this._logger.LogError(
+                "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
+
             throw;
         }
     }
