@@ -3,6 +3,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -33,9 +34,9 @@ public class ScriptGenerator
 
     public async Task<string> GenerateScriptAsync(string goal, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(goal))
+        if (string.IsNullOrEmpty(goal))
         {
-            throw new PlanningException(PlanningException.ErrorCodes.InvalidGoal, "The goal specified is empty");
+            throw new SKException("The goal specified is empty");
         }
 
         var availableFunctionsManual = this._context.GetFunctionsManual(this.Config);

@@ -9,7 +9,7 @@ using RepoUtils;
 namespace KernelSyntaxExamples;
 
 // ReSharper disable once InconsistentNaming
-public static class Example54_PowerShellPlanning
+public static class Example56_PowerShellPlanning
 {
     public static async Task RunAsync()
     {
@@ -41,7 +41,7 @@ public static class Example54_PowerShellPlanning
         var folder = RepoFiles.SampleSkillsPath();
 
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithAzureChatCompletionService(
                 TestConfiguration.AzureOpenAI.ChatDeploymentName,
                 TestConfiguration.AzureOpenAI.Endpoint,

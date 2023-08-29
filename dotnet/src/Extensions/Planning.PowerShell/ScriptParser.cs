@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation.Language;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -100,9 +101,7 @@ public static class ScriptParser
 
         if (!commandName.Equals(AllowedCommandName, StringComparison.Ordinal))
         {
-            throw new PlanningException(
-                PlanningException.ErrorCodes.InvalidPlan,
-                $"Script can contain only {AllowedCommandName} command.");
+            throw new SKException($"Script can contain only {AllowedCommandName} command.");
         }
     }
 
