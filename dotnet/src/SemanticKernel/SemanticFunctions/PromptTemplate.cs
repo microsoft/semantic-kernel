@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -64,16 +63,6 @@ public sealed class PromptTemplate : IPromptTemplate
         foreach (var p in this._promptConfig.Input.Parameters)
         {
             result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
-        }
-
-        // Parameters from the template
-        foreach (var block in this._templateEngine.ExtractBlocks(this._template))
-        {
-            string? blockName = (block as VarBlock)?.Name;
-            if (!string.IsNullOrEmpty(blockName) && !result.ContainsKey(blockName!))
-            {
-                result.Add(blockName!, new ParameterView(blockName!));
-            }
         }
 
         return result.Values.ToList();
