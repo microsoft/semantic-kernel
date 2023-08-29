@@ -79,14 +79,6 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterFunction(ISKFunction skfunction)
-    {
-        this._skillCollection.AddFunction(skfunction);
-
-        return skfunction;
-    }
-
-    /// <inheritdoc/>
     public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null)
     {
         Verify.NotNull(skillInstance);

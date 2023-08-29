@@ -45,37 +45,6 @@ public interface IKernel
     IReadOnlySkillCollection Skills { get; }
 
     /// <summary>
-    /// Register a Semantic Kernel callable function in the internal skill collection.
-    /// </summary>
-    /// <param name="skfunction">The Semantic Kernel callable function to register.</param>
-    /// <returns>The Semantic Kernel callable function that was registered.</returns>
-    ISKFunction RegisterFunction(ISKFunction skfunction);
-
-    /*
-    /// <summary>
-    /// Build and register a function in the internal skill collection, in a global generic skill.
-    /// </summary>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string functionName,
-        SemanticFunctionConfig functionConfig);
-
-    /// <summary>
-    /// Build and register a function in the internal skill collection.
-    /// </summary>
-    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string skillName,
-        string functionName,
-        SemanticFunctionConfig functionConfig);
-    */
-
-    /// <summary>
     /// Registers a custom function in the internal skill collection.
     /// </summary>
     /// <param name="customFunction">The custom function to register.</param>

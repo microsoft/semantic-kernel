@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class SkillCollection : ISkillCollection
 {
-    internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
+    public const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
     public SkillCollection(ILoggerFactory? loggerFactory = null)
     {

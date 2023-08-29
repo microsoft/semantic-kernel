@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -19,24 +20,34 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class InlineFunctionsDefinitionExtension
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// Build and register a function in the internal skill collection, in a global generic skill.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
+    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(this IKernel kernel, string functionName, SemanticFunctionConfig functionConfig)
     {
-        return kernel.RegisterSemanticFunction(functionName, functionConfig);
+        return kernel.RegisterSemanticFunction(SkillCollection.GlobalSkill, functionName, functionConfig);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Build and register a function in the internal skill collection.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
+    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(this IKernel kernel, string skillName, string functionName, SemanticFunctionConfig functionConfig)
     {
         // Future-proofing the name not to contain special chars
-        if (skillName is not null)
-        {
-            Verify.ValidSkillName(skillName);
-        }
+        Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
 
         ISKFunction function = kernel.CreateSemanticFunction(skillName, functionName, functionConfig);
-        return kernel.RegisterFunction(function);
+        return kernel.RegisterCustomFunction(function);
     }
 
     /// <summary>
@@ -94,7 +105,7 @@ public static class InlineFunctionsDefinitionExtension
     }
 
     /// <summary>
-    /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
+    /// Define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
@@ -166,6 +177,63 @@ public static class InlineFunctionsDefinitionExtension
             stopSequences);
 
         return kernel.RunAsync(skfunction);
+    }
+
+    /// <summary>
+    /// Define a semantic function.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="skillName"></param>
+    /// <param name="functionName"></param>
+    /// <param name="functionConfig"></param>
+    /// <returns></returns>
+    /// <exception cref="SKException"></exception>
+    private static ISKFunction CreateSemanticFunction(
+        this IKernel kernel,
+        string skillName,
+        string functionName,
+        SemanticFunctionConfig functionConfig)
+    {
+        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
+        }
+
+        ISKFunction func = SemanticFunction.FromSemanticConfig(
+            skillName,
+            functionName,
+            functionConfig,
+            kernel.LoggerFactory
+        );
+
+        // Connect the function to the current kernel skill collection, in case the function
+        // is invoked manually without a context and without a way to find other functions.
+        func.SetDefaultSkillCollection(kernel.Skills);
+
+        func.SetAIConfiguration(FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+
+        // Note: the service is instantiated using the kernel configuration state when the function is invoked
+        func.SetAIService(() => kernel.GetService<ITextCompletion>());
+
+        return func;
+    }
+
+    /// <summary>
+    /// Create a new settings object with the values from another settings object.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns>An instance of <see cref="CompleteRequestSettings"/> </returns>
+    private static CompleteRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
+    {
+        return new CompleteRequestSettings
+        {
+            Temperature = config.Temperature,
+            TopP = config.TopP,
+            PresencePenalty = config.PresencePenalty,
+            FrequencyPenalty = config.FrequencyPenalty,
+            MaxTokens = config.MaxTokens,
+            StopSequences = config.StopSequences,
+        };
     }
 
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");
