@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class SemanticFunction : ISKFunction, IDisposable
+public sealed class SemanticFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
     public string Name { get; }

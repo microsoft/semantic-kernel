@@ -1,12 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
+using Xunit;
 
 namespace SemanticKernel.Skills.UnitTests.SemanticFunctions;
 
@@ -21,7 +27,6 @@ public sealed class SemanticFunctionTests
         this._promptTemplate.Setup(x => x.GetParameters()).Returns(new List<ParameterView>());
     }
 
-    /* TODO Mark: Can these be deleted
     [Fact]
     public void ItHasDefaultRequestSettings()
     {
@@ -30,7 +35,7 @@ public sealed class SemanticFunctionTests
         var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
 
         // Act
-        var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
+        var skFunction = SemanticFunction.FromSemanticConfig("sk", "name", functionConfig);
 
         // Assert
         Assert.Equal(0, skFunction.RequestSettings.Temperature);
@@ -43,7 +48,7 @@ public sealed class SemanticFunctionTests
         // Arrange
         var templateConfig = new PromptTemplateConfig();
         var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
-        var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
+        var skFunction = SemanticFunction.FromSemanticConfig("sk", "name", functionConfig);
         var settings = new CompleteRequestSettings
         {
             Temperature = 0.9,
@@ -71,10 +76,8 @@ public sealed class SemanticFunctionTests
         Assert.Equal(settings.Temperature, skFunction.RequestSettings.Temperature);
         Assert.Equal(settings.MaxTokens, skFunction.RequestSettings.MaxTokens);
     }
-    */
 
-    /* TODO Mark: Move these tests here
-     [Fact]
+    [Fact]
     public void ItProvidesAccessToFunctionsViaSkillCollection()
     {
         // Arrange
@@ -128,8 +131,6 @@ public sealed class SemanticFunctionTests
         Assert.Equal("Export info.", result.Variables["mysk.readskillcollectionasync"]);
     }
 
-     */
-
     private static Mock<IPromptTemplate> MockPromptTemplate()
     {
         var promptTemplate = new Mock<IPromptTemplate>();
@@ -158,5 +159,51 @@ public sealed class SemanticFunctionTests
             .ReturnsAsync(new List<ITextResult> { textCompletionResult.Object });
 
         return aiService;
+    }
+
+    public class MySkill
+    {
+        [SKFunction, Description("Return any value.")]
+        public string GetAnyValue()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        [SKFunction, Description("Just say hello")]
+        public void SayHello()
+        {
+            Console.WriteLine("Hello folks!");
+        }
+
+        [SKFunction, Description("Export info."), SKName("ReadSkillCollectionAsync")]
+        public async Task<SKContext> ReadSkillCollectionAsync(SKContext context)
+        {
+            await Task.Delay(0);
+
+            if (context.Skills == null)
+            {
+                Assert.Fail("Skills collection is missing");
+            }
+
+            FunctionsView procMem = context.Skills.GetFunctionsView();
+
+            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
+            {
+                foreach (FunctionView f in list.Value)
+                {
+                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
+                }
+            }
+
+            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.NativeFunctions)
+            {
+                foreach (FunctionView f in list.Value)
+                {
+                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
+                }
+            }
+
+            return context;
+        }
     }
 }

@@ -242,37 +242,6 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly ILogger _logger;
 
-    /* TODO Move this
-    private ISKFunction CreateSemanticFunction(
-        string skillName,
-        string functionName,
-        SemanticFunctionConfig functionConfig)
-    {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
-        ISKFunction func = SemanticFunction.FromSemanticConfig(
-            skillName,
-            functionName,
-            functionConfig,
-            this.LoggerFactory
-        );
-
-        // Connect the function to the current kernel skill collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultSkillCollection(this.Skills);
-
-        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>());
-
-        return func;
-    }
-    */
-
     /// <summary>
     /// Import a skill into the kernel skill collection, so that semantic functions and pipelines can consume its functions.
     /// </summary>
