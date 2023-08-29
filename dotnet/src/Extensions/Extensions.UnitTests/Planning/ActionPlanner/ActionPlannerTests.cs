@@ -7,7 +7,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
@@ -131,10 +130,8 @@ public sealed class ActionPlannerTests
         kernel.Setup(x => x.Skills).Returns(skills.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
 
-        kernel.Setup(x => x.RegisterSemanticFunction(
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>()
+        kernel.Setup(x => x.RegisterCustomFunction(
+            It.IsAny<ISKFunction>()
         )).Returns(mockFunctionFlowFunction.Object);
 
         return kernel;
