@@ -18,6 +18,9 @@
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Skills/**/*" />
     <EmbeddedResource Include="Skills/**/*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

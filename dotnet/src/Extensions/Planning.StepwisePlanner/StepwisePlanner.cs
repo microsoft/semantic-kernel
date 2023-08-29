@@ -95,6 +95,14 @@ public class StepwisePlanner : IStepwisePlanner
         return plan;
     }
 
+    /// <summary>
+    /// Execute a plan
+    /// </summary>
+    /// <param name="question">The question to answer</param>
+    /// <param name="context">The context to use</param>
+    /// <param name="token">The cancellation token</param>
+    /// <returns>The context with the result</returns>
+    /// <exception cref="SKException">No AIService available for getting completions.</exception>
     [SKFunction, SKName("ExecutePlan"), Description("Execute a plan")]
     public async Task<SKContext> ExecutePlanAsync(
         [Description("The question to answer")]
@@ -288,16 +296,8 @@ public class StepwisePlanner : IStepwisePlanner
     }
 
     #region setup helpers
-    // Function to load PromptConfig from embedded resource
-    private static PromptTemplateConfig LoadPromptConfigFromResource()
-    {
-        string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
-        return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
-    }
-
     private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, IAIService aiService, SKContext context)
     {
-        // this.CreateChatHistory(this._kernel, out var aiService);
         var chatCompletion = aiService as IChatCompletion;
         var textCompletion = aiService as ITextCompletion;
 
@@ -344,22 +344,6 @@ public class StepwisePlanner : IStepwisePlanner
         return chatHistory;
     }
 
-    private static bool TryGetChatCompletion(IKernel kernel, [NotNullWhen(true)] out IChatCompletion? chatCompletion)
-    {
-        try
-        {
-            // Client used to request answers to chat completion models
-            chatCompletion = kernel.GetService<IChatCompletion>();
-            return true;
-        }
-        catch (SKException)
-        {
-            chatCompletion = null;
-        }
-
-        return false;
-    }
-
     private async Task<string> GetUserManualAsync(SKContext context)
     {
         var descriptions = await this.GetFunctionDescriptionsAsync().ConfigureAwait(false);
@@ -379,7 +363,12 @@ public class StepwisePlanner : IStepwisePlanner
     #endregion setup helpers
 
     #region execution helpers
-    public virtual SystemStep ParseResult(string input)
+    /// <summary>
+    /// Parse LLM response into a SystemStep during execution
+    /// </summary>
+    /// <param name="input">The response from the LLM</param>
+    /// <returns>A SystemStep</returns>
+    protected internal virtual SystemStep ParseResult(string input)
     {
         var result = new SystemStep
         {
@@ -412,7 +401,8 @@ public class StepwisePlanner : IStepwisePlanner
         }
         else
         {
-            throw new InvalidOperationException("Unexpected input format");
+            result.Observation = "Could not parse response. Unable to find thought or action. Please try again.";
+            return result;
         }
 
         result.Thought = result.Thought?.Replace(Thought, string.Empty).Trim();
@@ -529,29 +519,6 @@ public class StepwisePlanner : IStepwisePlanner
         return this.Config.GetAvailableFunctionsAsync(this.Config, null, CancellationToken.None);
     }
 
-    private static string ToManualString(FunctionView function)
-    {
-        var inputs = string.Join("\n", function.Parameters.Select(parameter =>
-        {
-            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"(default='{parameter.DefaultValue}')";
-            return $"  - {parameter.Name}: {parameter.Description} {defaultValueString}";
-        }));
-
-        var functionDescription = function.Description.Trim();
-
-        if (string.IsNullOrEmpty(inputs))
-        {
-            return $"{ToFullyQualifiedName(function)}: {functionDescription}\n";
-        }
-
-        return $"{ToFullyQualifiedName(function)}: {functionDescription}\n{inputs}\n";
-    }
-
-    private static string ToFullyQualifiedName(FunctionView function)
-    {
-        return $"{function.SkillName}.{function.Name}";
-    }
-
     private SKContext CreateActionContext(Dictionary<string, string> actionVariables)
     {
         var actionContext = this._kernel.CreateNewContext();
@@ -564,6 +531,29 @@ public class StepwisePlanner : IStepwisePlanner
         }
 
         return actionContext;
+    }
+    #endregion execution helpers
+
+    private static PromptTemplateConfig LoadPromptConfigFromResource()
+    {
+        string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
+        return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
+    }
+
+    private static bool TryGetChatCompletion(IKernel kernel, [NotNullWhen(true)] out IChatCompletion? chatCompletion)
+    {
+        try
+        {
+            // Client used to request answers to chat completion models
+            chatCompletion = kernel.GetService<IChatCompletion>();
+            return true;
+        }
+        catch (SKException)
+        {
+            chatCompletion = null;
+        }
+
+        return false;
     }
 
     private static void AddExecutionStatsToContext(List<SystemStep> stepsTaken, SKContext context, int iterations)
@@ -588,7 +578,29 @@ public class StepwisePlanner : IStepwisePlanner
 
         context.Variables.Set("skillCount", $"{skillCallCountStr} ({skillCallListWithCounts})");
     }
-    #endregion execution helpers
+
+    private static string ToManualString(FunctionView function)
+    {
+        var inputs = string.Join("\n", function.Parameters.Select(parameter =>
+        {
+            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"(default='{parameter.DefaultValue}')";
+            return $"  - {parameter.Name}: {parameter.Description} {defaultValueString}";
+        }));
+
+        var functionDescription = function.Description.Trim();
+
+        if (string.IsNullOrEmpty(inputs))
+        {
+            return $"{ToFullyQualifiedName(function)}: {functionDescription}\n";
+        }
+
+        return $"{ToFullyQualifiedName(function)}: {functionDescription}\n{inputs}\n";
+    }
+
+    private static string ToFullyQualifiedName(FunctionView function)
+    {
+        return $"{function.SkillName}.{function.Name}";
+    }
 
     #region private
     /// <summary>
