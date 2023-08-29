@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.TemplateEngine.PromptTemplateEngine</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.TemplateEngine.Prompt</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Prompt Template Engine</Title>
+    <Description>Semantic Kernel Prompt Template Engine</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

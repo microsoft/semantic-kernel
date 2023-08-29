@@ -6,14 +6,14 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Moq;
-using SemanticKernel.UnitTests.XunitHelpers;
+using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.UnitTests.TemplateEngine;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
 
 public sealed class PromptTemplateEngineTests
 {

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.TemplateEngine.Blocks;
+namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class ValBlockTests
 {

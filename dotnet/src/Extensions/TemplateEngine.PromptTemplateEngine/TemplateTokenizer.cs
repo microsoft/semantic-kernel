@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
-using Microsoft.SemanticKernel.Text;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
+namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
 
 /// <summary>
 /// Simple tokenizer used for default SK template language.
@@ -58,13 +57,13 @@ internal sealed class TemplateTokenizer
         const int MinCodeBlockLength = EmptyCodeBlockLength + 1;
 
         // Render NULL to ""
-        if (text.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(text))
         {
             return new List<Block> { new TextBlock(string.Empty, this._loggerFactory) };
         }
 
         // If the template is "empty" return the content as a text block
-        if (text.Length < MinCodeBlockLength)
+        if (text!.Length < MinCodeBlockLength)
         {
             return new List<Block> { new TextBlock(text, this._loggerFactory) };
         }

@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using Microsoft.SemanticKernel.Skills.Web.Google;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
 
 /// <summary>

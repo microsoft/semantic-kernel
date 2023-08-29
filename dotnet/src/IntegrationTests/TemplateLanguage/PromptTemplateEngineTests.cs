@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
 /// <summary>
 /// Interface of dynamic blocks that need async IO to be rendered.

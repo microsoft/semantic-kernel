@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
 internal sealed class VarBlock : Block, ITextRendering
 {

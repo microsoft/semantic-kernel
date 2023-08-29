@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
 internal static class Symbols
 {

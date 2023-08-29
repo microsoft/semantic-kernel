@@ -5,10 +5,9 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
-using Microsoft.SemanticKernel.Text;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
-namespace Microsoft.SemanticKernel.TemplateEngine;
+namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
 
 /// <summary>
 /// Simple tokenizer used for default SK template code language.
@@ -62,7 +61,7 @@ internal sealed class CodeTokenizer
         text = text?.Trim();
 
         // Render NULL to ""
-        if (text.IsNullOrEmpty()) { return new List<Block>(); }
+        if (string.IsNullOrEmpty(text)) { return new List<Block>(); }
 
         // Track what type of token we're reading
         TokenTypes currentTokenType = TokenTypes.None;
@@ -73,7 +72,7 @@ internal sealed class CodeTokenizer
         char textValueDelimiter = '\0';
 
         var blocks = new List<Block>();
-        char nextChar = text[0];
+        char nextChar = text![0];
 
         // Tokens must be separated by spaces, track their presence
         bool spaceSeparatorFound = false;
