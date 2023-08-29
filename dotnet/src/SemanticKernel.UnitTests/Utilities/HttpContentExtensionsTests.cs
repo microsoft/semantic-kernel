@@ -7,6 +7,7 @@ using System;
 using Xunit;
 using System.Net.Mime;
 using System.Text;
+using System.IO;
 
 namespace SemanticKernel.UnitTests.Utilities;
 
@@ -49,6 +50,48 @@ public sealed class HttpContentExtensionsTests : IDisposable
         Assert.False(string.IsNullOrEmpty(result));
 
         Assert.Equal("{\"details\": \"fake-response-content\"}", result);
+    }
+
+    [Fact]
+    public async Task ShouldReturnHttpContentAsStreamAsync()
+    {
+        //Arrange
+        using var expectedStream = new MemoryStream(Encoding.Default.GetBytes("{\"details\": \"fake-response-content\"}"));
+
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StreamContent(expectedStream);
+
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
+
+        using var responseMessage = await this._httpClient.SendAsync(requestMessage, CancellationToken.None);
+
+        //Act
+        var actualStream = await responseMessage.Content.ReadAsStreamAndTranslateExceptionAsync();
+
+        //Assert
+        Assert.NotNull(actualStream);
+
+        using var streamReader = new StreamReader(actualStream);
+        var content = await streamReader.ReadToEndAsync();
+        Assert.Equal("{\"details\": \"fake-response-content\"}", content);
+    }
+
+    [Fact]
+    public async Task ShouldReturnHttpContentAsByteArrayAsync()
+    {
+        //Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent(new byte[] { 1, 2, 3 });
+
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
+
+        using var responseMessage = await this._httpClient.SendAsync(requestMessage, CancellationToken.None);
+
+        //Act
+        var bytes = await responseMessage.Content.ReadAsByteArrayAsync();
+
+        //Assert
+        Assert.NotNull(bytes);
+
+        Assert.Equal(new byte[] { 1, 2, 3 }, bytes);
     }
 
     /// <summary>
