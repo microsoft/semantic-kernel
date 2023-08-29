@@ -47,7 +47,7 @@ public static class Example51_StepwisePlanner
         {
             for (int i = 0; i < 1; i++)
             {
-                // await RunTextCompletion(question);
+                await RunTextCompletion(question);
                 await RunChatCompletion(question);
             }
         }

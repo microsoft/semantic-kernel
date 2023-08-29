@@ -131,6 +131,7 @@ public class StepwisePlanner : IStepwisePlanner
             return tokenCount;
         };
 
+        var addThought = true;
         var GetCompletionAsync = async () =>
         {
             if (chatCompletion is not null)
@@ -141,6 +142,15 @@ public class StepwisePlanner : IStepwisePlanner
             else if (textCompletion is not null)
             {
                 var thoughtProcess = string.Join("\n", chatHistory.Messages.Select(m => m.Content));
+
+                // Add Thought to the thought process at the start of the first iteration
+                if (addThought)
+                {
+                    thoughtProcess = $"{thoughtProcess}\n{Thought}";
+                    addThought = false;
+                }
+
+                thoughtProcess = $"{thoughtProcess}\n";
                 var results = (await textCompletion.GetCompletionsAsync(thoughtProcess, CompleteRequestSettings.FromCompletionConfig(this._promptConfig.Completion), token).ConfigureAwait(false));
 
                 if (results.Count == 0)
