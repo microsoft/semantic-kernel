@@ -5,7 +5,6 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Threading;
-using Polly.Retry;
 using Polly;
 
 namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
@@ -15,11 +14,21 @@ namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
 /// </summary>
 public class DefaultHttpRetryHandler : DelegatingHandler
 {
-    private readonly AsyncRetryPolicy<HttpResponseMessage> _policy;
+    private readonly AsyncPolicy<HttpResponseMessage> _policy;
+    private readonly ILogger<DefaultHttpRetryHandler>? _logger;
+    private readonly HttpRetryConfig _config;
+    private ITimeProvider _timeProvider;
 
-    public DefaultHttpRetryHandler(ILoggerFactory? loggerFactory)
+    public DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILoggerFactory? loggerFactory = null) : this(config, null, loggerFactory)
     {
-        this._policy = GetPolicy(loggerFactory);
+    }
+
+    internal DefaultHttpRetryHandler(HttpRetryConfig? config, ITimeProvider? timeProvider, ILoggerFactory? loggerFactory)
+    {
+        this._logger = loggerFactory?.CreateLogger<DefaultHttpRetryHandler>();
+        this._config = config ?? new();
+        this._policy = this.GetPolicy();
+        this._timeProvider = timeProvider ?? new DefaultTimeProvider();
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -31,27 +40,92 @@ public class DefaultHttpRetryHandler : DelegatingHandler
         }).ConfigureAwait(false);
     }
 
-    private static AsyncRetryPolicy<HttpResponseMessage> GetPolicy(ILoggerFactory? logger)
+    /// <summary>
+    /// Creates a policy based in the provided configuration.
+    /// </summary>
+    /// <returns>Returns the async policy executor</returns>
+    private AsyncPolicy<HttpResponseMessage> GetPolicy()
     {
-        // Handle 429 and 401 errors
-        // Typically 401 would not be something we retry but for demonstration
-        // purposes we are doing so as it's easy to trigger when using an invalid key.
-        const int tooManyRequestsStatusCode = 429;
-        const int unauthorizedStatusCode = 401;
+        if (this.IsRetryDisabled())
+        {
+            return Policy.NoOpAsync<HttpResponseMessage>();
+        }
 
-        return Policy
-            .HandleResult<HttpResponseMessage>(response =>
-                (int)response.StatusCode is tooManyRequestsStatusCode or unauthorizedStatusCode)
-            .WaitAndRetryAsync(new[]
-                {
-                    TimeSpan.FromSeconds(2),
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(8)
-                },
-                (outcome, timespan, retryCount, _) => logger?.CreateLogger(nameof(RetryThreeTimesWithBackoff)).LogWarning(
+        var policyBuilder = Policy.HandleResult<HttpResponseMessage>(response =>
+            {
+                return this._config.RetryableStatusCodes.Contains(response.StatusCode);
+            });
+
+        policyBuilder = policyBuilder.Or<Exception>(e => this._config.RetryableExceptionTypes.Contains(e.GetType()));
+
+        return policyBuilder.WaitAndRetryAsync(
+            retryCount: this._config.MaxRetryCount,
+            sleepDurationProvider: (retryCount, context, timeSpan) =>
+            {
+                return this.GetWaitTime(retryCount, context.Result);
+            },
+            (outcome, timespan, retryCount, _) =>
+            {
+                this._logger?.LogWarning(
                     "Error executing action [attempt {0} of 3], pausing {1}ms. Outcome: {2}",
                     retryCount,
                     timespan.TotalMilliseconds,
-                    outcome.Result.StatusCode));
+                    outcome.Result.StatusCode);
+                return Task.CompletedTask;
+            });
+    }
+
+    private bool IsRetryDisabled()
+    {
+        return this._config.MaxRetryCount == 0;
+    }
+
+    /// <summary>
+    /// Get the wait time for the next retry.
+    /// </summary>
+    /// <param name="retryCount">Current retry count</param>
+    /// <param name="response">The response message that potentially contains RetryAfter header.</param>
+    private TimeSpan GetWaitTime(int retryCount, HttpResponseMessage? response)
+    {
+        // If the response contains a RetryAfter header, use that value
+        // Otherwise, use the configured min retry delay
+        var retryAfter = response?.Headers.RetryAfter?.Date.HasValue == true
+            ? response?.Headers.RetryAfter?.Date - this._timeProvider.GetCurrentTime()
+            : (response?.Headers.RetryAfter?.Delta) ?? this._config.MinRetryDelay;
+        retryAfter ??= this._config.MinRetryDelay;
+
+        // If the retry delay is longer than the max retry delay, use the max retry delay
+        var timeToWait = retryAfter > this._config.MaxRetryDelay
+            ? this._config.MaxRetryDelay
+            : retryAfter < this._config.MinRetryDelay
+                ? this._config.MinRetryDelay
+                : retryAfter ?? default;
+
+        // If exponential backoff is enabled, double the delay for each retry
+        if (this._config.UseExponentialBackoff)
+        {
+            for (var backoffRetryCount = 1; backoffRetryCount < retryCount + 1; backoffRetryCount++)
+            {
+                timeToWait = timeToWait.Add(timeToWait);
+            }
+        }
+
+        return timeToWait;
+    }
+
+    /// <summary>
+    /// Interface for a time provider, primarily to enable unit testing.
+    /// </summary>
+    internal interface ITimeProvider
+    {
+        DateTimeOffset GetCurrentTime();
+    }
+
+    internal sealed class DefaultTimeProvider : ITimeProvider
+    {
+        public DateTimeOffset GetCurrentTime()
+        {
+            return DateTimeOffset.UtcNow;
+        }
     }
 }

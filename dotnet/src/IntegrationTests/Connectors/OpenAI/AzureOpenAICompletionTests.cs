@@ -44,7 +44,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         var configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(configuration);
 
-        HttpRetryConfig httpRetryConfig = new() { MaxRetryCount = 0 };
+        var httpRetryConfig = new HttpRetryConfig { MaxRetryCount = 0 };
         DefaultHttpRetryHandlerFactory defaultHttpRetryHandlerFactory = new(httpRetryConfig);
 
         var target = new KernelBuilder()

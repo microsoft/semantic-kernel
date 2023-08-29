@@ -17,20 +17,21 @@ public static class Example08_RetryHandler
     {
         var kernel = InitializeKernel();
         var retryHandlerFactory = new RetryThreeTimesWithBackoffFactory();
+
         InfoLogger.Logger.LogInformation("============================== RetryThreeTimesWithBackoff ==============================");
         await RunRetryPolicyAsync(kernel, retryHandlerFactory);
 
         InfoLogger.Logger.LogInformation("========================= RetryThreeTimesWithRetryAfterBackoff =========================");
-        await RunRetryPolicyBuilderAsync(typeof(RetryThreeTimesWithRetryAfterBackoffFactory));
+        await RunRetryPolicyBuilderAsync<RetryThreeTimesWithRetryAfterBackoffFactory>();
 
         InfoLogger.Logger.LogInformation("==================================== NoRetryPolicy =====================================");
-        await RunRetryPolicyBuilderAsync(typeof(NullHttpHandlerFactory));
+        await RunRetryPolicyBuilderAsync<NullHttpHandlerFactory>();
 
         InfoLogger.Logger.LogInformation("=============================== DefaultHttpRetryHandler ================================");
-        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
+        await RunRetryHandlerConfigAsync(new() { MaxRetryCount = 3, UseExponentialBackoff = true });
 
         InfoLogger.Logger.LogInformation("======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======");
-        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
+        await RunRetryHandlerConfigAsync(new() { MaxRetryCount = 3, UseExponentialBackoff = true });
     }
 
     private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? httpConfig = null)
@@ -71,10 +72,10 @@ public static class Example08_RetryHandler
         await ImportAndExecuteSkillAsync(kernel);
     }
 
-    private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
+    private static async Task RunRetryPolicyBuilderAsync<T>()
     {
         var kernel = Kernel.Builder.WithLoggerFactory(InfoLogger.LoggerFactory)
-            .WithHttpHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
+            .WithHttpHandlerFactory((Activator.CreateInstance(typeof(T)) as IDelegatingHandlerFactory)!)
             // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY")
             .Build();

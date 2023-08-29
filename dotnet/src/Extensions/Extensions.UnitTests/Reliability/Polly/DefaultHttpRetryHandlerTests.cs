@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Reliability.Polly.Config;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -164,7 +164,6 @@ public class DefaultHttpRetryHandlerTests
         // Arrange
         var currentTime = DateTimeOffset.UtcNow;
         var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
         mockTimeProvider.SetupSequence(x => x.GetCurrentTime())
             .Returns(() => currentTime)
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(5))
@@ -175,7 +174,8 @@ public class DefaultHttpRetryHandlerTests
         {
             UseExponentialBackoff = true, MaxRetryCount = 3,
             MinRetryDelay = TimeSpan.FromMilliseconds(500)
-        }, mockTimeProvider, mockDelayProvider);
+        }, mockTimeProvider);
+
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -191,9 +191,6 @@ public class DefaultHttpRetryHandlerTests
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(4), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(statusCode, response.StatusCode);
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(4));
-        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(500), It.IsAny<CancellationToken>()), Times.Once);
-        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(1000), It.IsAny<CancellationToken>()), Times.Once);
-        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(2000), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
@@ -343,7 +340,6 @@ public class DefaultHttpRetryHandlerTests
             MinRetryDelay = TimeSpan.FromMilliseconds(500)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
         var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
@@ -353,10 +349,7 @@ public class DefaultHttpRetryHandlerTests
             .Returns(() => currentTime.AddMilliseconds(5))
             .Returns(() => currentTime.AddMilliseconds(510));
 
-        mockDelayProvider.Setup(x => x.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
-            .Returns(() => Task.CompletedTask);
-
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -369,7 +362,6 @@ public class DefaultHttpRetryHandlerTests
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(2));
-        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(500), It.IsAny<CancellationToken>()), Times.Once);
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
@@ -384,7 +376,6 @@ public class DefaultHttpRetryHandlerTests
             MaxRetryDelay = TimeSpan.FromMilliseconds(500)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
         var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
@@ -394,10 +385,7 @@ public class DefaultHttpRetryHandlerTests
             .Returns(() => currentTime.AddMilliseconds(5))
             .Returns(() => currentTime.AddMilliseconds(505));
 
-        mockDelayProvider.Setup(x => x.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
-            .Returns(() => Task.CompletedTask);
-
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests)
         {
             Headers = { RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromMilliseconds(2000)) }
@@ -413,7 +401,6 @@ public class DefaultHttpRetryHandlerTests
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(2));
-        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(500), It.IsAny<CancellationToken>()), Times.Once);
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
@@ -436,7 +423,6 @@ public class DefaultHttpRetryHandlerTests
             MaxTotalRetryTime = TimeSpan.FromMilliseconds(350)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
         var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
@@ -450,7 +436,7 @@ public class DefaultHttpRetryHandlerTests
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(275))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(330));
 
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider);
 
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
@@ -464,7 +450,6 @@ public class DefaultHttpRetryHandlerTests
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(6));
-        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(50), It.IsAny<CancellationToken>()), Times.Exactly(5));
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(6), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(statusCode, response.StatusCode);
@@ -482,7 +467,6 @@ public class DefaultHttpRetryHandlerTests
             MaxTotalRetryTime = TimeSpan.FromMilliseconds(100)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
         var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
@@ -496,7 +480,7 @@ public class DefaultHttpRetryHandlerTests
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(275))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(330));
 
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider);
 
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         using var testContent = new StringContent("test");
@@ -510,7 +494,6 @@ public class DefaultHttpRetryHandlerTests
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(4)); // 1 initial, 2 retries, 1 for logging time taken.
-        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(50), It.IsAny<CancellationToken>()), Times.Exactly(1));
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
@@ -528,7 +511,6 @@ public class DefaultHttpRetryHandlerTests
             MaxTotalRetryTime = TimeSpan.FromMilliseconds(100)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
         var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
@@ -542,7 +524,7 @@ public class DefaultHttpRetryHandlerTests
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(275))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(330));
 
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider);
         var mockHandler = GetHttpMessageHandlerMock(typeof(HttpRequestException));
 
         retry.InnerHandler = mockHandler.Object;
@@ -553,7 +535,6 @@ public class DefaultHttpRetryHandlerTests
 
         // Assert
         mockTimeProvider.Verify(x => x.GetCurrentTime(), Times.Exactly(4)); // 1 initial, 2 retries, 1 for logging time taken.
-        mockDelayProvider.Verify(x => x.DelayAsync(TimeSpan.FromMilliseconds(50), It.IsAny<CancellationToken>()), Times.Exactly(1));
         mockHandler.Protected()
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
     }
@@ -649,12 +630,11 @@ public class DefaultHttpRetryHandlerTests
     }
 
     private static DefaultHttpRetryHandler ConfigureRetryHandler(HttpRetryConfig? config = null,
-        Mock<DefaultHttpRetryHandler.ITimeProvider>? timeProvider = null, Mock<DefaultHttpRetryHandler.IDelayProvider>? delayProvider = null)
+        Mock<DefaultHttpRetryHandler.ITimeProvider>? timeProvider = null)
     {
-        delayProvider ??= new Mock<DefaultHttpRetryHandler.IDelayProvider>();
         timeProvider ??= new Mock<DefaultHttpRetryHandler.ITimeProvider>();
 
-        var retry = new DefaultHttpRetryHandler(config ?? new HttpRetryConfig(), null, delayProvider.Object, timeProvider.Object);
+        var retry = new DefaultHttpRetryHandler(config ?? new HttpRetryConfig(), timeProvider.Object, null);
         return retry;
     }
 

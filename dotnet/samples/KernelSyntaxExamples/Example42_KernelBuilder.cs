@@ -81,7 +81,7 @@ public static class Example42_KernelBuilder
         var templateEngine = new PromptTemplateEngine(loggerFactory);
         var kernelConfig = new KernelConfig();
 
-        using var httpHandler = new Microsoft.SemanticKernel.Reliability.Polly.Config.DefaultHttpRetryHandler(loggerFactory);
+        using var httpHandler = new DefaultHttpRetryHandler(loggerFactory: loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(

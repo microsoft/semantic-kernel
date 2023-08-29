@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
 /// <summary>
 /// Retry configuration for DefaultKernelRetryHandler that uses RetryAfter header when present.
 /// </summary>
-public sealed class HttpRetryConfig
+public sealed record HttpRetryConfig
 {
     /// <summary>
     /// Maximum number of retries.

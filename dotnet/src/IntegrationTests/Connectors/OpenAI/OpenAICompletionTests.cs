@@ -178,6 +178,7 @@ public sealed class OpenAICompletionTests : IDisposable
         // Arrange
         var retryConfig = new HttpRetryConfig();
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
+
         KernelBuilder builder = Kernel.Builder
             .WithLoggerFactory(this._testOutputHelper)
             .Configure(c => c.SetHttpRetryConfig(retryConfig));

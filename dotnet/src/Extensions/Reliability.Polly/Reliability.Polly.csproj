@@ -7,9 +7,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*.cs" Link="Diagnostics/%(Filename)%(Extension)" />
+  </ItemGroup>
+  
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Polly Reliability Extension</Title>
@@ -17,6 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="IntegrationTests" />
     <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
   </ItemGroup>
 
@@ -24,7 +31,4 @@
     <PackageReference Include="Polly" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
-  </ItemGroup>
 </Project>
