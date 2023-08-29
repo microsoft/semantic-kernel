@@ -312,7 +312,7 @@ class AzureCognitiveSearchMemoryTests {
 
         // Act
         List<MemoryQueryResult> results =
-                kernel.getMemory().searchAsync("fake-index", "fake-query", 1, 0.5, false).block();
+                kernel.getMemory().searchAsync("fake-index", "fake-query", 1, 0.5f, false).block();
 
         // Assert
         assertEquals(1, results.size());

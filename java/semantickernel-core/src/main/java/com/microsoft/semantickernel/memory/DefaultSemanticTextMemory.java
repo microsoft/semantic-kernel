@@ -103,7 +103,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             @Nonnull String collection,
             @Nonnull String query,
             int limit,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbeddings) {
 
         // TODO: break this up into smaller methods

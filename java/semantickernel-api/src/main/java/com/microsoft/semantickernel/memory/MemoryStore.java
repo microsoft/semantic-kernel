@@ -128,7 +128,7 @@ public interface MemoryStore extends Buildable {
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             int limit,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbeddings);
 
     /**
@@ -145,7 +145,7 @@ public interface MemoryStore extends Buildable {
     Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbedding);
 
     static Builder builder() {

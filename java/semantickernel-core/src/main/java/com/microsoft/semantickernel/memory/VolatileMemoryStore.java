@@ -191,7 +191,7 @@ public class VolatileMemoryStore implements MemoryStore {
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             int limit,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
@@ -252,7 +252,7 @@ public class VolatileMemoryStore implements MemoryStore {
     public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);

@@ -381,7 +381,7 @@ class VolatileMemoryStoreTests {
         this._db.upsertAsync(collection, testRecord).block();
 
         // Act
-        double threshold = -1;
+        float threshold = -1f;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
@@ -467,7 +467,7 @@ class VolatileMemoryStoreTests {
         this._db.upsertAsync(collection, testRecord).block();
 
         // Act
-        double threshold = -1;
+        float threshold = -1f;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
@@ -547,7 +547,7 @@ class VolatileMemoryStoreTests {
         this._db.upsertAsync(collection, testRecord).block();
 
         // Act
-        double threshold = -1;
+        float threshold = -1f;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
@@ -567,7 +567,7 @@ class VolatileMemoryStoreTests {
         this._db.createCollectionAsync(collection).block();
 
         // Act
-        double threshold = -1;
+        float threshold = -1f;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
                         .getNearestMatchesAsync(
@@ -648,7 +648,7 @@ class VolatileMemoryStoreTests {
         this._db.upsertAsync(collection, testRecord).block();
 
         // Act
-        double threshold = 0.75;
+        float threshold = 0.75f;
         Tuple2<MemoryRecord, Float> topNResultDefault =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
@@ -738,7 +738,7 @@ class VolatileMemoryStoreTests {
         this._db.upsertAsync(collection, testRecord).block();
 
         // Act
-        double threshold = 0.75;
+        float threshold = 0.75f;
         Tuple2<MemoryRecord, Float> topNResult =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
@@ -760,7 +760,7 @@ class VolatileMemoryStoreTests {
         this._db.createCollectionAsync(collection).block();
 
         // Act
-        double threshold = -1;
+        float threshold = -1f;
         Tuple2<MemoryRecord, Float> topNResults =
                 this._db
                         .getNearestMatchAsync(collection, compareEmbedding, threshold, false)
@@ -795,7 +795,7 @@ class VolatileMemoryStoreTests {
         // Act
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 this._db
-                        .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true)
+                        .getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75f, true)
                         .block();
         Collection<String> topNKeys =
                 topNResults.stream()

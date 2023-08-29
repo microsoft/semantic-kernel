@@ -66,7 +66,7 @@ public final class NullMemory implements SemanticTextMemory {
             @Nonnull String collection,
             @Nonnull String query,
             int limit,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbeddings) {
         return Mono.just(Collections.emptyList());
     }

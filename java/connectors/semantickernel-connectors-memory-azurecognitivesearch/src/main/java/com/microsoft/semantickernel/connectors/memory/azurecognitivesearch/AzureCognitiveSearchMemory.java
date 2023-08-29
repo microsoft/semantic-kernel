@@ -233,7 +233,7 @@ public class AzureCognitiveSearchMemory implements SemanticTextMemory {
             @Nonnull String collection,
             @Nonnull String query,
             int limit,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbeddings) {
 
         SearchAsyncClient client = this.getSearchClient(normalizeIndexName(collection));

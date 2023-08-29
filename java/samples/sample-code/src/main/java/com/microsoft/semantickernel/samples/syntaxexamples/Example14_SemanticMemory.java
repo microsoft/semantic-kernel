@@ -105,7 +105,7 @@ public class Example14_SemanticMemory {
     }
 
     private static Mono<Void> searchMemoryAsync(Kernel kernel, String query) {
-        return kernel.getMemory().searchAsync(MEMORY_COLLECTION_NAME, query, 2, 0.5, false)
+        return kernel.getMemory().searchAsync(MEMORY_COLLECTION_NAME, query, 2, 0.5f, false)
                 .mapNotNull(memories -> {
                     System.out.println("\nQuery: " + query + "\n");
                     for (int n = 0; n < memories.size(); n++) {
