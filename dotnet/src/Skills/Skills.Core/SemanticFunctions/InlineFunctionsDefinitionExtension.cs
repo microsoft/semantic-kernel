@@ -22,14 +22,17 @@ public static class InlineFunctionsDefinitionExtension
     /// <inheritdoc/>
     public static ISKFunction RegisterSemanticFunction(this IKernel kernel, string functionName, SemanticFunctionConfig functionConfig)
     {
-        return kernel.RegisterSemanticFunction(SkillCollection.GlobalSkill, functionName, functionConfig);
+        return kernel.RegisterSemanticFunction(functionName, functionConfig);
     }
 
     /// <inheritdoc/>
     public static ISKFunction RegisterSemanticFunction(this IKernel kernel, string skillName, string functionName, SemanticFunctionConfig functionConfig)
     {
         // Future-proofing the name not to contain special chars
-        Verify.ValidSkillName(skillName);
+        if (skillName is not null)
+        {
+            Verify.ValidSkillName(skillName);
+        }
         Verify.ValidFunctionName(functionName);
 
         ISKFunction function = kernel.CreateSemanticFunction(skillName, functionName, functionConfig);

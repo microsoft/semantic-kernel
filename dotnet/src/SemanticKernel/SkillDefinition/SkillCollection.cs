@@ -35,7 +35,8 @@ public class SkillCollection : ISkillCollection
     {
         Verify.NotNull(functionInstance);
 
-        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
+        var skillName = functionInstance.SkillName ?? GlobalSkill;
+        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(skillName, static _ => new(StringComparer.OrdinalIgnoreCase));
         skill[functionInstance.Name] = functionInstance;
 
         return this;
