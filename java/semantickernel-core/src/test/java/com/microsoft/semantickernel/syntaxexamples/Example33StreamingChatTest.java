@@ -36,7 +36,7 @@ public class Example33StreamingChatTest {
         ChatCompletion<?> chatCompletion =
                 SKBuilders.chatCompletion()
                         .withOpenAIClient(client)
-                        .setModelId("gpt-35-turbo")
+                        .withModelId("gpt-35-turbo")
                         .build();
 
         ChatHistory chatHistory =

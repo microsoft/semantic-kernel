@@ -33,9 +33,9 @@ public class Example03_SemanticFunctionInline {
     public static void inlineFunction(Kernel kernel, String prompt, String functionName, String text) {
         SKFunction summarize = kernel
                 .getSemanticFunctionBuilder()
-                .setPromptTemplate(prompt)
-                .setFunctionName(functionName)
-                .setCompletionConfig(
+                .withPromptTemplate(prompt)
+                .withFunctionName(functionName)
+                .withCompletionConfig(
                         new PromptTemplateConfig.CompletionConfig(
                                 0.2,
                                 0.5,

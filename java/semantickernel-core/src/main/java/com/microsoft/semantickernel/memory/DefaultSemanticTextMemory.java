@@ -169,13 +169,13 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
         @Nullable EmbeddingGeneration<String> embeddingGenerator = null;
 
         @Override
-        public Builder setStorage(@Nonnull MemoryStore storage) {
+        public Builder withStorage(@Nonnull MemoryStore storage) {
             this.storage = storage;
             return this;
         }
 
         @Override
-        public Builder setEmbeddingGenerator(
+        public Builder withEmbeddingGenerator(
                 @Nonnull EmbeddingGeneration<String> embeddingGenerator) {
             this.embeddingGenerator = embeddingGenerator;
             return this;

@@ -18,8 +18,8 @@ public class Example05_InlineFunctionDefinition {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService()
-                .setModelId("text-davinci-003")
+        TextCompletion textCompletion = SKBuilders.textCompletion()
+                .withModelId("text-davinci-003")
                 .withOpenAIClient(client)
                 .build();
 
@@ -45,8 +45,8 @@ public class Example05_InlineFunctionDefinition {
         var excuseFunction = SKBuilders
                 .completionFunctions()
                 .withKernel(kernel)
-                .setPromptTemplate(functionDefinition)
-                .setCompletionConfig(
+                .withPromptTemplate(functionDefinition)
+                .withCompletionConfig(
                         new PromptTemplateConfig.CompletionConfigBuilder()
                                 .maxTokens(100)
                                 .temperature(0.4)
@@ -64,9 +64,9 @@ public class Example05_InlineFunctionDefinition {
         // Create function via kernel
         var fixedFunction = kernel.
                 getSemanticFunctionBuilder()
-                .setPromptTemplate("Translate this date " +
+                .withPromptTemplate("Translate this date " +
                         DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(LocalDateTime.now()) + " to French format")
-                .setCompletionConfig(
+                .withCompletionConfig(
                         new PromptTemplateConfig.CompletionConfigBuilder()
                                 .maxTokens(100)
                                 .temperature(0.4)

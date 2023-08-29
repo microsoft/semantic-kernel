@@ -99,7 +99,7 @@ public interface SKContext extends Buildable {
 
     interface Builder extends SemanticKernelBuilder<SKContext> {
 
-        Builder setVariables(ContextVariables variables);
+        Builder withVariables(ContextVariables variables);
 
         /**
          * Sets the skills
@@ -107,7 +107,7 @@ public interface SKContext extends Buildable {
          * @param skills null argument will be ignored
          * @return Context for fluent calls
          */
-        Builder setSkills(@Nullable ReadOnlySkillCollection skills);
+        Builder withSkills(@Nullable ReadOnlySkillCollection skills);
 
         /**
          * Sets the memory
@@ -115,7 +115,7 @@ public interface SKContext extends Buildable {
          * @param memory null argument will be ignored
          * @return Context for fluent calls
          */
-        Builder setMemory(@Nullable SemanticTextMemory memory);
+        Builder withMemory(@Nullable SemanticTextMemory memory);
 
         Builder clone(SKContext context);
 

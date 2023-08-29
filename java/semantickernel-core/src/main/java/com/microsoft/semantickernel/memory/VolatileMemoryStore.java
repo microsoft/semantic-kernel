@@ -280,9 +280,6 @@ public class VolatileMemoryStore implements MemoryStore {
     }
 
     public static class Builder implements MemoryStore.Builder {
-
-        public Builder() {}
-
         @Override
         public MemoryStore build() {
             return new VolatileMemoryStore();

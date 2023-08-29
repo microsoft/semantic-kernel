@@ -37,7 +37,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         return generateMessageAsync(createNewChat(text), chatRequestSettings).map(Arrays::asList);
     }
 
-    public static class Builder implements ChatCompletion.Builder {
+    public static class Builder implements ChatCompletion.Builder<OpenAIChatHistory> {
         public Builder() {}
 
         @Nullable private OpenAIAsyncClient client;
@@ -48,7 +48,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
             return this;
         }
 
-        public Builder setModelId(String modelId) {
+        public Builder withModelId(String modelId) {
             this.modelId = modelId;
             return this;
         }

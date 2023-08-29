@@ -32,14 +32,14 @@ public class ConversationSummarySkill {
         this.summarizeConversationFunction =
                 SKBuilders.completionFunctions()
                         .withKernel(kernel)
-                        .setPromptTemplate(
+                        .withPromptTemplate(
                                 SemanticFunctionConstants.SummarizeConversationDefinition)
-                        .setFunctionName("summarize")
-                        .setSkillName("ConversationSummarySkill")
-                        .setDescription(
+                        .withFunctionName("summarize")
+                        .withSkillName("ConversationSummarySkill")
+                        .withDescription(
                                 "Given a section of a conversation transcript, summarize the part"
                                         + " of the conversation.")
-                        .setCompletionConfig(
+                        .withCompletionConfig(
                                 SKBuilders.completionConfig()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
@@ -50,14 +50,14 @@ public class ConversationSummarySkill {
         this.conversationActionItemsFunction =
                 SKBuilders.completionFunctions()
                         .withKernel(kernel)
-                        .setPromptTemplate(
+                        .withPromptTemplate(
                                 SemanticFunctionConstants.GetConversationActionItemsDefinition)
-                        .setFunctionName("ActionItems")
-                        .setSkillName("ConversationSummarySkill")
-                        .setDescription(
+                        .withFunctionName("ActionItems")
+                        .withSkillName("ConversationSummarySkill")
+                        .withDescription(
                                 "Given a section of a conversation transcript, identify action"
                                         + " items.")
-                        .setCompletionConfig(
+                        .withCompletionConfig(
                                 SKBuilders.completionConfig()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
@@ -68,14 +68,14 @@ public class ConversationSummarySkill {
         this.conversationTopicsFunction =
                 SKBuilders.completionFunctions()
                         .withKernel(kernel)
-                        .setPromptTemplate(
+                        .withPromptTemplate(
                                 SemanticFunctionConstants.GetConversationTopicsDefinition)
-                        .setFunctionName("Topics")
-                        .setSkillName("ConversationSummarySkill")
-                        .setDescription(
+                        .withFunctionName("Topics")
+                        .withSkillName("ConversationSummarySkill")
+                        .withDescription(
                                 "Analyze a conversation transcript and extract key topics worth"
                                         + " remembering.")
-                        .setCompletionConfig(
+                        .withCompletionConfig(
                                 SKBuilders.completionConfig()
                                         .maxTokens(MaxTokens)
                                         .temperature(0.1)
@@ -101,7 +101,7 @@ public class ConversationSummarySkill {
         List<String> paragraphs = TextChunker.splitPlainTextParagraphs(lines, MaxTokens);
 
         if (context == null) {
-            context = SKBuilders.context().setSkills(kernel.getSkills()).build();
+            context = SKBuilders.context().withSkills(kernel.getSkills()).build();
         }
 
         SKContext completionContext = context.copy();
