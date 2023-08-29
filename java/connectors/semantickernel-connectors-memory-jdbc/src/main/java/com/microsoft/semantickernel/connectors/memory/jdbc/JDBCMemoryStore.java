@@ -271,7 +271,7 @@ public class JDBCMemoryStore implements MemoryStore {
                         });
     }
 
-    /** Builds an JDBCMemoryStore. */
+    /** Builds a JDBCMemoryStore. */
     public static class Builder implements SQLMemoryStoreBuilder {
         private Connection connection;
 

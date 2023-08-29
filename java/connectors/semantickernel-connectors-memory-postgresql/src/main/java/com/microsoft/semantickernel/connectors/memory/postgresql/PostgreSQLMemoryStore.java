@@ -17,7 +17,7 @@ public class PostgreSQLMemoryStore extends JDBCMemoryStore {
         return super.connectAsync();
     }
 
-    /** Builds an PostgreSQLMemoryStore. */
+    /** Builds a PostgreSQLMemoryStore. */
     public static class Builder implements SQLMemoryStoreBuilder {
         private Connection connection;
 

@@ -20,7 +20,7 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
         return super.connectAsync();
     }
 
-    /** Builds an SQLiteMemoryStore. */
+    /** Builds a SQLiteMemoryStore. */
     public static class Builder implements SQLMemoryStoreBuilder {
         private Connection connection;
 
