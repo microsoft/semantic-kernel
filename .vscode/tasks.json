@@ -123,8 +123,15 @@
       "label": "validate (contributing-python)",
       "command": "poetry",
       "type": "shell",
-      "group":"build",
-      "args": ["run", "pre-commit", "run", "-c", ".conf/.pre-commit-config.yaml", "-a"],
+      "group": "build",
+      "args": [
+        "run",
+        "pre-commit",
+        "run",
+        "-c",
+        ".conf/.pre-commit-config.yaml",
+        "-a"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/python"
       }
@@ -287,7 +294,7 @@
       "label": "test (Semantic-Kernel-Python Integration)",
       "command": "poetry",
       "type": "shell",
-      "args": ["run", "pytest", "tests/integration","-k","${input:filter}",],
+      "args": ["run", "pytest", "tests/integration", "-k", "${input:filter}"],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -303,7 +310,7 @@
       "label": "test (Semantic-Kernel-Python ALL)",
       "command": "poetry",
       "type": "shell",
-      "args": ["run", "pytest", "tests","-k","${input:filter}",],
+      "args": ["run", "pytest", "tests", "-k", "${input:filter}"],
       "problemMatcher": "$msCompile",
       "group": "test",
       "presentation": {
@@ -314,7 +321,7 @@
       "options": {
         "cwd": "${workspaceFolder}/python"
       }
-    }
+    },
     // ****************
     // Samples (dotnet)
     // ****************
