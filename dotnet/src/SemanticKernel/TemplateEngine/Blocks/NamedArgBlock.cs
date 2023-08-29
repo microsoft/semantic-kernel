@@ -15,12 +15,12 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     public string GetValue(ContextVariables? variables)
     {
         var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
-        var valueIsValidVarBlock = this._argValueAsVarBlock != null && this._argValueAsVarBlock.IsValid(out var errorMessage2);
         if (valueIsValidValBlock && this._valBlock != null)
         {
             return this._valBlock.Render(variables);
         }
 
+        var valueIsValidVarBlock = this._argValueAsVarBlock != null && this._argValueAsVarBlock.IsValid(out var errorMessage2);
         if (valueIsValidVarBlock && this._argValueAsVarBlock != null)
         {
             return this._argValueAsVarBlock.Render(variables);
