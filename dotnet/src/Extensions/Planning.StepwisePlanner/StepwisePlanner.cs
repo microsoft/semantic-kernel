@@ -310,6 +310,10 @@ public class StepwisePlanner : IStepwisePlanner
 
         systemContext.Variables.Set("suffix", this.Config.Suffix);
 
+        // NOTE:
+        // Only render the userManual in the system message when not using ChatCompletion
+        // So far there is less hallucination if the functions are supplied from the user
+        // rather than the system message. This may be anecdotal though and should be tested further.
         if (chatCompletion is null)
         {
             systemContext.Variables.Set("functionDescriptions", userManual);
@@ -317,6 +321,9 @@ public class StepwisePlanner : IStepwisePlanner
         string systemMessage = await this.GetSystemMessage(systemContext).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
+
+        // NOTE:
+        // See above re: userManual and systemMessage
         if (chatCompletion is not null)
         {
             chatHistory.AddUserMessage(userManual);
