@@ -114,6 +114,17 @@ public static class Example51_StepwisePlanner
         kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "semanticCalculator");
         kernel.ImportSkill(new TimeSkill(), "time");
 
+        // StepwisePlanner is instructed to depend on available functions.
+        // We expose this function to increase the flexibility in it's ability to answer
+        // given the relatively small number of functions we have in this example.
+        // This seems to be particularly helpful in these examples with gpt-35-turbo -- even though it
+        // does not *use* this function. It seems to help the planner find a better path to the answer.
+        kernel.CreateSemanticFunction(
+            "Generate an answer for the following question: {{$input}}",
+                functionName: "GetAnswerForQuestion",
+                skillName: "AnswerBot",
+                description: "Given a question, get an answer and return it as the result of the function");
+
         Console.WriteLine("*****************************************************");
         Stopwatch sw = new();
         Console.WriteLine("Question: " + question);
