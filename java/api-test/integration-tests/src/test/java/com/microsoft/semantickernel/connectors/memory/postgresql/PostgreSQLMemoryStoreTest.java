@@ -29,20 +29,21 @@ public class PostgreSQLMemoryStoreTest {
     private static final String POSTGRES_USER = "test";
     private static final String POSTGRES_PASSWORD = "test";
 
-    private static MemoryStore _db;
-    private static int _collectionNum = 0;
+    private static MemoryStore db;
+    private static int collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
     private static final String NULL_KEY = null;
     private static final ZonedDateTime NULL_TIMESTAMP = null;
 
     @BeforeAll
     static void setUp() throws SQLException {
-        _db =
+        db =
                 new PostgreSQLMemoryStore.Builder()
                         .withConnection(
-                                DriverManager.getConnection(CONTAINER.getJdbcUrl(), POSTGRES_USER, POSTGRES_PASSWORD))
-                        .build();
-        ((PostgreSQLMemoryStore) _db).connectAsync().block();
+                                DriverManager.getConnection(
+                                        CONTAINER.getJdbcUrl(), POSTGRES_USER, POSTGRES_PASSWORD))
+                        .buildAsync()
+                        .block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -81,18 +82,18 @@ public class PostgreSQLMemoryStoreTest {
 
     @Test
     void initializeDbConnectionSucceeds() {
-        assertNotNull(_db);
+        assertNotNull(db);
     }
 
     @Test
     void itCanCreateAndGetCollectionAsync() throws IOException {
         // Arrange
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        _db.createCollectionAsync(collection).block();
-        Collection<String> collections = _db.getCollectionsAsync().block();
+        db.createCollectionAsync(collection).block();
+        Collection<String> collections = db.getCollectionsAsync().block();
 
         // Assert
         assertNotNull(collections);
@@ -108,7 +109,7 @@ public class PostgreSQLMemoryStoreTest {
         // Assert
         assertThrows(
                 NullPointerException.class,
-                () -> _db.createCollectionAsync(collection).block(),
+                () -> db.createCollectionAsync(collection).block(),
                 "Should not be able to create collection with null name");
     }
 
@@ -125,13 +126,13 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Assert
         assertThrows(
                 MemoryException.class,
-                () -> _db.upsertAsync(collection, testRecord).block(),
+                () -> db.upsertAsync(collection, testRecord).block(),
                 "Should not be able to insert into a non-existent collection");
     }
 
@@ -147,14 +148,14 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        _db.createCollectionAsync(collection).block();
-        String key = _db.upsertAsync(collection, testRecord).block();
-        MemoryRecord actualDefault = _db.getAsync(collection, key, false).block();
-        MemoryRecord actualWithEmbedding = _db.getAsync(collection, key, true).block();
+        db.createCollectionAsync(collection).block();
+        String key = db.upsertAsync(collection, testRecord).block();
+        MemoryRecord actualDefault = db.getAsync(collection, key, false).block();
+        MemoryRecord actualWithEmbedding = db.getAsync(collection, key, true).block();
 
         // Assert
         assertNotNull(actualDefault);
@@ -184,13 +185,13 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        _db.createCollectionAsync(collection).block();
-        String key = _db.upsertAsync(collection, testRecord).block();
-        MemoryRecord actual = _db.getAsync(collection, key, true).block();
+        db.createCollectionAsync(collection).block();
+        String key = db.upsertAsync(collection, testRecord).block();
+        MemoryRecord actual = db.getAsync(collection, key, true).block();
 
         // Assert
         assertNotNull(actual);
@@ -210,13 +211,13 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         ZonedDateTime.now(ZoneId.of("UTC")));
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        _db.createCollectionAsync(collection).block();
-        String key = _db.upsertAsync(collection, testRecord).block();
-        MemoryRecord actual = _db.getAsync(collection, key, true).block();
+        db.createCollectionAsync(collection).block();
+        String key = db.upsertAsync(collection, testRecord).block();
+        MemoryRecord actual = db.getAsync(collection, key, true).block();
 
         // Assert
         assertNotNull(actual);
@@ -246,14 +247,14 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        _db.createCollectionAsync(collection).block();
-        String key = _db.upsertAsync(collection, testRecord).block();
-        String key2 = _db.upsertAsync(collection, testRecord2).block();
-        MemoryRecord actual = _db.getAsync(collection, key, true).block();
+        db.createCollectionAsync(collection).block();
+        String key = db.upsertAsync(collection, testRecord).block();
+        String key2 = db.upsertAsync(collection, testRecord2).block();
+        MemoryRecord actual = db.getAsync(collection, key, true).block();
 
         // Assert
         assertNotNull(actual);
@@ -275,15 +276,15 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        _db.createCollectionAsync(collection).block();
-        String key = _db.upsertAsync(collection, testRecord).block();
+        db.createCollectionAsync(collection).block();
+        String key = db.upsertAsync(collection, testRecord).block();
         assertNotNull(key);
-        _db.removeAsync(collection, key).block();
-        MemoryRecord actual = _db.getAsync(collection, key, false).block();
+        db.removeAsync(collection, key).block();
+        MemoryRecord actual = db.getAsync(collection, key, false).block();
 
         // Assert
         assertNull(actual);
@@ -292,12 +293,12 @@ public class PostgreSQLMemoryStoreTest {
     @Test
     void removingNonExistingRecordDoesNothingAsync() {
         // Arrange
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        _db.removeAsync(collection, "key").block();
-        MemoryRecord actual = _db.getAsync(collection, "key", false).block();
+        db.removeAsync(collection, "key").block();
+        MemoryRecord actual = db.getAsync(collection, "key", false).block();
 
         // Assert
         assertNull(actual);
@@ -308,20 +309,20 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         int numCollections = 3;
         String[] testCollections =
-                IntStream.range(_collectionNum, _collectionNum += numCollections)
+                IntStream.range(collectionNum, collectionNum += numCollections)
                         .mapToObj(i -> "test_collection" + i)
                         .toArray(String[]::new);
 
-        Collection<String> collections = _db.getCollectionsAsync().block();
+        Collection<String> collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         int initialSize = collections.size();
 
         Flux.fromArray(testCollections)
-                .concatMap(collection -> _db.createCollectionAsync(collection))
+                .concatMap(collection -> db.createCollectionAsync(collection))
                 .blockLast();
 
         // Act
-        collections = _db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
 
         // Assert
         assertNotNull(collections);
@@ -334,9 +335,9 @@ public class PostgreSQLMemoryStoreTest {
     }
 
     private String setUpNearestMatches() {
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
+        db.createCollectionAsync(collection).block();
         int i = 0;
         MemoryRecord testRecord =
                 MemoryRecord.localRecord(
@@ -347,7 +348,7 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        db.upsertAsync(collection, testRecord).block();
 
         i++;
         testRecord =
@@ -359,7 +360,7 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        db.upsertAsync(collection, testRecord).block();
 
         i++;
         testRecord =
@@ -371,7 +372,7 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        db.upsertAsync(collection, testRecord).block();
 
         i++;
         testRecord =
@@ -383,7 +384,7 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        db.upsertAsync(collection, testRecord).block();
 
         i++;
         testRecord =
@@ -395,7 +396,7 @@ public class PostgreSQLMemoryStoreTest {
                         NULL_ADDITIONAL_METADATA,
                         NULL_KEY,
                         NULL_TIMESTAMP);
-        _db.upsertAsync(collection, testRecord).block();
+        db.upsertAsync(collection, testRecord).block();
 
         return collection;
     }
@@ -410,7 +411,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db.getNearestMatchesAsync(collection, compareEmbedding, topN, threshold, false)
+                db.getNearestMatchesAsync(collection, compareEmbedding, topN, threshold, false)
                         .block();
 
         // Assert
@@ -433,7 +434,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
+                db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
 
         // Assert
@@ -450,7 +451,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
+                db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
 
         // Assert
@@ -462,14 +463,14 @@ public class PostgreSQLMemoryStoreTest {
     void getNearestMatchesReturnsEmptyIfCollectionEmpty() {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
+        db.createCollectionAsync(collection).block();
 
         // Act
         double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db.getNearestMatchesAsync(
+                db.getNearestMatchesAsync(
                                 collection, compareEmbedding, Integer.MAX_VALUE, threshold, false)
                         .block();
 
@@ -489,9 +490,9 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = 0.75;
         Tuple2<MemoryRecord, Float> topNResultDefault =
-                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
+                db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
         Tuple2<MemoryRecord, Float> topNResultWithEmbedding =
-                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, true).block();
+                db.getNearestMatchAsync(collection, compareEmbedding, threshold, true).block();
 
         // Assert
         assertNotNull(topNResultDefault);
@@ -514,7 +515,7 @@ public class PostgreSQLMemoryStoreTest {
         // Act
         double threshold = 0.75;
         Tuple2<MemoryRecord, Float> topNResult =
-                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
+                db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
 
         // Assert
         assertNotNull(topNResult);
@@ -527,14 +528,14 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
+        db.createCollectionAsync(collection).block();
 
         // Act
         double threshold = -1;
         Tuple2<MemoryRecord, Float> topNResults =
-                _db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
+                db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
 
         // Assert
         assertNull(topNResults);
@@ -545,9 +546,9 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         Embedding compareEmbedding = new Embedding(Arrays.asList(1f, 1f, 1f));
         int topN = 4;
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
+        db.createCollectionAsync(collection).block();
 
         for (int i = 0; i < 10; i++) {
             MemoryRecord testRecord =
@@ -559,12 +560,12 @@ public class PostgreSQLMemoryStoreTest {
                             NULL_ADDITIONAL_METADATA,
                             NULL_KEY,
                             NULL_TIMESTAMP);
-            _db.upsertAsync(collection, testRecord).block();
+            db.upsertAsync(collection, testRecord).block();
         }
 
         // Act
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                _db.getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true).block();
+                db.getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true).block();
         Collection<String> topNKeys =
                 topNResults.stream()
                         .map(tuple -> tuple.getT1().getKey())
@@ -575,7 +576,7 @@ public class PostgreSQLMemoryStoreTest {
         assertEquals(topN, topNResults.size());
         assertEquals(topN, topNKeys.size());
         for (Iterator<Tuple2<MemoryRecord, Float>> iterator = topNResults.iterator();
-             iterator.hasNext(); ) {
+                iterator.hasNext(); ) {
             Tuple2<MemoryRecord, Float> tuple = iterator.next();
             int compare = Float.compare(tuple.getT2(), 0.75f);
             assertTrue(topNKeys.contains(tuple.getT1().getKey()));
@@ -587,14 +588,14 @@ public class PostgreSQLMemoryStoreTest {
     void itCanBatchUpsertRecordsAsync() {
         // Arrange
         int numRecords = 10;
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
+        db.createCollectionAsync(collection).block();
         Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
 
         // Act
-        Collection<String> keys = _db.upsertBatchAsync(collection, records).block();
-        Collection<MemoryRecord> resultRecords = _db.getBatchAsync(collection, keys, false).block();
+        Collection<String> keys = db.upsertBatchAsync(collection, records).block();
+        Collection<MemoryRecord> resultRecords = db.getBatchAsync(collection, keys, false).block();
 
         // Assert
         assertNotNull(keys);
@@ -606,14 +607,14 @@ public class PostgreSQLMemoryStoreTest {
     void itCanBatchGetRecordsAsync() {
         // Arrange
         int numRecords = 10;
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
+        db.createCollectionAsync(collection).block();
         Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
-        Collection<String> keys = _db.upsertBatchAsync(collection, records).block();
+        Collection<String> keys = db.upsertBatchAsync(collection, records).block();
 
         // Act
-        Collection<MemoryRecord> results = _db.getBatchAsync(collection, keys, false).block();
+        Collection<MemoryRecord> results = db.getBatchAsync(collection, keys, false).block();
 
         // Assert
         assertNotNull(keys);
@@ -625,21 +626,21 @@ public class PostgreSQLMemoryStoreTest {
     void itCanBatchRemoveRecordsAsync() {
         // Arrange
         int numRecords = 10;
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
+        db.createCollectionAsync(collection).block();
         Collection<MemoryRecord> records = this.createBatchRecords(numRecords);
 
         List<String> keys = new ArrayList<>();
-        for (String key : _db.upsertBatchAsync(collection, records).block()) {
+        for (String key : db.upsertBatchAsync(collection, records).block()) {
             keys.add(key);
         }
 
         // Act
-        _db.removeBatchAsync(collection, keys).block();
+        db.removeBatchAsync(collection, keys).block();
 
         // Assert
-        for (MemoryRecord result : _db.getBatchAsync(collection, keys, true).block()) {
+        for (MemoryRecord result : db.getBatchAsync(collection, keys, true).block()) {
             assertNull(result);
         }
     }
@@ -649,31 +650,31 @@ public class PostgreSQLMemoryStoreTest {
         // Arrange
         int numCollections = 3;
         String[] testCollections =
-                IntStream.range(_collectionNum, _collectionNum += numCollections)
+                IntStream.range(collectionNum, collectionNum += numCollections)
                         .mapToObj(i -> "test_collection" + i)
                         .toArray(String[]::new);
 
-        Collection<String> collections = _db.getCollectionsAsync().block();
+        Collection<String> collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         int initialSize = collections.size();
 
         Flux.fromArray(testCollections)
-                .concatMap(collection -> _db.createCollectionAsync(collection))
+                .concatMap(collection -> db.createCollectionAsync(collection))
                 .blockLast();
-        _collectionNum += numCollections;
+        collectionNum += numCollections;
 
         // Act
-        collections = _db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         assertEquals(initialSize + numCollections, collections.size());
 
         // Act
         for (String collection : collections) {
-            _db.deleteCollectionAsync(collection).block();
+            db.deleteCollectionAsync(collection).block();
         }
 
         // Assert
-        collections = _db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         assertEquals(0, collections.size());
     }
@@ -681,31 +682,31 @@ public class PostgreSQLMemoryStoreTest {
     @Test
     void itThrowsWhenDeletingNonExistentCollectionAsync() {
         // Arrange
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        assertThrows(MemoryException.class, () -> _db.deleteCollectionAsync(collection).block());
+        assertThrows(MemoryException.class, () -> db.deleteCollectionAsync(collection).block());
     }
 
     @Test
     void doesCollectionExistAsyncReturnTrueForExistingCollection() {
         // Arrange
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
-        _db.createCollectionAsync(collection).block();
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
+        db.createCollectionAsync(collection).block();
 
         // Act
-        assertTrue(_db.doesCollectionExistAsync(collection).block());
+        assertTrue(db.doesCollectionExistAsync(collection).block());
     }
 
     @Test
     void doesCollectionExistAsyncReturnFalseForNonExistentCollection() {
         // Arrange
-        String collection = "test_collection" + _collectionNum;
-        _collectionNum++;
+        String collection = "test_collection" + collectionNum;
+        collectionNum++;
 
         // Act
-        assertFalse(_db.doesCollectionExistAsync(collection).block());
+        assertFalse(db.doesCollectionExistAsync(collection).block());
     }
 }

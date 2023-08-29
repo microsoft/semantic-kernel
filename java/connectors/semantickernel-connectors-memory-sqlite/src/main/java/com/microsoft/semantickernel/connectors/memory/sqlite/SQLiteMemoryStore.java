@@ -4,8 +4,7 @@ package com.microsoft.semantickernel.connectors.memory.sqlite;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
-import com.microsoft.semantickernel.connectors.memory.jdbc.SQLMemoryStoreBuilder;
-import com.microsoft.semantickernel.memory.MemoryStore;
+import com.microsoft.semantickernel.connectors.memory.jdbc.SQLMemoryStore;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,12 +15,8 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
         super(connector);
     }
 
-    public Mono<Void> connectAsync() {
-        return super.connectAsync();
-    }
-
     /** Builds a SQLiteMemoryStore. */
-    public static class Builder implements SQLMemoryStoreBuilder {
+    public static class Builder implements SQLMemoryStore.Builder<SQLiteMemoryStore> {
         private Connection connection;
 
         /**
@@ -31,8 +26,21 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
          *     connection.
          */
         @Override
-        public MemoryStore build() {
+        public SQLiteMemoryStore build() {
             return new SQLiteMemoryStore(new JDBCConnector(connection));
+        }
+
+        /**
+         * Asynchronously builds and returns an SQLiteMemoryStore instance with the specified
+         * database connection.
+         *
+         * @return A Mono with an SQLiteMemoryStore instance configured with the provided SQLite
+         *     database connection.
+         */
+        @Override
+        public Mono<SQLiteMemoryStore> buildAsync() {
+            SQLiteMemoryStore memoryStore = this.build();
+            return memoryStore.initialiseDatabase().thenReturn(memoryStore);
         }
 
         /**

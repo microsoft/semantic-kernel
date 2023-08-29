@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryException.ErrorCodes;
 import com.microsoft.semantickernel.memory.MemoryRecord;
-import com.microsoft.semantickernel.memory.MemoryStore;
 import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,7 +16,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-public class JDBCMemoryStore implements MemoryStore {
+public class JDBCMemoryStore implements SQLMemoryStore {
     protected final SQLConnector dbConnector;
 
     public JDBCMemoryStore(SQLConnector connector) {
@@ -25,12 +24,11 @@ public class JDBCMemoryStore implements MemoryStore {
     }
 
     /**
-     * Establishes an asynchronous connection to the database.
+     * Asynchronously initialises the database by creating the Semantic Kernel table.
      *
-     * @return A Mono representing the completion of the table creation operation, indicating the
-     *     successful establishment of the database connection.
+     * @return A Mono representing the completion of the table creation operation.
      */
-    public Mono<Void> connectAsync() {
+    public Mono<Void> initialiseDatabase() {
         return this.dbConnector.createTableAsync();
     }
 
@@ -272,24 +270,38 @@ public class JDBCMemoryStore implements MemoryStore {
     }
 
     /** Builds a JDBCMemoryStore. */
-    public static class Builder implements SQLMemoryStoreBuilder {
+    public static class Builder implements SQLMemoryStore.Builder<JDBCMemoryStore> {
         private Connection connection;
 
         /**
-         * Builds and returns a MemoryStore instance with the specified database connection.
+         * Builds and returns a JDBCMemoryStore instance with the specified database connection.
          *
-         * @return A MemoryStore instance configured with the provided database connection.
+         * @return A JDBCMemoryStore instance configured with the provided database connection.
          */
         @Override
-        public MemoryStore build() {
+        public JDBCMemoryStore build() {
             return new JDBCMemoryStore(new JDBCConnector(connection));
         }
 
         /**
-         * Sets the database connection to be used by the JDBCMemoryStore being built.
+         * Asynchronously builds and returns a JDBCMemoryStore instance with the specified database
+         * connection.
+         *
+         * @return A Mono with a JDBCMemoryStore instance configured with the provided database
+         *     connection.
+         */
+        @Override
+        public Mono<JDBCMemoryStore> buildAsync() {
+            JDBCMemoryStore memoryStore = this.build();
+            return memoryStore.initialiseDatabase().thenReturn(memoryStore);
+        }
+
+        /**
+         * Sets the database connection to be used by the memory store being built.
          *
          * @param connection The Connection object representing the database connection.
-         * @return The updated Builder instance to continue the building process.
+         * @return The updated Builder instance to continue the building process for a
+         *     JDBCMemoryStore.
          */
         @Override
         public Builder withConnection(Connection connection) {

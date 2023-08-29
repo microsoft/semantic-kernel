@@ -3,8 +3,7 @@ package com.microsoft.semantickernel.connectors.memory.postgresql;
 
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
-import com.microsoft.semantickernel.connectors.memory.jdbc.SQLMemoryStoreBuilder;
-import com.microsoft.semantickernel.memory.MemoryStore;
+import com.microsoft.semantickernel.connectors.memory.jdbc.SQLMemoryStore;
 import java.sql.Connection;
 import reactor.core.publisher.Mono;
 
@@ -13,12 +12,8 @@ public class PostgreSQLMemoryStore extends JDBCMemoryStore {
         super(connector);
     }
 
-    public Mono<Void> connectAsync() {
-        return super.connectAsync();
-    }
-
     /** Builds a PostgreSQLMemoryStore. */
-    public static class Builder implements SQLMemoryStoreBuilder {
+    public static class Builder implements SQLMemoryStore.Builder<PostgreSQLMemoryStore> {
         private Connection connection;
 
         /**
@@ -29,8 +24,21 @@ public class PostgreSQLMemoryStore extends JDBCMemoryStore {
          *     connection.
          */
         @Override
-        public MemoryStore build() {
+        public PostgreSQLMemoryStore build() {
             return new PostgreSQLMemoryStore(new PostgreSQLConnector(connection));
+        }
+
+        /**
+         * Asynchronously builds and returns a PostgreSQLMemoryStore instance with the specified
+         * database connection.
+         *
+         * @return A Mono with a PostgreSQLMemoryStore instance configured with the provided
+         *     database connection.
+         */
+        @Override
+        public Mono<PostgreSQLMemoryStore> buildAsync() {
+            PostgreSQLMemoryStore memoryStore = this.build();
+            return memoryStore.initialiseDatabase().thenReturn(memoryStore);
         }
 
         /**
