@@ -9,7 +9,7 @@ using RepoUtils;
 namespace KernelSyntaxExamples;
 
 // ReSharper disable once InconsistentNaming
-public static class Example56_PowerShellPlanning
+public static class Example56_PowerShellScriptPlanner
 {
     public static async Task RunAsync()
     {
@@ -18,19 +18,17 @@ public static class Example56_PowerShellPlanning
         Console.WriteLine($"Goal: {goal}");
 
         var kernel = GetKernel();
-        var context = kernel.CreateNewContext();
-        var generator = new ScriptGenerator(kernel);
 
-        var script = await generator.GenerateScriptAsync(goal);
+        var planner = new ScriptPlanner(kernel);
 
-        Console.WriteLine("Generated script:\n");
-        Console.WriteLine(script);
+        var plan = await planner.CreatePlanAsync(goal);
 
-        var plan = script.ToPlanFromScript(goal, context);
+        Console.WriteLine("Generated plan:\n");
+        Console.WriteLine(plan.OriginalPlan);
 
         var result = await kernel.RunAsync(plan);
 
-        Console.WriteLine("Result:");
+        Console.WriteLine("\nResult:");
         Console.WriteLine(result.Result);
 
         Console.ReadKey();

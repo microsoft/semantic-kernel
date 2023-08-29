@@ -61,6 +61,12 @@ public sealed class Plan : IPlan
     [JsonPropertyName("next_step_index")]
     public int NextStepIndex { get; private set; }
 
+    /// <summary>
+    /// Original generated plan in string representation.
+    /// </summary>
+    [JsonPropertyName("original_plan")]
+    public string? OriginalPlan { get; set; }
+
     #region ISKFunction implementation
 
     /// <inheritdoc/>

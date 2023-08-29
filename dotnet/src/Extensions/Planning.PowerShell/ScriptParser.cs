@@ -13,9 +13,11 @@ namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
 public static class ScriptParser
 {
-    public static Plan ToPlanFromScript(this string script, string goal, SKContext context)
+    public static Plan ToPlanFromScript(string script, string goal, SKContext context)
     {
         var plan = new Plan(goal);
+
+        plan.OriginalPlan = script;
 
         var syntaxTree = Parser.ParseInput(script, out var tokens, out var errors);
         var resultVariable = string.Empty;
@@ -73,6 +75,8 @@ public static class ScriptParser
 
         return plan;
     }
+
+    #region private ================================================================================
 
     private static Dictionary<string, CommandElementAst> GetParameterElements(ReadOnlyCollection<CommandElementAst> commandElements)
     {
@@ -173,4 +177,6 @@ public static class ScriptParser
 
     private const string UriParameterName = "Uri";
     private const string BodyParameterName = "Body";
+
+    #endregion
 }

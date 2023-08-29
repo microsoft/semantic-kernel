@@ -9,11 +9,11 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
-public class ScriptGenerator
+public class ScriptPlanner
 {
-    public ScriptGenerator(
+    public ScriptPlanner(
         IKernel kernel,
-        ScriptGenerationConfig? config = null,
+        ScriptPlannerConfig? config = null,
         string? prompt = null)
     {
         this.Config = config ?? new();
@@ -32,7 +32,25 @@ public class ScriptGenerator
         this._context = kernel.CreateNewContext();
     }
 
-    public async Task<string> GenerateScriptAsync(string goal, CancellationToken cancellationToken = default)
+    public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
+    {
+        var script = await this.GenerateScriptAsync(goal, cancellationToken).ConfigureAwait(false);
+
+        var plan = ScriptParser.ToPlanFromScript(script, goal, this._context);
+
+        return plan;
+    }
+
+    #region private ================================================================================
+
+    private const string SkillName = "PowerShell_Excluded";
+
+    private ScriptPlannerConfig Config { get; }
+
+    private readonly SKContext _context;
+    private readonly ISKFunction _generateScriptFunction;
+
+    private async Task<string> GenerateScriptAsync(string goal, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(goal))
         {
@@ -55,26 +73,23 @@ public class ScriptGenerator
 
     private string SanitizeScript(string script)
     {
+        const StringComparison ComparisonType = StringComparison.OrdinalIgnoreCase;
+
         const string MarkdownScriptPrefix = "```powershell";
         const string MarkdownScriptEnding = "```";
 
-        if (script.StartsWith(MarkdownScriptPrefix, StringComparison.OrdinalIgnoreCase))
+        if (script.StartsWith(MarkdownScriptPrefix, ComparisonType))
         {
-            script = script.Replace(MarkdownScriptPrefix, string.Empty);
+            script = script.Replace(MarkdownScriptPrefix, string.Empty, ComparisonType);
         }
 
-        if (script.EndsWith(MarkdownScriptEnding, StringComparison.OrdinalIgnoreCase))
+        if (script.EndsWith(MarkdownScriptEnding, ComparisonType))
         {
-            script = script.Replace(MarkdownScriptEnding, string.Empty);
+            script = script.Replace(MarkdownScriptEnding, string.Empty, ComparisonType);
         }
 
         return script;
     }
 
-    private const string SkillName = "PowerShell_Excluded";
-
-    private ScriptGenerationConfig Config { get; }
-
-    private readonly SKContext _context;
-    private readonly ISKFunction _generateScriptFunction;
+    #endregion
 }

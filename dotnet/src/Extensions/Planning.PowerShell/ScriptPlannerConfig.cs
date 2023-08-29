@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
-public class ScriptGenerationConfig
+public class ScriptPlannerConfig
 {
     /// <summary>
     /// A list of skills to exclude from the script generation request.
