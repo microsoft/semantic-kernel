@@ -7,11 +7,9 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -81,22 +79,11 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
+    public ISKFunction RegisterFunction(ISKFunction skfunction)
     {
-        return this.RegisterSemanticFunction(SkillCollection.GlobalSkill, functionName, functionConfig);
-    }
+        this._skillCollection.AddFunction(skfunction);
 
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string skillName, string functionName, SemanticFunctionConfig functionConfig)
-    {
-        // Future-proofing the name not to contain special chars
-        Verify.ValidSkillName(skillName);
-        Verify.ValidFunctionName(functionName);
-
-        ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig);
-        this._skillCollection.AddFunction(function);
-
-        return function;
+        return skfunction;
     }
 
     /// <inheritdoc/>
@@ -263,6 +250,7 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly ILogger _logger;
 
+    /* TODO Move this
     private ISKFunction CreateSemanticFunction(
         string skillName,
         string functionName,
@@ -291,6 +279,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         return func;
     }
+    */
 
     /// <summary>
     /// Import a skill into the kernel skill collection, so that semantic functions and pipelines can consume its functions.

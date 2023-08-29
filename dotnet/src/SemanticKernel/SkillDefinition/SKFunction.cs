@@ -3,9 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -50,6 +48,7 @@ public static class SKFunction
         ILoggerFactory? loggerFactory = null)
             => NativeFunction.FromNativeFunction(nativeFunction, skillName, functionName, description, parameters, loggerFactory);
 
+    /* TODO Move or delete this
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
     /// </summary>
@@ -66,4 +65,5 @@ public static class SKFunction
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
             => SemanticFunction.FromSemanticConfig(skillName, functionName, functionConfig, loggerFactory, cancellationToken);
+    */
 }
