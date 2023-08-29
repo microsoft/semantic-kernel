@@ -545,6 +545,7 @@ public class StepwisePlanner : IStepwisePlanner
         try
         {
             // Client used to request answers to chat completion models
+            // TODO #2635 - Using TryGetService would improve cost of this method to avoid exception handling
             chatCompletion = kernel.GetService<IChatCompletion>();
             return true;
         }
