@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -46,6 +45,14 @@ public interface IKernel
     IReadOnlySkillCollection Skills { get; }
 
     /// <summary>
+    /// Register a Semantic Kernel callable function in the internal skill collection.
+    /// </summary>
+    /// <param name="skfunction">The Semantic Kernel callable function to register.</param>
+    /// <returns>The Semantic Kernel callable function that was registered.</returns>
+    ISKFunction RegisterFunction(ISKFunction skfunction);
+
+    /*
+    /// <summary>
     /// Build and register a function in the internal skill collection, in a global generic skill.
     /// </summary>
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
@@ -66,6 +73,7 @@ public interface IKernel
         string skillName,
         string functionName,
         SemanticFunctionConfig functionConfig);
+    */
 
     /// <summary>
     /// Registers a custom function in the internal skill collection.

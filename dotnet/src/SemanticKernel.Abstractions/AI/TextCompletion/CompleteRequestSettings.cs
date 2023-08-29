@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 
@@ -65,6 +64,7 @@ public class CompleteRequestSettings
     /// </summary>
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 
+    /*
     /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
@@ -82,4 +82,5 @@ public class CompleteRequestSettings
             StopSequences = config.StopSequences,
         };
     }
+    */
 }
