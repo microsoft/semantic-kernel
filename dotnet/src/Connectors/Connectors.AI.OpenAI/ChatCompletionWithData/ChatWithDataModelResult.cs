@@ -21,7 +21,7 @@ public class ChatWithDataModelResult
     public DateTimeOffset Created { get; }
 
     /// <summary>
-    /// Contains tool content, which stores citations from data source.
+    /// Content from data source, including citations.
     /// For more information see <see href="https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/use-your-data#conversation-history-for-better-results"/>.
     /// </summary>
     public string? ToolContent { get; set; }

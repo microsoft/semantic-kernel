@@ -59,7 +59,7 @@ public static class Example54_AzureChatCompletionWithData
 
         chatHistory.AddAssistantMessage(response);
 
-        // Second question without previous context based on uploaded content.
+        // Second question based on uploaded content.
         ask = "What are Emily and David studying?";
         chatHistory.AddUserMessage(ask);
 
