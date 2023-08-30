@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace SemanticKernel.UnitTests;
+
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
     public HttpRequestHeaders? RequestHeaders { get; private set; }
