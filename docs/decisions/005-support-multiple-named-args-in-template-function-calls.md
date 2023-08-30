@@ -83,10 +83,11 @@ Cons:
 
 * Promotes code that is harder to read unless commas can be used (see [Using Commas](#syntax-idea-1-using-commas))
 * More complexity to support
+* Doesn't align with Guidance which doesn't support spaces before and after the = sign.
 
 ## Decision Outcome
 
-Chosen options: "Syntax idea 3: Python/Guidance-Style keyword arguments", because it aligns well with Guidance's syntax and is the most compatible with YAML.
+Chosen options: "Syntax idea 3: Python/Guidance-Style keyword arguments", because it aligns well with Guidance's syntax and is the most compatible with YAML and "Syntax idea 4: Allow whitespace between arg name/value delimiter" for more flexible developer experience.
 
 Additional decisions:
 
@@ -100,12 +101,10 @@ Example
 
 ```
 
-* Don't allow whitespace before and after equals sign for named args because without commas, differentiating between arguments becomes more difficult to read.
-* Arg values are allowed to be defined as strings or variables ONLY, e.g.
+* Allow arg values to be defined as strings or variables ONLY, e.g.
   
 ```handlebars
 {{MyFunction street=$street zip="98123" city='Seattle'}}
 ```
 
 If function expects a value other than a string for an argument, the SDK will use the corresponding TypeConverter to parse the string provided when evaluating the expression.
-
