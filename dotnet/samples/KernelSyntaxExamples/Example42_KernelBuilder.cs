@@ -19,12 +19,12 @@ using Microsoft.SemanticKernel.Config;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Reliability.Polly.Config;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.Reliability.Polly.Config;
-using Polly.Retry;
 using Polly;
+using Polly.Retry;
 
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder

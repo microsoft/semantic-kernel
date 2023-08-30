@@ -2,9 +2,9 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Polly;
 
 namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
@@ -71,10 +71,11 @@ public class DefaultHttpRetryHandler : DelegatingHandler
             (outcome, timespan, retryCount, _) =>
             {
                 this._logger?.LogWarning(
-                    "Error executing action [attempt {0} of 3], pausing {1}ms. Outcome: {2}",
+                    "Error executing action [attempt {CurrentRetryAttempt} of {MaxRetryAttempts}]. Reason: {StatusCode}. Will retry after {WaitMilliseconds}ms.",
                     retryCount,
-                    timespan.TotalMilliseconds,
-                    outcome.Result.StatusCode);
+                    this._config.MaxRetryCount,
+                    outcome.Result.StatusCode,
+                    timespan.TotalMilliseconds);
                 return Task.CompletedTask;
             });
 

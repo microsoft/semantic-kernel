@@ -2,8 +2,8 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Xunit;
 using Microsoft.SemanticKernel.Reliability.Polly.Config;
+using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.Reliability.Polly;
 

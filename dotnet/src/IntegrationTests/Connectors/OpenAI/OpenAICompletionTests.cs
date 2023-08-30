@@ -9,11 +9,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Reliability.Polly.Config;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.SemanticKernel.Reliability.Polly.Config;
 
 namespace SemanticKernel.IntegrationTests.Connectors.OpenAI;
 

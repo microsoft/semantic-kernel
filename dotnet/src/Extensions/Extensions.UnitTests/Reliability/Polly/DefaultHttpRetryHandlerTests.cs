@@ -24,10 +24,8 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
 
     public DefaultHttpRetryHandlerTests()
     {
-        SystemClock.SleepAsync = (_, _) => Task.FromResult(0);
+        SystemClock.SleepAsync = (_, _) => Task.CompletedTask;
         SystemClock.Sleep = (_, _) => { };
-        SystemClock.DateTimeOffsetUtcNow = this._mockTimeProvider.Object.GetCurrentTime;
-        SystemClock.UtcNow = () => this._mockTimeProvider.Object.GetCurrentTime().DateTime;
     }
 
     public void Dispose()
