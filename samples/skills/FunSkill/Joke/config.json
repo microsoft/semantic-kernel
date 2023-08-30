@@ -2,7 +2,7 @@
   "schema": 1,
   "description": "Generate a funny joke",
   "type": "completion",
-  "function_completion_enabled": true,
+  "function_calling_enabled": true,
   "completion": {
     "max_tokens": 1000,
     "temperature": 0.9,

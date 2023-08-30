@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Dict, Optional
 
 from pydantic import Field
 
+from semantic_kernel.models.chat.function_call import FunctionCall
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.sk_pydantic import SKBaseModel
 
@@ -19,6 +20,7 @@ class ChatMessage(SKBaseModel):
         default=None, init=True, repr=False
     )
     name: Optional[str] = None
+    function_call: Optional[FunctionCall] = None
 
     @property
     def content(self) -> Optional[str]:

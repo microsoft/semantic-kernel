@@ -122,7 +122,7 @@ class SKFunction(SKFunctionBase):
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context, **kwargs):
+        async def _local_func(client, request_settings, context: 'SKContext', **kwargs):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -135,13 +135,14 @@ class SKFunction(SKFunctionBase):
             except Exception as e:
                 # TODO: "critical exceptions"
                 context.fail(str(e), e)
+                return context
 
             functions = kwargs.get("functions")
 
             as_chat_prompt = cast(ChatPromptTemplate, function_config.prompt_template)
 
             # Similar to non-chat, render prompt (which renders to a
-            # list of <role, content> messages)
+            # dict of <role, content, name> messages)
             messages = await as_chat_prompt.render_messages_async(context)
 
             if not functions:
@@ -157,9 +158,8 @@ class SKFunction(SKFunctionBase):
                 finally:
                     return context
 
-            # if not request_settings.function_call:
-            #     request_settings.function_call = "auto"
             try:
+                assert hasattr(client, "complete_chat_with_functions_async")
                 (
                     completion,
                     function_call,
@@ -172,22 +172,24 @@ class SKFunction(SKFunctionBase):
                 return context
 
             if function_call is not None:
-                skill_name, name = function_call["name"].split("-")
-                if context.skill_collection.has_callable_function(skill_name, name):
+                if context.skill_collection.has_callable_function(
+                    *function_call.split_name()
+                ):
                     func = context.skill_collection.get_callable_function(
-                        skill_name, name
+                        *function_call.split_name()
                     )
                 else:
                     raise KernelException(
                         KernelException.ErrorCodes.FunctionNotAvailable,
-                        f"Function {function_call['name']} not found",
+                        f"Function {function_call.name} not found",
                     )
-                for key, value in function_call["arguments"].items():
-                    context.variables[key] = str(value)
+                context.variables.merge_or_overwrite(function_call.to_context_variables())
                 try:
                     await func.invoke_async(context=context)
+                    if context.error_occurred:
+                        return context
                     as_chat_prompt.add_function_response_message(
-                        name=function_call["name"],
+                        name=function_call.name,
                         content=context.variables.input,
                     )
                     return await _local_func(

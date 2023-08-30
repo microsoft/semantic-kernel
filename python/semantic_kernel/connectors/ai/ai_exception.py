@@ -28,6 +28,8 @@ class AIException(Exception):
         InvalidConfiguration = 8
         # The function is not supported.
         FunctionTypeNotSupported = 9
+        # The content filter was triggered.
+        ContentFilterTriggered = 10
 
     # The error code.
     _error_code: ErrorCodes

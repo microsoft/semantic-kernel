@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import json
 from logging import Logger
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import openai
+
+from semantic_kernel.models.chat.chat_message import FunctionCall
 
 if TYPE_CHECKING:
     from openai.openai_object import OpenAIObject
@@ -84,7 +85,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         request_settings: ChatRequestSettings,
         logger: Optional[Logger] = None,
     ) -> Union[
-        Tuple[Optional[str], Optional[Dict]], List[Tuple[Optional[str], Optional[Dict]]]
+        Tuple[Optional[str], Optional[FunctionCall]],
+        List[Tuple[Optional[str], Optional[FunctionCall]]],
     ]:
         # TODO: tracking on token counts/etc.
 
@@ -142,6 +144,12 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         )
 
         if len(response.choices) == 1:
+            if response['choices'][0].finish_reason == "content_filter":
+                raise AIException(
+                    AIException.ErrorCodes.ContentFilterTriggered,
+                    "OpenAI service failed to complete the chat because the content filter was triggered",
+                    None,
+                )
             return response.choices[0].message.content
         else:
             return [choice.message.content for choice in response.choices]
@@ -294,7 +302,7 @@ def _parse_choices(chunk):
 
 def _parse_message(
     message: "OpenAIObject", logger: Optional[Logger] = None
-) -> Tuple[Optional[str], Optional[Dict]]:
+) -> Tuple[Optional[str], Optional[FunctionCall]]:
     """
     Parses the message.
 
@@ -306,17 +314,10 @@ def _parse_message(
     """
     content = message.content if hasattr(message, "content") else None
     function_call = message.function_call if hasattr(message, "function_call") else None
-    try:
-        if function_call:
-            function_call = {
-                "name": function_call.name,
-                "arguments": json.loads(function_call.arguments),
-            }
-    except json.JSONDecodeError:
-        function_call = None
-        if logger:
-            logger.warning(
-                "The function call was not valid JSON: %s", function_call.arguments
-            )
+    if function_call:
+        function_call = FunctionCall(
+            name=function_call.name,
+            arguments=function_call.arguments,
+        )
 
     return (content, function_call)
