@@ -23,6 +23,7 @@ public static class Example54_AzureChatCompletionWithData
         // potentially reshape our understanding of climate change.
 
         await ExampleWithChatCompletion();
+        await ExampleWithStreamingChatCompletion();
         await ExampleWithKernel();
     }
 
@@ -30,29 +31,48 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
+        const string Ask = "How did Emily and David meet?";
+
         var chatCompletion = new AzureChatCompletionWithData(GetCompletionWithDataConfig());
         var chatHistory = chatCompletion.CreateNewChat();
 
         // First question without previous context based on uploaded content.
-        chatHistory.AddUserMessage("How did Emily and David meet?");
+        chatHistory.AddUserMessage(Ask);
 
         // Chat Completion example
-        string reply = await chatCompletion.GenerateMessageAsync(chatHistory);
+        string response = await chatCompletion.GenerateMessageAsync(chatHistory);
 
-        // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        Console.WriteLine(reply);
+        // Output
+        // Ask: How did Emily and David meet?
+        // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
+        Console.WriteLine($"Ask: {Ask}");
+        Console.WriteLine($"Response: {response}");
         Console.WriteLine();
+    }
 
-        // Second question based on uploaded content.
-        chatHistory.AddUserMessage("What are Emily and David studying?");
+    private static async Task ExampleWithStreamingChatCompletion()
+    {
+        Console.WriteLine("=== Example with Streaming Chat Completion ===");
+
+        const string Ask = "What are Emily and David studying?";
+
+        var chatCompletion = new AzureChatCompletionWithData(GetCompletionWithDataConfig());
+        var chatHistory = chatCompletion.CreateNewChat();
+
+        // First question without previous context based on uploaded content.
+        chatHistory.AddUserMessage(Ask);
+
+        Console.WriteLine($"Ask: {Ask}");
+        Console.WriteLine("Response: ");
 
         // Chat Completion Streaming example
         await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
         {
             await foreach (var message in result.GetStreamingChatMessageAsync())
             {
-                // Output:
-                // They are passionate scientists who study glaciology,
+                // Output
+                // Ask: What are Emily and David studying?
+                // Response: They are passionate scientists who study glaciology,
                 // a branch of geology that deals with the study of ice and its effects.
                 Console.Write(message.Content);
             }
@@ -65,6 +85,8 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Kernel ===");
 
+        var ask = "How did Emily and David meet?";
+
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         IKernel kernel = new KernelBuilder()
@@ -74,21 +96,26 @@ public static class Example54_AzureChatCompletionWithData
         var semanticFunction = kernel.CreateSemanticFunction("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var result = await kernel.RunAsync("How did Emily and David meet?", semanticFunction);
+        var response = await kernel.RunAsync(ask, semanticFunction);
 
-        // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        Console.WriteLine(result);
+        // Output
+        // Ask: How did Emily and David meet?
+        // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine($"Response: {response}");
         Console.WriteLine();
 
         // Second question based on uploaded content.
-        result = await kernel.RunAsync("What are Emily and David studying?", semanticFunction);
+        ask = "What are Emily and David studying?";
+        response = await kernel.RunAsync(ask, semanticFunction);
 
-        // Output:
-        // They are passionate scientists who study glaciology,
+        // Output
+        // Ask: What are Emily and David studying?
+        // Response: They are passionate scientists who study glaciology,
         // a branch of geology that deals with the study of ice and its effects.
-        Console.WriteLine(result);
-
-        Console.WriteLine(Environment.NewLine);
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine($"Response: {response}");
+        Console.WriteLine();
     }
 
     /// <summary>
