@@ -43,7 +43,8 @@ kernel.import_skill(MathSkill(), skill_name="math")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
-# if you only want to use a specific function, set the name of that function in this parameter.
+# if you only want to use a specific function, set the name of that function in this parameter,
+# the format for that is 'SkillName-FunctionName', (i.e. 'math-Add'). 
 # if the model or api version do not support this you will get an error.
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     max_tokens=2000, temperature=0.7, top_p=0.8, function_call="auto"

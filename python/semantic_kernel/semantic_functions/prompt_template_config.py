@@ -18,6 +18,7 @@ class PromptTemplateConfig:
         token_selection_biases: Dict[int, int] = field(default_factory=dict)
         chat_system_prompt: str = None
         # the function_call should be 'auto' or the name of a specific function in order to leverage function calling
+        # when not using auto, the format is 'SkillName-FunctionName', e.g. 'Weather-GetWeather'
         function_call: Optional[str] = None
 
     @dataclass
