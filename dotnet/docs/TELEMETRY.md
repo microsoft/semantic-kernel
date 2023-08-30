@@ -52,6 +52,7 @@ Log filtering configuration has been refined to strike a balance between visibil
 builder.AddFilter("Microsoft", LogLevel.Warning);
 builder.AddFilter("Microsoft.SemanticKernel", LogLevel.Critical);
 builder.AddFilter("Microsoft.SemanticKernel.Reliability", LogLevel.Information);
+```
 
 ## Metering
 
