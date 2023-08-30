@@ -11,9 +11,9 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
-public static class ScriptParser
+internal static class ScriptParser
 {
-    public static Plan ToPlanFromScript(string script, string goal, SKContext context)
+    internal static Plan ToPlanFromScript(this string script, string goal, Func<string, string, ISKFunction?> getSkillFunction)
     {
         var plan = new Plan(goal);
 
@@ -32,7 +32,7 @@ public static class ScriptParser
 
             if (!string.IsNullOrWhiteSpace(functionName))
             {
-                var skillFunction = GetSkillFunction(context, skillName, functionName);
+                var skillFunction = getSkillFunction(skillName, functionName);
                 var variables = GetVariables(parameterElements[BodyParameterName]);
 
                 if (skillFunction != null)
@@ -74,6 +74,26 @@ public static class ScriptParser
         plan.Outputs.Add(resultVariable);
 
         return plan;
+    }
+
+    internal static Func<string, string, ISKFunction?> GetSkillFunction(SKContext context)
+    {
+        return (skillName, functionName) =>
+        {
+            if (string.IsNullOrEmpty(skillName))
+            {
+                if (context.Skills!.TryGetFunction(functionName, out var skillFunction))
+                {
+                    return skillFunction;
+                }
+            }
+            else if (context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
+            {
+                return skillFunction;
+            }
+
+            return null;
+        };
     }
 
     #region private ================================================================================
@@ -121,23 +141,6 @@ public static class ScriptParser
         if (command.Parent.Parent is AssignmentStatementAst assignmentStatementAst)
         {
             return assignmentStatementAst.Left.Extent.GetText().TrimStart('$');
-        }
-
-        return null;
-    }
-
-    private static ISKFunction? GetSkillFunction(SKContext context, string skillName, string functionName)
-    {
-        if (string.IsNullOrEmpty(skillName))
-        {
-            if (context.Skills!.TryGetFunction(functionName, out var skillFunction))
-            {
-                return skillFunction;
-            }
-        }
-        else if (context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
-        {
-            return skillFunction;
         }
 
         return null;

@@ -36,7 +36,8 @@ public class ScriptPlanner
     {
         var script = await this.GenerateScriptAsync(goal, cancellationToken).ConfigureAwait(false);
 
-        var plan = ScriptParser.ToPlanFromScript(script, goal, this._context);
+        var getSkillFunction = this.Config.GetSkillFunction ?? ScriptParser.GetSkillFunction(this._context);
+        var plan = script.ToPlanFromScript(goal, getSkillFunction);
 
         return plan;
     }
