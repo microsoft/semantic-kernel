@@ -8,10 +8,11 @@ import com.microsoft.semantickernel.connectors.memory.jdbc.SQLMemoryStore;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import javax.annotation.CheckReturnValue;
 import reactor.core.publisher.Mono;
 
 public class SQLiteMemoryStore extends JDBCMemoryStore {
-    public SQLiteMemoryStore(SQLConnector connector) {
+    private SQLiteMemoryStore(SQLConnector connector) {
         super(connector);
     }
 
@@ -21,13 +22,15 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
 
         /**
          * Builds and returns an SQLiteMemoryStore instance with the specified database connection.
+         * The build process will connect to the database and create the required tables.
          *
-         * @return An SQLiteMemoryStore instance configured with the provided SQLite database
-         *     connection.
+         * @return An SQLiteMemoryStore instance configured with the provided database connection.
+         * @deprecated Use {@link #buildAsync()} instead.
          */
         @Override
+        @Deprecated
         public SQLiteMemoryStore build() {
-            return new SQLiteMemoryStore(new JDBCConnector(connection));
+            return this.buildAsync().block();
         }
 
         /**
@@ -38,9 +41,11 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
          *     database connection.
          */
         @Override
+        @CheckReturnValue
         public Mono<SQLiteMemoryStore> buildAsync() {
-            SQLiteMemoryStore memoryStore = this.build();
-            return memoryStore.initialiseDatabase().thenReturn(memoryStore);
+            JDBCConnector connector = new JDBCConnector(connection);
+            SQLiteMemoryStore memoryStore = new SQLiteMemoryStore(connector);
+            return connector.createTableAsync().thenReturn(memoryStore);
         }
 
         /**

@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLMemoryStore;
 import java.sql.Connection;
+import javax.annotation.CheckReturnValue;
 import reactor.core.publisher.Mono;
 
 public class PostgreSQLMemoryStore extends JDBCMemoryStore {
@@ -18,14 +19,17 @@ public class PostgreSQLMemoryStore extends JDBCMemoryStore {
 
         /**
          * Builds and returns a PostgreSQLMemoryStore instance with the specified database
-         * connection.
+         * connection. The build process will connect to the database and create the required
+         * tables.
          *
-         * @return A PostgreSQLMemoryStore instance configured with the provided PostgreSQL database
+         * @return A PostgreSQLMemoryStore instance configured with the provided database
          *     connection.
+         * @deprecated Use {@link #buildAsync()} instead.
          */
         @Override
+        @Deprecated
         public PostgreSQLMemoryStore build() {
-            return new PostgreSQLMemoryStore(new PostgreSQLConnector(connection));
+            return this.buildAsync().block();
         }
 
         /**
@@ -36,9 +40,11 @@ public class PostgreSQLMemoryStore extends JDBCMemoryStore {
          *     database connection.
          */
         @Override
+        @CheckReturnValue
         public Mono<PostgreSQLMemoryStore> buildAsync() {
-            PostgreSQLMemoryStore memoryStore = this.build();
-            return memoryStore.initialiseDatabase().thenReturn(memoryStore);
+            PostgreSQLConnector connector = new PostgreSQLConnector(connection);
+            PostgreSQLMemoryStore memoryStore = new PostgreSQLMemoryStore(connector);
+            return connector.createTableAsync().thenReturn(memoryStore);
         }
 
         /**

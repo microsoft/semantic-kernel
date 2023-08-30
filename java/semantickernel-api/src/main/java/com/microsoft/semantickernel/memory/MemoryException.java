@@ -71,6 +71,9 @@ public class MemoryException extends SKException {
         /** Unable to serialize a memory . */
         UNABLE_TO_SERIALIZE_MEMORY("Unable to serialize memory"),
 
+        /** Unable to build memory. */
+        UNABLE_TO_BUILD_MEMORY("Unable to build memory"),
+
         /** Attempted to access a memory collection that does not exist. */
         ATTEMPTED_TO_ACCESS_NONEXISTENT_COLLECTION("Attempted to access non-existent collection"),
 

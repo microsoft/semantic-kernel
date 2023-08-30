@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.memory.MemoryRecord;
 import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,17 +20,8 @@ import reactor.util.function.Tuples;
 public class JDBCMemoryStore implements SQLMemoryStore {
     protected final SQLConnector dbConnector;
 
-    public JDBCMemoryStore(SQLConnector connector) {
+    protected JDBCMemoryStore(SQLConnector connector) {
         this.dbConnector = connector;
-    }
-
-    /**
-     * Asynchronously initialises the database by creating the Semantic Kernel table.
-     *
-     * @return A Mono representing the completion of the table creation operation.
-     */
-    public Mono<Void> initialiseDatabase() {
-        return this.dbConnector.createTableAsync();
     }
 
     @Override
@@ -274,13 +266,16 @@ public class JDBCMemoryStore implements SQLMemoryStore {
         private Connection connection;
 
         /**
-         * Builds and returns a JDBCMemoryStore instance with the specified database connection.
+         * Builds and returns a JDBCMemoryStore instance with the specified database connection. The
+         * build process will connect to the database and create the required tables.
          *
          * @return A JDBCMemoryStore instance configured with the provided database connection.
+         * @deprecated Use {@link #buildAsync()} instead.
          */
         @Override
+        @Deprecated
         public JDBCMemoryStore build() {
-            return new JDBCMemoryStore(new JDBCConnector(connection));
+            return this.buildAsync().block();
         }
 
         /**
@@ -291,9 +286,11 @@ public class JDBCMemoryStore implements SQLMemoryStore {
          *     connection.
          */
         @Override
+        @CheckReturnValue
         public Mono<JDBCMemoryStore> buildAsync() {
-            JDBCMemoryStore memoryStore = this.build();
-            return memoryStore.initialiseDatabase().thenReturn(memoryStore);
+            JDBCConnector connector = new JDBCConnector(connection);
+            JDBCMemoryStore memoryStore = new JDBCMemoryStore(connector);
+            return connector.createTableAsync().thenReturn(memoryStore);
         }
 
         /**
