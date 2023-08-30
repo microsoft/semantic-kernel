@@ -7,7 +7,7 @@ if __name__ == "__main__":
     """Client"""
     kernel = sk.Kernel()
 
-    openapi_skill = register_openapi_skill(kernel, "openApiSkill", "samples/kernel-syntax-examples/openapi_example/openapi.yaml")
+    openapi_skill = register_openapi_skill(kernel, "openApiSkill", "openapi.yaml")
 
     context_variables = sk.ContextVariables(
         variables={
