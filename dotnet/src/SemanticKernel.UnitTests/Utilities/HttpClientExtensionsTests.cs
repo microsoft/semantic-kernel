@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
-using Xunit;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
-using System.Net;
+using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities;
 
