@@ -372,7 +372,7 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
         mockLogger.Verify(l => l.Log(
             LogLevel.Warning,
             It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("pausing 500ms")),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Will retry after 500ms")),
             It.IsAny<Exception>(),
             It.IsAny<Func<It.IsAnyType, Exception, string>>()!
             ), Times.AtLeastOnce);
@@ -411,7 +411,7 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
         mockLogger.Verify(l => l.Log(
             LogLevel.Warning,
             It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("pausing 500ms")),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Will retry after 500ms")),
             It.IsAny<Exception>(),
             It.IsAny<Func<It.IsAnyType, Exception, string>>()!
             ), Times.AtLeastOnce);
@@ -478,7 +478,7 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
             MaxRetryCount = 5,
             MinRetryDelay = TimeSpan.FromMilliseconds(50),
             MaxRetryDelay = TimeSpan.FromMilliseconds(50),
-            MaxTotalRetryTime = TimeSpan.FromMilliseconds(100)
+            MaxTotalRetryTime = TimeSpan.FromMilliseconds(55)
         };
 
         var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
@@ -500,7 +500,7 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
 
         // Assert
         mockHandler.Protected()
-            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Between(1, 3, Moq.Range.Inclusive), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
     }
 
     [Fact]

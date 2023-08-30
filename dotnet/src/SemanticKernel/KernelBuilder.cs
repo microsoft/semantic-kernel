@@ -1,11 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Config;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -24,6 +29,9 @@ public sealed class KernelBuilder
     private IDelegatingHandlerFactory? _httpHandlerFactory = null;
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
+
+    private static bool _promptTemplateEngineInitialized = false;
+    private static Type? _promptTemplateEngineType = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -49,7 +57,7 @@ public sealed class KernelBuilder
         var instance = new Kernel(
             new SkillCollection(this._loggerFactory),
             this._aiServices.Build(),
-            this._promptTemplateEngine ?? new PromptTemplateEngine(this._loggerFactory),
+            this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),
             this._config,
             this._loggerFactory
@@ -231,5 +239,69 @@ public sealed class KernelBuilder
     {
         this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._config), setAsDefault);
         return this;
+    }
+
+    /// <summary>
+    /// Create a default prompt template engine.
+    ///
+    /// This is a temporary solution to avoid breaking existing clients.
+    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
+    ///
+    /// </summary>
+    /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
+    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
+    private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
+    {
+        if (!_promptTemplateEngineInitialized)
+        {
+            _promptTemplateEngineType = this.GetPromptTemplateEngineType();
+            _promptTemplateEngineInitialized = true;
+        }
+
+        if (_promptTemplateEngineType is not null)
+        {
+            var constructor = _promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+            if (constructor is not null)
+            {
+#pragma warning disable CS8601 // Null logger factory is OK
+                return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
+#pragma warning restore CS8601
+            }
+        }
+
+        return new NullPromptTemplateEngine();
+    }
+
+    /// <summary>
+    /// Get the prompt template engine type if available
+    /// </summary>
+    /// <returns>The type for the prompt template engine if available</returns>
+    private Type? GetPromptTemplateEngineType()
+    {
+        try
+        {
+            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.PromptTemplateEngine");
+
+            return assembly.ExportedTypes.Single(type =>
+                type.Name.Equals("PromptTemplateEngine", StringComparison.Ordinal) &&
+                type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            return null;
+        }
+    }
+}
+
+/// <summary>
+/// No-operation IPromptTemplateEngine which performs no rendering of the template.
+///
+/// This is a temporary solution to avoid breaking existing clients.
+/// </summary>
+internal class NullPromptTemplateEngine : IPromptTemplateEngine
+{
+    public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(templateText);
     }
 }
