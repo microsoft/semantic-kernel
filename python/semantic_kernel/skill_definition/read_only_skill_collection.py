@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, ClassVar, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Tuple
 
 import pydantic as pdt
 
@@ -57,13 +57,13 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
             return False
         return self.data[s_name][f_name].is_native
 
-    def has_callable_function(self, skill_name: str, function_name: str) -> bool:
-        s_name, f_name = self._normalize_names(skill_name, function_name, True)
-        if s_name not in self.data:
-            return False
-        if f_name not in self.data[s_name]:
-            return False
-        return self.data[s_name][f_name].function_calling_enabled
+    # def has_callable_function(self, skill_name: str, function_name: str) -> bool:
+    #     s_name, f_name = self._normalize_names(skill_name, function_name, True)
+    #     if s_name not in self.data:
+    #         return False
+    #     if f_name not in self.data[s_name]:
+    #         return False
+    #     return self.data[s_name][f_name].function_calling_enabled
 
     def get_semantic_function(
         self, skill_name: str, function_name: str
@@ -91,18 +91,18 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
             f"Function not available: {s_name}.{f_name}",
         )
 
-    def get_callable_function(
-        self, skill_name: str, function_name: str
-    ) -> "SKFunctionBase":
-        s_name, f_name = self._normalize_names(skill_name, function_name, True)
-        if self.has_callable_function(s_name, f_name):
-            return self.data[s_name][f_name]
+    # def get_callable_function(
+    #     self, skill_name: str, function_name: str
+    # ) -> "SKFunctionBase":
+    #     s_name, f_name = self._normalize_names(skill_name, function_name, True)
+    #     if self.has_callable_function(s_name, f_name):
+    #         return self.data[s_name][f_name]
 
-        self._log.error(f"Function not available: {s_name}.{f_name}")
-        raise KernelException(
-            KernelException.ErrorCodes.FunctionNotAvailable,
-            f"Function not available: {s_name}.{f_name}",
-        )
+    #     self._log.error(f"Function not available: {s_name}.{f_name}")
+    #     raise KernelException(
+    #         KernelException.ErrorCodes.FunctionNotAvailable,
+    #         f"Function not available: {s_name}.{f_name}",
+    #     )
 
     def get_functions_view(
         self, include_semantic: bool = True, include_native: bool = True
@@ -146,3 +146,11 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
 
         s_name, f_name = s_name.lower(), f_name.lower()
         return s_name, f_name
+
+    def get_function_calling_object(self) -> List[Dict[str,str]]:
+        """Create the object used for function_calling."""
+        result = []
+        for skill in self.data.values():
+            for function in skill.values():
+                result.append(function.describe_callable_function())
+        return result
