@@ -258,8 +258,15 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         }
 
         if request_settings.function_call is not None:
-            model_args["functions"] = functions
             model_args["function_call"] = request_settings.function_call
+            if request_settings.function_call != "auto":
+                model_args["functions"] = [
+                    func
+                    for func in functions
+                    if func["name"] == request_settings.function_call
+                ]
+            else:
+                model_args["functions"] = functions
 
         try:
             response: Any = await openai.ChatCompletion.acreate(**model_args)

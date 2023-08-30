@@ -18,7 +18,7 @@ class FunctionCall(SKBaseModel):
             args = json.loads(self.arguments)
         except json.JSONDecodeError:
             return None
-        return ContextVariables(variables=args)
+        return ContextVariables(variables={k.lower(): v for k, v in args.items()})
 
     def split_name(self) -> Tuple[str, str]:
         """Split the name into a skill and function name."""

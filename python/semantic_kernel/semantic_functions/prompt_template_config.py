@@ -17,6 +17,7 @@ class PromptTemplateConfig:
         stop_sequences: List[str] = field(default_factory=list)
         token_selection_biases: Dict[int, int] = field(default_factory=dict)
         chat_system_prompt: str = None
+        # the function_call should be 'auto' or the name of a specific function in order to leverage function calling
         function_call: Optional[str] = None
 
     @dataclass
