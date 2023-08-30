@@ -40,6 +40,31 @@ public class JDBCConnector implements SQLConnector, Closeable {
     protected static final String TABLE_NAME = "SKMemoryTable";
     protected static final String INDEX_NAME = "SKMemoryIndex";
 
+    /**
+     * Returns the name of the table that stores the collection names.
+     *
+     * @return The name of the table that stores the collection names.
+     */
+    protected static String DEFAULT_COLLECTIONS_TABLE_NAME() {
+        return COLLECTIONS_TABLE_NAME;
+    }
+    /**
+     * Returns the name of the Semantic Kernel table.
+     *
+     * @return The name of the Semantic Kernel table.
+     */
+    protected static String DEFAULT_TABLE_NAME() {
+        return TABLE_NAME;
+    }
+    /**
+     * Returns the name of the index on the Semantic Kernel table.
+     *
+     * @return The name of the index on the Semantic Kernel table.
+     */
+    protected static String DEFAULT_INDEX_NAME() {
+        return INDEX_NAME;
+    }
+
     public Mono<Void> createTableAsync() {
         return Mono.fromRunnable(
                         () -> {
@@ -358,7 +383,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
             this.connection.close();
         } catch (SQLException e) {
             throw new SQLConnectorException(
-                    SQLConnectorException.ErrorCodes.SQL_ERROR, "Failed to close connection", e);
+                    SQLConnectorException.ErrorCodes.SQL_ERROR, "Database access error while closing connection", e);
         }
     }
 }
