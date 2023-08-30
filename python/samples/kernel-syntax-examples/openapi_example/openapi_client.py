@@ -7,14 +7,14 @@ if __name__ == "__main__":
     """Client"""
     kernel = sk.Kernel()
 
-    openapi_skill = register_openapi_skill(kernel, "openApiSkill", "openapi.yaml")
+    openapi_skill = register_openapi_skill(kernel, "openApiSkill", "samples/kernel-syntax-examples/openapi_example/openapi.yaml")
 
     context_variables = sk.ContextVariables(
         variables={
-            "request_body": {"input": "hello world"},
-            "path_params": {"name": "mark"},
-            "query_params": {"q": "0.7"},
-            "headers": {"Content-Type": "application/json", "Header": "example"},
+            "request_body": '{"input": "hello world"}',
+            "path_params": '{"name": "mark"}',
+            "query_params": '{"q": "0.7"}',
+            "headers": '{"Content-Type": "application/json", "Header": "example"}',
         }
     )
     result = asyncio.run(
