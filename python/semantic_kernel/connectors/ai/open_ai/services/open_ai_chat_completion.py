@@ -240,7 +240,12 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             "top_p": request_settings.top_p,
             "n": request_settings.number_of_responses,
             "stream": stream,
-            "stop": request_settings.stop_sequences,
+            "stop": (
+                request_settings.stop_sequences
+                if request_settings.stop_sequences is not None
+                and len(request_settings.stop_sequences) > 0
+                else None
+            ),
             "max_tokens": request_settings.max_tokens,
             "presence_penalty": request_settings.presence_penalty,
             "frequency_penalty": request_settings.frequency_penalty,
