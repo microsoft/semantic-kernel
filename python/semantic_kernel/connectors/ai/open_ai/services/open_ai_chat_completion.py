@@ -144,7 +144,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         )
 
         if len(response.choices) == 1:
-            if response['choices'][0].finish_reason == "content_filter":
+            if response["choices"][0].finish_reason == "content_filter":
                 raise AIException(
                     AIException.ErrorCodes.ContentFilterTriggered,
                     "OpenAI service failed to complete the chat because the content filter was triggered",

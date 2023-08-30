@@ -11,7 +11,6 @@ def test_function_call():
     assert fc.arguments == """{"input": "world"}"""
 
 
-
 @pytest.mark.asyncio
 async def test_function_call_to_content_variables(create_kernel):
     # Test parsing arguments to variables
@@ -26,4 +25,4 @@ async def test_function_call_to_content_variables(create_kernel):
 
     context.variables.merge_or_overwrite(func_call.to_context_variables())
     assert context.variables.input == "world"
-    assert context.variables['input2'] == "world2"
+    assert context.variables["input2"] == "world2"

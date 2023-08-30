@@ -8,6 +8,7 @@ from semantic_kernel.sk_pydantic import SKBaseModel
 
 class FunctionCall(SKBaseModel):
     """Class to hold a function call."""
+
     name: str
     arguments: str
 

@@ -122,7 +122,7 @@ class SKFunction(SKFunctionBase):
         if function_config is None:
             raise ValueError("Function configuration cannot be `None`")
 
-        async def _local_func(client, request_settings, context: 'SKContext', **kwargs):
+        async def _local_func(client, request_settings, context: "SKContext", **kwargs):
             if client is None:
                 raise ValueError("AI LLM service cannot be `None`")
 
@@ -183,7 +183,9 @@ class SKFunction(SKFunctionBase):
                         KernelException.ErrorCodes.FunctionNotAvailable,
                         f"Function {function_call.name} not found",
                     )
-                context.variables.merge_or_overwrite(function_call.to_context_variables())
+                context.variables.merge_or_overwrite(
+                    function_call.to_context_variables()
+                )
                 try:
                     await func.invoke_async(context=context)
                     if context.error_occurred:
