@@ -181,12 +181,42 @@ public class CodeTokenizerTests
         Assert.Equal("f'oo", namedArg.GetValue(null));
     }
 
+    [Fact]
+    public void ItSupportsSpacesInNamedArguments()
+    {
+        // Arrange
+        var template = "func name = 'foo'";
+
+        // Act
+        var blocks = this._target.Tokenize(template);
+
+        // Assert
+        Assert.Equal(2, blocks.Count);
+        Assert.Equal("func", blocks[0].Content);
+        Assert.Equal("name='foo'", blocks[1].Content);
+        var namedArg = blocks[1] as NamedArgBlock;
+        Assert.NotNull(namedArg);
+        Assert.Equal("foo", namedArg.GetValue(null));
+        Assert.Equal("name", namedArg.Name);
+    }
+
     [Theory]
     [InlineData(@"call 'f\\'xy'")]
     [InlineData(@"call 'f\\'x")]
+    [InlineData("f name")]
     public void ItThrowsWhenSeparatorsAreMissing(string template)
     {
         // Act & Assert
         Assert.Throws<SKException>(() => this._target.Tokenize(template));
+    }
+
+    [Theory]
+    [InlineData("f a =", "A function named argument must contain a quoted value or variable after the '=' character.")]
+    [InlineData("f a='b' arg2", "A function named argument must contain a name and value separated by a '=' character.")]
+    public void ItThrowsWhenArgValueIsMissing(string template, string expectedErrorMessage)
+    {
+        // Act & Assert
+        var exception = Assert.Throws<SKException>(() => this._target.Tokenize(template));
+        Assert.Equal(expectedErrorMessage, exception.Message);
     }
 }

@@ -38,7 +38,7 @@ public sealed class PromptTemplateEngineTests
     {
         // Arrange
         var template = "{$x11} This {$a} is {$_a} a {{$x11}} test {{$x11}} " +
-                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c=$d}}";
+                       "template {{foo}}{{bar $a}}{{baz $_a}}{{yay $x11}}{{food a='b' c = $d}}";
 
         // Act
         var blocks = this._target.ExtractBlocks(template);
@@ -78,8 +78,8 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal(BlockTypes.Code, blocks[8].Type);
         Assert.Equal(BlockTypes.Code, updatedBlocks[8].Type);
 
-        Assert.Equal("food a='b' c=$d", blocks[9].Content);
-        Assert.Equal("food a='b' c=$d", updatedBlocks[9].Content);
+        Assert.Equal("food a='b' c = $d", blocks[9].Content);
+        Assert.Equal("food a='b' c = $d", updatedBlocks[9].Content);
         Assert.Equal(BlockTypes.Code, blocks[9].Type);
         Assert.Equal(BlockTypes.Code, updatedBlocks[9].Type);
 
@@ -127,8 +127,8 @@ public sealed class PromptTemplateEngineTests
         Assert.Equal(BlockTypes.Code, blocks[8].Type);
         Assert.Equal(BlockTypes.Code, updatedBlocks[8].Type);
 
-        Assert.Equal("food a='b' c=$d", blocks[9].Content);
-        Assert.Equal("food a='b' c=$d", updatedBlocks[9].Content);
+        Assert.Equal("food a='b' c = $d", blocks[9].Content);
+        Assert.Equal("food a='b' c = $d", updatedBlocks[9].Content);
         Assert.Equal(BlockTypes.Code, blocks[9].Type);
         Assert.Equal(BlockTypes.Code, updatedBlocks[9].Type);
     }

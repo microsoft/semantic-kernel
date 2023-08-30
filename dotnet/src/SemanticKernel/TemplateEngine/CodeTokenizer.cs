@@ -140,28 +140,6 @@ internal sealed class CodeTokenizer
                 continue;
             }
 
-            // If reading a named argument and either the '=' or the value prefix ($, ', or ") haven't been found
-            if (currentTokenType == TokenTypes.NamedArg && (!namedArgSeparatorFound || namedArgValuePrefix == 0))
-            {
-                if (!namedArgSeparatorFound)
-                {
-                    if (currentChar == Symbols.NamedArgBlockSeparator)
-                    {
-                        namedArgSeparatorFound = true;
-                    }
-                }
-                else
-                {
-                    namedArgValuePrefix = currentChar;
-                    if (!IsQuote((char)namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix)
-                    {
-                        throw new SKException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
-                    }
-                }
-                currentTokenContent.Append(currentChar);
-                continue;
-            }
-
             // While reading a values between quotes
             if (currentTokenType == TokenTypes.Value || (currentTokenType == TokenTypes.NamedArg && IsQuote(namedArgValuePrefix)))
             {
@@ -207,6 +185,7 @@ internal sealed class CodeTokenizer
                 {
                     blocks.Add(new VarBlock(currentTokenContent.ToString(), this._loggerFactory));
                     currentTokenContent.Clear();
+                    currentTokenType = TokenTypes.None;
                 }
                 else if (currentTokenType == TokenTypes.FunctionId)
                 {
@@ -222,18 +201,41 @@ internal sealed class CodeTokenizer
                         blocks.Add(new FunctionIdBlock(tokenContent, this._loggerFactory));
                     }
                     currentTokenContent.Clear();
+                    currentTokenType = TokenTypes.None;
                 }
-                else if (currentTokenType == TokenTypes.NamedArg)
+                else if (currentTokenType == TokenTypes.NamedArg && namedArgSeparatorFound && namedArgValuePrefix != 0)
                 {
                     blocks.Add(new NamedArgBlock(currentTokenContent.ToString(), this._loggerFactory));
                     currentTokenContent.Clear();
                     namedArgSeparatorFound = false;
                     namedArgValuePrefix = '\0';
+                    currentTokenType = TokenTypes.None;
                 }
 
                 spaceSeparatorFound = true;
-                currentTokenType = TokenTypes.None;
 
+                continue;
+            }
+
+            // If reading a named argument and either the '=' or the value prefix ($, ', or ") haven't been found
+            if (currentTokenType == TokenTypes.NamedArg && (!namedArgSeparatorFound || namedArgValuePrefix == 0))
+            {
+                if (!namedArgSeparatorFound)
+                {
+                    if (currentChar == Symbols.NamedArgBlockSeparator)
+                    {
+                        namedArgSeparatorFound = true;
+                    }
+                }
+                else
+                {
+                    namedArgValuePrefix = currentChar;
+                    if (!IsQuote((char)namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix)
+                    {
+                        throw new SKException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
+                    }
+                }
+                currentTokenContent.Append(currentChar);
                 continue;
             }
 

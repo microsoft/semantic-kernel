@@ -20,11 +20,17 @@ public class NamedArgBlockTests
         Assert.Equal(BlockTypes.NamedArg, target.Type);
     }
 
-    [Fact]
-    public void ItTrimsSpaces()
+    [Theory]
+    [InlineData("  a=$b  ", "a=$b")]
+    [InlineData(" a =  $b ", "a=$b")]
+    [InlineData(" a=\"b\" ", "a=\"b\"")]
+    [InlineData(" a =  \"b\" ", "a=\"b\"")]
+    [InlineData("  a='b'  ", "a='b'")]
+    [InlineData("a =  'b' ", "a='b'")]
+    public void ItTrimsSpaces(string input, string expected)
     {
         // Act + Assert
-        Assert.Equal("a=$b", new NamedArgBlock("  a=$b  ", NullLoggerFactory.Instance).Content);
+        Assert.Equal(expected, new NamedArgBlock(input, NullLoggerFactory.Instance).Content);
     }
 
     [Theory]
@@ -72,6 +78,7 @@ public class NamedArgBlockTests
     [InlineData("a>b='val'", false)]
     [InlineData("a/b='val'", false)]
     [InlineData("a\\b='val'", false)]
+    [InlineData("a ='val'", true)]
     public void ArgNameAllowsUnderscoreLettersAndDigits(string name, bool isValid)
     {
         // Arrange
@@ -79,6 +86,20 @@ public class NamedArgBlockTests
 
         // Act + Assert
         Assert.Equal(isValid, target.IsValid(out _));
+    }
+
+    [Theory]
+    [InlineData("name   ='value'")]
+    [InlineData("name=   'value'")]
+    public void AllowsAnyNumberOfSpacesBeforeAndAfterEqualSign(string input)
+    {
+        // Arrange
+        var target = new NamedArgBlock(input);
+
+        // Act + Assert
+        Assert.True(target.IsValid(out _));
+        Assert.Equal(target.Name, "name");
+        Assert.Equal(target.GetValue(null), "value");
     }
 
     [Fact]
@@ -96,6 +117,7 @@ public class NamedArgBlockTests
     [InlineData("0=\"val\"", true)]
     [InlineData("0='val\"", false)]
     [InlineData("0=\"val'", false)]
+    [InlineData("0= 'val'", true)]
     public void ArgValueAllowsConsistentlyQuotedValues(string name, bool isValid)
     {
         // Arrange
