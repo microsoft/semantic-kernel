@@ -2,6 +2,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -10,6 +11,11 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// </summary>
 public interface IChatResult
 {
+    /// <summary>
+    /// Gets the model result data.
+    /// </summary>
+    ModelResult ModelResult { get; }
+
     /// <summary>
     /// Get the chat message from the result.
     /// </summary>
