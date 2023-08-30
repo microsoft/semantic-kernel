@@ -899,6 +899,40 @@ public sealed class SKFunctionTests2
         AssertExtensions.AssertIsArgumentOutOfRange(result.LastException, "g", context.Variables["g"]);
     }
 
+    [Fact]
+    public void ItExposesMetadataFromDelegate()
+    {
+        [Description("Concat information")]
+        static string Test(Guid id, string name, [SKName("old")] int age) => $"{id} {name} {age}";
+
+        // Act
+        var function = SKFunction.FromNativeFunction(Test);
+
+        // Assert
+        Assert.Contains("Test", function.Name, StringComparison.Ordinal);
+        Assert.Equal("Concat information", function.Description);
+        Assert.Equal("id", function.Describe().Parameters[0].Name);
+        Assert.Equal("name", function.Describe().Parameters[1].Name);
+        Assert.Equal("old", function.Describe().Parameters[2].Name);
+    }
+
+    [Fact]
+    public void ItExposesMetadataFromMethodInfo()
+    {
+        [Description("Concat information")]
+        static string Test(Guid id, string name, [SKName("old")] int age) => $"{id} {name} {age}";
+
+        // Act
+        var function = SKFunction.FromNativeMethod(Method(Test));
+
+        // Assert
+        Assert.Contains("Test", function.Name, StringComparison.Ordinal);
+        Assert.Equal("Concat information", function.Description);
+        Assert.Equal("id", function.Describe().Parameters[0].Name);
+        Assert.Equal("name", function.Describe().Parameters[1].Name);
+        Assert.Equal("old", function.Describe().Parameters[2].Name);
+    }
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;

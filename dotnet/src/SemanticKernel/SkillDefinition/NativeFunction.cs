@@ -110,8 +110,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, logger);
 
-        functionName ??= nativeFunction.Method.Name;
-        description ??= string.Empty;
+        functionName ??= methodDetails.Name;
+        parameters ??= methodDetails.Parameters;
+        description ??= methodDetails.Description;
 
         if (string.IsNullOrWhiteSpace(skillName))
         {
