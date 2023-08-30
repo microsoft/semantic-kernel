@@ -12,6 +12,7 @@ from azure.search.documents.indexes.models import (
     SearchIndex,
     VectorSearch,
 )
+from azure.search.documents.models import Vector
 from numpy import ndarray
 
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
@@ -402,12 +403,14 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             collection_name.lower()
         )
 
+        vector = Vector(
+            value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING
+        )
+
         search_results = await search_client.search(
             search_text="*",
-            vector_fields=SEARCH_FIELD_EMBEDDING,
-            vector=embedding.tolist(),
+            vectors=[vector],
             select=get_field_selection(with_embeddings),
-            top_k=limit,
         )
 
         if not search_results or search_results is None:

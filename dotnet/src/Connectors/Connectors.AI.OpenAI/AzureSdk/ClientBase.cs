@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -10,7 +11,6 @@ using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -47,6 +47,35 @@ public abstract class ClientBase
     private protected ILogger Logger { get; set; }
 
     /// <summary>
+    /// Instance of <see cref="Meter"/> for metrics.
+    /// </summary>
+    private static Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
+    /// </summary>
+    private static Counter<int> s_promptTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.PromptTokens",
+            description: "Number of prompt tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
+    /// </summary>
+    private static Counter<int> s_completionTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.CompletionTokens",
+            description: "Number of completion tokens used");
+
+    /// <summary>
+    /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
+    /// </summary>
+    private static Counter<int> s_totalTokensCounter =
+        s_meter.CreateCounter<int>(
+            name: "SK.Connectors.OpenAI.TotalTokens",
+            description: "Total number of tokens used");
+
+    /// <summary>
     /// Creates completions for the prompt and settings.
     /// </summary>
     /// <param name="text">The prompt to complete.</param>
@@ -77,6 +106,8 @@ public abstract class ClientBase
         {
             throw new SKException("Text completions not found");
         }
+
+        this.CaptureUsageDetails(responseData.Usage);
 
         return responseData.Choices.Select(choice => new TextResult(responseData, choice)).ToList();
     }
@@ -168,12 +199,16 @@ public abstract class ClientBase
             throw new SKException("Chat completions null response");
         }
 
-        if (response.Value.Choices.Count == 0)
+        var responseData = response.Value;
+
+        if (responseData.Choices.Count == 0)
         {
             throw new SKException("Chat completions not found");
         }
 
-        return response.Value.Choices.Select(chatChoice => new ChatResult(response.Value, chatChoice)).ToList();
+        this.CaptureUsageDetails(responseData.Usage);
+
+        return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
     }
 
     /// <summary>
@@ -358,9 +393,7 @@ public abstract class ClientBase
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                $"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new SKException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
@@ -372,78 +405,22 @@ public abstract class ClientBase
         }
         catch (RequestFailedException e)
         {
-            switch (e.Status)
-            {
-                case (int)HttpStatusCodeType.BadRequest:
-                case (int)HttpStatusCodeType.MethodNotAllowed:
-                case (int)HttpStatusCodeType.NotFound:
-                case (int)HttpStatusCodeType.NotAcceptable:
-                case (int)HttpStatusCodeType.Conflict:
-                case (int)HttpStatusCodeType.Gone:
-                case (int)HttpStatusCodeType.LengthRequired:
-                case (int)HttpStatusCodeType.PreconditionFailed:
-                case (int)HttpStatusCodeType.RequestEntityTooLarge:
-                case (int)HttpStatusCodeType.RequestUriTooLong:
-                case (int)HttpStatusCodeType.UnsupportedMediaType:
-                case (int)HttpStatusCodeType.RequestedRangeNotSatisfiable:
-                case (int)HttpStatusCodeType.ExpectationFailed:
-                case (int)HttpStatusCodeType.HttpVersionNotSupported:
-                case (int)HttpStatusCodeType.UpgradeRequired:
-                case (int)HttpStatusCodeType.MisdirectedRequest:
-                case (int)HttpStatusCodeType.UnprocessableEntity:
-                case (int)HttpStatusCodeType.Locked:
-                case (int)HttpStatusCodeType.FailedDependency:
-                case (int)HttpStatusCodeType.PreconditionRequired:
-                case (int)HttpStatusCodeType.RequestHeaderFieldsTooLarge:
-                    throw new AIException(
-                        AIException.ErrorCodes.InvalidRequest,
-                        $"The request is not valid, HTTP status: {e.Status}",
-                        e.Message, e);
-
-                case (int)HttpStatusCodeType.Unauthorized:
-                case (int)HttpStatusCodeType.Forbidden:
-                case (int)HttpStatusCodeType.ProxyAuthenticationRequired:
-                case (int)HttpStatusCodeType.UnavailableForLegalReasons:
-                case (int)HttpStatusCodeType.NetworkAuthenticationRequired:
-                    throw new AIException(
-                        AIException.ErrorCodes.AccessDenied,
-                        $"The request is not authorized, HTTP status: {e.Status}",
-                        e.Message, e);
-
-                case (int)HttpStatusCodeType.RequestTimeout:
-                    throw new AIException(
-                        AIException.ErrorCodes.RequestTimeout,
-                        $"The request timed out, HTTP status: {e.Status}");
-
-                case (int)HttpStatusCodeType.TooManyRequests:
-                    throw new AIException(
-                        AIException.ErrorCodes.Throttling,
-                        $"Too many requests, HTTP status: {e.Status}",
-                        e.Message, e);
-
-                case (int)HttpStatusCodeType.InternalServerError:
-                case (int)HttpStatusCodeType.NotImplemented:
-                case (int)HttpStatusCodeType.BadGateway:
-                case (int)HttpStatusCodeType.ServiceUnavailable:
-                case (int)HttpStatusCodeType.GatewayTimeout:
-                case (int)HttpStatusCodeType.InsufficientStorage:
-                    throw new AIException(
-                        AIException.ErrorCodes.ServiceError,
-                        $"The service failed to process the request, HTTP status:{e.Status}",
-                        e.Message, e);
-
-                default:
-                    throw new AIException(
-                        AIException.ErrorCodes.UnknownError,
-                        $"Unexpected HTTP response, status: {e.Status}",
-                        e.Message, e);
-            }
+            throw e.ToHttpOperationException();
         }
-        catch (Exception e) when (e is not AIException)
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
-        }
+    }
+
+    /// <summary>
+    /// Captures usage details, including token information.
+    /// </summary>
+    /// <param name="usage">Instance of <see cref="CompletionsUsage"/> with usage details.</param>
+    private void CaptureUsageDetails(CompletionsUsage usage)
+    {
+        this.Logger.LogInformation(
+            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+            usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
+
+        s_promptTokensCounter.Add(usage.PromptTokens);
+        s_completionTokensCounter.Add(usage.CompletionTokens);
+        s_totalTokensCounter.Add(usage.TotalTokens);
     }
 }

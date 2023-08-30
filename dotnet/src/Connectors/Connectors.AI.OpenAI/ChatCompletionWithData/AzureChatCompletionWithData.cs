@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -139,9 +138,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         if (maxTokens.HasValue && maxTokens < 1)
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidRequest,
-                $"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
+            throw new SKException($"MaxTokens {maxTokens} is not valid, the value must be greater than zero");
         }
     }
 
@@ -199,9 +196,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             this._logger.LogError(
                 "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
 
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Error occurred on chat completion with data request execution: {ex.Message}", ex);
+            throw;
         }
     }
 
@@ -245,9 +240,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
             this._logger.LogError(errorMessage);
 
-            throw new AIException(
-                AIException.ErrorCodes.InvalidResponseContent,
-                errorMessage);
+            throw new SKException(errorMessage);
         }
 
         return response;
