@@ -23,7 +23,6 @@ public static class Example54_AzureChatCompletionWithData
         // potentially reshape our understanding of climate change.
 
         await ExampleWithChatCompletion();
-        await ExampleWithStreamingChatCompletion();
         await ExampleWithKernel();
     }
 
@@ -31,41 +30,43 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
-        const string Ask = "How did Emily and David meet?";
-
         var chatCompletion = new AzureChatCompletionWithData(GetCompletionWithDataConfig());
         var chatHistory = chatCompletion.CreateNewChat();
 
         // First question without previous context based on uploaded content.
-        chatHistory.AddUserMessage(Ask);
+        var ask = "How did Emily and David meet?";
+        chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        string response = await chatCompletion.GenerateMessageAsync(chatHistory);
+        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory))[0];
+        var chatMessage = await chatResult.GetChatMessageAsync();
+
+        var response = chatMessage.Content;
+        var toolResponse = chatResult.ModelResult.GetResult<ChatWithDataModelResult>().ToolContent;
 
         // Output
         // Ask: How did Emily and David meet?
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        Console.WriteLine($"Ask: {Ask}");
+        Console.WriteLine($"Ask: {ask}");
         Console.WriteLine($"Response: {response}");
         Console.WriteLine();
-    }
 
-    private static async Task ExampleWithStreamingChatCompletion()
-    {
-        Console.WriteLine("=== Example with Streaming Chat Completion ===");
+        // Chat history maintenance
+        if (!string.IsNullOrEmpty(toolResponse))
+        {
+            chatHistory.AddMessage(AuthorRole.Tool, toolResponse);
+        }
 
-        const string Ask = "What are Emily and David studying?";
+        chatHistory.AddAssistantMessage(response);
 
-        var chatCompletion = new AzureChatCompletionWithData(GetCompletionWithDataConfig());
-        var chatHistory = chatCompletion.CreateNewChat();
-
-        // First question without previous context based on uploaded content.
-        chatHistory.AddUserMessage(Ask);
-
-        Console.WriteLine($"Ask: {Ask}");
-        Console.WriteLine("Response: ");
+        // Second question without previous context based on uploaded content.
+        ask = "What are Emily and David studying?";
+        chatHistory.AddUserMessage(ask);
 
         // Chat Completion Streaming example
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine("Response: ");
+
         await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
         {
             await foreach (var message in result.GetStreamingChatMessageAsync())
