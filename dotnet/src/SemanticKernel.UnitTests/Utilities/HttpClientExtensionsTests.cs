@@ -41,7 +41,7 @@ public sealed class HttpClientExtensionsTests : IDisposable
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
 
         //Act
-        using var responseMessage = await this._httpClient.SendAndCheckSuccessAsync(requestMessage, CancellationToken.None);
+        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, CancellationToken.None);
 
         //Assert
         Assert.NotNull(responseMessage);
@@ -62,7 +62,7 @@ public sealed class HttpClientExtensionsTests : IDisposable
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://fake-random-test-host");
 
         //Act
-        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => this._httpClient.SendAndCheckSuccessAsync(requestMessage, CancellationToken.None));
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => this._httpClient.SendWithSuccessCheckAsync(requestMessage, CancellationToken.None));
 
         //Assert
         Assert.NotNull(exception);

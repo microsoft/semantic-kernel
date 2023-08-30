@@ -16,13 +16,22 @@ public static class RequestFailedExceptionExtensions
     /// </summary>
     /// <param name="exception">The original <see cref="RequestFailedException"/>.</param>
     /// <returns>An <see cref="HttpOperationException"/> instance.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     public static HttpOperationException ToHttpOperationException(this RequestFailedException exception)
     {
         const int NoResponseReceived = 0;
 
+        string? responseContent = null;
+
+        try
+        {
+            responseContent = exception.GetRawResponse()?.Content?.ToString();
+        }
+        catch { } // We want to suppress any exceptions that occur while reading the content, ensuring that an HttpOperationException is thrown instead.
+
         return new HttpOperationException(
             exception.Status == NoResponseReceived ? null : (HttpStatusCode?)exception.Status,
-            exception.Message,
+            responseContent,
             exception.Message,
             exception);
     }

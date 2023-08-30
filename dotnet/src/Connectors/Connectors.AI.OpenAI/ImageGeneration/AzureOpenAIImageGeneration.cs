@@ -171,7 +171,7 @@ public class AzureOpenAIImageGeneration : OpenAIClientBase, IImageGeneration
             }
 
             using var response = await this.ExecuteRequestAsync(operationLocation, HttpMethod.Get, null, cancellationToken).ConfigureAwait(false);
-            var responseJson = await response.Content.ReadAsStringAndTranslateExceptionAsync().ConfigureAwait(false);
+            var responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
             var result = this.JsonDeserialize<AzureImageGenerationResponse>(responseJson);
 
             if (result.Status.Equals(AzureImageOperationStatus.Succeeded, StringComparison.OrdinalIgnoreCase))

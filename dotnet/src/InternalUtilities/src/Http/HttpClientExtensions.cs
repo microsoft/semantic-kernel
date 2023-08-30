@@ -17,7 +17,7 @@ internal static class HttpClientExtensions
     /// <returns>The <see cref="HttpResponseMessage"/> representing the response.</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2016:Forward the 'CancellationToken' parameter to methods", Justification = "The `ReadAsStringAsync` method in the NetStandard 2.0 version does not have an overload that accepts the cancellation token.")]
-    internal static async Task<HttpResponseMessage> SendAndCheckSuccessAsync(this HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken)
+    internal static async Task<HttpResponseMessage> SendWithSuccessCheckAsync(this HttpClient client, HttpRequestMessage request, CancellationToken cancellationToken)
     {
         HttpResponseMessage? response = null;
 

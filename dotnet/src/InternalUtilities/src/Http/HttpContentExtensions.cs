@@ -15,7 +15,7 @@ internal static class HttpContentExtensions
     /// </summary>
     /// <param name="httpContent">The HTTP content to read.</param>
     /// <returns>A string representation of the HTTP content.</returns>
-    public static async Task<string> ReadAsStringAndTranslateExceptionAsync(this HttpContent httpContent)
+    public static async Task<string> ReadAsStringWithExceptionMappingAsync(this HttpContent httpContent)
     {
         try
         {

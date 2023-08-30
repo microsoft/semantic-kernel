@@ -44,7 +44,7 @@ public sealed class HttpContentExtensionsTests : IDisposable
         using var responseMessage = await this._httpClient.SendAsync(requestMessage, CancellationToken.None);
 
         //Act
-        var result = await responseMessage.Content.ReadAsStringAndTranslateExceptionAsync();
+        var result = await responseMessage.Content.ReadAsStringWithExceptionMappingAsync();
 
         //Assert
         Assert.False(string.IsNullOrEmpty(result));

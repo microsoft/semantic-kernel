@@ -91,7 +91,7 @@ public abstract class OpenAIClientBase
     {
         using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
         using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
-        string responseJson = await response.Content.ReadAsStringAndTranslateExceptionAsync().ConfigureAwait(false);
+        string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
         T result = this.JsonDeserialize<T>(responseJson);
         return result;
     }
@@ -118,7 +118,7 @@ public abstract class OpenAIClientBase
             request.Content = content;
         }
 
-        var response = await this._httpClient.SendAndCheckSuccessAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
         this._logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
 
