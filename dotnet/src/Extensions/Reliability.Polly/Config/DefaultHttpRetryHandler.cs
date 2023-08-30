@@ -60,11 +60,9 @@ public class DefaultHttpRetryHandler : DelegatingHandler
 
         policyBuilder = policyBuilder.Or<Exception>(e => this._config.RetryableExceptionTypes.Contains(e.GetType()));
 
-        if (this._config.UseExponentialBackoff)
-        {
-            return policyBuilder.WaitAndRetryAsync(Backoff.)
-        }
-        return policyBuilder.WaitAndRetryAsync(
+        var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(this._config.MaxTotalRetryTime);
+
+        var retryPolicy = policyBuilder.WaitAndRetryAsync(
             retryCount: this._config.MaxRetryCount,
             sleepDurationProvider: (retryCount, context, timeSpan) =>
             {
@@ -79,6 +77,8 @@ public class DefaultHttpRetryHandler : DelegatingHandler
                     outcome.Result.StatusCode);
                 return Task.CompletedTask;
             });
+
+        return Policy.WrapAsync<HttpResponseMessage>(timeoutPolicy, retryPolicy);
     }
 
     private bool IsRetryDisabled()
@@ -110,10 +110,7 @@ public class DefaultHttpRetryHandler : DelegatingHandler
         // If exponential backoff is enabled, double the delay for each retry
         if (this._config.UseExponentialBackoff)
         {
-            for (var backoffRetryCount = 1; backoffRetryCount < retryCount + 1; backoffRetryCount++)
-            {
-                timeToWait = timeToWait.Add(timeToWait);
-            }
+            timeToWait = TimeSpan.FromTicks(timeToWait.Ticks * 2);
         }
 
         return timeToWait;
