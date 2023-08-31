@@ -198,13 +198,14 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         if (searchResult == null) { yield break; }
 
+        var minAzureSearchScore = CosineSimilarityToScore(minRelevanceScore);
         await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
-            if (doc == null || doc.Score < minRelevanceScore) { continue; }
+            if (doc == null || doc.Score < minAzureSearchScore) { continue; }
 
             MemoryRecord memoryRecord = doc.Document.ToMemoryRecord(withEmbeddings);
 
-            yield return (memoryRecord, doc.Score ?? 0);
+            yield return (memoryRecord, ScoreToCosineSimilarity(doc.Score ?? 0));
         }
     }
 
@@ -426,6 +427,16 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             throw e.ToHttpOperationException();
         }
+    }
+
+    private static double ScoreToCosineSimilarity(double score)
+    {
+        return 1 - (1 - score) / score;
+    }
+
+    private static double CosineSimilarityToScore(double similarity)
+    {
+        return 1 / (2 - similarity);
     }
 
     #endregion
