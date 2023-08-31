@@ -46,31 +46,8 @@ class ChatPromptTemplate(PromptTemplate):
         """Add a user message to the chat template."""
         self.add_message("user", message, name)
 
-<<<<<<< HEAD
     def add_function_response_message(self, name: str, content: Any) -> None:
         """Add a function response message to the chat template."""
-=======
-    def add_assistant_message(self, message: str) -> None:
-        self.add_message("assistant", message)
-
-    def add_assistant_message_with_function_call(
-        self,
-        message: Optional[str] = None,
-        function_call: Optional[Dict[str, str]] = None,
-    ) -> None:
-        if not message and not function_call:
-            raise ValueError(
-                "Either message or function_call must be provided to add_assistant_message_with_function_call"
-            )
-        self.add_message("assistant", message, function_call)
-
-    def add_message(
-        self,
-        role: str,
-        message: Optional[str] = None,
-        function_call: Optional[Dict[str, str]] = None,
-    ) -> None:
->>>>>>> 3cf50782 (lots of updates)
         self._messages.append(
             ChatMessage(role="function", name=name, fixed_content=str(content))
         )

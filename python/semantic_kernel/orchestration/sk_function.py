@@ -58,6 +58,7 @@ class SKFunction(SKFunctionBase):
     _ai_request_settings: CompleteRequestSettings
     _chat_service: Optional[ChatCompletionClientBase]
     _chat_request_settings: ChatRequestSettings
+    _function_calling_description: str
 
     @staticmethod
     def from_native_method(method, skill_name="", log=None) -> "SKFunction":
@@ -290,9 +291,9 @@ class SKFunction(SKFunctionBase):
     # def function_calling_enabled(self) -> bool:
     #     return self._function_calling_enabled
 
-    @property
-    def is_function_call(self) -> bool:
-        return self._is_function_call
+    # @property
+    # def is_function_call(self) -> bool:
+    #     return self._is_function_call
 
     @property
     def request_settings(self) -> CompleteRequestSettings:
@@ -326,6 +327,17 @@ class SKFunction(SKFunctionBase):
         self._ai_request_settings = CompleteRequestSettings()
         self._chat_service = None
         self._chat_request_settings = ChatRequestSettings()
+        self._function_calling_description = {
+            "name": f"{skill_name}-{function_name}",
+            "description": description,
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    param.name: param.callable_function_object for param in parameters
+                },
+                "required": [p.name for p in parameters if p.required],
+            },
+        }
 
     def set_default_skill_collection(
         self, skills: ReadOnlySkillCollectionBase
@@ -374,20 +386,6 @@ class SKFunction(SKFunctionBase):
             # function_calling_enabled=self._function_calling_enabled,
             parameters=self._parameters,
         )
-
-    def describe_callable_function(self) -> Dict[str, Any]:
-        return {
-            "name": f"{self.skill_name}-{self.name}",
-            "description": self.description,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    param.name: param.callable_function_object
-                    for param in self.parameters
-                },
-                "required": [p.name for p in self.parameters if p.required],
-            },
-        }
 
     def __call__(
         self,
@@ -463,6 +461,7 @@ class SKFunction(SKFunctionBase):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
+        functions_filter: Optional[Dict[str, List[str]]] = None,
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
 
@@ -487,14 +486,18 @@ class SKFunction(SKFunctionBase):
 
         try:
             if self.is_semantic:
-                return await self._invoke_semantic_async(context, settings)
+                return await self._invoke_semantic_async(
+                    context, settings, functions_filter
+                )
             else:
                 return await self._invoke_native_async(context)
         except Exception as e:
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(self, context: "SKContext", settings):
+    async def _invoke_semantic_async(
+        self, context: "SKContext", settings, functions_filter
+    ):
         self._verify_is_semantic()
 
         self._ensure_context_has_skills(context)
@@ -510,7 +513,10 @@ class SKFunction(SKFunctionBase):
                     "Semantic functions must have either an AI service or Chat service",
                 )
 
-        functions = context.skill_collection.get_function_calling_object()
+        functions = context.skill_collection.get_function_calling_object(
+            filter=functions_filter,
+            caller_function_name=f"{self.skill_name}-{self.name}",
+        )
 
         service = (
             self._ai_service if self._ai_service is not None else self._chat_service

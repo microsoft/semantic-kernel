@@ -44,7 +44,7 @@ kernel.import_skill(MathSkill(), skill_name="math")
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
 # if you only want to use a specific function, set the name of that function in this parameter,
-# the format for that is 'SkillName-FunctionName', (i.e. 'math-Add'). 
+# the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     max_tokens=2000, temperature=0.7, top_p=0.8, function_call="auto"
@@ -83,7 +83,10 @@ async def chat() -> bool:
 
     # calling the chat, you could add a overloaded version of the settings here,
     # to enable or disable function calling or set the function calling to a specific skill.
-    answer = await chat_function.invoke_async(variables=context_vars)
+    filters = {"exclude_skill": ["FunSkill"]}
+    answer = await chat_function.invoke_async(
+        variables=context_vars, functions_filter=filters
+    )
     print(f"Mosscap:> {answer}")
     return True
 

@@ -147,10 +147,66 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
         s_name, f_name = s_name.lower(), f_name.lower()
         return s_name, f_name
 
-    def get_function_calling_object(self) -> List[Dict[str,str]]:
-        """Create the object used for function_calling."""
+    def get_function_calling_object(
+        self, filter: Dict[str, List[str]], caller_function_name: str
+    ) -> List[Dict[str, str]]:
+        """Create the object used for function_calling.
+
+        args:
+            filter: a dictionary with keys
+                exclude_skill, include_skill, exclude_function, include_function
+                and lists of the required filter.
+                The function name should be in the format "skill_name-function_name".
+                Using exclude_skill and include_skill at the same time will raise an error.
+                Using exclude_function and include_function at the same time will raise an error.
+                If using include_* implies that all other function will be excluded.
+                Example:
+                    filter = {
+                        "exclude_skill": ["skill1", "skill2"],
+                        "include_function": ["skill3-function1", "skill4-function2"],
+                        }
+                    will return only skill3-function1 and skill4-function2.
+                    filter = {
+                        "exclude_function": ["skill1-function1", "skill2-function2"],
+                        }
+                    will return all functions except skill1-function1 and skill2-function2.
+            caller_function_name: the name of the function that is calling the other functions.
+        returns:
+            a list of dictionaries with keys that can be passed to the function calling api.
+        """
+        include_skill = filter.get("include_skill", None)
+        exclude_skill = filter.get("exclude_skill", [])
+        include_function = filter.get("include_function", None)
+        exclude_function = filter.get("exclude_function", [])
+        if include_skill and exclude_skill:
+            raise ValueError(
+                "Cannot use both include_skill and exclude_skill at the same time."
+            )
+        if include_function and exclude_function:
+            raise ValueError(
+                "Cannot use both include_function and exclude_function at the same time."
+            )
+        if include_skill:
+            include_skill = [skill.lower() for skill in include_skill]
+        if exclude_skill:
+            exclude_skill = [skill.lower() for skill in exclude_skill]
+        if include_function:
+            include_function = [function.lower() for function in include_function]
+        if exclude_function:
+            exclude_function = [function.lower() for function in exclude_function]
         result = []
-        for skill in self.data.values():
-            for function in skill.values():
-                result.append(function.describe_callable_function())
+        for skill_name, skill in self.data.items():
+            if skill_name in exclude_skill or (
+                include_skill and skill_name not in include_skill
+            ):
+                continue
+            for function_name, function in skill.items():
+                current_name = f"{skill_name}-{function_name}"
+                if (
+                    current_name == caller_function_name.lower()
+                    or current_name in exclude_function
+                    or (include_function and current_name not in include_function)
+                ):
+                    continue
+                result.append(function._function_calling_description)
         return result

@@ -2,7 +2,7 @@
 
 from abc import abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -90,13 +90,13 @@ class SKFunctionBase(PydanticField):
     #     """
     #     pass
 
-    @property
-    @abstractmethod
-    def is_function_call(self) -> bool:
-        """
-        Whether the function is a function call that is passed to the API.
-        """
-        pass
+    # @property
+    # @abstractmethod
+    # def is_function_call(self) -> bool:
+    #     """
+    #     Whether the function is a function call that is passed to the API.
+    #     """
+    #     pass
 
     @property
     @abstractmethod
@@ -149,6 +149,7 @@ class SKFunctionBase(PydanticField):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
+        functions_filter: Optional[Dict[str, List[str]]] = None,
     ) -> "SKContext":
         """
         Invokes the function with an explicit string input
@@ -159,6 +160,7 @@ class SKFunctionBase(PydanticField):
             memory: {SemanticTextMemoryBase} -- The memory to use
             settings {CompleteRequestSettings} -- LLM completion settings
             log {Logger} -- Application logger
+            functions_filter {Dict[str, List[str]]} -- A filter to apply to the functions
         Returns:
             SKContext -- The updated context, potentially a new one if
             context switching is implemented.
