@@ -72,7 +72,7 @@ public class CompleteRequestSettings
     /// <returns>An instance of <see cref="CompleteRequestSettings"/> </returns>
     public static CompleteRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
     {
-        return new CompleteRequestSettings
+        var settings = new CompleteRequestSettings
         {
             Temperature = config.Temperature,
             TopP = config.TopP,
@@ -81,5 +81,12 @@ public class CompleteRequestSettings
             MaxTokens = config.MaxTokens,
             StopSequences = config.StopSequences,
         };
+
+        if (config.ChatSystemPrompt is not null)
+        {
+            settings.ChatSystemPrompt = config.ChatSystemPrompt;
+        }
+
+        return settings;
     }
 }
