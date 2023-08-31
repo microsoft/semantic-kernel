@@ -272,6 +272,10 @@ class SKFunction(SKFunctionBase):
         return self._skill_name
 
     @property
+    def full_name(self) -> str:
+        return f"{self.skill_name}-{self.name}"
+
+    @property
     def description(self) -> str:
         return self._description
 
@@ -328,7 +332,7 @@ class SKFunction(SKFunctionBase):
         self._chat_service = None
         self._chat_request_settings = ChatRequestSettings()
         self._function_calling_description = {
-            "name": f"{skill_name}-{function_name}",
+            "name": self.full_name,
             "description": description,
             "parameters": {
                 "type": "object",
@@ -515,7 +519,7 @@ class SKFunction(SKFunctionBase):
 
         functions = context.skill_collection.get_function_calling_object(
             filter=functions_filter,
-            caller_function_name=f"{self.skill_name}-{self.name}",
+            caller_function_name=self.full_name,
         )
 
         service = (

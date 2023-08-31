@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Dict, List
+from typing import List
 
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.skill_definition.parameter_view import ParameterView
@@ -37,17 +37,17 @@ class FunctionView(SKBaseModel):
             is_asynchronous=is_asynchronous,
         )
 
-    @property
-    def callable_function_object(self) -> Dict[str, Any]:
-        return {
-            "name": f"{self.skill_name}-{self.name}",
-            "description": self.description,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    param.name: param.callable_function_object
-                    for param in self.parameters
-                },
-                "required": [p.name for p in self.parameters if p.required],
-            },
-        }
+    # @property
+    # def callable_function_object(self) -> Dict[str, Any]:
+    #     return {
+    #         "name": self.full_name,
+    #         "description": self.description,
+    #         "parameters": {
+    #             "type": "object",
+    #             "properties": {
+    #                 param.name: param.callable_function_object
+    #                 for param in self.parameters
+    #             },
+    #             "required": [p.name for p in self.parameters if p.required],
+    #         },
+    #     }
