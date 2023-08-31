@@ -57,7 +57,7 @@ class PromptTemplateConfig:
             "number_of_responses"
         )
         config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
-        config.token_selection_biases = completion_dict.get(
+        config.completion.token_selection_biases = completion_dict.get(
             "token_selection_biases", {}
         )
 
@@ -123,5 +123,5 @@ class PromptTemplateConfig:
         config.completion.max_tokens = max_tokens
         config.completion.number_of_responses = number_of_responses
         config.completion.stop_sequences = stop_sequences
-        config.token_selection_biases = token_selection_biases
+        config.completion.token_selection_biases = token_selection_biases
         return config
