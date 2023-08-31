@@ -157,9 +157,24 @@ public static class Example42_KernelBuilder
             .Configure(c => c.SetHttpHandlerFactory(new NullHttpHandlerFactory()))
             .Build();
 
-        var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new RetryThreeTimesFactory()).Build();
+        var logger = loggerFactory.CreateLogger<PollyHttpRetryHandlerFactory>();
+        var retryThreeTimesPolicy = Policy
+            .Handle<HttpOperationException>(ex
+                => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(4),
+                    TimeSpan.FromSeconds(8)
+                },
+                (ex, timespan, retryCount, _)
+                    => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms", retryCount, timespan.TotalMilliseconds));
+
+        var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
 
         var kernel11 = Kernel.Builder.WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
+
+        var kernel12 = Kernel.Builder.WithHttpHandlerFactory(new MyCustomHandlerFactory()).Build();
 
         return Task.CompletedTask;
     }
@@ -178,61 +193,34 @@ public static class Example42_KernelBuilder
         private static AsyncRetryPolicy GetPolicy(ILogger? logger)
         {
             return Policy
-                .Handle<HttpOperationException>(ex => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-                .WaitAndRetryAsync(new[]
-                    {
-                        TimeSpan.FromSeconds(2),
-                        TimeSpan.FromSeconds(4),
-                        TimeSpan.FromSeconds(8)
-                    },
-                    (ex, timespan, retryCount, _) => logger?.LogWarning(ex,
-                        "Error executing action [attempt {0} of 3], pausing {1}ms",
-                        retryCount, timespan.TotalMilliseconds));
+            .Handle<HttpOperationException>(ex
+                => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(4),
+                    TimeSpan.FromSeconds(8)
+                },
+                (ex, timespan, retryCount, _)
+                    => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms",
+                    retryCount,
+                    timespan.TotalMilliseconds));
         }
     }
 
-    // Basic custom retry handler
-    public class RetryThreeTimesFactory : IDelegatingHandlerFactory
+    // Basic custom retry handler factory
+    public class MyCustomHandlerFactory : HttpHandlerFactory<MyCustomHandler>
     {
-        public DelegatingHandler Create(ILoggerFactory? loggerFactory)
-        {
-            return new RetryThreeTimes(loggerFactory);
-        }
     }
 
-    public class RetryThreeTimes : DelegatingHandler
+    // Basic custom empty retry handler
+    public class MyCustomHandler : DelegatingHandler
     {
-        private readonly AsyncRetryPolicy _policy;
-
-        public RetryThreeTimes(ILoggerFactory? loggerFactory = null)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            this._policy = GetPolicy(loggerFactory is not null ?
-                loggerFactory.CreateLogger(nameof(RetryThreeTimes)) :
-                NullLogger.Instance);
-        }
+            // Your custom handler implementation
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return await this._policy.ExecuteAsync(async () =>
-            {
-                var response = await base.SendAsync(request, cancellationToken);
-                return response;
-            });
-        }
-
-        private static AsyncRetryPolicy GetPolicy(ILogger logger)
-        {
-            return Policy
-                .Handle<HttpOperationException>(ex => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-                .WaitAndRetryAsync(new[]
-                    {
-                        TimeSpan.FromSeconds(2),
-                        TimeSpan.FromSeconds(4),
-                        TimeSpan.FromSeconds(8)
-                    },
-                    (ex, timespan, retryCount, _) => logger.LogWarning(ex,
-                        "Error executing action [attempt {0} of 3], pausing {1}ms",
-                        retryCount, timespan.TotalMilliseconds));
+            throw new NotImplementedException();
         }
     }
 }
