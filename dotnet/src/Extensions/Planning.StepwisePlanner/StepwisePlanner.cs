@@ -405,7 +405,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
-        var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
+        var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngineProvider);
         var functionConfig = new SemanticFunctionConfig(config, template);
 
         return kernel.RegisterSemanticFunction(RestrictedSkillName, functionName, functionConfig);

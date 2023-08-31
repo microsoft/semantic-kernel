@@ -116,10 +116,17 @@ public class PromptTemplateConfig
     /// <summary>
     /// Type, such as "completion", "embeddings", etc.
     /// </summary>
-    /// <remarks>TODO: use enum</remarks>
+    /// <remarks>TODO: can we remove this?</remarks>
     [JsonPropertyName("type")]
-    [JsonPropertyOrder(2)]
+    [JsonPropertyOrder(7)]
     public string Type { get; set; } = "completion";
+
+    /// <summary>
+    /// Type, such as "prompt", "handlebars", etc.
+    /// </summary>
+    [JsonPropertyName("format")]
+    [JsonPropertyOrder(2)]
+    public string Format { get; set; } = "prompt";
 
     /// <summary>
     /// Description

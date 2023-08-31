@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.SemanticFunctions;
 public sealed class PromptTemplate : IPromptTemplate
 {
     private readonly string _template;
-    private readonly IPromptTemplateEngine _templateEngine;
+    private readonly IPromptTemplateEngineProvider _templateEngineProvider;
 
     // ReSharper disable once NotAccessedField.Local
     private readonly PromptTemplateConfig _promptConfig;
@@ -29,7 +29,7 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="kernel">Kernel in which template is to take effect.</param>
     public PromptTemplate(string template, PromptTemplateConfig promptTemplateConfig, IKernel kernel)
-        : this(template, promptTemplateConfig, kernel.PromptTemplateEngine)
+        : this(template, promptTemplateConfig, kernel.PromptTemplateEngineProvider)
     {
     }
 
@@ -38,14 +38,14 @@ public sealed class PromptTemplate : IPromptTemplate
     /// </summary>
     /// <param name="template">Template.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="promptTemplateEngine">Prompt template engine.</param>
+    /// <param name="promptTemplateEngineProvider">Prompt template engine.</param>
     public PromptTemplate(
         string template,
         PromptTemplateConfig promptTemplateConfig,
-        IPromptTemplateEngine promptTemplateEngine)
+        IPromptTemplateEngineProvider promptTemplateEngineProvider)
     {
         this._template = template;
-        this._templateEngine = promptTemplateEngine;
+        this._templateEngineProvider = promptTemplateEngineProvider;
         this._promptConfig = promptTemplateConfig;
     }
 
@@ -74,6 +74,7 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <returns>Prompt rendered to string</returns>
     public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken)
     {
-        return await this._templateEngine.RenderAsync(this._template, executionContext, cancellationToken).ConfigureAwait(false);
+        var templateEngine = this._templateEngineProvider.Create(this._promptConfig.Format);
+        return await templateEngine.RenderAsync(this._template, executionContext, cancellationToken).ConfigureAwait(false);
     }
 }

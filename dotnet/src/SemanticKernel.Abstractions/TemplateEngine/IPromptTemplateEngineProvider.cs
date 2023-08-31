@@ -18,5 +18,5 @@ public interface IPromptTemplateEngineProvider
     /// <param name="kernel"></param>
     /// <param name="loggerFactory"></param>
     /// <returns>Instance of <see cref = "IPromptTemplateEngine" /></returns>
-    IPromptTemplateEngine Create(string format, IKernel kernel, ILoggerFactory? loggerFactory = null);
+    IPromptTemplateEngine Create(string format, IKernel? kernel = null, ILoggerFactory? loggerFactory = null);
 }

@@ -36,9 +36,9 @@ public interface IKernel
     ISemanticTextMemory Memory { get; }
 
     /// <summary>
-    /// Reference to the engine rendering prompt templates
+    /// Reference to the provider of prompt template engines
     /// </summary>
-    IPromptTemplateEngine PromptTemplateEngine { get; }
+    IPromptTemplateEngineProvider PromptTemplateEngineProvider { get; }
 
     /// <summary>
     /// Reference to the read-only skill collection containing all the imported functions
