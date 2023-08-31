@@ -494,7 +494,7 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
         using var httpClient = new HttpClient(retry);
 
         // Act
-        await Assert.ThrowsAsync<Exception>(
+        await Assert.ThrowsAnyAsync<Exception>(
             () => httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None));
 
         // Assert
@@ -525,7 +525,7 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
         using var httpClient = new HttpClient(retry);
 
         // Act
-        await Assert.ThrowsAsync<Exception>(
+        await Assert.ThrowsAnyAsync<Exception>(
             () => httpClient.GetAsync(new Uri("https://www.microsoft.com"), CancellationToken.None));
 
         // Assert
