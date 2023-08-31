@@ -65,6 +65,14 @@ public class PromptTemplateConfig
         [JsonPropertyOrder(6)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<string> StopSequences { get; set; } = new();
+
+        /// <summary>
+        /// Enabling or disabling function calling is done by setting this parameter.
+        /// Possible values are none, auto, or a specific function.
+        /// </summary>
+        [JsonPropertyName("function_call")]
+        [JsonPropertyOrder(7)]
+        public string? FunctionCall { get; set; }
     }
 
     /// <summary>

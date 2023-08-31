@@ -36,6 +36,11 @@ public interface ISKFunction
     bool IsSemantic { get; }
 
     /// <summary>
+    /// Whether the function can be used as a function call that is passed to the API.
+    /// </summary>
+    bool FunctionCallingEnabled { get; }
+
+    /// <summary>
     /// AI service settings
     /// </summary>
     CompleteRequestSettings RequestSettings { get; }

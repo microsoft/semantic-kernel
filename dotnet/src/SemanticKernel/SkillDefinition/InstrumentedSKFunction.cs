@@ -30,6 +30,9 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public bool IsSemantic => this._function.IsSemantic;
 
     /// <inheritdoc/>
+    public bool FunctionCallingEnabled => this._function.FunctionCallingEnabled;
+
+    /// <inheritdoc/>
     public CompleteRequestSettings RequestSettings => this._function.RequestSettings;
 
     /// <summary>

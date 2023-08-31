@@ -317,6 +317,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             PresencePenalty = requestSettings.PresencePenalty,
             FrequencyPenalty = requestSettings.FrequencyPenalty,
             StopSequences = requestSettings.StopSequences,
+            FunctionCall = requestSettings.FunctionCall,
         };
     }
 

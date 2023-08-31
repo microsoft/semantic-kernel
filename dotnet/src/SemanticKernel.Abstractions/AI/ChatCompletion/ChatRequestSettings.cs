@@ -58,4 +58,10 @@ public class ChatRequestSettings
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
+
+    /// <summary>
+    /// Enabling or disabling function calling is done by setting this parameter.
+    /// Possible values are none, auto, or a specific function.
+    /// </summary>
+    public string? FunctionCall { get; set; }
 }
