@@ -44,7 +44,7 @@ public sealed class Program
         var serviceProvider = GetServiceProvider();
 
         var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
-        var logger = serviceProvider.GetRequiredService<ILoggerFactory>();
+        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
         using var meterListener = new MeterListener();
         using var activityListener = new ActivityListener();
@@ -52,8 +52,8 @@ public sealed class Program
         ConfigureMetering(meterListener, telemetryClient);
         ConfigureTracing(activityListener, telemetryClient);
 
-        var kernel = GetKernel(logger);
-        var planner = GetSequentialPlanner(kernel, logger);
+        var kernel = GetKernel(loggerFactory);
+        var planner = GetSequentialPlanner(kernel, loggerFactory);
 
         try
         {
@@ -96,7 +96,7 @@ public sealed class Program
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(typeof(Program).FullName, LogLevel);
+            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == LogLevel);
             loggingBuilder.SetMinimumLevel(LogLevel);
         });
 

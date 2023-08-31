@@ -113,12 +113,15 @@ public sealed class ActionPlanner : IActionPlanner
             plan = new Plan(goal);
         }
 
-        // Create a plan using the function and the parameters suggested by the planner
-        foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
+        // Populate plan parameters using the function and the parameters suggested by the planner
+        if (plan.Steps.Count > 0)
         {
-            if (p.Value != null)
+            foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
             {
-                plan.Parameters[p.Key] = p.Value.ToString();
+                if (p.Value != null)
+                {
+                    plan.Steps[0].Parameters[p.Key] = p.Value.ToString();
+                }
             }
         }
 

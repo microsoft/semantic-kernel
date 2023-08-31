@@ -13,7 +13,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -227,12 +226,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
-        }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
         }
         finally
         {

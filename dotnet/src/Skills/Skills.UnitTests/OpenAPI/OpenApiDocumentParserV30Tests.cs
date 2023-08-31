@@ -63,6 +63,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.NotNull(valueProperty);
         Assert.True(valueProperty.IsRequired);
         Assert.Equal("The value of the secret.", valueProperty.Description);
+        Assert.Equal("string", valueProperty.Type);
         Assert.NotNull(valueProperty.Properties);
         Assert.False(valueProperty.Properties.Any());
 
@@ -70,6 +71,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.NotNull(attributesProperty);
         Assert.False(attributesProperty.IsRequired);
         Assert.Equal("attributes", attributesProperty.Description);
+        Assert.Equal("object", attributesProperty.Type);
         Assert.NotNull(attributesProperty.Properties);
         Assert.True(attributesProperty.Properties.Any());
 
@@ -77,8 +79,8 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.NotNull(enabledProperty);
         Assert.False(enabledProperty.IsRequired);
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Description);
-        Assert.NotNull(enabledProperty.Properties);
-        Assert.False(enabledProperty.Properties.Any());
+        Assert.Equal("boolean", enabledProperty.Type);
+        Assert.False(enabledProperty.Properties?.Any());
     }
 
     [Fact]
@@ -151,6 +153,21 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.Equal("10", apiVersion.DefaultValue);
         Assert.Equal("Requested API version.", apiVersion.Description);
         Assert.True(apiVersion.IsRequired);
+    }
+
+    [Fact]
+    public async Task ItCanUseOperationSummaryAsync()
+    {
+        // Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        // Assert
+        Assert.NotNull(operations);
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "Excuses");
+        Assert.NotNull(operation);
+        Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Description);
     }
 
     [Fact]

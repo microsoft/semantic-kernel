@@ -77,7 +77,7 @@
       }
     },
     {
-      "label": "validate - (contributing-Format-Build-Test-Run)",
+      "label": "validate (contributing-Format-Build-Test-Run)",
       "detail": "Runs tasks to validate changes before checking in.",
       "group": "build",
       "dependsOn": [
@@ -87,6 +87,54 @@
         "run (Kernel-Demo)"
       ],
       "dependsOrder": "sequence"
+    },
+    // *****************************
+    // Contributing (python) - Setup
+    // *****************************
+    {
+      "label": "setup (contributing-python)",
+      "detail": "",
+      "group": "build",
+      "dependsOn": ["install poetry", "install python packages"],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "install poetry",
+      "detail": "Install poetry",
+      "command": "pip3",
+      "type": "shell",
+      "args": ["install", "poetry"],
+      "options": {
+        "cwd": "${workspaceFolder}/python"
+      }
+    },
+    {
+      "label": "install python packages",
+      "detail": "Install python packages",
+      "command": "poetry",
+      "type": "shell",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}/python"
+      }
+    },
+    // Formatting
+    {
+      "label": "validate (contributing-python)",
+      "command": "poetry",
+      "type": "shell",
+      "group": "build",
+      "args": [
+        "run",
+        "pre-commit",
+        "run",
+        "-c",
+        ".conf/.pre-commit-config.yaml",
+        "-a"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/python"
+      }
     },
     // ***************
     // Kernel (dotnet)
@@ -220,6 +268,58 @@
       },
       "options": {
         "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
+      }
+    },
+    // ****************
+    // Kernel (python)
+    // ****************
+    // Test
+    {
+      "label": "test (Semantic-Kernel-Python)",
+      "command": "poetry",
+      "type": "shell",
+      "args": ["run", "pytest", "tests/unit"],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "PR-Validate"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/python"
+      }
+    },
+    {
+      "label": "test (Semantic-Kernel-Python Integration)",
+      "command": "poetry",
+      "type": "shell",
+      "args": ["run", "pytest", "tests/integration", "-k", "${input:filter}"],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "PR-Validate"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/python"
+      }
+    },
+    {
+      "label": "test (Semantic-Kernel-Python ALL)",
+      "command": "poetry",
+      "type": "shell",
+      "args": ["run", "pytest", "tests", "-k", "${input:filter}"],
+      "problemMatcher": "$msCompile",
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "group": "PR-Validate"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/python"
       }
     },
     // ****************
