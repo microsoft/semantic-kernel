@@ -278,9 +278,3 @@ this command, from the [python](../python) folder:
 ```bash
     poetry run pre-commit run -c .conf/.pre-commit-config.yaml -a
 ```
-
-## Running ruff
-
-```bash
-    poetry run ruff check .
-```
