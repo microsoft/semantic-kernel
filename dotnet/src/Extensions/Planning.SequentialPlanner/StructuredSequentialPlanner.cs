@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 using AI.ChatCompletion;
 using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
-using Connectors.AI.OpenAI.ChatCompletion;
 using Diagnostics;
 using Orchestration;
 using SkillDefinition;
 using TemplateEngine.Prompt;
+using FunctionCall = Connectors.AI.OpenAI.AzureSdk.FunctionCalling.FunctionCall;
 
 
 /// <summary>
@@ -37,14 +37,19 @@ public class StructuredSequentialPlanner : ISequentialPlanner
 
         Config.ExcludedSkills.Add(RestrictedSkillName);
 
-        // _promptTemplate = prompt ?? EmbeddedResource.Read("structuredprompt.txt");
+        _promptTemplate = prompt ?? EmbeddedResource.Read("structuredPrompt.txt");
 
-        this._functionFlowFunction = kernel.CreateSemanticFunction(
-            PromptTemplate,
+        if (string.IsNullOrEmpty(_promptTemplate))
+        {
+            throw new Exception("The prompt template is empty");
+        }
+
+        _functionFlowFunction = kernel.CreateSemanticFunction(
+            _promptTemplate,
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            maxTokens: this.Config.MaxTokens ?? 1024,
+            maxTokens: Config.MaxTokens ?? 1024,
             temperature: 0.0);
 
         _context = kernel.CreateNewContext();
@@ -65,17 +70,18 @@ public class StructuredSequentialPlanner : ISequentialPlanner
         relevantFunctionDefinitions.Add(SequentialPlan);
         _context.Variables.Update(goal);
 
+        // temporary solution to pass the function definitions to the model
+        // TODO: have to find a better way to pass the function definitions to the model - SKFunctionCall that inherits from ISKFunction and has a FunctionDefinitions property?
         var templateEngine = new PromptTemplateEngine();
-        var prompt = await templateEngine.RenderAsync(PromptTemplate, _context, cancellationToken).ConfigureAwait(false);
-        Console.WriteLine(prompt);
-        var openAIChatCompletion = (OpenAIChatCompletion)_chatCompletion;
+        var prompt = await templateEngine.RenderAsync(_promptTemplate, _context, cancellationToken).ConfigureAwait(false);
+        var openAIChatCompletion = (IOpenAIChatCompletion)_chatCompletion;
 
         var chatHistory = openAIChatCompletion.CreateNewChat(prompt);
 
-        List<SKFunctionCall>? functionCalls = await openAIChatCompletion.GenerateResponseAsync<List<SKFunctionCall>>(
+        List<FunctionCall>? functionCalls = await openAIChatCompletion.GenerateResponseAsync<List<FunctionCall>>(
             chatHistory,
             new ChatRequestSettings()
-                { Temperature = 0.2, MaxTokens = 1024 },
+                { Temperature = 0.0, MaxTokens = 1024 },
             SequentialPlan, relevantFunctionDefinitions.ToArray(), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (functionCalls is null)
@@ -83,7 +89,7 @@ public class StructuredSequentialPlanner : ISequentialPlanner
             throw new SKException("The planner failed to generate a response");
         }
 
-        Plan plan = functionCalls.ToPlan(goal, _context.Skills);
+        var plan = functionCalls.ToPlan(goal, _context.Skills);
         Console.WriteLine(plan.ToPlanString());
         return plan;
     }
@@ -178,38 +184,39 @@ public class StructuredSequentialPlanner : ISequentialPlanner
             new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
     };
 
-    private const string PromptTemplate = @"Create a step-by-step plan to satisfy the goal given, with the available functions.
-
-To create a plan, follow these steps:
-0. The plan should be as short as possible.
-1. From a 'goal' property create a 'plan' property as a series of 'functionCalls'.
-2. A plan has 'INPUT' available in context variables by default.
-3. Only add functions to the plan that exist in the list of functions provided.
-4. Only use functions that are required for the given goal.
-5. Make sure each function call in the plan ends with a valid JSON object.
-6. Always output valid JSON that can be parsed by a JSON parser.
-7. If a plan cannot be created with the functions provided, return an empty plan array.
-
-A function call in plan takes the form of a JSON object:
-{
-    ""rationale"": ""... reason for taking step ..."",
-    ""function"": ""FullyQualifiedFunctionName"",
-    ""parameters"": [
-        {""name"": ""parameter1"", ""value"": ""value1""},
-        {""name"": ""parameter2"", ""value"": ""value2""}
-        // ... more parameters
-    ],
-    ""setContextVariable"": ""UNIQUE_VARIABLE_KEY"",    // optional
-    ""appendToResult"": ""RESULT__UNIQUE_RESULT_KEY""    // optional
-}
-
-The 'setContextVariable' and 'appendToResult' properties are optional and used to save the 'output' of the function.
-
-Use a '$' to reference a context variable in a parameter value, e.g. when `INPUT='world'` the parameter value 'Hello $INPUT' will evaluate to `Hello world`.
-
-Functions do not have access to the context variables of other functions. Do not attempt to use context variables as arrays or objects. Instead, use available functions to extract specific elements or properties from context variables.
-
-Goal: {{$input}}
-
-Begin!";
+    private readonly string _promptTemplate;
+    //     private const string PromptTemplate = @"Create a step-by-step plan to satisfy the goal given, with the available functions.
+    //
+    // To create a plan, follow these steps:
+    // 0. The plan should be as short as possible.
+    // 1. From a 'goal' property create a 'plan' property as a series of 'functionCalls'.
+    // 2. A plan has 'INPUT' available in context variables by default.
+    // 3. Only add functions to the plan that exist in the list of functions provided.
+    // 4. Only use functions that are required for the given goal.
+    // 5. Make sure each function call in the plan ends with a valid JSON object.
+    // 6. Always output valid JSON that can be parsed by a JSON parser.
+    // 7. If a plan cannot be created with the functions provided, return an empty plan array.
+    //
+    // A function call in plan takes the form of a JSON object:
+    // {
+    //     ""rationale"": ""... reason for taking step ..."",
+    //     ""function"": ""FullyQualifiedFunctionName"",
+    //     ""parameters"": [
+    //         {""name"": ""parameter1"", ""value"": ""value1""},
+    //         {""name"": ""parameter2"", ""value"": ""value2""}
+    //         // ... more parameters
+    //     ],
+    //     ""setContextVariable"": ""UNIQUE_VARIABLE_KEY"",    // optional
+    //     ""appendToResult"": ""RESULT__UNIQUE_RESULT_KEY""    // optional
+    // }
+    //
+    // The 'setContextVariable' and 'appendToResult' properties are optional and used to save the 'output' of the function.
+    //
+    // Use a '$' to reference a context variable in a parameter value, e.g. when `INPUT='world'` the parameter value 'Hello $INPUT' will evaluate to `Hello world`.
+    //
+    // Functions do not have access to the context variables of other functions. Do not attempt to use context variables as arrays or objects. Instead, use available functions to extract specific elements or properties from context variables.
+    //
+    // Goal: {{$input}}
+    //
+    // Begin!";
 }

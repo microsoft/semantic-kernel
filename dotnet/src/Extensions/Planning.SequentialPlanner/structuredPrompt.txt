@@ -1,0 +1,34 @@
+Create a step-by-step plan to satisfy the goal given, with the available functions.
+
+To create a plan, follow these steps:
+0. The plan should be as short as possible.
+1. From a 'goal' property create a 'plan' property as a series of 'functionCalls'.
+2. A plan has 'INPUT' available in context variables by default.
+3. Only add functions to the plan that exist in the list of functions provided.
+4. Only use functions that are required for the given goal.
+5. Make sure each function call in the plan ends with a valid JSON object.
+6. Always output valid JSON that can be parsed by a JSON parser.
+7. If a plan cannot be created with the functions provided, return an empty plan array.
+
+A function call in plan takes the form of a JSON object:
+{
+    "rationale": "... reason for taking step ...",
+    "function": "FullyQualifiedFunctionName",
+    "parameters": [
+        {"name": "parameter1", "value": "value1"},
+        {"name": "parameter2", "value": "value2"}
+        // ... more parameters
+    ],
+    "setContextVariable": "UNIQUE_VARIABLE_KEY",    // optional
+    "appendToResult": "RESULT__UNIQUE_RESULT_KEY"    // optional
+}
+
+The 'setContextVariable' and 'appendToResult' properties are optional and used to save the 'output' of the function.
+
+Use a '$' to reference a context variable in a parameter value, e.g. when `INPUT='world'` the parameter value 'Hello $INPUT' will evaluate to `Hello world`.
+
+Functions do not have access to the context variables of other functions. Do not attempt to use context variables as arrays or objects. Instead, use available functions to extract specific elements or properties from context variables.
+
+Goal: {{$input}}
+
+Begin!

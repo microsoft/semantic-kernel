@@ -212,12 +212,12 @@ internal static class SequentialPlanParser
     }
 
 
-    public static Plan ToPlan(this IEnumerable<SKFunctionCall> functionCalls, string goal, IReadOnlySkillCollection skillCollection)
+    public static Plan ToPlan(this IEnumerable<FunctionCall> functionCalls, string goal, IReadOnlySkillCollection skillCollection)
     {
         // Initialize Plan with goal
         var plan = new Plan(goal);
 
-        List<SKFunctionCall> functions = functionCalls.ToList();
+        List<FunctionCall> functions = functionCalls.ToList();
 
         if (functions.Count == 0)
         {
