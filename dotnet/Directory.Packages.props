@@ -53,6 +53,8 @@
     <PackageVersion Include="protobuf-net" Version="3.2.26" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
+    <PackageVersion Include="Cloud.Unum.USearch" Version="[2.1.0, )" />
+
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <!-- Analyzers -->

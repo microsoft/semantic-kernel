@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -159,6 +159,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reliability.Basic", "src\Extensions\Reliability.Basic\Reliability.Basic.csproj", "{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.StepwisePlanner.UnitTests", "src\Extensions\Extensions.StepwisePlanner.UnitTests\Extensions.StepwisePlanner.UnitTests.csproj", "{6F651E87-F16E-407B-AF7F-B3475F850E9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Memory.USearch", "src\Connectors\Connectors.Memory.USearch\Connectors.Memory.USearch.csproj", "{2E9C5DF2-6650-4D2B-AC3B-FF0E8509DD34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -401,6 +403,12 @@ Global
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E9C5DF2-6650-4D2B-AC3B-FF0E8509DD34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E9C5DF2-6650-4D2B-AC3B-FF0E8509DD34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E9C5DF2-6650-4D2B-AC3B-FF0E8509DD34}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{2E9C5DF2-6650-4D2B-AC3B-FF0E8509DD34}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{2E9C5DF2-6650-4D2B-AC3B-FF0E8509DD34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E9C5DF2-6650-4D2B-AC3B-FF0E8509DD34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -458,6 +466,7 @@ Global
 		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{2E9C5DF2-6650-4D2B-AC3B-FF0E8509DD34} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

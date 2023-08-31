@@ -43,6 +43,8 @@
     <ProjectReference Include="..\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Sqlite\Connectors.Memory.Sqlite.csproj" />
     <ProjectReference Include="..\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
+    <ProjectReference Include="..\Connectors.Memory.USearch\Connectors.Memory.USearch.csproj" />
+
   </ItemGroup>
 
   <ItemGroup>
