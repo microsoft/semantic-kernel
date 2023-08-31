@@ -20,12 +20,12 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 public sealed class TextCompletionStreamingResponse
 {
     /// <summary>
-    /// Constant string representing the "text_stream" event in the websocket message.
+    /// Constant string representing the event that is fired when text is received from a websocket.
     /// </summary>
     public const string ResponseObjectTextStreamEvent = "text_stream";
 
     /// <summary>
-    /// Constant string representing the "stream_end" event in the websocket message.
+    /// Constant string representing the event that is fired when streaming from a websocket ends.
     /// </summary>
     public const string ResponseObjectStreamEndEvent = "stream_end";
 

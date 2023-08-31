@@ -53,7 +53,7 @@ public class AzureCognitiveSearchMemoryRecord
     /// </summary>
     public const string AdditionalMetadataField = "AdditionalMetadata";
     /// <summary>
-    /// IsReference field name.
+    /// Is reference field name.
     /// </summary>
     public const string IsReferenceField = "IsReference";
 

@@ -13,11 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 /// <summary>
 /// Base class for OpenAI clients, providing common functionality and properties.
 /// </summary>
-/// <example>
-/// <code>
-/// var openAIClient = new CustomOpenAIClient("modelId", "apiKey", "organization");
-/// </code>
-/// </example>
 public abstract class OpenAIClientBase : ClientBase
 {
     /// <summary>

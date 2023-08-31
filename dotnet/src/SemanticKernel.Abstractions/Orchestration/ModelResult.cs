@@ -35,13 +35,13 @@ public sealed class ModelResult
     }
 
     /// <summary>
-    /// Gets the raw result object stored in the ModelResult instance.
+    /// Gets the raw result object stored in the <see cref="ModelResult"/>instance.
     /// </summary>
     /// <returns>The raw result object.</returns>
     public object GetRawResult() => this.result;
 
     /// <summary>
-    /// Gets the result object stored in the ModelResult instance, cast to the specified type.
+    /// Gets the result object stored in the <see cref="ModelResult"/> instance, cast to the specified type.
     /// </summary>
     /// <typeparam name="T">The type to cast the result object to.</typeparam>
     /// <returns>The result object cast to the specified type.</returns>
