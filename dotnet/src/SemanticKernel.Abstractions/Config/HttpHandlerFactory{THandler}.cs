@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Config;
 
 public abstract class HttpHandlerFactory<THandler> : IDelegatingHandlerFactory where THandler : DelegatingHandler
 {
-    public virtual DelegatingHandler Create(ILoggerFactory? loggerFactory)
+    public virtual DelegatingHandler Create(ILoggerFactory? loggerFactory = null)
     {
         return (DelegatingHandler)Activator.CreateInstance(typeof(THandler), loggerFactory);
     }

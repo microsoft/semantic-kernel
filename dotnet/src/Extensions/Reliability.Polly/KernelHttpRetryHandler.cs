@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Polly;
 
-namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
+namespace Microsoft.SemanticKernel.Reliability.Polly;
 
 /// <summary>
-/// A basic example of a retry mechanism that retries three times with backoff.
+/// Default retry handler implementation.
 /// </summary>
-public class DefaultHttpRetryHandler : DelegatingHandler
+internal class DefaultHttpRetryHandler : DelegatingHandler
 {
     private readonly AsyncPolicy<HttpResponseMessage> _policy;
     private readonly ILogger<DefaultHttpRetryHandler>? _logger;
     private readonly HttpRetryConfig _config;
-    private ITimeProvider _timeProvider;
+    private readonly ITimeProvider _timeProvider;
 
-    public DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILoggerFactory? loggerFactory = null) : this(config, null, loggerFactory)
+    internal DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILoggerFactory? loggerFactory = null) : this(config, null, loggerFactory)
     {
     }
 
@@ -79,7 +79,7 @@ public class DefaultHttpRetryHandler : DelegatingHandler
                 return Task.CompletedTask;
             });
 
-        return Policy.WrapAsync<HttpResponseMessage>(timeoutPolicy, retryPolicy);
+        return Policy.WrapAsync(timeoutPolicy, retryPolicy);
     }
 
     private bool IsRetryDisabled()

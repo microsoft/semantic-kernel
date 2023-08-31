@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Config;
 using Polly;
 using Polly.Retry;
 
-namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
+namespace Reliability;
 
 /// <summary>
 /// A factory for creating a retry handler.

@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
+namespace Microsoft.SemanticKernel.Reliability.Polly;
 
 /// <summary>
 /// Retry configuration for DefaultKernelRetryHandler that uses RetryAfter header when present.

@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Reliability.Polly.Config;
+using Microsoft.SemanticKernel.Reliability.Polly;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.Reliability.Polly;
@@ -37,7 +37,7 @@ public class HttpRetryConfigTests
         Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
         var httpHandlerFactory = config.HttpHandlerFactory as DefaultHttpRetryHandlerFactory;
         Assert.NotNull(httpHandlerFactory);
-        Assert.Equal(httpRetryConfig, httpHandlerFactory.DefaultConfig);
+        Assert.Equal(httpRetryConfig, httpHandlerFactory.Config);
     }
 
     [Fact]
@@ -54,13 +54,13 @@ public class HttpRetryConfigTests
         Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
         var httpHandlerFactory = config.HttpHandlerFactory as DefaultHttpRetryHandlerFactory;
         Assert.NotNull(httpHandlerFactory);
-        Assert.Equal(retryConfig.MaxRetryCount, httpHandlerFactory.DefaultConfig.MaxRetryCount);
-        Assert.Equal(retryConfig.MaxRetryDelay, httpHandlerFactory.DefaultConfig.MaxRetryDelay);
-        Assert.Equal(retryConfig.MinRetryDelay, httpHandlerFactory.DefaultConfig.MinRetryDelay);
-        Assert.Equal(retryConfig.MaxTotalRetryTime, httpHandlerFactory.DefaultConfig.MaxTotalRetryTime);
-        Assert.Equal(retryConfig.UseExponentialBackoff, httpHandlerFactory.DefaultConfig.UseExponentialBackoff);
-        Assert.Equal(retryConfig.RetryableStatusCodes, httpHandlerFactory.DefaultConfig.RetryableStatusCodes);
-        Assert.Equal(retryConfig.RetryableExceptionTypes, httpHandlerFactory.DefaultConfig.RetryableExceptionTypes);
+        Assert.Equal(retryConfig.MaxRetryCount, httpHandlerFactory.Config.MaxRetryCount);
+        Assert.Equal(retryConfig.MaxRetryDelay, httpHandlerFactory.Config.MaxRetryDelay);
+        Assert.Equal(retryConfig.MinRetryDelay, httpHandlerFactory.Config.MinRetryDelay);
+        Assert.Equal(retryConfig.MaxTotalRetryTime, httpHandlerFactory.Config.MaxTotalRetryTime);
+        Assert.Equal(retryConfig.UseExponentialBackoff, httpHandlerFactory.Config.UseExponentialBackoff);
+        Assert.Equal(retryConfig.RetryableStatusCodes, httpHandlerFactory.Config.RetryableStatusCodes);
+        Assert.Equal(retryConfig.RetryableExceptionTypes, httpHandlerFactory.Config.RetryableExceptionTypes);
     }
 
     [Fact]
@@ -78,12 +78,12 @@ public class HttpRetryConfigTests
         var httpHandlerFactory = config.HttpHandlerFactory as DefaultHttpRetryHandlerFactory;
 
         Assert.NotNull(httpHandlerFactory);
-        Assert.Equal(defaultConfig.MaxRetryCount, httpHandlerFactory.DefaultConfig.MaxRetryCount);
-        Assert.Equal(defaultConfig.MaxRetryDelay, httpHandlerFactory.DefaultConfig.MaxRetryDelay);
-        Assert.Equal(defaultConfig.MinRetryDelay, httpHandlerFactory.DefaultConfig.MinRetryDelay);
-        Assert.Equal(defaultConfig.MaxTotalRetryTime, httpHandlerFactory.DefaultConfig.MaxTotalRetryTime);
-        Assert.Equal(defaultConfig.UseExponentialBackoff, httpHandlerFactory.DefaultConfig.UseExponentialBackoff);
-        Assert.Equal(defaultConfig.RetryableStatusCodes, httpHandlerFactory.DefaultConfig.RetryableStatusCodes);
-        Assert.Equal(defaultConfig.RetryableExceptionTypes, httpHandlerFactory.DefaultConfig.RetryableExceptionTypes);
+        Assert.Equal(defaultConfig.MaxRetryCount, httpHandlerFactory.Config.MaxRetryCount);
+        Assert.Equal(defaultConfig.MaxRetryDelay, httpHandlerFactory.Config.MaxRetryDelay);
+        Assert.Equal(defaultConfig.MinRetryDelay, httpHandlerFactory.Config.MinRetryDelay);
+        Assert.Equal(defaultConfig.MaxTotalRetryTime, httpHandlerFactory.Config.MaxTotalRetryTime);
+        Assert.Equal(defaultConfig.UseExponentialBackoff, httpHandlerFactory.Config.UseExponentialBackoff);
+        Assert.Equal(defaultConfig.RetryableStatusCodes, httpHandlerFactory.Config.RetryableStatusCodes);
+        Assert.Equal(defaultConfig.RetryableExceptionTypes, httpHandlerFactory.Config.RetryableExceptionTypes);
     }
 }

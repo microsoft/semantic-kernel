@@ -19,7 +19,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Reliability.Polly.Config;
+using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
@@ -80,8 +80,8 @@ public static class Example42_KernelBuilder
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(loggerFactory);
         var kernelConfig = new KernelConfig();
-
-        using var httpHandler = new DefaultHttpRetryHandler(loggerFactory: loggerFactory);
+        kernelConfig.SetHttpRetryConfig(new());
+        using var httpHandler = kernelConfig.HttpHandlerFactory.Create(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(
@@ -159,10 +159,39 @@ public static class Example42_KernelBuilder
 
         var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new RetryThreeTimesFactory()).Build();
 
+        var kernel11 = Kernel.Builder.WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
+
         return Task.CompletedTask;
     }
 
-    // Example of a basic custom retry handler
+    // Example using the PollyHttpRetryHandler from Reliability.Polly extension
+    public class PollyRetryThreeTimesFactory : HttpHandlerFactory<PollyHttpRetryHandler>
+    {
+        public override DelegatingHandler Create(ILoggerFactory? loggerFactory = null)
+        {
+            var logger = loggerFactory?.CreateLogger<PollyRetryThreeTimesFactory>();
+
+            Activator.CreateInstance(typeof(PollyHttpRetryHandler), GetPolicy(logger), logger);
+            return base.Create(loggerFactory);
+        }
+
+        private static AsyncRetryPolicy GetPolicy(ILogger? logger)
+        {
+            return Policy
+                .Handle<HttpOperationException>(ex => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                .WaitAndRetryAsync(new[]
+                    {
+                        TimeSpan.FromSeconds(2),
+                        TimeSpan.FromSeconds(4),
+                        TimeSpan.FromSeconds(8)
+                    },
+                    (ex, timespan, retryCount, _) => logger?.LogWarning(ex,
+                        "Error executing action [attempt {0} of 3], pausing {1}ms",
+                        retryCount, timespan.TotalMilliseconds));
+        }
+    }
+
+    // Basic custom retry handler
     public class RetryThreeTimesFactory : IDelegatingHandlerFactory
     {
         public DelegatingHandler Create(ILoggerFactory? loggerFactory)

@@ -5,13 +5,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Config;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Reliability.Polly.Config;
+namespace Microsoft.SemanticKernel.Reliability.Polly;
 
-public class DefaultHttpRetryHandlerFactory : HttpHandlerFactory<DefaultHttpRetryHandler>
+internal sealed class DefaultHttpRetryHandlerFactory : HttpHandlerFactory<DefaultHttpRetryHandler>
 {
     public DefaultHttpRetryHandlerFactory(HttpRetryConfig? config = null)
     {
-        this.DefaultConfig = config ?? new();
+        this.Config = config ?? new();
     }
 
     /// <summary>
@@ -21,7 +21,7 @@ public class DefaultHttpRetryHandlerFactory : HttpHandlerFactory<DefaultHttpRetr
     /// <returns>Returns the created handler</returns>
     public override DelegatingHandler Create(ILoggerFactory? loggerFactory = null)
     {
-        return new DefaultHttpRetryHandler(this.DefaultConfig, loggerFactory);
+        return new DefaultHttpRetryHandler(this.Config, loggerFactory);
     }
 
     /// <summary>
@@ -40,5 +40,5 @@ public class DefaultHttpRetryHandlerFactory : HttpHandlerFactory<DefaultHttpRetr
     /// <summary>
     /// Default retry configuration used when creating a new instance of <see cref="DefaultHttpRetryHandler"/>.
     /// </summary>
-    public HttpRetryConfig DefaultConfig { get; }
+    internal HttpRetryConfig Config { get; }
 }

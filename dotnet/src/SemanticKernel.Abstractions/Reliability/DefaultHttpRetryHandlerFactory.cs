@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Config;
 
 namespace Microsoft.SemanticKernel.Reliability;
 
-[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated")]
+[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated.\nCheck KernelSyntaxExamples.Example42_KernelBuilder.cs for alternatives")]
 public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
     public DefaultHttpRetryHandlerFactory(HttpRetryConfig? config = null)

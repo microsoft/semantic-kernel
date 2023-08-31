@@ -33,9 +33,9 @@ public sealed class KernelConfig
         return this;
     }
 
-    [Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated, provide a factory for custom http handling")]
+    [Obsolete("Usage of Semantic Kernel internal core retry abstractions is deprecated, use a Resiliency extension package")]
     public KernelConfig SetDefaultHttpRetryConfig(HttpRetryConfig? httpRetryConfig)
     {
-        throw new NotSupportedException("Usage of Semantic Kernel internal retry abstractions is deprecated");
+        throw new NotSupportedException("Usage of Semantic Kernel internal core retry abstractions is deprecated, use a Reliability extension package for a similar result");
     }
 }

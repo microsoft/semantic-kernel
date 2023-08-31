@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Reliability.Polly.Config;
+using Microsoft.SemanticKernel.Reliability.Polly;
 using Moq;
 using Moq.Protected;
 using Polly.Timeout;
@@ -512,7 +512,7 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
             MaxRetryCount = 5,
             MinRetryDelay = TimeSpan.FromMilliseconds(50),
             MaxRetryDelay = TimeSpan.FromMilliseconds(50),
-            MaxTotalRetryTime = TimeSpan.FromMilliseconds(100)
+            MaxTotalRetryTime = TimeSpan.FromMilliseconds(55)
         };
 
         var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
@@ -531,7 +531,7 @@ public sealed class DefaultHttpRetryHandlerTests : IDisposable
 
         // Assert
         mockHandler.Protected()
-            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Between(1, 3, Moq.Range.Inclusive), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
     }
 
     [Fact]

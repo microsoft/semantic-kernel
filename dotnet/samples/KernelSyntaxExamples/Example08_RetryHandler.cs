@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Config;
-using Microsoft.SemanticKernel.Reliability.Polly.Config;
+using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Skills.Core;
+using Reliability;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
