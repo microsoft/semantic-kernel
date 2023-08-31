@@ -14,13 +14,6 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
 /// <summary>
 /// Connector for OneDrive API
 /// </summary>
-/// <example>
-/// <code>
-/// GraphServiceClient graphServiceClient = new GraphServiceClient(...);
-/// OneDriveConnector oneDriveConnector = new OneDriveConnector(graphServiceClient);
-/// bool fileExists = await oneDriveConnector.FileExistsAsync("path/to/file.txt");
-/// </code>
-/// </example>
 public class OneDriveConnector : ICloudDriveConnector
 {
     private readonly GraphServiceClient _graphServiceClient;

@@ -11,14 +11,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Represents a result from a model execution.
 /// </summary>
-/// <example>
-/// <code>
-/// ModelResult modelResult = new ModelResult(someObject);
-/// var rawResult = modelResult.GetRawResult();
-/// var typedResult = modelResult.GetResult&lt;SomeType&gt;();
-/// var jsonResult = modelResult.GetJsonResult();
-/// </code>
-/// </example>
 public sealed class ModelResult
 {
     private readonly object result;

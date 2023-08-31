@@ -9,23 +9,6 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Provides extension methods for the IChatCompletion interface.
 /// </summary>
-/// <example>
-/// <code>
-/// IChatCompletion chatCompletion = ...;
-/// ChatHistory chatHistory = ...;
-/// ChatRequestSettings requestSettings = ...;
-/// CancellationToken cancellationToken = ...;
-///
-/// // Generate a single chat message
-/// string message = await chatCompletion.GenerateMessageAsync(chatHistory, requestSettings, cancellationToken);
-///
-/// // Generate a stream of chat messages
-/// await foreach (string messageStream in chatCompletion.GenerateMessageStreamAsync(chatHistory, requestSettings, cancellationToken))
-/// {
-///     Console.WriteLine(messageStream);
-/// }
-/// </code>
-/// </example>
 public static class ChatCompletionExtensions
 {
     /// <summary>

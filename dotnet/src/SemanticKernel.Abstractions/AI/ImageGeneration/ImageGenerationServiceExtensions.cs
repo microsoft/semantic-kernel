@@ -12,12 +12,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for working with <see cref="IImageGeneration"/> services.
 /// </summary>
-/// <example>
-/// <code>
-/// IAIServiceProvider serviceProvider = ...;
-/// IImageGeneration imageGenerationService = serviceProvider.GetImageGenerationService("myServiceId");
-/// </code>
-/// </example>
 public static class ImageGenerationServiceExtensions
 {
     /// <summary>

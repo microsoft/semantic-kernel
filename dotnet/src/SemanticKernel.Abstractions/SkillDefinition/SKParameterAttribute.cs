@@ -6,15 +6,6 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
 /// Attribute to describe additional parameters used by a native function that aren't part of its method signature.
-/// <example>
-/// <code>
-/// [SKParameterAttribute("paramName", "Description of the parameter")]
-/// public void MyFunction(int input)
-/// {
-///     // ...
-/// }
-/// </code>
-/// </example>
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class SKParameterAttribute : Attribute

@@ -13,15 +13,6 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph;
 /// Organizational Hierarchy skill.
 /// Provides methods to get information about the organization hierarchy, such as direct reports and manager details.
 /// </summary>
-/// <example>
-/// <code>
-/// IOrganizationHierarchyConnector connector = new OrganizationHierarchyConnector();
-/// OrganizationHierarchySkill skill = new OrganizationHierarchySkill(connector);
-/// string managerEmail = await skill.GetMyManagerEmailAsync();
-/// string managerName = await skill.GetMyManagerNameAsync();
-/// string directReportsEmails = await skill.GetMyDirectReportsEmailAsync();
-/// </code>
-/// </example>
 public sealed class OrganizationHierarchySkill
 {
     private readonly IOrganizationHierarchyConnector _connector;

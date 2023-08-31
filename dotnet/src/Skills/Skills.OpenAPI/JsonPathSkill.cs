@@ -13,14 +13,6 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI;
 /// <summary>
 /// Provides methods to retrieve JSON elements from a JSON string using JsonPath queries.
 /// </summary>
-/// <example>
-/// <code>
-/// var jsonPathSkill = new JsonPathSkill();
-/// string json = "{\"name\": \"John\", \"age\": 30, \"city\": \"New York\"}";
-/// string jsonPath = "$.name";
-/// string name = jsonPathSkill.GetJsonElementValue(json, jsonPath);
-/// </code>
-/// </example>
 public sealed class JsonPathSkill
 {
     /// <summary>

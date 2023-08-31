@@ -15,12 +15,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 /// <summary>
 /// A class for generating images using OpenAI's API.
 /// </summary>
-/// <example>
-/// <code>
-/// var imageGenerator = new OpenAIImageGeneration(apiKey);
-/// string imageUrl = await imageGenerator.GenerateImageAsync("A beautiful sunset over the ocean", 512, 512);
-/// </code>
-/// </example>
 public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     /// <summary>

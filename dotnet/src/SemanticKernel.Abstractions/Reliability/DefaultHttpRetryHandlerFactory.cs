@@ -8,14 +8,6 @@ namespace Microsoft.SemanticKernel.Reliability;
 /// A factory class for creating instances of <see cref="DefaultHttpRetryHandler"/>.
 /// Implements the <see cref="IDelegatingHandlerFactory"/> interface.
 /// </summary>
-/// <example>
-/// To create a new instance of <see cref="DefaultHttpRetryHandler"/> with a custom configuration:
-/// <code>
-/// var config = new HttpRetryConfig { MaxRetries = 5 };
-/// var factory = new DefaultHttpRetryHandlerFactory(config);
-/// var handler = factory.Create(logger);
-/// </code>
-/// </example>
 public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
     /// <summary>

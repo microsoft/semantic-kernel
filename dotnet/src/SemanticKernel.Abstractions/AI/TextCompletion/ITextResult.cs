@@ -7,12 +7,6 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel.AI.TextCompletion;
 /// <summary>
 /// Interface for text completion results.
-/// Example usage:
-/// <code>
-/// ITextResult textResult = ...;
-/// string completion = await textResult.GetCompletionAsync();
-/// Console.WriteLine(completion);
-/// </code>
 /// </summary>
 public interface ITextResult
 {

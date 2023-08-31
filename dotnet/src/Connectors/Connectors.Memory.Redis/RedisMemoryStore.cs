@@ -247,7 +247,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <summary>
-    /// Dispose the object.
+    /// Disposes the the <see cref="RedisMemoryStore"/> instance.
     /// </summary>
     public void Dispose()
     {
@@ -256,9 +256,9 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <summary>
-    /// Dispose the object.
+    /// Disposes the resources used by the <see cref="RedisMemoryStore"/> instance.
     /// </summary>
-    /// <param name="disposing">True if disposing managed resources.</param>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)

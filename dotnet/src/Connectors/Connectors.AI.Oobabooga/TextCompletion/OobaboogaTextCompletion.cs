@@ -23,14 +23,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// Oobabooga text completion service API.
 /// Adapted from <see href="https://github.com/oobabooga/text-generation-webui/tree/main/api-examples"/>
 /// </summary>
-/// <example>
-/// <code>
-/// var endpoint = new Uri("https://api.oobabooga.com");
-/// var oobaboogaTextCompletion = new OobaboogaTextCompletion(endpoint);
-/// var requestSettings = new CompleteRequestSettings { MaxTokens = 50, Temperature = 0.7 };
-/// var completions = await oobaboogaTextCompletion.GetCompletionsAsync("Once upon a time", requestSettings);
-/// </code>
-/// </example>
 public sealed class OobaboogaTextCompletion : ITextCompletion
 {
     /// <summary>

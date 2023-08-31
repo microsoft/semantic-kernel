@@ -18,12 +18,6 @@ namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 /// <remarks>
 /// https://learn.microsoft.com/azure/active-directory/develop/msal-net-token-cache-serialization?tabs=desktop
 /// </remarks>
-/// <example>
-/// <code>
-/// var credentialManager = await LocalUserMSALCredentialManager.CreateAsync();
-/// string token = await credentialManager.GetTokenAsync(clientId, tenantId, scopes, redirectUri);
-/// </code>
-/// </example>
 public sealed class LocalUserMSALCredentialManager
 {
     /// <summary>

@@ -30,15 +30,6 @@ namespace Microsoft.SemanticKernel.Planning;
 /// The rationale is currently available only in the prompt, we might include it in
 /// the Plan object in future.
 /// </summary>
-///
-/// <example>
-/// <code>
-/// var kernel = new Kernel();
-/// var planner = new ActionPlanner(kernel);
-/// var goal = "create a file called 'something.txt'";
-/// var plan = await planner.CreatePlanAsync(goal);
-/// </code>
-/// </example>
 public sealed class ActionPlanner : IActionPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";

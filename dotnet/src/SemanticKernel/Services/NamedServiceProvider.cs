@@ -9,13 +9,6 @@ namespace Microsoft.SemanticKernel.Services;
 /// Provides named services of type <typeparamref name="TService"/>. Allows for the registration and retrieval of services by name.
 /// </summary>
 /// <typeparam name="TService">The type of service provided by this provider.</typeparam>
-/// <example>
-/// <code>
-/// var services = new Dictionary&lt;Type, Dictionary&lt;string, Func&lt;object&gt;&gt;&gt;();
-/// var defaultIds = new Dictionary&lt;Type, string&gt;();
-/// var provider = new NamedServiceProvider&lt;IMyService&gt;(services, defaultIds);
-/// </code>
-/// </example>
 public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
 {
     // A dictionary that maps a service type to a nested dictionary of names and service instances or factories

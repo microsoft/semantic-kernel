@@ -12,18 +12,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for working with text embedding services.
 /// </summary>
-/// <example>
-/// <code>
-/// IAIServiceProvider serviceProvider = ...;
-/// string serviceId = "myServiceId";
-///
-/// // Get a text embedding service by ID
-/// ITextEmbeddingGeneration embeddingService = serviceProvider.GetTextEmbeddingService(serviceId);
-///
-/// // Check if a text embedding service with the specified ID exists
-/// bool hasService = serviceProvider.HasTextEmbeddingService(serviceId);
-/// </code>
-/// </example>
 public static class TextEmbeddingServiceExtensions
 {
     /// <summary>

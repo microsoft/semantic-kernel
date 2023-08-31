@@ -10,13 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 /// <summary>
 /// Represents the response from the Hugging Face text embedding API.
 /// </summary>
-/// <example>
-/// Usage:
-/// <code>
-/// TextEmbeddingResponse response = GetTextEmbeddingResponse();
-/// IList&lt;TextEmbeddingResponse.EmbeddingVector&gt; embeddings = response.Embeddings;
-/// </code>
-/// </example>
 public sealed class TextEmbeddingResponse
 {
     /// <summary>

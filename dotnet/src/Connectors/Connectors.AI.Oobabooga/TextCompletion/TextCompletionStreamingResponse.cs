@@ -6,16 +6,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 /// <summary>
 /// Represents the HTTP schema for streaming completion response. Adapted from <see href="https://github.com/oobabooga/text-generation-webui/blob/main/extensions/api/streaming_api.py"/>.
-/// <example>
-/// <code>
-/// var response = new TextCompletionStreamingResponse
-/// {
-///     Event = TextCompletionStreamingResponse.ResponseObjectTextStreamEvent,
-///     MessageNum = 0,
-///     Text = "Generated text"
-/// };
-/// </code>
-/// </example>
 /// </summary>
 public sealed class TextCompletionStreamingResponse
 {

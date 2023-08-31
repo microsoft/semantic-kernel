@@ -8,13 +8,6 @@ namespace Microsoft.SemanticKernel.Reliability;
 /// <summary>
 /// A factory for creating instances of <see cref="NullHttpRetryHandler"/>.
 /// </summary>
-/// <example>
-/// To create a new instance of <see cref="NullHttpRetryHandler"/> using the factory:
-/// <code>
-/// var factory = new NullHttpRetryHandlerFactory();
-/// var handler = factory.Create(null);
-/// </code>
-/// </example>
 public class NullHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
     /// <summary>

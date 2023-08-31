@@ -12,12 +12,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for working with <see cref="ITextCompletion"/> services.
 /// </summary>
-/// <example>
-/// <code>
-/// IAIServiceProvider serviceProvider = ...;
-/// ITextCompletion textCompletionService = serviceProvider.GetTextCompletionServiceOrDefault();
-/// </code>
-/// </example>
 public static class TextCompletionServiceExtensions
 {
     /// <summary>

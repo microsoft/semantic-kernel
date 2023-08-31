@@ -5,13 +5,6 @@ using System;
 namespace Microsoft.SemanticKernel.Diagnostics;
 /// <summary>
 /// Provides functionality to manage telemetry settings.
-/// Example usage:
-/// <code>
-/// if (Telemetry.IsTelemetryEnabled)
-/// {
-///     // Send telemetry data
-/// }
-/// </code>
 /// </summary>
 public static class Telemetry
 {

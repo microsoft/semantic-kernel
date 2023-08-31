@@ -8,14 +8,6 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 /// <summary>
 /// Interface for text completion streaming results.
 /// Provides an asynchronous enumerable of text completion results.
-/// Example usage:
-/// <code>
-/// ITextStreamingResult streamingResult = ...;
-/// await foreach (string completion in streamingResult.GetCompletionStreamingAsync())
-/// {
-///     Console.WriteLine(completion);
-/// }
-/// </code>
 /// </summary>
 public interface ITextStreamingResult : ITextResult
 {

@@ -10,12 +10,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides an extension method for working with Hugging Face model results.
 /// </summary>
-/// <example>
-/// <code>
-/// ModelResult result = ...;
-/// TextCompletionResponse huggingFaceResult = result.GetHuggingFaceResult();
-/// </code>
-/// </example>
 public static class HuggingFaceModelResultExtension
 {
     /// <summary>

@@ -10,15 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 /// <summary>
 /// Represents a sparse vector data, which is a list of indices and a list of corresponding values, both of the same length.
 /// </summary>
-/// <example>
-/// <code>
-/// <![CDATA[
-/// List<long> indices = new List<long> { 0, 2, 4 };
-/// ReadOnlyMemory<float> values = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
-/// SparseVectorData sparseVectorData = SparseVectorData.CreateSparseVectorData(indices, values);
-/// ]]>
-/// </code>
-/// </example>
 public class SparseVectorData
 {
     /// <summary>

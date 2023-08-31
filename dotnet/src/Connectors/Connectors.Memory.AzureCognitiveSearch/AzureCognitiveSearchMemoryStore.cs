@@ -23,15 +23,6 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 /// <summary>
 /// AzureCognitiveSearchMemoryStore is a memory store implementation using Azure Cognitive Search.
 /// </summary>
-/// <example>
-/// <code>
-/// var store = new AzureCognitiveSearchMemoryStore("https://contoso.search.windows.net", "your-api-key");
-/// await store.CreateCollectionAsync("myCollection");
-/// var record = new MemoryRecord("key1", "text", "description", new float[] { 0.1f, 0.2f, 0.3f });
-/// await store.UpsertAsync("myCollection", record);
-/// var retrievedRecord = await store.GetAsync("myCollection", "key1");
-/// </code>
-/// </example>
 public class AzureCognitiveSearchMemoryStore : IMemoryStore
 {
     /// <summary>

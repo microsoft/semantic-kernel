@@ -7,13 +7,6 @@ namespace Microsoft.SemanticKernel.Services;
 /// <summary>
 /// Provides AI services by managing a collection of named service instances.
 /// </summary>
-/// <example>
-/// <code>
-/// var services = new Dictionary&lt;Type, Dictionary&lt;string, Func&lt;object&gt;&gt;&gt;();
-/// var defaultIds = new Dictionary&lt;Type, string&gt;();
-/// var aiServiceProvider = new AIServiceProvider(services, defaultIds);
-/// </code>
-/// </example>
 public class AIServiceProvider : NamedServiceProvider<IAIService>, IAIServiceProvider
 {
     /// <summary>

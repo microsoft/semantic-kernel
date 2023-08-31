@@ -10,13 +10,6 @@ namespace Microsoft.SemanticKernel.SemanticFunctions;
 /// <summary>
 /// Prompt template configuration.
 /// </summary>
-/// <example>
-/// <code>
-/// var config = new PromptTemplateConfig();
-/// config.Type = "completion";
-/// config.Description = "A sample prompt template configuration.";
-/// </code>
-/// </example>
 public class PromptTemplateConfig
 {
     /// <summary>

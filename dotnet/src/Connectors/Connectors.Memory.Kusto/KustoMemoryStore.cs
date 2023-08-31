@@ -307,9 +307,9 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <summary>
-    /// Disposes the <see cref="KustoMemoryStore"/>instance.
+    /// Disposes the resources used by the <see cref="KustoMemoryStore"/> instance.
     /// </summary>
-    /// <param name="disposing">Indicates whether the method call comes from a Dispose method (its value is true) or from a finalizer (its value is false).</param>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)

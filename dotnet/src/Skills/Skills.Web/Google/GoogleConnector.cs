@@ -17,14 +17,6 @@ namespace Microsoft.SemanticKernel.Skills.Web.Google;
 /// Google search connector.
 /// Provides methods to search using Google Custom Search API.
 /// </summary>
-/// <example>
-/// <code>
-/// var apiKey = "your_api_key";
-/// var searchEngineId = "your_search_engine_id";
-/// var googleConnector = new GoogleConnector(apiKey, searchEngineId);
-/// var searchResults = await googleConnector.SearchAsync("example query", 10, 0, CancellationToken.None);
-/// </code>
-/// </example>
 public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
     private readonly ILogger _logger;
@@ -89,9 +81,9 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <summary>
-    /// Releases the unmanaged resources used by the GoogleConnector and optionally releases the managed resources.
+    /// Disposes the resources used by the <see cref="GoogleConnector"/> instance.
     /// </summary>
-    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     private void Dispose(bool disposing)
     {
         if (disposing)
@@ -101,7 +93,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+    /// Disposes the <see cref="GoogleConnector"/> instance.
     /// </summary>
     public void Dispose()
     {

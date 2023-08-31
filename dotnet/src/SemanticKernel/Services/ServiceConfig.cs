@@ -7,17 +7,6 @@ namespace Microsoft.SemanticKernel.Services;
 /// <summary>
 /// Represents a base class for service configurations.
 /// </summary>
-/// <remarks>
-/// Example usage:
-/// <code>
-/// public class MyServiceConfig : ServiceConfig
-/// {
-///     public MyServiceConfig() : base("MyServiceId")
-///     {
-///     }
-/// }
-/// </code>
-/// </remarks>
 public abstract class ServiceConfig : IServiceConfig
 {
     /// <summary>

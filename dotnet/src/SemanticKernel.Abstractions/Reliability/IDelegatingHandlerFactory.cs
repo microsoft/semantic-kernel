@@ -8,14 +8,6 @@ namespace Microsoft.SemanticKernel.Reliability;
 /// <summary>
 /// Factory for creating <see cref="DelegatingHandler"/> instances.
 /// </summary>
-/// <example>
-/// Here is an example of how to use the IDelegatingHandlerFactory:
-/// <code>
-/// IDelegatingHandlerFactory factory = new MyDelegatingHandlerFactory();
-/// ILogger logger = new LoggerFactory().CreateLogger("MyLogger");
-/// DelegatingHandler handler = factory.Create(logger);
-/// </code>
-/// </example>
 public interface IDelegatingHandlerFactory
 {
     /// <summary>

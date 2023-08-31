@@ -12,12 +12,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for working with chat completion services.
 /// </summary>
-/// <example>
-/// <code>
-/// IAIServiceProvider serviceProvider = ...;
-/// IChatCompletion chatCompletionService = serviceProvider.GetChatCompletionService();
-/// </code>
-/// </example>
 public static class ChatCompletionServiceExtensions
 {
     /// <summary>

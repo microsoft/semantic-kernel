@@ -11,13 +11,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for working with OpenAI model results.
 /// </summary>
-/// <example>
-/// <code>
-/// // Assuming you have a ModelResult object called 'result'
-/// TextModelResult textResult = result.GetOpenAITextResult();
-/// ChatModelResult chatResult = result.GetOpenAIChatResult();
-/// </code>
-/// </example>
 public static class OpenAIModelResultExtension
 {
     /// <summary>

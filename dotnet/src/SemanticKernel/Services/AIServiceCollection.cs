@@ -9,14 +9,6 @@ namespace Microsoft.SemanticKernel.Services;
 /// <summary>
 /// A collection of AI services that can be registered and built into an <see cref="IAIServiceProvider"/>.
 /// </summary>
-/// <example>
-/// <code>
-/// var serviceCollection = new AIServiceCollection();
-/// serviceCollection.SetService&lt;IMyService&gt;(new MyService());
-/// serviceCollection.SetService&lt;IMyService&gt;("namedService", new MyNamedService());
-/// var serviceProvider = serviceCollection.Build();
-/// </code>
-/// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix")]
 public class AIServiceCollection
 {
