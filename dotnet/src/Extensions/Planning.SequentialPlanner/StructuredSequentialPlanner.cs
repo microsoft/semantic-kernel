@@ -16,11 +16,17 @@ using SkillDefinition;
 using TemplateEngine.Prompt;
 
 
+/// <summary>
+///  Sequential planner that uses the OpenAI chat completion function calling API to generate a step by step plan to fulfill a goal.
+/// </summary>
 public class StructuredSequentialPlanner : ISequentialPlanner
 {
-    // private readonly string _promptTemplate = string.Empty;
-
-
+    /// <summary>
+    ///  Initializes a new instance of the <see cref="StructuredSequentialPlanner"/> class.
+    /// </summary>
+    /// <param name="kernel"></param>
+    /// <param name="config"></param>
+    /// <param name="prompt"></param>
     public StructuredSequentialPlanner(
         IKernel kernel,
         SequentialPlannerConfig? config = null,
@@ -33,13 +39,13 @@ public class StructuredSequentialPlanner : ISequentialPlanner
 
         // _promptTemplate = prompt ?? EmbeddedResource.Read("structuredprompt.txt");
 
-        // this._functionFlowFunction = kernel.CreateSemanticFunction(
-        //     promptTemplate,
-        //     skillName: RestrictedSkillName,
-        //     description: "Given a request or command or goal generate a step by step plan to " +
-        //                  "fulfill the request using functions. This ability is also known as decision making and function flow",
-        //     maxTokens: this.Config.MaxTokens ?? 1024,
-        //     temperature: 0.0);
+        this._functionFlowFunction = kernel.CreateSemanticFunction(
+            PromptTemplate,
+            skillName: RestrictedSkillName,
+            description: "Given a request or command or goal generate a step by step plan to " +
+                         "fulfill the request using functions. This ability is also known as decision making and function flow",
+            maxTokens: this.Config.MaxTokens ?? 1024,
+            temperature: 0.0);
 
         _context = kernel.CreateNewContext();
         _chatCompletion = kernel.GetService<IChatCompletion>();
