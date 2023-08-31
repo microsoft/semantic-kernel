@@ -1,25 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of SKContext
+namespace Microsoft.SemanticKernel.Orchestration;
+
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Azure.AI.OpenAI;
+using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Extensions.Logging;
+using Memory;
+using Planning.Sequential;
+using SkillDefinition;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace - Using NS of SKContext
-namespace Microsoft.SemanticKernel.Orchestration;
 #pragma warning restore IDE0130
+
 
 public static class SKContextSequentialPlannerExtensions
 {
     internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
 
     internal const string PlanSKFunctionsAreRemembered = "Planning.SKFunctionsAreRemembered";
+
 
     /// <summary>
     /// Returns a string containing the manual for all available functions.
@@ -38,12 +43,30 @@ public static class SKContextSequentialPlannerExtensions
         config ??= new SequentialPlannerConfig();
 
         // Use configured function provider if available, otherwise use the default SKContext function provider.
-        IOrderedEnumerable<FunctionView> functions = config.GetAvailableFunctionsAsync is null ?
-            await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false) :
-            await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
+        IOrderedEnumerable<FunctionView> functions = config.GetAvailableFunctionsAsync is null
+            ? await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false)
+            : await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", functions.Select(x => x.ToManualString()));
     }
+
+
+    public static async Task<List<FunctionDefinition>> GetFunctionDefinitions(
+        this SKContext context,
+        string? semanticQuery = null,
+        SequentialPlannerConfig? config = null,
+        CancellationToken cancellationToken = default)
+    {
+        config ??= new SequentialPlannerConfig();
+
+        // Use configured function provider if available, otherwise use the default SKContext function provider.
+        IOrderedEnumerable<FunctionView> functions = config.GetAvailableFunctionsAsync is null
+            ? await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false)
+            : await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
+
+        return functions.Where(view => view.CanBeCalled()).Select(view => view.ToFunctionDefinition()).ToList();
+    }
+
 
     /// <summary>
     /// Returns a list of functions that are available to the user based on the semantic query and the excluded skills and functions.
@@ -68,6 +91,7 @@ public static class SKContextSequentialPlannerExtensions
             .ToList();
 
         List<FunctionView>? result = null;
+
         if (string.IsNullOrEmpty(semanticQuery) || config.Memory is NullMemory || config.RelevancyThreshold is null)
         {
             // If no semantic query is provided, return all available functions.
@@ -105,6 +129,7 @@ public static class SKContextSequentialPlannerExtensions
             .ThenBy(x => x.Name);
     }
 
+
     private static async Task<IEnumerable<FunctionView>> GetRelevantFunctionsAsync(
         SKContext context,
         IEnumerable<FunctionView> availableFunctions,
@@ -113,12 +138,15 @@ public static class SKContextSequentialPlannerExtensions
     {
         ILogger? logger = null;
         var relevantFunctions = new ConcurrentBag<FunctionView>();
+
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
+
             if (function != null)
             {
                 logger ??= context.LoggerFactory.CreateLogger(nameof(SKContext));
+
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
                     logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFullyQualifiedName());
@@ -130,6 +158,7 @@ public static class SKContextSequentialPlannerExtensions
 
         return relevantFunctions;
     }
+
 
     /// <summary>
     /// Saves all available functions to memory.
@@ -160,6 +189,7 @@ public static class SKContextSequentialPlannerExtensions
             // It'd be nice if there were a saveIfNotExists method on the memory interface
             var memoryEntry = await memory.GetAsync(collection: PlannerMemoryCollectionName, key: key, withEmbedding: false,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
+
             if (memoryEntry == null)
             {
                 // TODO It'd be nice if the minRelevanceScore could be a parameter for each item that was saved to memory

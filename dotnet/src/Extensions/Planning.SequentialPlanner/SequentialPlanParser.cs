@@ -1,14 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Planning.Sequential;
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Diagnostics;
+using Orchestration;
+using SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Planning.Sequential;
 
 /// <summary>
 /// Parse sequential plan text into a plan.
@@ -41,6 +44,7 @@ internal static class SequentialPlanParser
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
 
+
     internal static Func<string, string, ISKFunction?> GetSkillFunction(SKContext context)
     {
         return (skillName, functionName) =>
@@ -61,6 +65,7 @@ internal static class SequentialPlanParser
         };
     }
 
+
     /// <summary>
     /// Convert a plan xml string to a plan.
     /// </summary>
@@ -73,6 +78,7 @@ internal static class SequentialPlanParser
     internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getSkillFunction, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
+
         try
         {
             xmlDoc.LoadXml("<xml>" + xmlString + "</xml>");
@@ -88,10 +94,11 @@ internal static class SequentialPlanParser
             // '(.*?)': Captures the content between the opening and closing <plan> tags using a non-greedy match. It matches any character (except newline) in a lazy manner, i.e., it captures the smallest possible match.
             // '</plan>': Matches the literal string "</plan>", indicating the closing tag of the <plan> element.
             Regex planRegex = new(@"<plan\b[^>]*>(.*?)</plan>", RegexOptions.Singleline);
-            Match match = planRegex.Match(xmlString);
+            var match = planRegex.Match(xmlString);
+
             if (match.Success)
             {
-                string planXml = match.Value;
+                var planXml = match.Value;
 
                 try
                 {
@@ -109,7 +116,7 @@ internal static class SequentialPlanParser
         }
 
         // Get the Solution
-        XmlNodeList solution = xmlDoc.GetElementsByTagName(SolutionTag);
+        var solution = xmlDoc.GetElementsByTagName(SolutionTag);
 
         var plan = new Plan(goal);
 
@@ -141,10 +148,11 @@ internal static class SequentialPlanParser
                             var planStep = new Plan(skillFunction);
 
                             var functionVariables = new ContextVariables();
-                            var functionOutputs = new List<string>();
-                            var functionResults = new List<string>();
+                            List<string> functionOutputs = new List<string>();
+                            List<string> functionResults = new List<string>();
 
                             var view = skillFunction.Describe();
+
                             foreach (var p in view.Parameters)
                             {
                                 functionVariables.Set(p.Name, p.DefaultValue);
@@ -173,6 +181,7 @@ internal static class SequentialPlanParser
                             // Plan properties
                             planStep.Outputs = functionOutputs;
                             planStep.Parameters = functionVariables;
+
                             foreach (var result in functionResults)
                             {
                                 plan.Outputs.Add(result);
@@ -202,12 +211,78 @@ internal static class SequentialPlanParser
         return plan;
     }
 
+
+    public static Plan ToPlan(this IEnumerable<SKFunctionCall> functionCalls, string goal, IReadOnlySkillCollection skillCollection)
+    {
+        // Initialize Plan with goal
+        var plan = new Plan(goal);
+
+        List<SKFunctionCall> functions = functionCalls.ToList();
+
+        if (functions.Count == 0)
+        {
+            Console.WriteLine("No functions found");
+            return plan;
+        }
+
+        // Process each functionCall
+        foreach (var functionCall in functions)
+        {
+            skillCollection.TryGetFunction(functionCall, out var skillFunction);
+
+            if (skillFunction is not null)
+            {
+                var planStep = new Plan(skillFunction);
+
+                var functionVariables = new ContextVariables();
+
+                foreach (var parameter in functionCall.Parameters)
+                {
+                    functionVariables.Set(parameter.Name, parameter.Value);
+                }
+
+                List<string> functionOutputs = new();
+
+                if (!string.IsNullOrEmpty(functionCall.SetContextVariable))
+                {
+                    functionOutputs.Add(functionCall.SetContextVariable!);
+                }
+
+                List<string> functionResults = new List<string>();
+
+                if (!string.IsNullOrEmpty(functionCall.AppendToResult))
+                {
+                    functionOutputs.Add(functionCall.AppendToResult!);
+                    functionResults.Add(functionCall.AppendToResult!);
+                }
+
+                planStep.Outputs = functionOutputs;
+                planStep.Parameters = functionVariables;
+
+                foreach (var result in functionResults)
+                {
+                    plan.Outputs.Add(result);
+                }
+
+                plan.AddSteps(planStep);
+            }
+            else
+            {
+                throw new Exception($"Function '{functionCall.Function}' not found.");
+            }
+        }
+
+        return plan;
+    }
+
+
     private static void GetSkillFunctionNames(string skillFunctionName, out string skillName, out string functionName)
     {
         var skillFunctionNameParts = skillFunctionName.Split('.');
         skillName = skillFunctionNameParts?.Length > 0 ? skillFunctionNameParts[0] : string.Empty;
         functionName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[1] : skillFunctionName;
     }
+
 
     private static readonly string[] s_functionTagArray = new string[] { FunctionTag };
 }
