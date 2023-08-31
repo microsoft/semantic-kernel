@@ -181,7 +181,7 @@ class C(PydanticField): ... # No other changes needed
 
 The classes B and C can now be used as valid Pydantic Field annotations.
 
-````python
+```python
 from pydantic import BaseModel
 
 class MyModel(BaseModel):
@@ -201,7 +201,7 @@ class CorrectModel(BaseModel):
     a: A  # Okay
     class Config:  # Configuration that tells Pydantic to allow field types that it can't serialize
         arbitrary_types_allowed = True
-````
+```
 
 #### Classes with data, but no Generic types that need to be serialized
 
