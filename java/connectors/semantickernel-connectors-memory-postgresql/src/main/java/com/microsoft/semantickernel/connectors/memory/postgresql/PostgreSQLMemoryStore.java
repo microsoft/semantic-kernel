@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 import reactor.core.publisher.Mono;
 
 public class PostgreSQLMemoryStore extends JDBCMemoryStore {
-    public PostgreSQLMemoryStore(SQLConnector connector) {
+    private PostgreSQLMemoryStore(SQLConnector connector) {
         super(connector);
     }
 
