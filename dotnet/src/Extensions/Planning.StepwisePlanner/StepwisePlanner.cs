@@ -411,8 +411,8 @@ public class StepwisePlanner : IStepwisePlanner
 
         if (actionIndex != -1)
         {
-            int jsonStartIndex = input.IndexOf("{", actionIndex);
-            int jsonEndIndex = input.Substring(jsonStartIndex).LastIndexOf("}");
+            int jsonStartIndex = input.IndexOf("{", actionIndex, StringComparison.OrdinalIgnoreCase);
+            int jsonEndIndex = input.Substring(jsonStartIndex).LastIndexOf("}", StringComparison.OrdinalIgnoreCase);
             if (jsonStartIndex != -1 && jsonEndIndex != -1)
             {
                 string json = input.Substring(jsonStartIndex, jsonEndIndex + 1);
