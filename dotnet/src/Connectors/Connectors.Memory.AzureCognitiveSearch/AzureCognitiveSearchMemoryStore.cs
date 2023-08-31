@@ -65,8 +65,8 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         return await indexes
             .AnyAsync(index =>
-                string.Equals(index, collectionName, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(index, normalizedIndexName, StringComparison.OrdinalIgnoreCase),
+                    string.Equals(index, collectionName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(index, normalizedIndexName, StringComparison.OrdinalIgnoreCase),
                 cancellationToken: cancellationToken
             )
             .ConfigureAwait(false);
@@ -169,6 +169,9 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Cosine similarity range: -1 .. +1
+        minRelevanceScore = Math.Max(-1, Math.Min(1, minRelevanceScore));
+
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
         var client = this.GetSearchClient(normalizedIndexName);
@@ -431,7 +434,9 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
     private static double ScoreToCosineSimilarity(double score)
     {
-        return 1 - (1 - score) / score;
+        // Azure Cognitive Search score formula. The min value is 0.333 for cosine similarity -1.
+        score = Math.Max(score, 1.0 / 3);
+        return 2 - 1 / score;
     }
 
     private static double CosineSimilarityToScore(double similarity)
