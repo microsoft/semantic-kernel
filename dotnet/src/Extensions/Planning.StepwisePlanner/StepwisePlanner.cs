@@ -311,9 +311,7 @@ public class StepwisePlanner : IStepwisePlanner
         string userManual = await this.GetUserManualAsync(context).ConfigureAwait(false);
         string userQuestion = await this.GetUserQuestionAsync(context).ConfigureAwait(false);
 
-#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods that take one -- the method is obsolete and to be removed.
         var systemContext = this._kernel.CreateNewContext();
-#pragma warning restore CA2016
 
         systemContext.Variables.Set("suffix", this.Config.Suffix);
         systemContext.Variables.Set("functionDescriptions", userManual);
