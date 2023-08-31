@@ -38,6 +38,44 @@ jobs:
         if: steps.filter.outputs.python != 'true'
         run: echo "NOT python file"
 
+  temp-redis-test-check:
+    needs: paths-filter
+    if: github.event_name == 'pull_request' && needs.paths-filter.outputs.pythonChanges == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies with hnswlib native disabled
+        if: matrix.os == 'macos-latest' && matrix.python-version == '3.11'
+        run: |
+          export HNSWLIB_NO_NATIVE=1
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install poetry pytest
+          cd python && poetry install
+      - name: Install dependencies with hnswlib native enabled
+        if: matrix.os != 'macos-latest' || matrix.python-version != '3.11'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install poetry pytest
+          cd python
+          poetry install
+      - name: Run Integration Tests
+        id: run_tests
+        shell: bash
+        run: |
+          docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          cd python
+          poetry run pytest ./tests/integration -v
+
   python-merge-gate:
     needs: paths-filter
     if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
