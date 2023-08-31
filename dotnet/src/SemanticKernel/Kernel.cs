@@ -61,6 +61,8 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    [Obsolete("Use Kernel constructor with IPromptTemplateEngineFactory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
@@ -68,13 +70,32 @@ public sealed class Kernel : IKernel, IDisposable
         ISemanticTextMemory memory,
         KernelConfig config,
         ILoggerFactory loggerFactory)
+        : this(skillCollection, aiServiceProvider, new PromptTemplateEngineFactory(promptTemplateEngine), memory, config, loggerFactory)
+    {
+    }
+
+    /// <summary>
+    /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
+    /// </summary>
+    /// <param name="skillCollection"></param>
+    /// <param name="aiServiceProvider"></param>
+    /// <param name="promptTemplateEngineFactory"></param>
+    /// <param name="memory"></param>
+    /// <param name="config"></param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public Kernel(
+        ISkillCollection skillCollection,
+        IAIServiceProvider aiServiceProvider,
+        IPromptTemplateEngineProvider promptTemplateEngineFactory,
+        ISemanticTextMemory memory,
+        KernelConfig config,
+        ILoggerFactory loggerFactory)
     {
         this.LoggerFactory = loggerFactory;
         this.Config = config;
-        this.PromptTemplateEngine = promptTemplateEngine;
+        this.PromptTemplateEngine = promptTemplateEngineFactory.Create(DefaultPromptTemplateEngineProvider.DefaultFormat, this, loggerFactory);
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
-        this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
 
         this._logger = loggerFactory.CreateLogger(nameof(Kernel));
@@ -259,7 +280,6 @@ public sealed class Kernel : IKernel, IDisposable
 
     private readonly ISkillCollection _skillCollection;
     private ISemanticTextMemory _memory;
-    private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly ILogger _logger;
 
