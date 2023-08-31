@@ -4,7 +4,10 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk.FunctionCalling
 using System.Collections.Generic;
 
 
-public record SKFunctionCall
+/// <summary>
+///  The function call to be made returned by the LLM
+/// </summary>
+public record FunctionCall
 {
     /// <summary>
     /// Rationale given by the LLM for choosing the function
@@ -19,16 +22,16 @@ public record SKFunctionCall
     /// <summary>
     ///  Parameter values
     /// </summary>
-    public List<Parameter> Parameters { get; set; } = new();
+    public List<FunctionCallParameter> Parameters { get; set; } = new();
 
+    /// <summary>
+    ///  Enables the model to set a context variable if the function call is a step in a plan
+    /// </summary>
     public string? SetContextVariable { get; set; }
 
+    /// <summary>
+    ///  Enables the model to append the result of the function call to
+    /// another context variable if the function call is a step in a plan
+    /// </summary>
     public string? AppendToResult { get; set; }
-}
-
-
-public class Parameter
-{
-    public string Name { get; set; }
-    public string Value { get; set; }
 }

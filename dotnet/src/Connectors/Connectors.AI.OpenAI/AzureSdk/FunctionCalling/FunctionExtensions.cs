@@ -116,7 +116,7 @@ public static class FunctionExtensions
     /// <param name="functionCall"></param>
     /// <param name="functionInstance"></param>
     /// <returns></returns>
-    public static bool TryGetFunction(this IReadOnlySkillCollection skillCollection, SKFunctionCall functionCall, out ISKFunction? functionInstance)
+    public static bool TryGetFunction(this IReadOnlySkillCollection skillCollection, FunctionCall functionCall, out ISKFunction? functionInstance)
     {
         Console.WriteLine(functionCall.Function);
 
@@ -151,7 +151,7 @@ public static class FunctionExtensions
     /// </summary>
     /// <param name="functionCall"></param>
     /// <returns></returns>
-    public static ContextVariables FunctionParameters(this SKFunctionCall functionCall)
+    public static ContextVariables FunctionParameters(this FunctionCall functionCall)
     {
         var contextVariables = new ContextVariables();
 
@@ -162,4 +162,5 @@ public static class FunctionExtensions
 
         return contextVariables;
     }
+
 }
