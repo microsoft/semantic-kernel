@@ -308,9 +308,6 @@ public class StepwisePlanner : IStepwisePlanner
     #region setup helpers
     private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, IAIService aiService, SKContext context)
     {
-        var chatCompletion = aiService as IChatCompletion;
-        var textCompletion = aiService as ITextCompletion;
-
         string userManual = await this.GetUserManualAsync(context).ConfigureAwait(false);
         string userQuestion = await this.GetUserQuestionAsync(context).ConfigureAwait(false);
 
@@ -410,33 +407,38 @@ public class StepwisePlanner : IStepwisePlanner
         result.Thought = result.Thought?.Replace(Thought, string.Empty).Trim();
 
         // Extract action
-        Match actionMatch = s_actionRegex.Match(input);
+        int actionIndex = input.IndexOf(Action, StringComparison.OrdinalIgnoreCase);
 
-        if (actionMatch.Success)
+        if (actionIndex != -1)
         {
-            var json = actionMatch.Groups[1].Value.Trim();
-
-            try
+            int jsonStartIndex = input.IndexOf("{", actionIndex);
+            int jsonEndIndex = input.Substring(jsonStartIndex).LastIndexOf("}");
+            if (jsonStartIndex != -1 && jsonEndIndex != -1)
             {
-                var systemStepResults = JsonSerializer.Deserialize<SystemStep>(json);
+                string json = input.Substring(jsonStartIndex, jsonEndIndex + 1);
 
-                if (systemStepResults == null)
+                try
                 {
-                    result.Observation = $"System step parsing error, empty JSON: {json}";
+                    var systemStepResults = JsonSerializer.Deserialize<SystemStep>(json);
+
+                    if (systemStepResults == null)
+                    {
+                        result.Observation = $"System step parsing error, empty JSON: {json}";
+                    }
+                    else
+                    {
+                        result.Action = systemStepResults.Action;
+                        result.ActionVariables = systemStepResults.ActionVariables;
+                    }
                 }
-                else
+                catch (JsonException)
                 {
-                    result.Action = systemStepResults.Action;
-                    result.ActionVariables = systemStepResults.ActionVariables;
+                    result.Observation = $"System step parsing error, invalid JSON: {json}";
                 }
-            }
-            catch (JsonException)
-            {
-                result.Observation = $"System step parsing error, invalid JSON: {json}";
             }
         }
 
-        if (string.IsNullOrEmpty(result.Thought) && string.IsNullOrEmpty(result.Action))
+        if (string.IsNullOrEmpty(result.Thought) && string.IsNullOrEmpty(result.Action) && string.IsNullOrEmpty(result.Observation))
         {
             result.Observation = "System step error, no thought or action found. Please give a valid thought and/or action.";
         }
@@ -665,11 +667,6 @@ public class StepwisePlanner : IStepwisePlanner
     /// The Observation tag
     /// </summary>
     private const string Observation = "[OBSERVATION]";
-
-    /// <summary>
-    /// The regex for parsing the action response
-    /// </summary>
-    private static readonly Regex s_actionRegex = new(@"\[ACTION\][^{}]*({(?:[^{}]*{[^{}]*})*[^{}]*})", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
     /// <summary>
     /// The regex for parsing the thought response

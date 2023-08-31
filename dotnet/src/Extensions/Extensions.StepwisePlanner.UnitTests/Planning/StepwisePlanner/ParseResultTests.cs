@@ -43,6 +43,30 @@ public sealed class ParseResultTests
     [InlineData("The web search result is a snippet from a Wikipedia article that says something.\n\n[ACTION] {\n  \"action\": \"WebSearch.Search\",\n \"action_variables\": {\"input\": \"another search\", \"count\": \"1\"}\n}", "The web search result is a snippet from a Wikipedia article that says something.", "WebSearch.Search", "input",
         "another search", "count", "1")]
     [InlineData("[ACTION] {\"action\": \"time.Year\", \"action_variables\": {\"input\": \"\"}}", null, "time.Year", "input", "")]
+    [InlineData(@"[ACTION]{
+  ""action"": ""RepositorySkill.PushChangesToBranch"",
+  ""action_variables"": {
+    ""branchName"": ""myBranchName"",
+    ""comment"": ""{MyComment""
+  }
+}
+", null, "RepositorySkill.PushChangesToBranch", "branchName", "myBranchName", "comment", "{MyComment")]
+    [InlineData(@"[ACTION]{
+  ""action"": ""RepositorySkill.PushChangesToBranch"",
+  ""action_variables"": {
+    ""branchName"": ""myBranchName"",
+    ""comment"": ""}MyComment""
+  }
+}
+", null, "RepositorySkill.PushChangesToBranch", "branchName", "myBranchName", "comment", "}MyComment")]
+    [InlineData(@"[ACTION]{
+  ""action"": ""RepositorySkill.PushChangesToBranch"",
+  ""action_variables"": {
+    ""branchName"": ""myBranchName"",
+    ""comment"": ""{MyComment}""
+  }
+}
+", null, "RepositorySkill.PushChangesToBranch", "branchName", "myBranchName", "comment", "{MyComment}")]
     public void ParseActionReturnsAction(string input, string expectedThought, string expectedAction, params string[] expectedVariables)
     {
         Dictionary<string, string>? expectedDictionary = null;
