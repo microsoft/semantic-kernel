@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 using AI.ChatCompletion;
 using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
-using Connectors.AI.OpenAI.ChatCompletion;
 using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using Orchestration;
 using SkillDefinition;
 using TemplateEngine.Prompt;
+using FunctionCall = Connectors.AI.OpenAI.AzureSdk.FunctionCalling.FunctionCall;
 
 
 /// <summary>
@@ -25,14 +25,6 @@ using TemplateEngine.Prompt;
 public class StructuredActionPlanner : IActionPlanner
 {
     private const string SkillName = "this";
-
-    // Planner semantic function
-    private readonly ISKFunction _plannerFunction;
-
-    // Context used to access the list of functions in the kernel
-    private readonly SKContext _context;
-    private readonly IKernel _kernel;
-    private readonly ILogger _logger;
 
 
     /// <summary>
@@ -59,7 +51,7 @@ public class StructuredActionPlanner : IActionPlanner
 
         kernel.ImportSkill(this, SkillName);
 
-        _kernel = kernel;
+        _chatCompletion = kernel.GetService<IChatCompletion>();
         _context = kernel.CreateNewContext();
     }
 
@@ -77,15 +69,14 @@ public class StructuredActionPlanner : IActionPlanner
         var templateEngine = new PromptTemplateEngine();
         var prompt = await templateEngine.RenderAsync(PromptTemplate, _context, cancellationToken).ConfigureAwait(false);
 
-        var chatCompletion = _kernel.GetService<IChatCompletion>();
-        var openAIChatCompletion = (OpenAIChatCompletion)chatCompletion;
+        var openAIChatCompletion = (IOpenAIChatCompletion)_chatCompletion;
 
         var chatHistory = openAIChatCompletion.CreateNewChat(prompt);
 
         List<FunctionDefinition> functionDefinitions = _context.Skills.GetFunctionDefinitions(new[] { SkillName }).ToList();
         // the intended functionCall must always be included in the list of function definitions
         functionDefinitions.Add(ActionPlan);
-        var response = await openAIChatCompletion.GenerateResponseAsync<SKFunctionCall>(
+        var response = await openAIChatCompletion.GenerateResponseAsync<FunctionCall>(
             chatHistory,
             new ChatRequestSettings()
                 { Temperature = 0.2, MaxTokens = 512 },
@@ -107,6 +98,15 @@ public class StructuredActionPlanner : IActionPlanner
         return plan;
     }
 
+
+    // Planner semantic function
+    private readonly ISKFunction _plannerFunction;
+
+    // Context used to access the list of functions in the kernel
+    private readonly SKContext _context;
+    private readonly ILogger _logger;
+
+    private readonly IChatCompletion _chatCompletion;
 
     private const string PromptTemplate = "Decide the best action to take to achieve the user's goal." +
                                           "\nGoal: {{ $input }}";
