@@ -4,6 +4,9 @@
 
 namespace Microsoft.SemanticKernel.Reliability.Polly;
 
+/// <summary>
+/// Extension methods for <see cref="KernelConfig"/> class.
+/// </summary>
 public static class KernelConfigExtensions
 {
     /// <summary>

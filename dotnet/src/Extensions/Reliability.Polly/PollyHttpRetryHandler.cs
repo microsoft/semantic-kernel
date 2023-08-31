@@ -41,23 +41,24 @@ public class PollyHttpRetryHandler : DelegatingHandler
         this._asyncPolicy = asyncPolicy;
     }
 
+    /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (this._typedAsyncPolicy is not null)
         {
-            return await this._typedAsyncPolicy.ExecuteAsync(async () =>
+            return await this._typedAsyncPolicy.ExecuteAsync(async (cancelToken) =>
             {
-                var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                var response = await base.SendAsync(request, cancelToken).ConfigureAwait(false);
                 return response;
-            }).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
-        return await this._asyncPolicy!.ExecuteAsync(async () =>
+        return await this._asyncPolicy!.ExecuteAsync(async (cancelToken) =>
         {
-            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            var response = await base.SendAsync(request, cancelToken).ConfigureAwait(false);
             return response;
-        }).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -19,10 +19,21 @@ internal class DefaultHttpRetryHandler : DelegatingHandler
     private readonly HttpRetryConfig _config;
     private readonly ITimeProvider _timeProvider;
 
+    /// <summary>
+    /// Creates a new instance of <see cref="DefaultHttpRetryHandler"/> with the provided configuration.
+    /// </summary>
+    /// <param name="config">Retry configuration</param>
+    /// <param name="loggerFactory">Logger factory</param>
     internal DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILoggerFactory? loggerFactory = null) : this(config, null, loggerFactory)
     {
     }
 
+    /// <summary>
+    /// Creates a new instance of <see cref="DefaultHttpRetryHandler"/> with the provided configuration.
+    /// </summary>
+    /// <param name="config">Retry configuration</param>
+    /// <param name="timeProvider">Time provider abstraction</param>
+    /// <param name="loggerFactory">Logger factory</param>
     internal DefaultHttpRetryHandler(HttpRetryConfig? config, ITimeProvider? timeProvider, ILoggerFactory? loggerFactory)
     {
         this._logger = loggerFactory?.CreateLogger<DefaultHttpRetryHandler>();
@@ -31,15 +42,16 @@ internal class DefaultHttpRetryHandler : DelegatingHandler
         this._timeProvider = timeProvider ?? new DefaultTimeProvider();
     }
 
+    /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return await this._policy.ExecuteAsync(async () =>
+        return await this._policy.ExecuteAsync(async (cancelToken) =>
         {
-            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            var response = await base.SendAsync(request, cancelToken).ConfigureAwait(false);
             return response;
-        }).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -82,6 +94,10 @@ internal class DefaultHttpRetryHandler : DelegatingHandler
         return Policy.WrapAsync(timeoutPolicy, retryPolicy);
     }
 
+    /// <summary>
+    /// Checks if retry is disabled.
+    /// </summary>
+    /// <returns>Returns true when disabled</returns>
     private bool IsRetryDisabled()
     {
         return this._config.MaxRetryCount == 0;
@@ -108,10 +124,13 @@ internal class DefaultHttpRetryHandler : DelegatingHandler
                 ? this._config.MinRetryDelay
                 : retryAfter ?? default;
 
-        // If exponential backoff is enabled, double the delay for each retry
-        if (this._config.UseExponentialBackoff)
+        // If exponential backoff is enabled, and the server didn't provide a RetryAfter header, double the delay for each retry
+        if (this._config.UseExponentialBackoff && response?.Headers.RetryAfter?.Date.HasValue == false)
         {
-            timeToWait = TimeSpan.FromTicks(timeToWait.Ticks * 2);
+            for (var backoffRetryCount = 1; backoffRetryCount < retryCount + 1; backoffRetryCount++)
+            {
+                timeToWait = timeToWait.Add(timeToWait);
+            }
         }
 
         return timeToWait;
@@ -125,6 +144,9 @@ internal class DefaultHttpRetryHandler : DelegatingHandler
         DateTimeOffset GetCurrentTime();
     }
 
+    /// <summary>
+    /// Concrete implementation of <see cref="ITimeProvider"/> that returns the current time.
+    /// </summary>
     internal sealed class DefaultTimeProvider : ITimeProvider
     {
         public DateTimeOffset GetCurrentTime()

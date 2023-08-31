@@ -7,9 +7,16 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Reliability.Polly;
 
+/// <summary>
+/// Internal factory for creating <see cref="DefaultHttpRetryHandler"/> instances.
+/// </summary>
 internal sealed class DefaultHttpRetryHandlerFactory : HttpHandlerFactory<DefaultHttpRetryHandler>
 {
-    public DefaultHttpRetryHandlerFactory(HttpRetryConfig? config = null)
+    /// <summary>
+    /// Creates a new instance of <see cref="DefaultHttpRetryHandlerFactory"/> with the provided configuration.
+    /// </summary>
+    /// <param name="config">Http retry configuration</param>
+    internal DefaultHttpRetryHandlerFactory(HttpRetryConfig? config = null)
     {
         this.Config = config ?? new();
     }
