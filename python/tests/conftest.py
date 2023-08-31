@@ -68,7 +68,7 @@ def get_aoai_config():
         endpoint = os.environ["AzureOpenAI__Endpoint"]
     else:
         # Load credentials from .env file
-        deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
+        deployment_name, api_key, endpoint, _ = sk.azure_openai_settings_from_dot_env()
         deployment_name = "text-embedding-ada-002"
 
     return deployment_name, api_key, endpoint
