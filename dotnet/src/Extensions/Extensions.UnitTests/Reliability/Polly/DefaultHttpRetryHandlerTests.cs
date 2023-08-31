@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Reliability.Polly;
 using Moq;
 using Moq.Protected;
-using Polly.Timeout;
 using Polly.Utilities;
 using Xunit;
 
