@@ -410,28 +410,31 @@ public class StepwisePlanner : IStepwisePlanner
         if (actionIndex != -1)
         {
             int jsonStartIndex = input.IndexOf("{", actionIndex, StringComparison.OrdinalIgnoreCase);
-            int jsonEndIndex = input.Substring(jsonStartIndex).LastIndexOf("}", StringComparison.OrdinalIgnoreCase);
-            if (jsonStartIndex != -1 && jsonEndIndex != -1)
+            if (jsonStartIndex != -1)
             {
-                string json = input.Substring(jsonStartIndex, jsonEndIndex + 1);
-
-                try
+                int jsonEndIndex = input.Substring(jsonStartIndex).LastIndexOf("}", StringComparison.OrdinalIgnoreCase);
+                if (jsonEndIndex != -1)
                 {
-                    var systemStepResults = JsonSerializer.Deserialize<SystemStep>(json);
+                    string json = input.Substring(jsonStartIndex, jsonEndIndex + 1);
 
-                    if (systemStepResults == null)
+                    try
                     {
-                        result.Observation = $"System step parsing error, empty JSON: {json}";
+                        var systemStepResults = JsonSerializer.Deserialize<SystemStep>(json);
+
+                        if (systemStepResults == null)
+                        {
+                            result.Observation = $"System step parsing error, empty JSON: {json}";
+                        }
+                        else
+                        {
+                            result.Action = systemStepResults.Action;
+                            result.ActionVariables = systemStepResults.ActionVariables;
+                        }
                     }
-                    else
+                    catch (JsonException)
                     {
-                        result.Action = systemStepResults.Action;
-                        result.ActionVariables = systemStepResults.ActionVariables;
+                        result.Observation = $"System step parsing error, invalid JSON: {json}";
                     }
-                }
-                catch (JsonException)
-                {
-                    result.Observation = $"System step parsing error, invalid JSON: {json}";
                 }
             }
         }
