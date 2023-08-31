@@ -1,19 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace></RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <RestorePackagesPath>$(MSBuildThisFileDirectory)/pkg</RestorePackagesPath>
     <OutDir>bin</OutDir>
     <NodeApiAssemblyJSModuleType>esm</NodeApiAssemblyJSModuleType>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+    <UserSecretsId>cd5a47f6-146f-41bf-8b77-427192d0ba0b</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SemanticKernel" Version="0.20.230821.4-preview" />
     <PackageReference Include="Microsoft.JavaScript.NodeApi.Generator" Version="0.4.*-*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\dotnet\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 </Project>

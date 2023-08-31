@@ -14,9 +14,9 @@ const Logging = dotnet.Microsoft.Extensions.Logging;
 // The JS marshaller does not yet support extension methods.
 const kernelBuilder = SK.OpenAIKernelBuilderExtensions.WithAzureTextCompletionService(
   SK.Kernel.Builder,
-  process.env['OPENAI_DEPLOYMENT'] || '',
-  process.env['OPENAI_ENDPOINT'] || '',
-  process.env['OPENAI_KEY'] || '',
+  process.env['AzureOpenAI__DeploymentName'] || '',
+  process.env['AzureOpenAI__Endpoint'] || '',
+  process.env['AzureOpenAI__ApiKey'] || '',
 );
 
 const kernel = kernelBuilder
