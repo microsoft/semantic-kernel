@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 from datetime import datetime
 
 import numpy as np
