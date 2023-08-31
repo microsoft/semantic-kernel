@@ -17,15 +17,37 @@ permissions:
   contents: read
 
 jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      pythonChanges: ${{ steps.filter.outputs.python}}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            python:
+              - 'python/**'
+      # run only if 'python' files were changed
+      - name: python tests
+        if: steps.filter.outputs.python == 'true'
+        run: echo "Python file"
+      # run only if not 'python' files were changed
+      - name: not python tests
+        if: steps.filter.outputs.python != 'true'
+        run: echo "NOT python file"
+
   python-merge-gate:
-    if: ${{ github.event_name != 'pull_request' && github.event_name != 'schedule'}}
+    needs: paths-filter
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
       fail-fast: false
       matrix:
         python-version: ["3.11"]
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -45,7 +67,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install poetry pytest
           cd python
-          poetry install --without azure_cognitive_search --without weaviate --without pinecone --without postgres
+          poetry install
       - name: Run Integration Tests
         id: run_tests
         shell: bash
@@ -70,16 +92,11 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
           cd python
-          poetry run pytest ./tests/integration/completions/test_azure_oai_chat_service.py -v
-          poetry run pytest ./tests/integration/completions/test_oai_chat_service.py -v
-          poetry run pytest ./tests/integration/completions/test_hf_local_text_completions.py -v
-          poetry run pytest ./tests/integration/connectors/memory/test_chroma.py -v
-          poetry run pytest ./tests/integration/connectors/memory/test_qdrant_memory_store.py -v
-          poetry run pytest ./tests/integration/planning -v
-          poetry run pytest ./tests/integration/embeddings -v
+          poetry run pytest ./tests/integration -v
 
   python-integration-tests:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    needs: paths-filter
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.paths-filter.outputs.pythonChanges == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 1
@@ -163,7 +180,7 @@ jobs:
           echo "run_type=Manual" >> "$GITHUB_ENV"
           echo "MSTEAMS_WEBHOOK=${{ secrets.MSTEAMS_WEBHOOK }}" >> "$GITHUB_ENV
 
-      - name: Run Type is Other
+      - name: Run Type is ${{ github.event_name }}
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
         shell: bash
         run: |
@@ -172,7 +189,7 @@ jobs:
 
       - name: Fail workflow if tests failed
         id: check_tests_failed
-        if: contains(join(needs.*.result, ','), 'failed')
+        if: contains(join(needs.*.result, ','), 'failure')
         uses: actions/github-script@v6
         with:
           script: core.setFailed('Integration Tests Failed!')
@@ -186,9 +203,19 @@ jobs:
 
       - name: Microsoft Teams Notification
         uses: skitionek/notify-microsoft-teams@master
-        if: always()
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           webhook_url: ${{ env.MSTEAMS_WEBHOOK }}
+          dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
+          overwrite: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
+
+      - name: Microsoft Teams Notification (Dry Run)
+        uses: skitionek/notify-microsoft-teams@master
+        if: github.ref != 'refs/heads/main'
+        with:
+          webhook_url: NONE
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
