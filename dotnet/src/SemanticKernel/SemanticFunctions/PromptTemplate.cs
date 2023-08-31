@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.SemanticFunctions;
 public sealed class PromptTemplate : IPromptTemplate
 {
     private readonly string _template;
-    private readonly IPromptTemplateEngineProvider _templateEngineProvider;
+    private readonly IPromptTemplateEngineFactory _templateEngineProvider;
 
     // ReSharper disable once NotAccessedField.Local
     private readonly PromptTemplateConfig _promptConfig;
@@ -29,7 +29,7 @@ public sealed class PromptTemplate : IPromptTemplate
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="kernel">Kernel in which template is to take effect.</param>
     public PromptTemplate(string template, PromptTemplateConfig promptTemplateConfig, IKernel kernel)
-        : this(template, promptTemplateConfig, kernel.PromptTemplateEngineProvider)
+        : this(template, promptTemplateConfig, kernel.PromptTemplateEngineFactory)
     {
     }
 
@@ -38,14 +38,14 @@ public sealed class PromptTemplate : IPromptTemplate
     /// </summary>
     /// <param name="template">Template.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
-    /// <param name="promptTemplateEngineProvider">Prompt template engine.</param>
+    /// <param name="promptTemplateEngineFactory">Prompt template engine.</param>
     public PromptTemplate(
         string template,
         PromptTemplateConfig promptTemplateConfig,
-        IPromptTemplateEngineProvider promptTemplateEngineProvider)
+        IPromptTemplateEngineFactory promptTemplateEngineFactory)
     {
         this._template = template;
-        this._templateEngineProvider = promptTemplateEngineProvider;
+        this._templateEngineProvider = promptTemplateEngineFactory;
         this._promptConfig = promptTemplateConfig;
     }
 

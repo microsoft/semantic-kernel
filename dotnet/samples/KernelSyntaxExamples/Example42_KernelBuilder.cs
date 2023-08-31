@@ -77,7 +77,7 @@ public static class Example42_KernelBuilder
             loggerFactory: loggerFactory);
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var skills = new SkillCollection();
-        var templateEngine = new PromptTemplateEngine(loggerFactory);
+        var templateEngineFactory = new PromptTemplateEngineFactory();
         var kernelConfig = new KernelConfig();
 
         using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), loggerFactory);
@@ -93,7 +93,7 @@ public static class Example42_KernelBuilder
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, loggerFactory);
+        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngineFactory, memory, kernelConfig, loggerFactory);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies

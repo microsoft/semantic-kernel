@@ -104,7 +104,7 @@ public static class ImportSemanticSkillFromDirectoryExtension
                 }
 
                 // Load prompt template
-                var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngineProvider);
+                var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngineFactory);
 
                 var functionConfig = new SemanticFunctionConfig(config, template);
 

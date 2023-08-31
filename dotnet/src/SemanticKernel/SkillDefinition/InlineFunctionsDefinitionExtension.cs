@@ -94,7 +94,7 @@ public static class InlineFunctionsDefinitionExtension
         Verify.ValidFunctionName(functionName);
         if (!string.IsNullOrEmpty(skillName)) { Verify.ValidSkillName(skillName); }
 
-        var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngineProvider);
+        var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngineFactory);
 
         // Prepare lambda wrapping AI logic
         var functionConfig = new SemanticFunctionConfig(config, template);

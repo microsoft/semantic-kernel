@@ -45,7 +45,7 @@ public sealed class Kernel : IKernel, IDisposable
     public IReadOnlySkillCollection Skills => this._skillCollection;
 
     /// <inheritdoc/>
-    public IPromptTemplateEngineProvider PromptTemplateEngineProvider { get; }
+    public IPromptTemplateEngineFactory PromptTemplateEngineFactory { get; }
 
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
@@ -61,7 +61,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    [Obsolete("Use Kernel constructor with IPromptTemplateEngineProvider instead. This will be removed in a future release.")]
+    [Obsolete("Use Kernel constructor with IPromptTemplateEngineFactory instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public Kernel(
         ISkillCollection skillCollection,
@@ -70,7 +70,7 @@ public sealed class Kernel : IKernel, IDisposable
         ISemanticTextMemory memory,
         KernelConfig config,
         ILoggerFactory loggerFactory)
-        : this(skillCollection, aiServiceProvider, new NullPromptTemplateEngineProvider(promptTemplateEngine), memory, config, loggerFactory)
+        : this(skillCollection, aiServiceProvider, new NullPromptTemplateEngineFactory(promptTemplateEngine), memory, config, loggerFactory)
     {
     }
 
@@ -79,20 +79,20 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="skillCollection"></param>
     /// <param name="aiServiceProvider"></param>
-    /// <param name="promptTemplateEngineProvider"></param>
+    /// <param name="promptTemplateEngineFactory"></param>
     /// <param name="memory"></param>
     /// <param name="config"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
-        IPromptTemplateEngineProvider promptTemplateEngineProvider,
+        IPromptTemplateEngineFactory promptTemplateEngineFactory,
         ISemanticTextMemory memory,
         KernelConfig config,
         ILoggerFactory loggerFactory)
     {
         this.LoggerFactory = loggerFactory;
-        this.PromptTemplateEngineProvider = promptTemplateEngineProvider;
+        this.PromptTemplateEngineFactory = promptTemplateEngineFactory;
         this.Config = config;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
