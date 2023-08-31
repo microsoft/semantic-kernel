@@ -13,13 +13,14 @@ from semantic_kernel.core_skills import CodeSkill
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function
 
-PROMPT_PREFIX = """The preceding is a summary of the data. There may be more rows. """
-PROMPT_SUFFIX = """Write a Python function `process({arg_name})` where 
-    {arg_name} is/are Pandas dataframe(s).
-    This is the function's purpose: {goal}
-    Write the function in a Python code block with all necessary imports.
-    Do not include any example usage. Do not include any explanation nor 
-    decoration. Store the reult in a local variable named `result`."""
+PROMPT_PREFIX = "The preceding is a summary of the data. There may be more rows. "
+PROMPT_SUFFIX = (
+    "Write a Python function `process({arg_name})` where {arg_name} is/are Pandas dataframe(s). "
+    "This is the function's purpose: {goal} "
+    "Write the function in a Python code block with all necessary imports. "
+    "Do not include any example usage. Do not include any explanation nor decoration. "
+    "Store the reult in a local variable named `result`."
+)
 # Give code executor access to Pandas module -- also give separate global scope to prevent damage
 GLOBAL_VARS = {"pd": pd}
 # Maximum number of attempts for code execution
@@ -63,7 +64,7 @@ class DataSkill:
         self._code_skill = CodeSkill(self._service)
 
         # If data has been given now, process it, or use add_data() later
-        if sources:
+        if sources is not None:
             # Unpack if its a List instance
             if isinstance(sources, List):
                 self.add_data(*sources)
@@ -126,7 +127,7 @@ class DataSkill:
         else:
             prompt = f"You are working with {num_sources} Pandas dataframe(s) in Python, named df1, df2, and so on.\n"
             for i, table in enumerate(self.data):
-                prompt += f"The header of df{i + 1} is: \n"
+                prompt += f"The header of df{i + 1} is:\n"
                 prompt += table.head(num_rows).to_json(orient="records") + "\n"
         return prompt
 
@@ -149,7 +150,7 @@ class DataSkill:
                 code = await self._code_skill.custom_code_async(prompt)
                 # Check if user wants to give permission to execute the code
                 if self.verbose:
-                    print("Generated code:", "\n", code, "\n")
+                    print(f"Generated code:\n{code}\n")
                     user_input = input("Do you want to execute this code? (y/n) ")
                     if user_input.lower() != "y":
                         execute_code = False
@@ -174,7 +175,7 @@ class DataSkill:
                     break
             except Exception as e:
                 print(f"Error with code execution, retrying: {e}")
-                await asyncio.sleep(1)  # Introduce a delay before the next retry
+                await asyncio.sleep(0.5)  # Introduce a delay before the next retry
                 continue
         else:
             # The loop completed without breaking, meaning all retries failed
@@ -238,11 +239,11 @@ class DataSkill:
             ask -- The transformation to apply to the data
         """
 
-        task = """You need to write Python code that will 
-        transform the dataframe as the user asked. If the user
-        wants to transform more than one dataframe, return
-        a list of the transformed dataframes. Otherwise, return
-        a single trasnformed dataframe"""
+        task = (
+            "Write Python code to transform the data as the user asked. "
+            "If the user wants to transform more than one dataframe, return a list of the transformed "
+            "dataframes. Otherwise, return a single transformed dataframe. "
+        )
         local_vars = {}
         arg = ""
         for i, table in enumerate(self.data):
@@ -282,12 +283,11 @@ class DataSkill:
         Args:
             ask -- The description of the plot to generate
         """
-        (
-            PROMPT_PREFIX
-            + """You need to write Python code that will plot 
-        the data as the user asked. You need to import matplotlib and use nothing
-        else for plotting. """
-            + PROMPT_SUFFIX
-        )
+
+        # task = (
+        #     "You need to write Python code that will plot the data as the user asked. "
+        #     "You need to import matplotlib and use nothing else for plotting. "
+        # )
+        
         # TODO
         pass
