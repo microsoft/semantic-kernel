@@ -88,7 +88,6 @@ jobs:
           Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
           Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
           Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          Redis__Configuration: ${{ secrets.REDIS__CONFIGURATION }}
           AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
@@ -148,7 +147,6 @@ jobs:
           Pinecone__ApiKey: ${{ secrets.PINECONE__APIKEY }}
           Pinecone__Environment: ${{ secrets.PINECONE__ENVIRONMENT }}
           Postgres__Connectionstr: ${{secrets.POSTGRES__CONNECTIONSTR}}
-          Redis__Configuration: ${{ secrets.REDIS__CONFIGURATION }}
           AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
