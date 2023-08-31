@@ -139,3 +139,19 @@ def google_palm_settings_from_dot_env() -> str:
     assert api_key is not None, "Google PaLM API key not found in .env file"
 
     return api_key
+
+
+def redis_settings_from_dot_env() -> str:
+    """Reads the Redis connection string from the .env file.
+
+    Returns:
+        str: The Redis connection string
+    """
+    config = dotenv_values(".env")
+    connection_string = config.get("REDIS_CONNECTION_STRING", None)
+
+    assert (
+        connection_string is not None
+    ), "Redis connection string not found in .env file"
+
+    return connection_string
