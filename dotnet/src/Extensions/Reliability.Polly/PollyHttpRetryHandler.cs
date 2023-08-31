@@ -10,7 +10,7 @@ using Polly;
 namespace Microsoft.SemanticKernel.Reliability.Polly;
 
 /// <summary>
-/// Customizeable PollyHttpHandler that will follow the provided policy.
+/// Customizable PollyHttpHandler that will follow the provided policy.
 /// </summary>
 public class PollyHttpRetryHandler : DelegatingHandler
 {
