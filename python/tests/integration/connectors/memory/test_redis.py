@@ -25,14 +25,10 @@ pytestmark = pytest.mark.skipif(not redis_installed, reason="Redis is not instal
 
 @pytest.fixture(scope="session")
 def connection_string():
-    if "Python_Integration_Tests" in os.environ:
-        connection_string = os.environ["Redis__Configuration"]
-    else:
-        # Load credentials from .env file, or go to default if not found
-        try:
-            connection_string = sk.redis_settings_from_dot_env()
-        except Exception:
-            connection_string = "redis://localhost:6379"
+    try:
+        connection_string = sk.redis_settings_from_dot_env()
+    except Exception:
+        connection_string = "redis://localhost:6379"
 
     return connection_string
 
