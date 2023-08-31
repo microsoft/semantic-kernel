@@ -47,7 +47,6 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     /// <returns>Returns the created handler</returns>
     public override DelegatingHandler Create(ILoggerFactory? loggerFactory = null)
     {
-
         if (this._typedAsyncPolicy is not null)
         {
             return new PollyHttpRetryHandler(this._typedAsyncPolicy, loggerFactory);
