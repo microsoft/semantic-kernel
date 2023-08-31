@@ -11,13 +11,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
-using FunctionCalling.Extensions;
 using ChatCompletion;
 using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
 using FunctionCalling.Extensions;
-using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
 using Text;
@@ -220,6 +218,7 @@ public abstract class ClientBase
             throw new SKException("Chat completions not found");
         }
 
+        Console.WriteLine($"Total Tokens: {responseData.Usage.TotalTokens} Prompt Tokens: {responseData.Usage.PromptTokens} Completion Tokens: {responseData.Usage.CompletionTokens}");
         CaptureUsageDetails(responseData.Usage);
 
         return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
@@ -255,6 +254,7 @@ public abstract class ClientBase
             throw new SKException("Chat completions not found");
         }
 
+        Console.WriteLine($"Total Tokens: {responseData.Usage.TotalTokens} Prompt Tokens: {responseData.Usage.PromptTokens} Completion Tokens: {responseData.Usage.CompletionTokens}");
         CaptureUsageDetails(responseData.Usage);
 
         if (!responseData.IsFunctionCallResponse(functionNames))
@@ -455,22 +455,19 @@ public abstract class ClientBase
             ChoiceCount = requestSettings.ResultsPerPrompt
         };
 
-        // signaling that this is the function call the user wants to make
-        if (functionCall != null)
+        // signaling that the user wants the model to choose the function
+        if (functionCall == null)
         {
-            options.FunctionCall = functionCall;
-            options.Functions = new List<FunctionDefinition>
-                { functionCall };
+            options.FunctionCall = FunctionDefinition.Auto;
         }
 
         // signaling that this is the list of functions the user wants the model to choose from
-        else if (functions != null)
+        if (functions != null)
         {
-            options.FunctionCall = FunctionDefinition.Auto;
             options.Functions = new List<FunctionDefinition>(functions);
         }
 
-        foreach (var keyValue in requestSettings.TokenSelectionBiases)
+        foreach (KeyValuePair<int, int> keyValue in requestSettings.TokenSelectionBiases)
         {
             options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
         }

@@ -77,7 +77,7 @@ public static class OpenAIChatCompletionExtensions
             if (propertyEnumerator.MoveNext())
             {
                 var firstProperty = propertyEnumerator.Current.Value;
-                firstElementJsonString = firstProperty.GetRawText();
+                firstElementJsonString = firstProperty.GetRawText().Trim();
 
                 result = JsonSerializer.Deserialize<T>(firstElementJsonString, options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
             }
