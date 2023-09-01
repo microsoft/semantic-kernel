@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -59,14 +58,14 @@ public class WeaviateMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="endpoint">The Weaviate server endpoint URL.</param>
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public WeaviateMemoryStore(string endpoint, string? apiKey = null, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public WeaviateMemoryStore(string endpoint, string? apiKey = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(endpoint);
 
         this._endpoint = new Uri(endpoint);
         this._apiKey = apiKey;
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
 
@@ -76,21 +75,19 @@ public class WeaviateMemoryStore : IMemoryStore
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
     /// <param name="endpoint">The optional Weaviate server endpoint URL. If not specified, the base address of the HTTP client is used.</param>
-    /// <param name="logger">Optional logger instance.</param>
-    public WeaviateMemoryStore(HttpClient httpClient, string? apiKey = null, string? endpoint = null, ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public WeaviateMemoryStore(HttpClient httpClient, string? apiKey = null, string? endpoint = null, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
         if (string.IsNullOrEmpty(httpClient.BaseAddress?.AbsoluteUri) && string.IsNullOrEmpty(endpoint))
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidConfiguration,
-                "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
+            throw new SKException("The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
 
         this._apiKey = apiKey;
         this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = httpClient;
     }
 

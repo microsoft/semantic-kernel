@@ -6,7 +6,7 @@ import sys
 import threading
 from enum import Enum
 from logging import Logger
-from typing import Any, Callable, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, cast
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -25,7 +25,6 @@ from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
 from semantic_kernel.orchestration.delegate_types import DelegateTypes
-from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.semantic_function_config import (
@@ -37,6 +36,9 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 from semantic_kernel.utils.null_logger import NullLogger
+
+if TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 if platform.system() == "Windows" and sys.version_info >= (3, 8, 0):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -82,6 +84,7 @@ class SKFunction(SKFunctionBase):
         if (
             hasattr(method, "__sk_function_input_description__")
             and method.__sk_function_input_description__ is not None
+            and method.__sk_function_input_description__ != ""
         ):
             input_param = ParameterView(
                 "input",
@@ -309,11 +312,11 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional[SKContext] = None,
+        context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-    ) -> SKContext:
+    ) -> "SKContext":
         return self.invoke(
             input=input,
             variables=variables,
@@ -327,11 +330,13 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional[SKContext] = None,
+        context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-    ) -> SKContext:
+    ) -> "SKContext":
+        from semantic_kernel.orchestration.sk_context import SKContext
+
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
@@ -342,11 +347,11 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context._variables = variables.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = variables.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
             if memory is not None:
-                context._memory = memory
+                context.memory = memory
 
         if input is not None:
             context.variables.update(input)
@@ -373,11 +378,13 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional[SKContext] = None,
+        context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-    ) -> SKContext:
+    ) -> "SKContext":
+        from semantic_kernel.orchestration.sk_context import SKContext
+
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
@@ -388,11 +395,11 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context._variables = variables.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = variables.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
             if memory is not None:
-                context._memory = memory
+                context.memory = memory
 
         if input is not None:
             context.variables.update(input)
@@ -466,11 +473,13 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         variables: ContextVariables = None,
-        context: Optional[SKContext] = None,
+        context: Optional["SKContext"] = None,
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
     ):
+        from semantic_kernel.orchestration.sk_context import SKContext
+
         if context is None:
             context = SKContext(
                 variables=ContextVariables("") if variables is None else variables,
@@ -481,8 +490,8 @@ class SKFunction(SKFunctionBase):
         else:
             # If context is passed, we need to merge the variables
             if variables is not None:
-                context._variables = variables.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = variables.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
             if memory is not None:
                 context._memory = memory

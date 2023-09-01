@@ -133,6 +133,39 @@ class Kernel:
 
         return function
 
+    def register_native_function(
+        self,
+        skill_name: Optional[str],
+        sk_function: Callable,
+    ) -> SKFunctionBase:
+        if not hasattr(sk_function, "__sk_function__"):
+            raise KernelException(
+                KernelException.ErrorCodes.InvalidFunctionType,
+                "sk_function argument must be decorated with @sk_function",
+            )
+        function_name = sk_function.__sk_function_name__
+
+        if skill_name is None or skill_name == "":
+            skill_name = SkillCollection.GLOBAL_SKILL
+        assert skill_name is not None  # for type checker
+
+        validate_skill_name(skill_name)
+        validate_function_name(function_name)
+
+        function = SKFunction.from_native_method(sk_function, skill_name, self.logger)
+
+        if self.skills.has_function(skill_name, function_name):
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                "Overloaded functions are not supported, "
+                "please differentiate function names.",
+            )
+
+        function.set_default_skill_collection(self.skills)
+        self._skill_collection.add_native_function(function)
+
+        return function
+
     async def run_stream_async(
         self,
         *functions: Any,
@@ -157,13 +190,13 @@ class Kernel:
             if input_context is not None:
                 context = input_context
                 if input_vars is not None:
-                    context._variables = input_vars.merge_or_overwrite(
-                        new_vars=context._variables, overwrite=False
+                    context.variables = input_vars.merge_or_overwrite(
+                        new_vars=context.variables, overwrite=False
                     )
 
                 if input_str is not None:
-                    context._variables = ContextVariables(input_str).merge_or_overwrite(
-                        new_vars=context._variables, overwrite=False
+                    context.variables = ContextVariables(input_str).merge_or_overwrite(
+                        new_vars=context.variables, overwrite=False
                     )
 
             # if the user did not pass in a context, prioritize an input string,
@@ -200,9 +233,9 @@ class Kernel:
         except Exception as ex:
             # TODO: "critical exceptions"
             self._log.error(
-                f"Something went wrong in stream function."
-                f"During function invocation: '{stream_function.skill_name}.{stream_function.name}'. "
-                f"Error description: '{str(ex)}'"
+                "Something went wrong in stream function. During function invocation:"
+                f" '{stream_function.skill_name}.{stream_function.name}'. Error"
+                f" description: '{str(ex)}'"
             )
             raise KernelException(
                 KernelException.ErrorCodes.FunctionInvokeError,
@@ -220,13 +253,13 @@ class Kernel:
         if input_context is not None:
             context = input_context
             if input_vars is not None:
-                context._variables = input_vars.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = input_vars.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
 
             if input_str is not None:
-                context._variables = ContextVariables(input_str).merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = ContextVariables(input_str).merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
 
         # if the user did not pass in a context, prioritize an input string,
@@ -362,8 +395,10 @@ class Kernel:
         if len(function_names) != len(set(function_names)):
             raise KernelException(
                 KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                "Overloaded functions are not supported, "
-                "please differentiate function names.",
+                (
+                    "Overloaded functions are not supported, "
+                    "please differentiate function names."
+                ),
             )
 
         skill = {}
@@ -645,9 +680,11 @@ class Kernel:
             if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load chat service, unable to prepare semantic function. "
-                    "Function description: "
-                    "{function_config.prompt_template_config.description}",
+                    (
+                        "Could not load chat service, unable to prepare semantic"
+                        " function. Function description:"
+                        " {function_config.prompt_template_config.description}"
+                    ),
                 )
 
             function.set_chat_service(lambda: service(self))
@@ -668,9 +705,11 @@ class Kernel:
             if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load text service, unable to prepare semantic function. "
-                    "Function description: "
-                    "{function_config.prompt_template_config.description}",
+                    (
+                        "Could not load text service, unable to prepare semantic"
+                        " function. Function description:"
+                        " {function_config.prompt_template_config.description}"
+                    ),
                 )
 
             function.set_ai_service(lambda: service(self))
