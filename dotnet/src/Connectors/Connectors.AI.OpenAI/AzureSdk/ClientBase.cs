@@ -245,7 +245,6 @@ public abstract class ClientBase
             {
                 yield return new ChatStreamingResult(response.Value, choice);
             }
-            
         }
     }
 

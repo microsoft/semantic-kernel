@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -68,7 +67,7 @@ public class ChatToTextConverter : IChatToTextConverter
             return new ChatMessage(AuthorRole.Assistant, result);
         }
 
-        public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation]CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await foreach (string? message in this._textResults.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
             {
