@@ -132,7 +132,7 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {openApiDocumentPath} is found.");
         }
 
-        kernel.LoggerFactory.CreateLogger(nameof(KernelOpenApiExtensions)).LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
+        kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiExtensions)).LogTrace("Registering Rest functions from {0} OpenApi document", openApiDocumentPath);
 
         var skill = new Dictionary<string, ISKFunction>();
 
@@ -163,7 +163,7 @@ public static class KernelOpenApiExtensions
             throw new FileNotFoundException($"No OpenApi document for the specified path - {filePath} is found.");
         }
 
-        kernel.LoggerFactory.CreateLogger(nameof(KernelOpenApiExtensions)).LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
+        kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiExtensions)).LogTrace("Registering Rest functions from {0} OpenApi document", filePath);
 
         using var stream = File.OpenRead(filePath);
 
@@ -202,7 +202,7 @@ public static class KernelOpenApiExtensions
 
         var skill = new Dictionary<string, ISKFunction>();
 
-        ILogger logger = kernel.LoggerFactory.CreateLogger(nameof(KernelOpenApiExtensions));
+        ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiExtensions));
         foreach (var operation in operations)
         {
             try
@@ -244,7 +244,7 @@ public static class KernelOpenApiExtensions
     {
         var restOperationParameters = operation.GetParameters(serverUrlOverride);
 
-        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(nameof(KernelOpenApiExtensions)) : NullLogger.Instance;
+        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelOpenApiExtensions)) : NullLogger.Instance;
 
         async Task<SKContext> ExecuteAsync(SKContext context)
         {

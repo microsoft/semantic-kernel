@@ -26,7 +26,7 @@ public class InstrumentedActionPlanner : IActionPlanner
         ILoggerFactory? loggerFactory = null)
     {
         this._planner = planner;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(InstrumentedActionPlanner)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedActionPlanner)) : NullLogger.Instance;
     }
 
     /// <inheritdoc />

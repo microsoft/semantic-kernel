@@ -35,7 +35,7 @@ public sealed class PineconeClient : IPineconeClient
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(PineconeClient)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeClient)) : NullLogger.Instance;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._indexHostMapping = new ConcurrentDictionary<string, string>();
     }

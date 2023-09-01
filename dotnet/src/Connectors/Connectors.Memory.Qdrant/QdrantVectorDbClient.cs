@@ -39,7 +39,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         this._vectorSize = vectorSize;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._httpClient.BaseAddress = SanitizeEndpoint(endpoint);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantVectorDbClient)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantVectorDbClient)) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         this._httpClient = httpClient;
         this._vectorSize = vectorSize;
         this._endpointOverride = string.IsNullOrEmpty(endpoint) ? null : SanitizeEndpoint(endpoint!);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantVectorDbClient)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantVectorDbClient)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>

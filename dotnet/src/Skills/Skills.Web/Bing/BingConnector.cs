@@ -45,7 +45,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
         Verify.NotNull(httpClient);
 
         this._apiKey = apiKey;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(BingConnector)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(BingConnector)) : NullLogger.Instance;
         this._httpClient = httpClient;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", Telemetry.HttpUserAgent);
     }
