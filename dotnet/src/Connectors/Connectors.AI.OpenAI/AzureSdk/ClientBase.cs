@@ -29,7 +29,10 @@ public abstract class ClientBase
 
 
     // Prevent external inheritors
-    protected private ClientBase(ILoggerFactory? loggerFactory = null) => Logger = loggerFactory is not null ? loggerFactory.CreateLogger(GetType().Name) : NullLogger.Instance;
+    private protected ClientBase(ILoggerFactory? loggerFactory = null)
+    {
+        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
+    }
 
     /// <summary>
     /// Model Id or Deployment Name
