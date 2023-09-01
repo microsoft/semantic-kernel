@@ -21,7 +21,10 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
         Verify.NotNull(response);
         Verify.NotNull(choice);
 
-        this.ModelResult = new(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created)));
+        this.ModelResult = new(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created))
+        {
+            ToolContent = this.GetToolContent(choice)
+        });
 
         this._choice = choice;
     }
@@ -44,6 +47,14 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
     #region private ================================================================================
 
     private readonly ChatWithDataChoice _choice;
+
+    private string? GetToolContent(ChatWithDataChoice choice)
+    {
+        var message = choice.Messages
+            .FirstOrDefault(message => message.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+
+        return message?.Content;
+    }
 
     #endregion
 }

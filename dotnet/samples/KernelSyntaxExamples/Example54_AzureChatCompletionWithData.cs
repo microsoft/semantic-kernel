@@ -34,25 +34,46 @@ public static class Example54_AzureChatCompletionWithData
         var chatHistory = chatCompletion.CreateNewChat();
 
         // First question without previous context based on uploaded content.
-        chatHistory.AddUserMessage("How did Emily and David meet?");
+        var ask = "How did Emily and David meet?";
+        chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        string reply = await chatCompletion.GenerateMessageAsync(chatHistory);
+        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory))[0];
+        var chatMessage = await chatResult.GetChatMessageAsync();
 
-        // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        Console.WriteLine(reply);
+        var response = chatMessage.Content;
+        var toolResponse = chatResult.ModelResult.GetResult<ChatWithDataModelResult>().ToolContent;
+
+        // Output
+        // Ask: How did Emily and David meet?
+        // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine($"Response: {response}");
         Console.WriteLine();
 
+        // Chat history maintenance
+        if (!string.IsNullOrEmpty(toolResponse))
+        {
+            chatHistory.AddMessage(AuthorRole.Tool, toolResponse);
+        }
+
+        chatHistory.AddAssistantMessage(response);
+
         // Second question based on uploaded content.
-        chatHistory.AddUserMessage("What are Emily and David studying?");
+        ask = "What are Emily and David studying?";
+        chatHistory.AddUserMessage(ask);
 
         // Chat Completion Streaming example
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine("Response: ");
+
         await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
         {
             await foreach (var message in result.GetStreamingChatMessageAsync())
             {
-                // Output:
-                // They are passionate scientists who study glaciology,
+                // Output
+                // Ask: What are Emily and David studying?
+                // Response: They are passionate scientists who study glaciology,
                 // a branch of geology that deals with the study of ice and its effects.
                 Console.Write(message.Content);
             }
@@ -65,6 +86,8 @@ public static class Example54_AzureChatCompletionWithData
     {
         Console.WriteLine("=== Example with Kernel ===");
 
+        var ask = "How did Emily and David meet?";
+
         var completionWithDataConfig = GetCompletionWithDataConfig();
 
         IKernel kernel = new KernelBuilder()
@@ -74,21 +97,26 @@ public static class Example54_AzureChatCompletionWithData
         var semanticFunction = kernel.CreateSemanticFunction("Question: {{$input}}");
 
         // First question without previous context based on uploaded content.
-        var result = await kernel.RunAsync("How did Emily and David meet?", semanticFunction);
+        var response = await kernel.RunAsync(ask, semanticFunction);
 
-        // Output: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
-        Console.WriteLine(result);
+        // Output
+        // Ask: How did Emily and David meet?
+        // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine($"Response: {response}");
         Console.WriteLine();
 
         // Second question based on uploaded content.
-        result = await kernel.RunAsync("What are Emily and David studying?", semanticFunction);
+        ask = "What are Emily and David studying?";
+        response = await kernel.RunAsync(ask, semanticFunction);
 
-        // Output:
-        // They are passionate scientists who study glaciology,
+        // Output
+        // Ask: What are Emily and David studying?
+        // Response: They are passionate scientists who study glaciology,
         // a branch of geology that deals with the study of ice and its effects.
-        Console.WriteLine(result);
-
-        Console.WriteLine(Environment.NewLine);
+        Console.WriteLine($"Ask: {ask}");
+        Console.WriteLine($"Response: {response}");
+        Console.WriteLine();
     }
 
     /// <summary>
