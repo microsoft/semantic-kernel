@@ -6,13 +6,29 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
+/// <summary>
+/// A <see cref="Block"/> that represents a named argument for a function call.
+/// For example, in the template {{ MySkill.MyFunction var1="foo" }}, var1="foo" is a named arg block.
+/// </summary>
 internal sealed class NamedArgBlock : Block, ITextRendering
 {
+    /// <summary>
+    /// Returns the <see cref="BlockTypes"/>.
+    /// </summary>
     internal override BlockTypes Type => BlockTypes.NamedArg;
 
+    /// <summary>
+    /// Gets the name of the function argument.
+    /// </summary>
     internal string Name { get; } = string.Empty;
 
-    public string GetValue(ContextVariables? variables)
+    /// <summary>
+    /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
+    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the context variables passed in.
+    /// </summary>
+    /// <param name="variables">Variables to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
+    /// <returns></returns>
+    internal string GetValue(ContextVariables? variables)
     {
         var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
         if (valueIsValidValBlock)
@@ -29,6 +45,12 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return string.Empty;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NamedArgBlock"/> class.
+    /// </summary>
+    /// <param name="text">Raw text parsed from the prompt template.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <exception cref="SKException"></exception>
     public NamedArgBlock(string? text, ILoggerFactory? logger = null)
         : base(NamedArgBlock.TrimWhitespace(text), logger)
     {
@@ -66,11 +88,21 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         throw new SKException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
     }
 
+    /// <summary>
+    /// Renders the named arg block.
+    /// </summary>
+    /// <param name="variables"></param>
+    /// <returns></returns>
     public string Render(ContextVariables? variables)
     {
         return this.Content;
     }
 
+    /// <summary>
+    /// Returns whether the named arg block has valid syntax.
+    /// </summary>
+    /// <param name="errorMsg">An error message that gets set when the named arg block is not valid.</param>
+    /// <returns></returns>
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     public override bool IsValid(out string errorMsg)
     {
