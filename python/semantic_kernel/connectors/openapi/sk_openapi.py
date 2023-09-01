@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Dict, Mapping, Optional, Union
 from urllib.parse import urljoin
@@ -291,10 +292,10 @@ def register_openapi_skill(
 
             response = await runner.run_operation(
                 operation,
-                path_params=path_params if has_path_params else None,
-                query_params=query_params if has_query_params else None,
-                headers=headers if has_headers else None,
-                request_body=request_body if has_request_body else None,
+                path_params=json.loads(path_params) if has_path_params else None,
+                query_params=json.loads(query_params) if has_query_params else None,
+                headers=json.loads(headers) if has_headers else None,
+                request_body=json.loads(request_body) if has_request_body else None,
             )
             return response
 
