@@ -16,7 +16,6 @@ using Extensions.Logging.Abstractions;
 using Orchestration;
 using SkillDefinition;
 using TemplateEngine.Prompt;
-using FunctionCall = Connectors.AI.OpenAI.AzureSdk.FunctionCalling.FunctionCall;
 
 
 /// <summary>
@@ -76,7 +75,7 @@ public class StructuredActionPlanner : IActionPlanner
         List<FunctionDefinition> functionDefinitions = _context.Skills.GetFunctionDefinitions(new[] { SkillName }).ToList();
         // the intended functionCall must always be included in the list of function definitions
         functionDefinitions.Add(ActionPlan);
-        var response = await openAIChatCompletion.GenerateResponseAsync<FunctionCall>(
+        var response = await openAIChatCompletion.GenerateResponseAsync<ActionPlanCall>(
             chatHistory,
             new ChatRequestSettings()
                 { Temperature = 0.2, MaxTokens = 512 },
