@@ -138,14 +138,4 @@ public sealed class SKContext
     public Exception? LastException { get; internal set; }
 
     #endregion
-
-    #region Obsolete
-    /// <summary>
-    /// App logger (obsolete - use 'Logger' instead).
-    /// </summary>
-    [Obsolete("Use SKContext.Logger instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogger Log => this.LoggerFactory.CreateLogger<SKContext>();
-
-    #endregion
 }
