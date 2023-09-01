@@ -43,7 +43,7 @@ public sealed class WebFileDownloadSkill
     public WebFileDownloadSkill(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(WebFileDownloadSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WebFileDownloadSkill)) : NullLogger.Instance;
     }
 
     /// <summary>

@@ -92,6 +92,7 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
           AZURE_COSMODB_MONGO_CONNECTION_STRING: ${{ secrets.AZURE_COSMODB_MONGO_CONNECTION_STRING }}
         run: |
+          docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
           cd python
           poetry run pytest ./tests/integration -v
 
@@ -151,6 +152,7 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
           AZURE_COSMODB_MONGO_CONNECTION_STRING: ${{ secrets.AZURE_COSMODB_MONGO_CONNECTION_STRING }}
         run: |
+          docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
           cd python
           poetry run pytest ./tests/integration -v
 
