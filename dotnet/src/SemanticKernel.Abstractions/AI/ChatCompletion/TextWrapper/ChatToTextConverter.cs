@@ -147,11 +147,11 @@ public class ChatToTextConverter : IChatToTextConverter
         return chatResults;
     }
 
-    public async IAsyncEnumerable<IChatStreamingResult> TextStreamingResultToChatStreamingResult(IAsyncEnumerable<ITextStreamingResult> results)
+    public async IAsyncEnumerable<IChatStreamingResult> TextStreamingResultToChatStreamingResult(IAsyncEnumerable<ITextStreamingResult> result)
     {
-        await foreach (ITextStreamingResult result in results)
+        await foreach (ITextStreamingResult textResult in result)
         {
-            yield return new ChatStreamingResultFromTextStreamingResult(result);
+            yield return new ChatStreamingResultFromTextStreamingResult(textResult);
         }
     }
 }

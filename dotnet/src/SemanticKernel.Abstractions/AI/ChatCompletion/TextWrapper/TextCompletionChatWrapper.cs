@@ -22,26 +22,25 @@ public class TextCompletionChatWrapper : IChatCompletion, ITextCompletion
         var chatHistory = new ChatHistory();
         if (!string.IsNullOrWhiteSpace(instructions))
         {
-            // TODO reconcile ChatHistory with OpenAiChatHistory, why is there a different class?
             chatHistory.AddSystemMessage(instructions);
         }
         return chatHistory;
     }
 
-    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? chatRequestSettings = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         var text = this._converter.ChatToText(chat);
-        var completionSettings = this._converter.ChatSettingsToCompleteSettings(chatRequestSettings);
+        var completionSettings = this._converter.ChatSettingsToCompleteSettings(requestSettings);
 
         var result = await this._wrappedCompletion.GetCompletionsAsync(text, completionSettings, cancellationToken).ConfigureAwait(false);
 
         return this._converter.TextResultToChatResult(result);
     }
 
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? chatRequestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         var text = this._converter.ChatToText(chat);
-        var completionSettings = this._converter.ChatSettingsToCompleteSettings(chatRequestSettings);
+        var completionSettings = this._converter.ChatSettingsToCompleteSettings(requestSettings);
 
         var response = this._wrappedCompletion.GetStreamingCompletionsAsync(text, completionSettings, cancellationToken);
 
