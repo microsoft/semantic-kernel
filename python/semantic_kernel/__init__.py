@@ -21,6 +21,7 @@ from semantic_kernel.utils.settings import (
     openai_settings_from_dot_env,
     pinecone_settings_from_dot_env,
     postgres_settings_from_dot_env,
+    redis_settings_from_dot_env,
 )
 
 __all__ = [
@@ -32,6 +33,7 @@ __all__ = [
     "pinecone_settings_from_dot_env",
     "bing_search_settings_from_dot_env",
     "google_palm_settings_from_dot_env",
+    "redis_settings_from_dot_env",
     "PromptTemplateConfig",
     "PromptTemplate",
     "ChatPromptTemplate",
