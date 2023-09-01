@@ -84,7 +84,7 @@ public sealed class Kernel : IKernel, IDisposable
         this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
 
-        this._logger = loggerFactory.CreateLogger(nameof(Kernel));
+        this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
 
     /// <inheritdoc/>

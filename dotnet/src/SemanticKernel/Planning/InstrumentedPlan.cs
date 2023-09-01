@@ -44,7 +44,7 @@ public sealed class InstrumentedPlan : IPlan
         ILoggerFactory? loggerFactory = null)
     {
         this._plan = plan;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(InstrumentedPlan)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedPlan)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>

@@ -88,12 +88,13 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
         IEnumerable<ParameterView>? parameters = null,
         ILoggerFactory? loggerFactory = null)
     {
-        ILogger logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ISKFunction)) : NullLogger.Instance;
+        ILogger logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ISKFunction)) : NullLogger.Instance;
 
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, logger);
 
-        functionName ??= nativeFunction.Method.Name;
-        description ??= string.Empty;
+        functionName ??= methodDetails.Name;
+        parameters ??= methodDetails.Parameters;
+        description ??= methodDetails.Description;
 
         if (string.IsNullOrWhiteSpace(skillName))
         {

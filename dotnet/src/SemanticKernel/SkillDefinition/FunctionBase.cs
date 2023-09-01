@@ -40,6 +40,11 @@ public abstract class FunctionBase : ISKFunction,
     /// </summary>
     public IList<ParameterView> Parameters { get; }
 
+    /// <summary>
+    /// Logger instance
+    /// </summary>
+    protected ILogger Logger { get; private set; }
+
     internal FunctionBase(
         string functionName,
         string skillName,
@@ -106,8 +111,6 @@ public abstract class FunctionBase : ISKFunction,
     {
         return Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context));
     }
-
-    protected readonly ILogger Logger;
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
