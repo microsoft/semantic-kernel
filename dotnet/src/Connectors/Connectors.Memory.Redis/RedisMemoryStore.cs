@@ -119,7 +119,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             await this._ft.InfoAsync(collectionName).ConfigureAwait(false);
             return true;
         }
-        catch (RedisServerException ex) when (ex.Message.Equals(IndexDoesNotExistErrorMessage, StringComparison.Ordinal))
+        catch (RedisServerException ex) when (ex.Message.Equals(IndexDoesNotExistErrorMessage, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -294,7 +294,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     /// Message when index does not exist.
     /// <see href="https://github.com/RediSearch/RediSearch/blob/master/src/info_command.c#L97"/>
     /// </summary>
-    private const string IndexDoesNotExistErrorMessage = "Unknown Index name";
+    private const string IndexDoesNotExistErrorMessage = "Unknown index name";
 
     private readonly IDatabase _database;
     private readonly int _vectorSize;
