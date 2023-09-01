@@ -68,23 +68,22 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._messages = []
 
     async def complete_chat_async(
-        self, messages: List[Dict[str, str]], request_settings: ChatRequestSettings
+        self,
+        messages: List[Dict[str, str]],
+        request_settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(
-            messages, request_settings, False, functions
+            messages, request_settings, False, None
         )
 
         if len(response.choices) == 1:
-            return (
-                response.choices[0].message.content,
-                response.choices[0].message.function_call,
-            )
-        else:
-            return [
-                (choice.message.content, choice.message.function_call)
-                for choice in response.choices
-            ]
+            return response.choices[0].message.content
+        return [
+            choice.message.content
+            for choice in response.choices
+        ]
 
     async def complete_chat_with_functions_async(
         self,
@@ -275,12 +274,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 ]
             else:
                 model_args["functions"] = functions
-
-        if functions and not request_settings.function_call:
-            request_settings.function_call = "auto"
-
-        if not functions and request_settings.function_call:
-            request_settings.function_call = None
 
         try:
             response: Any = await openai.ChatCompletion.acreate(**model_args)
