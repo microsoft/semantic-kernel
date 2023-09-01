@@ -45,10 +45,11 @@ public static class Example51_StepwisePlanner
 
         foreach (var question in questions)
         {
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 2; i++)
             {
                 await RunTextCompletion(question);
-                await RunChatCompletion(question);
+                await RunChatCompletion(question, "gpt-35-turbo");
+                await RunChatCompletion(question, "gpt-4-32k");
             }
         }
 
@@ -134,6 +135,7 @@ public static class Example51_StepwisePlanner
         plannerConfig.ExcludedFunctions.Add("DaysAgo");
         plannerConfig.ExcludedFunctions.Add("DateMatchingLastDayName");
         plannerConfig.MinIterationTimeMs = 1500;
+        plannerConfig.MaxIterations = 25;
 
         if (!string.IsNullOrEmpty(Suffix))
         {

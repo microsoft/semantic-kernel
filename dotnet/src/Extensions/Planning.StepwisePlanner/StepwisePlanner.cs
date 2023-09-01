@@ -116,89 +116,24 @@ public class StepwisePlanner : IStepwisePlanner
             return context;
         }
 
+        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this.CreateChatHistory(this._kernel, out var aiService), aiService, context).ConfigureAwait(false);
+
+        if (aiService is null)
+        {
+            throw new SKException("No AIService available for getting completions.");
+        }
+
+        if (chatHistory is null)
+        {
+            throw new SKException("ChatHistory is null.");
+        }
+
         var stepsTaken = new List<SystemStep>();
 
-        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this.CreateChatHistory(this._kernel, out var aiService), aiService, context).ConfigureAwait(false);
-        var chatCompletion = aiService as IChatCompletion;
-        var textCompletion = aiService as ITextCompletion;
-
         var startingMessageCount = chatHistory.Messages.Count;
-
-        var GetMessageTokens = () =>
-        {
-            var messages = string.Join("\n", chatHistory?.Messages);
-            var tokenCount = messages.Length / 4;
-            return tokenCount;
-        };
-
-        var addThought = true;
-        var GetCompletionAsync = async () =>
-        {
-            if (chatCompletion is not null)
-            {
-                var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, ChatRequestSettings.FromCompletionConfig(this._promptConfig.Completion), token).ConfigureAwait(false));
-                return llmResponse;
-            }
-            else if (textCompletion is not null)
-            {
-                var thoughtProcess = string.Join("\n", chatHistory.Messages.Select(m => m.Content));
-
-                // Add Thought to the thought process at the start of the first iteration
-                if (addThought)
-                {
-                    thoughtProcess = $"{thoughtProcess}\n{Thought}";
-                    addThought = false;
-                }
-
-                thoughtProcess = $"{thoughtProcess}\n";
-                var results = (await textCompletion.GetCompletionsAsync(thoughtProcess, CompleteRequestSettings.FromCompletionConfig(this._promptConfig.Completion), token).ConfigureAwait(false));
-
-                if (results.Count == 0)
-                {
-                    throw new SKException("No completions returned.");
-                }
-
-                return await results[0].GetCompletionAsync(token).ConfigureAwait(false);
-            }
-
-            throw new SKException("No AIService available for getting completions.");
-        };
-
-        var GetNextStepCompletionAsync = () =>
-            {
-                var tokenCount = GetMessageTokens();
-
-                var preserveFirstNSteps = 0; // first thought
-                var removalIndex = (startingMessageCount) + preserveFirstNSteps;
-                var messagesRemoved = 0;
-                string? originalThought = null;
-                while (tokenCount >= this.Config.MaxTokens && chatHistory?.Messages.Count > removalIndex)
-                {
-                    // something needs to be removed.
-                    if (string.IsNullOrEmpty(originalThought))
-                    {
-                        originalThought = stepsTaken[0].Thought;
-
-                        // Update message history
-                        chatHistory.AddAssistantMessage($"{Thought} {originalThought}");
-                        preserveFirstNSteps++;
-                        chatHistory.AddAssistantMessage("... I've removed some of my previous work to make room for the new stuff ...");
-                        preserveFirstNSteps++;
-
-                        removalIndex = (startingMessageCount) + preserveFirstNSteps;
-                    }
-
-                    chatHistory.Messages.RemoveAt(removalIndex);
-                    tokenCount = GetMessageTokens();
-                    messagesRemoved++;
-                }
-
-                return GetCompletionAsync();
-            };
-
         var GetNextStepAsync = async () =>
         {
-            var actionText = await GetNextStepCompletionAsync().ConfigureAwait(false);
+            var actionText = await this.GetNextStepCompletion(stepsTaken, chatHistory, aiService, startingMessageCount, token).ConfigureAwait(false);
             this._logger?.LogDebug("Response: {ActionText}", actionText);
             return this.ParseResult(actionText);
         };
@@ -206,18 +141,13 @@ public class StepwisePlanner : IStepwisePlanner
         SystemStep? lastStep = null;
         for (int i = 0; i < this.Config.MaxIterations; i++)
         {
-            var nextStep = await GetNextStepAsync().ConfigureAwait(false);
-
-            // If not Action/Thought/FinalAnswer is found,
-            // add a message to the chat history to guide LLM into returning the next thought.
-            if (string.IsNullOrEmpty(nextStep.Action) &&
-                string.IsNullOrEmpty(nextStep.Thought) &&
-                string.IsNullOrEmpty(nextStep.FinalAnswer))
+            // sleep for a bit to avoid rate limiting
+            if (i > 0)
             {
-                this._logger?.LogWarning("No response from LLM");
-                chatHistory?.AddUserMessage(Thought);
-                continue;
+                await Task.Delay(this.Config.MinIterationTimeMs, token).ConfigureAwait(false);
             }
+
+            var nextStep = await GetNextStepAsync().ConfigureAwait(false);
 
             // If a final answer is found, update and return the context with the result.
             if (!string.IsNullOrEmpty(nextStep.FinalAnswer))
@@ -226,10 +156,31 @@ public class StepwisePlanner : IStepwisePlanner
 
                 context.Variables.Update(nextStep.FinalAnswer);
 
+                stepsTaken.Add(nextStep);
+
                 // Add additional results to the context
                 AddExecutionStatsToContext(stepsTaken, context, i + 1);
 
                 return context;
+            }
+
+            // If no Action/Thought is found,
+            // add a message to the chat history to guide LLM into returning the next thought.
+            if (string.IsNullOrEmpty(nextStep.Action) &&
+                string.IsNullOrEmpty(nextStep.Thought))
+            {
+                if (lastStep is not null && string.IsNullOrEmpty(lastStep.Action))
+                {
+                    this._logger?.LogWarning("No response from LLM, expected Action");
+                    chatHistory.AddUserMessage(Action);
+                }
+                else
+                {
+                    this._logger?.LogWarning("No response from LLM, expected Thought");
+                    chatHistory.AddUserMessage(Thought);
+                }
+
+                continue;
             }
 
             // If the thought is empty and the last step had no action, copy action to last step and set as new nextStep
@@ -240,33 +191,43 @@ public class StepwisePlanner : IStepwisePlanner
 
                 lastStep.OriginalResponse += nextStep.OriginalResponse;
                 nextStep = lastStep;
-                if (chatHistory?.Messages.Count > startingMessageCount)
+                if (chatHistory.Messages.Count > startingMessageCount)
                 {
                     chatHistory.Messages.RemoveAt(chatHistory.Messages.Count - 1);
                 }
             }
             else
             {
+                this._logger?.LogInformation("Thought: {Thought}", nextStep.Thought);
                 stepsTaken.Add(nextStep);
                 lastStep = nextStep;
             }
 
-            this._logger?.LogInformation("Thought: {Thought}", nextStep.Thought);
+            if (string.IsNullOrEmpty(nextStep.Action))
+            {
+                this._logger?.LogInformation("Action: No action to take");
 
-            if (!string.IsNullOrEmpty(nextStep!.Action!))
+                // Add thought to chat history
+                if (!string.IsNullOrEmpty(nextStep.Thought))
+                {
+                    chatHistory.AddAssistantMessage($"{Thought} {nextStep.Thought}");
+                }
+            }
+            else
             {
                 this._logger?.LogInformation("Action: {Action}({ActionVariables}). Iteration: {Iteration}.",
                     nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables), i + 1);
 
+                // add [thought and] action to chat history
                 var actionMessage = $"{Action} {{\"action\": \"{nextStep.Action}\",\"action_variables\": {JsonSerializer.Serialize(nextStep.ActionVariables)}}}";
-
                 var message = string.IsNullOrEmpty(nextStep.Thought) ? actionMessage : $"{Thought} {nextStep.Thought}\n{actionMessage}";
-                chatHistory?.AddAssistantMessage(message);
 
+                chatHistory.AddAssistantMessage(message);
+
+                // Invoke the action
                 try
                 {
-                    await Task.Delay(this.Config.MinIterationTimeMs, token).ConfigureAwait(false);
-                    var result = await this.InvokeActionAsync(nextStep.Action!, nextStep!.ActionVariables!).ConfigureAwait(false);
+                    var result = await this.InvokeActionAsync(nextStep.Action, nextStep.ActionVariables).ConfigureAwait(false);
 
                     if (string.IsNullOrEmpty(result))
                     {
@@ -284,19 +245,8 @@ public class StepwisePlanner : IStepwisePlanner
                 }
 
                 this._logger?.LogInformation("Observation: {Observation}", nextStep.Observation);
-                chatHistory?.AddUserMessage($"{Observation} {nextStep.Observation}");
+                chatHistory.AddUserMessage($"{Observation} {nextStep.Observation}");
             }
-            else
-            {
-                this._logger?.LogInformation("Action: No action to take");
-                if (!string.IsNullOrEmpty(nextStep.Thought))
-                {
-                    chatHistory?.AddAssistantMessage($"{Thought} {nextStep.Thought}");
-                }
-            }
-
-            // sleep for a bit to avoid rate limiting
-            await Task.Delay(this.Config.MinIterationTimeMs, token).ConfigureAwait(false);
         }
 
         AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
@@ -360,6 +310,77 @@ public class StepwisePlanner : IStepwisePlanner
     #endregion setup helpers
 
     #region execution helpers
+    private Task<string> GetNextStepCompletion(List<SystemStep> stepsTaken, ChatHistory chatHistory, IAIService aiService, int startingMessageCount, CancellationToken token)
+    {
+        var tokenCount = this.GetChatHistoryTokens(chatHistory);
+
+        var preserveFirstNSteps = 0;
+        var removalIndex = (startingMessageCount) + preserveFirstNSteps;
+        var messagesRemoved = 0;
+        string? originalThought = null;
+        while (tokenCount >= this.Config.MaxTokens && chatHistory.Messages.Count > removalIndex)
+        {
+            // something needs to be removed.
+            if (string.IsNullOrEmpty(originalThought))
+            {
+                originalThought = stepsTaken[0].Thought;
+            }
+
+            // Update message history
+            chatHistory.AddAssistantMessage($"{Thought} {originalThought}");
+            preserveFirstNSteps++;
+            chatHistory.AddAssistantMessage("... I've removed some of my previous work to make room for the new stuff ...");
+            preserveFirstNSteps++;
+
+            removalIndex = (startingMessageCount) + preserveFirstNSteps;
+
+            chatHistory.Messages.RemoveAt(removalIndex);
+            tokenCount = this.GetChatHistoryTokens(chatHistory);
+            messagesRemoved++;
+        }
+
+        return this.GetCompletionAsync(aiService, chatHistory, stepsTaken.Count == 0, token);
+    }
+
+    private async Task<string> GetCompletionAsync(IAIService aiService, ChatHistory chatHistory, bool addThought, CancellationToken token)
+    {
+        if (aiService is IChatCompletion chatCompletion)
+        {
+            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, ChatRequestSettings.FromCompletionConfig(this._promptConfig.Completion), token).ConfigureAwait(false));
+            return llmResponse;
+        }
+        else if (aiService is ITextCompletion textCompletion)
+        {
+            var thoughtProcess = string.Join("\n", chatHistory.Messages.Select(m => m.Content));
+
+            // Add Thought to the thought process at the start of the first iteration
+            if (addThought)
+            {
+                thoughtProcess = $"{thoughtProcess}\n{Thought}";
+                addThought = false;
+            }
+
+            thoughtProcess = $"{thoughtProcess}\n";
+            var results = (await textCompletion.GetCompletionsAsync(thoughtProcess, CompleteRequestSettings.FromCompletionConfig(this._promptConfig.Completion), token).ConfigureAwait(false));
+
+            if (results.Count == 0)
+            {
+                throw new SKException("No completions returned.");
+            }
+
+            return await results[0].GetCompletionAsync(token).ConfigureAwait(false);
+        }
+
+        throw new SKException("No AIService available for getting completions.");
+    }
+
+    private int GetChatHistoryTokens(ChatHistory chatHistory)
+    {
+        var messages = string.Join("\n", chatHistory.Messages);
+        var tokenCount = messages.Length / 4;
+        return tokenCount;
+    }
+
     /// <summary>
     /// Parse LLM response into a SystemStep during execution
     /// </summary>
@@ -367,6 +388,15 @@ public class StepwisePlanner : IStepwisePlanner
     /// <returns>A SystemStep</returns>
     protected internal virtual SystemStep ParseResult(string input)
     {
+        // The hope is that the input will either be:
+        // 1) [Thought] some thought [Action] {...}
+        // 2) [Thought] some thought
+        // 3) some thought
+        // 4) [Action] {...}
+        // 5) {...}
+        // 6) [FinalAnswer] some answer
+        // 7) [Thought] some thought [FinalAnswer]
+
         var result = new SystemStep
         {
             OriginalResponse = input
@@ -402,7 +432,7 @@ public class StepwisePlanner : IStepwisePlanner
             return result;
         }
 
-        result.Thought = result.Thought?.Replace(Thought, string.Empty).Trim();
+        result.Thought = result.Thought.Replace(Thought, string.Empty).Trim();
 
         // Extract action
         int actionIndex = input.IndexOf(Action, StringComparison.OrdinalIgnoreCase);
@@ -573,7 +603,7 @@ public class StepwisePlanner : IStepwisePlanner
         {
             if (string.IsNullOrEmpty(step.Action)) { continue; }
 
-            _ = actionCounts.TryGetValue(step.Action!, out int currentCount);
+            _ = actionCounts.TryGetValue(step.Action, out int currentCount);
             actionCounts[step.Action!] = ++currentCount;
         }
 
