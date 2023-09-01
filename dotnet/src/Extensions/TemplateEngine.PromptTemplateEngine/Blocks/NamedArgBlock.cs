@@ -35,8 +35,8 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         var argParts = this.Content.Split(Symbols.NamedArgBlockSeparator);
         if (argParts.Length > 2)
         {
-            this.Logger.LogError("Invalid named argument `{0}`.", this.Content);
-            throw new SKException($"Invalid named argument `{this.Content}`. A named argument can contain at most one equals sign separating the arg name from the arg value.");
+            this.Logger.LogError("Invalid named argument `{Text}`.", text);
+            throw new SKException($"Invalid named argument `{text}`. A named argument can contain at most one equals sign separating the arg name from the arg value.");
         }
 
         if (argParts.Length == 2)
@@ -47,7 +47,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             var secondPart = trimmedArgParts[1];
             if (secondPart.Length == 0)
             {
-                this.Logger.LogError("Invalid named argument `{0}`", this.Content);
+                this.Logger.LogError("Invalid named argument `{Text}`", text);
                 throw new SKException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
             }
             else if (secondPart[0] == Symbols.VarPrefix)
@@ -62,7 +62,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return;
         }
 
-        this.Logger.LogError("Invalid named argument `{0}`", this.Content);
+        this.Logger.LogError("Invalid named argument `{Text}`", text);
         throw new SKException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
     }
 

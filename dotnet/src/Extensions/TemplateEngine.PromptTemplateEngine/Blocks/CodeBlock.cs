@@ -80,7 +80,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             throw new SKException(error);
         }
 
-        this.Logger.LogTrace("Rendering code: `{0}`", this.Content);
+        this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
 
         switch (this._tokens[0].Type)
         {
@@ -130,7 +130,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         catch (Exception ex)
         {
-            this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
+            this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {SkillName}.{FunctionName}. Error: {ErrorMessage}",
                 function!.SkillName, function.Name, ex.Message);
             localException = ex;
         }
@@ -198,7 +198,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         var firstArg = this._tokens[1];
 
         // Sensitive data, logging as trace, disabled by default
-        this.Logger.LogTrace("Passing variable/value: `{0}`", firstArg.Content);
+        this.Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
 
         var namedArgsStartIndex = 1;
         if (firstArg.Type is not BlockTypes.NamedArg)
@@ -222,7 +222,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             }
 
             // Sensitive data, logging as trace, disabled by default
-            this.Logger.LogTrace("Passing variable/value: `{0}`", arg.Content);
+            this.Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
 
             contextClone.Variables.Set(arg.Name, arg.GetValue(context.Variables));
         }
