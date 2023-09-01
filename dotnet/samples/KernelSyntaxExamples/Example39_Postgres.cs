@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Memory;
-using Npgsql;
-using Pgvector.Npgsql;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -16,11 +14,7 @@ public static class Example39_Postgres
 
     public static async Task RunAsync()
     {
-        NpgsqlDataSourceBuilder dataSourceBuilder = new(TestConfiguration.Postgres.ConnectionString);
-        dataSourceBuilder.UseVector();
-        await using NpgsqlDataSource dataSource = dataSourceBuilder.Build();
-
-        PostgresMemoryStore memoryStore = new(dataSource, vectorSize: 1536, schema: "public");
+        using PostgresMemoryStore memoryStore = new(TestConfiguration.Postgres.ConnectionString, vectorSize: 1536, schema: "public");
 
         IKernel kernel = Kernel.Builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -31,7 +25,7 @@ public static class Example39_Postgres
                 modelId: TestConfiguration.OpenAI.EmbeddingModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .WithMemoryStorage(memoryStore)
-            //.WithPostgresMemoryStore(dataSource, vectorSize: 1536, schema: "public") // This method offers an alternative approach to registering Postgres memory store.
+            //.WithPostgresMemoryStore(TestConfiguration.Postgres.ConnectionString, vectorSize: 1536, schema: "public") // This method offers an alternative approach to registering Postgres memory store.
             .Build();
 
         Console.WriteLine("== Printing Collections in DB ==");

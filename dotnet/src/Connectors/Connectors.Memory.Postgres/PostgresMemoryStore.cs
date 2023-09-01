@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Pgvector;
+using Pgvector.Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 
@@ -20,21 +21,39 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 /// <remarks>The embedded data is saved to the Postgres database specified in the constructor.
 /// Similarity search capability is provided through the pgvector extension. Use Postgres's "Table" to implement "Collection".
 /// </remarks>
-public class PostgresMemoryStore : IMemoryStore
+public class PostgresMemoryStore : IMemoryStore, IDisposable
 {
     internal const string DefaultSchema = "public";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
     /// </summary>
+    /// <param name="connectionString">Postgres database connection string.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="schema">Database schema of collection tables.</param>
+    public PostgresMemoryStore(string connectionString, int vectorSize, string schema = DefaultSchema)
+    {
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionString);
+        dataSourceBuilder.UseVector();
+        this._dataSource = dataSourceBuilder.Build();
+        this._postgresDbClient = new PostgresDbClient(this._dataSource, schema, vectorSize);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
+    /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
-    /// <param name="schema">Database schema of collection tables. The default value is "public".</param>
+    /// <param name="schema">Database schema of collection tables.</param>
     public PostgresMemoryStore(NpgsqlDataSource dataSource, int vectorSize, string schema = DefaultSchema)
         : this(new PostgresDbClient(dataSource, schema, vectorSize))
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
+    /// </summary>
+    /// <param name="postgresDbClient">An implementation of a client for Postgres.</param>
     public PostgresMemoryStore(IPostgresDbClient postgresDbClient)
     {
         this._postgresDbClient = postgresDbClient;
@@ -176,9 +195,24 @@ public class PostgresMemoryStore : IMemoryStore
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._dataSource?.Dispose();
+        }
+    }
+
     #region private ================================================================================
 
     private readonly IPostgresDbClient _postgresDbClient;
+    private readonly NpgsqlDataSource? _dataSource;
 
     private async Task<string> InternalUpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken)
     {
