@@ -86,7 +86,7 @@ public sealed class TextWrapperTests : IDisposable
         }
 
         Assert.Contains(partialExpectedAnswer, sb.ToString(), StringComparison.InvariantCultureIgnoreCase);
-        Assert.True(numResults > 1, numResults.ToString());
+        Assert.True(numResults > 1);
     }
 
     [Theory]

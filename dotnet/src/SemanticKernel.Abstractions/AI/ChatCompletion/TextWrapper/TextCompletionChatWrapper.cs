@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion.TextWrapper;
 public class TextCompletionChatWrapper : IChatCompletion, ITextCompletion
@@ -20,7 +21,7 @@ public class TextCompletionChatWrapper : IChatCompletion, ITextCompletion
     public ChatHistory CreateNewChat(string? instructions = null)
     {
         var chatHistory = new ChatHistory();
-        if (!string.IsNullOrWhiteSpace(instructions))
+        if (!instructions.IsNullOrWhitespace())
         {
             chatHistory.AddSystemMessage(instructions);
         }

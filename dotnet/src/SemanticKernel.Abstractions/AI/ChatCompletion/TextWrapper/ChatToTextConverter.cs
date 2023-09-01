@@ -91,11 +91,9 @@ public class ChatToTextConverter : IChatToTextConverter
                 TokenSelectionBiases = textSettings.TokenSelectionBiases
             };
 
-        int numTextStopSequences = textSettings?.StopSequences?.Count ?? 0;
-        var stopSequences = new List<string>(defaultStopSequences.Length + numTextStopSequences);
+        var stopSequences = new List<string>(defaultStopSequences);
 
-        stopSequences.AddRange(defaultStopSequences);
-        if (numTextStopSequences > 0)
+        if (textSettings?.StopSequences?.Count > 0)
         {
             stopSequences.AddRange(textSettings.StopSequences);
         }
