@@ -31,7 +31,7 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
     /// <summary>
     /// Prompt template engine.
     /// </summary>
-    public IPromptTemplate? PromptTemplate { get; }
+    public IPromptTemplate PromptTemplate { get; }
 
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
@@ -204,14 +204,14 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         {
             const string Message = "Something went wrong while rendering the semantic function" +
                                    " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message, ex.Detail);
+            this.Logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message, ex.Detail);
             throw;
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
             const string Message = "Something went wrong while rendering the semantic function" +
                                    " or while executing the text completion. Function: {0}.{1}. Error: {2}";
-            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message);
+            this.Logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message);
             throw;
         }
 

@@ -12,7 +12,11 @@ using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
-internal abstract class FunctionBase : ISKFunction,
+
+/// <summary>
+/// Implements base functionality for internal SK functions.
+/// </summary>
+public abstract class FunctionBase : ISKFunction,
     ISKFunctionEventSupport<FunctionInvokingEventArgs>,
     ISKFunctionEventSupport<FunctionInvokedEventArgs>
 {
@@ -51,7 +55,7 @@ internal abstract class FunctionBase : ISKFunction,
         this.SkillName = skillName;
         this.Description = description;
         this.Parameters = parameters;
-        this._logger = logger;
+        this.Logger = logger;
     }
 
     /// <inheritdoc/>
@@ -103,7 +107,7 @@ internal abstract class FunctionBase : ISKFunction,
         return Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context));
     }
 
-    protected readonly ILogger _logger;
+    protected readonly ILogger Logger;
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };

@@ -122,7 +122,7 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
         catch (Exception e) when (!e.IsCriticalException())
         {
             const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-            this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
+            this.Logger.LogError(e, Message, this._function.Method.Name, e.Message);
             context.LastException = e;
             return context;
         }
@@ -194,7 +194,7 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
     [DoesNotReturn]
     private void ThrowNotSemantic()
     {
-        this._logger.LogError("The function is not semantic");
+        this.Logger.LogError("The function is not semantic");
         throw new SKException("Invalid operation, the method requires a semantic function");
     }
 

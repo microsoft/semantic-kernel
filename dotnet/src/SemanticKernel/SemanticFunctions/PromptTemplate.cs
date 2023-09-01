@@ -23,8 +23,6 @@ public sealed class PromptTemplate : IPromptTemplate
     // ReSharper disable once NotAccessedField.Local
     private readonly PromptTemplateConfig _promptConfig;
 
-    internal string Template => this._template;
-
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>
