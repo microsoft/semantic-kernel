@@ -65,8 +65,8 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         return await indexes
             .AnyAsync(index =>
-                string.Equals(index, collectionName, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(index, normalizedIndexName, StringComparison.OrdinalIgnoreCase),
+                    string.Equals(index, collectionName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(index, normalizedIndexName, StringComparison.OrdinalIgnoreCase),
                 cancellationToken: cancellationToken
             )
             .ConfigureAwait(false);
@@ -169,6 +169,9 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        // Cosine similarity range: -1 .. +1
+        minRelevanceScore = Math.Max(-1, Math.Min(1, minRelevanceScore));
+
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
         var client = this.GetSearchClient(normalizedIndexName);
@@ -198,13 +201,14 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         if (searchResult == null) { yield break; }
 
+        var minAzureSearchScore = CosineSimilarityToScore(minRelevanceScore);
         await foreach (SearchResult<AzureCognitiveSearchMemoryRecord>? doc in searchResult.Value.GetResultsAsync())
         {
-            if (doc == null || doc.Score < minRelevanceScore) { continue; }
+            if (doc == null || doc.Score < minAzureSearchScore) { continue; }
 
             MemoryRecord memoryRecord = doc.Document.ToMemoryRecord(withEmbeddings);
 
-            yield return (memoryRecord, doc.Score ?? 0);
+            yield return (memoryRecord, ScoreToCosineSimilarity(doc.Score ?? 0));
         }
     }
 
@@ -426,6 +430,18 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         {
             throw e.ToHttpOperationException();
         }
+    }
+
+    private static double ScoreToCosineSimilarity(double score)
+    {
+        // Azure Cognitive Search score formula. The min value is 0.333 for cosine similarity -1.
+        score = Math.Max(score, 1.0 / 3);
+        return 2 - 1 / score;
+    }
+
+    private static double CosineSimilarityToScore(double similarity)
+    {
+        return 1 / (2 - similarity);
     }
 
     #endregion
