@@ -90,19 +90,19 @@ public static class FunctionExtensions
     /// <param name="skillCollection"></param>
     /// <param name="excludedSkills"></param>
     /// <returns></returns>
-    public static IEnumerable<FunctionDefinition> GetFunctionDefinitions(this IReadOnlySkillCollection skillCollection, IEnumerable<string>? excludedSkills = null)
+    public static IEnumerable<FunctionDefinition> GetFunctionDefinitions(this IReadOnlySkillCollection skillCollection, IEnumerable<string>? excludedSkills = null, IEnumerable<string>? excludedFunctions = null)
     {
         var functionsView = skillCollection.GetFunctionsView();
 
-        if (excludedSkills is null)
-        {
-            return functionsView.ToFunctionDefinitions();
-        }
+        excludedSkills ??= Array.Empty<string>();
+        excludedFunctions ??= Array.Empty<string>();
 
         List<FunctionView> availableFunctions = functionsView.SemanticFunctions
             .Concat(functionsView.NativeFunctions)
             .SelectMany(x => x.Value)
-            .Where(s => !excludedSkills.Contains(s.SkillName))
+            .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
+            .OrderBy(x => x.SkillName)
+            .ThenBy(x => x.Name)
             .ToList();
 
         return availableFunctions.Where(view => view.CanBeCalled()).Select(functionView => functionView.ToFunctionDefinition());
