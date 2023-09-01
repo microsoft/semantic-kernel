@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -88,44 +87,35 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
     private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
-        try
+        var completionRequest = new TextCompletionRequest
         {
-            var completionRequest = new TextCompletionRequest
+            Input = text
+        };
+
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
+
+        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        if (!string.IsNullOrEmpty(this._apiKey))
+        {
+            httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        }
+
+        using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
+
+        if (completionResponse is null)
+        {
+            throw new SKException("Unexpected response from model")
             {
-                Input = text
+                Data = { { "ResponseData", body } },
             };
-
-            using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
-
-            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-            if (!string.IsNullOrEmpty(this._apiKey))
-            {
-                httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-            }
-
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
-
-            if (completionResponse is null)
-            {
-                throw new SKException("Unexpected response from model")
-                {
-                    Data = { { "ResponseData", body } },
-                };
-            }
-
-            return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
-        catch (Exception e) when (e is not SKException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
-        }
+
+        return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
     }
 
     /// <summary>
