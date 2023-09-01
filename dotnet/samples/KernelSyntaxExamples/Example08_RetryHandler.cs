@@ -125,12 +125,12 @@ public static class Example08_RetryHandler
     }
 
     // Basic custom retry handler factory
-    private sealed class MyCustomHandlerFactory : HttpHandlerFactory<MyCustomHandler>
+    public sealed class MyCustomHandlerFactory : HttpHandlerFactory<MyCustomHandler>
     {
     }
 
     // Basic custom empty retry handler
-    private sealed class MyCustomHandler : DelegatingHandler
+    public sealed class MyCustomHandler : DelegatingHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
