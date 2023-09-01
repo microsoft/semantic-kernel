@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -80,7 +81,9 @@ public static class Example42_KernelBuilder
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(loggerFactory);
         var kernelConfig = new KernelConfig();
-        kernelConfig.SetHttpRetryConfig(new());
+        kernelConfig.SetRetryBasic(new());
+        // OR kernel.Config.SetRetryPolly(your Polly AsyncPolicy...);
+
         using var httpHandler = kernelConfig.HttpHandlerFactory.Create(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
@@ -141,7 +144,7 @@ public static class Example42_KernelBuilder
         // AI requests (when using the kernel).
 
         var kernel8 = Kernel.Builder
-            .Configure(c => c.SetHttpRetryConfig(new HttpRetryConfig
+            .Configure(c => c.SetRetryBasic(new BasicRetryConfig
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,

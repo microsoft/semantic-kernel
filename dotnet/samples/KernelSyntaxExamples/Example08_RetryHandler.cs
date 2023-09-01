@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Config;
-using Microsoft.SemanticKernel.Reliability.Polly;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Skills.Core;
 using Reliability;
 using RepoUtils;
@@ -35,7 +35,7 @@ public static class Example08_RetryHandler
         await RunRetryHandlerConfigAsync(new() { MaxRetryCount = 3, UseExponentialBackoff = true });
     }
 
-    private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? httpConfig = null)
+    private static async Task RunRetryHandlerConfigAsync(BasicRetryConfig? httpConfig = null)
     {
         var kernelBuilder = Kernel.Builder.WithLoggerFactory(InfoLogger.LoggerFactory);
         if (httpConfig != null)
@@ -45,7 +45,7 @@ public static class Example08_RetryHandler
             // purposes we are doing so as it's easy to trigger when using an invalid key.
             httpConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
 
-            kernelBuilder = kernelBuilder.Configure(c => c.SetHttpRetryConfig(httpConfig));
+            kernelBuilder = kernelBuilder.Configure(c => c.SetRetryBasic(httpConfig));
         }
 
         // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play

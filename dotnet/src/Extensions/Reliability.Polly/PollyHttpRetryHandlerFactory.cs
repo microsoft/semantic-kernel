@@ -20,8 +20,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/>.
     /// </summary>
     /// <param name="typedAsyncPolicy">HttpResponseMessage typed AsyncPolicy</param> dedicated for <see cref="HttpResponseMessage"/> typed policies.
-    /// <param name="loggerFactory">Logger factory</param>
-    public PollyHttpRetryHandlerFactory(AsyncPolicy<HttpResponseMessage> typedAsyncPolicy, ILoggerFactory? loggerFactory = null)
+    public PollyHttpRetryHandlerFactory(AsyncPolicy<HttpResponseMessage> typedAsyncPolicy)
     {
         Verify.NotNull(typedAsyncPolicy);
 
@@ -32,8 +31,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/> dedicated for non-typed policies.
     /// </summary>
     /// <param name="asyncPolicy">A non-typed AsyncPolicy</param>
-    /// <param name="loggerFactory">Logger factory</param>
-    public PollyHttpRetryHandlerFactory(AsyncPolicy asyncPolicy, ILoggerFactory? loggerFactory = null)
+    public PollyHttpRetryHandlerFactory(AsyncPolicy asyncPolicy)
     {
         Verify.NotNull(asyncPolicy);
 
@@ -49,9 +47,9 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     {
         if (this._typedAsyncPolicy is not null)
         {
-            return new PollyHttpRetryHandler(this._typedAsyncPolicy, loggerFactory);
+            return new PollyHttpRetryHandler(this._typedAsyncPolicy);
         }
 
-        return new PollyHttpRetryHandler(this._asyncPolicy!, loggerFactory);
+        return new PollyHttpRetryHandler(this._asyncPolicy!);
     }
 }

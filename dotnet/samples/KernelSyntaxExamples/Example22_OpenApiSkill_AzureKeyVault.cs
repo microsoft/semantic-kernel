@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
@@ -34,7 +33,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .Configure(c => c.SetHttpRetryConfig(new()
+            .Configure(c => c.SetRetryBasic(new()
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true

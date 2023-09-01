@@ -38,7 +38,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
         // Arrange
         var asyncPolicy = Policy.NoOpAsync<HttpResponseMessage>();
         var (mockLoggerFactory, mockLogger) = GetLoggerMocks();
-        using var retry = new PollyHttpRetryHandler(asyncPolicy, mockLoggerFactory.Object);
+        using var retry = new PollyHttpRetryHandler(asyncPolicy);
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -70,7 +70,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
                 sleepDurationProvider: (retryTimes) => TimeSpan.FromMilliseconds(10));
 
         var (mockLoggerFactory, mockLogger) = GetLoggerMocks();
-        using var retry = new PollyHttpRetryHandler(asyncPolicy, mockLoggerFactory.Object);
+        using var retry = new PollyHttpRetryHandler(asyncPolicy);
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -103,7 +103,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
                 (retryNumber) => TimeSpan.FromMilliseconds(10));
 
         var (mockLoggerFactory, mockLogger) = GetLoggerMocks();
-        using var retry = new PollyHttpRetryHandler(asyncPolicy, mockLoggerFactory.Object);
+        using var retry = new PollyHttpRetryHandler(asyncPolicy);
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -139,7 +139,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
         var (mockLoggerFactory, mockLogger) = GetLoggerMocks();
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(exceptionType);
-        using var retry = new PollyHttpRetryHandler(asyncPolicy, mockLoggerFactory.Object);
+        using var retry = new PollyHttpRetryHandler(asyncPolicy);
 
         retry.InnerHandler = mockHandler.Object;
         using var httpClient = new HttpClient(retry);

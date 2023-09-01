@@ -3,7 +3,6 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Polly;
 
@@ -21,8 +20,7 @@ public class PollyHttpRetryHandler : DelegatingHandler
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/>.
     /// </summary>
     /// <param name="typedAsyncPolicy">HttpResponseMessage typed AsyncPolicy</param> dedicated for <see cref="HttpResponseMessage"/> typed policies.
-    /// <param name="loggerFactory">Logger factory</param>
-    public PollyHttpRetryHandler(AsyncPolicy<HttpResponseMessage> typedAsyncPolicy, ILoggerFactory? loggerFactory = null)
+    public PollyHttpRetryHandler(AsyncPolicy<HttpResponseMessage> typedAsyncPolicy)
     {
         Verify.NotNull(typedAsyncPolicy);
 
@@ -33,8 +31,7 @@ public class PollyHttpRetryHandler : DelegatingHandler
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/> dedicated for non-typed policies.
     /// </summary>
     /// <param name="asyncPolicy">A non-typed AsyncPolicy</param>
-    /// <param name="loggerFactory">Logger factory</param>
-    public PollyHttpRetryHandler(AsyncPolicy asyncPolicy, ILoggerFactory? loggerFactory = null)
+    public PollyHttpRetryHandler(AsyncPolicy asyncPolicy)
     {
         Verify.NotNull(asyncPolicy);
 

@@ -2,15 +2,15 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Reliability.Polly;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.Reliability.Polly;
+namespace SemanticKernel.Extensions.UnitTests.Reliability.Basic;
 
 /// <summary>
 /// Unit tests of <see cref="KernelConfig"/>.
 /// </summary>
-public class HttpRetryConfigTests
+public class BasicRetryConfigTests
 {
     [Fact]
     public async Task NegativeMaxRetryCountThrowsAsync()
@@ -18,41 +18,41 @@ public class HttpRetryConfigTests
         // Act
         await Assert.ThrowsAsync<System.ArgumentOutOfRangeException>(() =>
         {
-            var httpRetryConfig = new HttpRetryConfig() { MaxRetryCount = -1 };
+            var BasicRetryConfig = new BasicRetryConfig() { MaxRetryCount = -1 };
             return Task.CompletedTask;
         });
     }
 
     [Fact]
-    public void SetDefaultHttpRetryConfig()
+    public void SetDefaultBasicRetryConfig()
     {
         // Arrange
         var config = new KernelConfig();
-        var httpRetryConfig = new HttpRetryConfig() { MaxRetryCount = 1 };
+        var basicRetryConfig = new BasicRetryConfig() { MaxRetryCount = 1 };
 
         // Act
-        config.SetHttpRetryConfig(httpRetryConfig);
+        config.SetRetryBasic(basicRetryConfig);
 
         // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-        var httpHandlerFactory = config.HttpHandlerFactory as DefaultHttpRetryHandlerFactory;
+        Assert.IsType<BasicHttpRetryHandlerFactory>(config.HttpHandlerFactory);
+        var httpHandlerFactory = config.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
         Assert.NotNull(httpHandlerFactory);
-        Assert.Equal(httpRetryConfig, httpHandlerFactory.Config);
+        Assert.Equal(basicRetryConfig, httpHandlerFactory.Config);
     }
 
     [Fact]
-    public void SetDefaultHttpRetryConfigToDefaultIfNotSet()
+    public void SetDefaultBasicRetryConfigToDefaultIfNotSet()
     {
         // Arrange
         var config = new KernelConfig();
-        var retryConfig = new HttpRetryConfig();
+        var retryConfig = new BasicRetryConfig();
 
         // Act
-        config.SetHttpRetryConfig(retryConfig);
+        config.SetRetryBasic(retryConfig);
 
         // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-        var httpHandlerFactory = config.HttpHandlerFactory as DefaultHttpRetryHandlerFactory;
+        Assert.IsType<BasicHttpRetryHandlerFactory>(config.HttpHandlerFactory);
+        var httpHandlerFactory = config.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
         Assert.NotNull(httpHandlerFactory);
         Assert.Equal(retryConfig.MaxRetryCount, httpHandlerFactory.Config.MaxRetryCount);
         Assert.Equal(retryConfig.MaxRetryDelay, httpHandlerFactory.Config.MaxRetryDelay);
@@ -64,18 +64,18 @@ public class HttpRetryConfigTests
     }
 
     [Fact]
-    public void SetDefaultHttpRetryConfigToDefaultIfNull()
+    public void SetDefaultBasicRetryConfigToDefaultIfNull()
     {
         // Arrange
         var config = new KernelConfig();
-        var defaultConfig = new HttpRetryConfig();
+        var defaultConfig = new BasicRetryConfig();
 
         // Act
-        config.SetHttpRetryConfig();
+        config.SetRetryBasic();
 
         // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-        var httpHandlerFactory = config.HttpHandlerFactory as DefaultHttpRetryHandlerFactory;
+        Assert.IsType<BasicHttpRetryHandlerFactory>(config.HttpHandlerFactory);
+        var httpHandlerFactory = config.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
 
         Assert.NotNull(httpHandlerFactory);
         Assert.Equal(defaultConfig.MaxRetryCount, httpHandlerFactory.Config.MaxRetryCount);

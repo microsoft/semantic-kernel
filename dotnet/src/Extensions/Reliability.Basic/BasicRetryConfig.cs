@@ -6,12 +6,12 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Reliability.Polly;
+namespace Microsoft.SemanticKernel.Reliability.Basic;
 
 /// <summary>
 /// Retry configuration for DefaultKernelRetryHandler that uses RetryAfter header when present.
 /// </summary>
-public sealed record HttpRetryConfig
+public sealed record BasicRetryConfig
 {
     /// <summary>
     /// Maximum number of retries.

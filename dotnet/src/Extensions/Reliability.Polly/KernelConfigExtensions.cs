@@ -2,7 +2,11 @@
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 
-namespace Microsoft.SemanticKernel.Reliability.Polly;
+using System.Net.Http;
+using Microsoft.SemanticKernel.Reliability.Polly;
+using Polly;
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods for <see cref="KernelConfig"/> class.
@@ -13,11 +17,24 @@ public static class KernelConfigExtensions
     /// Sets the default retry configuration for any kernel http request.
     /// </summary>
     /// <param name="kernelConfig">Target instance</param>
-    /// <param name="retryConfig">Retry configuration</param>
+    /// <param name="retryPolicy">Provided AsyncPolicy</param>
     /// <returns>Returns target instance for fluent compatibility</returns>
-    public static KernelConfig SetHttpRetryConfig(this KernelConfig kernelConfig, HttpRetryConfig? retryConfig = null)
+    public static KernelConfig SetRetryPolly(this KernelConfig kernelConfig, AsyncPolicy retryPolicy)
     {
-        var pollyHandler = new DefaultHttpRetryHandlerFactory(retryConfig);
+        var pollyHandler = new PollyHttpRetryHandlerFactory(retryPolicy);
+        kernelConfig.SetHttpHandlerFactory(pollyHandler);
+        return kernelConfig;
+    }
+
+    /// <summary>
+    /// Sets the default retry configuration for any kernel http request.
+    /// </summary>
+    /// <param name="kernelConfig">Target instance</param>
+    /// <param name="retryPolicy">Provided HttpResponseMessage AsyncPolicy</param>
+    /// <returns>Returns target instance for fluent compatibility</returns>
+    public static KernelConfig SetRetryPolly(this KernelConfig kernelConfig, AsyncPolicy<HttpResponseMessage> retryPolicy)
+    {
+        var pollyHandler = new PollyHttpRetryHandlerFactory(retryPolicy);
         kernelConfig.SetHttpHandlerFactory(pollyHandler);
         return kernelConfig;
     }
