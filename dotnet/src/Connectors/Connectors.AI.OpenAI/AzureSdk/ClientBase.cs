@@ -241,7 +241,11 @@ public abstract class ClientBase
         using StreamingChatCompletions streamingChatCompletions = response.Value;
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
-            yield return new ChatStreamingResult(response.Value, choice);
+            await foreach (ChatMessage? message in choice.GetMessageStreaming(cancellationToken).ConfigureAwait(false))
+            {
+                yield return new ChatStreamingResult(response.Value, choice);
+            }
+            
         }
     }
 

@@ -41,7 +41,7 @@ public class ChatToTextConverter : IChatToTextConverter
             this._textResults = textResults;
         }
 
-        public ModelResult ModelResult => this._textResults.ModelResult;
+        public ModelResult ModelResult => this._textResults.ModelResult; // TODO return ChatModelResult
 
         public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
         {

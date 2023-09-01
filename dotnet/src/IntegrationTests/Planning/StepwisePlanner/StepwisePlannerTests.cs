@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -69,7 +70,7 @@ public sealed class StepwisePlannerTests : IDisposable
     [Theory]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     // [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2")] // Chat tests take long
-    public async void CanExecuteStepwisePlan(bool useChatModel, string prompt, string partialExpectedAnswer)
+    public async Task CanExecuteStepwisePlan(bool useChatModel, string prompt, string partialExpectedAnswer)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -96,41 +97,12 @@ public sealed class StepwisePlannerTests : IDisposable
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
-        AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
-        AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
-
-        var builder = Kernel.Builder.WithLoggerFactory(this._loggerFactory);
-
-        if (useChatModel)
-        {
-            builder.WithAzureChatCompletionService(
-                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-        else
-        {
-            builder.WithAzureTextCompletionService(
-                deploymentName: azureOpenAIConfiguration.DeploymentName,
-                endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
-        }
-
-        if (useEmbeddings)
-        {
-            builder.WithAzureTextEmbeddingGenerationService(
-                    deploymentName: azureOpenAIEmbeddingsConfiguration.DeploymentName,
-                    endpoint: azureOpenAIEmbeddingsConfiguration.Endpoint,
-                    apiKey: azureOpenAIEmbeddingsConfiguration.ApiKey)
-                .WithMemoryStorage(new VolatileMemoryStore());
-        }
-
-        var kernel = builder.Build();
-
-        return kernel;
+        return TestHelpers.InitializeAzureOpenAiKernelBuilder(
+                this._configuration,
+                this._loggerFactory,
+                useEmbeddings,
+                useChatModel)
+            .Build();
     }
 
     private readonly ILoggerFactory _loggerFactory;
