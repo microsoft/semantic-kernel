@@ -6,7 +6,7 @@ JOKE MUST BE:
 NO SEXISM, RACISM OR OTHER BIAS/BIGOTRY
 
 BE CREATIVE AND FUNNY. I WANT TO LAUGH.
-{{$style}}
+Incorporate the style suggestion, if provided: {{$style}}
 +++++
 
 {{$input}}

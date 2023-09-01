@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -42,7 +41,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         this._config = config;
 
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -197,9 +196,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             this._logger.LogError(
                 "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
 
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Error occurred on chat completion with data request execution: {ex.Message}", ex);
+            throw;
         }
     }
 
