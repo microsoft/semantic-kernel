@@ -18,7 +18,7 @@ paths:
               properties:
                 input:
                   type: string
-                  description: The inpt=ut of the request
+                  description: The input of the request
                   example: Howdy
       responses:
         '200':
