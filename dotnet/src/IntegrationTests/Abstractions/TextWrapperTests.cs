@@ -89,6 +89,38 @@ public sealed class TextWrapperTests : IDisposable
         Assert.True(numResults > 1, numResults.ToString());
     }
 
+    [Theory]
+    [InlineData("What are the first five digits of pi", "3.1415", true)]
+    [InlineData("What are the first five digits of pi", "3.1415", false)]
+    public async Task CanGetStreamingCompletionCompletedWithoutStreaming(string prompt, string partialExpectedAnswer, bool useWrappedCompletion)
+    {
+        // Arrange
+        IChatCompletion chatCompletion = this.GetChatCompletion(useWrappedCompletion);
+        ChatHistory chat = chatCompletion.CreateNewChat(systemMessage);
+        chat.AddUserMessage(prompt);
+        var chatRequestSettings = new ChatRequestSettings
+        {
+            MaxTokens = 50
+        };
+
+        // Act
+        IAsyncEnumerable<IChatStreamingResult> results = chatCompletion.GetStreamingChatCompletionsAsync(chat, chatRequestSettings);
+
+        // Assert
+        var sb = new StringBuilder();
+        int numResults = 0;
+        await foreach (IChatStreamingResult result in results)
+        {
+            ChatMessageBase message = await result.GetChatMessageAsync();
+            Assert.Equal(AuthorRole.Assistant, message.Role);
+            sb.Append(message.Content);
+            numResults++;
+        }
+
+        Assert.Contains(partialExpectedAnswer, sb.ToString(), StringComparison.InvariantCultureIgnoreCase);
+        Assert.Equal(numResults, 1);
+    }
+
     private IChatCompletion GetChatCompletion(bool useWrappedChatModel)
     {
         var kernel = this.InitializeKernel(!useWrappedChatModel);

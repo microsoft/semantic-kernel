@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
@@ -30,16 +30,28 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     /// <inheritdoc/>
     public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
     {
-        var chatMessage = await this._choice.GetMessageStreaming(cancellationToken)
-                                                .LastOrDefaultAsync(cancellationToken)
-                                                .ConfigureAwait(false);
+        string? role = null;
+        var content = new StringBuilder();
 
-        if (chatMessage is null)
+        await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
+        {
+            if (role is null)
+            {
+                role = message.Role.ToString();
+            }
+            else if (role != message.Role.ToString())
+            {
+                throw new SKException("Multiple roles in streaming response");
+            }
+            content.Append(message.Content);
+        }
+
+        if (role is null)
         {
             throw new SKException("Unable to get chat message from stream");
         }
 
-        return new SKChatMessage(chatMessage);
+        return new SKChatMessage(role, content.ToString());
     }
 
     /// <inheritdoc/>
