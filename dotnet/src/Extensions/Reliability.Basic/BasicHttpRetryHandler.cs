@@ -189,8 +189,10 @@ internal sealed class BasicHttpRetryHandler : DelegatingHandler
                 ? this._config.MinRetryDelay
                 : retryAfter ?? default;
 
-        // If exponential backoff is enabled, double the delay for each retry
-        if (this._config.UseExponentialBackoff)
+        // If exponential backoff is enabled, and the server didn't provide a RetryAfter header, double the delay for each retry
+        if (this._config.UseExponentialBackoff
+            && response?.Headers.RetryAfter?.Date.HasValue == false
+            && response?.Headers.RetryAfter?.Delta.HasValue == false)
         {
             for (var backoffRetryCount = 1; backoffRetryCount < retryCount + 1; backoffRetryCount++)
             {
