@@ -2,15 +2,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion.TextWrapper;
 
 public class ChatToTextConverter : IChatToTextConverter
 {
+    public const string IncomingMessageStart = "<|im_start|>";
+    public const string IncomingMessageEnd = "<|im_end|>";
+    private static readonly string UserIdentifier = $"[{AuthorRole.User.Label}]";
+    private static readonly string AssistantIdentifier = $"[{AuthorRole.Assistant.Label}]";
+
+    private static readonly string[] defaultStopSequences = new[] {
+        IncomingMessageStart,
+        IncomingMessageEnd,
+        UserIdentifier,
+        AssistantIdentifier };
+
     private sealed class ChatMessage : ChatMessageBase
     {
         public ChatMessage(AuthorRole authorRole, string content) : base(authorRole, content)
@@ -27,6 +41,8 @@ public class ChatToTextConverter : IChatToTextConverter
             this._textResults = textResults;
         }
 
+        public ModelResult ModelResult => this._textResults.ModelResult;
+
         public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
         {
             string result = await this._textResults.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
@@ -35,7 +51,7 @@ public class ChatToTextConverter : IChatToTextConverter
         }
     }
 
-    /*private sealed class ChatStreamingResultFromTextStreamingResult : IChatStreamingResult
+    private sealed class ChatStreamingResultFromTextStreamingResult : IChatStreamingResult
     {
         private readonly ITextStreamingResult _textResults;
 
@@ -44,18 +60,22 @@ public class ChatToTextConverter : IChatToTextConverter
             this._textResults = textResults;
         }
 
+        public ModelResult ModelResult => this._textResults.ModelResult;
+
         public async Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
         {
             string result = await this._textResults.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
             return new ChatMessage(AuthorRole.Assistant, result);
         }
 
-        public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync(CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation]CancellationToken cancellationToken = default)
         {
-            // TODO actually stream
-            yield return await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
+            await foreach (string? message in this._textResults.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
+            {
+                yield return new ChatMessage(AuthorRole.Assistant, message);
+            }
         }
-    }*/
+    }
 
     public CompleteRequestSettings ChatSettingsToCompleteSettings(ChatRequestSettings? textSettings)
     {
@@ -66,23 +86,22 @@ public class ChatToTextConverter : IChatToTextConverter
                 Temperature = textSettings.Temperature,
                 FrequencyPenalty = textSettings.FrequencyPenalty,
                 MaxTokens = textSettings.MaxTokens,
-                StopSequences = textSettings.StopSequences,
                 TopP = textSettings.TopP,
                 PresencePenalty = textSettings.PresencePenalty,
                 ResultsPerPrompt = textSettings.ResultsPerPrompt,
                 TokenSelectionBiases = textSettings.TokenSelectionBiases
             };
 
-        // TODO HACK
-        //settings.StopSequences = new List<string>() { "USER", "\nASSISTANT" };
-        //settings.StopSequences = new List<string>() { "<im_start>" };
-        settings.StopSequences = new List<string>() {
-                "<|im_end|>",
-                "<|im_start|>",
-                "[assistant]",
-                "[user]"
-            };
-        settings.MaxTokens ??= 200;
+        int numTextStopSequences = textSettings?.StopSequences?.Count ?? 0;
+        var stopSequences = new List<string>(defaultStopSequences.Length + numTextStopSequences);
+
+        stopSequences.AddRange(defaultStopSequences);
+        if (numTextStopSequences > 0)
+        {
+            stopSequences.AddRange(textSettings.StopSequences);
+        }
+
+        settings.StopSequences = stopSequences;
 
         return settings;
     }
@@ -96,7 +115,8 @@ public class ChatToTextConverter : IChatToTextConverter
             WriteRolePrefix(sb, message.Role);
 
             sb.Append(message.Content);
-            sb.Append("<|im_end|>\n");
+
+            sb.Append($"{IncomingMessageEnd}\n");
         }
 
         WriteRolePrefix(sb, AuthorRole.Assistant);
@@ -108,9 +128,7 @@ public class ChatToTextConverter : IChatToTextConverter
     {
         if (role != AuthorRole.System)
         {
-            sb.Append("<|im_start|>[");
-            sb.Append(role);
-            sb.Append("]\n");
+            sb.Append($"{IncomingMessageStart}[{role}]\n");
         }
     }
 
@@ -130,12 +148,11 @@ public class ChatToTextConverter : IChatToTextConverter
         return chatResults;
     }
 
-    public IAsyncEnumerable<IChatStreamingResult> TextStreamingResultToChatStreamingResult(IAsyncEnumerable<ITextStreamingResult> result)
+    public async IAsyncEnumerable<IChatStreamingResult> TextStreamingResultToChatStreamingResult(IAsyncEnumerable<ITextStreamingResult> results)
     {
-        throw new NotImplementedException("Streaming is currently not supported in the ChatToText converter");
-        /*await foreach (ITextStreamingResult message in result)
+        await foreach (ITextStreamingResult result in results)
         {
-            yield return new ChatStreamingResultFromTextStreamingResult(message);
-        }*/
+            yield return new ChatStreamingResultFromTextStreamingResult(result);
+        }
     }
 }

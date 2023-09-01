@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion.TextWrapper;
 public interface IChatToTextConverter
 {
     string ChatToText(ChatHistory chat);

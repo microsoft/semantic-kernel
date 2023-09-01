@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.AI.ChatCompletion.TextWrapper;
 public class TextCompletionChatWrapper : IChatCompletion, ITextCompletion
 {
     private readonly ITextCompletion _wrappedCompletion;
