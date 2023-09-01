@@ -26,7 +26,7 @@ public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
         ILoggerFactory? loggerFactory = null)
     {
         this._planner = planner;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(InstrumentedSequentialPlanner)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedSequentialPlanner)) : NullLogger.Instance;
     }
 
     /// <inheritdoc />

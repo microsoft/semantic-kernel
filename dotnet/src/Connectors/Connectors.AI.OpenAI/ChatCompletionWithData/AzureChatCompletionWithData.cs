@@ -41,7 +41,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         this._config = config;
 
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>

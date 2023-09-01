@@ -177,7 +177,7 @@ public static class Example42_KernelBuilder
         public RetryThreeTimes(ILoggerFactory? loggerFactory = null)
         {
             this._policy = GetPolicy(loggerFactory is not null ?
-                loggerFactory.CreateLogger(nameof(RetryThreeTimes)) :
+                loggerFactory.CreateLogger(this.GetType()) :
                 NullLogger.Instance);
         }
 

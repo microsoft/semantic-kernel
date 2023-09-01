@@ -29,7 +29,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         ITimeProvider? timeProvider = null)
     {
         this._config = config;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(DefaultHttpRetryHandler)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DefaultHttpRetryHandler)) : NullLogger.Instance;
         this._delayProvider = delayProvider ?? new TaskDelayProvider();
         this._timeProvider = timeProvider ?? new DefaultTimeProvider();
     }

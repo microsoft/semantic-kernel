@@ -53,7 +53,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 
         this._search = new CustomSearchAPIService(initializer);
         this._searchEngineId = searchEngineId;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(GoogleConnector)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(GoogleConnector)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>

@@ -24,7 +24,7 @@ public class InstrumentedStepwisePlanner : IStepwisePlanner
         ILoggerFactory? loggerFactory = null)
     {
         this._planner = planner;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(InstrumentedStepwisePlanner)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedStepwisePlanner)) : NullLogger.Instance;
     }
 
     /// <inheritdoc />

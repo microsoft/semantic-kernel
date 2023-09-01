@@ -32,7 +32,7 @@ public class PromptTemplateEngine : IPromptTemplateEngine
     public PromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(nameof(PromptTemplateEngine));
+        this._logger = this._loggerFactory.CreateLogger(typeof(PromptTemplateEngine));
         this._tokenizer = new TemplateTokenizer(loggerFactory);
     }
 

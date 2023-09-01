@@ -154,7 +154,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
 
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(SemanticFunction)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this.Parameters = template.GetParameters();

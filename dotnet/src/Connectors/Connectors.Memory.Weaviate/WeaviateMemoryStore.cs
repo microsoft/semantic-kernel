@@ -65,7 +65,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
         this._endpoint = new Uri(endpoint);
         this._apiKey = apiKey;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(WeaviateMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
 
@@ -87,7 +87,7 @@ public class WeaviateMemoryStore : IMemoryStore
 
         this._apiKey = apiKey;
         this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(WeaviateMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = httpClient;
     }
 

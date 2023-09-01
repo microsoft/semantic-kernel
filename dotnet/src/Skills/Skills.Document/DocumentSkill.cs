@@ -64,7 +64,7 @@ public sealed class DocumentSkill
     {
         this._documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
         this._fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(DocumentSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DocumentSkill)) : NullLogger.Instance;
     }
 
     /// <summary>
