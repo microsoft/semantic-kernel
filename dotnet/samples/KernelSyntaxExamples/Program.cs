@@ -32,7 +32,7 @@ public static class Program
         // await Example09_FunctionTypes.RunAsync().SafeWaitAsync(cancelToken);
         // await Example10_DescribeAllSkillsAndFunctions.RunAsync().SafeWaitAsync(cancelToken);
         // await Example11_WebSearchQueries.RunAsync().SafeWaitAsync(cancelToken);
-        await Example12_SequentialPlanner.RunAsync().SafeWaitAsync(cancelToken);
+        // await Example12_SequentialPlanner.RunAsync().SafeWaitAsync(cancelToken);
         // await Example13_ConversationSummarySkill.RunAsync().SafeWaitAsync(cancelToken);
         // await Example14_SemanticMemory.RunAsync().SafeWaitAsync(cancelToken);
         // await Example15_MemorySkill.RunAsync().SafeWaitAsync(cancelToken);

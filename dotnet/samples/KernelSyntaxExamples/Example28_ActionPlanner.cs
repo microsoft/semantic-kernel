@@ -22,17 +22,11 @@ public static class Example28_ActionPlanner
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
 
-        // var builder = new KernelBuilder()
-        //     .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-        //     .WithOpenAIChatCompletionService(
-        //         TestConfiguration.OpenAI.ChatModelId,
-        //         TestConfiguration.OpenAI.ApiKey);
-
         string folder = RepoFiles.SampleSkillsPath();
-        IKernel kernel = builder.Build();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+        // IKernel kernel = builder.Build();
+        // kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        // kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        // kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
 
         // We're going to ask the planner to find a function to achieve this goal.
         var goal = "Write a joke about Cleopatra in the style of Hulk Hogan.";
@@ -41,10 +35,10 @@ public static class Example28_ActionPlanner
         // to execute and achieve the goal requested.
         // var plan = await planner.CreatePlanAsync(goal);
         // Execute the full plan (which is a single function)
-        SKContext result = await UseActionPlanner(kernel, goal).ConfigureAwait(false);
+        // SKContext result = await UseActionPlanner(kernel, goal).ConfigureAwait(false);
 
         //Show the result, which should match the given goal
-        Console.WriteLine(result);
+        // Console.WriteLine(result);
 
         IKernel kernel2 = builder.Build();
         kernel2.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
