@@ -55,37 +55,31 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         : base(NamedArgBlock.TrimWhitespace(text), logger)
     {
         var argParts = this.Content.Split(Symbols.NamedArgBlockSeparator);
-        if (argParts.Length > 2)
+        if (argParts.Length != 2)
         {
-            this.Logger.LogError("Invalid named argument `{Text}`.", text);
-            throw new SKException($"Invalid named argument `{text}`. A named argument can contain at most one equals sign separating the arg name from the arg value.");
+            this.Logger.LogError("Invalid named argument `{Text}`", text);
+            throw new SKException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
-        if (argParts.Length == 2)
+        this.Name = argParts[0];
+        this._argNameAsVarBlock = new VarBlock($"{Symbols.VarPrefix}{argParts[0]}");
+        var argValue = argParts[1];
+        if (argValue.Length == 0)
         {
-            var trimmedArgParts = NamedArgBlock.GetTrimmedParts(text);
-            this.Name = trimmedArgParts[0];
-            this._argNameAsVarBlock = new VarBlock($"{Symbols.VarPrefix}{trimmedArgParts[0]}");
-            var secondPart = trimmedArgParts[1];
-            if (secondPart.Length == 0)
-            {
-                this.Logger.LogError("Invalid named argument `{Text}`", text);
-                throw new SKException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
-            }
-            else if (secondPart[0] == Symbols.VarPrefix)
-            {
-                this._argValueAsVarBlock = new VarBlock(secondPart);
-            }
-            else
-            {
-                this._valBlock = new ValBlock(trimmedArgParts[1]);
-            }
-
-            return;
+            this.Logger.LogError("Invalid named argument `{Text}`", text);
+            throw new SKException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
-        this.Logger.LogError("Invalid named argument `{Text}`", text);
-        throw new SKException($"A function named argument must contain a name and value separated by a '{Symbols.NamedArgBlockSeparator}' character.");
+        if (argValue[0] == Symbols.VarPrefix)
+        {
+            this._argValueAsVarBlock = new VarBlock(argValue);
+        }
+        else
+        {
+            this._valBlock = new ValBlock(argValue);
+        }
+
+        return;
     }
 
     /// <summary>
