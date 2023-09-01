@@ -86,7 +86,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogDebug("Vectors not found {Message}", e.Message);
+            this._logger.LogError(e, "Vectors not found {Message}", e.Message);
             throw;
         }
 
@@ -141,7 +141,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogDebug("Request for vector with payload ID failed {Message}", e.Message);
+            this._logger.LogError(e, "Request for vector with payload ID failed {Message}", e.Message);
             throw;
         }
 
@@ -419,11 +419,12 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.NotFound)
         {
+            this._logger.LogDebug(e, "Collection {Name} not found: {Message}, {Response}", collectionName, e.Message, e.ResponseContent);
             return false;
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogError("Collection fetch failed: {Message}, {Response}", e.Message, e.ResponseContent);
+            this._logger.LogError(e, "Collection fetch failed: {Message}, {Response}", e.Message, e.ResponseContent);
             throw;
         }
     }
@@ -443,7 +444,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogError("Collection listing failed: {Message}, {Response}", e.Message, e.ResponseContent);
+            this._logger.LogError(e, "Collection listing failed: {Message}, {Response}", e.Message, e.ResponseContent);
             throw;
         }
 

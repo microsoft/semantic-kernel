@@ -154,7 +154,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (HttpOperationException e) when (e.StatusCode == HttpStatusCode.NotFound)
         {
-            this._logger.LogDebug("Collection: {CollectionName}, with class name: {ClassName}, does not exist.", collectionName, className);
+            this._logger.LogDebug(e, "Collection: {CollectionName}, with class name: {ClassName}, does not exist.", collectionName, className);
             return false;
         }
         catch (HttpOperationException e)
@@ -529,7 +529,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogDebug("Weaviate responded with {StatusCode}", e.StatusCode);
+            this._logger.LogError(e, "Weaviate responded with {StatusCode}", e.StatusCode);
             throw;
         }
     }

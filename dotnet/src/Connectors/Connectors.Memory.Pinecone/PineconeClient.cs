@@ -65,7 +65,7 @@ public sealed class PineconeClient : IPineconeClient
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogError("Error occurred on Get Vectors request: {Message}", e.Message);
+            this._logger.LogError(e, "Error occurred on Get Vectors request: {Message}", e.Message);
             yield break;
         }
 
@@ -118,7 +118,7 @@ public sealed class PineconeClient : IPineconeClient
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogError("Error occurred on Query Vectors request: {Message}", e.Message);
+            this._logger.LogError(e, "Error occurred on Query Vectors request: {Message}", e.Message);
             yield break;
         }
 
@@ -225,7 +225,7 @@ public sealed class PineconeClient : IPineconeClient
             }
             catch (HttpOperationException e)
             {
-                this._logger.LogError("Failed to upsert vectors {Message}", e.Message);
+                this._logger.LogError(e, "Failed to upsert vectors {Message}", e.Message);
                 throw;
             }
 
@@ -283,7 +283,7 @@ public sealed class PineconeClient : IPineconeClient
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogError("Delete operation failed: {Message}", e.Message);
+            this._logger.LogError(e, "Delete operation failed: {Message}", e.Message);
             throw;
         }
     }
@@ -306,7 +306,7 @@ public sealed class PineconeClient : IPineconeClient
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogWarning("Vector update for Document {Id} failed. {Message}", document.Id, e.Message);
+            this._logger.LogError(e, "Vector update for Document {Id} failed. {Message}", document.Id, e.Message);
             throw;
         }
     }
@@ -333,7 +333,7 @@ public sealed class PineconeClient : IPineconeClient
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogDebug("Index not found {Message}", e.Message);
+            this._logger.LogError(e, "Index not found {Message}", e.Message);
             throw;
         }
 
