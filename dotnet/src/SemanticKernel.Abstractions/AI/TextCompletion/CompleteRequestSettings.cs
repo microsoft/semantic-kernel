@@ -68,8 +68,8 @@ public class CompleteRequestSettings
     /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
-    /// <param name="config"></param>
-    /// <returns>An instance of <see cref="CompleteRequestSettings"/> </returns>
+    /// <param name="config">Template configuration</param>
+    /// <returns>An instance of <see cref="CompleteRequestSettings"/></returns>
     public static CompleteRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
     {
         var settings = new CompleteRequestSettings
@@ -82,9 +82,9 @@ public class CompleteRequestSettings
             StopSequences = config.StopSequences,
         };
 
-        if (config.ChatSystemPrompt is not null)
+        if (!string.IsNullOrWhiteSpace(config.ChatSystemPrompt))
         {
-            settings.ChatSystemPrompt = config.ChatSystemPrompt;
+            settings.ChatSystemPrompt = config.ChatSystemPrompt!;
         }
 
         return settings;
