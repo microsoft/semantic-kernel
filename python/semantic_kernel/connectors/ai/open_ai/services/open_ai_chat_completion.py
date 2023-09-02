@@ -4,6 +4,7 @@ from logging import Logger
 from typing import Any, List, Optional, Tuple, Union
 
 import openai
+from litellm import acompletion
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -201,7 +202,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         ]
 
         try:
-            response: Any = await openai.ChatCompletion.acreate(
+            response: Any = await acompletion(
                 **model_args,
                 api_key=self._api_key,
                 api_type=self._api_type,
