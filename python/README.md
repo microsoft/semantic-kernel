@@ -26,7 +26,7 @@ AZURE_OPENAI_API_KEY=""
 
 ```python
 import semantic_kernel as sk
-from semantic_kernel.connectors.ai.open_ai import OpenAITextCompletion, AzureTextCompletion
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, AzureTextCompletion
 
 kernel = sk.Kernel()
 
