@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
@@ -20,61 +20,26 @@ public static class Example56_OpenAIChatCompletionWithFunctionCalling
 {
     public static async Task RunAsync()
     {
-        await AzureOpenAIChatCompletionFunctionCallAsync();
-        await OpenAIChatCompletionFunctionCallAsync();
-        await OpenAIStructuredResponseAsync();
+        await RunChatAsync();
+        await RunChatWithResponse();
         await RunAsSKFunctionCall();
     }
 
 
-    private static async Task AzureOpenAIChatCompletionFunctionCallAsync()
+    /// <summary>
+    ///  Demonstrates how to use the Azure OpenAI chat completion service with function calling and a raw json response
+    /// </summary>
+    private static async Task RunChatAsync()
     {
-        Console.WriteLine("======== Azure OpenAI - Function Calling ========");
+        var builder = new KernelBuilder()
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
 
-        AzureChatCompletion azureChatCompletion = new(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
-
-        await RunChatAsync(azureChatCompletion);
-    }
-
-
-    private static async Task AzureOpenAIStructuredResponseAsync()
-    {
-        Console.WriteLine("======== Open AI - Function Calling ========");
-
-        AzureChatCompletion azureChatCompletion = new(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
-
-        await RunChatWithResponse(azureChatCompletion);
-    }
-
-
-    private static async Task OpenAIChatCompletionFunctionCallAsync()
-    {
-        Console.WriteLine("======== Open AI - Function Calling ========");
-
-        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
-
-        await RunChatAsync(openAIChatCompletion);
-    }
-
-
-    private static async Task OpenAIStructuredResponseAsync()
-    {
-        Console.WriteLine("======== Open AI - Function Calling ========");
-
-        OpenAIChatCompletion openAIChatCompletion = new(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
-
-        await RunChatWithResponse(openAIChatCompletion);
-    }
-
-
-    private static async Task RunChatAsync(IOpenAIChatCompletion chatCompletion)
-    {
+        IKernel kernel = builder.Build();
+        IChatCompletion chatCompletion = kernel.GetService<IChatCompletion>();
         var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
 
         // First user message
@@ -90,30 +55,45 @@ public static class Example56_OpenAIChatCompletionWithFunctionCalling
         };
 
         // First bot assistant message as a json response
-        var functionCallResponse = await chatCompletion.GenerateFunctionCallAsync(chatHistory, chatRequestSettings, null, new[] { SuggestBooks, SuggestVacationDestinations });
+        var functionCallResponse = await chatCompletion.GenerateFunctionCallAsync(chatHistory, chatRequestSettings, new[] { SuggestBooks, SuggestVacationDestinations });
         Console.WriteLine(functionCallResponse);
         Console.WriteLine();
     }
 
 
-    private static async Task RunChatWithResponse(IOpenAIChatCompletion chatCompletion)
+    /// <summary>
+    ///  Demonstrates how to use the Azure OpenAI chat completion service with function calling and a structured response
+    /// </summary>
+    private static async Task RunChatWithResponse()
     {
+
+        var builder = new KernelBuilder()
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
+
+        IKernel kernel = builder.Build();
+        IChatCompletion chatCompletion = kernel.GetService<IChatCompletion>();
+
         var chatHistory = chatCompletion.CreateNewChat("You are a librarian, expert about books");
 
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
 
-        var chatRequestSettings = new ChatRequestSettings
+        var functionCallRequestSettings = new FunctionCallRequestSettings()
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,
             Temperature = 1,
             TopP = 0.5,
-            FrequencyPenalty = 0
+            FrequencyPenalty = 0,
+            CallableFunctions = new List<FunctionDefinition>(new[] { SuggestBooks, SuggestVacationDestinations })
         };
 
         // First bot assistant message as a json response
-        List<string>? bookRecommendations = await chatCompletion.GenerateResponseAsync<List<string>>(chatHistory, chatRequestSettings, null, new[] { SuggestBooks, SuggestVacationDestinations });
+        List<string>? bookRecommendations = await chatCompletion.GenerateResponseAsync<List<string>>(chatHistory, functionCallRequestSettings);
 
         if (bookRecommendations != null)
         {
@@ -124,6 +104,9 @@ public static class Example56_OpenAIChatCompletionWithFunctionCalling
     }
 
 
+    /// <summary>
+    /// Demonstrates how to use the Azure OpenAI chat completion service with function calling and execute the function call
+    /// </summary>
     private static async Task RunAsSKFunctionCall()
     {
         var builder = new KernelBuilder()
