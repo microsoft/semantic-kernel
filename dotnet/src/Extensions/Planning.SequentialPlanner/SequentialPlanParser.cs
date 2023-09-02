@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
 using Orchestration;
 using SkillDefinition;

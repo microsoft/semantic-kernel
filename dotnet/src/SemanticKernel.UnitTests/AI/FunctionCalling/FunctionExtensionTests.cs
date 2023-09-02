@@ -4,7 +4,7 @@ namespace SemanticKernel.UnitTests.AI.FunctionCalling;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Xunit;
 

@@ -6,15 +6,11 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
 using Azure.AI.OpenAI;
-using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
 using Orchestration;
 using SkillDefinition;
-using TemplateEngine.Prompt;
-
-// using FunctionCall = Connectors.AI.OpenAI.AzureSdk.FunctionCalling.FunctionCall;
 
 
 /// <summary>
@@ -34,6 +30,7 @@ public class StructuredSequentialPlanner : ISequentialPlanner
         string? prompt = null)
     {
         Verify.NotNull(kernel);
+        _kernel = kernel;
         Config = config ?? new SequentialPlannerConfig();
 
         Config.ExcludedSkills.Add(RestrictedSkillName);
@@ -44,17 +41,6 @@ public class StructuredSequentialPlanner : ISequentialPlanner
         {
             throw new Exception("The prompt template is empty");
         }
-
-        _functionFlowFunction = kernel.CreateSemanticFunction(
-            _promptTemplate,
-            skillName: RestrictedSkillName,
-            description: "Given a request or command or goal generate a step by step plan to " +
-                         "fulfill the request using functions. This ability is also known as decision making and function flow",
-            maxTokens: Config.MaxTokens ?? 1024,
-            temperature: 0.0);
-
-        _context = kernel.CreateNewContext();
-        _chatCompletion = kernel.GetService<IChatCompletion>();
     }
 
 
@@ -66,24 +52,20 @@ public class StructuredSequentialPlanner : ISequentialPlanner
             throw new SKException("The goal specified is empty");
         }
 
+        _context = _kernel.CreateNewContext();
+        _context.Variables.Update(goal);
         List<FunctionDefinition> relevantFunctionDefinitions = await _context.GetFunctionDefinitions(goal, Config, cancellationToken).ConfigureAwait(false);
 
-        relevantFunctionDefinitions.Add(SequentialPlan);
-        _context.Variables.Update(goal);
+        _functionFlowFunction = _kernel.CreateFunctionCall(
+            skillName: RestrictedSkillName,
+            promptTemplate: _promptTemplate,
+            callFunctionsAutomatically: false,
+            targetFunction: SequentialPlan,
+            callableFunctions: relevantFunctionDefinitions,
+            maxTokens: Config.MaxTokens ?? 1024, temperature: 0.0);
 
-        // temporary solution to pass the function definitions to the model
-        // TODO: have to find a better way to pass the function definitions to the model - SKFunctionCall that inherits from ISKFunction and has a FunctionDefinitions property?
-        var templateEngine = new PromptTemplateEngine();
-        var prompt = await templateEngine.RenderAsync(_promptTemplate, _context, cancellationToken).ConfigureAwait(false);
-        var openAIChatCompletion = (IOpenAIChatCompletion)_chatCompletion;
-
-        var chatHistory = openAIChatCompletion.CreateNewChat(prompt);
-
-        List<SequentialPlanCall>? functionCalls = await openAIChatCompletion.GenerateResponseAsync<List<SequentialPlanCall>>(
-            chatHistory,
-            new ChatRequestSettings()
-                { Temperature = 0.0, MaxTokens = 1024 },
-            SequentialPlan, relevantFunctionDefinitions.ToArray(), cancellationToken: cancellationToken).ConfigureAwait(false);
+        SKContext? result = await _functionFlowFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        List<SequentialPlanCall>? functionCalls = result.ToFunctionCallResult<List<SequentialPlanCall>>();
 
         if (functionCalls is null)
         {
@@ -98,14 +80,13 @@ public class StructuredSequentialPlanner : ISequentialPlanner
 
     private SequentialPlannerConfig Config { get; }
 
-    private readonly SKContext _context;
-
-    private readonly IChatCompletion _chatCompletion;
+    private SKContext? _context;
+    private readonly IKernel _kernel;
 
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed
     /// </summary>
-    private readonly ISKFunction _functionFlowFunction;
+    private ISKFunction? _functionFlowFunction;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation

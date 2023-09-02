@@ -8,16 +8,14 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using AI.ChatCompletion;
 using Azure.AI.OpenAI;
-using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Connectors.AI.OpenAI.FunctionCalling;
+using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
 using Extensions.Logging;
 using Orchestration;
 using SemanticFunctions;
 using SkillDefinition;
-using TemplateEngine.Prompt;
-using FunctionCall = Connectors.AI.OpenAI.AzureSdk.FunctionCalling.FunctionCall;
 
 
 public class StructuredStepwisePlanner : IStepwisePlanner
@@ -66,7 +64,7 @@ public class StructuredStepwisePlanner : IStepwisePlanner
             throw new SKException("The goal specified is empty");
         }
 
-        var executeFunction = _kernel.Func(this, "ExecutePlan");
+        var executeFunction = _kernel.Func(ToString(), "ExecutePlan");
         Plan planStep = new(executeFunction);
 
         planStep.Parameters.Set("question", goal);
@@ -92,7 +90,6 @@ public class StructuredStepwisePlanner : IStepwisePlanner
     {
         List<StructuredStep> stepsTaken = new();
 
-        var chatCompletion = (IOpenAIChatCompletion)_kernel.GetService<IChatCompletion>();
         List<FunctionDefinition> functionDefinitions = GetAvailableFunctions().ToList();
 
         if (!string.IsNullOrEmpty(question))
@@ -103,26 +100,22 @@ public class StructuredStepwisePlanner : IStepwisePlanner
 
                 context.Variables.Set("agentScratchPad", scratchPad);
 
-                var templateEngine = new PromptTemplateEngine();
-                var prompt = await templateEngine.RenderAsync(_promptTemplate, _context).ConfigureAwait(false);
-                var chatHistory = chatCompletion.CreateNewChat(prompt);
+                _systemStepFunction = _kernel.CreateFunctionCall(
+                    skillName: RestrictedSkillName,
+                    promptTemplate: _promptTemplate,
+                    callFunctionsAutomatically: false,
+                    targetFunction: StepwisePlan,
+                    callableFunctions: functionDefinitions,
+                    maxTokens: 1024, temperature: 0.0);
 
-                var nextStep = await chatCompletion.GenerateResponseAsync<StructuredStep>(
-                    chatHistory,
-                    new ChatRequestSettings()
-                        { Temperature = 0.0, MaxTokens = Config.MaxTokens },
-                    StepwisePlan, functionDefinitions.ToArray()).ConfigureAwait(false);
+                SKContext? result = await _systemStepFunction.InvokeAsync(context).ConfigureAwait(false);
 
-                // var llmResponse = await _systemStepFunction.InvokeAsync(context).ConfigureAwait(false);
+                if (result.ErrorOccurred)
+                {
+                    throw new SKException($"Error occurred while executing stepwise plan: {result.LastException?.Message}", result.LastException);
+                }
 
-                // if (llmResponse.ErrorOccurred)
-                // {
-                //     throw new SKException($"Error occurred while executing stepwise plan: {llmResponse.LastException?.Message}", llmResponse.LastException);
-                // }
-
-                // Attempt to deserialize the response
-                // var actionText = llmResponse.Result.Trim();
-                // var nextStep = JsonSerializer.Deserialize<StructuredStep>(actionText);
+                StructuredStep? nextStep = result.ToFunctionCallResult<StructuredStep>();
 
                 if (nextStep == null)
                 {
@@ -156,16 +149,9 @@ public class StructuredStepwisePlanner : IStepwisePlanner
                     try
                     {
                         await Task.Delay(Config.MinIterationTimeMs).ConfigureAwait(false);
-                        var result = await InvokeActionAsync(nextStep).ConfigureAwait(false);
+                        string actionResult = await InvokeActionAsync(nextStep).ConfigureAwait(false);
 
-                        if (string.IsNullOrEmpty(result))
-                        {
-                            nextStep.Observation = "Got no result from action";
-                        }
-                        else
-                        {
-                            nextStep.Observation = result;
-                        }
+                        nextStep.Observation = string.IsNullOrEmpty(actionResult) ? "Got no result from action" : actionResult;
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
@@ -177,7 +163,7 @@ public class StructuredStepwisePlanner : IStepwisePlanner
                 }
                 else
                 {
-                    _logger?.LogInformation("{Action}: No action to take");
+                    _logger?.LogInformation($"{Action}: No action to take");
                 }
 
                 // sleep 3 seconds
@@ -247,7 +233,7 @@ public class StructuredStepwisePlanner : IStepwisePlanner
     }
 
 
-    private async Task<string> InvokeActionAsync(FunctionCall functionCall)
+    private async Task<string> InvokeActionAsync(FunctionCallResult functionCall)
     {
         _context.Skills.TryGetFunction(functionCall.Function, out var targetFunction);
 
@@ -325,7 +311,7 @@ public class StructuredStepwisePlanner : IStepwisePlanner
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
 
-    private readonly ISKFunction _systemStepFunction;
+    private ISKFunction _systemStepFunction;
 
     private readonly string _promptTemplate;
 

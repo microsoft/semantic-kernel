@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Planning.Action;
 
-using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Connectors.AI.OpenAI.FunctionCalling;
 
 
 /// <summary>
 ///  A function call for use with the Action Planner
 /// </summary>
-public class ActionPlanCall : FunctionCall
+public class ActionFunctionCall : FunctionCallResult
 {
     /// <summary>
     /// Rationale given by the LLM for choosing the function

@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
-using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Extensions.Logging;
 using Memory;
 using Planning.Sequential;
@@ -51,6 +51,14 @@ public static class SKContextSequentialPlannerExtensions
     }
 
 
+    /// <summary>
+    ///  Gets a list of functions that are available to the user based on the semantic query and the excluded skills and functions.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="semanticQuery"></param>
+    /// <param name="config"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public static async Task<List<FunctionDefinition>> GetFunctionDefinitions(
         this SKContext context,
         string? semanticQuery = null,
@@ -146,7 +154,7 @@ public static class SKContextSequentialPlannerExtensions
             if (function != null)
             {
                 logger ??= context.LoggerFactory.CreateLogger(typeof(SKContext));
-              
+
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
                     logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFullyQualifiedName());

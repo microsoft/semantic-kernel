@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
-using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Connectors.AI.OpenAI.FunctionCalling;
 
 
 /// <summary>
 /// Function call for use with the Sequential Planner
 /// </summary>
-public class SequentialPlanCall : FunctionCall
+public class SequentialPlanCall : FunctionCallResult
 {
     /// <summary>
     /// Rationale given by the LLM for choosing the function

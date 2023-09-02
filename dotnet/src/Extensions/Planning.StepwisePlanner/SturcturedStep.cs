@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Planning.Stepwise;
 
-using Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+using Connectors.AI.OpenAI.FunctionCalling;
 
 
-public class StructuredStep : FunctionCall
+public class StructuredStep : FunctionCallResult
 {
     public string? Thought { get; set; }
 
