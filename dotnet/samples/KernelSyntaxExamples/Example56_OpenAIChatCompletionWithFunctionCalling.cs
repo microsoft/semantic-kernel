@@ -5,9 +5,12 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensions;
+using Microsoft.SemanticKernel.SkillDefinition;
+using RepoUtils;
 
 
 /// <summary>
@@ -20,6 +23,7 @@ public static class Example56_OpenAIChatCompletionWithFunctionCalling
         await AzureOpenAIChatCompletionFunctionCallAsync();
         await OpenAIChatCompletionFunctionCallAsync();
         await OpenAIStructuredResponseAsync();
+        await RunAsSKFunctionCall();
     }
 
 
@@ -86,7 +90,7 @@ public static class Example56_OpenAIChatCompletionWithFunctionCalling
         };
 
         // First bot assistant message as a json response
-        var functionCallResponse = await chatCompletion.GenerateMessageAsync(chatHistory, chatRequestSettings, null, new[] { SuggestBooks, SuggestVacationDestinations });
+        var functionCallResponse = await chatCompletion.GenerateFunctionCallAsync(chatHistory, chatRequestSettings, null, new[] { SuggestBooks, SuggestVacationDestinations });
         Console.WriteLine(functionCallResponse);
         Console.WriteLine();
     }
@@ -117,6 +121,32 @@ public static class Example56_OpenAIChatCompletionWithFunctionCalling
             Console.WriteLine(string.Join(", \n", bookRecommendations));
         }
         Console.WriteLine();
+    }
+
+
+    private static async Task RunAsSKFunctionCall()
+    {
+        var builder = new KernelBuilder()
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithAzureChatCompletionService(
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey);
+
+        string folder = RepoFiles.SampleSkillsPath();
+
+        IKernel kernel = builder.Build();
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+        //We're going to ask the planner to find a function to achieve this goal.
+        var goal = "Write a joke about Cleopatra in the style of Hulk Hogan.";
+
+        ISKFunction functionCall = kernel.CreateFunctionCall(goal, callFunctionsAutomatically: true, maxTokens: 1024);
+        var context = kernel.CreateNewContext();
+        var result = await functionCall.InvokeAsync(context);
+        Console.WriteLine("Result: ");
+        Console.WriteLine(result.Result);
     }
 
 
