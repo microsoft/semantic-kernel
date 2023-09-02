@@ -17,7 +17,7 @@ using SemanticKernel.AI.TextCompletion;
 /// OpenAI chat completion client.
 /// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class OpenAIChatCompletion : OpenAIClientBase
+public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, ITextCompletion
 {
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
