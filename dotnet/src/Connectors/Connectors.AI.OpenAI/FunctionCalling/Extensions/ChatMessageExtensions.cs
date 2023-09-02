@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk.FunctionCalling.Extensions;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensions;
 
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Azure.AI.OpenAI;
+using SemanticKernel.AI.ChatCompletion;
 
 
 /// <summary>
@@ -86,5 +87,41 @@ public static class ChatMessageExtensions
 
         json = json.Replace(@"\", @"");
         return json;
+    }
+
+
+    /// <summary>
+    /// Returns the content of the chat message as a FunctionCallResult
+    /// </summary>
+    /// <param name="chatMessage"></param>
+    /// <returns></returns>
+    public static FunctionCallResult? ToFunctionCall(this ChatMessageBase chatMessage)
+    {
+        FunctionCallResult? functionCall = default;
+        var firstElementJsonString = "";
+
+        try
+        {
+            using var document = JsonDocument.Parse(chatMessage.Content);
+
+            var root = document.RootElement;
+
+            var propertyEnumerator = root.EnumerateObject();
+
+            if (propertyEnumerator.MoveNext())
+            {
+                var firstProperty = propertyEnumerator.Current.Value;
+                firstElementJsonString = firstProperty.GetRawText().Trim();
+
+                functionCall = JsonSerializer.Deserialize<FunctionCallResult>(firstElementJsonString, new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
+            }
+
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"Error while converting '{firstElementJsonString}' to a '{typeof(FunctionCallResult)}': {ex}");
+        }
+
+        return functionCall;
     }
 }

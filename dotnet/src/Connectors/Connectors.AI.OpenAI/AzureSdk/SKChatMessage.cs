@@ -2,6 +2,7 @@
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
+using System.Text.Json.Serialization;
 using SemanticKernel.AI.ChatCompletion;
 
 
@@ -13,6 +14,7 @@ public class SKChatMessage : ChatMessageBase
     /// <summary>
     ///  The name of the function call if the message is a function call.
     /// </summary>
+    [JsonPropertyName("function")]
     public string? FunctionName { get; }
 
 

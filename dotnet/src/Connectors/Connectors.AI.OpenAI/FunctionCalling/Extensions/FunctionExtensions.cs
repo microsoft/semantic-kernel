@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensions;
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,64 @@ using SkillDefinition;
 /// </summary>
 public static class FunctionExtensions
 {
+
+    /// <summary>
+    /// Default FunctionDefinition
+    /// </summary>
+    public static readonly FunctionDefinition Default = new()
+    {
+        Name = "function_call",
+        Description = "make a function call",
+        Parameters = BinaryData.FromObjectAsJson(
+            new
+            {
+                Type = "object",
+                Properties = new
+                {
+                    FunctionCall = new
+                    {
+                        Type = "object",
+                        Description = "Function call data structure",
+                        Properties = new
+                        {
+                            Function = new
+                            {
+                                Type = "string",
+                                Description = "Name of the function chosen"
+                            },
+                            Parameters = new
+                            {
+                                Type = "array",
+                                Description = "Parameter values",
+                                Items = new
+                                {
+                                    Type = "object",
+                                    Description = "Parameter value",
+                                    Properties = new
+                                    {
+                                        Name = new
+                                        {
+                                            Type = "string",
+                                            Description = "Parameter name"
+                                        },
+                                        Value = new
+                                        {
+                                            Type = "string",
+                                            Description = "Parameter value"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        Required = new[] { "function", "parameters" }
+                    }
+                },
+                Required = new[] { "functionCall" }
+
+            }, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
+    };
+
+
     /// <summary>
     ///  Convert FunctionView to FunctionDefinition
     /// </summary>
@@ -116,7 +174,7 @@ public static class FunctionExtensions
     /// <param name="functionCall"></param>
     /// <param name="functionInstance"></param>
     /// <returns></returns>
-    public static bool TryGetFunction(this IReadOnlySkillCollection skillCollection, FunctionCall functionCall, out ISKFunction? functionInstance)
+    public static bool TryGetFunction(this IReadOnlySkillCollection skillCollection, FunctionCallResult functionCall, out ISKFunction? functionInstance)
     {
         Console.WriteLine(functionCall.Function);
 
@@ -151,7 +209,7 @@ public static class FunctionExtensions
     /// </summary>
     /// <param name="functionCall"></param>
     /// <returns></returns>
-    public static ContextVariables FunctionParameters(this FunctionCall functionCall)
+    public static ContextVariables FunctionParameters(this FunctionCallResult functionCall)
     {
         var contextVariables = new ContextVariables();
 
@@ -161,6 +219,43 @@ public static class FunctionExtensions
         }
 
         return contextVariables;
+    }
+
+
+    /// <summary>
+    /// Converts the SKContext.Result to a FunctionCallResult
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="options"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T? ToFunctionCallResult<T>(this SKContext context, JsonSerializerOptions? options = null)
+    {
+        T? result = default;
+
+        try
+        {
+            using var document = JsonDocument.Parse(context.Result);
+
+            var root = document.RootElement;
+
+            var propertyEnumerator = root.EnumerateObject();
+
+            if (propertyEnumerator.MoveNext())
+            {
+                var firstProperty = propertyEnumerator.Current.Value;
+                var firstElementJsonString = firstProperty.GetRawText();
+
+                result = JsonSerializer.Deserialize<T>(firstElementJsonString, options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
+            }
+
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine($"Error while converting '{context.Result}' to a '{typeof(T)}': {ex}");
+        }
+
+        return result;
     }
 
 }

@@ -15,6 +15,7 @@ using ChatCompletion;
 using Diagnostics;
 using Extensions.Logging;
 using Extensions.Logging.Abstractions;
+using FunctionCalling;
 using FunctionCalling.Extensions;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
@@ -29,10 +30,7 @@ public abstract class ClientBase
 
 
     // Prevent external inheritors
-    private protected ClientBase(ILoggerFactory? loggerFactory = null)
-    {
-        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
-    }
+    protected private ClientBase(ILoggerFactory? loggerFactory = null) => Logger = loggerFactory is not null ? loggerFactory.CreateLogger(GetType()) : NullLogger.Instance;
 
     /// <summary>
     /// Model Id or Deployment Name
@@ -160,7 +158,7 @@ public abstract class ClientBase
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        List<ReadOnlyMemory<float>> result = new List<ReadOnlyMemory<float>>(data.Count);
+        List<ReadOnlyMemory<float>> result = new(data.Count);
 
         foreach (var text in data)
         {
@@ -202,10 +200,10 @@ public abstract class ClientBase
     {
         Verify.NotNull(chat);
         chatSettings ??= new ChatRequestSettings();
+        ValidateMaxTokens(chatSettings?.MaxTokens);
+        var chatOptions = CreateChatCompletionsOptions(chatSettings!, chat);
 
-        ValidateMaxTokens(chatSettings.MaxTokens);
-        var chatOptions = CreateChatCompletionsOptions(chatSettings, chat);
-
+        List<string>? functionNames = chatOptions.Functions?.Select(f => f.Name).ToList();
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => Client.GetChatCompletionsAsync(ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
 
@@ -224,7 +222,20 @@ public abstract class ClientBase
         Console.WriteLine($"Total Tokens: {responseData.Usage.TotalTokens} Prompt Tokens: {responseData.Usage.PromptTokens} Completion Tokens: {responseData.Usage.CompletionTokens}");
         CaptureUsageDetails(responseData.Usage);
 
-        return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
+        if (functionNames is null)
+        {
+            return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
+        }
+
+        if (!responseData.IsFunctionCallResponse(functionNames))
+        {
+            return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
+        }
+
+        return responseData.Choices.Select(choice => choice.IsFunctionCall(functionNames)
+                ? new ChatResult(responseData, choice, true)
+                : new ChatResult(responseData, choice)).Cast<IChatResult>()
+            .ToList();
     }
 
 
@@ -408,17 +419,31 @@ public abstract class ClientBase
             throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
         }
 
-        var options = new ChatCompletionsOptions
+        var options = requestSettings switch
         {
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = (float?)requestSettings.Temperature,
-            NucleusSamplingFactor = (float?)requestSettings.TopP,
-            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
-            PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoiceCount = requestSettings.ResultsPerPrompt
+            OpenAIChatRequestSettings openAIChatRequestSettings => new ChatCompletionsOptions
+            {
+                MaxTokens = openAIChatRequestSettings.MaxTokens,
+                Temperature = (float?)openAIChatRequestSettings.Temperature,
+                NucleusSamplingFactor = (float?)openAIChatRequestSettings.TopP,
+                FrequencyPenalty = (float?)openAIChatRequestSettings.FrequencyPenalty,
+                PresencePenalty = (float?)openAIChatRequestSettings.PresencePenalty,
+                ChoiceCount = requestSettings.ResultsPerPrompt,
+                FunctionCall = openAIChatRequestSettings.FunctionCall,
+                Functions = openAIChatRequestSettings.CallableFunctions
+            },
+            _ => new ChatCompletionsOptions
+            {
+                MaxTokens = requestSettings.MaxTokens,
+                Temperature = (float?)requestSettings.Temperature,
+                NucleusSamplingFactor = (float?)requestSettings.TopP,
+                FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
+                PresencePenalty = (float?)requestSettings.PresencePenalty,
+                ChoiceCount = requestSettings.ResultsPerPrompt
+            }
         };
 
-        foreach (var keyValue in requestSettings.TokenSelectionBiases)
+        foreach (KeyValuePair<int, int> keyValue in requestSettings.TokenSelectionBiases)
         {
             options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
         }

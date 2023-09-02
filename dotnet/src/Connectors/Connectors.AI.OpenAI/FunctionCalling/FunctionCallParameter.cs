@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 
 /// <summary>
 ///  A parameter for a function call

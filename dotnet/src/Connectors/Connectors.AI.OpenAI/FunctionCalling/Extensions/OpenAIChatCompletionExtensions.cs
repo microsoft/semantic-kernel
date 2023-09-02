@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk.FunctionCalling;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensions;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,42 +27,39 @@ public static class OpenAIChatCompletionExtensions
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <remarks>This extension does not support multiple prompt results (Only the first will be returned)</remarks>
     /// <returns>Generated chat message in string format</returns>
-    public static async Task<string> GenerateMessageAsync(
-        this IOpenAIChatCompletion chatCompletion,
+    public static async Task<string> GenerateFunctionCallAsync(
+        this IChatCompletion chatCompletion,
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
-        FunctionDefinition? functionCall = null,
-        FunctionDefinition[]? functionCalls = null,
+        ChatRequestSettings requestSettings,
+        FunctionDefinition functionCall,
+        FunctionDefinition functionCalls,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, functionCall, functionCalls, cancellationToken).ConfigureAwait(false);
+        OpenAIChatRequestSettings openAIChatRequestSettings = requestSettings.ToOpenAIRequestSettings(functionCall, new[] { functionCalls });
+        IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, openAIChatRequestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
         return firstChatMessage.Content;
     }
 
 
     /// <summary>
-    ///  Returns the first result as a <typeparamref name="T"/> object.
+    ///  Returns the content of the first result as a <typeparamref name="T"/> object.
     /// </summary>
     /// <param name="chatCompletion"></param>
     /// <param name="chat"></param>
     /// <param name="requestSettings"></param>
-    /// <param name="functionCall"></param>
-    /// <param name="functionCalls"></param>
     /// <param name="options"></param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     public static async Task<T?> GenerateResponseAsync<T>(
-        this IOpenAIChatCompletion chatCompletion,
+        this IChatCompletion chatCompletion,
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
-        FunctionDefinition? functionCall = null,
-        FunctionDefinition[]? functionCalls = null,
+        OpenAIChatRequestSettings requestSettings,
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, functionCall, functionCalls, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
         T? result = default;
         var firstElementJsonString = "";
@@ -90,4 +88,37 @@ public static class OpenAIChatCompletionExtensions
 
         return result;
     }
+
+
+    /// <summary>
+    ///  Converts the <see cref="ChatRequestSettings"/> to <see cref="OpenAIChatRequestSettings"/>
+    /// </summary>
+    /// <param name="settings"></param>
+    /// <param name="targetFunctionCall"></param>
+    /// <param name="callableFunctions"></param>
+    /// <returns></returns>
+    public static OpenAIChatRequestSettings ToOpenAIRequestSettings(this ChatRequestSettings settings, FunctionDefinition targetFunctionCall, IReadOnlyList<FunctionDefinition> callableFunctions)
+    {
+        // Remove duplicates, if any, due to the inaccessibility of ReadOnlySkillCollection
+        // Can't changes what skills are available to the context because you can't remove skills from the context
+        List<FunctionDefinition> distinctCallableFunctions = callableFunctions
+            .GroupBy(func => func.Name)
+            .Select(group => group.First())
+            .ToList();
+
+        var requestSettings = new OpenAIChatRequestSettings()
+        {
+            Temperature = settings.Temperature,
+            TopP = settings.TopP,
+            PresencePenalty = settings.PresencePenalty,
+            FrequencyPenalty = settings.FrequencyPenalty,
+            StopSequences = settings.StopSequences,
+            MaxTokens = settings.MaxTokens,
+            FunctionCall = targetFunctionCall,
+            CallableFunctions = distinctCallableFunctions
+        };
+
+        return requestSettings;
+    }
+
 }
