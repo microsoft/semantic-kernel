@@ -22,8 +22,8 @@ public static class OpenAIChatCompletionExtensions
     /// <param name="chatCompletion">Target interface to extend</param>
     /// <param name="chat">Chat history</param>
     /// <param name="requestSettings">AI request settings</param>
+    /// <param name="callableFunctions"></param>
     /// <param name="functionCall"></param>
-    /// <param name="functionCalls"></param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <remarks>This extension does not support multiple prompt results (Only the first will be returned)</remarks>
     /// <returns>Generated chat message in string format</returns>
@@ -31,12 +31,12 @@ public static class OpenAIChatCompletionExtensions
         this IChatCompletion chatCompletion,
         ChatHistory chat,
         ChatRequestSettings requestSettings,
-        FunctionDefinition functionCall,
-        FunctionDefinition functionCalls,
+        IEnumerable<FunctionDefinition> callableFunctions,
+        FunctionDefinition? functionCall = null,
         CancellationToken cancellationToken = default)
     {
-        OpenAIChatRequestSettings openAIChatRequestSettings = requestSettings.ToOpenAIRequestSettings(functionCall, new[] { functionCalls });
-        IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, openAIChatRequestSettings, cancellationToken).ConfigureAwait(false);
+        FunctionCallRequestSettings functionCallRequestSettings = requestSettings.ToFunctionCallRequestSettings(callableFunctions, functionCall ?? FunctionDefinition.Auto);
+        IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, functionCallRequestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
         return firstChatMessage.Content;
     }
@@ -55,7 +55,7 @@ public static class OpenAIChatCompletionExtensions
     public static async Task<T?> GenerateResponseAsync<T>(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        OpenAIChatRequestSettings requestSettings,
+        FunctionCallRequestSettings requestSettings,
         JsonSerializerOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -91,13 +91,13 @@ public static class OpenAIChatCompletionExtensions
 
 
     /// <summary>
-    ///  Converts the <see cref="ChatRequestSettings"/> to <see cref="OpenAIChatRequestSettings"/>
+    ///  Converts the <see cref="ChatRequestSettings"/> to <see cref="FunctionCallRequestSettings"/>
     /// </summary>
     /// <param name="settings"></param>
-    /// <param name="targetFunctionCall"></param>
     /// <param name="callableFunctions"></param>
+    /// <param name="targetFunctionCall"></param>
     /// <returns></returns>
-    public static OpenAIChatRequestSettings ToOpenAIRequestSettings(this ChatRequestSettings settings, FunctionDefinition targetFunctionCall, IReadOnlyList<FunctionDefinition> callableFunctions)
+    public static FunctionCallRequestSettings ToFunctionCallRequestSettings(this ChatRequestSettings settings, IEnumerable<FunctionDefinition> callableFunctions, FunctionDefinition? targetFunctionCall = null)
     {
         // Remove duplicates, if any, due to the inaccessibility of ReadOnlySkillCollection
         // Can't changes what skills are available to the context because you can't remove skills from the context
@@ -106,7 +106,7 @@ public static class OpenAIChatCompletionExtensions
             .Select(group => group.First())
             .ToList();
 
-        var requestSettings = new OpenAIChatRequestSettings()
+        var requestSettings = new FunctionCallRequestSettings()
         {
             Temperature = settings.Temperature,
             TopP = settings.TopP,
@@ -114,7 +114,7 @@ public static class OpenAIChatCompletionExtensions
             FrequencyPenalty = settings.FrequencyPenalty,
             StopSequences = settings.StopSequences,
             MaxTokens = settings.MaxTokens,
-            FunctionCall = targetFunctionCall,
+            FunctionCall = targetFunctionCall ?? FunctionDefinition.Auto,
             CallableFunctions = distinctCallableFunctions
         };
 

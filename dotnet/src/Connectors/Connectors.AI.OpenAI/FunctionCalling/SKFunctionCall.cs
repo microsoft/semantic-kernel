@@ -130,13 +130,13 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         var textService = serviceFactory();
 
         // Mainly check if the service returned by the factory could be cast as IChatCompletion
-        if (textService is IChatCompletion chatService)
+        if (textService is not IChatCompletion chatService)
         {
-            _aiService = new Lazy<IChatCompletion>(() => chatService);
-            return this;
+            throw new SKException("The service factory must return an IOpenAIChatCompletion");
         }
+        _aiService = new Lazy<IChatCompletion>(() => chatService);
+        return this;
 
-        throw new SKException("The service factory must return an IOpenAIChatCompletion");
     }
 
 
@@ -203,7 +203,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     private readonly IPromptTemplate _promptTemplate;
 
 
-    private OpenAIChatRequestSettings GetRequestSettings(CompleteRequestSettings settings)
+    private FunctionCallRequestSettings GetRequestSettings(CompleteRequestSettings settings)
     {
         // Remove duplicates, if any, due to the inaccessibility of ReadOnlySkillCollection
         // Can't changes what skills are available to the context because you can't remove skills from the context
@@ -212,7 +212,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
             .Select(group => group.First())
             .ToList();
 
-        var requestSettings = new OpenAIChatRequestSettings()
+        var requestSettings = new FunctionCallRequestSettings()
         {
             Temperature = settings.Temperature,
             TopP = settings.TopP,
@@ -248,7 +248,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
     private async Task<IReadOnlyList<IChatResult>> RunPromptAsync(
         IChatCompletion? client,
-        OpenAIChatRequestSettings? requestSettings,
+        FunctionCallRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {
@@ -279,18 +279,17 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         {
             const string MESSAGE = "Something went wrong while rendering the semantic function" +
                                    " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}. {ResponseContent}";
-            _logger?.LogError(ex, MESSAGE, SkillName, Name, ex.Message, ex.ResponseContent);
+            _logger.LogError(ex, MESSAGE, SkillName, Name, ex.Message, ex.ResponseContent);
             throw;
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
             const string MESSAGE = "Something went wrong while rendering the semantic function" +
                                    " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}";
-            _logger?.LogError(ex, MESSAGE, SkillName, Name, ex.Message);
+            _logger.LogError(ex, MESSAGE, SkillName, Name, ex.Message);
             throw;
         }
 
-        return new List<IChatResult>();
     }
 
 

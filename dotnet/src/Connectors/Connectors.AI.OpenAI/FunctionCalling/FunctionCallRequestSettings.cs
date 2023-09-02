@@ -9,7 +9,7 @@ using SemanticKernel.AI.ChatCompletion;
 /// <summary>
 ///  Extension of ChatRequestSettings for use with the OpenAI connector for function calling
 /// </summary>
-public class OpenAIChatRequestSettings : ChatRequestSettings
+public class FunctionCallRequestSettings : ChatRequestSettings
 {
     /// <summary>
     ///  The function to call

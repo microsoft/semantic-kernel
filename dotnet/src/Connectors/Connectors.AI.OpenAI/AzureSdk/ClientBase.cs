@@ -421,16 +421,16 @@ public abstract class ClientBase
 
         var options = requestSettings switch
         {
-            OpenAIChatRequestSettings openAIChatRequestSettings => new ChatCompletionsOptions
+            FunctionCallRequestSettings functionCallRequestSettings => new ChatCompletionsOptions
             {
-                MaxTokens = openAIChatRequestSettings.MaxTokens,
-                Temperature = (float?)openAIChatRequestSettings.Temperature,
-                NucleusSamplingFactor = (float?)openAIChatRequestSettings.TopP,
-                FrequencyPenalty = (float?)openAIChatRequestSettings.FrequencyPenalty,
-                PresencePenalty = (float?)openAIChatRequestSettings.PresencePenalty,
+                MaxTokens = functionCallRequestSettings.MaxTokens,
+                Temperature = (float?)functionCallRequestSettings.Temperature,
+                NucleusSamplingFactor = (float?)functionCallRequestSettings.TopP,
+                FrequencyPenalty = (float?)functionCallRequestSettings.FrequencyPenalty,
+                PresencePenalty = (float?)functionCallRequestSettings.PresencePenalty,
                 ChoiceCount = requestSettings.ResultsPerPrompt,
-                FunctionCall = openAIChatRequestSettings.FunctionCall,
-                Functions = openAIChatRequestSettings.CallableFunctions
+                FunctionCall = functionCallRequestSettings.FunctionCall,
+                Functions = functionCallRequestSettings.CallableFunctions
             },
             _ => new ChatCompletionsOptions
             {
