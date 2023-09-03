@@ -103,7 +103,7 @@ public static class Example08_RetryHandler
 
     private static class InfoLogger
     {
-        internal static ILogger Logger => LoggerFactory.CreateLogger<object>();
+        internal static ILogger Logger => LoggerFactory.CreateLogger("Example08_RetryHandler");
         internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
         private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
 
@@ -113,6 +113,8 @@ public static class Example08_RetryHandler
             {
                 builder.SetMinimumLevel(LogLevel.Information);
                 builder.AddFilter("Microsoft", LogLevel.Information);
+                builder.AddFilter("Microsoft.SemanticKernel", LogLevel.Critical);
+                builder.AddFilter("Microsoft.SemanticKernel.Reliability", LogLevel.Information);
                 builder.AddFilter("System", LogLevel.Information);
 
                 builder.AddConsole();
@@ -122,72 +124,63 @@ public static class Example08_RetryHandler
 }
 
 /* Output:
-info: object[0]
+info: Example08_RetryHandler[0]
       ============================== RetryThreeTimesWithBackoff ==============================
-info: object[0]
+info: Example08_RetryHandler[0]
       Question: How popular is Polly library?
-warn: object[0]
+warn: Reliability.RetryThreeTimesWithBackoff[0]
       Error executing action [attempt 1 of 3], pausing 2000ms. Outcome: Unauthorized
-warn: object[0]
+warn: Reliability.RetryThreeTimesWithBackoff[0]
       Error executing action [attempt 2 of 3], pausing 4000ms. Outcome: Unauthorized
-warn: object[0]
+warn: Reliability.RetryThreeTimesWithBackoff[0]
       Error executing action [attempt 3 of 3], pausing 8000ms. Outcome: Unauthorized
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-info: object[0]
+info: Example08_RetryHandler[0]
+      Answer: Error: Access denied: The request is not authorized, HTTP status: 401
+info: Example08_RetryHandler[0]
       ========================= RetryThreeTimesWithRetryAfterBackoff =========================
-info: object[0]
+info: Example08_RetryHandler[0]
       Question: How popular is Polly library?
-warn: object[0]
+warn: Reliability.RetryThreeTimesWithRetryAfterBackoff[0]
       Error executing action [attempt 1 of 3], pausing 2000ms. Outcome: Unauthorized
-warn: object[0]
+warn: Reliability.RetryThreeTimesWithRetryAfterBackoff[0]
       Error executing action [attempt 2 of 3], pausing 2000ms. Outcome: Unauthorized
-warn: object[0]
+warn: Reliability.RetryThreeTimesWithRetryAfterBackoff[0]
       Error executing action [attempt 3 of 3], pausing 2000ms. Outcome: Unauthorized
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-info: object[0]
+info: Example08_RetryHandler[0]
+      Answer: Error: Access denied: The request is not authorized, HTTP status: 401
+info: Example08_RetryHandler[0]
       ==================================== NoRetryPolicy =====================================
-info: object[0]
+info: Example08_RetryHandler[0]
       Question: How popular is Polly library?
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-info: object[0]
+info: Example08_RetryHandler[0]
+      Answer: Error: Access denied: The request is not authorized, HTTP status: 401
+info: Example08_RetryHandler[0]
       =============================== DefaultHttpRetryHandler ================================
-info: object[0]
+info: Example08_RetryHandler[0]
       Question: How popular is Polly library?
-warn: object[0]
+warn: Microsoft.SemanticKernel.Reliability.DefaultHttpRetryHandler[0]
       Error executing action [attempt 1 of 3]. Reason: Unauthorized. Will retry after 2000ms
-warn: object[0]
+warn: Microsoft.SemanticKernel.Reliability.DefaultHttpRetryHandler[0]
       Error executing action [attempt 2 of 3]. Reason: Unauthorized. Will retry after 4000ms
-warn: object[0]
+warn: Microsoft.SemanticKernel.Reliability.DefaultHttpRetryHandler[0]
       Error executing action [attempt 3 of 3]. Reason: Unauthorized. Will retry after 8000ms
-fail: object[0]
+fail: Microsoft.SemanticKernel.Reliability.DefaultHttpRetryHandler[0]
       Error executing request, max retry count reached. Reason: Unauthorized
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-info: object[0]
+info: Example08_RetryHandler[0]
+      Answer: Error: Access denied: The request is not authorized, HTTP status: 401
+info: Example08_RetryHandler[0]
       ======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======
-info: object[0]
+info: Example08_RetryHandler[0]
       Question: How popular is Polly library?
-warn: object[0]
+warn: Microsoft.SemanticKernel.Reliability.DefaultHttpRetryHandler[0]
       Error executing action [attempt 1 of 3]. Reason: Unauthorized. Will retry after 2000ms
-warn: object[0]
+warn: Microsoft.SemanticKernel.Reliability.DefaultHttpRetryHandler[0]
       Error executing action [attempt 2 of 3]. Reason: Unauthorized. Will retry after 4000ms
-warn: object[0]
+warn: Microsoft.SemanticKernel.Reliability.DefaultHttpRetryHandler[0]
       Error executing action [attempt 3 of 3]. Reason: Unauthorized. Will retry after 8000ms
-fail: object[0]
+fail: Microsoft.SemanticKernel.Reliability.DefaultHttpRetryHandler[0]
       Error executing request, max retry count reached. Reason: Unauthorized
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
+info: Example08_RetryHandler[0]
+      Answer: Error: Access denied: The request is not authorized, HTTP status: 401
+== DONE ==
 */
