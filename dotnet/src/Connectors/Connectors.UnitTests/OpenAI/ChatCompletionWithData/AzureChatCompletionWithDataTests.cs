@@ -85,7 +85,8 @@ public sealed class AzureChatCompletionWithDataTests : IDisposable
             CompletionApiVersion = "fake-api-version",
             DataSourceEndpoint = "https://fake-data-source-endpoint",
             DataSourceApiKey = "fake-data-source-api-key",
-            DataSourceIndex = "fake-data-source-index"
+            DataSourceIndex = "fake-data-source-index",
+            ResponsibleAIPolicy = "fake-policy",
         };
     }
 }

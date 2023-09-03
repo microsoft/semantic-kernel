@@ -265,7 +265,9 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             Messages = this.GetMessages(chat)
         };
 
-        return HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
+        var httpRequest = HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
+        httpRequest.Headers.TryAddWithoutValidation("x-policy-id", this._config.ResponsibleAIPolicy);
+        return httpRequest;
     }
 
     private List<ChatWithDataSource> GetDataSources()

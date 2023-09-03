@@ -45,4 +45,9 @@ public class AzureChatCompletionWithDataConfig
     /// For Azure Cognitive Search indexes, see <see href="https://learn.microsoft.com/en-us/azure/search/search-how-to-create-search-index"/>
     /// </summary>
     public string DataSourceIndex { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Responsible AI Policy. For example policy is '146' used for Text Harmful, Hate, Sexual content and Jailbreak
+    /// </summary>
+    public string ResponsibleAIPolicy { get; set; } = string.Empty;
 }
