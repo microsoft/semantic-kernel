@@ -2,8 +2,8 @@
 
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Polly;
 
 namespace Microsoft.SemanticKernel.Reliability.Polly;
