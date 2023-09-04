@@ -69,18 +69,16 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
 
-        this._logger.LogDebug("Sending request: {0}", uri);
+        this._logger.LogDebug("Sending request: {Uri}", uri);
 
         using HttpResponseMessage response = await this.SendGetRequest(uri, cancellationToken).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
-        this._logger.LogDebug("Response received: {0}", response.StatusCode);
-
-        string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string json = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Response content received: {0}", json);
+        this._logger.LogTrace("Response content received: {Data}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
 
@@ -126,7 +124,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
             httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", this._apiKey);
         }
 
-        return await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",

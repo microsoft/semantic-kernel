@@ -152,11 +152,9 @@ internal sealed class RestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        responseMessage.EnsureSuccessStatusCode();
-
-        var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var content = await responseMessage.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         // First iteration allowing to associate additional metadata with the returned content.
         var result = new RestApiOperationResponse(

@@ -223,10 +223,9 @@ public static class KernelAIPluginExtensions
             requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
         }
 
-        using var response = await httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        using var response = await httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }
 
     private static async Task<string> LoadDocumentFromFilePath(

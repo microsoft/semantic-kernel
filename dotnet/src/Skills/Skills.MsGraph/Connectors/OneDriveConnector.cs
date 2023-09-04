@@ -59,8 +59,7 @@ public class OneDriveConnector : ICloudDriveConnector
                 return false;
             }
 
-            // Otherwise, rethrow the exception.
-            throw;
+            throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
         }
     }
 
@@ -80,12 +79,25 @@ public class OneDriveConnector : ICloudDriveConnector
 
         using FileStream fileContentStream = new(filePath, FileMode.Open, FileAccess.Read);
 
-        GraphResponse<DriveItem> response = await this._graphServiceClient.Me
-            .Drive.Root
-            .ItemWithPath(destinationPath).Content
-            .Request().PutResponseAsync<DriveItem>(fileContentStream, cancellationToken, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
+        GraphResponse<DriveItem>? response = null;
 
-        response.ToHttpResponseMessage().EnsureSuccessStatusCode();
+        try
+        {
+            response = await this._graphServiceClient.Me
+                .Drive.Root
+                .ItemWithPath(destinationPath).Content
+                .Request().PutResponseAsync<DriveItem>(fileContentStream, cancellationToken, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
+
+            response.ToHttpResponseMessage().EnsureSuccessStatusCode();
+        }
+        catch (ServiceException ex)
+        {
+            throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpOperationException(response?.StatusCode, responseContent: null, ex.Message, ex);
+        }
     }
 
     /// <inheritdoc/>
@@ -96,13 +108,26 @@ public class OneDriveConnector : ICloudDriveConnector
         Ensure.NotNullOrWhitespace(type, nameof(type));
         Ensure.NotNullOrWhitespace(scope, nameof(scope));
 
-        GraphResponse<Permission> response = await this._graphServiceClient.Me
-            .Drive.Root
-            .ItemWithPath(filePath)
-            .CreateLink(type, scope)
-            .Request().PostResponseAsync(cancellationToken).ConfigureAwait(false);
+        GraphResponse<Permission>? response = null;
 
-        response.ToHttpResponseMessage().EnsureSuccessStatusCode();
+        try
+        {
+            response = await this._graphServiceClient.Me
+               .Drive.Root
+               .ItemWithPath(filePath)
+               .CreateLink(type, scope)
+               .Request().PostResponseAsync(cancellationToken).ConfigureAwait(false);
+
+            response.ToHttpResponseMessage().EnsureSuccessStatusCode();
+        }
+        catch (ServiceException ex)
+        {
+            throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new HttpOperationException(response?.StatusCode, responseContent: null, ex.Message, ex);
+        }
 
         string? result = (await response.GetResponseObjectAsync().ConfigureAwait(false)).Link?.WebUrl;
         if (string.IsNullOrWhiteSpace(result))

@@ -105,7 +105,7 @@ public sealed class HttpSkill
     {
         using var request = new HttpRequestMessage(method, uri) { Content = requestContent };
         request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-        using var response = await this._client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        using var response = await this._client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }
 }

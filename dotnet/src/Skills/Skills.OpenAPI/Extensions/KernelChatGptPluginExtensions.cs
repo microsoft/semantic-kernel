@@ -54,10 +54,9 @@ public static class KernelChatGptPluginExtensions
             ? ProductInfoHeaderValue.Parse(executionParameters!.UserAgent)
             : ProductInfoHeaderValue.Parse(Telemetry.HttpUserAgent));
 
-        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        using var response = await internalHttpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string gptPluginJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
         return await kernel

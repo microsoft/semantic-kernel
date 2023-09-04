@@ -102,8 +102,8 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
 
         httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
-        var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
 
