@@ -22,7 +22,7 @@ internal static class PowerShellParser
         var syntaxTree = Parser.ParseInput(script, out var tokens, out var errors);
         var resultVariable = string.Empty;
 
-        foreach (var command in GetFunctionInvokationsFromScript(syntaxTree))
+        foreach (var command in GetFunctionInvocationsFromScript(syntaxTree))
         {
             ValidateCommand(command);
 
@@ -109,7 +109,7 @@ internal static class PowerShellParser
         }
     }
 
-    private static IEnumerable<CommandAst> GetFunctionInvokationsFromScript(ScriptBlockAst syntaxTree)
+    private static IEnumerable<CommandAst> GetFunctionInvocationsFromScript(ScriptBlockAst syntaxTree)
     {
         return syntaxTree
             .FindAll(treeItem => treeItem is CommandAst command, searchNestedScriptBlocks: true)
