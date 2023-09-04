@@ -173,18 +173,20 @@ public class ChromaClient : IChromaClient
 
         request.RequestUri = new Uri(new Uri(endpoint), operationName);
 
-        HttpResponseMessage response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage? response = null;
 
-        string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string? responseContent = null;
 
         try
         {
-            response.EnsureSuccessStatusCode();
+            response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+
+            responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException e)
         {
-            this._logger.LogError(e, "{0} {1} operation failed: {2}, {3}", request.Method.Method, operationName, e.Message, responseContent);
-            throw new SKException($"{request.Method.Method} {operationName} operation failed: {e.Message}, {responseContent}", e);
+            this._logger.LogError(e, "{Method} {Path} operation failed: {Message}, {Response}", request.Method.Method, operationName, e.Message, e.ResponseContent);
+            throw;
         }
 
         return (response, responseContent);
