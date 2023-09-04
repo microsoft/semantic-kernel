@@ -28,7 +28,7 @@ public abstract class SKEventArgs : EventArgs
     public FunctionView FunctionView { get; }
 
     /// <summary>
-    /// SKContext prior function execution.
+    /// Context related to the event.
     /// </summary>
     public SKContext SKContext { get; }
 }
