@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using System.Linq;
 
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
