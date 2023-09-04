@@ -5,12 +5,15 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planning.Structured;
+using Microsoft.SemanticKernel.Planning.Structured.Stepwise;
 using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
 using NCalcSkills;
 using RepoUtils;
+
 
 /**
  * This example shows how to use Stepwise Planner to create a plan for a given goal.
@@ -21,23 +24,26 @@ public static class Example51_StepwisePlanner
 {
     public static async Task RunAsync()
     {
-        string[] questions = new string[]
+        var questions = new string[]
         {
-            "Who is the current president of the United States? What is his current age divided by 2",
-            // "Who is Leo DiCaprio's girlfriend? What is her current age raised to the (his current age)/100 power?",
-            // "What is the capital of France? Who is that city's current mayor? What percentage of their life has been in the 21st century as of today?",
-            // "What is the current day of the calendar year? Using that as an angle in degrees, what is the area of a unit circle with that angle?"
+            "What is the age of the current president of the United States divided by 2?",
+            "Who is Leo DiCaprio's girlfriend? What is her current age raised to the (his current age)/100 power?",
+            "What is the capital of France? Who is that city's current mayor? What percentage of their life has been in the 21st century as of today?",
+            "What is the current day of the calendar year? Using that as an angle in degrees, what is the area of a unit circle with that angle?"
         };
 
         foreach (var question in questions)
         {
             var kernel = GetKernel();
-            await RunWithQuestion(kernel, question);
+            // await RunWithQuestion(kernel, question);
+            await RunStructuredWithQuestion(kernel, question);
         }
     }
 
+
     private static async Task RunWithQuestion(IKernel kernel, string question)
     {
+        Console.WriteLine(TestConfiguration.Bing.ApiKey);
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
 
@@ -60,12 +66,13 @@ public static class Example51_StepwisePlanner
 
         var result = await plan.InvokeAsync(kernel.CreateNewContext());
         Console.WriteLine("Result: " + result);
-        if (result.Variables.TryGetValue("stepCount", out string? stepCount))
+
+        if (result.Variables.TryGetValue("stepCount", out var stepCount))
         {
             Console.WriteLine("Steps Taken: " + stepCount);
         }
 
-        if (result.Variables.TryGetValue("skillCount", out string? skillCount))
+        if (result.Variables.TryGetValue("skillCount", out var skillCount))
         {
             Console.WriteLine("Skills Used: " + skillCount);
         }
@@ -73,6 +80,50 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         Console.WriteLine("*****************************************************");
     }
+
+
+    private static async Task RunStructuredWithQuestion(IKernel kernel, string question)
+    {
+        Console.WriteLine(TestConfiguration.Bing.ApiKey);
+        var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
+        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+
+        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
+        kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "advancedCalculator");
+        kernel.ImportSkill(new TimeSkill(), "time");
+
+        Console.WriteLine("*****************************************************");
+        Stopwatch sw = new();
+        Console.WriteLine("Question: " + question);
+
+        var plannerConfig = new StructuredPlannerConfig();
+        plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
+        plannerConfig.MinIterationTimeMs = 1500;
+        plannerConfig.MaxTokens = 4000;
+        plannerConfig.MaxIterations = 15;
+
+        StructuredStepwisePlanner planner = new(kernel, plannerConfig);
+
+        sw.Start();
+        var plan = await planner.CreatePlanAsync(question);
+
+        var result = await plan.InvokeAsync(kernel.CreateNewContext());
+        Console.WriteLine("Result: " + result);
+
+        if (result.Variables.TryGetValue("stepCount", out var stepCount))
+        {
+            Console.WriteLine("Steps Taken: " + stepCount);
+        }
+
+        if (result.Variables.TryGetValue("skillCount", out var skillCount))
+        {
+            Console.WriteLine("Skills Used: " + skillCount);
+        }
+
+        Console.WriteLine("Time Taken: " + sw.Elapsed);
+        Console.WriteLine("*****************************************************");
+    }
+
 
     private static IKernel GetKernel()
     {
@@ -82,7 +133,7 @@ public static class Example51_StepwisePlanner
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey,
-            alsoAsTextCompletion: true,
+            true,
             setAsDefault: true);
 
         var kernel = builder
@@ -91,13 +142,14 @@ public static class Example51_StepwisePlanner
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
+                MinRetryDelay = TimeSpan.FromSeconds(3)
             }))
             .Build();
 
         return kernel;
     }
 }
+
 
 // *****************************************************
 // Question: Who is the current president of the United States? What is his current age divided by 2

@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
+using Microsoft.SemanticKernel.Planning.Structured;
+using Microsoft.SemanticKernel.Planning.Structured.Sequential;
 using RepoUtils;
 using Skills;
 
@@ -85,12 +87,19 @@ internal static class Example12_SequentialPlanner
             "SummarizeSkill",
             "WriterSkill");
 
-        // var planner = new SequentialPlanner(kernel);
-        ISequentialPlanner planner = useStructuredPlanner
-            ? new StructuredSequentialPlanner(kernel)
-            : new SequentialPlanner(kernel);
+        Plan plan = null;
 
-        var plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
+        if (!useStructuredPlanner)
+        {
+            var planner = new SequentialPlanner(kernel);
+            plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
+        }
+
+        else
+        {
+            var planner = new StructuredSequentialPlanner(kernel);
+            plan = await planner.CreatePlanAsync("Write a poem about John Doe, then translate it into Italian.");
+        }
 
         Console.WriteLine("Original plan:");
         Console.WriteLine(plan.ToPlanWithGoalString());
@@ -198,34 +207,6 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Email Plan ========");
         IKernel kernel;
-        ISequentialPlanner planner;
-
-        if (useStructuredPlanner)
-        {
-            kernel = InitializeKernelAndStructuredPlanner(out var structuredSequentialPlanner, 512);
-            planner = structuredSequentialPlanner;
-        }
-        else
-        {
-            kernel = InitializeKernelAndPlanner(out var sequentialPlanner, 512);
-            planner = sequentialPlanner;
-        }
-
-        kernel.ImportSkill(new EmailSkill(), "email");
-
-        // Load additional skills to enable planner to do non-trivial asks.
-        var folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder,
-            "SummarizeSkill",
-            "WriterSkill");
-
-        var plan = await planner.CreatePlanAsync("Summarize an input, translate to french, and e-mail to John Doe");
-
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.ToPlanWithGoalString());
-
-        // Serialize plan before execution for saving to memory on success.
-        var originalPlan = plan.ToJson();
 
         var input =
             "Once upon a time, in a faraway kingdom, there lived a kind and just king named Arjun. " +
@@ -239,11 +220,55 @@ internal static class Example12_SequentialPlanner
             "and the kingdom was at peace once again. The king was so grateful to Mira that he asked her to marry him and she agreed. " +
             "They ruled the kingdom together, ruling with fairness and compassion, just as Arjun had done before. They lived " +
             "happily ever after, with the people of the kingdom remembering Mira as the brave young woman who saved them from the dragon.";
+
+        var originalPlan = string.Empty;
+        Plan plan = null;
+
+        if (useStructuredPlanner)
+        {
+            kernel = InitializeKernelAndStructuredPlanner(out var structuredSequentialPlanner, 512);
+            kernel.ImportSkill(new EmailSkill(), "email");
+
+            // Load additional skills to enable planner to do non-trivial asks.
+            var folder = RepoFiles.SampleSkillsPath();
+            kernel.ImportSemanticSkillFromDirectory(folder,
+                "SummarizeSkill",
+                "WriterSkill");
+
+            plan = await structuredSequentialPlanner.CreatePlanAsync("Summarize an input, translate to french, and e-mail to John Doe");
+
+            Console.WriteLine("Original plan:");
+            Console.WriteLine(plan.ToPlanWithGoalString());
+
+            // Serialize plan before execution for saving to memory on success.
+            originalPlan = plan.ToJson();
+
+            Console.WriteLine("======== Sequential Planner - Find and Execute Saved Plan ========");
+
+        }
+        else
+        {
+            kernel = InitializeKernelAndPlanner(out var sequentialPlanner, 512);
+            kernel.ImportSkill(new EmailSkill(), "email");
+
+            // Load additional skills to enable planner to do non-trivial asks.
+            var folder = RepoFiles.SampleSkillsPath();
+            kernel.ImportSemanticSkillFromDirectory(folder,
+                "SummarizeSkill",
+                "WriterSkill");
+
+            plan = await sequentialPlanner.CreatePlanAsync("Summarize an input, translate to french, and e-mail to John Doe");
+
+            Console.WriteLine("Original plan:");
+            Console.WriteLine(plan.ToPlanWithGoalString());
+
+            // Serialize plan before execution for saving to memory on success.
+            originalPlan = plan.ToJson();
+
+        }
+
         await ExecutePlanAsync(kernel, plan, input, 5);
 
-        Console.WriteLine("======== Sequential Planner - Find and Execute Saved Plan ========");
-
-        // Save the plan for future use
         var semanticMemory = GetMemory();
         await semanticMemory.SaveInformationAsync(
             "plans",
@@ -406,30 +431,42 @@ internal static class Example12_SequentialPlanner
         if (useStructuredPlanner)
         {
             kernel = InitializeKernelAndStructuredPlanner(out var structuredSequentialPlanner);
-            planner = structuredSequentialPlanner;
+            var folder = RepoFiles.SampleSkillsPath();
+            kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+            kernel.ImportSemanticSkillFromDirectory(folder, "MiscSkill");
+
+            var originalPlan = await structuredSequentialPlanner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
+
+            Console.WriteLine("Original plan:");
+            Console.WriteLine(originalPlan.ToPlanWithGoalString());
+
+            Stopwatch sw = new();
+            sw.Start();
+            await ExecutePlanAsync(kernel, originalPlan);
+            sw.Stop();
+
+            Console.WriteLine($"Execution complete in {sw.ElapsedMilliseconds} ms!");
         }
         else
         {
             kernel = InitializeKernelAndPlanner(out var sequentialPlanner);
-            planner = sequentialPlanner;
+            var folder = RepoFiles.SampleSkillsPath();
+            kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+            kernel.ImportSemanticSkillFromDirectory(folder, "MiscSkill");
+            var originalPlan = await sequentialPlanner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
+
+            Console.WriteLine("Original plan:");
+            Console.WriteLine(originalPlan.ToPlanWithGoalString());
+
+            Stopwatch sw = new();
+            sw.Start();
+            await ExecutePlanAsync(kernel, originalPlan);
+            sw.Stop();
+
+            Console.WriteLine($"Execution complete in {sw.ElapsedMilliseconds} ms!");
         }
 
         // Load additional skills to enable planner to do non-trivial asks.
-        var folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "MiscSkill");
-
-        var originalPlan = await planner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
-
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(originalPlan.ToPlanWithGoalString());
-
-        Stopwatch sw = new();
-        sw.Start();
-        await ExecutePlanAsync(kernel, originalPlan);
-        sw.Stop();
-
-        Console.WriteLine($"Execution complete in {sw.ElapsedMilliseconds} ms!");
 
         /*
            Observed Output:
@@ -702,14 +739,23 @@ internal static class Example12_SequentialPlanner
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
         // IMPORTANT: To use memory and embeddings to find relevant skills in the planner, set the 'Memory' property on the planner config.
-        ISequentialPlanner planner = !useStructuredPlanner
-            ? new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.5, Memory = kernel.Memory })
-            : new StructuredSequentialPlanner(kernel, new SequentialPlannerConfig() { RelevancyThreshold = 0.5, Memory = kernel.Memory });
+        if (!useStructuredPlanner)
+        {
+            var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.5, Memory = kernel.Memory });
+            var plan = await planner.CreatePlanAsync(goal);
 
-        var plan = await planner.CreatePlanAsync(goal);
+            Console.WriteLine("Original plan:");
+            Console.WriteLine(plan.ToPlanWithGoalString());
+        }
 
-        Console.WriteLine("Original plan:");
-        Console.WriteLine(plan.ToPlanWithGoalString());
+        else
+        {
+            var planner = new StructuredSequentialPlanner(kernel, new StructuredPlannerConfig() { RelevancyThreshold = 0.5, Memory = kernel.Memory });
+            var plan = await planner.CreatePlanAsync(goal);
+
+            Console.WriteLine("Original plan:");
+            Console.WriteLine(plan.ToPlanWithGoalString());
+        }
 
         /*
            Observed Output:
@@ -770,7 +816,7 @@ internal static class Example12_SequentialPlanner
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        planner = new StructuredSequentialPlanner(kernel, new SequentialPlannerConfig { MaxTokens = maxTokens });
+        planner = new StructuredSequentialPlanner(kernel, new StructuredPlannerConfig() { MaxTokens = maxTokens });
 
         return kernel;
     }

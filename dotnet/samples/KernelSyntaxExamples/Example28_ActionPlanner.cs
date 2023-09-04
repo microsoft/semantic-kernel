@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Action;
+using Microsoft.SemanticKernel.Planning.Structured.Action;
 using RepoUtils;
 
 
@@ -23,10 +23,10 @@ public static class Example28_ActionPlanner
                 TestConfiguration.AzureOpenAI.ApiKey);
 
         string folder = RepoFiles.SampleSkillsPath();
-        // IKernel kernel = builder.Build();
-        // kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
-        // kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
-        // kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+        IKernel kernel = builder.Build();
+        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
 
         // We're going to ask the planner to find a function to achieve this goal.
         var goal = "Write a joke about Cleopatra in the style of Hulk Hogan.";
@@ -35,10 +35,10 @@ public static class Example28_ActionPlanner
         // to execute and achieve the goal requested.
         // var plan = await planner.CreatePlanAsync(goal);
         // Execute the full plan (which is a single function)
-        // SKContext result = await UseActionPlanner(kernel, goal).ConfigureAwait(false);
+        SKContext result = await UseActionPlanner(kernel, goal).ConfigureAwait(false);
 
         //Show the result, which should match the given goal
-        // Console.WriteLine(result);
+        Console.WriteLine(result);
 
         IKernel kernel2 = builder.Build();
         kernel2.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
@@ -81,6 +81,8 @@ public static class Example28_ActionPlanner
 
     private static async Task<SKContext> UseStructuredActionPlanner(IKernel kernel, string goal)
     {
+        // var context = kernel.CreateNewContext();
+        // Console.WriteLine(context);
         var planner = new StructuredActionPlanner(kernel);
         var plan = await planner.CreatePlanAsync(goal);
         return await plan.InvokeAsync();
