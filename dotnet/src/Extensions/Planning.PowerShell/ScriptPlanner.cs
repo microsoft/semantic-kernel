@@ -9,8 +9,17 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
+/// <summary>
+/// A planner that uses semantic function to create a plan, based on PowerShell script.
+/// </summary>
 public class ScriptPlanner
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ScriptPlanner"/> class.
+    /// </summary>
+    /// <param name="kernel">Instance of <see cref="IKernel"/>.</param>
+    /// <param name="config">Instance of <see cref="ScriptPlannerConfig"/> with planner configuration.</param>
+    /// <param name="prompt">Optional planner prompt override.</param>
     public ScriptPlanner(
         IKernel kernel,
         ScriptPlannerConfig? config = null,
@@ -32,11 +41,18 @@ public class ScriptPlanner
         this._context = kernel.CreateNewContext();
     }
 
+    /// <summary>
+    /// Create a plan for a goal.
+    /// </summary>
+    /// <param name="goal">The goal to create a plan for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The plan.</returns>
+    /// <exception cref="SKException">Thrown when the plan cannot be created.</exception>
     public async Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         var script = await this.GenerateScriptAsync(goal, cancellationToken).ConfigureAwait(false);
 
-        var getSkillFunction = this.Config.GetSkillFunction ?? ScriptParser.GetSkillFunction(this._context);
+        var getSkillFunction = this.Config.GetSkillFunction ?? GetSkillFunction(this._context);
         var plan = script.ToPlanFromScript(goal, getSkillFunction);
 
         return plan;
@@ -90,6 +106,26 @@ public class ScriptPlanner
         }
 
         return script;
+    }
+
+    private static Func<string, string, ISKFunction?> GetSkillFunction(SKContext context)
+    {
+        return (skillName, functionName) =>
+        {
+            if (string.IsNullOrEmpty(skillName))
+            {
+                if (context.Skills!.TryGetFunction(functionName, out var skillFunction))
+                {
+                    return skillFunction;
+                }
+            }
+            else if (context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
+            {
+                return skillFunction;
+            }
+
+            return null;
+        };
     }
 
     #endregion

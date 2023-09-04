@@ -6,6 +6,9 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
+/// <summary>
+/// Script planner configuration.
+/// </summary>
 public class ScriptPlannerConfig
 {
     /// <summary>

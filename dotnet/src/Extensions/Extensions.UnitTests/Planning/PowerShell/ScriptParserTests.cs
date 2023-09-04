@@ -29,6 +29,20 @@ public class ScriptParserTests
         Assert.Equal(Script, plan.OriginalPlan);
 
         Assert.Equal(2, plan.Steps.Count);
+
+        var firstFunction = plan.Steps[0];
+        var secondFunction = plan.Steps[1];
+
+        Assert.Equal(firstFunction.Name, "ShortPoem");
+        Assert.Equal(firstFunction.SkillName, "WriterSkill");
+        Assert.Equal(firstFunction.Parameters["input"], "John Doe");
+        Assert.Equal(firstFunction.Outputs[0], "poem");
+
+        Assert.Equal(secondFunction.Name, "Translate");
+        Assert.Equal(secondFunction.SkillName, "WriterSkill");
+        Assert.Equal(secondFunction.Parameters["input"], "$poem");
+        Assert.Equal(secondFunction.Parameters["language"], "Italian");
+        Assert.Equal(secondFunction.Outputs[0], "translatedPoem");
     }
 
     #region private ================================================================================
@@ -47,10 +61,10 @@ public class ScriptParserTests
     {
         var mockFunction = new Mock<ISKFunction>();
 
+        mockFunction.Setup(x => x.Name).Returns("ShortPoem");
+        mockFunction.Setup(x => x.SkillName).Returns("WriterSkill");
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView
         {
-            Name = "ShortPoem",
-            SkillName = "WriterSkill",
             Parameters = new List<ParameterView> { new ParameterView { Name = "input" } }
         });
 
@@ -61,10 +75,10 @@ public class ScriptParserTests
     {
         var mockFunction = new Mock<ISKFunction>();
 
+        mockFunction.Setup(x => x.Name).Returns("Translate");
+        mockFunction.Setup(x => x.SkillName).Returns("WriterSkill");
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView
         {
-            Name = "Translate",
-            SkillName = "WriterSkill",
             Parameters = new List<ParameterView>
             {
                 new ParameterView { Name = "input" },
