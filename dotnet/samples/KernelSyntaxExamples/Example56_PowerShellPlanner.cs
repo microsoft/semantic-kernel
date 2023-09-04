@@ -40,10 +40,9 @@ public static class Example56_PowerShellPlanner
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                TestConfiguration.AzureOpenAI.ApiKey)
+            .WithOpenAIChatCompletionService(
+                TestConfiguration.OpenAI.ChatModelId,
+                TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill", "WriterSkill");
