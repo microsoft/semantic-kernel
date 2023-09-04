@@ -144,7 +144,7 @@ dotnet/
 
 ## Considered Options
 
-* Move skills projects to be extensions and merge some packages
+* New `planning`, `functions` and `plugins` project areas
 * {title of option 2}
 * {title of option 3}
 * … <!-- numbers of options can vary -->
@@ -152,7 +152,7 @@ dotnet/
 In all cases the following changes will be made:
 
 * Move non core Connectors to a separate repository
-* Merge prompt template engine, core skills and semantic functions into a single package
+* Merge prompt template engine and semantic functions into a single package
 
 ## Decision Outcome
 
@@ -169,16 +169,25 @@ SK-dotnet
 └── src/
     ├── connectors/
     │   ├── Connectors.AI.OpenAI*
+    │   ├── Connectors.AI.HuggingFace
+    │   ├── ...
     │   └── Connectors.UnitTests
-    ├── extensions/
-    │   ├── Extensions.Planner*
-    │   ├── Extensions.Prompt*
-    │   ├── Extensions.OpenAPI
-    │   ├── Extensions.Grpc
-    │   ├── Extensions.Web
-    │   ├── Extensions.Document
-    │   ├── Extensions.MsGraph
-    │   └── Extensions.UnitTests
+    ├── planning/
+    │   ├── Planning.ActionPlanner*
+    │   ├── Planning.SequentialPlanner*
+    │   └── Planning.StepwisePlanner*
+    ├── functions/
+    │   ├── Functions.Native*
+    │   ├── Functions.Semantic*
+    │   ├── Functions.Grpc
+    │   ├── Functions.OpenAPI
+    │   └── Functions.UnitTests
+    ├── plugins/
+    │   ├── Plugins.Core*
+    │   ├── Plugins.Document
+    │   ├── Plugins.MsGraph
+    │   ├── Plugins.WebSearch
+    │   └── Plugins.UnitTests
     ├── InternalUtilities/
     ├── IntegrationTests
     ├── SemanticKernel*
@@ -190,11 +199,18 @@ SK-dotnet
 
 ### Changes
 
-* Merge all planner related NuGet packages because we want these all in the meta package
-* Merge `TemplateEngine.PromptTemplateEngine` and `Skills.Core`. Additionally move all semantic function code to this new package.
+| Project                             | Description |
+|-------------------------------------|-------------|
+| `Functions.Native`                  | Extract native functions from Semantic Kernel core and abstractions. |
+| `Functions.Semantic`                | Extract semantic functions from Semantic Kernel core and abstractions. Include the prompt template engine. |
+| `Functions.Grpc`                    | Old `Skills.Grpc` project |
+| `Functions.OpenAPI`                 | Old `Skills.OpenAPI` project |
+| `Plugins.Core`                      | Old `Skills.Core` project |
+| `Plugins.Document`                  | Old `Skills.Document` project |
+| `Plugins.MsGraph`                   | Old `Skills.MsGraph` project |
+| `Plugins.WebSearch`                 | Old `Skills.WebSearch` project |
 
 ### Pros and Cons
 
 * Good, because {argument a}
 * Good, because {argument b}
-
