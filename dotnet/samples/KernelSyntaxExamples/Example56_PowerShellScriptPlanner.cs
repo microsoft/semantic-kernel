@@ -13,15 +13,15 @@ public static class Example56_PowerShellScriptPlanner
 {
     public static async Task RunAsync()
     {
-        const string goal = "Write a poem about John Doe, then translate it into Italian.";
+        const string Goal = "Write a poem about John Doe, then translate it into Italian.";
 
-        Console.WriteLine($"Goal: {goal}");
+        Console.WriteLine($"Goal: {Goal}");
 
         var kernel = GetKernel();
 
         var planner = new ScriptPlanner(kernel);
 
-        var plan = await planner.CreatePlanAsync(goal);
+        var plan = await planner.CreatePlanAsync(Goal);
 
         Console.WriteLine("Generated plan:\n");
         Console.WriteLine(plan.OriginalPlan);
