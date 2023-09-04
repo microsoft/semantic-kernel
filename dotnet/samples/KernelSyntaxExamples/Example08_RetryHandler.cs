@@ -142,7 +142,7 @@ public static class Example08_RetryHandler
 
     private static class InfoLogger
     {
-        internal static ILogger Logger => LoggerFactory.CreateLogger<object>();
+        internal static ILogger Logger => LoggerFactory.CreateLogger("Example08_RetryHandler");
         internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
         private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
 
@@ -152,6 +152,8 @@ public static class Example08_RetryHandler
             {
                 builder.SetMinimumLevel(LogLevel.Information);
                 builder.AddFilter("Microsoft", LogLevel.Information);
+                builder.AddFilter("Microsoft.SemanticKernel", LogLevel.Critical);
+                builder.AddFilter("Microsoft.SemanticKernel.Reliability", LogLevel.Information);
                 builder.AddFilter("System", LogLevel.Information);
 
                 builder.AddConsole();

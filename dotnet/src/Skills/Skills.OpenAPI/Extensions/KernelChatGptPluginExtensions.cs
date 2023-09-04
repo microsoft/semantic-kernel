@@ -54,10 +54,9 @@ public static class KernelChatGptPluginExtensions
             ? ProductInfoHeaderValue.Parse(executionParameters!.UserAgent)
             : ProductInfoHeaderValue.Parse(Telemetry.HttpUserAgent));
 
-        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        using var response = await internalHttpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        string gptPluginJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string gptPluginJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
         string? openApiUrl = ParseOpenApiUrl(gptPluginJson);
 
         return await kernel
@@ -129,7 +128,7 @@ public static class KernelChatGptPluginExtensions
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {chatGptPluginPath} is found");
         }
 
-        kernel.LoggerFactory.CreateLogger(nameof(KernelChatGptPluginExtensions)).LogTrace("Registering Rest functions from {0} ChatGPT Plugin", chatGptPluginPath);
+        kernel.LoggerFactory.CreateLogger(typeof(KernelChatGptPluginExtensions)).LogTrace("Registering Rest functions from {0} ChatGPT Plugin", chatGptPluginPath);
 
         using var stream = File.OpenRead(chatGptPluginPath);
 
@@ -160,7 +159,7 @@ public static class KernelChatGptPluginExtensions
             throw new FileNotFoundException($"No ChatGPT plugin for the specified path - {filePath} is found");
         }
 
-        kernel.LoggerFactory.CreateLogger(nameof(KernelChatGptPluginExtensions)).LogTrace("Registering Rest functions from {0} ChatGPT Plugin", filePath);
+        kernel.LoggerFactory.CreateLogger(typeof(KernelChatGptPluginExtensions)).LogTrace("Registering Rest functions from {0} ChatGPT Plugin", filePath);
 
         using var stream = File.OpenRead(filePath);
 

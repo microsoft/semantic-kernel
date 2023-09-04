@@ -64,7 +64,7 @@ public class RetryThreeTimesWithRetryAfterBackoff : DelegatingHandler
                 },
                 (outcome, timespan, retryCount, _) =>
                 {
-                    loggerFactory?.CreateLogger(nameof(RetryThreeTimesWithRetryAfterBackoff)).LogWarning(
+                    loggerFactory?.CreateLogger(typeof(RetryThreeTimesWithRetryAfterBackoff)).LogWarning(
                         "Error executing action [attempt {0} of 3], pausing {1}ms. Outcome: {2}",
                         retryCount,
                         timespan.TotalMilliseconds,

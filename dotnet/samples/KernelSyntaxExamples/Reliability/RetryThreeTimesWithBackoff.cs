@@ -60,7 +60,7 @@ public class RetryThreeTimesWithBackoff : DelegatingHandler
                     TimeSpan.FromSeconds(4),
                     TimeSpan.FromSeconds(8)
                 },
-                (outcome, timespan, retryCount, _) => logger?.CreateLogger(nameof(RetryThreeTimesWithBackoff)).LogWarning(
+                (outcome, timespan, retryCount, _) => logger?.CreateLogger(typeof(RetryThreeTimesWithBackoff)).LogWarning(
                     "Error executing action [attempt {0} of 3], pausing {1}ms. Outcome: {2}",
                     retryCount,
                     timespan.TotalMilliseconds,
