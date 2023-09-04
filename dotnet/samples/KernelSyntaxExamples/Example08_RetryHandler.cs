@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Config;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Skills.Core;
 using Polly;
@@ -47,7 +47,7 @@ public static class Example08_RetryHandler
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
 
         var kernel = InitializeKernelBuilder()
-            .WithBasicRetry(retryConfig)
+            .WithRetryBasic(retryConfig)
             .Build();
 
         await ImportAndExecuteSkillAsync(kernel);
@@ -57,7 +57,7 @@ public static class Example08_RetryHandler
     {
         InfoLogger.Logger.LogInformation("============================== Using Reliability.Polly extension ==============================");
         var kernel = InitializeKernelBuilder()
-            .WithPollyRetry(GetPollyPolicy(InfoLogger.LoggerFactory))
+            .WithRetryPolly(GetPollyPolicy(InfoLogger.LoggerFactory))
             .Build();
 
         await ImportAndExecuteSkillAsync(kernel);

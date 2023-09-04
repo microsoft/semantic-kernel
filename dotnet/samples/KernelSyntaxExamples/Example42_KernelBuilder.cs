@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Config;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -81,9 +81,6 @@ public static class Example42_KernelBuilder
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(loggerFactory);
         var kernelConfig = new KernelConfig();
-        kernelConfig.SetRetryBasic(new());
-        // OR kernel.Config.SetRetryPolly(your Polly AsyncPolicy...);
-
         using var httpHandler = kernelConfig.HttpHandlerFactory.Create(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
@@ -143,8 +140,8 @@ public static class Example42_KernelBuilder
         // The default behavior can be configured or a custom retry handler can be injected that will apply to all
         // AI requests (when using the kernel).
 
-        var kernel8 = Kernel.Builder
-            .Configure(c => c.SetRetryBasic(new BasicRetryConfig
+        var kernel8 = Kernel.Builder.WithRetryBasic(
+            new BasicRetryConfig
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
@@ -153,11 +150,7 @@ public static class Example42_KernelBuilder
                 //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
                 //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
                 //  RetryableExceptions = new[] { typeof(HttpRequestException) }
-            }))
-            .Build();
-
-        var kernel9 = Kernel.Builder
-            .Configure(c => c.SetHttpHandlerFactory(new NullHttpHandlerFactory()))
+            })
             .Build();
 
         var logger = loggerFactory.CreateLogger<PollyHttpRetryHandlerFactory>();
@@ -173,11 +166,11 @@ public static class Example42_KernelBuilder
                 (ex, timespan, retryCount, _)
                     => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms", retryCount, timespan.TotalMilliseconds));
 
-        var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
+        var kernel9 = Kernel.Builder.WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
 
-        var kernel11 = Kernel.Builder.WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
+        var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
 
-        var kernel12 = Kernel.Builder.WithHttpHandlerFactory(new MyCustomHandlerFactory()).Build();
+        var kernel11 = Kernel.Builder.WithHttpHandlerFactory(new MyCustomHandlerFactory()).Build();
 
         return Task.CompletedTask;
     }

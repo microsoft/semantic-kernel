@@ -33,11 +33,11 @@ public static class Example22_OpenApiSkill_AzureKeyVault
     {
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .Configure(c => c.SetRetryBasic(new()
+            .WithRetryBasic(new()
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true
-            }))
+            })
             .Build();
 
         var type = typeof(SkillResourceNames);

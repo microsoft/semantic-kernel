@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Config;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -51,7 +51,7 @@ public sealed class KernelBuilder
     {
         if (this._httpHandlerFactory != null)
         {
-            this._config.SetHttpHandlerFactory(this._httpHandlerFactory);
+            this._config.HttpHandlerFactory = this._httpHandlerFactory;
         }
 
         var instance = new Kernel(

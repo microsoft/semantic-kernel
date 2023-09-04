@@ -20,7 +20,7 @@ public static class ReliabilityPollyKernelBuilderExtensions
     /// <param name="kernelConfig">Target instance</param>
     /// <param name="retryPolicy">Provided AsyncPolicy</param>
     /// <returns>Returns target instance for fluent compatibility</returns>
-    public static KernelBuilder WithPollyRetry(this KernelBuilder kernelConfig, AsyncPolicy retryPolicy)
+    public static KernelBuilder WithRetryPolly(this KernelBuilder kernelConfig, AsyncPolicy retryPolicy)
     {
         var pollyHandler = new PollyHttpRetryHandlerFactory(retryPolicy);
         return kernelConfig.WithHttpHandlerFactory(pollyHandler);
@@ -32,7 +32,7 @@ public static class ReliabilityPollyKernelBuilderExtensions
     /// <param name="kernelConfig">Target instance</param>
     /// <param name="retryPolicy">Provided HttpResponseMessage AsyncPolicy</param>
     /// <returns>Returns target instance for fluent compatibility</returns>
-    public static KernelBuilder WithPollyRetry(this KernelBuilder kernelConfig, AsyncPolicy<HttpResponseMessage> retryPolicy)
+    public static KernelBuilder WithRetryPolly(this KernelBuilder kernelConfig, AsyncPolicy<HttpResponseMessage> retryPolicy)
     {
         var pollyHandler = new PollyHttpRetryHandlerFactory(retryPolicy);
         return kernelConfig.WithHttpHandlerFactory(pollyHandler);

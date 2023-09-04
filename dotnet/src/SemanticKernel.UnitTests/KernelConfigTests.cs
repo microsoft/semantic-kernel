@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Config;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Reliability;
 using Moq;
 using Xunit;
@@ -32,7 +32,7 @@ public class KernelConfigTests
         var config = new KernelConfig();
 
         // Act
-        config.SetHttpHandlerFactory(retry);
+        config.HttpHandlerFactory = retry;
 
         // Assert
         Assert.Equal(retry, config.HttpHandlerFactory);
@@ -46,7 +46,7 @@ public class KernelConfigTests
         var config = new KernelConfig();
 
         // Act
-        config.SetHttpHandlerFactory(retry.Object);
+        config.HttpHandlerFactory = retry.Object;
 
         // Assert
         Assert.Equal(retry.Object, config.HttpHandlerFactory);

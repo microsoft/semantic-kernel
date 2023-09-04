@@ -27,11 +27,12 @@ public class BasicRetryConfigTests
     public void SetDefaultBasicRetryConfig()
     {
         // Arrange
-        var config = new KernelConfig();
+        var builder = new KernelBuilder();
         var basicRetryConfig = new BasicRetryConfig() { MaxRetryCount = 1 };
+        builder.WithRetryBasic(basicRetryConfig);
 
         // Act
-        config.SetRetryBasic(basicRetryConfig);
+        var config = builder.Build().Config;
 
         // Assert
         Assert.IsType<BasicHttpRetryHandlerFactory>(config.HttpHandlerFactory);
@@ -44,11 +45,12 @@ public class BasicRetryConfigTests
     public void SetDefaultBasicRetryConfigToDefaultIfNotSet()
     {
         // Arrange
-        var config = new KernelConfig();
         var retryConfig = new BasicRetryConfig();
+        var builder = new KernelBuilder();
+        builder.WithRetryBasic(retryConfig);
 
         // Act
-        config.SetRetryBasic(retryConfig);
+        var config = builder.Build().Config;
 
         // Assert
         Assert.IsType<BasicHttpRetryHandlerFactory>(config.HttpHandlerFactory);
@@ -61,29 +63,5 @@ public class BasicRetryConfigTests
         Assert.Equal(retryConfig.UseExponentialBackoff, httpHandlerFactory.Config.UseExponentialBackoff);
         Assert.Equal(retryConfig.RetryableStatusCodes, httpHandlerFactory.Config.RetryableStatusCodes);
         Assert.Equal(retryConfig.RetryableExceptionTypes, httpHandlerFactory.Config.RetryableExceptionTypes);
-    }
-
-    [Fact]
-    public void SetDefaultBasicRetryConfigToDefaultIfNull()
-    {
-        // Arrange
-        var config = new KernelConfig();
-        var defaultConfig = new BasicRetryConfig();
-
-        // Act
-        config.SetRetryBasic();
-
-        // Assert
-        Assert.IsType<BasicHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-        var httpHandlerFactory = config.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
-
-        Assert.NotNull(httpHandlerFactory);
-        Assert.Equal(defaultConfig.MaxRetryCount, httpHandlerFactory.Config.MaxRetryCount);
-        Assert.Equal(defaultConfig.MaxRetryDelay, httpHandlerFactory.Config.MaxRetryDelay);
-        Assert.Equal(defaultConfig.MinRetryDelay, httpHandlerFactory.Config.MinRetryDelay);
-        Assert.Equal(defaultConfig.MaxTotalRetryTime, httpHandlerFactory.Config.MaxTotalRetryTime);
-        Assert.Equal(defaultConfig.UseExponentialBackoff, httpHandlerFactory.Config.UseExponentialBackoff);
-        Assert.Equal(defaultConfig.RetryableStatusCodes, httpHandlerFactory.Config.RetryableStatusCodes);
-        Assert.Equal(defaultConfig.RetryableExceptionTypes, httpHandlerFactory.Config.RetryableExceptionTypes);
     }
 }

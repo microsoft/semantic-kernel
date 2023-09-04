@@ -2,7 +2,7 @@
 
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Config;
+namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>
 /// A http retry handler that does not retry.

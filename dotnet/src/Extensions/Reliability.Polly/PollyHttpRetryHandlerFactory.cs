@@ -2,7 +2,7 @@
 
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Config;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Diagnostics;
 using Polly;
 

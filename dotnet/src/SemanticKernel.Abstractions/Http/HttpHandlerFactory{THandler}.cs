@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Config;
+namespace Microsoft.SemanticKernel.Http;
 
 public abstract class HttpHandlerFactory<THandler> : IDelegatingHandlerFactory where THandler : DelegatingHandler
 {

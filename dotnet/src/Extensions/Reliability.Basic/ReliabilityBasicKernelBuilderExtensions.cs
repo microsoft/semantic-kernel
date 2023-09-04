@@ -18,7 +18,7 @@ public static class ReliabilityBasicKernelBuilderExtensions
     /// <param name="builder">Target instance</param>
     /// <param name="retryConfig">Retry configuration</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithBasicRetry(this KernelBuilder builder,
+    public static KernelBuilder WithRetryBasic(this KernelBuilder builder,
         BasicRetryConfig retryConfig)
     {
         var httpHandlerFactory = new BasicHttpRetryHandlerFactory(retryConfig);

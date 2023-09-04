@@ -3,7 +3,7 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Config;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Reliability;
 

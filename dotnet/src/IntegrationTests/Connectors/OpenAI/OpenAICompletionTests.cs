@@ -153,7 +153,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = Kernel.Builder
             .WithLoggerFactory(this._testOutputHelper)
-            .Configure(c => c.SetRetryBasic(retryConfig))
+            .WithRetryBasic(retryConfig)
             .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
@@ -181,7 +181,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         KernelBuilder builder = Kernel.Builder
             .WithLoggerFactory(this._testOutputHelper)
-            .Configure(c => c.SetRetryBasic(retryConfig));
+            .WithRetryBasic(retryConfig);
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
