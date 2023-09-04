@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.AI.OpenAI;
-using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Extensions.Logging;
 using Memory;
 using Planning.Sequential;
@@ -48,31 +46,6 @@ public static class SKContextSequentialPlannerExtensions
             : await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
 
         return string.Join("\n\n", functions.Select(x => x.ToManualString()));
-    }
-
-
-    /// <summary>
-    ///  Gets a list of functions that are available to the user based on the semantic query and the excluded skills and functions.
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="semanticQuery"></param>
-    /// <param name="config"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public static async Task<List<FunctionDefinition>> GetFunctionDefinitions(
-        this SKContext context,
-        string? semanticQuery = null,
-        SequentialPlannerConfig? config = null,
-        CancellationToken cancellationToken = default)
-    {
-        config ??= new SequentialPlannerConfig();
-
-        // Use configured function provider if available, otherwise use the default SKContext function provider.
-        IOrderedEnumerable<FunctionView> functions = config.GetAvailableFunctionsAsync is null
-            ? await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false)
-            : await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
-
-        return functions.Where(view => view.CanBeCalled()).Select(view => view.ToFunctionDefinition()).ToList();
     }
 
 

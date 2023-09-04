@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Planning.Sequential;
+namespace Microsoft.SemanticKernel.Planning.Structured.Sequential;
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
+using Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
 using SkillDefinition;
 
@@ -16,7 +19,7 @@ using SkillDefinition;
 /// <summary>
 ///  Sequential planner that uses the OpenAI chat completion function calling API to generate a step by step plan to fulfill a goal.
 /// </summary>
-public class StructuredSequentialPlanner : ISequentialPlanner
+public class StructuredSequentialPlanner : IStructuredPlanner
 {
     /// <summary>
     ///  Initializes a new instance of the <see cref="StructuredSequentialPlanner"/> class.
@@ -24,23 +27,35 @@ public class StructuredSequentialPlanner : ISequentialPlanner
     /// <param name="kernel"></param>
     /// <param name="config"></param>
     /// <param name="prompt"></param>
+    /// <param name="loggerFactory"></param>
     public StructuredSequentialPlanner(
         IKernel kernel,
-        SequentialPlannerConfig? config = null,
-        string? prompt = null)
+        StructuredPlannerConfig? config = null,
+        string? prompt = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(kernel);
-        _kernel = kernel;
-        Config = config ?? new SequentialPlannerConfig();
+
+        _logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(StructuredSequentialPlanner)) : NullLogger.Instance;
+
+        Config = config ?? new StructuredPlannerConfig();
 
         Config.ExcludedSkills.Add(RestrictedSkillName);
 
-        _promptTemplate = prompt ?? EmbeddedResource.Read("structuredPrompt.txt");
+        var promptTemplate = prompt ?? EmbeddedResource.Read("Prompts.Sequential.skprompt.txt");
 
-        if (string.IsNullOrEmpty(_promptTemplate))
+        if (string.IsNullOrEmpty(promptTemplate))
         {
-            throw new Exception("The prompt template is empty");
+            throw new SKException("The prompt template is empty");
         }
+
+        _plannerFunction = kernel.CreateFunctionCall(
+            skillName: RestrictedSkillName,
+            promptTemplate: promptTemplate,
+            callFunctionsAutomatically: false,
+            targetFunction: SequentialPlan,
+            maxTokens: Config.MaxTokens, temperature: 0.0);
+        _context = kernel.CreateNewContext();
     }
 
 
@@ -52,19 +67,12 @@ public class StructuredSequentialPlanner : ISequentialPlanner
             throw new SKException("The goal specified is empty");
         }
 
-        _context = _kernel.CreateNewContext();
         _context.Variables.Update(goal);
-        List<FunctionDefinition> relevantFunctionDefinitions = await _context.GetFunctionDefinitions(goal, Config, cancellationToken).ConfigureAwait(false);
 
-        _functionFlowFunction = _kernel.CreateFunctionCall(
-            skillName: RestrictedSkillName,
-            promptTemplate: _promptTemplate,
-            callFunctionsAutomatically: false,
-            targetFunction: SequentialPlan,
-            callableFunctions: relevantFunctionDefinitions,
-            maxTokens: Config.MaxTokens ?? 1024, temperature: 0.0);
+        SkillCollection skillCollection = await _context.GetSkillCollection(Config, goal).ConfigureAwait(false);
+        _plannerFunction.SetDefaultSkillCollection(skillCollection);
 
-        SKContext? result = await _functionFlowFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        SKContext? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
         List<SequentialPlanCall>? functionCalls = result.ToFunctionCallResult<List<SequentialPlanCall>>();
 
         if (functionCalls is null)
@@ -72,21 +80,15 @@ public class StructuredSequentialPlanner : ISequentialPlanner
             throw new SKException("The planner failed to generate a response");
         }
 
-        var plan = functionCalls.ToPlan(goal, _context.Skills);
-        Console.WriteLine(plan.ToPlanString());
+        var plan = functionCalls.ToPlan(goal, skillCollection);
         return plan;
     }
 
 
-    private SequentialPlannerConfig Config { get; }
-
-    private SKContext? _context;
-    private readonly IKernel _kernel;
-
-    /// <summary>
-    /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed
-    /// </summary>
-    private ISKFunction? _functionFlowFunction;
+    private StructuredPlannerConfig Config { get; }
+    private readonly SKContext _context;
+    private readonly ISKFunction _plannerFunction;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
@@ -165,6 +167,4 @@ public class StructuredSequentialPlanner : ISequentialPlanner
             },
             new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
     };
-
-    private readonly string _promptTemplate;
 }

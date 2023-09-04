@@ -24,8 +24,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Sequential\" />
-      <Folder Include="Stepwise\" />
+        <None Remove="Prompts\**\*"/>
+        <EmbeddedResource Include="Prompts/**/*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

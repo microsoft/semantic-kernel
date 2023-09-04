@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Planning.Sequential;
+namespace Microsoft.SemanticKernel.Planning.Structured.Sequential;
 
 using Connectors.AI.OpenAI.FunctionCalling;
 

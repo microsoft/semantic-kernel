@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Planning.Action;
+namespace Microsoft.SemanticKernel.Planning.Structured.Action;
 
 using System;
 using System.Text.Json;
@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
+using Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
 using SkillDefinition;
 
@@ -17,38 +18,42 @@ using SkillDefinition;
 /// <summary>
 ///  Action planner that uses the OpenAI chat completion function calling API to select the best action to take.
 /// </summary>
-public class StructuredActionPlanner : IActionPlanner
+public class StructuredActionPlanner : IStructuredPlanner
 {
-    private const string SkillName = "this";
-
 
     /// <summary>
     ///  Initializes a new instance of the <see cref="StructuredActionPlanner"/> class.
     /// </summary>
     /// <param name="kernel"></param>
+    /// <param name="config"></param>
     /// <param name="prompt"></param>
     /// <param name="loggerFactory"></param>
     public StructuredActionPlanner(
         IKernel kernel,
+        StructuredPlannerConfig? config = null,
         string? prompt = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(kernel);
 
-        _logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ActionPlanner)) : NullLogger.Instance;
+        _logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(StructuredActionPlanner)) : NullLogger.Instance;
 
-        var promptTemplate = prompt ?? PromptTemplate;
+        Config = config ?? new StructuredPlannerConfig();
+        Config.ExcludedSkills.Add(SkillName);
+
+        if (!string.IsNullOrEmpty(prompt))
+        {
+            _promptTemplate = prompt!;
+        }
 
         _plannerFunction = kernel.CreateFunctionCall(
             skillName: SkillName,
-            promptTemplate: promptTemplate,
+            promptTemplate: _promptTemplate,
             callFunctionsAutomatically: false,
             targetFunction: ActionPlan,
             maxTokens: 1024, temperature: 0.0);
 
-        kernel.ImportSkill(this, SkillName);
         _context = kernel.CreateNewContext();
-
     }
 
 
@@ -59,10 +64,13 @@ public class StructuredActionPlanner : IActionPlanner
         {
             throw new SKException("The goal specified is empty");
         }
-
-        // temporary solution until deeper integration with the kernel
         _context.Variables.Update(goal);
-        SKContext result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        SkillCollection skillCollection = await _context.GetSkillCollection(Config, goal).ConfigureAwait(false);
+
+        _plannerFunction.SetDefaultSkillCollection(skillCollection);
+
+        SKContext? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionFunctionCall? response = result.ToFunctionCallResult<ActionFunctionCall>();
 
         if (response is null)
@@ -70,7 +78,7 @@ public class StructuredActionPlanner : IActionPlanner
             throw new SKException("The planner failed to generate a response");
         }
 
-        if (!_context.Skills.TryGetFunction(response, out var function))
+        if (!_context.Skills.TryGetFunction(response, out ISKFunction? function))
         {
             throw new SKException($"The function {response.Function} is not available");
         }
@@ -82,15 +90,18 @@ public class StructuredActionPlanner : IActionPlanner
     }
 
 
-    // Planner semantic function
-    private readonly ISKFunction _plannerFunction;
+    private StructuredPlannerConfig Config { get; }
 
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;
     private readonly ILogger _logger;
 
-    private const string PromptTemplate = "Decide the best action to take to achieve the user's goal." +
-                                          "\nGoal: {{ $input }}";
+    // Planner semantic function
+    private readonly ISKFunction _plannerFunction;
+    private const string SkillName = "this";
+
+    private readonly string _promptTemplate = "Decide the best action to take to achieve the user's goal." +
+                                              "\nGoal: {{ $input }}";
 
     private static FunctionDefinition ActionPlan => new()
     {

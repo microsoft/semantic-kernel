@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Planning.Stepwise;
+namespace Microsoft.SemanticKernel.Planning.Structured.Stepwise;
 
 using System;
 using System.Collections.Generic;
@@ -7,65 +7,68 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI.FunctionCalling;
 using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
-using Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Orchestration;
 using SemanticFunctions;
 using SkillDefinition;
 
 
-public class StructuredStepwisePlanner : IStepwisePlanner
+/// <summary>
+///  Stepwise planner that uses the OpenAI chat completion function calling API to achieve a goal in a step by step manner. 
+/// </summary>
+public class StructuredStepwisePlanner : IStructuredPlanner
 {
 
+    /// <summary>
+    ///  Create a new instance of the StepwisePlanner
+    /// </summary>
+    /// <param name="kernel"></param>
+    /// <param name="config"></param>
+    /// <param name="prompt"></param>
+    /// <param name="promptUserConfig"></param>
     public StructuredStepwisePlanner(
         IKernel kernel,
-        StepwisePlannerConfig? config = null,
+        StructuredPlannerConfig? config = null,
         string? prompt = null,
         PromptTemplateConfig? promptUserConfig = null)
     {
         Verify.NotNull(kernel);
         _kernel = kernel;
 
-        Config = config ?? new StepwisePlannerConfig();
+        Config = config ?? new StructuredPlannerConfig();
         Config.ExcludedSkills.Add(RestrictedSkillName);
 
-        var promptConfig = promptUserConfig ?? new PromptTemplateConfig();
-        _promptTemplate = prompt ?? EmbeddedResource.Read("Skills.StructuredStep.skprompt.txt");
+        var promptTemplate = prompt ?? EmbeddedResource.Read("Prompts.Stepwise.skprompt.txt");
 
-        if (promptUserConfig == null)
-        {
-            var promptConfigString = EmbeddedResource.Read("Skills.StructuredStep.config.json");
+        _systemStepFunction = _kernel.CreateFunctionCall(
+            skillName: RestrictedSkillName,
+            promptTemplate: promptTemplate,
+            callFunctionsAutomatically: false,
+            targetFunction: StepwisePlan,
+            maxTokens: 1024, temperature: 1.0);
 
-            if (!string.IsNullOrEmpty(promptConfigString))
-            {
-                promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
-            }
-        }
-
-        promptConfig.Completion.MaxTokens = Config.MaxTokens;
-
-        // this._systemStepFunction = this.ImportSemanticFunction(this._kernel, "StepwiseStep", promptTemplate, promptConfig);
-        _kernel.ImportSkill(this, RestrictedSkillName);
+        _executeFunction = _kernel.ImportSkill(this, RestrictedSkillName);
 
         _context = _kernel.CreateNewContext();
-        _logger = _kernel.LoggerFactory.CreateLogger(nameof(StepwisePlanner));
+        _logger = _kernel.LoggerFactory.CreateLogger(nameof(StructuredStepwisePlanner));
+
     }
 
 
     /// <inheritdoc />
-    public Plan CreatePlan(string goal)
+    public Task<Plan> CreatePlanAsync(string goal, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(goal))
         {
             throw new SKException("The goal specified is empty");
         }
-
-        var executeFunction = _kernel.Func(ToString(), "ExecutePlan");
-        Plan planStep = new(executeFunction);
+        Plan planStep = new(_executeFunction["ExecutePlan"]);
 
         planStep.Parameters.Set("question", goal);
 
@@ -78,7 +81,7 @@ public class StructuredStepwisePlanner : IStepwisePlanner
 
         plan.AddSteps(planStep);
 
-        return plan;
+        return Task.FromResult(plan);
     }
 
 
@@ -88,25 +91,14 @@ public class StructuredStepwisePlanner : IStepwisePlanner
         string question,
         SKContext context)
     {
-        List<StructuredStep> stepsTaken = new();
-
-        List<FunctionDefinition> functionDefinitions = GetAvailableFunctions().ToList();
+        List<StepFunctionCall> stepsTaken = new();
 
         if (!string.IsNullOrEmpty(question))
         {
-            for (var i = 0; i < Config.MaxIterations; i++)
+            for (int i = 0; i < Config.MaxIterations; i++)
             {
-                var scratchPad = CreateScratchPad(question, stepsTaken);
-
+                string scratchPad = CreateScratchPad(question, stepsTaken);
                 context.Variables.Set("agentScratchPad", scratchPad);
-
-                _systemStepFunction = _kernel.CreateFunctionCall(
-                    skillName: RestrictedSkillName,
-                    promptTemplate: _promptTemplate,
-                    callFunctionsAutomatically: false,
-                    targetFunction: StepwisePlan,
-                    callableFunctions: functionDefinitions,
-                    maxTokens: 1024, temperature: 0.0);
 
                 SKContext? result = await _systemStepFunction.InvokeAsync(context).ConfigureAwait(false);
 
@@ -114,60 +106,55 @@ public class StructuredStepwisePlanner : IStepwisePlanner
                 {
                     throw new SKException($"Error occurred while executing stepwise plan: {result.LastException?.Message}", result.LastException);
                 }
-
-                StructuredStep? nextStep = result.ToFunctionCallResult<StructuredStep>();
+                StepFunctionCall? nextStep = result.ToFunctionCallResult<StepFunctionCall>();
 
                 if (nextStep == null)
                 {
                     throw new InvalidOperationException("Failed to parse step from response text.");
                 }
 
-                stepsTaken.Add(nextStep);
-
                 if (!string.IsNullOrEmpty(nextStep.FinalAnswer))
                 {
+                    stepsTaken.Add(nextStep);
                     _logger?.LogTrace("Final Answer: {FinalAnswer}", nextStep.FinalAnswer);
-
                     context.Variables.Update(nextStep.FinalAnswer);
-                    var updatedScratchPlan = CreateScratchPad(question, stepsTaken);
+                    string updatedScratchPlan = CreateScratchPad(question, stepsTaken);
                     context.Variables.Set("agentScratchPad", updatedScratchPlan);
 
                     // Add additional results to the context
                     AddExecutionStatsToContext(stepsTaken, context);
-
                     return context;
                 }
 
+                stepsTaken.Add(nextStep);
+
                 _logger?.LogTrace("Thought: {Thought}", nextStep.Thought);
 
-                if (!string.IsNullOrEmpty(nextStep!.Function!))
+                if (nextStep.Action != null)
                 {
-                    _logger?.LogInformation("Action: {Action}. Iteration: {Iteration}.", nextStep.Function, i + 1);
-                    _logger?.LogTrace("Action: {Action}({ActionVariables}). Iteration: {Iteration}.",
-                        nextStep.Function, JsonSerializer.Serialize(nextStep.Parameters), i + 1);
+                    _logger?.LogInformation("Action: {Action}. Iteration: {Iteration}.", nextStep.Action.Function, i + 1);
+                    _logger?.LogTrace("Action: {Action}({ActionVariables}). Iteration: {Iteration}.", nextStep.Action.Function, JsonSerializer.Serialize(nextStep.Action.Parameters), i + 1);
 
                     try
                     {
                         await Task.Delay(Config.MinIterationTimeMs).ConfigureAwait(false);
-                        string actionResult = await InvokeActionAsync(nextStep).ConfigureAwait(false);
-
-                        nextStep.Observation = string.IsNullOrEmpty(actionResult) ? "Got no result from action" : actionResult;
+                        string? actionResult = await InvokeActionAsync(nextStep.Action).ConfigureAwait(false);
+                        nextStep.ActionResult = string.IsNullOrEmpty(actionResult) ? "Got no result from action" : actionResult;
                     }
                     catch (Exception ex) when (!ex.IsCriticalException())
                     {
-                        nextStep.Observation = $"Error invoking action {nextStep.Function} : {ex.Message}";
-                        _logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Function);
+                        nextStep.ActionResult = $"Error invoking action {nextStep.Action.Function} : {ex.Message}";
+                        _logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Action.Function);
                     }
 
                     _logger?.LogTrace("Observation: {Observation}", nextStep.Observation);
                 }
                 else
                 {
-                    _logger?.LogInformation($"{Action}: No action to take");
+                    _logger?.LogInformation($"[Action]: No action to take");
                 }
-
                 // sleep 3 seconds
-                await Task.Delay(Config.MinIterationTimeMs).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromMilliseconds(Config.MinIterationTimeMs)).ConfigureAwait(false);
             }
 
             context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
@@ -181,7 +168,7 @@ public class StructuredStepwisePlanner : IStepwisePlanner
     }
 
 
-    private string CreateScratchPad(string question, IReadOnlyList<StructuredStep> stepsTaken)
+    private string CreateScratchPad(string question, IReadOnlyList<StepFunctionCall> stepsTaken)
     {
         if (stepsTaken.Count == 0)
         {
@@ -191,7 +178,6 @@ public class StructuredStepwisePlanner : IStepwisePlanner
         List<string> scratchPadLines = new()
         {
             ScratchPadPrefix,
-            $"{Thought}: {stepsTaken[0].Thought}"
         };
 
         var insertPoint = scratchPadLines.Count;
@@ -204,21 +190,12 @@ public class StructuredStepwisePlanner : IStepwisePlanner
                 break;
             }
 
-            var s = stepsTaken[i];
+            StepFunctionCall s = stepsTaken[i];
+            var formattedString = s.ToFormattedString();
 
-            if (!string.IsNullOrEmpty(s.Observation))
+            if (!string.IsNullOrEmpty(formattedString))
             {
-                scratchPadLines.Insert(insertPoint, $"{Observation}: {s.Observation}");
-            }
-
-            if (!string.IsNullOrEmpty(s.Function))
-            {
-                scratchPadLines.Insert(insertPoint, $"{Action}: {JsonSerializer.Serialize(new { action = s.Function, action_variables = s.Parameters })}");
-            }
-
-            if (i != 0 && s.Thought != null)
-            {
-                scratchPadLines.Insert(insertPoint, $"{Thought}: {s.Thought}");
+                scratchPadLines.Insert(insertPoint, formattedString);
             }
         }
 
@@ -235,7 +212,7 @@ public class StructuredStepwisePlanner : IStepwisePlanner
 
     private async Task<string> InvokeActionAsync(FunctionCallResult functionCall)
     {
-        _context.Skills.TryGetFunction(functionCall.Function, out var targetFunction);
+        _context.Skills.TryGetFunction(functionCall, out ISKFunction? targetFunction);
 
         if (targetFunction == null)
         {
@@ -244,17 +221,15 @@ public class StructuredStepwisePlanner : IStepwisePlanner
 
         try
         {
-            var function = _kernel.Func(targetFunction.SkillName, targetFunction.Name);
-
-            var result = await function.InvokeAsync(functionCall.FunctionParameters()).ConfigureAwait(false);
+            SKContext? result = await targetFunction.InvokeAsync(functionCall.FunctionParameters()).ConfigureAwait(false);
 
             if (result.ErrorOccurred)
             {
-                _logger?.LogError("Error occurred: {Error}", result.LastException);
+                _logger.LogError("Error occurred: {Error}", result.LastException);
                 return $"Error occurred: {result.LastException}";
             }
 
-            _logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
+            _logger.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
 
             return result.Result;
         }
@@ -266,54 +241,44 @@ public class StructuredStepwisePlanner : IStepwisePlanner
     }
 
 
-    private static void AddExecutionStatsToContext(List<StructuredStep> stepsTaken, SKContext context)
+    private static void AddExecutionStatsToContext(List<StepFunctionCall> stepsTaken, SKContext context)
     {
         context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
         context.Variables.Set("stepsTaken", JsonSerializer.Serialize(stepsTaken));
 
         Dictionary<string, int> functionCounts = new();
 
-        foreach (var step in stepsTaken.Where(step => !string.IsNullOrEmpty(step.Function)))
+        foreach (StepFunctionCall? step in stepsTaken.Where(step => !string.IsNullOrEmpty(step.Function)))
         {
-            if (!functionCounts.TryGetValue(step.Function, out var currentCount))
+            if (!functionCounts.TryGetValue(step.Function, out int currentCount))
             {
                 currentCount = 0;
             }
             functionCounts[step.Function] = currentCount + 1;
         }
 
-        var functionCallListWithCounts = string.Join(", ", functionCounts.Keys.Select(func =>
+        string functionCallListWithCounts = string.Join(", ", functionCounts.Keys.Select(func =>
             $"{func}({functionCounts[func]})"));
 
-        var functionCallsStr = functionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
+        string functionCallsStr = functionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
 
         context.Variables.Set("functionCount", $"{functionCallsStr} ({functionCallListWithCounts})");
-    }
-
-
-    private IEnumerable<FunctionDefinition> GetAvailableFunctions()
-    {
-
-        HashSet<string> excludedSkills = Config.ExcludedSkills;
-        HashSet<string> excludedFunctions = Config.ExcludedFunctions;
-
-        return _context.Skills!.GetFunctionDefinitions(excludedSkills, excludedFunctions);
+        Console.WriteLine(string.Join("\n", context.Variables.Select(v => $"{v.Key}: {v.Value}")));
     }
 
 
     /// <summary>
     /// The configuration for the StepwisePlanner
     /// </summary>
-    private StepwisePlannerConfig Config { get; }
+    private StructuredPlannerConfig Config { get; }
 
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
+    private readonly IDictionary<string, ISKFunction> _executeFunction;
 
-    private ISKFunction _systemStepFunction;
-
-    private readonly string _promptTemplate;
+    private readonly ISKFunction _systemStepFunction;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
@@ -324,21 +289,6 @@ public class StructuredStepwisePlanner : IStepwisePlanner
     /// The prefix used for the scratch pad
     /// </summary>
     private const string ScratchPadPrefix = "This was my previous work (but they haven't seen any of it! They only see what I return as final answer):";
-
-    /// <summary>
-    /// The Action tag
-    /// </summary>
-    private const string Action = "[ACTION]";
-
-    /// <summary>
-    /// The Thought tag
-    /// </summary>
-    private const string Thought = "[THOUGHT]";
-
-    /// <summary>
-    /// The Observation tag
-    /// </summary>
-    private const string Observation = "[OBSERVATION]";
 
     private static FunctionDefinition StepwisePlan => new()
     {
@@ -402,7 +352,7 @@ public class StructuredStepwisePlanner : IStepwisePlanner
                                 Type = "string",
                                 Description = "Observation from the action result"
                             },
-                            FinalAnswer = new
+                            Final_Answer = new
                             {
                                 Type = "string",
                                 Description = "Final answer if found"

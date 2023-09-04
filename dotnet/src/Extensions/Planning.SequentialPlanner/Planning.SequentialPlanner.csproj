@@ -30,18 +30,10 @@
 
   <ItemGroup>
     <None Remove="skprompt.txt" />
-    <None Remove="structuredPrompt.txt"/>
     <EmbeddedResource Include="skprompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="structuredPrompt.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
   </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Azure.AI.OpenAI"/>
-    </ItemGroup>
 
 
 </Project>

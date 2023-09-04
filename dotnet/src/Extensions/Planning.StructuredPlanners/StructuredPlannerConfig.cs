@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Planning.Structured;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Memory;
@@ -55,7 +54,17 @@ public sealed class StructuredPlannerConfig
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
     /// </summary>
-    public int? MaxTokens { get; set; }
+    public int MaxTokens { get; set; } = 1024;
+
+    /// <summary>
+    /// The maximum number of iterations to allow in a plan.
+    /// </summary>
+    public int MaxIterations { get; set; } = 100;
+
+    /// <summary>
+    /// The minimum time to wait between iterations in milliseconds.
+    /// </summary>
+    public int MinIterationTimeMs { get; set; } = 0;
 
     /// <summary>
     /// Whether to allow missing functions in the plan on creation.
@@ -72,7 +81,7 @@ public sealed class StructuredPlannerConfig
     /// <summary>
     /// Optional callback to get the available functions for planning.
     /// </summary>
-    public Func<StructuredPlannerConfig, string?, CancellationToken, Task<IOrderedEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
+    public Func<StructuredPlannerConfig, string?, CancellationToken, Task<FunctionsView>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
     /// Optional callback to get a function by name.

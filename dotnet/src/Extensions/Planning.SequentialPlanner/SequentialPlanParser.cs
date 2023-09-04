@@ -4,10 +4,8 @@ namespace Microsoft.SemanticKernel.Planning.Sequential;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
 using Orchestration;
 using SkillDefinition;
@@ -205,70 +203,6 @@ internal static class SequentialPlanParser
 
                 // Similar to comments or text, do not add empty nodes as steps.
                 // TODO - This could be a way to advertise desired functions for a plan.
-            }
-        }
-
-        return plan;
-    }
-
-
-    public static Plan ToPlan(this IEnumerable<SequentialPlanCall> functionCalls, string goal, IReadOnlySkillCollection skillCollection)
-    {
-        // Initialize Plan with goal
-        var plan = new Plan(goal);
-
-        List<SequentialPlanCall> functions = functionCalls.ToList();
-
-        if (functions.Count == 0)
-        {
-            Console.WriteLine("No functions found");
-            return plan;
-        }
-
-        // Process each functionCall
-        foreach (var functionCall in functions)
-        {
-            skillCollection.TryGetFunction(functionCall, out var skillFunction);
-
-            if (skillFunction is not null)
-            {
-                var planStep = new Plan(skillFunction);
-
-                var functionVariables = new ContextVariables();
-
-                foreach (var parameter in functionCall.Parameters)
-                {
-                    functionVariables.Set(parameter.Name, parameter.Value);
-                }
-
-                List<string> functionOutputs = new();
-
-                if (!string.IsNullOrEmpty(functionCall.SetContextVariable))
-                {
-                    functionOutputs.Add(functionCall.SetContextVariable!);
-                }
-
-                List<string> functionResults = new List<string>();
-
-                if (!string.IsNullOrEmpty(functionCall.AppendToResult))
-                {
-                    functionOutputs.Add(functionCall.AppendToResult!);
-                    functionResults.Add(functionCall.AppendToResult!);
-                }
-
-                planStep.Outputs = functionOutputs;
-                planStep.Parameters = functionVariables;
-
-                foreach (var result in functionResults)
-                {
-                    plan.Outputs.Add(result);
-                }
-
-                plan.AddSteps(planStep);
-            }
-            else
-            {
-                throw new Exception($"Function '{functionCall.Function}' not found.");
             }
         }
 
