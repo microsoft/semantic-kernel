@@ -79,7 +79,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(nameof(TextMemorySkill)).LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        loggerFactory?.CreateLogger(typeof(TextMemorySkill)).LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
         var memory = await this._memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -112,7 +112,7 @@ public sealed class TextMemorySkill
         relevance ??= DefaultRelevance;
         limit ??= DefaultLimit;
 
-        ILogger? logger = loggerFactory?.CreateLogger(nameof(TextMemorySkill));
+        ILogger? logger = loggerFactory?.CreateLogger(typeof(TextMemorySkill));
 
         logger?.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
@@ -156,7 +156,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(nameof(TextMemorySkill)).LogDebug("Saving memory to collection '{0}'", collection);
+        loggerFactory?.CreateLogger(typeof(TextMemorySkill)).LogDebug("Saving memory to collection '{0}'", collection);
 
         await this._memory.SaveInformationAsync(collection, text: input, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
@@ -182,7 +182,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(nameof(TextMemorySkill)).LogDebug("Removing memory from collection '{0}'", collection);
+        loggerFactory?.CreateLogger(typeof(TextMemorySkill)).LogDebug("Removing memory from collection '{0}'", collection);
 
         await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }

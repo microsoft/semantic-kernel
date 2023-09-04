@@ -11,10 +11,10 @@ if __name__ == "__main__":
 
     context_variables = sk.ContextVariables(
         variables={
-            "request_body": {"input": "hello world"},
-            "path_params": {"name": "mark"},
-            "query_params": {"q": "0.7"},
-            "headers": {"Content-Type": "application/json", "Header": "example"},
+            "request_body": '{"input": "hello world"}',
+            "path_params": '{"name": "mark"}',
+            "query_params": '{"q": "0.7"}',
+            "headers": '{"Content-Type": "application/json", "Header": "example"}',
         }
     )
     result = asyncio.run(
