@@ -33,7 +33,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(OpenApiDocumentParser)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(OpenApiDocumentParser)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -268,7 +268,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
-        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema.Required);
+        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description);
     }
@@ -307,8 +307,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 propertySchema.Type,
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
-                propertySchema.Description
-            );
+                propertySchema.Description);
 
             result.Add(property);
         }

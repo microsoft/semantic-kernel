@@ -149,3 +149,4 @@ Other SK packages available at nuget.org:
 5. **Microsoft.SemanticKernel.Skills.OpenAPI**: OpenAPI skill.
 6. **Microsoft.SemanticKernel.Skills.Web**: Web Skill: search the web, download
    files, etc.
+7. **Microsoft.SemanticKernel.Reliability.Polly**: Extension for http resiliency.

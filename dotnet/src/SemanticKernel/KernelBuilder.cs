@@ -1,11 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -25,6 +30,9 @@ public sealed class KernelBuilder
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
 
+    private static bool _promptTemplateEngineInitialized = false;
+    private static Type? _promptTemplateEngineType = null;
+
     /// <summary>
     /// Create a new kernel instance
     /// </summary>
@@ -43,13 +51,13 @@ public sealed class KernelBuilder
     {
         if (this._httpHandlerFactory != null)
         {
-            this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
+            this._config.HttpHandlerFactory = this._httpHandlerFactory;
         }
 
         var instance = new Kernel(
             new SkillCollection(this._loggerFactory),
             this._aiServices.Build(),
-            this._promptTemplateEngine ?? new PromptTemplateEngine(this._loggerFactory),
+            this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),
             this._config,
             this._loggerFactory
@@ -137,15 +145,26 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add a retry handler factory to the kernel to be built.
+    /// Add a http handler factory to the kernel to be built.
     /// </summary>
-    /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
-    /// <returns>Updated kernel builder including the retry handler factory.</returns>
-    public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
+    /// <param name="httpHandlerFactory">Http handler factory to add.</param>
+    /// <returns>Updated kernel builder including the http handler factory.</returns>
+    public KernelBuilder WithHttpHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
     {
         Verify.NotNull(httpHandlerFactory);
         this._httpHandlerFactory = httpHandlerFactory;
         return this;
+    }
+
+    /// <summary>
+    /// Add a retry handler factory to the kernel to be built.
+    /// </summary>
+    /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
+    /// <returns>Updated kernel builder including the retry handler factory.</returns>
+    [Obsolete("This method is deprecated, use WithHttpHandlerFactory instead")]
+    public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
+    {
+        return this.WithHttpHandlerFactory(httpHandlerFactory);
     }
 
     /// <summary>
@@ -220,5 +239,69 @@ public sealed class KernelBuilder
     {
         this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._config), setAsDefault);
         return this;
+    }
+
+    /// <summary>
+    /// Create a default prompt template engine.
+    ///
+    /// This is a temporary solution to avoid breaking existing clients.
+    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
+    ///
+    /// </summary>
+    /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
+    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
+    private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
+    {
+        if (!_promptTemplateEngineInitialized)
+        {
+            _promptTemplateEngineType = this.GetPromptTemplateEngineType();
+            _promptTemplateEngineInitialized = true;
+        }
+
+        if (_promptTemplateEngineType is not null)
+        {
+            var constructor = _promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+            if (constructor is not null)
+            {
+#pragma warning disable CS8601 // Null logger factory is OK
+                return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
+#pragma warning restore CS8601
+            }
+        }
+
+        return new NullPromptTemplateEngine();
+    }
+
+    /// <summary>
+    /// Get the prompt template engine type if available
+    /// </summary>
+    /// <returns>The type for the prompt template engine if available</returns>
+    private Type? GetPromptTemplateEngineType()
+    {
+        try
+        {
+            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.PromptTemplateEngine");
+
+            return assembly.ExportedTypes.Single(type =>
+                type.Name.Equals("PromptTemplateEngine", StringComparison.Ordinal) &&
+                type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            return null;
+        }
+    }
+}
+
+/// <summary>
+/// No-operation IPromptTemplateEngine which performs no rendering of the template.
+///
+/// This is a temporary solution to avoid breaking existing clients.
+/// </summary>
+internal class NullPromptTemplateEngine : IPromptTemplateEngine
+{
+    public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(templateText);
     }
 }
