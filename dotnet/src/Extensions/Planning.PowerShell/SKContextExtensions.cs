@@ -8,14 +8,14 @@ namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
 internal static class SKContextExtensions
 {
-    internal static string GetFunctionsManual(this SKContext context, ScriptPlannerConfig config)
+    internal static string GetFunctionsManual(this SKContext context, PowerShellPlannerConfig config)
     {
         var functions = context.GetAvailableFunctions(config);
 
         return string.Join("\n\n", functions.Select(f => f.ToManualString()));
     }
 
-    internal static IOrderedEnumerable<FunctionView> GetAvailableFunctions(this SKContext context, ScriptPlannerConfig config)
+    internal static IOrderedEnumerable<FunctionView> GetAvailableFunctions(this SKContext context, PowerShellPlannerConfig config)
     {
         var functionsView = context.Skills.GetFunctionsView();
 

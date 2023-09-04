@@ -8,7 +8,10 @@ using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.Planning.PowerShell;
 
-public class ScriptParserTests
+/// <summary>
+/// Unit tests for <see cref="PowerShellParser"/>.
+/// </summary>
+public class PowerShellParserTests
 {
     [Fact]
     public void ItParsesScriptCorrectly()
@@ -22,7 +25,7 @@ public class ScriptParserTests
         const string Goal = "Test goal";
 
         // Act
-        var plan = ScriptParser.ToPlanFromScript(Script, Goal, (skillName, functionName) => this.GetMockFunction(functionName));
+        var plan = PowerShellParser.ToPlanFromScript(Script, Goal, (skillName, functionName) => this.GetMockFunction(functionName));
 
         // Assert
         Assert.Equal(Goal, plan.Description);

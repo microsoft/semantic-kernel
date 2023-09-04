@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
-internal static class ScriptParser
+internal static class PowerShellParser
 {
     internal static Plan ToPlanFromScript(this string script, string goal, Func<string, string, ISKFunction?> getSkillFunction)
     {

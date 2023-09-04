@@ -12,17 +12,17 @@ namespace Microsoft.SemanticKernel.Planning.PowerShell;
 /// <summary>
 /// A planner that uses semantic function to create a plan, based on PowerShell script.
 /// </summary>
-public class ScriptPlanner
+public class PowerShellPlanner
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ScriptPlanner"/> class.
+    /// Initializes a new instance of the <see cref="PowerShellPlanner"/> class.
     /// </summary>
     /// <param name="kernel">Instance of <see cref="IKernel"/>.</param>
-    /// <param name="config">Instance of <see cref="ScriptPlannerConfig"/> with planner configuration.</param>
+    /// <param name="config">Instance of <see cref="PowerShellPlannerConfig"/> with planner configuration.</param>
     /// <param name="prompt">Optional planner prompt override.</param>
-    public ScriptPlanner(
+    public PowerShellPlanner(
         IKernel kernel,
-        ScriptPlannerConfig? config = null,
+        PowerShellPlannerConfig? config = null,
         string? prompt = null)
     {
         this.Config = config ?? new();
@@ -62,7 +62,7 @@ public class ScriptPlanner
 
     private const string SkillName = "PowerShell_Excluded";
 
-    private ScriptPlannerConfig Config { get; }
+    private PowerShellPlannerConfig Config { get; }
 
     private readonly SKContext _context;
     private readonly ISKFunction _generateScriptFunction;

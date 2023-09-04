@@ -7,9 +7,9 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.Planning.PowerShell;
 
 /// <summary>
-/// Script planner configuration.
+/// PowerShell planner configuration.
 /// </summary>
-public class ScriptPlannerConfig
+public class PowerShellPlannerConfig
 {
     /// <summary>
     /// A list of skills to exclude from the script generation request.
