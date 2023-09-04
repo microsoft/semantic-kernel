@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Planning.Action;
+namespace Microsoft.SemanticKernel.Planning.Structured.Action;
 
 using Connectors.AI.OpenAI.FunctionCalling;
 

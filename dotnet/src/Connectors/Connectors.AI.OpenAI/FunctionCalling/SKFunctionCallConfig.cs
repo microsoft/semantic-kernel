@@ -36,7 +36,7 @@ public class SKFunctionCallConfig
     /// <summary>
     ///  Whether to call functions automatically
     /// </summary>
-    public bool CallFunctionsAutomatically { get; set; } = false;
+    public bool CallFunctionsAutomatically { get; }
 
 
     /// <summary>

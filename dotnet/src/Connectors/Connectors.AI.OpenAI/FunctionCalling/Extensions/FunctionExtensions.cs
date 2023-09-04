@@ -122,10 +122,9 @@ public static class FunctionExtensions
     /// <param name="functionView"></param>
     /// <returns></returns>
     /// <remarks>
-    ///  A function definition must have at least one parameter and a description to be called
+    ///  A function definition must have a description to be called
     /// </remarks>
-    public static bool CanBeCalled(this FunctionView functionView) => functionView.Parameters.Count > 0
-                                                                      && !string.IsNullOrEmpty(functionView.Description);
+    public static bool CanBeCalled(this FunctionView functionView) => !string.IsNullOrEmpty(functionView.Description);
 
 
     /// <summary>
@@ -176,7 +175,6 @@ public static class FunctionExtensions
     /// <returns></returns>
     public static bool TryGetFunction(this IReadOnlySkillCollection skillCollection, FunctionCallResult functionCall, out ISKFunction? functionInstance)
     {
-        Console.WriteLine(functionCall.Function);
 
         // handles edge case where function name is prefixed with "functions." 
         if (functionCall.Function.StartsWith("functions.", StringComparison.Ordinal))
@@ -235,7 +233,7 @@ public static class FunctionExtensions
 
         try
         {
-            using var document = JsonDocument.Parse(context.Result);
+            using var document = JsonDocument.Parse(context.Result.Trim());
 
             var root = document.RootElement;
 

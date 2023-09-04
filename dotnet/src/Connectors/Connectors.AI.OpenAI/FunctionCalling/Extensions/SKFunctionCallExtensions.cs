@@ -56,7 +56,7 @@ public static class SKFunctionCallExtensions
 
         var config = new PromptTemplateConfig
         {
-            Description = description ?? "Generic function, unknown purpose",
+            Description = description ?? "Function call",
             Type = "completion",
             Completion = new PromptTemplateConfig.CompletionConfig
             {
@@ -74,8 +74,8 @@ public static class SKFunctionCallExtensions
         SKFunctionCallConfig functionConfig = new(template, config, targetFunction, callableFunctions, callFunctionsAutomatically);
         var functionCall = SKFunctionCall.FromConfig(skillName ?? "sk_function_call", functionName, functionConfig, loggerFactory);
         functionCall.SetAIService(() => kernel.GetService<ITextCompletion>());
-
-        return kernel.RegisterCustomFunction(functionCall);
+        functionCall.SetDefaultSkillCollection(kernel.Skills);
+        return functionCall;
     }
 
 

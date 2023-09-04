@@ -21,7 +21,7 @@ using SkillDefinition;
 /// <summary>
 /// A semantic function that calls other functions
 /// </summary>
-public sealed class SKFunctionCall : ISKFunction, IDisposable
+public sealed class SKFunctionCall : ISKFunction
 {
 
     /// <inheritdoc />
@@ -42,12 +42,12 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     /// <summary>
     ///  The callable functions for this SKFunctionCall instance
     /// </summary>
-    public List<FunctionDefinition> CallableFunctions { get; private set; }
+    public List<FunctionDefinition> CallableFunctions { get; }
 
     /// <summary>
     ///  Whether to call execute the function call automatically
     /// </summary>
-    public bool CallFunctionsAutomatically { get; set; }
+    public bool CallFunctionsAutomatically { get; }
 
 
     /// <summary>
@@ -97,8 +97,6 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
         var requestSettings = GetRequestSettings(settings ?? RequestSettings);
 
-        // dedupe req
-
         IReadOnlyList<IChatResult> results = await RunPromptAsync(_aiService?.Value, requestSettings, context, cancellationToken).ConfigureAwait(false);
         context.ModelResults = results.Select(c => c.ModelResult).ToArray();
 
@@ -117,7 +115,13 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
         _skillCollection = skills;
+        CallableFunctions.Clear();
         CallableFunctions.AddRange(skills.GetFunctionDefinitions(new[] { SkillName }).ToList());
+
+        if (_targetFunctionDefinition != FunctionDefinition.Auto)
+        {
+            CallableFunctions.Add(_targetFunctionDefinition);
+        }
         return this;
     }
 
@@ -125,7 +129,6 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     /// <inheritdoc />
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
-        // i need to verify that the return type is IOpenAIChatCompletion
         Verify.NotNull(serviceFactory);
         var textService = serviceFactory();
 
@@ -152,15 +155,13 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     /// <summary>
     /// Dispose of resources.
     /// </summary>
-    public void Dispose()
-    {
-        if (_aiService is { IsValueCreated: true } aiService)
-        {
-            (aiService.Value as IDisposable)?.Dispose();
-        }
-    }
-
-
+    // public void Dispose()
+    // {
+    //     if (_aiService is { IsValueCreated: true } aiService)
+    //     {
+    //         (aiService.Value as IDisposable)?.Dispose();
+    //     }
+    // }
     internal SKFunctionCall(
         IPromptTemplate template,
         string skillName,
