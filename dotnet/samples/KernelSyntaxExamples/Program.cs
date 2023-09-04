@@ -3,6 +3,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using KernelSyntaxExamples;
 using Microsoft.Extensions.Configuration;
 using Reliability;
 using RepoUtils;
@@ -75,6 +76,7 @@ public static class Program
         await Example53_Kusto.RunAsync().SafeWaitAsync(cancelToken);
         await Example54_AzureChatCompletionWithData.RunAsync().SafeWaitAsync(cancelToken);
         await Example55_TextChunker.RunAsync().SafeWaitAsync(cancelToken);
+        await Example56_PowerShellPlanner.RunAsync().SafeWaitAsync(cancelToken);
     }
 
     private static void LoadUserSecrets()
