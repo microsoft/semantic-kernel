@@ -8,14 +8,14 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Reliability;
+namespace SemanticKernel.Extensions.UnitTests.Reliability.Basic;
 
-public class DefaultHttpRetryHandlerTests
+public class BasicHttpRetryHandlerTests
 {
     [Theory]
     [InlineData(HttpStatusCode.RequestTimeout)]
@@ -25,7 +25,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task NoMaxRetryCountCallsOnceForStatusAsync(HttpStatusCode statusCode)
     {
         // Arrange
-        using var retry = new DefaultHttpRetryHandler(new HttpRetryConfig() { MaxRetryCount = 0 }, NullLoggerFactory.Instance);
+        using var retry = new BasicHttpRetryHandler(new BasicRetryConfig() { MaxRetryCount = 0 }, NullLoggerFactory.Instance);
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -93,7 +93,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task NoMaxRetryCountCallsOnceForExceptionAsync(Type exceptionType)
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig() { MaxRetryCount = 0 });
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig() { MaxRetryCount = 0 });
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(exceptionType);
 
@@ -117,7 +117,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesOnceOnTransientStatusWithExponentialBackoffAsync(HttpStatusCode statusCode)
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig() { UseExponentialBackoff = true });
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig() { UseExponentialBackoff = true });
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -139,7 +139,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesOnceOnRetryableExceptionWithExponentialBackoffAsync(Type exceptionType)
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig() { UseExponentialBackoff = true });
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig() { UseExponentialBackoff = true });
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(exceptionType);
 
@@ -163,15 +163,15 @@ public class DefaultHttpRetryHandlerTests
     {
         // Arrange
         var currentTime = DateTimeOffset.UtcNow;
-        var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
+        var mockTimeProvider = new Mock<BasicHttpRetryHandler.ITimeProvider>();
+        var mockDelayProvider = new Mock<BasicHttpRetryHandler.IDelayProvider>();
         mockTimeProvider.SetupSequence(x => x.GetCurrentTime())
             .Returns(() => currentTime)
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(5))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(510))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(1015))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(1520));
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig()
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig()
         {
             UseExponentialBackoff = true, MaxRetryCount = 3,
             MinRetryDelay = TimeSpan.FromMilliseconds(500)
@@ -203,7 +203,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesOnceOnTransientStatusCodeWithRetryValueAsync(HttpStatusCode statusCode)
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig(), null);
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig(), null);
         using var mockResponse = new HttpResponseMessage()
         {
             StatusCode = statusCode,
@@ -232,7 +232,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesStatusCustomCountAsync(HttpStatusCode expectedStatus)
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig() { MaxRetryCount = 3 }, null);
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig() { MaxRetryCount = 3 }, null);
         using var mockResponse = new HttpResponseMessage(expectedStatus);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -254,7 +254,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesExceptionsCustomCountAsync(Type expectedException)
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig() { MaxRetryCount = 3 }, null);
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig() { MaxRetryCount = 3 }, null);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(expectedException);
 
@@ -274,7 +274,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task NoExceptionNoRetryAsync()
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig() { MaxRetryCount = 3 }, null);
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig() { MaxRetryCount = 3 }, null);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.OK);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -295,7 +295,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItDoesNotExecuteOnCancellationTokenAsync()
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig() { MaxRetryCount = 3 }, null);
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig() { MaxRetryCount = 3 }, null);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.OK);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -317,7 +317,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItDoestExecuteOnFalseCancellationTokenAsync()
     {
         // Arrange
-        using var retry = ConfigureRetryHandler(new HttpRetryConfig() { MaxRetryCount = 3 }, null);
+        using var retry = ConfigureRetryHandler(new BasicRetryConfig() { MaxRetryCount = 3 }, null);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.OK);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -338,13 +338,13 @@ public class DefaultHttpRetryHandlerTests
     [Fact]
     public async Task ItRetriesWithMinRetryDelayAsync()
     {
-        var httpRetryConfig = new HttpRetryConfig
+        var BasicRetryConfig = new BasicRetryConfig
         {
             MinRetryDelay = TimeSpan.FromMilliseconds(500)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
-        var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
+        var mockDelayProvider = new Mock<BasicHttpRetryHandler.IDelayProvider>();
+        var mockTimeProvider = new Mock<BasicHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
 
@@ -356,7 +356,7 @@ public class DefaultHttpRetryHandlerTests
         mockDelayProvider.Setup(x => x.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .Returns(() => Task.CompletedTask);
 
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(BasicRetryConfig, mockTimeProvider, mockDelayProvider);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         using var testContent = new StringContent("test");
         var mockHandler = GetHttpMessageHandlerMock(mockResponse);
@@ -378,14 +378,14 @@ public class DefaultHttpRetryHandlerTests
     [Fact]
     public async Task ItRetriesWithMaxRetryDelayAsync()
     {
-        var httpRetryConfig = new HttpRetryConfig
+        var BasicRetryConfig = new BasicRetryConfig
         {
             MinRetryDelay = TimeSpan.FromMilliseconds(1),
             MaxRetryDelay = TimeSpan.FromMilliseconds(500)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
-        var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
+        var mockDelayProvider = new Mock<BasicHttpRetryHandler.IDelayProvider>();
+        var mockTimeProvider = new Mock<BasicHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
 
@@ -397,7 +397,7 @@ public class DefaultHttpRetryHandlerTests
         mockDelayProvider.Setup(x => x.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()))
             .Returns(() => Task.CompletedTask);
 
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(BasicRetryConfig, mockTimeProvider, mockDelayProvider);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests)
         {
             Headers = { RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromMilliseconds(2000)) }
@@ -428,7 +428,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesWithMaxTotalDelayAsync(HttpStatusCode statusCode)
     {
         // Arrange
-        var httpRetryConfig = new HttpRetryConfig
+        var BasicRetryConfig = new BasicRetryConfig
         {
             MaxRetryCount = 5,
             MinRetryDelay = TimeSpan.FromMilliseconds(50),
@@ -436,8 +436,8 @@ public class DefaultHttpRetryHandlerTests
             MaxTotalRetryTime = TimeSpan.FromMilliseconds(350)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
-        var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
+        var mockDelayProvider = new Mock<BasicHttpRetryHandler.IDelayProvider>();
+        var mockTimeProvider = new Mock<BasicHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
         mockTimeProvider.SetupSequence(x => x.GetCurrentTime())
@@ -450,7 +450,7 @@ public class DefaultHttpRetryHandlerTests
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(275))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(330));
 
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(BasicRetryConfig, mockTimeProvider, mockDelayProvider);
 
         using var mockResponse = new HttpResponseMessage(statusCode);
         using var testContent = new StringContent("test");
@@ -474,7 +474,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesFewerWithMaxTotalDelayAsync()
     {
         // Arrange
-        var httpRetryConfig = new HttpRetryConfig
+        var BasicRetryConfig = new BasicRetryConfig
         {
             MaxRetryCount = 5,
             MinRetryDelay = TimeSpan.FromMilliseconds(50),
@@ -482,8 +482,8 @@ public class DefaultHttpRetryHandlerTests
             MaxTotalRetryTime = TimeSpan.FromMilliseconds(100)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
-        var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
+        var mockDelayProvider = new Mock<BasicHttpRetryHandler.IDelayProvider>();
+        var mockTimeProvider = new Mock<BasicHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
         mockTimeProvider.SetupSequence(x => x.GetCurrentTime())
@@ -496,7 +496,7 @@ public class DefaultHttpRetryHandlerTests
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(275))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(330));
 
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(BasicRetryConfig, mockTimeProvider, mockDelayProvider);
 
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         using var testContent = new StringContent("test");
@@ -520,7 +520,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesFewerWithMaxTotalDelayOnExceptionAsync()
     {
         // Arrange
-        var httpRetryConfig = new HttpRetryConfig
+        var BasicRetryConfig = new BasicRetryConfig
         {
             MaxRetryCount = 5,
             MinRetryDelay = TimeSpan.FromMilliseconds(50),
@@ -528,8 +528,8 @@ public class DefaultHttpRetryHandlerTests
             MaxTotalRetryTime = TimeSpan.FromMilliseconds(100)
         };
 
-        var mockDelayProvider = new Mock<DefaultHttpRetryHandler.IDelayProvider>();
-        var mockTimeProvider = new Mock<DefaultHttpRetryHandler.ITimeProvider>();
+        var mockDelayProvider = new Mock<BasicHttpRetryHandler.IDelayProvider>();
+        var mockTimeProvider = new Mock<BasicHttpRetryHandler.ITimeProvider>();
 
         var currentTime = DateTimeOffset.UtcNow;
         mockTimeProvider.SetupSequence(x => x.GetCurrentTime())
@@ -542,7 +542,7 @@ public class DefaultHttpRetryHandlerTests
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(275))
             .Returns(() => currentTime + TimeSpan.FromMilliseconds(330));
 
-        using var retry = ConfigureRetryHandler(httpRetryConfig, mockTimeProvider, mockDelayProvider);
+        using var retry = ConfigureRetryHandler(BasicRetryConfig, mockTimeProvider, mockDelayProvider);
         var mockHandler = GetHttpMessageHandlerMock(typeof(HttpRequestException));
 
         retry.InnerHandler = mockHandler.Object;
@@ -562,7 +562,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesOnRetryableStatusCodesAsync()
     {
         // Arrange
-        var config = new HttpRetryConfig() { RetryableStatusCodes = new List<HttpStatusCode> { HttpStatusCode.Unauthorized } };
+        var config = new BasicRetryConfig() { RetryableStatusCodes = new List<HttpStatusCode> { HttpStatusCode.Unauthorized } };
         using var retry = ConfigureRetryHandler(config);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.Unauthorized);
 
@@ -585,7 +585,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItDoesNotRetryOnNonRetryableStatusCodesAsync()
     {
         // Arrange
-        var config = new HttpRetryConfig() { RetryableStatusCodes = new List<HttpStatusCode> { HttpStatusCode.Unauthorized } };
+        var config = new BasicRetryConfig() { RetryableStatusCodes = new List<HttpStatusCode> { HttpStatusCode.Unauthorized } };
         using var retry = ConfigureRetryHandler(config);
         using var mockResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
 
@@ -608,7 +608,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItRetriesOnRetryableExceptionsAsync()
     {
         // Arrange
-        var config = new HttpRetryConfig() { RetryableExceptionTypes = new List<Type> { typeof(InvalidOperationException) } };
+        var config = new BasicRetryConfig() { RetryableExceptionTypes = new List<Type> { typeof(InvalidOperationException) } };
         using var retry = ConfigureRetryHandler(config);
 
         using var testContent = new StringContent("test");
@@ -630,7 +630,7 @@ public class DefaultHttpRetryHandlerTests
     public async Task ItDoesNotRetryOnNonRetryableExceptionsAsync()
     {
         // Arrange
-        var config = new HttpRetryConfig() { RetryableExceptionTypes = new List<Type> { typeof(InvalidOperationException) } };
+        var config = new BasicRetryConfig() { RetryableExceptionTypes = new List<Type> { typeof(InvalidOperationException) } };
         using var retry = ConfigureRetryHandler(config);
 
         using var testContent = new StringContent("test");
@@ -648,13 +648,13 @@ public class DefaultHttpRetryHandlerTests
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
     }
 
-    private static DefaultHttpRetryHandler ConfigureRetryHandler(HttpRetryConfig? config = null,
-        Mock<DefaultHttpRetryHandler.ITimeProvider>? timeProvider = null, Mock<DefaultHttpRetryHandler.IDelayProvider>? delayProvider = null)
+    private static BasicHttpRetryHandler ConfigureRetryHandler(BasicRetryConfig? config = null,
+        Mock<BasicHttpRetryHandler.ITimeProvider>? timeProvider = null, Mock<BasicHttpRetryHandler.IDelayProvider>? delayProvider = null)
     {
-        delayProvider ??= new Mock<DefaultHttpRetryHandler.IDelayProvider>();
-        timeProvider ??= new Mock<DefaultHttpRetryHandler.ITimeProvider>();
+        delayProvider ??= new Mock<BasicHttpRetryHandler.IDelayProvider>();
+        timeProvider ??= new Mock<BasicHttpRetryHandler.ITimeProvider>();
 
-        var retry = new DefaultHttpRetryHandler(config ?? new HttpRetryConfig(), null, delayProvider.Object, timeProvider.Object);
+        var retry = new BasicHttpRetryHandler(config ?? new BasicRetryConfig(), null, delayProvider.Object, timeProvider.Object);
         return retry;
     }
 

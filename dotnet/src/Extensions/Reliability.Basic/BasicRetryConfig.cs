@@ -6,13 +6,12 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Reliability;
+namespace Microsoft.SemanticKernel.Reliability.Basic;
 
 /// <summary>
-/// Retry configuration for IHttpRetryPolicy that uses RetryAfter header when present.
+/// Retry configuration for DefaultKernelRetryHandler that uses RetryAfter header when present.
 /// </summary>
-[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated.\nCheck KernelSyntaxExamples.Example42_KernelBuilder.cs for alternatives")]
-public sealed class HttpRetryConfig
+public sealed record BasicRetryConfig
 {
     /// <summary>
     /// Maximum number of retries.

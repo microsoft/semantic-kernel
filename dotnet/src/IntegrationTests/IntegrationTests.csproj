@@ -43,7 +43,9 @@
     <ProjectReference Include="..\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
     <ProjectReference Include="..\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
     <ProjectReference Include="..\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
+    <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+    <ProjectReference Include="..\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\Skills\Skills.Core\Skills.Core.csproj" />
     <ProjectReference Include="..\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
     <ProjectReference Include="..\Skills\Skills.Web\Skills.Web.csproj" />

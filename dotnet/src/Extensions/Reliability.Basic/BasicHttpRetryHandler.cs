@@ -8,29 +8,31 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.Reliability;
+namespace Microsoft.SemanticKernel.Reliability.Basic;
 
-[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated.\nCheck KernelSyntaxExamples.Example42_KernelBuilder.cs for alternatives")]
-public sealed class DefaultHttpRetryHandler : DelegatingHandler
+/// <summary>
+/// Handler that retries HTTP requests based on a <see cref="BasicRetryConfig"/>.
+/// </summary>
+internal sealed class BasicHttpRetryHandler : DelegatingHandler
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHttpRetryHandler"/> class.
     /// </summary>
     /// <param name="config">The retry configuration.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public DefaultHttpRetryHandler(HttpRetryConfig? config = null, ILoggerFactory? loggerFactory = null)
-        : this(config ?? new HttpRetryConfig(), loggerFactory, null, null)
+    internal BasicHttpRetryHandler(BasicRetryConfig? config = null, ILoggerFactory? loggerFactory = null)
+        : this(config ?? new(), loggerFactory, null, null)
     {
     }
 
-    internal DefaultHttpRetryHandler(
-        HttpRetryConfig config,
+    internal BasicHttpRetryHandler(
+        BasicRetryConfig config,
         ILoggerFactory? loggerFactory = null,
         IDelayProvider? delayProvider = null,
         ITimeProvider? timeProvider = null)
     {
         this._config = config;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DefaultHttpRetryHandler)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger<BasicHttpRetryHandler>() : NullLogger.Instance;
         this._delayProvider = delayProvider ?? new TaskDelayProvider();
         this._timeProvider = timeProvider ?? new DefaultTimeProvider();
     }
@@ -161,7 +163,7 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
         }
     }
 
-    private readonly HttpRetryConfig _config;
+    private readonly BasicRetryConfig _config;
     private readonly ILogger _logger;
     private readonly IDelayProvider _delayProvider;
     private readonly ITimeProvider _timeProvider;
@@ -187,8 +189,10 @@ public sealed class DefaultHttpRetryHandler : DelegatingHandler
                 ? this._config.MinRetryDelay
                 : retryAfter ?? default;
 
-        // If exponential backoff is enabled, double the delay for each retry
-        if (this._config.UseExponentialBackoff)
+        // If exponential backoff is enabled, and the server didn't provide a RetryAfter header, double the delay for each retry
+        if (this._config.UseExponentialBackoff
+            && response?.Headers.RetryAfter?.Date is null
+            && response?.Headers.RetryAfter?.Delta is null)
         {
             for (var backoffRetryCount = 1; backoffRetryCount < retryCount + 1; backoffRetryCount++)
             {
