@@ -1,7 +1,0 @@
-{
-  "type": "openai",
-  "model": "text-davinci-003",
-  "endpoint": "",
-  "apikey": "",
-  "org": ""
-}
