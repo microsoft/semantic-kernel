@@ -45,11 +45,10 @@ public static class Example51_StepwisePlanner
 
         foreach (var question in questions)
         {
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 1; i++)
             {
                 await RunTextCompletion(question);
-                await RunChatCompletion(question, "gpt-35-turbo");
-                await RunChatCompletion(question, "gpt-4-32k");
+                await RunChatCompletion(question);
             }
         }
 
