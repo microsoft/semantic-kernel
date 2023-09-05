@@ -68,11 +68,11 @@ public class CompleteRequestSettings
     /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
-    /// <param name="config"></param>
-    /// <returns>An instance of <see cref="CompleteRequestSettings"/> </returns>
+    /// <param name="config">Template configuration</param>
+    /// <returns>An instance of <see cref="CompleteRequestSettings"/></returns>
     public static CompleteRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
     {
-        return new CompleteRequestSettings
+        var settings = new CompleteRequestSettings
         {
             Temperature = config.Temperature,
             TopP = config.TopP,
@@ -81,5 +81,12 @@ public class CompleteRequestSettings
             MaxTokens = config.MaxTokens,
             StopSequences = config.StopSequences,
         };
+
+        if (!string.IsNullOrWhiteSpace(config.ChatSystemPrompt))
+        {
+            settings.ChatSystemPrompt = config.ChatSystemPrompt!;
+        }
+
+        return settings;
     }
 }
