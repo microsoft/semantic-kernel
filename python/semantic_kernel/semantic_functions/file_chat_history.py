@@ -22,6 +22,16 @@ class FileChatHistory(ChatHistoryBase):
         messages: List[Dict[str, str]] | None = None,
         log: Logger | None = None,
     ) -> None:
+        """Create a new FileChatHistory instance.
+
+        Args:
+            path (str): The path to the file to load/save, saving and loading is done in a json format.
+            template (str): The template to use for rendering the chat history.
+            template_engine (PromptTemplatingEngine): The template engine to use for rendering the chat history.
+            prompt_config (PromptTemplateConfig): The prompt config to use for rendering the chat history.
+            messages (List[Dict[str, str]] | None, optional): The chat history to load. Defaults to None.
+            log (Logger | None, optional): The logger to use. Defaults to None.
+        """
         super().__init__(template, template_engine, prompt_config, messages, log)
         self._path = path
 
