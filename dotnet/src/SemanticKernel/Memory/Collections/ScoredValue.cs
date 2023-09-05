@@ -52,7 +52,7 @@ internal readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatabl
 
     public bool Equals(ScoredValue<T> other)
     {
-        return EqualityComparer<T>.Default.Equals(other.Value) &&
+        return EqualityComparer<T>.Default.Equals(this.Value, other.Value) &&
                this.Score.Equals(other.Score);
     }
 
