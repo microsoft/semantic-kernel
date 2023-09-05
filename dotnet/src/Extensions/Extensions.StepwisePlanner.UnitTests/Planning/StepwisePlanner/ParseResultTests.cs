@@ -86,9 +86,9 @@ public sealed class ParseResultTests
         var result = planner.ParseResult(input);
 
         // Assert
-        Assert.Equal(expectedAction, result.Action);
+        Assert.Equal(expectedAction ?? string.Empty, result.Action);
         Assert.Equal(expectedDictionary, result.ActionVariables);
-        Assert.Equal(expectedThought, result.Thought);
+        Assert.Equal(expectedThought ?? string.Empty, result.Thought);
     }
 
     // Method to create Mock<ISKFunction> objects
