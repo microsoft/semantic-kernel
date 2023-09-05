@@ -31,12 +31,15 @@ jobs:
               - 'python/**'
       # run only if 'python' files were changed
       - name: python tests
-        if: steps.filter.outputs.python == 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.filter.outputs.python == 'true'
         run: echo "Python file"
       # run only if not 'python' files were changed
       - name: not python tests
         if: steps.filter.outputs.python != 'true'
         run: echo "NOT python file"
+      - name: run tests on manual run
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "pythonChanges=true" >> $GITHUB_ENV
 
   python-merge-gate:
     needs: paths-filter
