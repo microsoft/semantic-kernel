@@ -80,8 +80,8 @@ public static class Example42_KernelBuilder
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(loggerFactory);
-        var kernelConfig = new KernelConfig();
-        using var httpHandler = kernelConfig.HttpHandlerFactory.Create(loggerFactory);
+        var httpHandlerFactory = NullHttpHandlerFactory.Instance;
+        using var httpHandler = httpHandlerFactory.Create(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(
@@ -94,7 +94,7 @@ public static class Example42_KernelBuilder
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, loggerFactory);
+        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, httpHandlerFactory, loggerFactory);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies
