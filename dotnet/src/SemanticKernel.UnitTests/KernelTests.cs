@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
@@ -123,6 +124,34 @@ public class KernelTests
         Assert.True(skill.ContainsKey("GetAnyValue"));
         Assert.True(skill.ContainsKey("getanyvalue"));
         Assert.True(skill.ContainsKey("GETANYVALUE"));
+    }
+
+    [Theory]
+    [InlineData(null, "Assistant is a large language model.")]
+    [InlineData("My Chat Prompt", "My Chat Prompt")]
+    public void ItUsesChatSystemPromptWhenProvided(string providedSystemChatPrompt, string expectedSystemChatPrompt)
+    {
+        // Arrange
+        var mockTextCompletion = new Mock<ITextCompletion>();
+        var mockCompletionResult = new Mock<ITextResult>();
+
+        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
+            .Build();
+
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Completion.ChatSystemPrompt = providedSystemChatPrompt;
+
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+
+        // Act
+        kernel.RunAsync(func);
+
+        // Assert
+        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<CompleteRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
