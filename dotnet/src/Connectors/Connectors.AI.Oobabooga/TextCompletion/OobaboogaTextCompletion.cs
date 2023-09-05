@@ -13,7 +13,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -211,10 +210,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             };
             httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
             TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(body);
 
@@ -224,12 +222,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             }
 
             return completionResponse.Results.Select(completionText => new TextCompletionResult(completionText)).ToList();
-        }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
         }
         finally
         {

@@ -83,6 +83,7 @@ public sealed class TestConfiguration
     {
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
+        public string IndexName { get; set; }
     }
 
     public class QdrantConfig

@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
 using Microsoft.SemanticKernel.Skills.Web.Bing;
@@ -86,13 +85,13 @@ public static class Example51_StepwisePlanner
             setAsDefault: true);
 
         var kernel = builder
-            .WithLogger(ConsoleLogger.Logger)
-            .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithRetryBasic(new()
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
                 MinRetryDelay = TimeSpan.FromSeconds(3),
-            }))
+            })
             .Build();
 
         return kernel;

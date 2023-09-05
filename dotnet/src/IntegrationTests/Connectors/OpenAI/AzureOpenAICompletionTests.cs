@@ -6,9 +6,9 @@ using Azure;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -44,19 +44,19 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         var configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(configuration);
 
-        HttpRetryConfig httpRetryConfig = new() { MaxRetryCount = 0 };
-        DefaultHttpRetryHandlerFactory defaultHttpRetryHandlerFactory = new(httpRetryConfig);
+        var httpRetryConfig = new BasicRetryConfig { MaxRetryCount = 0 };
+        BasicHttpRetryHandlerFactory defaultHttpRetryHandlerFactory = new(httpRetryConfig);
 
         var target = new KernelBuilder()
-             .WithLogger(this._logger)
+             .WithLoggerFactory(this._logger)
              .WithAzureChatCompletionService(configuration.ChatDeploymentName!, configuration.Endpoint, configuration.ApiKey)
-             .WithRetryHandlerFactory(defaultHttpRetryHandlerFactory)
+             .WithHttpHandlerFactory(defaultHttpRetryHandlerFactory)
              .Build();
 
         // Act
         var func = target.CreateSemanticFunction(prompt);
 
-        var exception = await Assert.ThrowsAsync<AIException>(() => func.InvokeAsync(string.Empty, settings: new CompleteRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => func.InvokeAsync(string.Empty, settings: new CompleteRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
 
         // Assert
         Assert.NotNull(exception);
@@ -77,14 +77,14 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         var openAIClient = new OpenAIClient(new Uri(configuration.Endpoint), new AzureKeyCredential(configuration.ApiKey), clientOptions);
 
         var target = new KernelBuilder()
-             .WithLogger(this._logger)
+             .WithLoggerFactory(this._logger)
              .WithAzureChatCompletionService(configuration.ChatDeploymentName!, openAIClient)
              .Build();
 
         // Act
         var func = target.CreateSemanticFunction(prompt);
 
-        var exception = await Assert.ThrowsAsync<AIException>(() => func.InvokeAsync(string.Empty, settings: new CompleteRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => func.InvokeAsync(string.Empty, settings: new CompleteRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
 
         // Assert
         Assert.NotNull(exception);

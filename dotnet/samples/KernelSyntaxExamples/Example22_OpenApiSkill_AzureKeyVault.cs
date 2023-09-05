@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
@@ -32,11 +31,13 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
     public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
-        var retryConfig = new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true };
-
         var kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
-            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithRetryBasic(new()
+            {
+                MaxRetryCount = 3,
+                UseExponentialBackoff = true
+            })
             .Build();
 
         var type = typeof(SkillResourceNames);
@@ -64,7 +65,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
     public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
-        var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
+        var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
         var type = typeof(SkillResourceNames);
         var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";

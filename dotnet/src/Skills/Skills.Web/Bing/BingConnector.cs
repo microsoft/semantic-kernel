@@ -28,9 +28,9 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// Initializes a new instance of the <see cref="BingConnector"/> class.
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
-    /// <param name="logger">An optional logger to log connector-related information.</param>
-    public BingConnector(string apiKey, ILogger<BingConnector>? logger = null) :
-        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), logger)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public BingConnector(string apiKey, ILoggerFactory? loggerFactory = null) :
+        this(apiKey, new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
     {
     }
 
@@ -39,13 +39,13 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// </summary>
     /// <param name="apiKey">The API key to authenticate the connector.</param>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
-    /// <param name="logger">An optional logger to log connector-related information.</param>
-    public BingConnector(string apiKey, HttpClient httpClient, ILogger<BingConnector>? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public BingConnector(string apiKey, HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
         this._apiKey = apiKey;
-        this._logger = logger ?? NullLogger<BingConnector>.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(BingConnector)) : NullLogger.Instance;
         this._httpClient = httpClient;
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", Telemetry.HttpUserAgent);
     }
@@ -61,18 +61,16 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
 
-        this._logger.LogDebug("Sending request: {0}", uri);
+        this._logger.LogDebug("Sending request: {Uri}", uri);
 
         using HttpResponseMessage response = await this.SendGetRequest(uri, cancellationToken).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
-        this._logger.LogDebug("Response received: {0}", response.StatusCode);
-
-        string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        string json = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
-        this._logger.LogTrace("Response content received: {0}", json);
+        this._logger.LogTrace("Response content received: {Data}", json);
 
         BingSearchResponse? data = JsonSerializer.Deserialize<BingSearchResponse>(json);
 
@@ -96,7 +94,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
             httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", this._apiKey);
         }
 
-        return await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+        return await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
     [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",

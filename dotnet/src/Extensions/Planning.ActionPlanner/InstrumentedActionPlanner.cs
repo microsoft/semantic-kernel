@@ -20,13 +20,13 @@ public class InstrumentedActionPlanner : IActionPlanner
     /// Initialize a new instance of the <see cref="InstrumentedActionPlanner"/> class.
     /// </summary>
     /// <param name="planner">Instance of <see cref="IActionPlanner"/> to decorate.</param>
-    /// <param name="logger">Optional logger.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public InstrumentedActionPlanner(
         IActionPlanner planner,
-        ILogger? logger = null)
+        ILoggerFactory? loggerFactory = null)
     {
         this._planner = planner;
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedActionPlanner)) : NullLogger.Instance;
     }
 
     /// <inheritdoc />

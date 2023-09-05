@@ -41,7 +41,7 @@ var prompt = @"{{$input}}
 
 One line TLDR with the fewest words.";
 
-var summarize = kernel.CreateSemanticFunction(prompt);
+var summarize = kernel.CreateSemanticFunction(prompt, maxTokens: 100);
 
 string text1 = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -80,8 +80,8 @@ string summarizePrompt = @"{{$input}}
 
 Give me a TLDR with the fewest words.";
 
-var translator = kernel.CreateSemanticFunction(translationPrompt);
-var summarize = kernel.CreateSemanticFunction(summarizePrompt);
+var translator = kernel.CreateSemanticFunction(translationPrompt, maxTokens: 200);
+var summarize = kernel.CreateSemanticFunction(summarizePrompt, maxTokens: 100);
 
 string inputText = @"
 1st Law of Thermodynamics - Energy cannot be created or destroyed.
@@ -149,3 +149,4 @@ Other SK packages available at nuget.org:
 5. **Microsoft.SemanticKernel.Skills.OpenAPI**: OpenAPI skill.
 6. **Microsoft.SemanticKernel.Skills.Web**: Web Skill: search the web, download
    files, etc.
+7. **Microsoft.SemanticKernel.Reliability.Polly**: Extension for http resiliency.

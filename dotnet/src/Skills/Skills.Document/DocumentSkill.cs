@@ -52,19 +52,19 @@ public sealed class DocumentSkill
 
     private readonly IDocumentConnector _documentConnector;
     private readonly IFileSystemConnector _fileSystemConnector;
-    private readonly ILogger<DocumentSkill> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DocumentSkill"/> class.
     /// </summary>
     /// <param name="documentConnector">Document connector</param>
     /// <param name="fileSystemConnector">File system connector</param>
-    /// <param name="logger">Optional logger</param>
-    public DocumentSkill(IDocumentConnector documentConnector, IFileSystemConnector fileSystemConnector, ILogger<DocumentSkill>? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public DocumentSkill(IDocumentConnector documentConnector, IFileSystemConnector fileSystemConnector, ILoggerFactory? loggerFactory = null)
     {
         this._documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
         this._fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
-        this._logger = logger ?? new NullLogger<DocumentSkill>();
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DocumentSkill)) : NullLogger.Instance;
     }
 
     /// <summary>

@@ -2,12 +2,13 @@
 
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Reliability;
 
 public class NullHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
-    public DelegatingHandler Create(ILogger? logger)
+    public DelegatingHandler Create(ILoggerFactory? loggerFactory)
     {
         return new NullHttpRetryHandler();
     }

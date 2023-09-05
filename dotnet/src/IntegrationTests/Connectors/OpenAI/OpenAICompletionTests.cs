@@ -7,9 +7,9 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -47,7 +47,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(openAIConfiguration);
 
         IKernel target = Kernel.Builder
-            .WithLogger(this._logger)
+            .WithLoggerFactory(this._logger)
             .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
@@ -69,7 +69,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAIChatAsTextTestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        KernelBuilder builder = Kernel.Builder.WithLogger(this._logger);
+        KernelBuilder builder = Kernel.Builder.WithLoggerFactory(this._logger);
 
         this.ConfigureChatOpenAI(builder);
 
@@ -88,7 +88,7 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task CanUseOpenAiChatForTextCompletionAsync()
     {
         // Note: we use OpenAi Chat Completion and GPT 3.5 Turbo
-        KernelBuilder builder = Kernel.Builder.WithLogger(this._logger);
+        KernelBuilder builder = Kernel.Builder.WithLoggerFactory(this._logger);
         this.ConfigureChatOpenAI(builder);
 
         IKernel target = builder.Build();
@@ -114,7 +114,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var builder = Kernel.Builder.WithLogger(this._logger);
+        var builder = Kernel.Builder.WithLoggerFactory(this._logger);
 
         if (useChatModel)
         {
@@ -145,15 +145,15 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task OpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
         // Arrange
-        var retryConfig = new HttpRetryConfig();
+        var retryConfig = new BasicRetryConfig();
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
 
         OpenAIConfiguration? openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
         Assert.NotNull(openAIConfiguration);
 
         IKernel target = Kernel.Builder
-            .WithLogger(this._testOutputHelper)
-            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
+            .WithLoggerFactory(this._testOutputHelper)
+            .WithRetryBasic(retryConfig)
             .WithOpenAITextCompletionService(
                 serviceId: openAIConfiguration.ServiceId,
                 modelId: openAIConfiguration.ModelId,
@@ -176,11 +176,12 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIHttpRetryPolicyTestAsync(string prompt, string expectedOutput)
     {
         // Arrange
-        var retryConfig = new HttpRetryConfig();
+        var retryConfig = new BasicRetryConfig();
         retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
+
         KernelBuilder builder = Kernel.Builder
-            .WithLogger(this._testOutputHelper)
-            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig));
+            .WithLoggerFactory(this._testOutputHelper)
+            .WithRetryBasic(retryConfig);
 
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
@@ -224,9 +225,8 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Assert
         Assert.True(context.ErrorOccurred);
-        Assert.IsType<AIException>(context.LastException);
-        Assert.Equal(AIException.ErrorCodes.AccessDenied, ((AIException)context.LastException).ErrorCode);
-        Assert.Contains("The request is not authorized, HTTP status: 401", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
+        Assert.IsType<HttpOperationException>(context.LastException);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
     }
 
     [Fact]
@@ -237,7 +237,7 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
 
         IKernel target = Kernel.Builder
-            .WithLogger(this._testOutputHelper)
+            .WithLoggerFactory(this._testOutputHelper)
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
@@ -252,9 +252,8 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Assert
         Assert.True(context.ErrorOccurred);
-        Assert.IsType<AIException>(context.LastException);
-        Assert.Equal(AIException.ErrorCodes.AccessDenied, ((AIException)context.LastException).ErrorCode);
-        Assert.Contains("The request is not authorized, HTTP status: 401", ((AIException)context.LastException).Message, StringComparison.OrdinalIgnoreCase);
+        Assert.IsType<HttpOperationException>(context.LastException);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
     }
 
     [Fact]
@@ -265,7 +264,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Arrange
         IKernel target = Kernel.Builder
-            .WithLogger(this._testOutputHelper)
+            .WithLoggerFactory(this._testOutputHelper)
             .WithAzureTextCompletionService(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
@@ -277,7 +276,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<AIException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
+        await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -295,7 +294,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         const string ExpectedAnswerContains = "<result>John</result>";
 
-        IKernel target = Kernel.Builder.WithLogger(this._logger).Build();
+        IKernel target = Kernel.Builder.WithLoggerFactory(this._logger).Build();
 
         this._serviceConfiguration[service](target);
 
@@ -315,7 +314,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var builder = Kernel.Builder.WithLogger(this._logger);
+        var builder = Kernel.Builder.WithLoggerFactory(this._logger);
         this.ConfigureAzureOpenAI(builder);
         IKernel target = builder.Build();
 
@@ -337,7 +336,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var builder = Kernel.Builder.WithLogger(this._logger);
+        var builder = Kernel.Builder.WithLoggerFactory(this._logger);
         this.ConfigureAzureOpenAI(builder);
         IKernel target = builder.Build();
 

@@ -7,7 +7,9 @@ Code example using Application Insights can be found [here](https://github.com/m
 
 ## Logging
 
-Logging is implemented with `ILogger` interface from `Microsoft.Extensions.Logging` namespace, using different [Log levels](https://learn.microsoft.com/en-us/dotnet/core/extensions/logging?tabs=command-line#log-level).
+The logging mechanism in this project relies on the `ILogger` interface from the `Microsoft.Extensions.Logging` namespace. Recent updates have introduced enhancements to the logger creation process. Instead of directly using the `ILogger` interface, instances of `ILogger` are now recommended to be created through an `ILoggerFactory` provided to components using the `WithLoggerFactory` method.
+
+By employing the `WithLoggerFactory` approach, logger instances are generated with precise type information, facilitating more accurate logging and streamlined control over log filtering across various classes.
 
 Log levels used in SK:
 
@@ -33,13 +35,23 @@ Log levels used in SK:
 Enable logging for Kernel instance:
 
 ```csharp
-var kernel = new KernelBuilder().WithLogger(logger);
+var kernel = new KernelBuilder().WithLoggerFactory(loggerFactory);
 ```
 
 Enable logging for Planner instance (_metering_ and _tracing_ will be enabled as well):
 
 ```csharp
-var planner = new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(logger);
+var planner = new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
+```
+
+### Log Filtering Configuration
+
+Log filtering configuration has been refined to strike a balance between visibility and relevance:
+
+```csharp
+builder.AddFilter("Microsoft", LogLevel.Warning);
+builder.AddFilter("Microsoft.SemanticKernel", LogLevel.Critical);
+builder.AddFilter("Microsoft.SemanticKernel.Reliability", LogLevel.Information);
 ```
 
 ## Metering
@@ -64,6 +76,10 @@ Available meters:
   - `SK.<SkillName><FunctionName>.ExecutionTotal` - total number of function executions
   - `SK.<SkillName><FunctionName>.ExecutionSuccess` - number of successful function executions
   - `SK.<SkillName><FunctionName>.ExecutionFailure` - number of failed function executions
+- _Microsoft.SemanticKernel.Connectors.AI.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
+  - `SK.Connectors.OpenAI.PromptTokens` - number of prompt tokens used.
+  - `SK.Connectors.OpenAI.CompletionTokens` - number of completion tokens used.
+  - `SK.Connectors.OpenAI.TotalTokens` - total number of tokens used.
 
 ### Examples
 

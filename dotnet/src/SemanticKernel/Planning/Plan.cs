@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -228,7 +229,7 @@ public sealed class Plan : IPlan
         var context = new SKContext(
             variables,
             kernel.Skills,
-            kernel.Logger);
+            kernel.LoggerFactory);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -239,7 +240,7 @@ public sealed class Plan : IPlan
     /// <param name="context">Context to use</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The updated plan</returns>
-    /// <exception cref="KernelException">If an error occurs while running the plan</exception>
+    /// <exception cref="SKException">If an error occurs while running the plan</exception>
     public async Task<Plan> InvokeNextStepAsync(SKContext context, CancellationToken cancellationToken = default)
     {
         if (this.HasNextStep)
@@ -250,14 +251,13 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Skills, context.Logger);
+            var functionContext = new SKContext(functionVariables, context.Skills, context.LoggerFactory);
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
             var resultValue = result.Result.Trim();
 
             if (result.ErrorOccurred)
             {
-                throw new KernelException(KernelException.ErrorCodes.FunctionInvokeError,
-                    $"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
+                throw new SKException($"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
             }
 
             #region Update State
@@ -268,8 +268,14 @@ public sealed class Plan : IPlan
             // Update Plan Result in State with matching outputs (if any)
             if (this.Outputs.Intersect(step.Outputs).Any())
             {
-                this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult);
-                this.State.Set(DefaultResultKey, string.Join("\n", currentPlanResult?.Trim(), resultValue));
+                if (this.State.TryGetValue(DefaultResultKey, out string? currentPlanResult))
+                {
+                    this.State.Set(DefaultResultKey, $"{currentPlanResult}\n{resultValue}");
+                }
+                else
+                {
+                    this.State.Set(DefaultResultKey, resultValue);
+                }
             }
 
             // Update state with outputs (if any)
@@ -311,7 +317,7 @@ public sealed class Plan : IPlan
         {
             AddVariablesToContext(this.State, context);
             var result = await this.Function
-                .WithInstrumentation(context.Logger)
+                .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, settings, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -398,9 +404,7 @@ public sealed class Plan : IPlan
         {
             if (context.Skills == null)
             {
-                throw new KernelException(
-                    KernelException.ErrorCodes.SkillCollectionNotSet,
-                    "Skill collection not found in the context");
+                throw new SKException("Skill collection not found in the context");
             }
 
             if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
@@ -409,9 +413,7 @@ public sealed class Plan : IPlan
             }
             else if (requireFunctions)
             {
-                throw new KernelException(
-                    KernelException.ErrorCodes.FunctionNotAvailable,
-                    $"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
+                throw new SKException($"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
             }
         }
         else

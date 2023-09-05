@@ -13,15 +13,17 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Reliability.Basic;
+using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Polly;
 using Polly.Retry;
 
@@ -68,19 +70,18 @@ public static class Example42_KernelBuilder
         // a correct dependency injection.
 
         // Manually setup all the dependencies used internally by the kernel
-        var logger = NullLogger.Instance;
+        var loggerFactory = NullLoggerFactory.Instance;
         var memoryStorage = new VolatileMemoryStore();
         var textEmbeddingGenerator = new AzureTextEmbeddingGeneration(
             modelId: azureOpenAIEmbeddingDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
-            logger: logger);
+            loggerFactory: loggerFactory);
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var skills = new SkillCollection();
-        var templateEngine = new PromptTemplateEngine(logger);
+        var templateEngine = new PromptTemplateEngine(loggerFactory);
         var kernelConfig = new KernelConfig();
-
-        using var httpHandler = new DefaultHttpRetryHandler(new HttpRetryConfig(), logger);
+        using var httpHandler = kernelConfig.HttpHandlerFactory.Create(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
         ITextCompletion Factory() => new AzureTextCompletion(
@@ -88,12 +89,12 @@ public static class Example42_KernelBuilder
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,
             httpClient,
-            logger);
+            loggerFactory);
         aiServices.SetService("foo", Factory);
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, logger);
+        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, kernelConfig, loggerFactory);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies
@@ -101,7 +102,7 @@ public static class Example42_KernelBuilder
 
         // Example: how to use a custom memory and configure Azure OpenAI
         var kernel4 = Kernel.Builder
-            .WithLogger(NullLogger.Instance)
+            .WithLoggerFactory(NullLoggerFactory.Instance)
             .WithMemory(memory)
             .WithAzureChatCompletionService(
                 deploymentName: azureOpenAIChatCompletionDeployment,
@@ -111,7 +112,7 @@ public static class Example42_KernelBuilder
 
         // Example: how to use a custom memory storage
         var kernel6 = Kernel.Builder
-            .WithLogger(NullLogger.Instance)
+            .WithLoggerFactory(NullLoggerFactory.Instance)
             .WithMemoryStorage(memoryStorage) // Custom memory storage
             .WithAzureChatCompletionService(
                 deploymentName: azureOpenAIChatCompletionDeployment,
@@ -139,8 +140,8 @@ public static class Example42_KernelBuilder
         // The default behavior can be configured or a custom retry handler can be injected that will apply to all
         // AI requests (when using the kernel).
 
-        var kernel8 = Kernel.Builder
-            .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
+        var kernel8 = Kernel.Builder.WithRetryBasic(
+            new BasicRetryConfig
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
@@ -149,58 +150,73 @@ public static class Example42_KernelBuilder
                 //  MaxTotalRetryTime = TimeSpan.FromSeconds(30),
                 //  RetryableStatusCodes = new[] { HttpStatusCode.TooManyRequests, HttpStatusCode.RequestTimeout },
                 //  RetryableExceptions = new[] { typeof(HttpRequestException) }
-            }))
+            })
             .Build();
 
-        var kernel9 = Kernel.Builder
-            .Configure(c => c.SetHttpRetryHandlerFactory(new NullHttpRetryHandlerFactory()))
-            .Build();
+        var logger = loggerFactory.CreateLogger<PollyHttpRetryHandlerFactory>();
+        var retryThreeTimesPolicy = Policy
+            .Handle<HttpOperationException>(ex
+                => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(4),
+                    TimeSpan.FromSeconds(8)
+                },
+                (ex, timespan, retryCount, _)
+                    => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms", retryCount, timespan.TotalMilliseconds));
 
-        var kernel10 = Kernel.Builder.WithRetryHandlerFactory(new RetryThreeTimesFactory()).Build();
+        var kernel9 = Kernel.Builder.WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
+
+        var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
+
+        var kernel11 = Kernel.Builder.WithHttpHandlerFactory(new MyCustomHandlerFactory()).Build();
 
         return Task.CompletedTask;
     }
 
-    // Example of a basic custom retry handler
-    public class RetryThreeTimesFactory : IDelegatingHandlerFactory
+    // Example using the PollyHttpRetryHandler from Reliability.Polly extension
+    public class PollyRetryThreeTimesFactory : HttpHandlerFactory<PollyHttpRetryHandler>
     {
-        public DelegatingHandler Create(ILogger? logger)
+        public override DelegatingHandler Create(ILoggerFactory? loggerFactory = null)
         {
-            return new RetryThreeTimes(logger);
+            var logger = loggerFactory?.CreateLogger<PollyRetryThreeTimesFactory>();
+
+            Activator.CreateInstance(typeof(PollyHttpRetryHandler), GetPolicy(logger), logger);
+            return base.Create(loggerFactory);
+        }
+
+        private static AsyncRetryPolicy GetPolicy(ILogger? logger)
+        {
+            return Policy
+            .Handle<HttpOperationException>(ex
+                => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(4),
+                    TimeSpan.FromSeconds(8)
+                },
+                (ex, timespan, retryCount, _)
+                    => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms",
+                    retryCount,
+                    timespan.TotalMilliseconds));
         }
     }
 
-    public class RetryThreeTimes : DelegatingHandler
+    // Basic custom retry handler factory
+    public class MyCustomHandlerFactory : HttpHandlerFactory<MyCustomHandler>
     {
-        private readonly AsyncRetryPolicy _policy;
+    }
 
-        public RetryThreeTimes(ILogger? logger = null)
+    // Basic custom empty retry handler
+    public class MyCustomHandler : DelegatingHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            this._policy = GetPolicy(logger ?? NullLogger.Instance);
-        }
+            // Your custom handler implementation
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return await this._policy.ExecuteAsync(async () =>
-            {
-                var response = await base.SendAsync(request, cancellationToken);
-                return response;
-            });
-        }
-
-        private static AsyncRetryPolicy GetPolicy(ILogger logger)
-        {
-            return Policy
-                .Handle<AIException>(ex => ex.ErrorCode == AIException.ErrorCodes.Throttling)
-                .WaitAndRetryAsync(new[]
-                    {
-                        TimeSpan.FromSeconds(2),
-                        TimeSpan.FromSeconds(4),
-                        TimeSpan.FromSeconds(8)
-                    },
-                    (ex, timespan, retryCount, _) => logger.LogWarning(ex,
-                        "Error executing action [attempt {0} of 3], pausing {1}ms",
-                        retryCount, timespan.TotalMilliseconds));
+            throw new NotImplementedException();
         }
     }
 }

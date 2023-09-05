@@ -30,10 +30,10 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiDocumentParser"/> class.
     /// </summary>
-    /// <param name="logger">Optional logger instance.</param>
-    public OpenApiDocumentParser(ILogger? logger = null)
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    public OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = logger ?? NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(OpenApiDocumentParser)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -186,7 +186,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 string.IsNullOrEmpty(serverUrl) ? null : new Uri(serverUrl),
                 path,
                 new HttpMethod(method),
-                operationItem.Description,
+                string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
                 CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters),
                 CreateRestApiOperationHeaders(operationItem.Parameters),
                 CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody)
@@ -268,7 +268,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         var mediaTypeMetadata = requestBody.Content[mediaType];
 
-        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema.Required);
+        var payloadProperties = GetPayloadProperties(operationId, mediaTypeMetadata.Schema, mediaTypeMetadata.Schema?.Required ?? new HashSet<string>());
 
         return new RestApiOperationPayload(mediaType, payloadProperties, requestBody.Description);
     }
@@ -307,8 +307,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 propertySchema.Type,
                 requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, requiredProperties, level + 1),
-                propertySchema.Description
-            );
+                propertySchema.Description);
 
             result.Add(property);
         }
