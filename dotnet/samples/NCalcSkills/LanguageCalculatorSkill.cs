@@ -79,11 +79,15 @@ Question: {{ $input }}
         string input,
         SKContext context)
     {
-        var answer = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
+        SKContext answer;
 
-        if (answer.ErrorOccurred)
+        try
         {
-            throw new InvalidOperationException("error in calculator for input " + input + " " + answer.LastException?.Message);
+            answer = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("error in calculator for input " + input + " " + ex.Message, ex);
         }
 
         string pattern = @"```\s*(.*?)\s*```";

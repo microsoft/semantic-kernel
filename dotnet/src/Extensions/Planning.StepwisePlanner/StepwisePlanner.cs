@@ -111,11 +111,15 @@ public class StepwisePlanner : IStepwisePlanner
 
                 context.Variables.Set("agentScratchPad", scratchPad);
 
-                var llmResponse = (await this._systemStepFunction.InvokeAsync(context).ConfigureAwait(false));
+                SKContext llmResponse;
 
-                if (llmResponse.ErrorOccurred)
+                try
                 {
-                    throw new SKException($"Error occurred while executing stepwise plan: {llmResponse.LastException?.Message}", llmResponse.LastException);
+                    llmResponse = await this._systemStepFunction.InvokeAsync(context).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    throw new SKException($"Error occurred while executing stepwise plan: {ex.Message}", ex);
                 }
 
                 string actionText = llmResponse.Result.Trim();
@@ -347,20 +351,14 @@ public class StepwisePlanner : IStepwisePlanner
 
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
 
-            if (result.ErrorOccurred)
-            {
-                this._logger?.LogError("Error occurred: {Error}", result.LastException);
-                return $"Error occurred: {result.LastException}";
-            }
-
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
 
             return result.Result;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
-            return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException.Message}";
+            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            throw;
         }
     }
 

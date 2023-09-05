@@ -179,38 +179,23 @@ public sealed class Kernel : IKernel, IDisposable
             this._skillCollection,
             this.LoggerFactory);
 
-        int pipelineStepCount = -1;
+        int pipelineStepCount = 0;
+
         foreach (ISKFunction f in pipeline)
         {
-            if (context.ErrorOccurred)
-            {
-                this._logger.LogError(
-                    context.LastException,
-                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastException?.Message);
-                return context;
-            }
-
-            pipelineStepCount++;
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
                 context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                if (context.ErrorOccurred)
-                {
-                    this._logger.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
-                        pipelineStepCount, f.SkillName, f.Name, context.LastException?.Message);
-                    return context;
-                }
             }
-            catch (Exception e) when (!e.IsCriticalException())
+            catch (Exception ex)
             {
-                this._logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
-                    pipelineStepCount, f.SkillName, f.Name, e.Message);
-                context.LastException = e;
-                return context;
+                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", f.SkillName, f.Name, pipelineStepCount, ex.Message);
+                throw;
             }
+
+            pipelineStepCount++;
         }
 
         return context;

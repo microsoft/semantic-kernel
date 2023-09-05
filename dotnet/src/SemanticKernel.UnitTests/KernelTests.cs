@@ -86,12 +86,7 @@ public class KernelTests
         cts.Cancel();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, skill["GetAnyValue"]);
-
-        // Assert
-        Assert.True(string.IsNullOrEmpty(result.Result));
-        Assert.True(result.ErrorOccurred);
-        Assert.True(result.LastException is OperationCanceledException);
+        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, skill["GetAnyValue"]));
     }
 
     [Fact]
@@ -109,8 +104,6 @@ public class KernelTests
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.Result));
-        Assert.False(result.ErrorOccurred);
-        Assert.False(result.LastException is OperationCanceledException);
     }
 
     [Fact]

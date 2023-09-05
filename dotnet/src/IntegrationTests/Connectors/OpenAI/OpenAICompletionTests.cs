@@ -99,7 +99,6 @@ public sealed class OpenAICompletionTests : IDisposable
         var result = await func.InvokeAsync("Jupiter");
 
         Assert.NotNull(result);
-        Assert.False(result.ErrorOccurred);
         Assert.Contains("Saturn", result.Result, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Uranus", result.Result, StringComparison.InvariantCultureIgnoreCase);
     }
@@ -133,8 +132,6 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Null(actual.LastException);
-        Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -220,13 +217,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
-        // Act
-        var context = await target.RunAsync("Any", skill["Summarize"]);
+        // Act and Assert
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", skill["Summarize"]));
 
-        // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<HttpOperationException>(context.LastException);
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
 
     [Fact]
@@ -247,13 +241,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
-        // Act
-        var context = await target.RunAsync("Any", skill["Summarize"]);
+        // Act and Assert
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", skill["Summarize"]));
 
-        // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<HttpOperationException>(context.LastException);
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
 
     [Fact]
@@ -324,8 +315,6 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
 
         // Assert
-        Assert.Null(actual.LastException);
-        Assert.False(actual.ErrorOccurred);
         Assert.Contains("Pike Place", actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -346,8 +335,6 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(skill["Limerick"]);
 
         // Assert
-        Assert.Null(actual.LastException?.Message);
-        Assert.False(actual.ErrorOccurred);
         Assert.Contains("Bob", actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 

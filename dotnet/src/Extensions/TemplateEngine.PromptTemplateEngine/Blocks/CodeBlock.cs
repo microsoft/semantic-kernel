@@ -140,24 +140,14 @@ internal sealed class CodeBlock : Block, ICodeRendering
             contextClone.Variables.Update(input);
         }
 
-        Exception? localException = null;
         try
         {
             contextClone = await function!.InvokeAsync(contextClone).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
-                function!.SkillName, function.Name, ex.Message);
-            localException = ex;
-        }
-
-        if (contextClone.ErrorOccurred || localException is not null)
-        {
-            var lastException = localException ?? contextClone.LastException;
-            var errorMsg = $"Function `{fBlock.Content}` execution failed. {lastException?.GetType().FullName}: {lastException?.Message}";
-            this.Logger.LogError(errorMsg);
-            throw new SKException(errorMsg, lastException);
+            this.Logger.LogError(ex, "Function {Function} execution failed with error {Error}", fBlock.Content, ex.Message);
+            throw;
         }
 
         return contextClone.Result;

@@ -350,11 +350,9 @@ public sealed class PlanTests
             new ContextVariables(stepOutput)
         );
 
-        returnContext.LastException = new ArgumentException("Error message");
-
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Returns(() => Task.FromResult(returnContext));
+            .Throws(new ArgumentException("Error message"));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -379,11 +377,9 @@ public sealed class PlanTests
 
         var returnContext = new SKContext();
 
-        returnContext.LastException = new ArgumentException("Error message");
-
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Returns(() => Task.FromResult(returnContext));
+            .Throws(new ArgumentException("Error message"));
 
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
