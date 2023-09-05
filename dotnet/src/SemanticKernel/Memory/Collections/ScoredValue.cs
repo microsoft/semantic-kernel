@@ -18,7 +18,7 @@ internal readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatabl
     }
 
     public T Value { get; }
-    public Score Score { get; }
+    public double Score { get; }
 
     public int CompareTo(ScoredValue<T> other)
     {
@@ -93,6 +93,6 @@ internal readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatabl
 
     internal static ScoredValue<T> Min()
     {
-        return new ScoredValue<T>(default!, Score.Min);
+        return new ScoredValue<T>(default!, double.MinValue);
     }
 }
