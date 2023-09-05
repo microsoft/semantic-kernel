@@ -14,7 +14,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Flow;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -25,7 +24,7 @@ using Microsoft.SemanticKernel.Skills.Web.Bing;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example55_FlowPlanner
+public static class Example56_FlowPlanner
 {
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
 name: FlowPlanner_Example_Flow
@@ -142,20 +141,12 @@ steps:
     private static KernelBuilder GetKernelBuilder()
     {
         var builder = new KernelBuilder();
-        builder.WithAzureChatCompletionService(
+        return builder.WithAzureChatCompletionService(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey,
             alsoAsTextCompletion: true,
             setAsDefault: true);
-
-        return builder
-            .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
-            {
-                MaxRetryCount = 3,
-                UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3),
-            }));
     }
 
     public sealed class CollectEmailSkill : ChatSkill
