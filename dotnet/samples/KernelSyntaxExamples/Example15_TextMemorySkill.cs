@@ -196,7 +196,7 @@ public static class Example15_TextMemorySkill
         {
             [TextMemorySkill.CollectionParam] = MemoryCollectionName,
             [TextMemorySkill.KeyParam] = "info5",
-            ["info"] = "My family is from New York"
+            ["input"] = "My family is from New York"
         }, cancellationToken);
 
         // Retrieve a specific memory with the Kernel
@@ -207,7 +207,7 @@ public static class Example15_TextMemorySkill
             [TextMemorySkill.KeyParam] = "info5"
         }, cancellationToken);
 
-        Console.WriteLine("Memory with key 'info3':" + result?.ToString() ?? "ERROR: memory not found");
+        Console.WriteLine("Memory with key 'info5':" + result?.ToString() ?? "ERROR: memory not found");
         Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,11 +225,11 @@ public static class Example15_TextMemorySkill
             collection: MemoryCollectionName,
             query: "where did I grow up?",
             limit: 2,
-            minRelevanceScore: 0.8,
+            minRelevanceScore: 0.79,
             withEmbeddings: true,
             cancellationToken: cancellationToken))
         {
-            Console.WriteLine($"Answer: {answer}");
+            Console.WriteLine($"Answer: {answer.Metadata.Text}");
         }
 
         Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemorySkill 'Recall' function ==");
@@ -239,7 +239,7 @@ public static class Example15_TextMemorySkill
         {
             [TextMemorySkill.CollectionParam] = MemoryCollectionName,
             [TextMemorySkill.LimitParam] = "2",
-            [TextMemorySkill.RelevanceParam] = "0.8",
+            [TextMemorySkill.RelevanceParam] = "0.79",
             ["input"] = "Ask: where do I live?"
         }, cancellationToken);
 
@@ -286,7 +286,7 @@ Answer:
         result = await kernel.RunAsync(aboutMeOracle, new()
         {
             [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-            [TextMemorySkill.RelevanceParam] = "0.8",
+            [TextMemorySkill.RelevanceParam] = "0.79",
             ["input"] = "Do I live in the same town where I grew up?"
         }, cancellationToken);
 
