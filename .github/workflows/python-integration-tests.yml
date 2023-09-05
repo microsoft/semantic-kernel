@@ -20,7 +20,7 @@ jobs:
   paths-filter:
     runs-on: ubuntu-latest
     outputs:
-      pythonChanges: ${{ steps.filter.outputs.python}}
+      pythonChanges: true
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
