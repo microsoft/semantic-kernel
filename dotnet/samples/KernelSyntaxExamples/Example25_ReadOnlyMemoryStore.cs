@@ -176,9 +176,7 @@ public static class Example25_ReadOnlyMemoryStore
 
     private static string s_jsonVectorEntries = @"[
         {
-            ""embedding"": {
-                ""vector"": [0, 0, 0 ]
-            },
+            ""embedding"": [0, 0, 0],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
@@ -191,9 +189,7 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
          },
          {
-            ""embedding"": {
-                ""vector"": [0, 0, 10 ]
-            },
+            ""embedding"": [0, 0, 10],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
@@ -206,9 +202,7 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
          },
          {
-            ""embedding"": {
-                ""vector"": [1, 2, 3 ]
-            },
+            ""embedding"": [1, 2, 3],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
@@ -221,9 +215,7 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
          },
          {
-            ""embedding"": {
-                ""vector"": [-1, -2, -3 ]
-            },
+            ""embedding"": [-1, -2, -3],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
@@ -236,9 +228,7 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
          },
          {
-            ""embedding"": {
-                ""vector"": [12, 8, 4 ]
-            },
+            ""embedding"": [12, 8, 4],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
