@@ -121,7 +121,7 @@ public static class SKContextSequentialPlannerExtensions
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
             if (function != null)
             {
-                logger ??= context.LoggerFactory.CreateLogger(nameof(SKContext));
+                logger ??= context.LoggerFactory.CreateLogger(typeof(SKContext));
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
                     logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFullyQualifiedName());

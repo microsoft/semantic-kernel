@@ -65,6 +65,13 @@ public class PromptTemplateConfig
         [JsonPropertyOrder(6)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<string> StopSequences { get; set; } = new();
+
+        /// <summary>
+        /// When provided will be used to set the system prompt while using Chat Completions
+        /// </summary>
+        [JsonPropertyName("chat_system_prompt")]
+        [JsonPropertyOrder(7)]
+        public string? ChatSystemPrompt { get; set; }
     }
 
     /// <summary>

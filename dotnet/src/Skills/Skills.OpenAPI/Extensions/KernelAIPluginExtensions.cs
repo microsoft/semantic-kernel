@@ -191,7 +191,7 @@ public static class KernelAIPluginExtensions
 
             var skill = new Dictionary<string, ISKFunction>();
 
-            ILogger logger = kernel.LoggerFactory.CreateLogger(nameof(KernelAIPluginExtensions));
+            ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions));
             foreach (var operation in operations)
             {
                 try
@@ -226,10 +226,9 @@ public static class KernelAIPluginExtensions
             requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
         }
 
-        using var response = await httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        using var response = await httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }
 
     private static async Task<string> LoadDocumentFromFilePath(
@@ -246,7 +245,7 @@ public static class KernelAIPluginExtensions
             throw new FileNotFoundException($"Invalid URI. The specified path '{filePath}' does not exist.");
         }
 
-        kernel.LoggerFactory.CreateLogger(nameof(KernelAIPluginExtensions)).LogTrace("Importing AI Plugin from {0}", filePath);
+        kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)).LogTrace("Importing AI Plugin from {0}", filePath);
 
         using (var sr = File.OpenText(filePath))
         {
@@ -318,7 +317,7 @@ public static class KernelAIPluginExtensions
             executionParameters?.EnablePayloadNamespacing ?? false
         );
 
-        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(nameof(KernelAIPluginExtensions)) : NullLogger.Instance;
+        var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)) : NullLogger.Instance;
 
         async Task<SKContext> ExecuteAsync(SKContext context)
         {

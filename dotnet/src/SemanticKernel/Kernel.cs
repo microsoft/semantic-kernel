@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,7 +76,7 @@ public sealed class Kernel : IKernel, IDisposable
         this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
 
-        this._logger = loggerFactory.CreateLogger(nameof(Kernel));
+        this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
 
     /// <inheritdoc/>
@@ -324,27 +323,6 @@ public sealed class Kernel : IKernel, IDisposable
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
-    }
-
-    #endregion
-
-    #region Obsolete
-
-    /// <inheritdoc/>
-    [Obsolete("Use Logger instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogger Log => this._logger;
-
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
-    /// <returns>SK context</returns>
-    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public SKContext CreateNewContext(CancellationToken cancellationToken)
-    {
-        return this.CreateNewContext();
     }
 
     #endregion

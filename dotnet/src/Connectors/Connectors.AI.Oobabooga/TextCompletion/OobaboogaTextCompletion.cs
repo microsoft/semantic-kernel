@@ -213,10 +213,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             };
             httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
             TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(body);
 

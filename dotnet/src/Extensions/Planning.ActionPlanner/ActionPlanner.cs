@@ -62,7 +62,7 @@ public sealed class ActionPlanner : IActionPlanner
     {
         Verify.NotNull(kernel);
 
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ActionPlanner)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ActionPlanner)) : NullLogger.Instance;
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 

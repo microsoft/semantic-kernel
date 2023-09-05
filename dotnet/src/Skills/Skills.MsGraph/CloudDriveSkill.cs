@@ -42,7 +42,7 @@ public sealed class CloudDriveSkill
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(CloudDriveSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CloudDriveSkill)) : NullLogger.Instance;
     }
 
     /// <summary>
