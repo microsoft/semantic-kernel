@@ -325,7 +325,7 @@ public class ChromaMemoryStore : IMemoryStore
 
     private double GetSimilarityScore(List<double>? distances, int recordIndex)
     {
-        var similarityScore = distances != null ? 1 - distances[recordIndex] : default;
+        var similarityScore = distances != null ? 1.0 / (1.0 + distances[recordIndex]) : default;
 
         if (similarityScore < 0)
         {
