@@ -3,7 +3,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Serialization;
 
 
 /// <summary>
@@ -15,16 +14,19 @@ public class FunctionCallResult
     /// <summary>
     /// Name of the function chosen
     /// </summary>
-    [JsonPropertyName("function")]
     public string Function { get; set; } = string.Empty;
 
     /// <summary>
     ///  Parameter values
     /// </summary>
-    [JsonPropertyName("parameters")]
     public List<FunctionCallParameter> Parameters { get; set; } = new();
 
 
+    /// <summary>
+    ///  Compare two FunctionCallResults
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
     public override bool Equals(object? obj)
     {
         if (obj is FunctionCallResult otherFunctionCallResult)

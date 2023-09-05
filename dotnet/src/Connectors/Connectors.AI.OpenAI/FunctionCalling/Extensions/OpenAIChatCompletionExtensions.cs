@@ -49,6 +49,7 @@ public static class OpenAIChatCompletionExtensions
     /// <param name="chat"></param>
     /// <param name="requestSettings"></param>
     /// <param name="options"></param>
+    /// <param name="deserializationFallback"></param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
@@ -57,16 +58,18 @@ public static class OpenAIChatCompletionExtensions
         ChatHistory chat,
         FunctionCallRequestSettings requestSettings,
         JsonSerializerOptions? options = null,
+        Func<string, T>? deserializationFallback = null,
         CancellationToken cancellationToken = default)
     {
         IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
         T? result = default;
         var firstElementJsonString = "";
+        string content = firstChatMessage.Content;
 
         try
         {
-            using var document = JsonDocument.Parse(firstChatMessage.Content);
+            using var document = JsonDocument.Parse(content);
 
             var root = document.RootElement;
 
@@ -81,9 +84,15 @@ public static class OpenAIChatCompletionExtensions
             }
 
         }
+
         catch (JsonException ex)
         {
             Console.WriteLine($"Error while converting '{firstElementJsonString}' to a '{typeof(T)}': {ex}");
+
+            if (deserializationFallback != null)
+            {
+                result = deserializationFallback.Invoke(content);
+            }
         }
 
         return result;
