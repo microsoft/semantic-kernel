@@ -72,7 +72,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpOperationException e) when (CollectionDoesNotExistException(e.ResponseContent, collectionName))
+        catch (HttpOperationException e) when (VerifyCollectionDoesNotExistMessage(e.ResponseContent, collectionName))
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
             throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
@@ -254,7 +254,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             return await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpOperationException e) when (CollectionDoesNotExistException(e.ResponseContent, collectionName))
+        catch (HttpOperationException e) when (VerifyCollectionDoesNotExistMessage(e.ResponseContent, collectionName))
         {
             this._logger.LogDebug("Collection {0} does not exist", collectionName);
 
@@ -340,7 +340,7 @@ public class ChromaMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="responseContent">Response content.</param>
     /// <param name="collectionName">Collection name.</param>
-    private static bool CollectionDoesNotExistException(string? responseContent, string collectionName)
+    private static bool VerifyCollectionDoesNotExistMessage(string? responseContent, string collectionName)
     {
         return responseContent?.Contains(string.Format(CultureInfo.InvariantCulture, "Collection {0} does not exist", collectionName)) ?? false;
     }
