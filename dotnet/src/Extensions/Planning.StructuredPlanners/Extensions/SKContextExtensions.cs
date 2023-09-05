@@ -10,8 +10,17 @@ using Orchestration;
 using SkillDefinition;
 
 
+/// <summary>
+///  SKContext extensions for structured planning
+/// </summary>
 public static class SKContextExtensions
 {
+    /// <summary>
+    ///  Get a skill collection from a list of function definitions
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="allowedSkills"></param>
+    /// <returns></returns>
     public static SkillCollection GetSkillCollection(this SKContext context, IEnumerable<FunctionDefinition> allowedSkills)
     {
         var skillCollection = new SkillCollection(context.LoggerFactory);
@@ -45,23 +54,17 @@ public static class SKContextExtensions
             }
         }
 
-        // foreach (var function
-        //          in from skillName
-        //                 in allowedSkillNames
-        //             let functionView = context.Skills.GetFunctionsView()
-        //             select functionView.SemanticFunctions[skillName].Concat(functionView.NativeFunctions[skillName])
-        //             into matchedFunctions
-        //             from function
-        //                 in matchedFunctions.Select(func => context.Skills.GetFunction(func.SkillName, func.Name))
-        //             select function)
-        // {
-        //     skillCollection.AddFunction(function);
-        // }
-
         return skillCollection;
     }
 
 
+    /// <summary>
+    ///  Get a skill collection from a StructuredPlannerConfig and a semantic query
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="structuredPlannerConfig"></param>
+    /// <param name="semanticQuery"></param>
+    /// <returns></returns>
     public static async Task<SkillCollection> GetSkillCollection(this SKContext context, StructuredPlannerConfig structuredPlannerConfig, string? semanticQuery = null)
     {
         IEnumerable<FunctionDefinition> functionDefinitions = new List<FunctionDefinition>();

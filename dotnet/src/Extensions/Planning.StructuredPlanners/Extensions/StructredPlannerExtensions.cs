@@ -255,12 +255,12 @@ public static class StructuredPlannerExtensions
     }
 
 
-    public static Plan ToPlan(this IEnumerable<SequentialPlanCall> functionCalls, string goal, IReadOnlySkillCollection skillCollection)
+    public static Plan ToPlan(this IEnumerable<SequentialFunctionCallResult> functionCalls, string goal, IReadOnlySkillCollection skillCollection)
     {
         // Initialize Plan with goal
         var plan = new Plan(goal);
 
-        List<SequentialPlanCall> functions = functionCalls.ToList();
+        List<SequentialFunctionCallResult> functions = functionCalls.ToList();
 
         if (functions.Count == 0)
         {
