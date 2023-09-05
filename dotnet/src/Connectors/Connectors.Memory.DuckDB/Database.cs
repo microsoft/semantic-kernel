@@ -160,38 +160,6 @@ internal sealed class Database
         }
     }
 
-    public async IAsyncEnumerable<DatabaseEntry> ReadAllAsync(DuckDBConnection conn,
-        string collectionName,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-            SELECT key, metadata, timestamp, cast(embedding as string) as embeddingAsString FROM {TableName}
-            WHERE collection=?1;";
-        cmd.Parameters.Add(new DuckDBParameter(collectionName));
-
-        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            string key = dataReader.GetString("key");
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                continue;
-            }
-
-            string metadata = dataReader.GetString("metadata");
-            string embeddingAsString = dataReader.GetString("embeddingAsString");
-            string timestamp = dataReader.GetString("timestamp");
-            yield return new DatabaseEntry
-            {
-                Key = key,
-                MetadataString = metadata,
-                EmbeddingString = embeddingAsString,
-                Timestamp = timestamp
-            };
-        }
-    }
-
     public async Task<DatabaseEntry?> ReadAsync(DuckDBConnection conn,
         string collectionName,
         string key,
@@ -242,17 +210,6 @@ internal sealed class Database
                 AND key=?2; ";
         cmd.Parameters.Add(new DuckDBParameter(collectionName));
         cmd.Parameters.Add(new DuckDBParameter(key));
-        return cmd.ExecuteNonQueryAsync(cancellationToken);
-    }
-
-    public Task DeleteEmptyAsync(DuckDBConnection conn, string collectionName, CancellationToken cancellationToken = default)
-    {
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-             DELETE FROM {TableName}
-             WHERE collection=?1
-                AND key IS NULL";
-        cmd.Parameters.Add(new DuckDBParameter(collectionName));
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 }
