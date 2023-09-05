@@ -136,7 +136,7 @@ public static class Example25_ReadOnlyMemoryStore
                 throw new Exception($"Embedding vector size {embedding.Length} does not match expected size of {this._vectorSize}");
             }
 
-            List<Tuple<MemoryRecord, double>> embeddings = new();
+            List<(MemoryRecord, double)> embeddings = new();
 
             foreach (var item in this._memoryRecords)
             {
