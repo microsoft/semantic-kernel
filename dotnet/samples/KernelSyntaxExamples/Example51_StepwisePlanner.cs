@@ -138,12 +138,12 @@ public static class Example51_StepwisePlanner
 
         var kernel = builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
+            .WithRetryBasic(new()
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
-                MinRetryDelay = TimeSpan.FromSeconds(3)
-            }))
+                MinRetryDelay = TimeSpan.FromSeconds(3),
+            })
             .Build();
 
         return kernel;

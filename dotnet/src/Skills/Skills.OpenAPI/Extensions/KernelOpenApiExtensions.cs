@@ -61,10 +61,9 @@ public static class KernelOpenApiExtensions
             ? ProductInfoHeaderValue.Parse(executionParameters!.UserAgent)
             : ProductInfoHeaderValue.Parse(Telemetry.HttpUserAgent));
 
-        using var response = await internalHttpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        using var response = await internalHttpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
         if (stream == null)
         {
             throw new MissingManifestResourceException($"Unable to load OpenApi skill from url '{url}'.");
