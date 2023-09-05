@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Reliability;
 using Moq;
 using Xunit;
@@ -31,7 +32,7 @@ public class KernelConfigTests
         var config = new KernelConfig();
 
         // Act
-        config.SetHttpRetryHandlerFactory(retry);
+        config.HttpHandlerFactory = retry;
 
         // Assert
         Assert.Equal(retry, config.HttpHandlerFactory);
@@ -45,33 +46,19 @@ public class KernelConfigTests
         var config = new KernelConfig();
 
         // Act
-        config.SetHttpRetryHandlerFactory(retry.Object);
+        config.HttpHandlerFactory = retry.Object;
 
         // Assert
         Assert.Equal(retry.Object, config.HttpHandlerFactory);
     }
 
     [Fact]
-    public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNull()
+    public void HttpHandlerFactoryIsSetToNullByDefault()
     {
         // Arrange
         var config = new KernelConfig();
 
-        // Act
-        config.SetHttpRetryHandlerFactory(null);
-
         // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-    }
-
-    [Fact]
-    public void HttpRetryHandlerFactoryIsSetToDefaultHttpRetryHandlerFactoryIfNotSet()
-    {
-        // Arrange
-        var config = new KernelConfig();
-
-        // Act
-        // Assert
-        Assert.IsType<DefaultHttpRetryHandlerFactory>(config.HttpHandlerFactory);
+        Assert.IsType<NullHttpHandlerFactory>(config.HttpHandlerFactory);
     }
 }
