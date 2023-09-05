@@ -26,7 +26,6 @@ def _config_ban_tokens(settings_type, keys):
     for k in keys:
         # -100 to potentially ban all tokens in the list
         settings.token_selection_biases[k] = -100
-    print(settings.token_selection_biases)
     return settings
 
 
