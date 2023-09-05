@@ -24,7 +24,7 @@ except ImportError:
 pytestmark = pytest.mark.skipif(not redis_installed, reason="Redis is not installed")
 
 pytestmark = pytest.mark.skipif(
-    platform.system() != "Linux" & "Python_Integration_Tests" in os.environ,
+    platform.system() != "Linux" and "Python_Integration_Tests" in os.environ,
     reason="local redis docker container is not available on all non-Linux platforms",
 )
 
