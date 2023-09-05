@@ -924,9 +924,9 @@ public class RedisMemoryStoreTests
 
         foreach (var item in embeddings)
         {
-            long timestamp = item.Item1.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
-            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Item1.Embedding.Span).ToArray();
-            redisResults.Add(RedisResult.Create($"{collection}:{item.Item1.Metadata.Id}", ResultType.BulkString));
+            long timestamp = item.Record.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
+            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Record.Embedding.Span).ToArray();
+            redisResults.Add(RedisResult.Create($"{collection}:{item.Record.Metadata.Id}", ResultType.BulkString));
             redisResults.Add(RedisResult.Create(
                 new RedisResult[]
                 {
