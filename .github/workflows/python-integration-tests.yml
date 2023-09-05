@@ -156,7 +156,7 @@ jobs:
           if [ ${{ matrix.os == 'ubuntu-latest' }} ]; then
           docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
           fi
-          
+
           cd python
           poetry run pytest ./tests/integration -v
 
