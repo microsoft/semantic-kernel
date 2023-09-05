@@ -3,7 +3,6 @@
 using System;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
@@ -15,16 +14,16 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Kusto;
 public static class KustoSerializer
 {
     /// <summary>
-    /// Returns serialized string from <see cref="Embedding{TEmbedding}"/> instance.
+    /// Returns serialized string from an embedding instance.
     /// </summary>
-    /// <param name="embedding">Instance of <see cref="Embedding{TEmbedding}"/> for serialization.</param>
+    /// <param name="embedding">Instance of an embedding for serialization.</param>
     public static string SerializeEmbedding(ReadOnlyMemory<float> embedding)
     {
         return JsonSerializer.Serialize(embedding, s_jsonSerializerOptions);
     }
 
     /// <summary>
-    /// Returns deserialized instance of <see cref="Embedding{TEmbedding}"/> from serialized embedding.
+    /// Returns deserialized instance of an embedding from serialized embedding.
     /// </summary>
     /// <param name="embedding">Serialized embedding.</param>
     public static ReadOnlyMemory<float> DeserializeEmbedding(string? embedding)

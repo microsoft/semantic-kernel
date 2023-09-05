@@ -100,10 +100,9 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
         }
 
-        using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         List<TextCompletionResponse>? completionResponse = JsonSerializer.Deserialize<List<TextCompletionResponse>>(body);
 

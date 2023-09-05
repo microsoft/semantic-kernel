@@ -2,12 +2,15 @@
 
 using System;
 using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Skills.Core;
-using Reliability;
+using Polly;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -15,71 +18,91 @@ public static class Example08_RetryHandler
 {
     public static async Task RunAsync()
     {
-        var kernel = InitializeKernel();
-        var retryHandlerFactory = new RetryThreeTimesWithBackoffFactory();
-        InfoLogger.Logger.LogInformation("============================== RetryThreeTimesWithBackoff ==============================");
-        await RunRetryPolicyAsync(kernel, retryHandlerFactory);
+        await DefaultNoRetry();
 
-        InfoLogger.Logger.LogInformation("========================= RetryThreeTimesWithRetryAfterBackoff =========================");
-        await RunRetryPolicyBuilderAsync(typeof(RetryThreeTimesWithRetryAfterBackoffFactory));
+        await ReliabilityBasicExtension();
 
-        InfoLogger.Logger.LogInformation("==================================== NoRetryPolicy =====================================");
-        await RunRetryPolicyBuilderAsync(typeof(NullHttpRetryHandlerFactory));
+        await ReliabilityPollyExtension();
 
-        InfoLogger.Logger.LogInformation("=============================== DefaultHttpRetryHandler ================================");
-        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
-
-        InfoLogger.Logger.LogInformation("======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======");
-        await RunRetryHandlerConfigAsync(new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true });
+        await CustomHandler();
     }
 
-    private static async Task RunRetryHandlerConfigAsync(HttpRetryConfig? httpConfig = null)
+    private static async Task DefaultNoRetry()
     {
-        var kernelBuilder = Kernel.Builder.WithLoggerFactory(InfoLogger.LoggerFactory);
-        if (httpConfig != null)
-        {
-            kernelBuilder = kernelBuilder.Configure(c => c.SetDefaultHttpRetryConfig(httpConfig));
-        }
+        InfoLogger.Logger.LogInformation("============================== Kernel default behavior: No Retry ==============================");
+        var kernel = InitializeKernelBuilder()
+            .Build();
 
-        // Add 401 to the list of retryable status codes
+        await ImportAndExecuteSkillAsync(kernel);
+    }
+
+    private static async Task ReliabilityBasicExtension()
+    {
+        InfoLogger.Logger.LogInformation("============================== Using Reliability.Basic extension ==============================");
+        var retryConfig = new BasicRetryConfig
+        {
+            MaxRetryCount = 3,
+            UseExponentialBackoff = true,
+        };
+        retryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized);
+
+        var kernel = InitializeKernelBuilder()
+            .WithRetryBasic(retryConfig)
+            .Build();
+
+        await ImportAndExecuteSkillAsync(kernel);
+    }
+
+    private static async Task ReliabilityPollyExtension()
+    {
+        InfoLogger.Logger.LogInformation("============================== Using Reliability.Polly extension ==============================");
+        var kernel = InitializeKernelBuilder()
+            .WithRetryPolly(GetPollyPolicy(InfoLogger.LoggerFactory))
+            .Build();
+
+        await ImportAndExecuteSkillAsync(kernel);
+    }
+
+    private static async Task CustomHandler()
+    {
+        InfoLogger.Logger.LogInformation("============================== Using a Custom Http Handler ==============================");
+        var kernel = InitializeKernelBuilder()
+                        .WithHttpHandlerFactory(new MyCustomHandlerFactory())
+                        .Build();
+
+        await ImportAndExecuteSkillAsync(kernel);
+    }
+
+    private static KernelBuilder InitializeKernelBuilder()
+    {
+        return Kernel.Builder
+                    .WithLoggerFactory(InfoLogger.LoggerFactory)
+                    // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
+                    .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
+    }
+
+    private static AsyncPolicy<HttpResponseMessage> GetPollyPolicy(ILoggerFactory? logger)
+    {
+        // Handle 429 and 401 errors
         // Typically 401 would not be something we retry but for demonstration
         // purposes we are doing so as it's easy to trigger when using an invalid key.
-        kernelBuilder = kernelBuilder.Configure(c => c.DefaultHttpRetryConfig.RetryableStatusCodes.Add(HttpStatusCode.Unauthorized));
+        const int tooManyRequests = 429;
+        const int unauthorized = 401;
 
-        // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-        kernelBuilder = kernelBuilder.WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
-
-        var kernel = kernelBuilder.Build();
-
-        await ImportAndExecuteSkillAsync(kernel);
-    }
-
-    private static IKernel InitializeKernel()
-    {
-        var kernel = Kernel.Builder
-            .WithLoggerFactory(InfoLogger.LoggerFactory)
-            // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY")
-            .Build();
-
-        return kernel;
-    }
-
-    private static async Task RunRetryPolicyAsync(IKernel kernel, IDelegatingHandlerFactory retryHandlerFactory)
-    {
-        kernel.Config.SetHttpRetryHandlerFactory(retryHandlerFactory);
-        await ImportAndExecuteSkillAsync(kernel);
-    }
-
-    private static async Task RunRetryPolicyBuilderAsync(Type retryHandlerFactoryType)
-    {
-        var kernel = Kernel.Builder.WithLoggerFactory(InfoLogger.LoggerFactory)
-            .WithRetryHandlerFactory((Activator.CreateInstance(retryHandlerFactoryType) as IDelegatingHandlerFactory)!)
-            // OpenAI settings - you can set the OpenAI.ApiKey to an invalid value to see the retry policy in play
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY")
-            .Build();
-
-        await ImportAndExecuteSkillAsync(kernel);
+        return Policy
+            .HandleResult<HttpResponseMessage>(response =>
+                (int)response.StatusCode is tooManyRequests or unauthorized)
+            .WaitAndRetryAsync(new[]
+                {
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(4),
+                    TimeSpan.FromSeconds(8)
+                },
+                (outcome, timespan, retryCount, _)
+                    => InfoLogger.Logger.LogWarning("Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms. Outcome: {StatusCode}",
+                        retryCount,
+                        timespan.TotalMilliseconds,
+                        outcome.Result.StatusCode));
     }
 
     private static async Task ImportAndExecuteSkillAsync(IKernel kernel)
@@ -101,9 +124,25 @@ public static class Example08_RetryHandler
         InfoLogger.Logger.LogInformation("Answer: {0}", answer);
     }
 
+    // Basic custom retry handler factory
+    public sealed class MyCustomHandlerFactory : HttpHandlerFactory<MyCustomHandler>
+    {
+    }
+
+    // Basic custom empty retry handler
+    public sealed class MyCustomHandler : DelegatingHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            // Your custom http handling implementation
+
+            throw new NotImplementedException();
+        }
+    }
+
     private static class InfoLogger
     {
-        internal static ILogger Logger => LoggerFactory.CreateLogger<object>();
+        internal static ILogger Logger => LoggerFactory.CreateLogger("Example08_RetryHandler");
         internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
         private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
 
@@ -113,6 +152,8 @@ public static class Example08_RetryHandler
             {
                 builder.SetMinimumLevel(LogLevel.Information);
                 builder.AddFilter("Microsoft", LogLevel.Information);
+                builder.AddFilter("Microsoft.SemanticKernel", LogLevel.Critical);
+                builder.AddFilter("Microsoft.SemanticKernel.Reliability", LogLevel.Information);
                 builder.AddFilter("System", LogLevel.Information);
 
                 builder.AddConsole();
@@ -120,74 +161,3 @@ public static class Example08_RetryHandler
         }
     }
 }
-
-/* Output:
-info: object[0]
-      ============================== RetryThreeTimesWithBackoff ==============================
-info: object[0]
-      Question: How popular is Polly library?
-warn: object[0]
-      Error executing action [attempt 1 of 3], pausing 2000ms. Outcome: Unauthorized
-warn: object[0]
-      Error executing action [attempt 2 of 3], pausing 4000ms. Outcome: Unauthorized
-warn: object[0]
-      Error executing action [attempt 3 of 3], pausing 8000ms. Outcome: Unauthorized
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-info: object[0]
-      ========================= RetryThreeTimesWithRetryAfterBackoff =========================
-info: object[0]
-      Question: How popular is Polly library?
-warn: object[0]
-      Error executing action [attempt 1 of 3], pausing 2000ms. Outcome: Unauthorized
-warn: object[0]
-      Error executing action [attempt 2 of 3], pausing 2000ms. Outcome: Unauthorized
-warn: object[0]
-      Error executing action [attempt 3 of 3], pausing 2000ms. Outcome: Unauthorized
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-info: object[0]
-      ==================================== NoRetryPolicy =====================================
-info: object[0]
-      Question: How popular is Polly library?
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-info: object[0]
-      =============================== DefaultHttpRetryHandler ================================
-info: object[0]
-      Question: How popular is Polly library?
-warn: object[0]
-      Error executing action [attempt 1 of 3]. Reason: Unauthorized. Will retry after 2000ms
-warn: object[0]
-      Error executing action [attempt 2 of 3]. Reason: Unauthorized. Will retry after 4000ms
-warn: object[0]
-      Error executing action [attempt 3 of 3]. Reason: Unauthorized. Will retry after 8000ms
-fail: object[0]
-      Error executing request, max retry count reached. Reason: Unauthorized
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-info: object[0]
-      ======= DefaultHttpRetryConfig [MaxRetryCount = 3, UseExponentialBackoff = true] =======
-info: object[0]
-      Question: How popular is Polly library?
-warn: object[0]
-      Error executing action [attempt 1 of 3]. Reason: Unauthorized. Will retry after 2000ms
-warn: object[0]
-      Error executing action [attempt 2 of 3]. Reason: Unauthorized. Will retry after 4000ms
-warn: object[0]
-      Error executing action [attempt 3 of 3]. Reason: Unauthorized. Will retry after 8000ms
-fail: object[0]
-      Error executing request, max retry count reached. Reason: Unauthorized
-fail: object[0]
-      Function call fail during pipeline step 0: QASkill.Question
-info: object[0]
-      Answer: Error: AccessDenied: The request is not authorized, HTTP status: Unauthorized
-*/
