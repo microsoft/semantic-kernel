@@ -39,7 +39,7 @@ jobs:
         run: echo "NOT python file"
       - name: run tests on manual run
         if: github.event_name == 'workflow_dispatch'
-        run: echo "pythonChanges=true" >> $GITHUB_ENV
+        run: echo "python=true" >> "$GITHUB_OUTPUT"
 
   python-merge-gate:
     needs: paths-filter
