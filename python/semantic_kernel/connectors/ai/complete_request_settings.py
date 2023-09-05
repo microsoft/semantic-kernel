@@ -20,6 +20,7 @@ class CompleteRequestSettings:
     number_of_responses: int = 1
     logprobs: int = 0
     token_selection_biases: Dict[int, int] = field(default_factory=dict)
+    chat_system_prompt: str = None
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
@@ -32,6 +33,9 @@ class CompleteRequestSettings:
         self.stop_sequences = completion_config.stop_sequences
         self.number_of_responses = completion_config.number_of_responses
         self.token_selection_biases = completion_config.token_selection_biases
+
+        if completion_config.chat_system_prompt:
+            self.chat_system_prompt = completion_config.chat_system_prompt
 
     @staticmethod
     def from_completion_config(
