@@ -91,19 +91,19 @@ public static class Example15_TextMemorySkill
 
     private static IMemoryStore CreateSampleChromaMemoryStore()
     {
-        IMemoryStore store = new ChromaMemoryStore(TestConfiguration.Chroma.Endpoint, ConsoleLogger.Logger);
+        IMemoryStore store = new ChromaMemoryStore(TestConfiguration.Chroma.Endpoint, ConsoleLogger.LoggerFactory);
         return store;
     }
 
     private static IMemoryStore CreateSampleQdrantMemoryStore()
     {
-        IMemoryStore store = new QdrantMemoryStore(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.Logger);
+        IMemoryStore store = new QdrantMemoryStore(TestConfiguration.Qdrant.Endpoint, 1536, ConsoleLogger.LoggerFactory);
         return store;
     }
 
     private static IMemoryStore CreateSamplePineconeMemoryStore()
     {
-        IMemoryStore store = new PineconeMemoryStore(TestConfiguration.Pinecone.Environment, TestConfiguration.Pinecone.ApiKey, ConsoleLogger.Logger);
+        IMemoryStore store = new PineconeMemoryStore(TestConfiguration.Pinecone.Environment, TestConfiguration.Pinecone.ApiKey, ConsoleLogger.LoggerFactory);
         return store;
     }
 
@@ -140,10 +140,8 @@ public static class Example15_TextMemorySkill
 
     private static async Task RunWithStoreAsync(IMemoryStore memoryStore, CancellationToken cancellationToken)
     {
-        var logger = ConsoleLogger.Logger;
-
         var kernel = Kernel.Builder
-            .WithLogger(logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
