@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -101,10 +100,10 @@ public interface IMemoryStore
     Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets the nearest matches to the <see cref="Embedding{Single}"/> of type <see cref="float"/>. Does not guarantee that the collection exists.
+    /// Gets the nearest matches to an embedding of type <see cref="float"/>. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
-    /// <param name="embedding">The <see cref="Embedding{Single}"/> to compare the collection's embeddings with.</param>
+    /// <param name="embedding">The embedding to compare the collection's embeddings with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
     /// <param name="minRelevanceScore">The minimum cosine similarity threshold for returned results.</param>
     /// <param name="withEmbeddings">If true, the embeddings will be returned in the memory records.</param>
@@ -119,11 +118,11 @@ public interface IMemoryStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets the nearest match to the <see cref="Embedding{Single}"/> of type <see cref="float"/>. Does not guarantee that the collection exists.
+    /// Gets the nearest match to an embedding of type <see cref="float"/>. Does not guarantee that the collection exists.
     /// </summary>
     /// <param name="collectionName">The name associated with a collection of embeddings.</param>
-    /// <param name="embedding">The <see cref="Embedding{Single}"/> to compare the collection's embeddings with.</param>
-    /// <param name="minRelevanceScore">The minimum cosine similarity threshold for returned results.</param>
+    /// <param name="embedding">The embedding to compare the collection's embeddings with.</param>
+    /// <param name="minRelevanceScore">The minimum relevance threshold for returned results.</param>
     /// <param name="withEmbedding">If true, the embedding will be returned in the memory record.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A tuple consisting of the <see cref="MemoryRecord"/> and the similarity score as a <see cref="double"/>. Null if no nearest match found.</returns>
