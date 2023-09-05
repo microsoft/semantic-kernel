@@ -1,8 +1,10 @@
+# Dev Setup
+
 This document describes how to setup your environment with Python and Poetry,
 if you're working on new features or a bug fix for Semantic Kernel, or simply
 want to run the tests included.
 
-# LLM setup
+## LLM setup
 
 Make sure you have an
 [Open AI API Key](https://openai.com/api/) or
@@ -10,7 +12,7 @@ Make sure you have an
 
 Copy those keys into a `.env` file (see the `.env.example` file):
 
-```
+```bash
 OPENAI_API_KEY=""
 OPENAI_ORG_ID=""
 AZURE_OPENAI_DEPLOYMENT_NAME=""
@@ -23,13 +25,15 @@ We suggest adding a copy of the `.env` file under these folders:
 - [python/tests](tests)
 - [./notebooks](./notebooks).
 
-# System setup
+## System setup
 
 To get started, you'll need VSCode and a local installation of Python 3.8+.
 
 You can run:
 
+```python
     python3 --version ; pip3 --version ; code -v
+```
 
 to verify that you have the required dependencies.
 
@@ -53,7 +57,7 @@ you may need to run `~/.local/bin/poetry install` and `~/.local/bin/poetry shell
 instead. You can fix this by adding `export PATH="$HOME/.local/bin:$PATH"` to
 your `~/.bashrc` and closing/re-opening the terminal.\_
 
-# Using Poetry
+## Using Poetry
 
 Poetry allows to use SK from the local files, without worrying about paths, as
 if you had SK pip package installed.
@@ -79,7 +83,7 @@ poetry install
 poetry shell
 ```
 
-# VSCode Setup
+## VSCode Setup
 
 Open any of the `.py` files in the project and run the `Python: Select Interpreter`
 command from the command palette. Make sure the virtual env (venv) created by
@@ -89,27 +93,33 @@ The python you're looking for should be under `~/.cache/pypoetry/virtualenvs/sem
 If prompted, install `black` and `flake8` (if VSCode doesn't find those packages,
 it will prompt you to install them).
 
-# Tests
+## Tests
 
 You can run the unit tests under the [tests/unit](tests/unit/) folder.
 
+```bash
     cd python
     poetry install
     poetry run pytest tests/unit
+```
 
 You can run the integration tests under the [tests/integration](tests/integration/) folder.
 
+```bash
     cd python
     poetry install
     poetry run pytest tests/integration
+```
 
 You can also run all the tests together under the [tests](tests/) folder.
 
+```bash
     cd python
     poetry install
     poetry run pytest tests
+```
 
-# Tools and scripts
+## Tools and scripts
 
 ## Pydantic and Serialization
 
@@ -171,12 +181,13 @@ class C(PydanticField): ... # No other changes needed
 
 The classes B and C can now be used as valid Pydantic Field annotations.
 
-````python
+```python
 from pydantic import BaseModel
 
 class MyModel(BaseModel):
     b: B
     c: C
+```
 
 Class A can only be used as a Pydantic Field annotation for a Pydantic BaseModel subclass
 which is configured to allow arbitrary field types like so:
@@ -190,7 +201,7 @@ class CorrectModel(BaseModel):
     a: A  # Okay
     class Config:  # Configuration that tells Pydantic to allow field types that it can't serialize
         arbitrary_types_allowed = True
-````
+```
 
 #### Classes with data, but no Generic types that need to be serialized
 
@@ -264,8 +275,6 @@ class A(SKGenericModel, Generic[T1, T2]):
 To run the same checks that run during the GitHub Action build, you can use
 this command, from the [python](../python) folder:
 
+```bash
     poetry run pre-commit run -c .conf/.pre-commit-config.yaml -a
-
-## Running ruff
-
-    poetry run ruff check .
+```
