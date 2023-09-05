@@ -140,7 +140,7 @@ public class StepwisePlanner : IStepwisePlanner
             return this.ParseResult(actionText);
         };
 
-        var TryGetFinalAnswer = (SystemStep step, int iterations, ref SKContext context) =>
+        var TryGetFinalAnswer = (SystemStep step, int iterations, SKContext context) =>
         {
             // If a final answer is found, update the context to be returned
             if (!string.IsNullOrEmpty(step.FinalAnswer))
@@ -154,10 +154,10 @@ public class StepwisePlanner : IStepwisePlanner
                 // Add additional results to the context
                 AddExecutionStatsToContext(stepsTaken, context, iterations);
 
-                return true;
+                return context;
             }
 
-            return false;
+            return null;
         };
 
         var TryGetObservations = (SystemStep step) =>
@@ -285,9 +285,10 @@ public class StepwisePlanner : IStepwisePlanner
             var nextStep = await GetNextStepAsync().ConfigureAwait(false);
 
             // If final answer is available, we're done, return the context
-            if (TryGetFinalAnswer(nextStep, i + 1, ref context))
+            var finalContext = TryGetFinalAnswer(nextStep, i + 1, context);
+            if (finalContext is not null)
             {
-                return context;
+                return finalContext;
             }
 
             // If we have an observation before running the action, continue to the next iteration
