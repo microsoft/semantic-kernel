@@ -128,9 +128,11 @@ public class StepwisePlanner : IStepwisePlanner
             throw new SKException("ChatHistory is null.");
         }
 
-        var stepsTaken = new List<SystemStep>();
-
         var startingMessageCount = chatHistory.Messages.Count;
+
+        var stepsTaken = new List<SystemStep>();
+        SystemStep? lastStep = null;
+
         var GetNextStepAsync = async () =>
         {
             var actionText = await this.GetNextStepCompletion(stepsTaken, chatHistory, aiService, startingMessageCount, token).ConfigureAwait(false);
@@ -138,37 +140,44 @@ public class StepwisePlanner : IStepwisePlanner
             return this.ParseResult(actionText);
         };
 
-        SystemStep? lastStep = null;
-        for (int i = 0; i < this.Config.MaxIterations; i++)
+        var TryGetFinalAnswer = (SystemStep step, int iterations, ref SKContext context)
+        =>
         {
-            // sleep for a bit to avoid rate limiting
-            if (i > 0)
+            // If a final answer is found, update the context to be returned
+            if (!string.IsNullOrEmpty(step.FinalAnswer))
             {
-                await Task.Delay(this.Config.MinIterationTimeMs, token).ConfigureAwait(false);
-            }
+                this._logger?.LogInformation("Final Answer: {FinalAnswer}", step.FinalAnswer);
 
-            var nextStep = await GetNextStepAsync().ConfigureAwait(false);
+                context.Variables.Update(step.FinalAnswer);
 
-            // If a final answer is found, update and return the context with the result.
-            if (!string.IsNullOrEmpty(nextStep.FinalAnswer))
-            {
-                this._logger?.LogInformation("Final Answer: {FinalAnswer}", nextStep.FinalAnswer);
-
-                context.Variables.Update(nextStep.FinalAnswer);
-
-                stepsTaken.Add(nextStep);
+                stepsTaken.Add(step);
 
                 // Add additional results to the context
-                AddExecutionStatsToContext(stepsTaken, context, i + 1);
+                AddExecutionStatsToContext(stepsTaken, context, iterations);
 
-                return context;
+                return true;
             }
 
-            // If no Action/Thought is found,
-            // add a message to the chat history to guide LLM into returning the next thought.
-            if (string.IsNullOrEmpty(nextStep.Action) &&
-                string.IsNullOrEmpty(nextStep.Thought))
+            return false;
+        };
+
+        var TryGetObservations = (SystemStep step, ref SKContext context) =>
+        {
+            // If no Action/Thought is found, return any already available Observation from parsing the response.
+            // Otherwise, add a message to the chat history to guide LLM into returning the next thought|action.
+            if (string.IsNullOrEmpty(step.Action) &&
+                string.IsNullOrEmpty(step.Thought))
             {
+                // If there is an observation, add it to the chat history
+                if (!string.IsNullOrEmpty(step.Observation))
+                {
+                    this._logger?.LogWarning("Invalid response from LLM, observation: {Observation}", step.Observation);
+                    chatHistory.AddUserMessage($"{Observation} {step.Observation}");
+                    stepsTaken.Add(step);
+                    lastStep = step;
+                    return true;
+                }
+
                 if (lastStep is not null && string.IsNullOrEmpty(lastStep.Action))
                 {
                     this._logger?.LogWarning("No response from LLM, expected Action");
@@ -180,17 +189,23 @@ public class StepwisePlanner : IStepwisePlanner
                     chatHistory.AddUserMessage(Thought);
                 }
 
-                continue;
+                // No action or thought from LLM
+                return true;
             }
 
-            // If the thought is empty and the last step had no action, copy action to last step and set as new nextStep
-            if (string.IsNullOrEmpty(nextStep.Thought) && lastStep is not null && string.IsNullOrEmpty(lastStep.Action))
-            {
-                lastStep.Action = nextStep.Action;
-                lastStep.ActionVariables = nextStep.ActionVariables;
+            return false;
+        };
 
-                lastStep.OriginalResponse += nextStep.OriginalResponse;
-                nextStep = lastStep;
+        var AddNextStep = (SystemStep step) =>
+        {
+            // If the thought is empty and the last step had no action, copy action to last step and set as new nextStep
+            if (string.IsNullOrEmpty(step.Thought) && lastStep is not null && string.IsNullOrEmpty(lastStep.Action))
+            {
+                lastStep.Action = step.Action;
+                lastStep.ActionVariables = step.ActionVariables;
+
+                lastStep.OriginalResponse += step.OriginalResponse;
+                step = lastStep;
                 if (chatHistory.Messages.Count > startingMessageCount)
                 {
                     chatHistory.Messages.RemoveAt(chatHistory.Messages.Count - 1);
@@ -198,59 +213,111 @@ public class StepwisePlanner : IStepwisePlanner
             }
             else
             {
-                this._logger?.LogInformation("Thought: {Thought}", nextStep.Thought);
-                stepsTaken.Add(nextStep);
-                lastStep = nextStep;
+                this._logger?.LogInformation("Thought: {Thought}", step.Thought);
+                stepsTaken.Add(step);
+                lastStep = step;
             }
 
-            if (string.IsNullOrEmpty(nextStep.Action))
-            {
-                this._logger?.LogInformation("Action: No action to take");
+            return step;
+        };
 
-                // Add thought to chat history
-                if (!string.IsNullOrEmpty(nextStep.Thought))
-                {
-                    chatHistory.AddAssistantMessage($"{Thought} {nextStep.Thought}");
-                }
-            }
-            else
+        var TryGetActionObservationAsync = async (SystemStep step) =>
+        {
+            if (!string.IsNullOrEmpty(step.Action))
             {
-                this._logger?.LogInformation("Action: {Action}({ActionVariables}). Iteration: {Iteration}.",
-                    nextStep.Action, JsonSerializer.Serialize(nextStep.ActionVariables), i + 1);
+                this._logger?.LogInformation("Action: {Action}({ActionVariables}).",
+                    step.Action, JsonSerializer.Serialize(step.ActionVariables));
 
                 // add [thought and] action to chat history
-                var actionMessage = $"{Action} {{\"action\": \"{nextStep.Action}\",\"action_variables\": {JsonSerializer.Serialize(nextStep.ActionVariables)}}}";
-                var message = string.IsNullOrEmpty(nextStep.Thought) ? actionMessage : $"{Thought} {nextStep.Thought}\n{actionMessage}";
+                var actionMessage = $"{Action} {{\"action\": \"{step.Action}\",\"action_variables\": {JsonSerializer.Serialize(step.ActionVariables)}}}";
+                var message = string.IsNullOrEmpty(step.Thought) ? actionMessage : $"{Thought} {step.Thought}\n{actionMessage}";
 
                 chatHistory.AddAssistantMessage(message);
 
                 // Invoke the action
                 try
                 {
-                    var result = await this.InvokeActionAsync(nextStep.Action, nextStep.ActionVariables).ConfigureAwait(false);
+                    var result = await this.InvokeActionAsync(step.Action, step.ActionVariables).ConfigureAwait(false);
 
                     if (string.IsNullOrEmpty(result))
                     {
-                        nextStep.Observation = "Got no result from action";
+                        step.Observation = "Got no result from action";
                     }
                     else
                     {
-                        nextStep.Observation = result;
+                        step.Observation = result;
                     }
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
                 {
-                    nextStep.Observation = $"Error invoking action {nextStep.Action} : {ex.Message}";
-                    this._logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.Action);
+                    step.Observation = $"Error invoking action {step.Action} : {ex.Message}";
+                    this._logger?.LogWarning(ex, "Error invoking action {Action}", step.Action);
                 }
 
-                this._logger?.LogInformation("Observation: {Observation}", nextStep.Observation);
-                chatHistory.AddUserMessage($"{Observation} {nextStep.Observation}");
+                this._logger?.LogInformation("Observation: {Observation}", step.Observation);
+                chatHistory.AddUserMessage($"{Observation} {step.Observation}");
+
+                return true;
+            }
+
+            return false;
+        };
+
+        var TryGetThought = (SystemStep step) =>
+        {
+            // Add thought to chat history
+            if (!string.IsNullOrEmpty(step.Thought))
+            {
+                chatHistory.AddAssistantMessage($"{Thought} {step.Thought}");
+            }
+
+            return false;
+        };
+
+        for (int i = 0; i < this.Config.MaxIterations; i++)
+        {
+            // sleep for a bit to avoid rate limiting
+            if (i > 0)
+            {
+                await Task.Delay(this.Config.MinIterationTimeMs, token).ConfigureAwait(false);
+            }
+
+            // Get next step from LLM
+            var nextStep = await GetNextStepAsync().ConfigureAwait(false);
+
+            // If final answer is available, we're done, return the context
+            if (TryGetFinalAnswer(nextStep, i + 1, ref context))
+            {
+                return context;
+            }
+
+            // If we have an observation before running the action, continue to the next iteration
+            if (TryGetObservations(nextStep, ref context))
+            {
+                continue;
+            }
+
+            // Add next step to steps taken, merging with last step if necessary
+            // (e.g. the LLM gave Thought and Action one at a time, merge to encourage LLM to give both at once in future steps)
+            nextStep = AddNextStep(nextStep);
+
+            // Execute actions and get observations
+            if (await TryGetActionObservationAsync(nextStep).ConfigureAwait(false))
+            {
+                continue;
+            }
+
+            this._logger?.LogInformation("Action: No action to take");
+
+            // If we have a thought, continue to the next iteration
+            if (TryGetThought(nextStep))
+            {
+                continue;
             }
         }
 
         AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
-        context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
+        context.Variables.Update("Result not found, review 'stepsTaken' to see what happened.");
 
         return context;
     }
@@ -388,15 +455,6 @@ public class StepwisePlanner : IStepwisePlanner
     /// <returns>A SystemStep</returns>
     protected internal virtual SystemStep ParseResult(string input)
     {
-        // The hope is that the input will either be:
-        // 1) [Thought] some thought [Action] {...}
-        // 2) [Thought] some thought
-        // 3) some thought
-        // 4) [Action] {...}
-        // 5) {...}
-        // 6) [FinalAnswer] some answer
-        // 7) [Thought] some thought [FinalAnswer]
-
         var result = new SystemStep
         {
             OriginalResponse = input
@@ -428,13 +486,16 @@ public class StepwisePlanner : IStepwisePlanner
         }
         else
         {
-            result.Observation = "Could not parse response. Unable to find thought or action. Please try again.";
+            // result.Observation = "Could not parse response. Unable to find thought or action. Please try again.";
             return result;
         }
 
         result.Thought = result.Thought.Replace(Thought, string.Empty).Trim();
 
         // Extract action
+        // Using regex is prone to issues with complex action json, so we use a simple string search instead
+        // This can be less fault tolerant in some scenarios where the LLM tries to call multiple actions, for example.
+        // TODO -- that could possibly be improved if we allow an action to be a list of actions.
         int actionIndex = input.IndexOf(Action, StringComparison.OrdinalIgnoreCase);
 
         if (actionIndex != -1)
@@ -451,27 +512,18 @@ public class StepwisePlanner : IStepwisePlanner
                     {
                         var systemStepResults = JsonSerializer.Deserialize<SystemStep>(json);
 
-                        if (systemStepResults == null)
-                        {
-                            result.Observation = $"System step parsing error, empty JSON: {json}";
-                        }
-                        else
+                        if (systemStepResults is not null)
                         {
                             result.Action = systemStepResults.Action;
                             result.ActionVariables = systemStepResults.ActionVariables;
                         }
                     }
-                    catch (JsonException)
+                    catch (JsonException je)
                     {
-                        result.Observation = $"System step parsing error, invalid JSON: {json}";
+                        result.Observation = $"Action parsing error: {je.Message}\nInvalid action: {json}";
                     }
                 }
             }
-        }
-
-        if (string.IsNullOrEmpty(result.Thought) && string.IsNullOrEmpty(result.Action) && string.IsNullOrEmpty(result.Observation))
-        {
-            result.Observation = "System step error, no thought or action found. Please give a valid thought and/or action.";
         }
 
         return result;
