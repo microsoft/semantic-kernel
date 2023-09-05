@@ -12,7 +12,7 @@ internal static class HttpClientProvider
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
-    /// <param name="httpHandlerFactory"></param>
+    /// <param name="httpHandlerFactory">The <see cref="IDelegatingHandlerFactory"/> to be used when the HttpClient is not provided already</param>
     /// <param name="httpClient">An optional pre-existing instance of HttpClient.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>An instance of HttpClient.</returns>
