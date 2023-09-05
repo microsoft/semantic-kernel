@@ -73,7 +73,7 @@ public class StructuredSequentialPlanner : IStructuredPlanner
         _plannerFunction.SetDefaultSkillCollection(skillCollection);
 
         SKContext? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
-        List<SequentialPlanCall>? functionCalls = result.ToFunctionCallResult<List<SequentialPlanCall>>();
+        List<SequentialFunctionCallResult>? functionCalls = result.ToFunctionCallResult<List<SequentialFunctionCallResult>>();
 
         if (functionCalls is null)
         {

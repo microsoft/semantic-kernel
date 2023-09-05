@@ -4,6 +4,7 @@ namespace Microsoft.SemanticKernel.Planning.Structured;
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Memory;
@@ -87,4 +88,9 @@ public sealed class StructuredPlannerConfig
     /// Optional callback to get a function by name.
     /// </summary>
     public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+
+    /// <summary>
+    ///  Serializer options for the planner to use for deserialization
+    /// </summary>
+    public JsonSerializerOptions SerializerOptions { get; set; } = new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true };
 }
