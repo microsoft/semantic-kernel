@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Collections;
 
 #pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -137,7 +136,7 @@ public static class Example25_ReadOnlyMemoryStore
                 throw new Exception($"Embedding vector size {embedding.Length} does not match expected size of {this._vectorSize}");
             }
 
-            TopNCollection<MemoryRecord> embeddings = new(limit);
+            List<Tuple<MemoryRecord, double>> embeddings = new();
 
             foreach (var item in this._memoryRecords)
             {
@@ -148,11 +147,9 @@ public static class Example25_ReadOnlyMemoryStore
                 }
             }
 
-            embeddings.SortByScore();
-
-            foreach (var item in embeddings)
+            foreach (var item in embeddings.OrderByDescending(l => l.Item2).Take(limit))
             {
-                yield return (item.Value, item.Score.Value);
+                yield return (item.Item1, item.Item2);
             }
         }
 
