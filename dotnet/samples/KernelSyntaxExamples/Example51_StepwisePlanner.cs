@@ -35,8 +35,8 @@ public static class Example51_StepwisePlanner
         foreach (var question in questions)
         {
             var kernel = GetKernel();
-            // await RunWithQuestion(kernel, question);
-            await RunStructuredWithQuestion(kernel, question);
+            await RunWithQuestion(kernel, question);
+            // await RunStructuredWithQuestion(kernel, question);
         }
     }
 
@@ -178,4 +178,33 @@ public static class Example51_StepwisePlanner
 // Steps Taken: 11
 // Skills Used: 9 (time.Now(1), time.DayOfYear(1), time.DaysBetween(1), time.MonthNumber(1), time.Day(1), advancedCalculator.Calculator(4))
 // Time Taken: 00:01:41.5585861
+// *****************************************************
+
+// *********************** S T R U C T U R E D ******************************
+// Question: Who is the current president of the United States? What is his current age divided by 2?
+// Result: The current president of the United States is Joe Biden. His current age divided by 2 is 40.5.
+// Steps Taken: 3
+// Skills Used: 5 (WebSearch.Search(2), time.Year(1), time.Date(1), advancedCalculator.Calculator(1))
+// Time Taken: 00:00:20.5524041
+// *****************************************************
+// *****************************************************
+// Question: Who is Leo DiCaprio's girlfriend? What is her current age raised to the (his current age)/100 power?
+// Result: 4.94.
+// Steps Taken: 9
+// Skills Used: 5 (WebSearch.Search(3), time.Year(1), advancedCalculator.Calculator(1))
+// Time Taken: 00:01:04.8966866
+// *****************************************************
+// *****************************************************
+// Question: What is the capital of France? Who is that cities current mayor? What percentage of their life has been in the 21st century as of today?
+// Result: The capital of France is Paris. The current mayor of Paris is Anne Hidalgo. Anne Hidalgo was born on 19 June 1959. As of today, 36.86% of her life has been in the 21st century.
+// Steps Taken: 8
+// Skills Used: 12 (WebSearch.Search(8), time.Year(1), advancedCalculator.Calculator(3))
+// Time Taken: 00:01:12.3925558
+// *****************************************************
+// *****************************************************
+// Question: What is the current day of the calendar year? Using that as an angle in degrees, what is the area of a unit circle with that angle?
+// Result: The area of a unit circle with an angle of 244 degrees is approximately 2.13 square units.
+// Steps Taken: 5
+// Skills Used: 9 (time.Now(1), time.DayOfYear(1), time.DaysBetween(1), time.MonthNumber(1), time.Day(1), advancedCalculator.Calculator(4))
+// Time Taken: 00:00:31.3289409
 // *****************************************************
