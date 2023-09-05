@@ -900,7 +900,7 @@ public class RedisMemoryStoreTests
 
     private void MockSearch(string collection, ReadOnlyMemory<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
     {
-        List<(MemoryRecord, double)> embeddings = new();
+        List<(MemoryRecord Record, double Score)> embeddings = new();
 
         List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : new();
 
@@ -915,7 +915,7 @@ public class RedisMemoryStoreTests
             }
         }
 
-        embeddings = embeddings.OrderByDescending(l => l.Item2).Take(topN).ToList();
+        embeddings = embeddings.OrderByDescending(l => l.Score).Take(topN).ToList();
 
         string redisKey = $"{collection}";
 
@@ -931,15 +931,15 @@ public class RedisMemoryStoreTests
                 new RedisResult[]
                 {
                     RedisResult.Create("key", ResultType.BulkString),
-                    RedisResult.Create(item.Item1.Metadata.Id, ResultType.BulkString),
+                    RedisResult.Create(item.Record.Metadata.Id, ResultType.BulkString),
                     RedisResult.Create("metadata", ResultType.BulkString),
-                    RedisResult.Create(item.Item1.GetSerializedMetadata(), ResultType.BulkString),
+                    RedisResult.Create(item.Record.GetSerializedMetadata(), ResultType.BulkString),
                     RedisResult.Create("embedding", ResultType.BulkString),
                     RedisResult.Create(embedding, ResultType.BulkString),
                     RedisResult.Create("timestamp", ResultType.BulkString),
                     RedisResult.Create(timestamp, ResultType.BulkString),
                     RedisResult.Create("vector_score", ResultType.BulkString),
-                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Item2}" : 1-item.Item2, ResultType.BulkString),
+                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score}" : 1-item.Score, ResultType.BulkString),
                 })
             );
         }

@@ -152,7 +152,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         }
 
         var collectionMemories = new List<MemoryRecord>();
-        List<(MemoryRecord, double)> embeddings = new();
+        List<(MemoryRecord Record, double Score)> embeddings = new();
 
         await foreach (var record in this.GetAllAsync(collectionName, cancellationToken))
         {
@@ -169,9 +169,9 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
             }
         }
 
-        foreach (var item in embeddings.OrderByDescending(l => l.Item2).Take(limit))
+        foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
         {
-            yield return (item.Item1, item.Item2);
+            yield return (item.Record, item.Score);
         }
     }
 

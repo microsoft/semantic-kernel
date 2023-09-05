@@ -136,7 +136,7 @@ public static class Example25_ReadOnlyMemoryStore
                 throw new Exception($"Embedding vector size {embedding.Length} does not match expected size of {this._vectorSize}");
             }
 
-            List<(MemoryRecord, double)> embeddings = new();
+            List<(MemoryRecord Record, double Score)> embeddings = new();
 
             foreach (var item in this._memoryRecords)
             {
@@ -147,9 +147,9 @@ public static class Example25_ReadOnlyMemoryStore
                 }
             }
 
-            foreach (var item in embeddings.OrderByDescending(l => l.Item2).Take(limit))
+            foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
             {
-                yield return (item.Item1, item.Item2);
+                yield return (item.Record, item.Score);
             }
         }
 
