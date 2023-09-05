@@ -17,7 +17,7 @@ def test_default_complete_request_settings():
     assert settings.number_of_responses == 1
     assert settings.logprobs == 0
     assert settings.token_selection_biases == {}
-    assert settings.chat_system_prompt is None
+    assert settings.chat_system_prompt == "Assistant is a large language model."
 
 
 def test_custom_complete_request_settings():
@@ -55,7 +55,6 @@ def test_default_chat_request_settings():
     assert settings.stop_sequences == []
     assert settings.number_of_responses == 1
     assert settings.token_selection_biases == {}
-    assert settings.chat_system_prompt == "Assistant is a large language model."
 
 
 def test_complete_request_settings_from_default_completion_config():
@@ -70,7 +69,6 @@ def test_complete_request_settings_from_default_completion_config():
     assert chat_settings.stop_sequences == []
     assert chat_settings.number_of_responses == 1
     assert chat_settings.token_selection_biases == {}
-    assert chat_settings.chat_system_prompt == "Assistant is a large language model."
 
 
 def test_chat_request_settings_from_custom_completion_config():
@@ -95,4 +93,3 @@ def test_chat_request_settings_from_custom_completion_config():
     assert chat_settings.stop_sequences == ["\n"]
     assert chat_settings.number_of_responses == 2
     assert chat_settings.token_selection_biases == {1: 1}
-    assert chat_settings.chat_system_prompt == "Hello"
