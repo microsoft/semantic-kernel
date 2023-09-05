@@ -21,7 +21,7 @@ using SkillDefinition;
 /// <summary>
 /// A semantic function that calls other functions
 /// </summary>
-public sealed class SKFunctionCall : ISKFunction
+public sealed class SKFunctionCall : ISKFunction, IDisposable
 {
 
     /// <inheritdoc />
@@ -84,7 +84,17 @@ public sealed class SKFunctionCall : ISKFunction
 
 
     /// <inheritdoc />
-    public FunctionView Describe() => null;
+    public FunctionView Describe()
+    {
+        return new FunctionView
+        {
+            IsSemantic = IsSemantic,
+            Name = Name,
+            SkillName = SkillName,
+            Description = Description,
+            Parameters = CallableFunctions.Select(f => new ParameterView(f.Name, f.Description)).ToList()
+        };
+    }
 
 
     /// <inheritdoc />
@@ -155,13 +165,15 @@ public sealed class SKFunctionCall : ISKFunction
     /// <summary>
     /// Dispose of resources.
     /// </summary>
-    // public void Dispose()
-    // {
-    //     if (_aiService is { IsValueCreated: true } aiService)
-    //     {
-    //         (aiService.Value as IDisposable)?.Dispose();
-    //     }
-    // }
+    public void Dispose()
+    {
+        if (_aiService is { IsValueCreated: true } aiService)
+        {
+            (aiService.Value as IDisposable)?.Dispose();
+        }
+    }
+
+
     internal SKFunctionCall(
         IPromptTemplate template,
         string skillName,
