@@ -140,8 +140,7 @@ public class StepwisePlanner : IStepwisePlanner
             return this.ParseResult(actionText);
         };
 
-        var TryGetFinalAnswer = (SystemStep step, int iterations, ref SKContext context)
-        =>
+        var TryGetFinalAnswer = (SystemStep step, int iterations, ref SKContext context) =>
         {
             // If a final answer is found, update the context to be returned
             if (!string.IsNullOrEmpty(step.FinalAnswer))
@@ -161,7 +160,7 @@ public class StepwisePlanner : IStepwisePlanner
             return false;
         };
 
-        var TryGetObservations = (SystemStep step, ref SKContext context) =>
+        var TryGetObservations = (SystemStep step) =>
         {
             // If no Action/Thought is found, return any already available Observation from parsing the response.
             // Otherwise, add a message to the chat history to guide LLM into returning the next thought|action.
@@ -292,7 +291,7 @@ public class StepwisePlanner : IStepwisePlanner
             }
 
             // If we have an observation before running the action, continue to the next iteration
-            if (TryGetObservations(nextStep, ref context))
+            if (TryGetObservations(nextStep))
             {
                 continue;
             }
