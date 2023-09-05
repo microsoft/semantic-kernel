@@ -900,7 +900,7 @@ public class RedisMemoryStoreTests
 
     private void MockSearch(string collection, ReadOnlyMemory<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
     {
-        List<Tuple<MemoryRecord, double>> embeddings = new();
+        List<(MemoryRecord, double)> embeddings = new();
 
         List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : new();
 

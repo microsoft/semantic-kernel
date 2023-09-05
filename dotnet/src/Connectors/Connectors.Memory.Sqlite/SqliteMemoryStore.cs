@@ -131,7 +131,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         }
 
         var collectionMemories = new List<MemoryRecord>();
-        List<Tuple<MemoryRecord, double>> embeddings = new();
+        List<(MemoryRecord, double)> embeddings = new();
 
         await foreach (var record in this.GetAllAsync(collectionName, cancellationToken))
         {
