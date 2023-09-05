@@ -63,10 +63,10 @@ public static class Example15_TextMemorySkill
         // store = await CreateSampleRedisMemoryStoreAsync();
 
         // Postgres Memory Store
-        // store = await CreateSamplePostgresMemoryStoreAsync();
+        // store = CreateSamplePostgresMemoryStore();
 
         // Kusto Memory Store
-        // store = await CreateSampleKustoMemoryStoreAsync();
+        // store = CreateSampleKustoMemoryStore();
 
         await RunWithStoreAsync(store, cancellationToken);
     }
