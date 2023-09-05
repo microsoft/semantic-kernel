@@ -23,7 +23,10 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
         Verify.NotNull(response);
         Verify.NotNull(choice);
 
-        this.ModelResult = new(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created)));
+        this.ModelResult = new(new ChatWithDataModelResult(response.Id, DateTimeOffset.FromUnixTimeSeconds(response.Created))
+        {
+            ToolContent = this.GetToolContent(choice)
+        });
 
         this._choice = choice;
     }
@@ -70,6 +73,14 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
     {
         return !message.EndTurn &&
             (message.Delta.Role is null || !message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+    }
+
+    private string? GetToolContent(ChatWithDataStreamingChoice choice)
+    {
+        var message = choice.Messages
+            .FirstOrDefault(message => message.Delta.Role is not null && message.Delta.Role.Equals(AuthorRole.Tool.Label, StringComparison.Ordinal));
+
+        return message?.Delta?.Content;
     }
 
     #endregion
