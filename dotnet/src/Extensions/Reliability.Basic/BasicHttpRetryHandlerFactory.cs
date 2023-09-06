@@ -8,17 +8,17 @@ using Microsoft.SemanticKernel.Http;
 namespace Microsoft.SemanticKernel.Reliability.Basic;
 
 /// <summary>
-/// Internal factory for creating <see cref="DefaultHttpRetryHandler"/> instances.
+/// Internal factory for creating <see cref="BasicHttpRetryHandlerFactory"/> instances.
 /// </summary>
 public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpRetryHandler>
 {
     /// <summary>
-    /// Gets the singleton instance of <see cref="DefaultHttpRetryHandlerFactory"/>.
+    /// Gets the singleton instance of <see cref="BasicHttpRetryHandlerFactory"/>.
     /// </summary>
     public static BasicHttpRetryHandlerFactory Instance { get; } = new BasicHttpRetryHandlerFactory();
 
     /// <summary>
-    /// Creates a new instance of <see cref="DefaultHttpRetryHandlerFactory"/> with the provided configuration.
+    /// Creates a new instance of <see cref="BasicHttpRetryHandlerFactory"/> with the provided configuration.
     /// </summary>
     /// <param name="config">Http retry configuration</param>
     internal BasicHttpRetryHandlerFactory(BasicRetryConfig? config = null)
@@ -27,7 +27,7 @@ public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpR
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="DefaultHttpRetryHandler"/> with the default configuration.
+    /// Creates a new instance of <see cref="BasicHttpRetryHandlerFactory"/> with the default configuration.
     /// </summary>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>Returns the created handler</returns>
@@ -37,7 +37,7 @@ public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpR
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="DefaultHttpRetryHandler"/> with a specified configuration.
+    /// Creates a new instance of <see cref="BasicHttpRetryHandlerFactory"/> with a specified configuration.
     /// </summary>
     /// <param name="config">Specific configuration</param>
     /// <param name="loggerFactory">Logger factory</param>
@@ -50,7 +50,7 @@ public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpR
     }
 
     /// <summary>
-    /// Default retry configuration used when creating a new instance of <see cref="DefaultHttpRetryHandler"/>.
+    /// Default retry configuration used when creating a new instance of <see cref="BasicHttpRetryHandlerFactory"/>.
     /// </summary>
     internal BasicRetryConfig Config { get; }
 }
