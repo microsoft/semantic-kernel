@@ -6,12 +6,12 @@ from logging import Logger
 from typing import List, Optional, Tuple
 
 import numpy as np
-import weaviate
-from weaviate.embedded import EmbeddedOptions
 
+import weaviate
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
+from weaviate.embedded import EmbeddedOptions
 
 SCHEMA = {
     "class": "MemoryRecord",
