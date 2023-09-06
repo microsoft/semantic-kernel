@@ -98,6 +98,40 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
+    public async Task<StreamingSKResult> StreamingInvokeAsync(SKContext context, CompleteRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    {
+        ITextCompletion? completionService = this._aiService?.Value;
+        requestSettings ??= this.RequestSettings;
+
+        Verify.NotNull(completionService);
+        Verify.NotNull(requestSettings);
+
+        try
+        {
+            string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            return new SemanticStreamingSKResult(
+                context,
+                (cancellationToken) => completionService.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken),
+                (cancellationToken) => completionService.GetRawStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken)
+            );
+        }
+        catch (HttpOperationException ex)
+        {
+            const string Message = "Something went wrong while rendering the semantic function" +
+                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}. {ResponseContent}";
+            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message, ex.ResponseContent);
+            throw;
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            const string Message = "Something went wrong while rendering the semantic function" +
+                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}";
+            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
         this._skillCollection = skills;

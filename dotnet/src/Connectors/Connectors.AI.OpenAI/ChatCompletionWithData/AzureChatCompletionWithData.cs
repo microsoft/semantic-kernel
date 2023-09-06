@@ -96,6 +96,18 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             .ToList();
     }
 
+    public Task<Stream> GetRawStreamingCompletionsAsync(
+        string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        requestSettings ??= new();
+        var chat = this.PrepareChatHistory(text, requestSettings);
+        var chatRequestSettings = this.PrepareChatRequestSettings(requestSettings);
+
+        return this.ExecuteRawChatCompletionStreamAsync(chat, chatRequestSettings, cancellationToken);
+    }
+
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
@@ -169,6 +181,17 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         {
             yield return result;
         }
+    }
+
+    private async Task<Stream> ExecuteRawChatCompletionStreamAsync(
+    ChatHistory chat,
+    ChatRequestSettings requestSettings,
+    CancellationToken cancellationToken = default)
+    {
+        using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
+        using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
+
+        return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
     }
 
     private async Task<HttpResponseMessage> SendRequestAsync(

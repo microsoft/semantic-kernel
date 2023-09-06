@@ -149,14 +149,41 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         try
         {
-            return await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
+            return await this._function!(null, settings, context, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
             const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-            this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
+            this._logger.LogError(e, Message, this._function!.Method.Name, e.Message);
             context.LastException = e;
             return context;
+        }
+    }
+
+    public async Task<StreamingSKResult> StreamingInvokeAsync(SKContext context,
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
+    {
+        var inputContext = context.Clone();
+        try
+        {
+            if (this._streamingFunction is not null)
+            {
+                return await this._streamingFunction(null, settings, context, cancellationToken).ConfigureAwait(false);
+            }
+
+            var outputContext = await this._function!(null, settings, context, cancellationToken).ConfigureAwait(false);
+
+            // Fall back to the non-streaming result
+            return new NativeStreamingSKResult(inputContext, outputContext.Result, outputContext);
+        }
+        catch (Exception e) when (!e.IsCriticalException())
+        {
+            const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
+            this._logger.LogError(e, Message, this._function!.Method.Name, e.Message);
+            context.LastException = e;
+
+            return new NativeStreamingSKResult(inputContext, string.Empty, context); ;
         }
     }
 
@@ -205,7 +232,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> _function;
+    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>>? _function;
+    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<StreamingSKResult>>? _streamingFunction;
     private readonly ILogger _logger;
 
     private struct MethodDetails
@@ -238,6 +266,28 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         this._logger = logger;
 
         this._function = delegateFunction;
+        this.Parameters = parameters;
+
+        this.Name = functionName;
+        this.SkillName = skillName;
+        this.Description = description;
+    }
+
+    internal NativeFunction(Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<StreamingSKResult>> delegateFunction,
+        IList<ParameterView> parameters,
+        string skillName,
+        string functionName,
+        string description,
+        ILogger logger)
+    {
+        Verify.NotNull(delegateFunction);
+        Verify.ValidSkillName(skillName);
+        Verify.ValidFunctionName(functionName);
+        Verify.ParametersUniqueness(parameters);
+
+        this._logger = logger;
+
+        this._streamingFunction = delegateFunction;
         this.Parameters = parameters;
 
         this.Name = functionName;

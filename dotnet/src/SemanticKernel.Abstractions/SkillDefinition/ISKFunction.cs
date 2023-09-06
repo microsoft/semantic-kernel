@@ -59,6 +59,18 @@ public interface ISKFunction
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Invoke the <see cref="ISKFunction"/>.
+    /// </summary>
+    /// <param name="context">SK context</param>
+    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <returns>A streaming result of the invocation.</returns>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    Task<StreamingSKResult> StreamingInvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Set the default skill collection to use when the function is invoked
     /// without a context or with a context that doesn't have a collection.
     /// </summary>

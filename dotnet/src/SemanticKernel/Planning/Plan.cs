@@ -342,6 +342,35 @@ public sealed class Plan : IPlan
         return context;
     }
 
+    public async Task<StreamingSKResult> StreamingInvokeAsync(SKContext context,
+        CompleteRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+    {
+        var inputContext = context.Clone();
+
+        if (this.Function is not null)
+        {
+            AddVariablesToContext(this.State, context);
+            var result = await this.Function
+                .WithInstrumentation(context.LoggerFactory)
+                .StreamingInvokeAsync(context, requestSettings, cancellationToken)
+                .ConfigureAwait(false);
+
+            var outputContext = await result.GetOutputSKContextAsync(cancellationToken).ConfigureAwait(false);
+
+            if (outputContext.ErrorOccurred)
+            {
+                return result;
+            }
+
+            context.Variables.Update(outputContext.Result);
+
+            return new PlanStreamingSKResult(inputContext, outputContext.Result, outputContext);
+        }
+
+        throw new NotImplementedException();
+    }
+
     /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {

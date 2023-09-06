@@ -74,6 +74,12 @@ public sealed class InstrumentedPlan : IPlan
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
         this._plan.SetDefaultSkillCollection(skills);
 
+    public Task<StreamingSKResult> StreamingInvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default) =>
+        this._plan.StreamingInvokeAsync(context, requestSettings, cancellationToken);
+
     #region private ================================================================================
 
     private readonly IPlan _plan;

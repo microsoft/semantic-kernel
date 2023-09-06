@@ -71,22 +71,27 @@ public sealed class InstrumentedSKFunction : ISKFunction
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
-    {
-        return await this.InvokeWithInstrumentationAsync(() =>
-            this._function.InvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
-    }
+        => await this.InvokeWithInstrumentationAsync(()
+            => this._function.InvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
+
+    public async Task<StreamingSKResult> StreamingInvokeAsync(
+        SKContext context,
+        CompleteRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default)
+        => await this.StreamingInvokeWithInstrumentationAsync(()
+            => this._function.StreamingInvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings) =>
-        this._function.SetAIConfiguration(settings);
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+        => this._function.SetAIConfiguration(settings);
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._function.SetAIService(serviceFactory);
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+        => this._function.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
-        this._function.SetDefaultSkillCollection(skills);
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+        => this._function.SetDefaultSkillCollection(skills);
 
     #region private ================================================================================
 
@@ -141,31 +146,57 @@ public sealed class InstrumentedSKFunction : ISKFunction
 
         stopwatch.Stop();
 
-        if (result.ErrorOccurred)
-        {
-            this._logger.LogWarning("{SkillName}.{FunctionName}: Function execution status: {Status}",
-                this.SkillName, this.Name, "Failed");
+        this.LogResult(stopwatch, result, nameof(this.InvokeAsync));
 
-            this._logger.LogError(result.LastException, "{SkillName}.{FunctionName}: Function execution exception details: {Message}",
-                this.SkillName, this.Name, result.LastException?.Message);
+        return result;
+    }
+
+    private async Task<StreamingSKResult> StreamingInvokeWithInstrumentationAsync(Func<Task<StreamingSKResult>> func)
+    {
+        using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
+
+        this._logger.LogInformation("{SkillName}.{FunctionName}: Streaming Function execution started.", this.SkillName, this.Name);
+
+        var stopwatch = new Stopwatch();
+
+        stopwatch.Start();
+
+        var result = await func().ConfigureAwait(false);
+
+        stopwatch.Stop();
+
+        var outputContext = await result.GetOutputSKContextAsync().ConfigureAwait(false);
+
+        this.LogResult(stopwatch, outputContext, nameof(this.StreamingInvokeAsync));
+
+        return result;
+    }
+
+    private void LogResult(Stopwatch stopwatch, SKContext outputContext, string functionType)
+    {
+        if (outputContext.ErrorOccurred)
+        {
+            this._logger.LogWarning("{SkillName}.{FunctionName}: {FunctionType} Function execution status: {Status}",
+                this.SkillName, this.Name, functionType, "Failed");
+
+            this._logger.LogError(outputContext.LastException, "{SkillName}.{FunctionName}: {FunctionType} Function execution exception details: {Message}",
+                this.SkillName, this.Name, functionType, outputContext.LastException?.Message);
 
             this._executionFailureCounter.Add(1);
         }
         else
         {
-            this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution status: {Status}",
-                this.SkillName, this.Name, "Success");
+            this._logger.LogInformation("{SkillName}.{FunctionName}: {FunctionType} Function execution status: {Status}",
+                this.SkillName, this.Name, functionType, "Success");
 
-            this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution finished in {ExecutionTime}ms",
-                this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
+            this._logger.LogInformation("{SkillName}.{FunctionName}: {FunctionType} Function execution finished in {ExecutionTime}ms",
+                this.SkillName, this.Name, functionType, stopwatch.ElapsedMilliseconds);
 
             this._executionSuccessCounter.Add(1);
         }
 
         this._executionTotalCounter.Add(1);
         this._executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
-
-        return result;
     }
 
     #endregion
