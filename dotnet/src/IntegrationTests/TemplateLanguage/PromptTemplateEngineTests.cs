@@ -133,7 +133,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     }
 
     [Fact]
-    public async Task ItAllowsCanHandleNamedArgsAsync()
+    public async Task ItHandlesNamedArgsAsync()
     {
         // Arrange
         string template = "Output: {{my.sayAge name=\"Mario\" birthdate=$birthdate exclamation='Wow, that\\'s surprising'}}";
