@@ -32,8 +32,6 @@ public sealed class KernelBuilder
     private static bool _promptTemplateEngineInitialized = false;
     private static Type? _promptTemplateEngineType = null;
 
-    public IDelegatingHandlerFactory HttpHandlerFactory => this._httpHandlerFactory;
-
     /// <summary>
     /// Create a new kernel instance
     /// </summary>
@@ -129,6 +127,18 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
+    /// Add memory storage factory to the kernel.
+    /// </summary>
+    /// <param name="factory">The storage factory.</param>
+    /// <returns>Updated kernel builder including the memory storage.</returns>
+    public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, IDelegatingHandlerFactory, TStore> factory) where TStore : IMemoryStore
+    {
+        Verify.NotNull(factory);
+        this._memoryStorageFactory = () => factory(this._loggerFactory, this._httpHandlerFactory);
+        return this;
+    }
+
+    /// <summary>
     /// Add prompt template engine to the kernel to be built.
     /// </summary>
     /// <param name="promptTemplateEngine">Prompt template engine to add.</param>
@@ -174,6 +184,16 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
+    /// Adds a <typeparamref name="TService"/> factory method to the services collection
+    /// </summary>
+    /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
+    public KernelBuilder WithDefaultAIService<TService>(Func<ILoggerFactory, TService> factory) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(() => factory(this._loggerFactory));
+        return this;
+    }
+
+    /// <summary>
     /// Adds a <typeparamref name="TService"/> instance to the services collection
     /// </summary>
     /// <param name="serviceId">The service ID</param>
@@ -191,10 +211,15 @@ public sealed class KernelBuilder
     /// <summary>
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
+    /// <param name="serviceId">The service ID</param>
     /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
-    public KernelBuilder WithDefaultAIService<TService>(Func<ILoggerFactory, TService> factory) where TService : IAIService
+    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
+    public KernelBuilder WithAIService<TService>(
+        string? serviceId,
+        Func<ILoggerFactory, TService> factory,
+        bool setAsDefault = false) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(() => factory(this._loggerFactory));
+        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory), setAsDefault);
         return this;
     }
 
@@ -206,10 +231,10 @@ public sealed class KernelBuilder
     /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
     public KernelBuilder WithAIService<TService>(
         string? serviceId,
-        Func<ILoggerFactory, TService> factory,
+        Func<ILoggerFactory, IDelegatingHandlerFactory, TService> factory,
         bool setAsDefault = false) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory), setAsDefault);
+        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._httpHandlerFactory), setAsDefault);
         return this;
     }
 

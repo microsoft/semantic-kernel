@@ -36,11 +36,11 @@ public static class HuggingFaceKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new HuggingFaceTextCompletion(
                 model,
                 apiKey,
-                HttpClientProvider.GetHttpClient(builder.HttpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 endpoint),
                 setAsDefault);
 
@@ -62,10 +62,10 @@ public static class HuggingFaceKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new HuggingFaceTextEmbeddingGeneration(
                 model,
-                HttpClientProvider.GetHttpClient(builder.HttpHandlerFactory, httpClient: null, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient: null, loggerFactory),
                 endpoint),
                 setAsDefault);
 
@@ -89,10 +89,10 @@ public static class HuggingFaceKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new HuggingFaceTextEmbeddingGeneration(
                 model,
-                HttpClientProvider.GetHttpClient(builder.HttpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 endpoint),
                 setAsDefault);
 

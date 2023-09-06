@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Http;
@@ -69,7 +69,7 @@ public static class Example42_KernelBuilder
         // to enable custom configurations, we highly recommend using KernelBuilder instead, to ensure
         // a correct dependency injection.
 
-        // Manually setup all the dependencies used internally by the kernel
+        // Manually setup all the dependencies to be used by the kernel
         var loggerFactory = NullLoggerFactory.Instance;
         var memoryStorage = new VolatileMemoryStore();
         var textEmbeddingGenerator = new AzureTextEmbeddingGeneration(
@@ -80,11 +80,14 @@ public static class Example42_KernelBuilder
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var skills = new SkillCollection();
         var templateEngine = new PromptTemplateEngine(loggerFactory);
-        var httpHandlerFactory = NullHttpHandlerFactory.Instance;
+
+        var httpHandlerFactory = BasicHttpRetryHandlerFactory.Instance;
+        //var httpHandlerFactory = new PollyHttpRetryHandlerFactory( your policy );
+
         using var httpHandler = httpHandlerFactory.Create(loggerFactory);
         using var httpClient = new HttpClient(httpHandler);
         var aiServices = new AIServiceCollection();
-        ITextCompletion Factory() => new AzureTextCompletion(
+        ITextCompletion Factory() => new AzureChatCompletion(
             modelId: azureOpenAIChatCompletionDeployment,
             endpoint: azureOpenAIEndpoint,
             apiKey: azureOpenAIKey,

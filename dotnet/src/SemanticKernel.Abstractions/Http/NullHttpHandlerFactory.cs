@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Http;
 
+/// <summary>
+/// Implementation of <see cref="IDelegatingHandlerFactory"/> that creates <see cref="NullHttpHandler"/> instances.
+/// </summary>
 public sealed class NullHttpHandlerFactory : IDelegatingHandlerFactory
 {
     public static NullHttpHandlerFactory Instance => new();

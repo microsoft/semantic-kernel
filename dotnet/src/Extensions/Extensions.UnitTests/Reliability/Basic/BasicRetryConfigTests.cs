@@ -28,14 +28,15 @@ public class BasicRetryConfigTests
     {
         // Arrange
         var builder = new KernelBuilder();
-        var basicRetryConfig = new BasicRetryConfig() { MaxRetryCount = 1 };
-
-        // Act
+        var basicRetryConfig = new BasicRetryConfig() { MaxRetryCount = 3 };
         builder.WithRetryBasic(basicRetryConfig);
 
+        // Act
+        var kernel = builder.Build();
+
         // Assert
-        Assert.IsType<BasicHttpRetryHandlerFactory>(builder.HttpHandlerFactory);
-        var httpHandlerFactory = builder.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
+        Assert.IsType<BasicHttpRetryHandlerFactory>(kernel.HttpHandlerFactory);
+        var httpHandlerFactory = kernel.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
         Assert.NotNull(httpHandlerFactory);
         Assert.Equal(basicRetryConfig, httpHandlerFactory.Config);
     }
@@ -46,13 +47,14 @@ public class BasicRetryConfigTests
         // Arrange
         var retryConfig = new BasicRetryConfig();
         var builder = new KernelBuilder();
-
-        // Act
         builder.WithRetryBasic(retryConfig);
 
+        // Act
+        var kernel = builder.Build();
+
         // Assert
-        Assert.IsType<BasicHttpRetryHandlerFactory>(builder.HttpHandlerFactory);
-        var httpHandlerFactory = builder.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
+        Assert.IsType<BasicHttpRetryHandlerFactory>(kernel.HttpHandlerFactory);
+        var httpHandlerFactory = kernel.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
         Assert.NotNull(httpHandlerFactory);
         Assert.Equal(retryConfig.MaxRetryCount, httpHandlerFactory.Config.MaxRetryCount);
         Assert.Equal(retryConfig.MaxRetryDelay, httpHandlerFactory.Config.MaxRetryDelay);

@@ -21,10 +21,10 @@ public static class WeaviateKernelBuilderExtensions
     /// <returns>Self instance</returns>
     public static KernelBuilder WithWeaviateMemoryStore(this KernelBuilder builder, string endpoint, string? apiKey)
     {
-        builder.WithMemoryStorage((loggerFactory) =>
+        builder.WithMemoryStorage((loggerFactory, httpHandlerFactory) =>
         {
             return new WeaviateMemoryStore(
-                HttpClientProvider.GetHttpClient(builder.HttpHandlerFactory, null, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, null, loggerFactory),
                 apiKey,
                 endpoint,
                 loggerFactory);
@@ -46,10 +46,10 @@ public static class WeaviateKernelBuilderExtensions
         string? endpoint = null,
         string? apiKey = null)
     {
-        builder.WithMemoryStorage((loggerFactory) =>
+        builder.WithMemoryStorage((loggerFactory, httpHandlerFactory) =>
         {
             return new WeaviateMemoryStore(
-                HttpClientProvider.GetHttpClient(builder.HttpHandlerFactory, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 apiKey,
                 endpoint,
                 loggerFactory);
