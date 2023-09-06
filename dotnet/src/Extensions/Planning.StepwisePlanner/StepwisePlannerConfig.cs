@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Planning.Stepwise;
 public sealed class StepwisePlannerConfig
 {
     #region Use these to configure which functions to include/exclude
+
     /// <summary>
     /// A list of skills to exclude from the plan creation request.
     /// </summary>
@@ -30,9 +31,11 @@ public sealed class StepwisePlannerConfig
     /// A list of functions to include in the plan creation request.
     /// </summary>
     public HashSet<string> IncludedFunctions { get; } = new();
+
     #endregion Use these to configure which functions to include/exclude
 
     #region Use these to completely override the functions available for planning
+
     /// <summary>
     /// Optional callback to get the available functions for planning.
     /// </summary>
@@ -42,9 +45,11 @@ public sealed class StepwisePlannerConfig
     /// Optional callback to get a function by name.
     /// </summary>
     public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+
     #endregion Use these to completely override the functions available for planning
 
     #region Execution configuration
+
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
     /// </summary>
@@ -76,5 +81,6 @@ public sealed class StepwisePlannerConfig
     public string Suffix { get; set; } = @"Let's break down the problem step by step and think about the best approach. Label steps as they are taken.
 
 Continue the thought process!";
+
     #endregion Execution configuration
 }

@@ -121,9 +121,9 @@ public static class Example51_StepwisePlanner
         // does not *use* this function. It seems to help the planner find a better path to the answer.
         kernel.CreateSemanticFunction(
             "Generate an answer for the following question: {{$input}}",
-                functionName: "GetAnswerForQuestion",
-                skillName: "AnswerBot",
-                description: "Given a question, get an answer and return it as the result of the function");
+            functionName: "GetAnswerForQuestion",
+            skillName: "AnswerBot",
+            description: "Given a question, get an answer and return it as the result of the function");
 
         Console.WriteLine("*****************************************************");
         Stopwatch sw = new();
@@ -200,6 +200,7 @@ public static class Example51_StepwisePlanner
     private static IKernel GetKernel(ref ExecutionResult result, bool useChat = false, string? model = null)
     {
         var builder = new KernelBuilder();
+        var maxTokens = 0;
         if (useChat)
         {
             builder.WithAzureChatCompletionService(
@@ -209,7 +210,7 @@ public static class Example51_StepwisePlanner
                 alsoAsTextCompletion: true,
                 setAsDefault: true);
 
-            Console.WriteLine($"Model: {model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName} ({ChatMaxTokens ?? (new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig()).MaxTokens})");
+            maxTokens = ChatMaxTokens ?? (new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig()).MaxTokens;
             result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
         }
         else
@@ -219,9 +220,11 @@ public static class Example51_StepwisePlanner
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
 
-            Console.WriteLine($"Model: {model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName} ({TextMaxTokens ?? (new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig()).MaxTokens})");
+            maxTokens = TextMaxTokens ?? (new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlannerConfig()).MaxTokens;
             result.model = model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName;
         }
+
+        Console.WriteLine($"Model: {result.model} ({maxTokens})");
 
         var kernel = builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)

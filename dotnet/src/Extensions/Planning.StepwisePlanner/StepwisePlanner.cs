@@ -323,6 +323,7 @@ public class StepwisePlanner : IStepwisePlanner
     }
 
     #region setup helpers
+
     private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, IAIService aiService, SKContext context)
     {
         string userManual = await this.GetUserManualAsync(context).ConfigureAwait(false);
@@ -374,9 +375,11 @@ public class StepwisePlanner : IStepwisePlanner
     {
         return this._promptRenderer.RenderAsync(this._promptTemplate, context);
     }
+
     #endregion setup helpers
 
     #region execution helpers
+
     private Task<string> GetNextStepCompletion(List<SystemStep> stepsTaken, ChatHistory chatHistory, IAIService aiService, int startingMessageCount, CancellationToken token)
     {
         var tokenCount = this.GetChatHistoryTokens(chatHistory);
@@ -486,7 +489,6 @@ public class StepwisePlanner : IStepwisePlanner
         }
         else
         {
-            // result.Observation = "Could not parse response. Unable to find thought or action. Please try again.";
             return result;
         }
 
@@ -619,6 +621,7 @@ public class StepwisePlanner : IStepwisePlanner
 
         return actionContext;
     }
+
     #endregion execution helpers
 
     private static PromptTemplateConfig LoadPromptConfigFromResource()
@@ -691,6 +694,7 @@ public class StepwisePlanner : IStepwisePlanner
     }
 
     #region private
+
     /// <summary>
     /// The configuration for the StepwisePlanner
     /// </summary>
@@ -760,5 +764,6 @@ public class StepwisePlanner : IStepwisePlanner
     /// The regex for parsing the final answer response
     /// </summary>
     private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL[_\s\-]?ANSWER\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
     #endregion private
 }
