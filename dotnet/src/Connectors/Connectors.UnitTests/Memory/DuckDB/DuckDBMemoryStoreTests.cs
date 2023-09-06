@@ -182,7 +182,7 @@ public class DuckDBMemoryStoreTests
         Assert.NotNull(actualDefault);
         Assert.NotNull(actualWithEmbedding);
         Assert.True(actualDefault.Embedding.IsEmpty);
-        Assert.False(actualWithEmbedding.Embedding.IsEmpty);
+        Assert.Equal(actualWithEmbedding.Embedding.ToArray(), testRecord.Embedding.ToArray());
     }
 
     [Fact]
