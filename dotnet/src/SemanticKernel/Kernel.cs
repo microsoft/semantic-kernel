@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -32,9 +33,6 @@ namespace Microsoft.SemanticKernel;
 public sealed class Kernel : IKernel, IDisposable
 {
     /// <inheritdoc/>
-    public KernelConfig Config { get; }
-
-    /// <inheritdoc/>
     public ILoggerFactory LoggerFactory { get; }
 
     /// <inheritdoc/>
@@ -51,25 +49,28 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     public static KernelBuilder Builder => new();
 
+    /// <inheritdoc/>
+    public IDelegatingHandlerFactory HttpHandlerFactory => this._httpHandlerFactory;
+
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="skillCollection"></param>
-    /// <param name="aiServiceProvider"></param>
-    /// <param name="promptTemplateEngine"></param>
-    /// <param name="memory"></param>
-    /// <param name="config"></param>
+    /// <param name="skillCollection">Skill collection</param>
+    /// <param name="aiServiceProvider">AI Service Provider</param>
+    /// <param name="promptTemplateEngine">Prompt template engine</param>
+    /// <param name="memory">Semantic text Memory</param>
+    /// <param name="httpHandlerFactory"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
-        KernelConfig config,
+        IDelegatingHandlerFactory httpHandlerFactory,
         ILoggerFactory loggerFactory)
     {
         this.LoggerFactory = loggerFactory;
-        this.Config = config;
+        this._httpHandlerFactory = httpHandlerFactory;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
@@ -261,6 +262,7 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly ILogger _logger;
+    private readonly IDelegatingHandlerFactory _httpHandlerFactory;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
