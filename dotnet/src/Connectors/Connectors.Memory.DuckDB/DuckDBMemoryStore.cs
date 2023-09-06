@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
@@ -150,7 +149,8 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
             yield break;
         }
 
-        TopNCollection<MemoryRecord> embeddings = new(limit);
+        var collectionMemories = new List<MemoryRecord>();
+        List<(MemoryRecord Record, double Score)> embeddings = new();
 
         await foreach (var dbEntry in this._dbConnector.GetNearestMatchesAsync(this._dbConnection, collectionName, embedding.ToArray(), limit, minRelevanceScore, cancellationToken))
         {
@@ -162,11 +162,9 @@ public sealed class DuckDBMemoryStore : IMemoryStore, IDisposable
             embeddings.Add(new(entry, dbEntry.Score));
         }
 
-        embeddings.SortByScore();
-
-        foreach (var item in embeddings)
+        foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
         {
-            yield return (item.Value, item.Score.Value);
+            yield return (item.Record, item.Score);
         }
     }
 
