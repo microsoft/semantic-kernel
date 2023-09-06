@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// Structure for storing data which can be scored.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
+internal readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ScoredValue{T}"/> struct.
@@ -29,7 +29,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     /// <summary>
     /// Gets the score of the item.
     /// </summary>
-    public Score Score { get; }
+    public double Score { get; }
 
     /// <summary>
     /// Compares the current instance with another instance of <see cref="ScoredValue{T}"/>.
@@ -90,7 +90,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     /// <returns>True if the instances are equal, false otherwise.</returns>
     public bool Equals(ScoredValue<T> other)
     {
-        return EqualityComparer<T>.Default.Equals(other.Value) &&
+        return EqualityComparer<T>.Default.Equals(this.Value, other.Value) &&
                 this.Score.Equals(other.Score);
     }
 
@@ -153,6 +153,6 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     /// </summary>
     internal static ScoredValue<T> Min()
     {
-        return new ScoredValue<T>(default!, Score.Min);
+        return new ScoredValue<T>(default!, double.MinValue);
     }
 }

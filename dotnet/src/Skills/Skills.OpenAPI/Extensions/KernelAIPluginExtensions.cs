@@ -46,7 +46,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromFilePath(
@@ -85,7 +85,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromUri(
@@ -124,7 +124,7 @@ public static class KernelAIPluginExtensions
         Verify.ValidSkillName(skillName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-        var httpClient = HttpClientProvider.GetHttpClient(kernel.Config, executionParameters?.HttpClient, kernel.LoggerFactory);
+        var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
         var pluginContents = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);

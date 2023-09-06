@@ -226,7 +226,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
-        var records = keys.Select(x => new List<AzureCognitiveSearchMemoryRecord> { new(x) });
+        var records = keys.Select(x => new AzureCognitiveSearchMemoryRecord(x));
 
         var client = this.GetSearchClient(normalizedIndexName);
         try
