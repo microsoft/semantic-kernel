@@ -253,16 +253,7 @@ public sealed class Plan : IPlan
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Skills, context.LoggerFactory);
 
-            SKContext result;
-
-            try
-            {
-                result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                throw new SKException($"Error occurred while running plan step: {ex.Message}", ex);
-            }
+            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var resultValue = result.Result.Trim();
 

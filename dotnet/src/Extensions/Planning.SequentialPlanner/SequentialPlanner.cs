@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -63,16 +62,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         this._context.Variables.Update(goal);
 
-        SKContext planResult;
-
-        try
-        {
-            planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            throw new SKException($"Error creating plan for goal: {ex.Message}", ex);
-        }
+        var planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         string planResultString = planResult.Result.Trim();
 

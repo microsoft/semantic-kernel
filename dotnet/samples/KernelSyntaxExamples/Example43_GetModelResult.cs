@@ -15,7 +15,6 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 public static class Example43_GetModelResult
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design")]
     public static async Task RunAsync()
     {
         Console.WriteLine("======== Inline Function Definition + Result ========");
@@ -62,14 +61,16 @@ public static class Example43_GetModelResult
             .Build();
         var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            var failedContext = await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
+            await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
         }
         catch (Exception ex)
         {
             Console.WriteLine(OutputExceptionDetail(ex.InnerException));
         }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         string OutputExceptionDetail(Exception? exception)
         {

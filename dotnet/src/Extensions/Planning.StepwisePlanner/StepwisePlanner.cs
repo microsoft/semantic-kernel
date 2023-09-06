@@ -111,18 +111,10 @@ public class StepwisePlanner : IStepwisePlanner
 
                 context.Variables.Set("agentScratchPad", scratchPad);
 
-                SKContext llmResponse;
-
-                try
-                {
-                    llmResponse = await this._systemStepFunction.InvokeAsync(context).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    throw new SKException($"Error occurred while executing stepwise plan: {ex.Message}", ex);
-                }
+                var llmResponse = await this._systemStepFunction.InvokeAsync(context).ConfigureAwait(false);
 
                 string actionText = llmResponse.Result.Trim();
+
                 this._logger?.LogTrace("Response: {ActionText}", actionText);
 
                 var nextStep = this.ParseResult(actionText);
