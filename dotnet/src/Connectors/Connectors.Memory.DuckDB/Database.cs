@@ -79,7 +79,7 @@ internal sealed class Database
         return dataArrayString;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method sserializing array of float and numbers")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method serializing array of float and numbers")]
     public async Task UpdateOrInsertAsync(DuckDBConnection conn,
         string collection, string key, string? metadata, float[]? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
