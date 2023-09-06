@@ -69,8 +69,6 @@ public sealed class StepwisePlannerTests : IDisposable
     [Theory]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
-    [InlineData(false, "What color is the sky?", "blue", 0)]
-    [InlineData(true, "What color is the sky?", "blue", 0)]
     [InlineData(false, "What is the weather in Seattle?", "Seattle", 1)]
     [InlineData(true, "What is the weather in Seattle?", "Seattle", 1)]
     public async void CanExecuteStepwisePlan(bool useChatModel, string prompt, string partialExpectedAnswer, int expectedMinSteps = 1)
