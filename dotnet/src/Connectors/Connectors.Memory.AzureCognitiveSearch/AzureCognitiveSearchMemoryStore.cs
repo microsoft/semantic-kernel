@@ -182,11 +182,15 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         SearchQueryVector vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Fields = AzureCognitiveSearchMemoryRecord.EmbeddingField,
+            Fields = { AzureCognitiveSearchMemoryRecord.EmbeddingField },
             Value = MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray(),
         };
 
-        SearchOptions options = new() { Vector = vectorQuery };
+        SearchOptions options = new()
+        {
+            Vectors = { vectorQuery }
+        };
+
         Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
         try
         {
