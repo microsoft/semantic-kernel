@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import os
+import platform
 from datetime import datetime
 
 import numpy as np
@@ -20,6 +22,11 @@ except ImportError:
     redis_installed = False
 
 pytestmark = pytest.mark.skipif(not redis_installed, reason="Redis is not installed")
+
+pytestmark = pytest.mark.skipif(
+    platform.system() != "Linux" and "Python_Integration_Tests" in os.environ,
+    reason="local redis docker container is not available on all non-Linux platforms",
+)
 
 
 @pytest.fixture(scope="session")
