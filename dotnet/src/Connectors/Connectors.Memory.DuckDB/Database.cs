@@ -117,7 +117,7 @@ internal sealed class Database
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method sserializing array of float and numbers")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Internal method serializing array of float and numbers")]
     public async IAsyncEnumerable<DatabaseEntry> GetNearestMatchesAsync(
         DuckDBConnection conn,
         string collectionName,
