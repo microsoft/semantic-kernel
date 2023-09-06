@@ -28,7 +28,7 @@ public abstract class ClientBase
     // Prevent external inheritors
     private protected ClientBase(ILoggerFactory? loggerFactory = null)
     {
-        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
+        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
     /// <summary>

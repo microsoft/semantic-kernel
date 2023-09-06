@@ -36,7 +36,7 @@ public class QdrantMemoryStore : IMemoryStore
     public QdrantMemoryStore(string endpoint, int vectorSize, ILoggerFactory? loggerFactory = null)
     {
         this._qdrantClient = new QdrantVectorDbClient(endpoint, vectorSize, loggerFactory);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantMemoryStore)) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public class QdrantMemoryStore : IMemoryStore
     public QdrantMemoryStore(HttpClient httpClient, int vectorSize, string? endpoint = null, ILoggerFactory? loggerFactory = null)
     {
         this._qdrantClient = new QdrantVectorDbClient(httpClient, vectorSize, endpoint, loggerFactory);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantMemoryStore)) : NullLogger.Instance;
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class QdrantMemoryStore : IMemoryStore
     public QdrantMemoryStore(IQdrantVectorDbClient client, ILoggerFactory? loggerFactory = null)
     {
         this._qdrantClient = client;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(QdrantMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(QdrantMemoryStore)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -110,9 +110,10 @@ public class QdrantMemoryStore : IMemoryStore
                 new[] { vectorData },
                 cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException("Failed to upsert vectors", ex);
+            this._logger.LogError(ex, "Failed to upsert vectors: {Message}", ex.Message);
+            throw;
         }
 
         return vectorData.PointId;
@@ -132,11 +133,11 @@ public class QdrantMemoryStore : IMemoryStore
                 vectorData,
                 cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException("Failed to upsert vectors", ex);
+            this._logger.LogError(ex, "Failed to upsert vectors: {Message}", ex.Message);
+            throw;
         }
-
         foreach (var v in vectorData)
         {
             yield return v.PointId;
@@ -156,9 +157,10 @@ public class QdrantMemoryStore : IMemoryStore
                 embedding: vectorData.Embedding,
                 key: vectorData.PointId);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException("Failed to get vector data", ex);
+            this._logger.LogError(ex, "Failed to get vector data: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -201,9 +203,10 @@ public class QdrantMemoryStore : IMemoryStore
                 json: vectorData.GetSerializedPayload(),
                 embedding: vectorData.Embedding);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException("Failed to get vector data", ex);
+            this._logger.LogError(ex, "Failed to get vector data: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -240,9 +243,10 @@ public class QdrantMemoryStore : IMemoryStore
         {
             await this._qdrantClient.DeleteVectorByPayloadIdAsync(collectionName, key, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException("Failed to remove vector data", ex);
+            this._logger.LogError(ex, "Failed to remove vector data: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -265,9 +269,10 @@ public class QdrantMemoryStore : IMemoryStore
         {
             await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, new[] { pointId }, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException("Failed to remove vector data", ex);
+            this._logger.LogError(ex, "Failed to remove vector data: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -284,9 +289,10 @@ public class QdrantMemoryStore : IMemoryStore
         {
             await this._qdrantClient.DeleteVectorsByIdAsync(collectionName, pointIds, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException("Failed to remove vector data", ex);
+            this._logger.LogError(ex, "Failed to remove vector data: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -326,9 +332,9 @@ public class QdrantMemoryStore : IMemoryStore
                     result = null;
                 }
             }
-            catch (HttpRequestException ex) when (ex.Message.Contains("404"))
+            catch (HttpOperationException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                this._logger.LogWarning("NotFound when calling {0}::FindNearestInCollectionAsync - the collection '{1}' may not exist yet",
+                this._logger.LogWarning("NotFound when calling {QdrantMemoryStore}::FindNearestInCollectionAsync - the collection '{Name}' may not exist yet",
                     nameof(QdrantMemoryStore), collectionName);
                 hasResult = false;
             }
