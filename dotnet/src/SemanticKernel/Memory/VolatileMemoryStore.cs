@@ -174,7 +174,7 @@ public class VolatileMemoryStore : IMemoryStore
 
         embeddings.SortByScore();
 
-        return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
+        return embeddings.Select(x => (x.Value, x.Score)).ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>

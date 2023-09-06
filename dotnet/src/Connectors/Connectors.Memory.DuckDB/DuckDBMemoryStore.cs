@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using DuckDB.NET.Data;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Collections;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
@@ -153,7 +152,7 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
         }
 
         var collectionMemories = new List<MemoryRecord>();
-        TopNCollection<MemoryRecord> embeddings = new(limit);
+        List<(MemoryRecord Record, double Score)> embeddings = new();
 
         await foreach (var record in this.GetAllAsync(collectionName, cancellationToken))
         {
@@ -170,11 +169,9 @@ public class DuckDBMemoryStore : IMemoryStore, IDisposable
             }
         }
 
-        embeddings.SortByScore();
-
-        foreach (var item in embeddings)
+        foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
         {
-            yield return (item.Value, item.Score.Value);
+            yield return (item.Record, item.Score);
         }
     }
 
