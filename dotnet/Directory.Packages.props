@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.7" />
     <PackageVersion Include="Azure.Identity" Version="1.10.0" />
-    <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.3" />
+    <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.4" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.3" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
