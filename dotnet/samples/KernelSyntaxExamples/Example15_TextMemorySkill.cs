@@ -146,7 +146,7 @@ public static class Example15_TextMemorySkill
             .WithOpenAITextEmbeddingGenerationService(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        // Create an embedding generator to use for semantic memory. 
+        // Create an embedding generator to use for semantic memory.
         var embeddingGenerator = new OpenAITextEmbeddingGeneration(TestConfiguration.OpenAI.EmbeddingModelId, TestConfiguration.OpenAI.ApiKey);
 
         // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
@@ -155,7 +155,7 @@ public static class Example15_TextMemorySkill
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 1: Store and retrieve memories using the ISemanticTextMemory (textMemory) object.
-        // 
+        //
         // This is a simple way to store memories from a code perspective, without using the Kernel.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         Console.WriteLine("== PART 1a: Saving Memories through the ISemanticTextMemory object ==");
@@ -175,12 +175,12 @@ public static class Example15_TextMemorySkill
         // Retrieve a memory
         Console.WriteLine("== PART 1b: Retrieving Memories through the ISemanticTextMemory object ==");
         MemoryQueryResult? lookup = await textMemory.GetAsync(MemoryCollectionName, "info1", cancellationToken: cancellationToken);
-        Console.WriteLine("Memory with key 'info3':" + lookup?.Metadata.Text ?? "ERROR: memory not found");
+        Console.WriteLine("Memory with key 'info1':" + lookup?.Metadata.Text ?? "ERROR: memory not found");
         Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 2: Create TextMemorySkill, store and retrieve memories through the Kernel.
-        // 
+        //
         // This enables semantic functions and the AI (via Planners) to access memories
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -212,8 +212,8 @@ public static class Example15_TextMemorySkill
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 3: Recall similar ideas with semantic search
-        // 
-        // Uses AI Embeddings for fuzzy lookup of memories based on intent, rather than a specific key. 
+        //
+        // Uses AI Embeddings for fuzzy lookup of memories based on intent, rather than a specific key.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         Console.WriteLine("== PART 3: Recall (similarity search) with AI Embeddings ==");
@@ -260,7 +260,7 @@ public static class Example15_TextMemorySkill
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 3: TextMemorySkill Recall in a Semantic Function
-        // 
+        //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
         // the text completion model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -300,7 +300,7 @@ Answer:
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 5: Cleanup, deleting database collection
-        // 
+        //
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         Console.WriteLine("== PART 5: Cleanup, deleting database collection ==");

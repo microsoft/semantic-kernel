@@ -68,8 +68,10 @@ public sealed class StepwisePlannerTests : IDisposable
 
     [Theory]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
-    // [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2")] // Chat tests take long
-    public async void CanExecuteStepwisePlan(bool useChatModel, string prompt, string partialExpectedAnswer)
+    [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
+    [InlineData(false, "What is the weather in Seattle?", "Seattle", 1)]
+    [InlineData(true, "What is the weather in Seattle?", "Seattle", 1)]
+    public async void CanExecuteStepwisePlan(bool useChatModel, string prompt, string partialExpectedAnswer, int expectedMinSteps = 1)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -91,7 +93,7 @@ public sealed class StepwisePlannerTests : IDisposable
         Assert.True(result.Variables.TryGetValue("stepsTaken", out string? stepsTakenString));
         var stepsTaken = JsonSerializer.Deserialize<List<SystemStep>>(stepsTakenString!);
         Assert.NotNull(stepsTaken);
-        Assert.True(stepsTaken.Count >= 3 && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least 3 steps and at most 10 steps to be taken.");
+        Assert.True(stepsTaken.Count >= expectedMinSteps && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least {expectedMinSteps} steps and at most 10 steps to be taken.");
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
