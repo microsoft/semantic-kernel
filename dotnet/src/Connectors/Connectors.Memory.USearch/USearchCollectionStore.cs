@@ -42,24 +42,6 @@ public record class USearchCollectionStorage : IUSearchCollectionStorage
         );
     }
 
-    public MemoryRecord? Get(ulong usearchKey)
-    {
-        if (!this._usearchRecords.TryGetValue(usearchKey, out MemoryRecord memoryRecord))
-        {
-            return null;
-        }
-        return memoryRecord;
-    }
-
-    public MemoryRecord? Get(string key)
-    {
-        if (!this._toUSearchKeys.TryGetValue(key, out ulong usearchKey))
-        {
-            return null;
-        }
-        return this.Get(usearchKey);
-    }
-
     public bool TryGetRecord(string key, out MemoryRecord? memoryRecord, bool withEmbedding)
     {
         if (this._toUSearchKeys.TryGetValue(key, out var usearchKey)
