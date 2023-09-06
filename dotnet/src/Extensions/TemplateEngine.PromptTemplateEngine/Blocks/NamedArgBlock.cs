@@ -23,29 +23,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     internal string Name { get; } = string.Empty;
 
     /// <summary>
-    /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
-    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the context variables passed in.
-    /// </summary>
-    /// <param name="variables">Variables to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
-    /// <returns></returns>
-    internal string GetValue(ContextVariables? variables)
-    {
-        var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
-        if (valueIsValidValBlock)
-        {
-            return this._valBlock!.Render(variables);
-        }
-
-        var valueIsValidVarBlock = this._argValueAsVarBlock != null && this._argValueAsVarBlock.IsValid(out var errorMessage2);
-        if (valueIsValidVarBlock)
-        {
-            return this._argValueAsVarBlock!.Render(variables);
-        }
-
-        return string.Empty;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="NamedArgBlock"/> class.
     /// </summary>
     /// <param name="text">Raw text parsed from the prompt template.</param>
@@ -78,8 +55,29 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         {
             this._valBlock = new ValBlock(argValue);
         }
+    }
 
-        return;
+    /// <summary>
+    /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
+    /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the context variables passed in.
+    /// </summary>
+    /// <param name="variables">Variables to use for rendering the named argument value when the value is a <see cref="VarBlock"/>.</param>
+    /// <returns></returns>
+    internal string GetValue(ContextVariables? variables)
+    {
+        var valueIsValidValBlock = this._valBlock != null && this._valBlock.IsValid(out var errorMessage);
+        if (valueIsValidValBlock)
+        {
+            return this._valBlock!.Render(variables);
+        }
+
+        var valueIsValidVarBlock = this._argValueAsVarBlock != null && this._argValueAsVarBlock.IsValid(out var errorMessage2);
+        if (valueIsValidVarBlock)
+        {
+            return this._argValueAsVarBlock!.Render(variables);
+        }
+
+        return string.Empty;
     }
 
     /// <summary>
