@@ -3,7 +3,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
@@ -41,8 +40,6 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         var variableName = "word2";
         var variableValue = " Potter";
-        var variables = new ContextVariables();
-        variables.Set(variableName, variableValue);
         var context = kernel.CreateNewContext();
         context.Variables[variableName] = variableValue;
 
@@ -66,7 +63,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
-        var result = await kernel.RunAsync(variables, haiku);
+        var result = await kernel.RunAsync(context.Variables, haiku);
         Console.WriteLine(result);
 
         /* OUTPUT:
