@@ -37,7 +37,11 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     }
 
     /// <inheritdoc/>
-    public async Task<IList<RestApiOperation>> ParseAsync(Stream stream, bool ignoreNonCompliantErrors = false, CancellationToken cancellationToken = default)
+    public async Task<IList<RestApiOperation>> ParseAsync(
+        Stream stream,
+        bool ignoreNonCompliantErrors = false,
+        Uri? documentUri = null,
+        CancellationToken cancellationToken = default)
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
@@ -47,7 +51,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
 
         this.AssertReadingSuccessful(result, ignoreNonCompliantErrors);
 
-        return ExtractRestApiOperations(result.OpenApiDocument);
+        return ExtractRestApiOperations(result.OpenApiDocument, documentUri);
     }
 
     #region private
@@ -147,12 +151,13 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     /// Parses an OpenApi document and extracts REST API operations.
     /// </summary>
     /// <param name="document">The OpenApi document.</param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <returns>List of Rest operations.</returns>
-    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document)
+    private static List<RestApiOperation> ExtractRestApiOperations(OpenApiDocument document, Uri? documentUri = null)
     {
         var result = new List<RestApiOperation>();
 
-        var serverUrl = document.Servers.FirstOrDefault()?.Url;
+        var serverUrl = GetServerUrl(document, documentUri);
 
         foreach (var pathPair in document.Paths)
         {
@@ -400,6 +405,25 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 throw new SKException(message);
             }
         }
+    }
+
+    /// <summary>
+    /// Returns server URL property.
+    /// </summary>
+    /// <param name="document">The OpenApi document.</param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
+    private static string? GetServerUrl(OpenApiDocument document, Uri? documentUri)
+    {
+        const string SchemeAuthorityDelimiter = "://";
+
+        var serverUrl = document.Servers.FirstOrDefault()?.Url;
+
+        if (!string.IsNullOrWhiteSpace(serverUrl))
+        {
+            return serverUrl;
+        }
+
+        return documentUri is not null ? documentUri.Scheme + SchemeAuthorityDelimiter + documentUri.Authority : null;
     }
 
     #endregion

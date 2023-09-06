@@ -241,7 +241,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     public async Task ItCanWorkWithDocumentsWithoutHostAndSchemaAttributesAsync()
     {
         //Arrange
-        using var stream = ModifyOpenApiDocument(this._openApiDocument, (doc) =>
+        using var stream = OpenApiTestHelper.ModifyOpenApiDocument(this._openApiDocument, (doc) =>
         {
             doc.Remove("host");
             doc.Remove("schemes");
@@ -252,21 +252,6 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
 
         //Assert
         Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
-    }
-
-    private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)
-    {
-        var json = JsonSerializer.Deserialize<JsonObject>(openApiDocument);
-
-        transformer(json!);
-
-        var stream = new MemoryStream();
-
-        JsonSerializer.Serialize(stream, json);
-
-        stream.Seek(0, SeekOrigin.Begin);
-
-        return stream;
     }
 
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,

@@ -59,7 +59,7 @@ public static class KernelAIPluginExtensions
             skillName,
             httpClient,
             executionParameters,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -98,7 +98,8 @@ public static class KernelAIPluginExtensions
             skillName,
             httpClient,
             executionParameters,
-            cancellationToken).ConfigureAwait(false);
+            uri,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -132,7 +133,7 @@ public static class KernelAIPluginExtensions
             skillName,
             httpClient,
             executionParameters,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     #region private
@@ -143,7 +144,8 @@ public static class KernelAIPluginExtensions
         string skillName,
         HttpClient httpClient,
         OpenApiSkillExecutionParameters? executionParameters,
-        CancellationToken cancellationToken)
+        Uri? documentUri = null,
+        CancellationToken cancellationToken = default)
     {
         if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
@@ -162,7 +164,8 @@ public static class KernelAIPluginExtensions
             executionParameters,
             httpClient,
             pluginContents,
-            cancellationToken).ConfigureAwait(false);
+            documentUri,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<IDictionary<string, ISKFunction>> LoadSkill(
@@ -171,13 +174,14 @@ public static class KernelAIPluginExtensions
         OpenApiSkillExecutionParameters? executionParameters,
         HttpClient httpClient,
         string pluginJson,
-        CancellationToken cancellationToken)
+        Uri? documentUri = null,
+        CancellationToken cancellationToken = default)
     {
         var parser = new OpenApiDocumentParser(kernel.LoggerFactory);
 
         using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
         {
-            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
+            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, documentUri, cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(
                 httpClient,
