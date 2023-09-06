@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -106,26 +107,34 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             return false;
         }
 
-        var isValueValid = true;
-        if (this._valBlock != null)
+        if (this._valBlock != null && !this._valBlock.IsValid(out var valErrorMsg))
         {
-            isValueValid = this._valBlock.IsValid(out errorMsg);
+            errorMsg = $"There was an issue with the named argument value for '{this.Name}': {valErrorMsg}";
+            this.Logger.LogError(errorMsg);
+            return false;
         }
-        else if (this._argValueAsVarBlock != null)
+        else if (this._argValueAsVarBlock != null && !this._argValueAsVarBlock.IsValid(out var variableErrorMsg))
         {
-            isValueValid = this._argValueAsVarBlock.IsValid(out errorMsg);
+            errorMsg = $"There was an issue with the named argument value for '{this.Name}': {variableErrorMsg}";
+            this.Logger.LogError(errorMsg);
+            return false;
         }
-        else
+        else if (this._valBlock == null && this._argValueAsVarBlock == null)
         {
-            errorMsg = "A name argument must have a value";
+            errorMsg = "A named argument must have a value";
             this.Logger.LogError(errorMsg);
             return false;
         }
 
         // Argument names share the same validation as variables
-        var isNameValid = this._argNameAsVarBlock.IsValid(out errorMsg);
+        if (!this._argNameAsVarBlock.IsValid(out var argNameErrorMsg))
+        {
+            errorMsg = Regex.Replace(argNameErrorMsg, "a variable", "An argument", RegexOptions.IgnoreCase);
+            errorMsg = Regex.Replace(errorMsg, "the variable", "The argument", RegexOptions.IgnoreCase);
+            return false;
+        }
 
-        return isNameValid && isValueValid;
+        return true;
     }
 #pragma warning restore CA2254
 

@@ -98,8 +98,8 @@ public class NamedArgBlockTests
 
         // Act + Assert
         Assert.True(target.IsValid(out _));
-        Assert.Equal(target.Name, "name");
-        Assert.Equal(target.GetValue(null), "value");
+        Assert.Equal("name", target.Name);
+        Assert.Equal("value", target.GetValue(null));
     }
 
     [Fact]
@@ -109,7 +109,38 @@ public class NamedArgBlockTests
         var target = new NamedArgBlock("a=b");
 
         // Act + Assert
-        Assert.False(target.IsValid(out _));
+        Assert.False(target.IsValid(out var error));
+        Assert.Equal("There was an issue with the named argument value for 'a': A value must have single quotes or double quotes on both sides", error);
+    }
+
+    [Fact]
+    public void ArgNameShouldBeNonEmpty()
+    {
+        // Arrange
+        var target = new NamedArgBlock("='b'");
+
+        // Act + Assert
+        Assert.False(target.IsValid(out var error));
+        Assert.Equal("A named argument must have a name", error);
+    }
+
+    [Fact]
+    public void ArgValueShouldBeNonEmpty()
+    {
+        Assert.Throws<SKException>(() => new NamedArgBlock("a="));
+    }
+
+    [Theory]
+    [InlineData("!@#^='b'", "The argument name '!@#^' contains invalid characters. Only alphanumeric chars and underscore are allowed.")]
+    [InlineData("a=$!@#^", "There was an issue with the named argument value for 'a': The variable name '!@#^' contains invalid characters. Only alphanumeric chars and underscore are allowed.")]
+    public void ArgNameAndVariableShouldBeAValidVariableName(string content, string expectedError)
+    {
+        // Arrange
+        var target = new NamedArgBlock(content);
+
+        // Act + Assert
+        Assert.False(target.IsValid(out var error));
+        Assert.Equal(expectedError, error);
     }
 
     [Theory]

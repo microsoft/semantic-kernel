@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
@@ -225,6 +226,39 @@ public sealed class PromptTemplateEngineTests
 
         // Assert
         Assert.Equal("foo-[8/25/2023] Mario (42): \"Let's-a go!\"-baz", result);
+    }
+
+    [Fact]
+    public async Task ItHandlesSyntaxErrorsAsync()
+    {
+        // Arrange
+        string MyFunctionAsync(
+            [Description("Name"), SKName("input")] string name,
+            [Description("Age"), SKName("age")] int age,
+            [Description("Slogan"), SKName("slogan")] string slogan,
+            [Description("Date"), SKName("date")] DateTime date)
+        {
+            var dateStr = date.ToString(PromptTemplateEngineTests.DateFormat, CultureInfo.InvariantCulture);
+            this._logger.WriteLine("MyFunction call received, name: {0}, age: {1}, slogan: {2}, date: {3}", name, age, slogan, date);
+            return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
+        }
+
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        Assert.NotNull(func);
+
+        this._variables.Set("input", "Mario");
+        this._variables.Set("someDate", "2023-08-25T00:00:00");
+        var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
+        {
+            ISKFunction? outFunc = func;
+            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+        }
+        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        var context = this.MockContext();
+
+        // Act
+        var result = await Assert.ThrowsAsync<SKException>(() => this._target.RenderAsync(template, context));
+        Assert.Equal($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.", result.Message);
     }
 
     [Fact]
