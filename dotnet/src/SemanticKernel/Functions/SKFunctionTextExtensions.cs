@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -20,22 +22,28 @@ public static class SKFunctionTextExtensions
     /// <param name="func">Semantic Kernel function</param>
     /// <param name="partitionedInput">Input to aggregate.</param>
     /// <param name="context">Semantic Kernel context.</param>
+    /// <param name="resultsSeparator">Separator to use between results.</param>
+    /// <param name="settings">LLM completion settings.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Aggregated results.</returns>
     public static async Task<SKContext> AggregatePartitionedResultsAsync(
         this ISKFunction func,
         List<string> partitionedInput,
-        SKContext context)
+        SKContext context,
+        string resultsSeparator = "\n",
+        CompleteRequestSettings? settings = null,
+        CancellationToken cancellationToken = default)
     {
         var results = new List<string>();
         foreach (var partition in partitionedInput)
         {
             context.Variables.Update(partition);
-            context = await func.InvokeAsync(context).ConfigureAwait(false);
+            context = await func.InvokeAsync(context, settings, cancellationToken).ConfigureAwait(false);
 
             results.Add(context.Variables.ToString());
         }
 
-        context.Variables.Update(string.Join("\n", results));
+        context.Variables.Update(string.Join(resultsSeparator, results));
         return context;
     }
 }
