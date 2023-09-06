@@ -81,8 +81,8 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
             doc.Remove("servers");
         });
 
-        using var expectedHttpResponseMessage = new HttpResponseMessage { Content = new StreamContent(content) };
-        using var httpClient = new HttpClient(OpenApiTestHelper.GetHttpClientHandlerMock(expectedHttpResponseMessage));
+        using var httpResponseMessage = new HttpResponseMessage { Content = new StreamContent(content) };
+        using var httpClient = new HttpClient(OpenApiTestHelper.GetHttpClientHandlerMock(httpResponseMessage));
 
         var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient };
 
@@ -119,8 +119,8 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
             });
         }
 
-        using var expectedHttpResponseMessage = new HttpResponseMessage { Content = new StreamContent(openApiDocument) };
-        using var httpClient = new HttpClient(OpenApiTestHelper.GetHttpClientHandlerMock(expectedHttpResponseMessage));
+        using var httpResponseMessage = new HttpResponseMessage { Content = new StreamContent(openApiDocument) };
+        using var httpClient = new HttpClient(OpenApiTestHelper.GetHttpClientHandlerMock(httpResponseMessage));
 
         var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient, ServerUrlOverride = new Uri(ServerUrlOverride) };
 
