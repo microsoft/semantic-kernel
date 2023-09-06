@@ -181,7 +181,7 @@ public static class KernelAIPluginExtensions
 
         using (var documentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(pluginJson)))
         {
-            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, documentUri, cancellationToken).ConfigureAwait(false);
+            var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(
                 httpClient,
@@ -198,7 +198,7 @@ public static class KernelAIPluginExtensions
                 try
                 {
                     logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters, cancellationToken);
+                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters, documentUri, cancellationToken);
                     skill[function.Name] = function;
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
@@ -302,6 +302,7 @@ public static class KernelAIPluginExtensions
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterRestApiFunction(
@@ -310,12 +311,14 @@ public static class KernelAIPluginExtensions
         RestApiOperationRunner runner,
         RestApiOperation operation,
         OpenApiSkillExecutionParameters? executionParameters,
+        Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
         var restOperationParameters = operation.GetParameters(
             executionParameters?.ServerUrlOverride,
             executionParameters?.EnableDynamicPayload ?? false,
-            executionParameters?.EnablePayloadNamespacing ?? false
+            executionParameters?.EnablePayloadNamespacing ?? false,
+            documentUri
         );
 
         var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)) : NullLogger.Instance;

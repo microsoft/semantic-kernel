@@ -31,8 +31,14 @@ internal static class RestApiOperationExtensions
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, Uri? serverUrlOverride = null, bool addPayloadParamsFromMetadata = false, bool enablePayloadNamespacing = false)
+    public static IReadOnlyList<RestApiOperationParameter> GetParameters(
+        this RestApiOperation operation,
+        Uri? serverUrlOverride = null,
+        bool addPayloadParamsFromMetadata = false,
+        bool enablePayloadNamespacing = false,
+        Uri? documentUri = null)
     {
         var parameters = new List<RestApiOperationParameter>(operation.Parameters)
         {
@@ -43,7 +49,7 @@ internal static class RestApiOperationExtensions
                 false,
                 RestApiOperationParameterLocation.Path,
                 RestApiOperationParameterStyle.Simple,
-                defaultValue: serverUrlOverride?.AbsoluteUri ?? operation.ServerUrl?.AbsoluteUri)
+                defaultValue: GetServerUrlParameter(operation, serverUrlOverride, documentUri))
         };
 
         //Add payload parameters
@@ -176,6 +182,26 @@ internal static class RestApiOperationExtensions
         }
 
         return property.Name;
+    }
+
+    /// <summary>
+    /// Returns server URL parameter.
+    /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="serverUrlOverride">The server URL override.</param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
+    private static string? GetServerUrlParameter(RestApiOperation operation, Uri? serverUrlOverride, Uri? documentUri)
+    {
+        const string SchemeAuthorityDelimiter = "://";
+
+        var serverUrl = serverUrlOverride?.AbsoluteUri ?? operation.ServerUrl?.AbsoluteUri;
+
+        if (!string.IsNullOrWhiteSpace(serverUrl))
+        {
+            return serverUrl;
+        }
+
+        return documentUri is not null ? documentUri.Scheme + SchemeAuthorityDelimiter + documentUri.Authority : null;
     }
 
     private const string MediaTypeTextPlain = "text/plain";
