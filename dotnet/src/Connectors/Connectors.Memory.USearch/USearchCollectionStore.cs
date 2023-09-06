@@ -47,8 +47,9 @@ public record class USearchCollectionStorage : IUSearchCollectionStorage
         if (this._toUSearchKeys.TryGetValue(key, out var usearchKey)
             && this._usearchRecords.TryGetValue(usearchKey, out memoryRecord))
         {
+            this._usearchIndex.Get(usearchKey, out float[] vector);
             memoryRecord = withEmbedding
-                ? memoryRecord
+                ? MemoryRecord.FromMetadata(memoryRecord.Metadata, embedding: vector, key: memoryRecord.Key, timestamp: memoryRecord.Timestamp)
                 : MemoryRecord.FromMetadata(memoryRecord.Metadata, embedding: null, key: memoryRecord.Key, timestamp: memoryRecord.Timestamp);
             return true;
         }
@@ -58,19 +59,20 @@ public record class USearchCollectionStorage : IUSearchCollectionStorage
 
     public bool Upsert(MemoryRecord record)
     {
-        record.Key = record.Metadata.Id;
-        if (!this._toUSearchKeys.TryGetValue(record.Key, out ulong usearchKey))
+        MemoryRecord recordWithoutEmbedding = MemoryRecord.FromMetadata(record.Metadata, embedding: null, key: record.Metadata.Id, timestamp: record.Timestamp);
+
+        if (!this._toUSearchKeys.TryGetValue(recordWithoutEmbedding.Key, out ulong usearchKey))
         {
             ulong value = this._nextFreeUSearchKey++;
-            this._toUSearchKeys.Add(record.Key, value);
-            this._usearchRecords.Add(value, record);
-            this._usearchIndex.Add(value, GetOrCreateArray(record.Embedding));
+            this._toUSearchKeys.Add(recordWithoutEmbedding.Key, value);
+            this._usearchRecords.Add(value, recordWithoutEmbedding);
+            this._usearchIndex.Add(value, GetOrCreateArray(recordWithoutEmbedding.Embedding));
             return true;
         }
 
-        this._usearchRecords[usearchKey] = record;
+        this._usearchRecords[usearchKey] = recordWithoutEmbedding;
         this._usearchIndex.Remove(usearchKey);
-        this._usearchIndex.Add(usearchKey, GetOrCreateArray(record.Embedding));
+        this._usearchIndex.Add(usearchKey, GetOrCreateArray(recordWithoutEmbedding.Embedding));
         return false;
     }
 
@@ -85,19 +87,21 @@ public record class USearchCollectionStorage : IUSearchCollectionStorage
         int nextIndex = 0;
         foreach (var record in records)
         {
-            record.Key = record.Metadata.Id;
-            float[] embedding = GetOrCreateArray(record.Embedding);
-            if (!this._toUSearchKeys.TryGetValue(record.Key, out ulong usearchKey))
+            MemoryRecord recordWithoutEmbedding = MemoryRecord.FromMetadata(record.Metadata, embedding: null, key: record.Metadata.Id, timestamp: record.Timestamp);
+
+            float[] embedding = GetOrCreateArray(recordWithoutEmbedding.Embedding);
+
+            if (!this._toUSearchKeys.TryGetValue(recordWithoutEmbedding.Key, out ulong usearchKey))
             {
                 ulong value = this._nextFreeUSearchKey++;
-                this._toUSearchKeys.Add(record.Key, value);
-                this._usearchRecords.Add(value, record);
+                this._toUSearchKeys.Add(recordWithoutEmbedding.Key, value);
+                this._usearchRecords.Add(value, recordWithoutEmbedding);
             }
-            this._usearchRecords[usearchKey] = record;
+            this._usearchRecords[usearchKey] = recordWithoutEmbedding;
             this._usearchIndex.Remove(usearchKey);
 
-            insertedKeys.Add(record.Key);
-            insertVectors[nextIndex] = GetOrCreateArray(record.Embedding);
+            insertedKeys.Add(recordWithoutEmbedding.Key);
+            insertVectors[nextIndex] = GetOrCreateArray(recordWithoutEmbedding.Embedding);
         }
         this._usearchIndex.Add(usearchKeys, insertVectors);
 
@@ -134,12 +138,12 @@ public record class USearchCollectionStorage : IUSearchCollectionStorage
 
         for (int i = 0; i < usearchKeys.Length; i++)
         {
-            this._usearchIndex.Get(usearchKeys[i], out float[] vector);
             if (distanceToScore(distances[i]) >= minRelevanceScore && this._usearchRecords.TryGetValue(usearchKeys[i], out MemoryRecord record))
             {
+                this._usearchIndex.Get(usearchKeys[i], out float[] vector);
                 record = withEmbeddings
-                    ? record
-                    : MemoryRecord.FromMetadata(record.Metadata, embedding: null, key: record.Key, timestamp: record.Timestamp);
+                    ? MemoryRecord.FromMetadata(record.Metadata, embedding: vector, key: record.Key, timestamp: record.Timestamp)
+                    : record;
 
                 result.Add((record, (double)distances[i]));
             }
