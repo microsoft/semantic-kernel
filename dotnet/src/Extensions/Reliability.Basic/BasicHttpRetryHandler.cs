@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Reliability.Basic;
 /// <summary>
 /// Handler that retries HTTP requests based on a <see cref="BasicRetryConfig"/>.
 /// </summary>
-internal sealed class BasicHttpRetryHandler : DelegatingHandler
+public sealed class BasicHttpRetryHandler : DelegatingHandler
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultHttpRetryHandler"/> class.

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -18,11 +19,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public interface IKernel
 {
-    /// <summary>
-    /// Settings required to execute functions, including details about AI dependencies, e.g. endpoints and API keys.
-    /// </summary>
-    KernelConfig Config { get; }
-
     /// <summary>
     /// App logger
     /// </summary>
@@ -42,6 +38,11 @@ public interface IKernel
     /// Reference to the read-only skill collection containing all the imported functions
     /// </summary>
     IReadOnlySkillCollection Skills { get; }
+
+    /// <summary>
+    /// Reference to Http handler factory
+    /// </summary>
+    IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <summary>
     /// Build and register a function in the internal skill collection, in a global generic skill.

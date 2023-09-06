@@ -61,7 +61,7 @@ public static class Example52_ApimAuth
 
         var kernel = Kernel.Builder
             .WithLoggerFactory(loggerFactory)
-            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (loggerFactory, config) =>
+            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (loggerFactory) =>
                 new AzureChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, loggerFactory))
             .Build();
 

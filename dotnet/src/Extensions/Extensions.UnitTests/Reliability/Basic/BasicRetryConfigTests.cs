@@ -8,7 +8,7 @@ using Xunit;
 namespace SemanticKernel.Extensions.UnitTests.Reliability.Basic;
 
 /// <summary>
-/// Unit tests of <see cref="KernelConfig"/>.
+/// Unit tests of <see cref="BasicRetryConfig"/>.
 /// </summary>
 public class BasicRetryConfigTests
 {
@@ -28,15 +28,15 @@ public class BasicRetryConfigTests
     {
         // Arrange
         var builder = new KernelBuilder();
-        var basicRetryConfig = new BasicRetryConfig() { MaxRetryCount = 1 };
+        var basicRetryConfig = new BasicRetryConfig() { MaxRetryCount = 3 };
         builder.WithRetryBasic(basicRetryConfig);
 
         // Act
-        var config = builder.Build().Config;
+        var kernel = builder.Build();
 
         // Assert
-        Assert.IsType<BasicHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-        var httpHandlerFactory = config.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
+        Assert.IsType<BasicHttpRetryHandlerFactory>(kernel.HttpHandlerFactory);
+        var httpHandlerFactory = kernel.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
         Assert.NotNull(httpHandlerFactory);
         Assert.Equal(basicRetryConfig, httpHandlerFactory.Config);
     }
@@ -50,11 +50,11 @@ public class BasicRetryConfigTests
         builder.WithRetryBasic(retryConfig);
 
         // Act
-        var config = builder.Build().Config;
+        var kernel = builder.Build();
 
         // Assert
-        Assert.IsType<BasicHttpRetryHandlerFactory>(config.HttpHandlerFactory);
-        var httpHandlerFactory = config.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
+        Assert.IsType<BasicHttpRetryHandlerFactory>(kernel.HttpHandlerFactory);
+        var httpHandlerFactory = kernel.HttpHandlerFactory as BasicHttpRetryHandlerFactory;
         Assert.NotNull(httpHandlerFactory);
         Assert.Equal(retryConfig.MaxRetryCount, httpHandlerFactory.Config.MaxRetryCount);
         Assert.Equal(retryConfig.MaxRetryDelay, httpHandlerFactory.Config.MaxRetryDelay);

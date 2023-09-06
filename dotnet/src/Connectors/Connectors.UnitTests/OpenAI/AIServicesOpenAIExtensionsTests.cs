@@ -79,7 +79,7 @@ public class AIServicesOpenAIExtensionsTests
         targetBuilder.WithAIService<ITextCompletion>("one", new OpenAITextCompletion("model", "key"));
         targetBuilder.WithAIService<ITextCompletion>("one", new OpenAITextCompletion("model", "key"));
 
-        targetBuilder.WithAIService<ITextCompletion>("one", (loggerFactory, config) => new OpenAITextCompletion("model", "key"));
-        targetBuilder.WithAIService<ITextCompletion>("one", (loggerFactory, config) => new OpenAITextCompletion("model", "key"));
+        targetBuilder.WithAIService<ITextCompletion>("one", (loggerFactory) => new OpenAITextCompletion("model", "key"));
+        targetBuilder.WithAIService<ITextCompletion>("one", (loggerFactory) => new OpenAITextCompletion("model", "key"));
     }
 }
