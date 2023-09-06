@@ -11,4 +11,10 @@ internal static class DuckDBExtensions
         int ordinal = reader.GetOrdinal(fieldName);
         return reader.GetString(ordinal);
     }
+
+    public static float GetFloat(this DbDataReader reader, string fieldName)
+    {
+        int ordinal = reader.GetOrdinal(fieldName);
+        return reader.GetFloat(ordinal);
+    }
 }
