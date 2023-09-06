@@ -12,6 +12,9 @@ namespace Microsoft.SemanticKernel.Reliability.Basic;
 /// </summary>
 public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpRetryHandler>
 {
+    /// <summary>
+    /// Gets the singleton instance of <see cref="DefaultHttpRetryHandlerFactory"/>.
+    /// </summary>
     public static BasicHttpRetryHandlerFactory Instance { get; } = new BasicHttpRetryHandlerFactory();
 
     /// <summary>
