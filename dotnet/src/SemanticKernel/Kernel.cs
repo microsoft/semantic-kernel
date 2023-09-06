@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -34,9 +34,6 @@ namespace Microsoft.SemanticKernel;
 public sealed class Kernel : IKernel, IDisposable
 {
     /// <inheritdoc/>
-    public KernelConfig Config { get; }
-
-    /// <inheritdoc/>
     public ILoggerFactory LoggerFactory { get; }
 
     /// <inheritdoc/>
@@ -54,6 +51,9 @@ public sealed class Kernel : IKernel, IDisposable
     public static KernelBuilder Builder => new();
 
     /// <inheritdoc/>
+    public IDelegatingHandlerFactory HttpHandlerFactory => this._httpHandlerFactory;
+
+    /// <inheritdoc/>
     public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
 
     /// <inheritdoc/>
@@ -62,22 +62,22 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="skillCollection"></param>
-    /// <param name="aiServiceProvider"></param>
-    /// <param name="promptTemplateEngine"></param>
-    /// <param name="memory"></param>
-    /// <param name="config"></param>
+    /// <param name="skillCollection">Skill collection</param>
+    /// <param name="aiServiceProvider">AI Service Provider</param>
+    /// <param name="promptTemplateEngine">Prompt template engine</param>
+    /// <param name="memory">Semantic text Memory</param>
+    /// <param name="httpHandlerFactory"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
-        KernelConfig config,
+        IDelegatingHandlerFactory httpHandlerFactory,
         ILoggerFactory loggerFactory)
     {
         this.LoggerFactory = loggerFactory;
-        this.Config = config;
+        this._httpHandlerFactory = httpHandlerFactory;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
@@ -290,6 +290,7 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly ILogger _logger;
+    private readonly IDelegatingHandlerFactory _httpHandlerFactory;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
@@ -376,27 +377,6 @@ public sealed class Kernel : IKernel, IDisposable
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
-    }
-
-    #endregion
-
-    #region Obsolete
-
-    /// <inheritdoc/>
-    [Obsolete("Use Logger instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogger Log => this._logger;
-
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
-    /// <returns>SK context</returns>
-    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public SKContext CreateNewContext(CancellationToken cancellationToken)
-    {
-        return this.CreateNewContext();
     }
 
     #endregion

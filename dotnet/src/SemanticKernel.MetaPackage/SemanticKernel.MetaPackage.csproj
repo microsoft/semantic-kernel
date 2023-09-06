@@ -1,27 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <AssemblyName>Microsoft.SemanticKernel</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel</Title>
     <Description>Semantic Kernel common package collection, including SK Core, OpenAI, Azure OpenAI, DALL-E 2.
 Empowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.</Description>
   </PropertyGroup>
-
   <ItemGroup>
+    <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Skills\Skills.Core\Skills.Core.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" PrivateAssets="none" />
   </ItemGroup>
-
 </Project>

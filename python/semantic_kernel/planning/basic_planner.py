@@ -18,7 +18,7 @@ class Plan:
         self.generated_plan = plan
 
     def __str__(self):
-        return f"Prompt: {self.prompt}\nGoal: {self.goal}\nPlan: {self.plan}"
+        return f"Prompt: {self.prompt}\nGoal: {self.goal}\nPlan: {self.generated_plan}"
 
     def __repr__(self):
         return str(self)
