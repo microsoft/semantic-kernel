@@ -7,6 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.USearch;
 internal interface ICollectionLockStore
 {
     object GetLockFor(string key);
+    void RemoveLockFor(string key);
 }
 
 internal sealed class USearchConcurrentCollectionLockStore : ICollectionLockStore
@@ -18,5 +19,10 @@ internal sealed class USearchConcurrentCollectionLockStore : ICollectionLockStor
     public object GetLockFor(string key)
     {
         return this._keyLockerMap.GetOrAdd(key, k => new object());
+    }
+
+    public void RemoveLockFor(string key)
+    {
+        this._keyLockerMap.TryRemove(key, out _);
     }
 }

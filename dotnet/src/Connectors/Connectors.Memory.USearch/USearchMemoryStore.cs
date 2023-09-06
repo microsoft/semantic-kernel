@@ -86,6 +86,7 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
                 return Task.FromException(new SKException($"Could not delete collection {collectionName}"));
             }
             usearchCollection.Dispose();
+            this._collectionLockerStore.RemoveLockFor(collectionName);
         }
 
         return Task.CompletedTask;
@@ -237,7 +238,10 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
         {
             foreach (KeyValuePair<string, IUSearchCollectionStorage> entry in this._store)
             {
-                entry.Value.Dispose();
+                lock (this._collectionLockerStore.GetLockFor(entry.Key))
+                {
+                    entry.Value.Dispose();
+                }
             }
             this._disposedValue = true;
         }
