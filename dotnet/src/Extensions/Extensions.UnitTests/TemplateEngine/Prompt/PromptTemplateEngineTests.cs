@@ -88,6 +88,7 @@ public sealed class PromptTemplateEngineTests
         this._variables.Set("a", "a value");
         this._variables.Set("_a", "_a value");
         this._variables.Set("c", "c value");
+        this._variables.Set("d", "d value");
 
         // Act
         blocks = this._target.ExtractBlocks(template);
