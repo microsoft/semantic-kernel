@@ -4,8 +4,8 @@
 
 status: proposed
 date: {YYYY-MM-DD when the decision was last updated}
-deciders: {list everyone involved in the decision}
-consulted: {list everyone whose opinions are sought (typically subject-matter experts); and with whom there is a two-way communication}
+deciders: shawncal
+consulted: semenshi, dmytrostruk, rbarreto, lemiller
 informed: {list everyone who is kept up-to-date on progress; and with whom there is a one-way communication}
 ---
 
@@ -13,8 +13,14 @@ informed: {list everyone who is kept up-to-date on progress; and with whom there
 
 ## Context and Problem Statement
 
-{Describe the context and problem statement, e.g., in free form using two to three sentences or in the form of an illustrative story.
- You may want to articulate the problem in form of a question and add links to collaboration boards or issue management systems.}
+- Provide a cohesive, well-defined set of assemblies that developers can easily combine based on their needs.
+  - Semantic Kernel core should only contain functionality related to AI orchestration
+    - Remove prompt template engine and semantic functions
+  - Semantic Kernel abstractions should only interfaces, abstract classes and minimal classes to support these
+- Remove `Skills` naming from NuGet packages and replace with `Plugins`
+  - Clearly distinguish between plugin implementations (`Skills.MsGraph`) and plugin integration (`Skills.OpenAPI`)
+- Have consistent naming for assemblies and their root namespaces
+  - See [Naming Patterns](#naming-patterns) section for examples of current patterns
 
 ### Current Project Structure
 
@@ -76,7 +82,7 @@ SK-dotnet
 | SemanticKernel.MetaPackage          | Semantic Kernel meta package i.e., a NuGet package that references other required Semantic Kernel NuGet packages |
 | SemanticKernel.UnitTests            | Semantic Kernel unit tests |
 
-### Naming Pattern
+### Naming Patterns
 
 Below are some different examples of Assembly and root namespace naming that are used in the projects.
 
@@ -121,7 +127,6 @@ dotnet/
     │   ├── Skills.MsGraph
     │   ├── Skills.OpenAPI
     │   ├── Skills.Web
-
     │   └── Skills.UnitTests
     ├── IntegrationTests/
     ├── SemanticKernel/
@@ -131,28 +136,36 @@ dotnet/
 
 ```
 
+### Semantic Kernel Skills and Functions
 
-<!-- This is an optional element. Feel free to remove. -->
+This diagram show current skills are integrated with the Semantic Kernel core.
+
+***Note:***
+
+- This is not a true class hierarchy diagram. It show some class relationships and dependencies.
+- Namespaces are abbreviated to remove Microsoft.SemanticKernel prefix. Namespaces use `_` rather than `.`.
+
+<img src="./diagrams/skfunctions-preview.png" alt="ISKFunction class relationships" width="400"/>
+
 ## Decision Drivers
 
-* Semantic Kernel core should only contain functionality related to AI orchestration
-  * Remove prompt template engine and semantic functions
-* Semantic Kernel abstractions should only interfaces, abstract classes and minimal classes to support these
-* Avoid having too many assemblies because of impact of signing these and to reduce complexity
-* Remove `Skills` naming from NuGet packages
-* Have consistent naming for assemblies and their root namespaces
+- Avoid having too many assemblies because of impact of signing these and to reduce complexity
+- Follow .Net naming guidelines
+  - [Names of Assemblies and DLLs](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-assemblies-and-dlls)
+  - [Names of Namespaces](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/names-of-namespaces)
 
 ## Considered Options
 
-* New `planning`, `functions` and `plugins` project areas
-* {title of option 2}
-* {title of option 3}
-* … <!-- numbers of options can vary -->
+- New `planning`, `functions` and `plugins` project areas
+- New `planning`, `functions` and `plugins` project areas with some project consolidation
+  - Merge all planner implementations into `Planner.Core`
+- New `planning`, `functions` and `plugins` project areas with individual unit test projects
+- … <!-- numbers of options can vary -->
 
 In all cases the following changes will be made:
 
-* Move non core Connectors to a separate repository
-* Merge prompt template engine and semantic functions into a single package
+- Move non core Connectors to a separate repository
+- Merge prompt template engine and semantic functions into a single package
 
 ## Decision Outcome
 
@@ -163,6 +176,17 @@ Chosen option: "{title of option 1}", because
 
 ### Move skills projects to be extensions and merge some packages
 
+Main categories for the projects will be:
+
+1. `connectors`: ***A connector project allows the Semantic Kernel to connect to AI and Memory services***. Some of the existing connector projects may move to other repositories.
+1. `planning`: ***A planning project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask***. This category will include the current action, sequential and stepwise planner (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
+1. `functions`: ***A function project that enables the Semantic Kernel to access the functions it will orchestrate***. This category will include:
+    1. Native functions i.e., arbitrary .Net functions for the .Net Semantic Kernel
+    1. Semantic functions i.e., prompts executed against an LLM
+    1. GRPC remote procedures i.e., procedures executed remotely using the GRPC framework
+    1. Open API endpoints i.e., REST endpoints that have Open API definitions executed remotely using the HTTP protocol
+1. `plugins`: ***A plugin project contains the implementation(s) of a Semantic Kernel plugin***. A Semantic Kernel plugin
+
 ```text
 SK-dotnet
 ├── samples/
@@ -170,15 +194,18 @@ SK-dotnet
     ├── connectors/
     │   ├── Connectors.AI.OpenAI*
     │   ├── Connectors.AI.HuggingFace
+    │   ├── Connectors.AI.AzureCognitiveSearch
+    │   ├── Connectors.AI.Qdrant
     │   ├── ...
     │   └── Connectors.UnitTests
-    ├── planning/
-    │   ├── Planning.ActionPlanner*
-    │   ├── Planning.SequentialPlanner*
-    │   └── Planning.StepwisePlanner*
+    ├── planners/
+    │   ├── Planners.ActionPlanner*
+    │   ├── Planners.SequentialPlanner*
+    │   └── Planners.StepwisePlanner*
     ├── functions/
     │   ├── Functions.Native*
     │   ├── Functions.Semantic*
+    │   ├── Functions.Planning*
     │   ├── Functions.Grpc
     │   ├── Functions.OpenAPI
     │   └── Functions.UnitTests
@@ -203,6 +230,7 @@ SK-dotnet
 |-------------------------------------|-------------|
 | `Functions.Native`                  | Extract native functions from Semantic Kernel core and abstractions. |
 | `Functions.Semantic`                | Extract semantic functions from Semantic Kernel core and abstractions. Include the prompt template engine. |
+| `Functions.Planning`                | Extract planning from Semantic Kernel core and abstractions. |
 | `Functions.Grpc`                    | Old `Skills.Grpc` project |
 | `Functions.OpenAPI`                 | Old `Skills.OpenAPI` project |
 | `Plugins.Core`                      | Old `Skills.Core` project |
@@ -212,5 +240,11 @@ SK-dotnet
 
 ### Pros and Cons
 
-* Good, because {argument a}
-* Good, because {argument b}
+- Good, because {argument a}
+- Good, because {argument b}
+
+### Semantic Kernel Skills and Functions
+
+This diagram how functions and plugins would be integrated with the Semantic Kernel core.
+
+<img src="./diagrams/skfunctions-v1.png" alt="ISKFunction class relationships" width="400"/>
