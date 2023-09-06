@@ -14,7 +14,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Flow;
-using Microsoft.SemanticKernel.Reliability;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -142,20 +141,18 @@ steps:
     private static KernelBuilder GetKernelBuilder()
     {
         var builder = new KernelBuilder();
-        builder.WithAzureChatCompletionService(
+        return builder.WithAzureChatCompletionService(
             TestConfiguration.AzureOpenAI.ChatDeploymentName,
             TestConfiguration.AzureOpenAI.Endpoint,
             TestConfiguration.AzureOpenAI.ApiKey,
             alsoAsTextCompletion: true,
-            setAsDefault: true);
-
-        return builder
-            .Configure(c => c.SetDefaultHttpRetryConfig(new HttpRetryConfig
+            setAsDefault: true)
+            .WithRetryBasic(new()
             {
                 MaxRetryCount = 3,
                 UseExponentialBackoff = true,
                 MinRetryDelay = TimeSpan.FromSeconds(3),
-            }));
+            });
     }
 
     public sealed class CollectEmailSkill : ChatSkill
