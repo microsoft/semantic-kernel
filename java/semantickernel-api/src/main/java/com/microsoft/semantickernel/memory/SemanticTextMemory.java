@@ -104,8 +104,8 @@ public interface SemanticTextMemory extends Buildable {
     }
 
     interface Builder extends SemanticKernelBuilder<SemanticTextMemory> {
-        Builder setStorage(MemoryStore storage);
+        Builder withStorage(MemoryStore storage);
 
-        Builder setEmbeddingGenerator(EmbeddingGeneration<String> embeddingGenerator);
+        Builder withEmbeddingGenerator(EmbeddingGeneration<String> embeddingGenerator);
     }
 }

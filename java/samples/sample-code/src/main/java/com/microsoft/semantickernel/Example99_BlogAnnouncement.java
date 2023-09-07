@@ -21,8 +21,8 @@ public class Example99_BlogAnnouncement {
   public static void main(String[] args) throws IOException, ConfigurationException {
     OpenAIAsyncClient client = OpenAIClientProvider.getClient();
 
-    TextCompletion textCompletionService = SKBuilders.textCompletionService()
-            .setModelId("text-davinci-003")
+    TextCompletion textCompletionService = SKBuilders.textCompletion()
+            .withModelId("text-davinci-003")
             .withOpenAIClient(client)
             .build();
 

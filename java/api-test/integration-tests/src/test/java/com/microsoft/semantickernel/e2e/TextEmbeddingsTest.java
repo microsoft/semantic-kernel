@@ -86,9 +86,9 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
         CompletionSKFunction chat =
                 kernel.getSemanticFunctionBuilder()
-                        .setPromptTemplate(skPrompt)
-                        .setFunctionName("recall")
-                        .setSkillName("aboutMe")
+                        .withPromptTemplate(skPrompt)
+                        .withFunctionName("recall")
+                        .withSkillName("aboutMe")
                         .build();
 
         VolatileMemoryStore volatileMemoryStore = new VolatileMemoryStore();
@@ -99,15 +99,15 @@ public class TextEmbeddingsTest extends AbstractKernelTest {
 
         SemanticTextMemory memory =
                 SKBuilders.semanticTextMemory()
-                        .setEmbeddingGenerator(embeddingGeneration)
-                        .setStorage(volatileMemoryStore)
+                        .withEmbeddingGenerator(embeddingGeneration)
+                        .withStorage(volatileMemoryStore)
                         .build();
 
         SKContext context =
                 SKBuilders.context()
-                        .setVariables(SKBuilders.variables().build())
-                        .setMemory(memory)
-                        .setSkills(kernel.getSkills())
+                        .withVariables(SKBuilders.variables().build())
+                        .withMemory(memory)
+                        .withSkills(kernel.getSkills())
                         .build();
 
         context.getSemanticMemory()

@@ -24,9 +24,9 @@ public class InlineFunctionTest extends AbstractKernelTest {
 
         CompletionSKFunction summarize =
                 kernel.getSemanticFunctionBuilder()
-                        .setPromptTemplate(prompt)
-                        .setFunctionName("summarize")
-                        .setCompletionConfig(
+                        .withPromptTemplate(prompt)
+                        .withFunctionName("summarize")
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(0.2, 0.5, 0, 0, 2000))
                         .build();
 

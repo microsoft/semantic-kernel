@@ -31,6 +31,6 @@ public interface TextCompletion extends AIService, Buildable {
 
         Builder withOpenAIClient(OpenAIAsyncClient client);
 
-        Builder setModelId(String modelId);
+        Builder withModelId(String modelId);
     }
 }

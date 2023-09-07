@@ -23,12 +23,12 @@ public class KernelTest extends AbstractKernelTest {
     private static void executeCompletion(Kernel kernel) {
         CompletionSKFunction summarize =
                 kernel.getSemanticFunctionBuilder()
-                        .setPromptTemplate(
+                        .withPromptTemplate(
                                 """
                                         {{$input}}
 
                                         One line TLDR with the fewest words.""")
-                        .setCompletionConfig(
+                        .withCompletionConfig(
                                 new PromptTemplateConfig.CompletionConfig(0, 0, 0, 0, 256))
                         .build();
 

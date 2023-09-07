@@ -41,9 +41,9 @@ public class Example04_ContextVariablesChat {
 
         CompletionSKFunction chat = kernel
                 .getSemanticFunctionBuilder()
-                .setPromptTemplate(prompt)
-                .setFunctionName("ChatBot")
-                .setCompletionConfig(
+                .withPromptTemplate(prompt)
+                .withFunctionName("ChatBot")
+                .withCompletionConfig(
                         new PromptTemplateConfig.CompletionConfig(
                                 0.7,
                                 0.5,

@@ -18,8 +18,8 @@ public class Example09_FunctionTypes {
     public static void main(String[] args) throws ConfigurationException {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletionService()
-                .setModelId("text-davinci-003")
+        TextCompletion textCompletion = SKBuilders.textCompletion()
+                .withModelId("text-davinci-003")
                 .withOpenAIClient(client)
                 .build();
 
@@ -35,7 +35,7 @@ public class Example09_FunctionTypes {
 
 
         var fakeContext = SKBuilders.context()
-                .setSkills(kernel.getSkills())
+                .withSkills(kernel.getSkills())
                 .build();
 
         // The kernel takes care of wiring the input appropriately

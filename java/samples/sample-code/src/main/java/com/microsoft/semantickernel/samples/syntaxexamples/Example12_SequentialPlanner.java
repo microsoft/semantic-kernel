@@ -176,17 +176,17 @@ public class Example12_SequentialPlanner {
         var kernel = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.chatCompletion()
                         .withOpenAIClient(client)
-                        .setModelId("gpt-35-turbo")
+                        .withModelId("gpt-35-turbo")
                         .build())
                 .withMemory(SKBuilders
                         .semanticTextMemory()
-                        .setEmbeddingGenerator(
-                                SKBuilders.textEmbeddingGenerationService()
+                        .withEmbeddingGenerator(
+                                SKBuilders.textEmbeddingGeneration()
                                         .withOpenAIClient(client)
-                                        .setModelId("gpt-35-turbo")
+                                        .withModelId("gpt-35-turbo")
                                         .build()
                         )
-                        .setStorage(new VolatileMemoryStore())
+                        .withStorage(new VolatileMemoryStore())
                         .build())
                 .build();
 

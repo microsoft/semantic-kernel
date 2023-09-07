@@ -44,9 +44,9 @@ public abstract class DefaultSemanticSKFunction<RequestConfiguration>
             assertSkillSupplierRegistered();
             context =
                     SKBuilders.context()
-                            .setVariables(SKBuilders.variables().build())
-                            .setMemory(NullMemory.getInstance())
-                            .setSkills(super.getSkillsSupplier().get())
+                            .withVariables(SKBuilders.variables().build())
+                            .withMemory(NullMemory.getInstance())
+                            .withSkills(super.getSkillsSupplier().get())
                             .build();
         } else {
             context = context.copy();

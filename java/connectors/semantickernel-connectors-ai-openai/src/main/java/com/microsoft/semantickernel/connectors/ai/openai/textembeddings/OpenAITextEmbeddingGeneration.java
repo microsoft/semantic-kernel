@@ -6,7 +6,7 @@ import com.azure.ai.openai.models.EmbeddingItem;
 import com.azure.ai.openai.models.Embeddings;
 import com.azure.ai.openai.models.EmbeddingsOptions;
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
-import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import reactor.core.publisher.Mono;
 
 public class OpenAITextEmbeddingGeneration extends ClientBase
-        implements EmbeddingGeneration<String> {
+        implements TextEmbeddingGeneration {
 
     public OpenAITextEmbeddingGeneration(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);
@@ -43,7 +43,7 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
                 .collectList();
     }
 
-    public static class Builder implements EmbeddingGeneration.Builder<String> {
+    public static class Builder implements TextEmbeddingGeneration.Builder {
         private OpenAIAsyncClient client;
         private String modelId;
 
@@ -52,13 +52,13 @@ public class OpenAITextEmbeddingGeneration extends ClientBase
             return this;
         }
 
-        public Builder setModelId(String modelId) {
+        public Builder withModelId(String modelId) {
             this.modelId = modelId;
             return this;
         }
 
         @Override
-        public EmbeddingGeneration<String> build() {
+        public OpenAITextEmbeddingGeneration build() {
             if (client == null) {
                 throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "OpenAI client not set");
             }

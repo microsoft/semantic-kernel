@@ -5,7 +5,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
+import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.memory.MemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
@@ -34,15 +34,15 @@ public class Example15_MemorySkill {
         }
 
         TextCompletion textCompletionService =
-                SKBuilders.textCompletionService()
-                        .setModelId("text-davinci-003")
+                SKBuilders.textCompletion()
+                        .withModelId("text-davinci-003")
                         .withOpenAIClient(client)
                         .build();
 
-        EmbeddingGeneration textEmbeddingGenerationService =
-                SKBuilders.textEmbeddingGenerationService()
+        TextEmbeddingGeneration textEmbeddingGenerationService =
+                SKBuilders.textEmbeddingGeneration()
                         .withOpenAIClient(client)
-                        .setModelId("text-embedding-ada-002")
+                        .withModelId("text-embedding-ada-002")
                         .build();
 
         MemoryStore memoryStore = SKBuilders.memoryStore().build();
@@ -77,18 +77,18 @@ public class Example15_MemorySkill {
 
         CompletionSKFunction saveFunctionDefinition = SKBuilders.completionFunctions()
                 .withKernel(kernel)
-                .setPromptTemplate("{{memory.save $info}}")
-                .setFunctionName("save")
-                .setDescription("save information to memory")
-                .setCompletionConfig(completionConfig)
+                .withPromptTemplate("{{memory.save $info}}")
+                .withFunctionName("save")
+                .withDescription("save information to memory")
+                .withCompletionConfig(completionConfig)
                 .build();
 
         CompletionSKFunction memorySaver =
                 kernel.registerSemanticFunction(saveFunctionDefinition);
 
         SKContext context = SKBuilders.context()
-                .setMemory(kernel.getMemory())
-                .setSkills(kernel.getSkills())
+                .withMemory(kernel.getMemory())
+                .withSkills(kernel.getSkills())
                 .build();
 
         context.setVariable(TextMemorySkill.COLLECTION_PARAM, MEMORY_COLLECTION_NAME)
@@ -102,8 +102,8 @@ public class Example15_MemorySkill {
 
         // create a new context to avoid using the variables from the previous example
         context = SKBuilders.context()
-                .setMemory(kernel.getMemory())
-                .setSkills(kernel.getSkills())
+                .withMemory(kernel.getMemory())
+                .withSkills(kernel.getSkills())
                 .build();
 
         String answer = memorySkill.retrieveAsync(MEMORY_COLLECTION_NAME, "info1", context).block();
@@ -161,8 +161,8 @@ public class Example15_MemorySkill {
 
         CompletionSKFunction recallFunctionDefinition = SKBuilders.completionFunctions()
                 .withKernel(kernel)
-                .setPromptTemplate(prompt)
-                .setCompletionConfig(completionConfig)
+                .withPromptTemplate(prompt)
+                .withCompletionConfig(completionConfig)
                 .build();
 
         SKFunction<?> aboutMeOracle = kernel.registerSemanticFunction(recallFunctionDefinition);
