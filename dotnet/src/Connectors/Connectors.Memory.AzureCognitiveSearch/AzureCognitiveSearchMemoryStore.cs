@@ -20,6 +20,9 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
+/// <summary>
+/// AzureCognitiveSearchMemoryStore is a memory store implementation using Azure Cognitive Search.
+/// </summary>
 public class AzureCognitiveSearchMemoryStore : IMemoryStore
 {
     /// <summary>
@@ -179,11 +182,15 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         SearchQueryVector vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Fields = AzureCognitiveSearchMemoryRecord.EmbeddingField,
+            Fields = { AzureCognitiveSearchMemoryRecord.EmbeddingField },
             Value = MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray(),
         };
 
-        SearchOptions options = new() { Vector = vectorQuery };
+        SearchOptions options = new()
+        {
+            Vectors = { vectorQuery }
+        };
+
         Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
         try
         {
