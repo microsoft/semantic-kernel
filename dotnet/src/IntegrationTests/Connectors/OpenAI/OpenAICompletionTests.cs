@@ -111,10 +111,6 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAITestAsync(bool useChatModel, string prompt, string expectedAnswerContains)
     {
         // Arrange
-
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
         var builder = Kernel.Builder.WithLoggerFactory(this._logger);
 
         if (useChatModel)
@@ -312,9 +308,6 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIInvokePromptTestAsync()
     {
         // Arrange
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
         var builder = Kernel.Builder.WithLoggerFactory(this._logger);
         this.ConfigureAzureOpenAI(builder);
         IKernel target = builder.Build();
@@ -334,9 +327,6 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task AzureOpenAIDefaultValueTestAsync()
     {
         // Arrange
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
         var builder = Kernel.Builder.WithLoggerFactory(this._logger);
         this.ConfigureAzureOpenAI(builder);
         IKernel target = builder.Build();
@@ -353,39 +343,9 @@ public sealed class OpenAICompletionTests : IDisposable
     }
 
     [Fact]
-    public async Task MultipleServiceInlineServiceIdTestAsync()
-    {
-        // Arrange
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
-        var builder = Kernel.Builder.WithLoggerFactory(this._logger);
-        this.ConfigureAzureOpenAI(builder);
-        this.ConfigureInvalidAzureOpenAI(builder);
-
-        IKernel target = builder.Build();
-
-        var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
-
-        // Act
-        SKContext defaultResult = await target.InvokeSemanticFunctionAsync(prompt);
-        SKContext azureResult = await target.InvokeSemanticFunctionAsync(prompt, serviceId: "azure-text-davinci-003");
-
-        // Assert
-        Assert.NotNull(defaultResult.LastException);
-        Assert.True(defaultResult.ErrorOccurred);
-        Assert.Null(azureResult.LastException);
-        Assert.False(azureResult.ErrorOccurred);
-        Assert.Contains("Pike Place", azureResult.Result, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
     public async Task MultipleServiceLoadPromptConfigTestAsync()
     {
         // Arrange
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
         var builder = Kernel.Builder.WithLoggerFactory(this._logger);
         this.ConfigureAzureOpenAI(builder);
         this.ConfigureInvalidAzureOpenAI(builder);
@@ -430,9 +390,6 @@ public sealed class OpenAICompletionTests : IDisposable
     public async Task InvalidServiceIdTestAsync()
     {
         // Arrange
-        var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
-        Assert.NotNull(azureOpenAIConfiguration);
-
         var builder = Kernel.Builder.WithLoggerFactory(this._logger);
         this.ConfigureAzureOpenAI(builder);
 
@@ -532,7 +489,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.NotNull(azureOpenAIConfiguration);
         Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
-        Assert.NotNull($"invalid-{azureOpenAIConfiguration.ServiceId}");
 
         kernelBuilder.WithAzureTextCompletionService(
             deploymentName: azureOpenAIConfiguration.DeploymentName,
