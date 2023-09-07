@@ -106,37 +106,40 @@ public sealed class RestApiOperation
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
-    /// <param name="documentUri">The URI of OpenApi document.</param>
+    /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? documentUri = null)
+    public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
         var path = this.ReplacePathParameters(this.Path, arguments);
 
         path = this.AddQueryString(path, arguments);
 
-        string serverUrl;
+        string serverUrlString;
 
         if (serverUrlOverride is not null)
         {
-            serverUrl = serverUrlOverride.AbsoluteUri;
+            serverUrlString = serverUrlOverride.AbsoluteUri;
         }
         else if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlFromArgument))
         {
             // Override defined server url - https://api.example.com/v1 by the one from arguments.
-            serverUrl = serverUrlFromArgument;
+            serverUrlString = serverUrlFromArgument;
         }
         else
         {
-            serverUrl = this.GetServerUrlParameter(documentUri) ?? throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
+            serverUrlString =
+                this.ServerUrl?.AbsoluteUri ??
+                apiHostUrl?.AbsoluteUri ??
+                throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
 
         // make sure base url ends with trailing slash
-        if (!serverUrl.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+        if (!serverUrlString.EndsWith("/", StringComparison.OrdinalIgnoreCase))
         {
-            serverUrl += "/";
+            serverUrlString += "/";
         }
 
-        return new Uri(new Uri(serverUrl), $"{path.TrimStart('/')}");
+        return new Uri(new Uri(serverUrlString), $"{path.TrimStart('/')}");
     }
 
     /// <summary>

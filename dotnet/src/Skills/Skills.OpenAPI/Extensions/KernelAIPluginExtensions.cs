@@ -358,7 +358,7 @@ public static class KernelAIPluginExtensions
                 var options = new RestApiOperationRunOptions
                 {
                     ServerUrlOverride = executionParameters?.ServerUrlOverride,
-                    DocumentUri = documentUri
+                    ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };
 
                 var result = await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);

@@ -109,7 +109,7 @@ internal sealed class RestApiOperationRunner
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var url = operation.BuildOperationUrl(arguments, options?.ServerUrlOverride, options?.DocumentUri);
+        var url = operation.BuildOperationUrl(arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
         var headers = operation.RenderHeaders(arguments);
 

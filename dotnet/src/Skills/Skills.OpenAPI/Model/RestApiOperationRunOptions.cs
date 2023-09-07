@@ -10,12 +10,12 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 internal class RestApiOperationRunOptions
 {
     /// <summary>
-    /// Override for REST API operation server url.
+    /// Override for REST API operation server URL.
     /// </summary>
     public Uri? ServerUrlOverride { get; set; }
 
     /// <summary>
-    /// The URI of OpenApi document.
+    /// The URL of REST API host.
     /// </summary>
-    public Uri? DocumentUri { get; set; }
+    public Uri? ApiHostUrl { get; set; }
 }

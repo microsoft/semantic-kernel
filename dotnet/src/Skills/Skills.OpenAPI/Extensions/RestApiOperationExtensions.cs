@@ -40,6 +40,14 @@ internal static class RestApiOperationExtensions
         bool enablePayloadNamespacing = false,
         Uri? documentUri = null)
     {
+        string? serverUrlString = null;
+        Uri? serverUrl = serverUrlOverride ?? operation.ServerUrl ?? documentUri;
+
+        if (serverUrl is not null)
+        {
+            serverUrlString = $"{serverUrl.GetLeftPart(UriPartial.Authority)}/";
+        }
+
         var parameters = new List<RestApiOperationParameter>(operation.Parameters)
         {
             // Register the "server-url" parameter if override is provided
@@ -49,7 +57,7 @@ internal static class RestApiOperationExtensions
                 false,
                 RestApiOperationParameterLocation.Path,
                 RestApiOperationParameterStyle.Simple,
-                defaultValue: serverUrlOverride?.AbsoluteUri ?? operation.GetServerUrlParameter(documentUri))
+                defaultValue: serverUrlString)
         };
 
         //Add payload parameters
@@ -65,25 +73,6 @@ internal static class RestApiOperationExtensions
         }
 
         return parameters;
-    }
-
-    /// <summary>
-    /// Returns server URL from OpenAPI document parameter or document URI.
-    /// </summary>
-    /// <param name="operation">The REST API operation.</param>
-    /// <param name="documentUri">The URI of OpenApi document.</param>
-    public static string? GetServerUrlParameter(this RestApiOperation operation, Uri? documentUri)
-    {
-        const string SchemeAuthorityDelimiter = "://";
-
-        var serverUrl = operation.ServerUrl?.AbsoluteUri;
-
-        if (!string.IsNullOrWhiteSpace(serverUrl))
-        {
-            return serverUrl;
-        }
-
-        return documentUri is not null ? documentUri.Scheme + SchemeAuthorityDelimiter + documentUri.Authority : null;
     }
 
     /// <summary>

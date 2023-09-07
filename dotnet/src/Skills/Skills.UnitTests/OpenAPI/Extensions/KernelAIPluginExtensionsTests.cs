@@ -153,10 +153,10 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     }
 
     [Theory]
-    [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001", "documentV2_0.json")]
-    [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001", "documentV3_0.json")]
-    [InlineData("https://api.example.com/openapi.json", "https://api.example.com", "documentV2_0.json")]
-    [InlineData("https://api.example.com/openapi.json", "https://api.example.com", "documentV3_0.json")]
+    [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001/", "documentV2_0.json")]
+    [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001/", "documentV3_0.json")]
+    [InlineData("https://api.example.com/openapi.json", "https://api.example.com/", "documentV2_0.json")]
+    [InlineData("https://api.example.com/openapi.json", "https://api.example.com/", "documentV3_0.json")]
     [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "Required for test data.")]
     public async Task ItUsesOpenApiDocumentHostUrlWhenServerUrlIsNotProvidedAsync(string documentUri, string expectedServerUrl, string documentFileName)
     {
