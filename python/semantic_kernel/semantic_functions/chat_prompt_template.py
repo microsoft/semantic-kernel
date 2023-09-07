@@ -27,6 +27,8 @@ class ChatPromptTemplate(PromptTemplate):
     ) -> None:
         super().__init__(template, template_engine, prompt_config, log)
         self._messages = []
+        if self._prompt_config.completion.chat_system_prompt:
+            self.add_system_message(self._prompt_config.completion.chat_system_prompt)
 
     async def render_async(self, context: "SKContext") -> str:
         raise NotImplementedError(
@@ -81,6 +83,12 @@ class ChatPromptTemplate(PromptTemplate):
     ) -> "ChatPromptTemplate":
         """Restore a ChatPromptTemplate from a list of role and message pairs."""
         chat_template = cls(template, template_engine, prompt_config, log)
+
+        if prompt_config.chat_system_prompt:
+            chat_template.add_system_message(
+                prompt_config.completion.chat_system_prompt
+            )
+
         for message in messages:
             chat_template.add_message(message["role"], message["message"])
 

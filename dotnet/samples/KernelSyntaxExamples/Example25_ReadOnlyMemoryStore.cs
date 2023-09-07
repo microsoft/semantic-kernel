@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Collections;
 
 #pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -137,7 +136,7 @@ public static class Example25_ReadOnlyMemoryStore
                 throw new Exception($"Embedding vector size {embedding.Length} does not match expected size of {this._vectorSize}");
             }
 
-            TopNCollection<MemoryRecord> embeddings = new(limit);
+            List<(MemoryRecord Record, double Score)> embeddings = new();
 
             foreach (var item in this._memoryRecords)
             {
@@ -148,11 +147,9 @@ public static class Example25_ReadOnlyMemoryStore
                 }
             }
 
-            embeddings.SortByScore();
-
-            foreach (var item in embeddings)
+            foreach (var item in embeddings.OrderByDescending(l => l.Score).Take(limit))
             {
-                yield return (item.Value, item.Score.Value);
+                yield return (item.Record, item.Score);
             }
         }
 
@@ -179,9 +176,7 @@ public static class Example25_ReadOnlyMemoryStore
 
     private static string s_jsonVectorEntries = @"[
         {
-            ""embedding"": {
-                ""vector"": [0, 0, 0 ]
-            },
+            ""embedding"": [0, 0, 0],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
@@ -194,9 +189,7 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
          },
          {
-            ""embedding"": {
-                ""vector"": [0, 0, 10 ]
-            },
+            ""embedding"": [0, 0, 10],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
@@ -209,9 +202,7 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
          },
          {
-            ""embedding"": {
-                ""vector"": [1, 2, 3 ]
-            },
+            ""embedding"": [1, 2, 3],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
@@ -224,9 +215,7 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
          },
          {
-            ""embedding"": {
-                ""vector"": [-1, -2, -3 ]
-            },
+            ""embedding"": [-1, -2, -3],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
@@ -239,9 +228,7 @@ public static class Example25_ReadOnlyMemoryStore
             ""timestamp"": null
          },
          {
-            ""embedding"": {
-                ""vector"": [12, 8, 4 ]
-            },
+            ""embedding"": [12, 8, 4],
             ""metadata"": {
                 ""is_reference"": false,
                 ""external_source_name"": ""externalSourceName"",
