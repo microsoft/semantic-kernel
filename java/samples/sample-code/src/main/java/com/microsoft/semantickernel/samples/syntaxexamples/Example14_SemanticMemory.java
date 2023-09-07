@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
+import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -61,7 +62,7 @@ public class Example14_SemanticMemory {
                         .withOpenAIClient(openAIAsyncClient)
                         .withModelId("text-embedding-ada-002")
                         .build())
-                .withMemoryStorage(SKBuilders.memoryStore().build())
+                .withMemoryStorage(new VolatileMemoryStore.Builder().build())
                 .build();
 
         runExampleAsync(kernelWithCustomDb).block();

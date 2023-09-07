@@ -1,34 +1,33 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.sqlite;
+package com.microsoft.semantickernel.connectors.memory.postgresql;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import java.io.IOException;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-public class SQLiteMemoryStoreTest {
+@Testcontainers
+public class PostgreSQLMemoryStoreTest {
+    @Container private static final PostgreSQLContainer CONTAINER = new PostgreSQLContainer();
+    private static final String POSTGRES_USER = "test";
+    private static final String POSTGRES_PASSWORD = "test";
 
     private static MemoryStore db;
     private static int collectionNum = 0;
@@ -38,7 +37,13 @@ public class SQLiteMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        db = new SQLiteMemoryStore.Builder().withFilename(":memory:").buildAsync().block();
+        db =
+                new PostgreSQLMemoryStore.Builder()
+                        .withConnection(
+                                DriverManager.getConnection(
+                                        CONTAINER.getJdbcUrl(), POSTGRES_USER, POSTGRES_PASSWORD))
+                        .buildAsync()
+                        .block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -81,7 +86,7 @@ public class SQLiteMemoryStoreTest {
     }
 
     @Test
-    void itCanCreateAndGetCollectionAsync() {
+    void itCanCreateAndGetCollectionAsync() throws IOException {
         // Arrange
         String collection = "test_collection" + collectionNum;
         collectionNum++;
@@ -308,16 +313,16 @@ public class SQLiteMemoryStoreTest {
                         .mapToObj(i -> "test_collection" + i)
                         .toArray(String[]::new);
 
-        Collection<String> collections = this.db.getCollectionsAsync().block();
+        Collection<String> collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         int initialSize = collections.size();
 
         Flux.fromArray(testCollections)
-                .concatMap(collection -> this.db.createCollectionAsync(collection))
+                .concatMap(collection -> db.createCollectionAsync(collection))
                 .blockLast();
 
         // Act
-        collections = this.db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
 
         // Assert
         assertNotNull(collections);
@@ -649,27 +654,27 @@ public class SQLiteMemoryStoreTest {
                         .mapToObj(i -> "test_collection" + i)
                         .toArray(String[]::new);
 
-        Collection<String> collections = this.db.getCollectionsAsync().block();
+        Collection<String> collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         int initialSize = collections.size();
 
         Flux.fromArray(testCollections)
-                .concatMap(collection -> this.db.createCollectionAsync(collection))
+                .concatMap(collection -> db.createCollectionAsync(collection))
                 .blockLast();
         collectionNum += numCollections;
 
         // Act
-        collections = this.db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         assertEquals(initialSize + numCollections, collections.size());
 
         // Act
         for (String collection : collections) {
-            this.db.deleteCollectionAsync(collection).block();
+            db.deleteCollectionAsync(collection).block();
         }
 
         // Assert
-        collections = this.db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         assertEquals(0, collections.size());
     }
