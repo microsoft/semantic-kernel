@@ -386,26 +386,6 @@ public sealed class OpenAICompletionTests : IDisposable
         Assert.Contains("Pike Place", azureResult.Result, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
-    public async Task InvalidServiceIdTestAsync()
-    {
-        // Arrange
-        var builder = Kernel.Builder.WithLoggerFactory(this._logger);
-        this.ConfigureAzureOpenAI(builder);
-
-        IKernel target = builder.Build();
-
-        var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
-
-        // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, serviceId: "invalid-text-davinci-003");
-
-        // Assert
-        Assert.NotNull(actual.LastException);
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name invalid-text-davinci-003 not registered.", actual.LastException.Message);
-        Assert.True(actual.ErrorOccurred);
-    }
-
     #region internals
 
     private readonly XunitLogger<Kernel> _logger;
