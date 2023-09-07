@@ -61,7 +61,7 @@ public class StepwiseFunctionCallResult : FunctionCallResult
 
         if (!string.IsNullOrEmpty(Thought))
         {
-            sb.AppendLine($" Thought: {Thought}");
+            sb.AppendLine($"Thought: {Thought}");
         }
 
         if (FunctionCall != null)
@@ -96,27 +96,27 @@ public class StepwiseFunctionCallResult : FunctionCallResult
 
         if (!string.IsNullOrEmpty(Thought))
         {
-            stringBuilder.AppendLine($"[{nameof(Thought)}] {Thought}");
-        }
-
-        if (!string.IsNullOrEmpty(Observation))
-        {
-            stringBuilder.AppendLine($"[{nameof(Observation)}] {Observation}");
+            stringBuilder.AppendLine($"{nameof(Thought)}: {Thought}");
         }
 
         if (FunctionCall != null)
         {
-            stringBuilder.AppendLine($"[{nameof(FunctionCall)}] {JsonSerializer.Serialize(new { action = FunctionCall.Function, action_variables = FunctionCall.Parameters })}");
+            stringBuilder.AppendLine($"Function_Call: {JsonSerializer.Serialize(new { function_call = FunctionCall.Function, parameters = FunctionCall.Parameters })}");
+        }
+
+        if (!string.IsNullOrEmpty(Observation))
+        {
+            stringBuilder.AppendLine($"Observation: {Observation}");
         }
 
         if (!string.IsNullOrEmpty(FunctionResult))
         {
-            stringBuilder.AppendLine($"[{nameof(FunctionResult)}] {FunctionResult}");
+            stringBuilder.AppendLine($"{nameof(FunctionResult)}: {FunctionResult}");
         }
 
         if (!string.IsNullOrEmpty(FinalAnswer))
         {
-            stringBuilder.AppendLine($"[{nameof(FinalAnswer)}] {FinalAnswer}");
+            stringBuilder.AppendLine($"{nameof(FinalAnswer)}: {FinalAnswer}");
         }
 
         return stringBuilder.ToString().Trim();

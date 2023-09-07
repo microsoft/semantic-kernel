@@ -85,11 +85,17 @@ public static class FunctionExtensions
 
         foreach (var param in functionView.Parameters)
         {
+            string descriptionString = param.Description!;
+            string defaultValue = param.DefaultValue ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(defaultValue))
+            {
+                descriptionString += $" (default={defaultValue})";
+            }
             parameterProps[param.Name] = new
             {
                 type = param.Type?.Name ?? "string",
-                description = param.Description
-                // cannot include default value in the parameter definition due to OpenAI request requirements
+                description = descriptionString
             };
         }
 
@@ -97,8 +103,7 @@ public static class FunctionExtensions
         var parameters = BinaryData.FromObjectAsJson(new
         {
             type = "object",
-            properties = parameterProps,
-            required = functionView.Parameters.Select(p => p.Name)
+            properties = parameterProps
         }, new JsonSerializerOptions()
             { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 

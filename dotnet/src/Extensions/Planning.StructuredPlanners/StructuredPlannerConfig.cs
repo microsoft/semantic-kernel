@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Memory;
+using SemanticFunctions;
 using SkillDefinition;
 
 
@@ -88,6 +89,16 @@ public sealed class StructuredPlannerConfig
     /// Optional callback to get a function by name.
     /// </summary>
     public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+
+    /// <summary>
+    /// Delegate to get the prompt template string.
+    /// </summary>
+    public Func<string>? GetPromptTemplate { get; set; } = null;
+
+    /// <summary>
+    /// The configuration to use for the prompt template.
+    /// </summary>
+    public PromptTemplateConfig? PromptUserConfig { get; set; } = null;
 
     /// <summary>
     ///  Serializer options for the planner to use for deserialization

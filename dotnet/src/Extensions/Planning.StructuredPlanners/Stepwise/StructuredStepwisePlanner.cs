@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AI.ChatCompletion;
 using Azure.AI.OpenAI;
-using Connectors.AI.OpenAI.ChatCompletion;
 using Connectors.AI.OpenAI.FunctionCalling;
 using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
@@ -80,87 +79,204 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     [SKFunction] [SKName("ExecutePlan")] [Description("Execute a plan")]
     public async Task<SKContext> ExecutePlanAsync(
         [Description("The problem to solve")] string problem,
-        SKContext context)
+        SKContext context,
+        CancellationToken token)
     {
-        List<StepwiseFunctionCallResult> stepsTaken = new();
-        var promptTemplateEngine = new PromptTemplateEngine();
-        var prompt = await promptTemplateEngine.RenderAsync(_promptTemplate, context).ConfigureAwait(false);
-        _chatHistory = new OpenAIChatHistory(prompt);
 
-        if (!string.IsNullOrEmpty(problem))
+        if (string.IsNullOrEmpty(problem))
         {
-            for (var i = 0; i < Config.MaxIterations; i++)
+            context.Variables.Update("Question not found.");
+            return context;
+        }
+
+        List<StepwiseFunctionCallResult> stepsTaken = new();
+        var lastStep = new StepwiseFunctionCallResult();
+
+        _chatHistory = await InitializeChatHistoryAsync(_chatHistory, problem).ConfigureAwait(false);
+
+        for (var i = 0; i < Config.MaxIterations; i++)
+        {
+            var chatCompletion = _kernel.GetService<IChatCompletion>();
+
+            if (i > 0)
             {
+                await Task.Delay(Config.MinIterationTimeMs, token).ConfigureAwait(false);
+            }
 
-                context.Variables.Set("stepsTaken", string.Join("\n", stepsTaken.Select((result, step) => result.ToStepResult(step + 1))));
+            context.Variables.Set("stepsTaken", string.Join("\n", stepsTaken.Select((result, step) => result.ToStepResult(step + 1))));
+            var nextStep = await StepAsync(context, stepsTaken, _chatHistory, chatCompletion, token).ConfigureAwait(false);
 
-                var chatCompletion = _kernel.GetService<IChatCompletion>();
-                var requestSettings = GetRequestSettings(context);
-                var nextStep = await chatCompletion.GenerateResponseAsync<StepwiseFunctionCallResult>(
-                        _chatHistory,
-                        requestSettings,
-                        Config.SerializerOptions)
-                    .ConfigureAwait(false);
+            if (nextStep == null)
+            {
+                throw new InvalidOperationException("Failed to parse step from response text.");
+            }
 
-                if (nextStep == null)
+            var finalContext = TryGetFinalAnswer(nextStep, context, stepsTaken);
+
+            if (finalContext is not null)
+            {
+                return finalContext;
+            }
+
+            nextStep = AddNextStep(stepsTaken, nextStep, lastStep, _chatHistory, _chatHistory.Messages.Count);
+            await Task.Delay(Config.MinIterationTimeMs, token).ConfigureAwait(false); // A
+            lastStep = nextStep;
+        }
+
+        context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
+
+        return context;
+    }
+
+
+    private async Task<StepwiseFunctionCallResult?> StepAsync(SKContext context, List<StepwiseFunctionCallResult> stepsTaken, ChatHistory chatHistory, IChatCompletion chatCompletion, CancellationToken token)
+    {
+        var tokenCount = GetChatHistoryTokens(chatHistory);
+
+        if (tokenCount >= Config.MaxTokens)
+        {
+            chatHistory = await TrimChatHistoryAsync(tokenCount, chatHistory, chatCompletion, stepsTaken).ConfigureAwait(false);
+        }
+        var requestSettings = GetRequestSettings(context);
+        return await GetNextStepAsync(chatHistory, chatCompletion, requestSettings, token).ConfigureAwait(false);
+    }
+
+
+    private Task<ChatHistory> TrimChatHistoryAsync(int tokenCount, ChatHistory chatHistory, IChatCompletion chatCompletion, List<StepwiseFunctionCallResult> stepsTaken)
+    {
+        _logger?.LogInformation("Trimming chat history");
+        var removalIndex = chatHistory.Messages.Count;
+        List<ChatMessageBase> userMessages = chatHistory.Messages.Where(m => m.Role == AuthorRole.User).ToList();
+        Queue<ChatMessageBase> stepwiseFunctionResults = new(chatHistory.Messages.Where(m => m.Role == AuthorRole.Assistant));
+
+        List<(ChatMessageBase AssistantMessage, ChatMessageBase UserMessage)> stepPairs =
+            Enumerable.Range(0, userMessages.Count).Select(i => (stepwiseFunctionResults.ElementAt(i), userMessages.ElementAt(i))).ToList();
+
+        var messagesRemoved = 0;
+
+        while (tokenCount >= Config.MaxTokens && chatHistory.Messages.Count > removalIndex)
+        {
+            // Check if a new step can be added
+            if (tokenCount + stepsTaken[stepsTaken.Count - 1].ToString().Length / 4 <= Config.MaxTokens)
+            {
+                // Add new stepwise function result to chat history
+                chatHistory.Messages.RemoveAt(removalIndex);
+                chatHistory.AddAssistantMessage(stepsTaken[stepsTaken.Count - 1].ToString());
+            }
+            else if (stepPairs.Count > 0)
+            {
+                // Check if the pair can be added without exceeding token limit
+                var pair = stepPairs.First();
+                stepPairs.RemoveAt(0);
+
+                if (tokenCount + pair.AssistantMessage.Content.Length / 4 + pair.UserMessage.Content.Length / 4 <= Config.MaxTokens)
                 {
-                    throw new InvalidOperationException("Failed to parse step from response text.");
-                }
-
-                if (!string.IsNullOrEmpty(nextStep.FinalAnswer))
-                {
-                    stepsTaken.Add(nextStep);
-                    _logger?.LogTrace("Final Answer: {FinalAnswer}", nextStep.FinalAnswer);
-                    context.Variables.Update(nextStep.FinalAnswer);
-
-                    // Add additional results to the context
-                    AddExecutionStatsToContext(stepsTaken, context);
-                    return context;
-                }
-
-                // forces the model to acknowledge it's past steps - no need for scratch pad
-                _chatHistory.AddAssistantMessage(nextStep.ToStepResult(i + 1));
-
-                _logger?.LogTrace("Thought: {Thought}", nextStep.Thought);
-
-                if (nextStep.FunctionCall != null)
-                {
-                    _logger?.LogInformation("Function: {Action}. Iteration: {Iteration}", nextStep.FunctionCall.Function, i + 1);
-                    _logger?.LogTrace("Function: {Action}({ActionVariables}). Iteration: {Iteration}.", nextStep.FunctionCall.Function, JsonSerializer.Serialize(nextStep.FunctionCall.Parameters), i + 1);
-
-                    try
-                    {
-                        await Task.Delay(Config.MinIterationTimeMs).ConfigureAwait(false);
-                        var actionResult = await InvokeActionAsync(nextStep.FunctionCall).ConfigureAwait(false);
-                        // forces the model to "observe" the action result
-                        _chatHistory.AddUserMessage(actionResult);
-                        nextStep.FunctionResult = actionResult;
-                        stepsTaken.Add(nextStep);
-                    }
-                    catch (Exception ex) when (!ex.IsCriticalException())
-                    {
-                        nextStep.FunctionResult = $"Error invoking action {nextStep.FunctionCall.Function} : {ex.Message}";
-                        _logger?.LogWarning(ex, "Error invoking action {Action}", nextStep.FunctionCall.Function);
-                    }
-
-                    _logger?.LogTrace("Observation: {Observation}", nextStep.Observation);
+                    // If pair fits, insert both
+                    chatHistory.Messages.Insert(removalIndex, pair.AssistantMessage);
+                    chatHistory.Messages.Insert(removalIndex + 1, pair.UserMessage);
                 }
                 else
                 {
-                    _logger?.LogInformation("[Action]: No action to take");
+                    // If pair doesn't fit, just insert user message
+                    chatHistory.Messages.Insert(removalIndex, pair.UserMessage);
                 }
-                // sleep 3 seconds
-                await Task.Delay(TimeSpan.FromMilliseconds(Config.MinIterationTimeMs)).ConfigureAwait(false);
+
+                // Update token count   
+                tokenCount = GetChatHistoryTokens(chatHistory);
             }
 
-            context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
-        }
-        else
-        {
-            context.Variables.Update("Question not found.");
+            // Removal during every cycle for next iteration
+            if (chatHistory.Messages.Count <= removalIndex)
+            {
+                continue;
+            }
+            chatHistory.Messages.RemoveAt(removalIndex);
+            messagesRemoved++; // Increment messages removed
+            tokenCount = GetChatHistoryTokens(chatHistory);
         }
 
-        return context;
+        return Task.FromResult(chatHistory);
+    }
+
+
+    private async Task<StepwiseFunctionCallResult> GetNextStepAsync(ChatHistory chatHistory, IChatCompletion chatCompletion, FunctionCallRequestSettings requestSettings, CancellationToken token)
+    {
+
+        var nextStep = await chatCompletion.GenerateResponseAsync<StepwiseFunctionCallResult>(
+                chatHistory,
+                requestSettings,
+                Config.SerializerOptions,
+                s => s.ToFunctionCallResult(), token)
+            .ConfigureAwait(false);
+
+        if (nextStep == null)
+        {
+            throw new InvalidOperationException("Failed to parse step from response text.");
+        }
+
+        var assistantMessage = nextStep.ToString();
+        _logger?.LogInformation("Assistant message: {AssistantMessage}", assistantMessage);
+        Console.WriteLine(assistantMessage);
+        _chatHistory.AddAssistantMessage(assistantMessage);
+
+        if (nextStep.FunctionCall == null)
+        {
+            return nextStep;
+        }
+
+        var actionResult = await InvokeActionAsync(nextStep.FunctionCall).ConfigureAwait(false);
+        nextStep.FunctionResult = actionResult;
+        var userMessage = $"Observation: {actionResult}";
+        Console.WriteLine(userMessage);
+        chatHistory.AddUserMessage("Observation: " + actionResult);
+        return nextStep;
+    }
+
+
+    private SKContext? TryGetFinalAnswer(StepwiseFunctionCallResult step, SKContext context, List<StepwiseFunctionCallResult> stepsTaken)
+    {
+        if (!string.IsNullOrEmpty(step.FinalAnswer))
+        {
+            _logger?.LogInformation("Final Answer: {FinalAnswer}", step.FinalAnswer);
+            context.Variables.Update(step.FinalAnswer);
+            stepsTaken.Add(step);
+            AddExecutionStatsToContext(stepsTaken, context, stepsTaken.Count);
+            return context;
+        }
+        return null;
+    }
+
+
+    private StepwiseFunctionCallResult AddNextStep(List<StepwiseFunctionCallResult> stepsTaken, StepwiseFunctionCallResult step, StepwiseFunctionCallResult lastStep, ChatHistory chatHistory, int startingMessageCount)
+    {
+        if (lastStep.FunctionCall == null)
+        {
+            stepsTaken.Add(step);
+            return step;
+        }
+
+        if (step.FunctionCall != null
+            && step.FunctionCall.Function.Equals(lastStep.FunctionCall.Function, StringComparison.Ordinal)
+            && step.FunctionCall.Parameters.Equals(lastStep.FunctionCall.Parameters))
+        {
+            lastStep.FunctionCall = step.FunctionCall;
+            lastStep.FunctionResult += step.FunctionResult;
+
+            if (chatHistory.Messages.Count > startingMessageCount)
+            {
+                chatHistory.Messages.RemoveAt(chatHistory.Messages.Count - 1);
+            }
+
+            step = lastStep;
+        }
+
+        else
+        {
+            _logger.LogInformation("Thought: {Thought}", step.Thought);
+            stepsTaken.Add(step);
+        }
+
+        return step;
     }
 
 
@@ -180,7 +296,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
             if (result.ErrorOccurred)
             {
                 _logger.LogError("Error occurred: {Error}", result.LastException);
-                return $"Error occurred: {result.LastException}";
+                return $"Error occurred: {result.LastException?.Message}";
             }
 
             _logger.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
@@ -190,15 +306,40 @@ public class StructuredStepwisePlanner : IStructuredPlanner
         catch (Exception e) when (!e.IsCriticalException())
         {
             _logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
-            return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException.Message}";
+            return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException?.Message}";
         }
     }
 
 
-    private static void AddExecutionStatsToContext(List<StepwiseFunctionCallResult> stepsTaken, SKContext context)
+    private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, string request)
+    {
+
+        var systemContext = this._kernel.CreateNewContext();
+        string systemMessage = await this.GetSystemMessage(systemContext).ConfigureAwait(false);
+
+        chatHistory.AddSystemMessage(systemMessage);
+        chatHistory.AddUserMessage(request);
+
+        return chatHistory;
+    }
+
+
+    private int GetChatHistoryTokens(ChatHistory chatHistory)
+    {
+        var messages = string.Join("\n", chatHistory.Messages);
+        var tokenCount = messages.Length / 4;
+        return tokenCount;
+    }
+
+
+    private Task<string> GetSystemMessage(SKContext context) => _promptRenderer.RenderAsync(_promptTemplate, context);
+
+
+    private static void AddExecutionStatsToContext(List<StepwiseFunctionCallResult> stepsTaken, SKContext context, int iteration)
     {
         context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
         context.Variables.Set("stepsTaken", string.Join("\n", stepsTaken.Select((result, step) => result.ToStepResult(step + 1))));
+        context.Variables.Set("iterations", iteration.ToString(CultureInfo.InvariantCulture));
 
         Dictionary<string, int> functionCounts = new();
 
@@ -208,7 +349,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
             {
                 currentCount = 0;
             }
-            functionCounts[step.Function] = currentCount + 1;
+            functionCounts[step.FunctionCall.Function] = currentCount + 1;
         }
 
         var functionCallListWithCounts = string.Join(", ", functionCounts.Keys.Select(func =>
@@ -229,12 +370,12 @@ public class StructuredStepwisePlanner : IStructuredPlanner
         {
             CallableFunctions = callableFunctions,
             FunctionCall = StepwisePlan,
-            MaxTokens = 1024,
+            MaxTokens = Config.MaxTokens,
             Temperature = 0.0,
             StopSequences = new List<string>()
             {
-                "\n Observation:",
-                "\n Thought:"
+                "Observation:",
+                "Thought:"
             }
         };
     }
@@ -250,8 +391,9 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
     private readonly IDictionary<string, ISKFunction> _executeFunction;
+    private readonly PromptTemplateEngine _promptRenderer = new();
 
-    private OpenAIChatHistory _chatHistory = new();
+    private ChatHistory _chatHistory = new();
     private readonly string _promptTemplate;
 
     /// <summary>
@@ -315,11 +457,6 @@ public class StructuredStepwisePlanner : IStructuredPlanner
                             {
                                 Type = "string",
                                 Description = "Current thought context"
-                            },
-                            Observation = new
-                            {
-                                Type = "string",
-                                Description = "Observation from the action result"
                             },
                             Final_Answer = new
                             {

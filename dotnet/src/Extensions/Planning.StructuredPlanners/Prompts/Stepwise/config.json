@@ -9,25 +9,15 @@
     "presence_penalty": 0,
     "frequency_penalty": 0,
     "stop_sequences": [
-      "[OBSERVATION]",
-      "\n[THOUGHT]"
+      "\n Observation:",
+      "\n Thought:"
     ]
   },
   "input": {
     "parameters": [
       {
-        "name": "question",
-        "description": "The question to answer",
-        "defaultValue": ""
-      },
-      {
-        "name": "agentScratchPad",
-        "description": "The agent's scratch pad",
-        "defaultValue": ""
-      },
-      {
-        "name": "functionDescriptions",
-        "description": "The manual of the agent's functions",
+        "name": "problem",
+        "description": "The problem to solve",
         "defaultValue": ""
       }
     ]

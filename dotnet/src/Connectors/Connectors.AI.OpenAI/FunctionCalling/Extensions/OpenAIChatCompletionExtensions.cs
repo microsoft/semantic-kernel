@@ -87,7 +87,7 @@ public static class OpenAIChatCompletionExtensions
 
         catch (JsonException ex)
         {
-            Console.WriteLine($"Error while converting '{firstElementJsonString}' to a '{typeof(T)}': {ex}");
+            Console.WriteLine($"Error while converting '{content}' to a '{typeof(T)}': {ex}");
 
             if (deserializationFallback != null)
             {
