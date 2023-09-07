@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Memory.Collections;
 /// Structure for storing data which can be scored.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
+internal readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
 {
     public ScoredValue(T item, double score)
     {
@@ -18,7 +18,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
     }
 
     public T Value { get; }
-    public Score Score { get; }
+    public double Score { get; }
 
     public int CompareTo(ScoredValue<T> other)
     {
@@ -52,7 +52,7 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
     public bool Equals(ScoredValue<T> other)
     {
-        return EqualityComparer<T>.Default.Equals(other.Value) &&
+        return EqualityComparer<T>.Default.Equals(this.Value, other.Value) &&
                this.Score.Equals(other.Score);
     }
 
@@ -93,6 +93,6 @@ public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<
 
     internal static ScoredValue<T> Min()
     {
-        return new ScoredValue<T>(default!, Score.Min);
+        return new ScoredValue<T>(default!, double.MinValue);
     }
 }

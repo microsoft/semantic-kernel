@@ -179,11 +179,15 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
         SearchQueryVector vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
-            Fields = AzureCognitiveSearchMemoryRecord.EmbeddingField,
+            Fields = { AzureCognitiveSearchMemoryRecord.EmbeddingField },
             Value = MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray(),
         };
 
-        SearchOptions options = new() { Vector = vectorQuery };
+        SearchOptions options = new()
+        {
+            Vectors = { vectorQuery }
+        };
+
         Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
         try
         {
@@ -223,7 +227,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
     {
         var normalizedIndexName = this.NormalizeIndexName(collectionName);
 
-        var records = keys.Select(x => new List<AzureCognitiveSearchMemoryRecord> { new(x) });
+        var records = keys.Select(x => new AzureCognitiveSearchMemoryRecord(x));
 
         var client = this.GetSearchClient(normalizedIndexName);
         try

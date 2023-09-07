@@ -10,8 +10,10 @@ namespace Microsoft.SemanticKernel.Reliability.Basic;
 /// <summary>
 /// Internal factory for creating <see cref="DefaultHttpRetryHandler"/> instances.
 /// </summary>
-internal sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpRetryHandler>
+public sealed class BasicHttpRetryHandlerFactory : HttpHandlerFactory<BasicHttpRetryHandler>
 {
+    public static BasicHttpRetryHandlerFactory Instance { get; } = new BasicHttpRetryHandlerFactory();
+
     /// <summary>
     /// Creates a new instance of <see cref="DefaultHttpRetryHandlerFactory"/> with the provided configuration.
     /// </summary>
