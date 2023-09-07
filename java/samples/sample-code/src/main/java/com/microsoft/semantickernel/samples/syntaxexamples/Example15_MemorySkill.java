@@ -13,10 +13,9 @@ import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import reactor.core.publisher.Mono;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import reactor.core.publisher.Mono;
 
 public class Example15_MemorySkill {
     private static final String MEMORY_COLLECTION_NAME = "aboutMe";
@@ -55,6 +54,7 @@ public class Example15_MemorySkill {
                 .build();
 
         // ========= Store memories using the kernel =========
+
         kernel.getMemory().saveInformationAsync(MEMORY_COLLECTION_NAME, "My name is Andrea", "info1", null, null).block();
         kernel.getMemory().saveInformationAsync(MEMORY_COLLECTION_NAME, "I work as a tourist operator", "info2", null, null).block();
         kernel.getMemory().saveInformationAsync(MEMORY_COLLECTION_NAME, "I've been living in Seattle since 2005", "info3", null, null).block();

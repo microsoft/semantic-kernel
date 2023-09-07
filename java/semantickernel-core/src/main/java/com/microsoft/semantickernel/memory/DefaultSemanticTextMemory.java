@@ -66,7 +66,6 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                         });
     }
 
-    @Override
     public Mono<MemoryQueryResult> getAsync(String collection, String key, boolean withEmbedding) {
         return _storage.getAsync(collection, key, withEmbedding)
                 .map(record -> new MemoryQueryResult(record.getMetadata(), 1d));

@@ -109,9 +109,10 @@ public interface SKFunction<RequestConfiguration> {
     /**
      * Create a manual-friendly string for a function.
      *
+     * @param includeOutputs Whether to include function outputs in the string.
      * @return A manual-friendly string for a function.
      */
-    String toManualString();
+    String toManualString(boolean includeOutputs);
 
     /**
      * Invokes the function with the given input, context and settings

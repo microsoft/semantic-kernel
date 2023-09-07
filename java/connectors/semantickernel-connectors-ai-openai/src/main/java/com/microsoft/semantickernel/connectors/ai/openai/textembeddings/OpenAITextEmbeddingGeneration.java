@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import reactor.core.publisher.Mono;
 
-public class OpenAITextEmbeddingGeneration extends ClientBase
-        implements TextEmbeddingGeneration {
+public class OpenAITextEmbeddingGeneration extends ClientBase implements TextEmbeddingGeneration {
 
     public OpenAITextEmbeddingGeneration(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);
