@@ -96,19 +96,24 @@ internal sealed class RestApiOperationRunner
     }
 
     /// <summary>
-    /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="config"/>.
+    /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="arguments"/>.
     /// </summary>
     /// <param name="operation">The REST API operation to execute.</param>
-    /// <param name="config">Configuration for REST API operation run.</param>
+    /// <param name="arguments">The dictionary of arguments to be passed to the operation.</param>
+    /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task execution result.</returns>
-    public Task<JsonNode?> RunAsync(RestApiOperation operation, RestApiOperationRunConfig config, CancellationToken cancellationToken = default)
+    public Task<JsonNode?> RunAsync(
+        RestApiOperation operation,
+        IDictionary<string, string> arguments,
+        RestApiOperationRunOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
-        var url = operation.BuildOperationUrl(config.Arguments, config.ServerUrlOverride, config.DocumentUri);
+        var url = operation.BuildOperationUrl(arguments, options?.ServerUrlOverride, options?.DocumentUri);
 
-        var headers = operation.RenderHeaders(config.Arguments);
+        var headers = operation.RenderHeaders(arguments);
 
-        var payload = this.BuildOperationPayload(operation, config.Arguments);
+        var payload = this.BuildOperationPayload(operation, arguments);
 
         return this.SendAsync(url, operation.Method, headers, payload, cancellationToken);
     }
