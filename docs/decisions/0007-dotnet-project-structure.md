@@ -156,10 +156,8 @@ This diagram show current skills are integrated with the Semantic Kernel core.
 
 ## Considered Options
 
-- New `planning`, `functions` and `plugins` project areas
-- New `planning`, `functions` and `plugins` project areas with some project consolidation
-  - Merge all planner implementations into `Planner.Core`
-- New `planning`, `functions` and `plugins` project areas with individual unit test projects
+- Option #1: New `planning`, `functions` and `plugins` project areas
+- Option #2: Folder naming matches assembly name
 - … <!-- numbers of options can vary -->
 
 In all cases the following changes will be made:
@@ -172,20 +170,17 @@ In all cases the following changes will be made:
 Chosen option: "{title of option 1}", because
 {justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
 
-## Pros and Cons of the Options
-
-### Move skills projects to be extensions and merge some packages
-
 Main categories for the projects will be:
 
-1. `connectors`: ***A connector project allows the Semantic Kernel to connect to AI and Memory services***. Some of the existing connector projects may move to other repositories.
-1. `planners`: ***A planner project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask***. This category will include the current action, sequential and stepwise planners (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
-1. `functions`: ***A function project that enables the Semantic Kernel to access the functions it will orchestrate***. This category will include:
-    1. Native functions i.e., arbitrary .Net functions for the .Net Semantic Kernel
+1. `Connectors`: ***A connector project allows the Semantic Kernel to connect to AI and Memory services***. Some of the existing connector projects may move to other repositories.
+1. `Planners`: ***A planner project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask***. This category will include the current action, sequential and stepwise planners (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
+1. `Functions`: ***A function project that enables the Semantic Kernel to access the functions it will orchestrate***. This category will include:
     1. Semantic functions i.e., prompts executed against an LLM
     1. GRPC remote procedures i.e., procedures executed remotely using the GRPC framework
     1. Open API endpoints i.e., REST endpoints that have Open API definitions executed remotely using the HTTP protocol
-1. `plugins`: ***A plugin project contains the implementation(s) of a Semantic Kernel plugin***. A Semantic Kernel plugin
+1. `Plugins`: ***A plugin project contains the implementation(s) of a Semantic Kernel plugin***. A Semantic Kernel plugin is contains a concrete implementation of a function e.g., a plugin may include code for basic text operations.
+
+### Option #1: New `planning`, `functions` and `plugins` project areas
 
 ```text
 SK-dotnet
@@ -194,8 +189,8 @@ SK-dotnet
     ├── connectors/
     │   ├── Connectors.AI.OpenAI*
     │   ├── Connectors.AI.HuggingFace
-    │   ├── Connectors.AI.AzureCognitiveSearch
-    │   ├── Connectors.AI.Qdrant
+    │   ├── Connectors.Memory.AzureCognitiveSearch
+    │   ├── Connectors.Memory.Qdrant
     │   ├── ...
     │   └── Connectors.UnitTests
     ├── planners/
@@ -221,7 +216,6 @@ SK-dotnet
     ├── SemanticKernel.Abstractions*
     ├── SemanticKernel.MetaPackage
     └── SemanticKernel.UnitTests
-
 ```
 
 ### Changes
@@ -238,13 +232,44 @@ SK-dotnet
 | `Plugins.MsGraph`                   | Old `Skills.MsGraph` project |
 | `Plugins.WebSearch`                 | Old `Skills.WebSearch` project |
 
-### Pros and Cons
-
-- Good, because {argument a}
-- Good, because {argument b}
-
 ### Semantic Kernel Skills and Functions
 
 This diagram how functions and plugins would be integrated with the Semantic Kernel core.
 
 <img src="./diagrams/skfunctions-v1.png" alt="ISKFunction class relationships" width="400"/>
+
+### Option #2: Folder naming matches assembly name
+
+```text
+SK-dotnet
+├── samples/
+└── libraries/
+    ├── Microsoft.SemanticKernel.Connectors.AI.OpenAI*
+    │   ├── src
+    │   └── tests (Not shown but all projects will have src and tests subfolders)
+    │
+    ├── Microsoft.SemanticKernel.Connectors.AI.HuggingFace
+    ├── Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch
+    ├── Microsoft.SemanticKernel.Connectors.Memory.Qdrant
+    │
+    ├── Microsoft.SemanticKernel.Planners*
+    │ 
+    ├── Microsoft.SemanticKernel.Functions.Prompt|Semantic*
+    ├── Microsoft.SemanticKernel.Functions.Grpc
+    ├── Microsoft.SemanticKernel.Functions.OpenAPI
+    │
+    ├── Microsoft.SemanticKernel.Plugins.Core*
+    ├── Microsoft.SemanticKernel.Plugins.Document
+    ├── Microsoft.SemanticKernel.Plugins.MsGraph
+    ├── Microsoft.SemanticKernel.Plugins.Web
+    │
+    ├── InternalUtilities
+    │
+    ├── IntegrationTests
+    │
+    ├── Microsoft.SemanticKernel.Core*
+    ├── Microsoft.SemanticKernel.Abstractions*
+    └── Microsoft.SemanticKernel.MetaPackage
+```
+
+***Note:*** Each project folder contains a `src` and `tests` folder.
