@@ -175,7 +175,10 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     #region protected ================================================================================
-
+    /// <summary>
+    /// Disposes the resources used by the <see cref="SqliteMemoryStore"/> instance.
+    /// </summary>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (!this._disposedValue)
