@@ -97,7 +97,7 @@ public static class ImportSemanticSkillFromDirectoryExtension
                     config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
                 }
 
-                logger ??= kernel.LoggerFactory.CreateLogger(nameof(IKernel));
+                logger ??= kernel.LoggerFactory.CreateLogger(typeof(IKernel));
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
                     logger.LogTrace("Config {0}: {1}", functionName, config.ToJson());
