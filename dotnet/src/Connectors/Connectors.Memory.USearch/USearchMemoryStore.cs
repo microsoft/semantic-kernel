@@ -58,7 +58,7 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
 
         lock (this._collectionLockerStore.GetLockFor(collectionName))
         {
-            this._store.TryAdd(collectionName, new USearchCollectionStorage(this._usearchIndexOptions));
+            this._store.TryAdd(collectionName, new USearchCollectionStore(this._usearchIndexOptions));
         }
 
         return Task.CompletedTask;
@@ -235,7 +235,7 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
     {
         if (!this._disposedValue)
         {
-            foreach (KeyValuePair<string, IUSearchCollectionStorage> entry in this._store)
+            foreach (KeyValuePair<string, IUSearchCollectionStore> entry in this._store)
             {
                 lock (this._collectionLockerStore.GetLockFor(entry.Key))
                 {
@@ -248,7 +248,7 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
 
     protected bool TryGetCollection(
         string name,
-        [NotNullWhen(true)] out IUSearchCollectionStorage? collection,
+        [NotNullWhen(true)] out IUSearchCollectionStore? collection,
         bool create = false)
     {
         if (this._store.TryGetValue(name, out collection))
@@ -258,7 +258,7 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
 
         if (create)
         {
-            collection = new USearchCollectionStorage(this._usearchIndexOptions);
+            collection = new USearchCollectionStore(this._usearchIndexOptions);
             if (this._store.TryAdd(name, collection))
             {
                 return true;
@@ -277,7 +277,7 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
 
     private readonly USearchConcurrentCollectionLockStore _collectionLockerStore = new();
 
-    private readonly ConcurrentDictionary<string, IUSearchCollectionStorage> _store = new();
+    private readonly ConcurrentDictionary<string, IUSearchCollectionStore> _store = new();
 
     private readonly IndexOptions _usearchIndexOptions;
 
