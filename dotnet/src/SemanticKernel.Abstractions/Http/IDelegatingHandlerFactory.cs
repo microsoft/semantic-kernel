@@ -10,5 +10,10 @@ namespace Microsoft.SemanticKernel.Http;
 /// </summary>
 public interface IDelegatingHandlerFactory
 {
+    /// <summary>
+    /// Creates a new <see cref="DelegatingHandler"/> instance with the specified logger.
+    /// </summary>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <returns>A new <see cref="DelegatingHandler"/> instance.</returns>
     DelegatingHandler Create(ILoggerFactory? loggerFactory);
 }

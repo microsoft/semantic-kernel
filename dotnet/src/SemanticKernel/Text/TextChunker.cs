@@ -15,6 +15,11 @@ namespace Microsoft.SemanticKernel.Text;
 /// </summary>
 public static class TextChunker
 {
+    /// <summary>
+    /// Delegate for counting tokens in a string.
+    /// </summary>
+    /// <param name="input">The input string to count tokens in.</param>
+    /// <returns>The number of tokens in the input string.</returns>
     public delegate int TokenCounter(string input);
 
     private static readonly char[] s_spaceChar = new[] { ' ' };

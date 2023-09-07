@@ -29,9 +29,9 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// A planner that creates a Stepwise plan using Mrkl systems.
 /// </summary>
-/// <remark>
+/// <remarks>
 /// An implementation of a Mrkl system as described in https://arxiv.org/pdf/2205.00445.pdf
-/// </remark>
+/// </remarks>
 public class StepwisePlanner : IStepwisePlanner
 {
     /// <summary>
