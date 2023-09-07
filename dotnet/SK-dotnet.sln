@@ -154,13 +154,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Kusto", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine.PromptTemplateEngine", "src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj", "{10E4B697-D4E8-468D-872D-49670FD150FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planning.StructuredPlanners", "src\Extensions\Planning.StructuredPlanners\Planning.StructuredPlanners.csproj", "{72702879-B092-4C54-B5C9-9FE20C97982D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reliability.Polly", "src\Extensions\Reliability.Polly\Reliability.Polly.csproj", "{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reliability.Basic", "src\Extensions\Reliability.Basic\Reliability.Basic.csproj", "{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.StepwisePlanner.UnitTests", "src\Extensions\Extensions.StepwisePlanner.UnitTests\Extensions.StepwisePlanner.UnitTests.csproj", "{6F651E87-F16E-407B-AF7F-B3475F850E9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planning.StructuredPlanners", "src\Extensions\Planning.StructuredPlanners\Planning.StructuredPlanners.csproj", "{716E74A6-DB19-4A81-A055-E09A46577007}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -403,6 +403,12 @@ Global
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{716E74A6-DB19-4A81-A055-E09A46577007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{716E74A6-DB19-4A81-A055-E09A46577007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{716E74A6-DB19-4A81-A055-E09A46577007}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{716E74A6-DB19-4A81-A055-E09A46577007}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{716E74A6-DB19-4A81-A055-E09A46577007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{716E74A6-DB19-4A81-A055-E09A46577007}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -457,10 +463,10 @@ Global
 		{C754950A-E16C-4F96-9CC7-9328E361B5AF} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{E07608CC-D710-4655-BB9E-D22CF3CDD193} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 		{10E4B697-D4E8-468D-872D-49670FD150FB} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
-		{72702879-B092-4C54-B5C9-9FE20C97982D} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{716E74A6-DB19-4A81-A055-E09A46577007} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
