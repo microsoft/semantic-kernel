@@ -67,11 +67,18 @@ public class PromptTemplateConfig
         public List<string> StopSequences { get; set; } = new();
 
         /// <summary>
-        /// When provided will be used to set the system prompt while using Chat Completions
+        /// When provided will be used to set the system prompt while using Chat Completions.
         /// </summary>
         [JsonPropertyName("chat_system_prompt")]
         [JsonPropertyOrder(7)]
         public string? ChatSystemPrompt { get; set; }
+
+        /// <summary>
+        /// When provided will be used to select the AI service used.
+        /// </summary>
+        [JsonPropertyName("service_id")]
+        [JsonPropertyOrder(8)]
+        public string? ServiceId { get; set; }
     }
 
     /// <summary>

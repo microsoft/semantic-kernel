@@ -181,6 +181,88 @@ public class KernelTests
         kernel.ImportSkill(new MySkill());
     }
 
+    [Fact]
+    public void ItUsesDefaultServiceWhenSpecified()
+    {
+        // Arrange
+        var mockTextCompletion1 = new Mock<ITextCompletion>();
+        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var mockCompletionResult = new Mock<ITextResult>();
+
+        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+            .Build();
+
+        var templateConfig = new PromptTemplateConfig();
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+
+        // Act
+        kernel.RunAsync(func);
+
+        // Assert
+        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public void ItUsesServiceIdWhenProvided()
+    {
+        // Arrange
+        var mockTextCompletion1 = new Mock<ITextCompletion>();
+        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var mockCompletionResult = new Mock<ITextResult>();
+
+        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+            .Build();
+
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Completion.ServiceId = "service1";
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+
+        // Act
+        kernel.RunAsync(func);
+
+        // Assert
+        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
+    {
+        // Arrange
+        var mockTextCompletion1 = new Mock<ITextCompletion>();
+        var mockTextCompletion2 = new Mock<ITextCompletion>();
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+            .Build();
+
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Completion.ServiceId = "service3";
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+
+        // Act
+        SKContext result = await kernel.RunAsync(func);
+
+        // Assert
+        Assert.NotNull(result.LastException);
+        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", result.LastException.Message);
+        Assert.True(result.ErrorOccurred);
+    }
+
     public class MySkill
     {
         [SKFunction, Description("Return any value.")]

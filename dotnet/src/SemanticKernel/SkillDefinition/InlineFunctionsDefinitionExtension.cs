@@ -35,6 +35,8 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="presencePenalty">Presence Penalty parameter passed to LLM</param>
     /// <param name="frequencyPenalty">Frequency Penalty parameter passed to LLM</param>
     /// <param name="stopSequences">Strings the LLM will detect to stop generating (before reaching max tokens)</param>
+    /// <param name="chatSystemPrompt">When provided will be used to set the system prompt while using Chat Completions</param>
+    /// <param name="serviceId">When provided will be used to select the AI service used</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
@@ -47,7 +49,9 @@ public static class InlineFunctionsDefinitionExtension
         double topP = 0,
         double presencePenalty = 0,
         double frequencyPenalty = 0,
-        IEnumerable<string>? stopSequences = null)
+        IEnumerable<string>? stopSequences = null,
+        string? chatSystemPrompt = null,
+        string? serviceId = null)
     {
         functionName ??= RandomFunctionName();
 
@@ -62,7 +66,9 @@ public static class InlineFunctionsDefinitionExtension
                 PresencePenalty = presencePenalty,
                 FrequencyPenalty = frequencyPenalty,
                 MaxTokens = maxTokens,
-                StopSequences = stopSequences?.ToList() ?? new List<string>()
+                StopSequences = stopSequences?.ToList() ?? new List<string>(),
+                ChatSystemPrompt = chatSystemPrompt,
+                ServiceId = serviceId
             }
         };
 
@@ -119,6 +125,8 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="presencePenalty">Presence Penalty parameter passed to LLM</param>
     /// <param name="frequencyPenalty">Frequency Penalty parameter passed to LLM</param>
     /// <param name="stopSequences">Strings the LLM will detect to stop generating (before reaching max tokens)</param>
+    /// <param name="chatSystemPrompt">When provided will be used to set the system prompt while using Chat Completions</param>
+    /// <param name="serviceId">When provided will be used to select the AI service used</param>
     /// <returns>A function ready to use</returns>
     public static Task<SKContext> InvokeSemanticFunctionAsync(
         this IKernel kernel,
@@ -131,7 +139,9 @@ public static class InlineFunctionsDefinitionExtension
         double topP = 0,
         double presencePenalty = 0,
         double frequencyPenalty = 0,
-        IEnumerable<string>? stopSequences = null)
+        IEnumerable<string>? stopSequences = null,
+        string? chatSystemPrompt = null,
+        string? serviceId = null)
     {
         var skfunction = kernel.CreateSemanticFunction(
             promptTemplate,
@@ -143,7 +153,9 @@ public static class InlineFunctionsDefinitionExtension
             topP,
             presencePenalty,
             frequencyPenalty,
-            stopSequences);
+            stopSequences,
+            chatSystemPrompt,
+            serviceId);
 
         return kernel.RunAsync(skfunction);
     }
