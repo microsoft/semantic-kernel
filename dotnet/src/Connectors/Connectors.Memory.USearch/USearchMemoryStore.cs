@@ -211,6 +211,7 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
             ).ToAsyncEnumerable<(MemoryRecord, double)>();
         }
     }
+
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
