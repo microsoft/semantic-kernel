@@ -10,6 +10,8 @@ import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
+import com.microsoft.semantickernel.planner.PlanningException;
+import com.microsoft.semantickernel.planner.PlanningException.ErrorCodes;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -263,7 +265,8 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
         String resultValue = result.getResult();
 
         if (resultValue == null) {
-            return Mono.error(new RuntimeException("No result returned"));
+            return Mono.error(
+                    new PlanningException(ErrorCodes.UNKNOWN_ERROR, "No result returned"));
         }
 
         resultValue = resultValue.trim();
@@ -295,13 +298,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
         updatedContext.setVariable(DefaultResultKey, finalResultValue);
 
-                                        return Mono.just(
-                                                SKBuilders.context()
-                                                        .clone(context)
-                                                        .withVariables(updatedContext)
-                                                        .build());
-                                    });
-                });
+        return Mono.just(SKBuilders.context().clone(context).withVariables(updatedContext).build());
     }
 
     public Mono<SKContext> invokeAsync(

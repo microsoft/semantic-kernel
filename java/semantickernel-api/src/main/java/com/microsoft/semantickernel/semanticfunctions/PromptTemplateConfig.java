@@ -3,12 +3,12 @@ package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import com.microsoft.semantickernel.builders.Buildable;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import reactor.util.annotation.Nullable;
 
 /** Prompt template configuration */
@@ -24,7 +24,6 @@ public class PromptTemplateConfig {
     public CompletionConfig getCompletionConfig() {
         return completionConfig;
     }
-
 
     /** Builder for CompletionConfig */
     public static class CompletionConfigBuilder implements SemanticKernelBuilder<CompletionConfig> {
@@ -284,7 +283,7 @@ public class PromptTemplateConfig {
         }
 
         public SemanticKernelBuilder<CompletionConfig> builder() {
-          return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
+            return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
         }
     }
 
