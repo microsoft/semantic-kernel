@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -20,11 +19,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public interface IKernel
 {
-    /// <summary>
-    /// Settings required to execute functions, including details about AI dependencies, e.g. endpoints and API keys.
-    /// </summary>
-    KernelConfig Config { get; }
-
     /// <summary>
     /// App logger
     /// </summary>
@@ -44,6 +38,11 @@ public interface IKernel
     /// Reference to the read-only skill collection containing all the imported functions
     /// </summary>
     IReadOnlySkillCollection Skills { get; }
+
+    /// <summary>
+    /// Reference to Http handler factory
+    /// </summary>
+    IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <summary>
     /// Build and register a function in the internal skill collection, in a global generic skill.
@@ -185,24 +184,4 @@ public interface IKernel
     /// <typeparam name="T">Service type</typeparam>
     /// <returns>Instance of T</returns>
     T GetService<T>(string? name = null) where T : IAIService;
-
-    #region Obsolete
-
-    /// <summary>
-    /// App logger
-    /// </summary>
-    [Obsolete("Use Logger instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    ILogger Log { get; }
-
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
-    /// <returns>SK context</returns>
-    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    SKContext CreateNewContext(CancellationToken cancellationToken);
-
-    #endregion
 }

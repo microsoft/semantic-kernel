@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -50,9 +50,9 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
         {
-            var client = CreateAzureOpenAIClient(loggerFactory, config, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
+            var client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
             return new AzureTextCompletion(deploymentName, client, loggerFactory);
         }, setAsDefault);
 
@@ -79,9 +79,9 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
         {
-            var client = CreateAzureOpenAIClient(loggerFactory, config, deploymentName, endpoint, credentials, httpClient);
+            var client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, credentials, httpClient);
             return new AzureTextCompletion(deploymentName, client, loggerFactory);
         }, setAsDefault);
 
@@ -104,7 +104,7 @@ public static class OpenAIKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory) =>
             new AzureTextCompletion(
                 deploymentName,
                 openAIClient,
@@ -134,12 +134,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, config) =>
+        builder.WithAIService<ITextCompletion>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new OpenAITextCompletion(
                 modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory),
             setAsDefault);
         return builder;
@@ -169,12 +169,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, config) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new AzureTextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 apiKey,
-                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory),
             setAsDefault);
         return builder;
@@ -200,12 +200,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, config) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new AzureTextEmbeddingGeneration(
                 deploymentName,
                 endpoint,
                 credential,
-                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory),
             setAsDefault);
         return builder;
@@ -231,12 +231,12 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, config) =>
+        builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new OpenAITextEmbeddingGeneration(
                 modelId,
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory),
             setAsDefault);
         return builder;
@@ -268,9 +268,9 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config)
+        AzureChatCompletion Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory)
         {
-            OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, config, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
+            OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, new AzureKeyCredential(apiKey), httpClient);
 
             return new(deploymentName, client, loggerFactory);
         };
@@ -308,9 +308,9 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config)
+        AzureChatCompletion Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory)
         {
-            OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, config, deploymentName, endpoint, credentials, httpClient);
+            OpenAIClient client = CreateAzureOpenAIClient(loggerFactory, httpHandlerFactory, deploymentName, endpoint, credentials, httpClient);
 
             return new(deploymentName, client, loggerFactory);
         };
@@ -344,9 +344,9 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        AzureChatCompletionWithData Factory(ILoggerFactory loggerFactory, KernelConfig kernelConfig) => new(
+        AzureChatCompletionWithData Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory) => new(
             config,
-            HttpClientProvider.GetHttpClient(kernelConfig, httpClient, loggerFactory),
+            HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
             loggerFactory);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -381,11 +381,11 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        OpenAIChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config) => new(
+        OpenAIChatCompletion Factory(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory) => new(
             modelId,
             apiKey,
             orgId,
-            HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+            HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
             loggerFactory);
 
         builder.WithAIService<IChatCompletion>(serviceId, Factory, setAsDefault);
@@ -417,7 +417,7 @@ public static class OpenAIKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        AzureChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config)
+        AzureChatCompletion Factory(ILoggerFactory loggerFactory)
         {
             return new(deploymentName, openAIClient, loggerFactory);
         };
@@ -451,7 +451,7 @@ public static class OpenAIKernelBuilderExtensions
         string? serviceId = null,
         bool setAsDefault = false)
     {
-        OpenAIChatCompletion Factory(ILoggerFactory loggerFactory, KernelConfig config)
+        OpenAIChatCompletion Factory(ILoggerFactory loggerFactory)
         {
             return new(deploymentName, openAIClient, loggerFactory);
         };
@@ -488,11 +488,11 @@ public static class OpenAIKernelBuilderExtensions
         bool setAsDefault = false,
         HttpClient? httpClient = null)
     {
-        builder.WithAIService<IImageGeneration>(serviceId, (ILoggerFactory loggerFactory, KernelConfig config) =>
+        builder.WithAIService<IImageGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new OpenAIImageGeneration(
                 apiKey,
                 orgId,
-                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory),
             setAsDefault);
 
@@ -518,11 +518,11 @@ public static class OpenAIKernelBuilderExtensions
         HttpClient? httpClient = null,
         int maxRetryCount = 5)
     {
-        builder.WithAIService<IImageGeneration>(serviceId, (ILoggerFactory loggerFactory, KernelConfig config) =>
+        builder.WithAIService<IImageGeneration>(serviceId, (loggerFactory, httpHandlerFactory) =>
             new AzureOpenAIImageGeneration(
                 endpoint,
                 apiKey,
-                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 loggerFactory,
                 maxRetryCount),
             setAsDefault);
@@ -532,32 +532,26 @@ public static class OpenAIKernelBuilderExtensions
 
     #endregion
 
-    private static OpenAIClient CreateAzureOpenAIClient(ILoggerFactory loggerFactory, KernelConfig config, string deploymentName, string endpoint, AzureKeyCredential credentials, HttpClient? httpClient)
+    private static OpenAIClient CreateAzureOpenAIClient(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory, string deploymentName, string endpoint, AzureKeyCredential credentials, HttpClient? httpClient)
     {
-        OpenAIClientOptions options = CreateOpenAIClientOptions(loggerFactory, config, httpClient);
+        OpenAIClientOptions options = CreateOpenAIClientOptions(loggerFactory, httpHandlerFactory, httpClient);
 
         return new(new Uri(endpoint), credentials, options);
     }
 
-    private static OpenAIClient CreateAzureOpenAIClient(ILoggerFactory loggerFactory, KernelConfig config, string deploymentName, string endpoint, TokenCredential credentials, HttpClient? httpClient)
+    private static OpenAIClient CreateAzureOpenAIClient(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory, string deploymentName, string endpoint, TokenCredential credentials, HttpClient? httpClient)
     {
-        OpenAIClientOptions options = CreateOpenAIClientOptions(loggerFactory, config, httpClient);
+        OpenAIClientOptions options = CreateOpenAIClientOptions(loggerFactory, httpHandlerFactory, httpClient);
 
         return new(new Uri(endpoint), credentials, options);
     }
 
-    private static OpenAIClientOptions CreateOpenAIClientOptions(ILoggerFactory loggerFactory, KernelConfig config, HttpClient? httpClient)
+    private static OpenAIClientOptions CreateOpenAIClientOptions(ILoggerFactory loggerFactory, IDelegatingHandlerFactory httpHandlerFactory, HttpClient? httpClient)
     {
         OpenAIClientOptions options = new();
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory));
+        options.Transport = new HttpClientTransport(HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-
-        if (config.HttpHandlerFactory is DefaultHttpRetryHandlerFactory factory && factory.Config is not null)
-        {
-            options.Retry.MaxRetries = factory.Config.MaxRetryCount;
-            options.Retry.MaxDelay = factory.Config.MaxRetryDelay;
-        }
 
         return options;
     }

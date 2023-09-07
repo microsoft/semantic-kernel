@@ -8,6 +8,9 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel;
 
+/// <summary>
+/// Provides extension methods for working with OpenAI model results.
+/// </summary>
 public static class OpenAIModelResultExtension
 {
     /// <summary>
