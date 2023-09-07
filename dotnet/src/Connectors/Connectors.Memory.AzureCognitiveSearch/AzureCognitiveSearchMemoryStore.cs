@@ -20,6 +20,9 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
+/// <summary>
+/// AzureCognitiveSearchMemoryStore is a memory store implementation using Azure Cognitive Search.
+/// </summary>
 public class AzureCognitiveSearchMemoryStore : IMemoryStore
 {
     /// <summary>

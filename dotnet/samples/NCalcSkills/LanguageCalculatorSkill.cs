@@ -61,6 +61,10 @@ expression:```Asin(1)```
 Question: {{ $input }}
 ";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LanguageCalculatorSkill"/> class.
+    /// </summary>
+    /// <param name="kernel">The kernel to be used for creating the semantic function.</param>
     public LanguageCalculatorSkill(IKernel kernel)
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
@@ -73,6 +77,12 @@ Question: {{ $input }}
             topP: 1);
     }
 
+    /// <summary>
+    /// Calculates the result of a non-trivial math expression.
+    /// </summary>
+    /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
+    /// <param name="context">The context for the skill execution.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
         [Description("A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sin/cosine/floor.")]
