@@ -13,7 +13,7 @@ public interface IUSearchCollectionStorage : IDisposable
 {
     public bool TryGetRecord(string key, out MemoryRecord? memoryRecord, bool withEmbedding);
 
-    public bool Upsert(MemoryRecord record);
+    public string Upsert(MemoryRecord record);
 
     public IEnumerable<string> UpsertBatch(IEnumerable<MemoryRecord> records);
 
@@ -57,53 +57,57 @@ public record class USearchCollectionStorage : IUSearchCollectionStorage
         return false;
     }
 
-    public bool Upsert(MemoryRecord record)
+    public string Upsert(MemoryRecord record)
     {
         MemoryRecord recordWithoutEmbedding = MemoryRecord.FromMetadata(record.Metadata, embedding: null, key: record.Metadata.Id, timestamp: record.Timestamp);
 
         if (!this._toUSearchKeys.TryGetValue(recordWithoutEmbedding.Key, out ulong usearchKey))
         {
-            ulong value = this._nextFreeUSearchKey++;
-            this._toUSearchKeys.Add(recordWithoutEmbedding.Key, value);
-            this._usearchRecords.Add(value, recordWithoutEmbedding);
-            this._usearchIndex.Add(value, GetOrCreateArray(recordWithoutEmbedding.Embedding));
-            return true;
+            usearchKey = this._nextFreeUSearchKey++;
+            this._toUSearchKeys.Add(recordWithoutEmbedding.Key, usearchKey);
         }
-
+        else
+        {
+            this._usearchIndex.Remove(usearchKey);
+        }
+        this._usearchIndex.Add(usearchKey, GetOrCreateArray(record.Embedding));
         this._usearchRecords[usearchKey] = recordWithoutEmbedding;
-        this._usearchIndex.Remove(usearchKey);
-        this._usearchIndex.Add(usearchKey, GetOrCreateArray(recordWithoutEmbedding.Embedding));
-        return false;
+        return recordWithoutEmbedding.Key;
     }
 
     // TODO: get around of Roslyn(CA1851)
     public IEnumerable<string> UpsertBatch(IEnumerable<MemoryRecord> records)
     {
         int recordsLen = records.Count();
+
         float[][] insertVectors = new float[recordsLen][];
-        ulong[] usearchKeys = new ulong[recordsLen];
+        ulong[] insertUsearchKeys = new ulong[recordsLen];
         List<string> insertedKeys = new();
 
-        int nextIndex = 0;
+        int insertIndex = 0;
         foreach (var record in records)
         {
             MemoryRecord recordWithoutEmbedding = MemoryRecord.FromMetadata(record.Metadata, embedding: null, key: record.Metadata.Id, timestamp: record.Timestamp);
 
-            float[] embedding = GetOrCreateArray(recordWithoutEmbedding.Embedding);
-
             if (!this._toUSearchKeys.TryGetValue(recordWithoutEmbedding.Key, out ulong usearchKey))
             {
-                ulong value = this._nextFreeUSearchKey++;
-                this._toUSearchKeys.Add(recordWithoutEmbedding.Key, value);
-                this._usearchRecords.Add(value, recordWithoutEmbedding);
+                usearchKey = this._nextFreeUSearchKey++;
+                this._toUSearchKeys.Add(recordWithoutEmbedding.Key, usearchKey);
             }
-            this._usearchRecords[usearchKey] = recordWithoutEmbedding;
-            this._usearchIndex.Remove(usearchKey);
+            else
+            {
+                this._usearchIndex.Remove(usearchKey);
+            }
 
+            this._usearchRecords[usearchKey] = recordWithoutEmbedding;
             insertedKeys.Add(recordWithoutEmbedding.Key);
-            insertVectors[nextIndex] = GetOrCreateArray(recordWithoutEmbedding.Embedding);
+
+            insertUsearchKeys[insertIndex] = usearchKey;
+            insertVectors[insertIndex] = GetOrCreateArray(record.Embedding);
+            insertIndex++;
         }
-        this._usearchIndex.Add(usearchKeys, insertVectors);
+
+        this._usearchIndex.Add(insertUsearchKeys, insertVectors);
 
         return insertedKeys;
     }

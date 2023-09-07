@@ -97,15 +97,12 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
     {
         lock (this._collectionLockerStore.GetLockFor(collectionName))
         {
-            if (this.TryGetCollection(collectionName, out var usearchCollection, create: false))
-            {
-                usearchCollection.Upsert(record);
-            }
-            else
+            if (!this.TryGetCollection(collectionName, out var usearchCollection, create: false))
             {
                 return Task.FromException<string>(new SKException($"Attempted to access a memory collection that does not exist: {collectionName}"));
             }
-            return Task.FromResult(record.Key);
+
+            return Task.FromResult(usearchCollection.Upsert(record));
         }
     }
 
