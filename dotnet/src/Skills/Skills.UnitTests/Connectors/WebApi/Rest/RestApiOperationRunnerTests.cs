@@ -624,6 +624,101 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("fake-input-value", payloadText);
     }
 
+    [Fact]
+    public async Task ItShouldBuildJsonPayloadDynamicallyExcludingOptionalParametersIfTheirArgumentsNotProvidedAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        List<RestApiOperationPayloadProperty> payloadProperties = new()
+        {
+            new("upn", "string", false, new List<RestApiOperationPayloadProperty>()),
+        };
+
+        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
+            payload
+        );
+
+        var arguments = new Dictionary<string, string>();
+
+        var sut = new RestApiOperationRunner(
+            this._httpClient,
+            this._authenticationHandlerMock.Object,
+            enableDynamicPayload: true,
+            enablePayloadNamespacing: true);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        var messageContent = this._httpMessageHandlerStub.RequestContent;
+        Assert.NotNull(messageContent);
+        Assert.True(messageContent.Length != 0);
+
+        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        Assert.NotNull(deserializedPayload);
+
+        var senderUpn = deserializedPayload["upn"]?.ToString();
+        Assert.Null(senderUpn);
+    }
+
+    [Fact]
+    public async Task ItShouldBuildJsonPayloadDynamicallyIncludingOptionalParametersIfTheirArgumentsProvidedAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        List<RestApiOperationPayloadProperty> payloadProperties = new()
+        {
+            new("upn", "string", false, new List<RestApiOperationPayloadProperty>()),
+        };
+
+        var payload = new RestApiOperationPayload(MediaTypeNames.Application.Json, payloadProperties);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
+            payload
+        );
+
+        var arguments = new Dictionary<string, string>();
+        arguments.Add("upn", "fake-sender-upn");
+
+        var sut = new RestApiOperationRunner(
+            this._httpClient,
+            this._authenticationHandlerMock.Object,
+            enableDynamicPayload: true,
+            enablePayloadNamespacing: true);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        var messageContent = this._httpMessageHandlerStub.RequestContent;
+        Assert.NotNull(messageContent);
+        Assert.True(messageContent.Length != 0);
+
+        var deserializedPayload = JsonNode.Parse(new MemoryStream(messageContent));
+        Assert.NotNull(deserializedPayload);
+
+        var senderUpn = deserializedPayload["upn"]?.ToString();
+        Assert.Equal("fake-sender-upn", senderUpn);
+    }
+
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>

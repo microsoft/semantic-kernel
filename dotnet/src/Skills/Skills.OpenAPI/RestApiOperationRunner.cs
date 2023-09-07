@@ -248,12 +248,16 @@ internal sealed class RestApiOperationRunner
                 continue;
             }
 
-            if (!arguments.TryGetValue(argumentName, out var propertyValue))
+            if (arguments.TryGetValue(argumentName, out var propertyValue))
+            {
+                result.Add(propertyMetadata.Name, ConvertJsonPropertyValueType(propertyValue, propertyMetadata));
+                continue;
+            }
+
+            if (propertyMetadata.IsRequired)
             {
                 throw new SKException($"No argument is found for the '{propertyMetadata.Name}' payload property.");
             }
-
-            result.Add(propertyMetadata.Name, ConvertJsonPropertyValueType(propertyValue, propertyMetadata));
         }
 
         return result;
