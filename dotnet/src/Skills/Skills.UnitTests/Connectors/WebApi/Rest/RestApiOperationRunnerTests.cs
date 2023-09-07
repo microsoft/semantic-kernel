@@ -657,7 +657,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             enablePayloadNamespacing: true);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         var messageContent = this._httpMessageHandlerStub.RequestContent;
@@ -705,7 +705,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             enablePayloadNamespacing: true);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         var messageContent = this._httpMessageHandlerStub.RequestContent;
