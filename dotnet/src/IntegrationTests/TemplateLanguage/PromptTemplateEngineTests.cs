@@ -132,6 +132,23 @@ public sealed class PromptTemplateEngineTests : IDisposable
         Assert.Equal("== a\"b != 123 ==", result);
     }
 
+    [Fact]
+    public async Task ItHandlesNamedArgsAsync()
+    {
+        // Arrange
+        string template = "Output: {{my.sayAge name=\"Mario\" birthdate=$birthdate exclamation='Wow, that\\'s surprising'}}";
+        var kernel = Kernel.Builder.Build();
+        kernel.ImportSkill(new MySkill(), "my");
+        var context = kernel.CreateNewContext();
+        context.Variables["birthdate"] = "1981-08-20T00:00:00";
+
+        // Act
+        var result = await this._target.RenderAsync(template, context);
+
+        // Assert
+        Assert.Equal("Output: Mario is 42 today. Wow, that's surprising!", result);
+    }
+
     [Theory]
     [MemberData(nameof(GetTemplateLanguageTests))]
     public async Task ItHandleEdgeCasesAsync(string template, string expectedResult)
@@ -175,6 +192,15 @@ public sealed class PromptTemplateEngineTests : IDisposable
         public string MyFunction2(string input)
         {
             return input;
+        }
+
+        [SKFunction, Description("This is a test"), SKName("sayAge")]
+        public string MyFunction3(string name, DateTime birthdate, string exclamation)
+        {
+            var today = new DateTime(2023, 8, 25);
+            TimeSpan timespan = today - birthdate;
+            int age = (int)(timespan.TotalDays / 365.25);
+            return $"{name} is {age} today. {exclamation}!";
         }
     }
 

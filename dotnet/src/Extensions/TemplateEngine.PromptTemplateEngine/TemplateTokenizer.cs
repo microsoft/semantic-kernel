@@ -174,17 +174,13 @@ internal sealed class TemplateTokenizer
                                     break;
 
                                 case BlockTypes.FunctionId:
-                                    if (codeBlocks.Count > 2)
-                                    {
-                                        throw new SKException($"Functions support only one parameter: {contentWithoutDelimiters}");
-                                    }
-
                                     blocks.Add(new CodeBlock(codeBlocks, contentWithoutDelimiters, this._loggerFactory));
                                     break;
 
                                 case BlockTypes.Code:
                                 case BlockTypes.Text:
                                 case BlockTypes.Undefined:
+                                case BlockTypes.NamedArg:
                                 default:
                                     throw new SKException($"Code tokenizer returned an incorrect first token type {codeBlocks[0].Type:G}");
                             }
