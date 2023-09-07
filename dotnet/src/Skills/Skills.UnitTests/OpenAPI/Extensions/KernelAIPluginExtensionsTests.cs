@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
@@ -68,39 +69,6 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     }
 
     [Theory]
-    [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001")]
-    [InlineData("https://api.example.com/openapi.json", "https://api.example.com")]
-    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "Required for test data.")]
-    public async Task ItUsesOpenApiDocumentHostUrlWhenServerUrlIsNotProvidedAsync(string documentUri, string expectedServerUrl)
-    {
-        // Arrange
-        var openApiDocument = ResourceSkillsProvider.LoadFromResource("documentV3_0.json");
-
-        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
-        {
-            doc.Remove("servers");
-        });
-
-        using var httpResponseMessage = new HttpResponseMessage { Content = new StreamContent(content) };
-        using var httpClient = new HttpClient(OpenApiTestHelper.GetHttpClientHandlerMock(httpResponseMessage));
-
-        var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient };
-
-        // Act
-        var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(documentUri), executionParameters);
-
-        // Assert
-        var setSecretFunction = skill["SetSecret"];
-        Assert.NotNull(setSecretFunction);
-
-        var functionView = setSecretFunction.Describe();
-        Assert.NotNull(functionView);
-
-        var serverUrlParameter = functionView.Parameters.First(p => p.Name == "server_url");
-        Assert.Equal(expectedServerUrl, serverUrlParameter.DefaultValue);
-    }
-
-    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task ItUsesServerUrlOverrideIfProvidedAsync(bool removeServersProperty)
@@ -119,16 +87,21 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
             });
         }
 
-        using var httpResponseMessage = new HttpResponseMessage { Content = new StreamContent(openApiDocument) };
-        using var httpClient = new HttpClient(OpenApiTestHelper.GetHttpClientHandlerMock(httpResponseMessage));
+        using var messageHandlerStub = new HttpMessageHandlerStub(openApiDocument);
+        using var httpClient = new HttpClient(messageHandlerStub, false);
 
         var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient, ServerUrlOverride = new Uri(ServerUrlOverride) };
+        var variables = this.GetContextVariables();
 
         // Act
         var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(DocumentUri), executionParameters);
+        var setSecretFunction = skill["SetSecret"];
+
+        messageHandlerStub.ResetResponse();
+
+        var result = await this.kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
-        var setSecretFunction = skill["SetSecret"];
         Assert.NotNull(setSecretFunction);
 
         var functionView = setSecretFunction.Describe();
@@ -136,10 +109,112 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
 
         var serverUrlParameter = functionView.Parameters.First(p => p.Name == "server_url");
         Assert.Equal(ServerUrlOverride, serverUrlParameter.DefaultValue);
+
+        Assert.NotNull(messageHandlerStub.RequestUri);
+        Assert.StartsWith(ServerUrlOverride, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("documentV2_0.json")]
+    [InlineData("documentV3_0.json")]
+    public async Task ItUsesServerUrlFromOpenApiDocumentAsync(string documentFileName)
+    {
+        // Arrange
+        const string DocumentUri = "http://localhost:3001/openapi.json";
+        const string ServerUrlFromDocument = "https://my-key-vault.vault.azure.net/";
+
+        var openApiDocument = ResourceSkillsProvider.LoadFromResource(documentFileName);
+
+        using var messageHandlerStub = new HttpMessageHandlerStub(openApiDocument);
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+
+        var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient };
+        var variables = this.GetContextVariables();
+
+        // Act
+        var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(DocumentUri), executionParameters);
+        var setSecretFunction = skill["SetSecret"];
+
+        messageHandlerStub.ResetResponse();
+
+        var result = await this.kernel.RunAsync(setSecretFunction, variables);
+
+        // Assert
+        Assert.NotNull(setSecretFunction);
+
+        var functionView = setSecretFunction.Describe();
+        Assert.NotNull(functionView);
+
+        var serverUrlParameter = functionView.Parameters.First(p => p.Name == "server_url");
+        Assert.Equal(ServerUrlFromDocument, serverUrlParameter.DefaultValue);
+
+        Assert.NotNull(messageHandlerStub.RequestUri);
+        Assert.StartsWith(ServerUrlFromDocument, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001", "documentV2_0.json")]
+    [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001", "documentV3_0.json")]
+    [InlineData("https://api.example.com/openapi.json", "https://api.example.com", "documentV2_0.json")]
+    [InlineData("https://api.example.com/openapi.json", "https://api.example.com", "documentV3_0.json")]
+    [SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "Required for test data.")]
+    public async Task ItUsesOpenApiDocumentHostUrlWhenServerUrlIsNotProvidedAsync(string documentUri, string expectedServerUrl, string documentFileName)
+    {
+        // Arrange
+        var openApiDocument = ResourceSkillsProvider.LoadFromResource(documentFileName);
+
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc.Remove("servers");
+            doc.Remove("host");
+            doc.Remove("schemes");
+        });
+
+        using var messageHandlerStub = new HttpMessageHandlerStub(content);
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+
+        var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient };
+        var variables = this.GetContextVariables();
+
+        // Act
+        var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(documentUri), executionParameters);
+        var setSecretFunction = skill["SetSecret"];
+
+        messageHandlerStub.ResetResponse();
+
+        var result = await this.kernel.RunAsync(setSecretFunction, variables);
+
+        // Assert
+        Assert.NotNull(setSecretFunction);
+
+        var functionView = setSecretFunction.Describe();
+        Assert.NotNull(functionView);
+
+        var serverUrlParameter = functionView.Parameters.First(p => p.Name == "server_url");
+        Assert.Equal(expectedServerUrl, serverUrlParameter.DefaultValue);
+
+        Assert.NotNull(messageHandlerStub.RequestUri);
+        Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
     public void Dispose()
     {
         this._openApiDocument.Dispose();
     }
+
+    #region private ================================================================================
+
+    private ContextVariables GetContextVariables()
+    {
+        var variables = new ContextVariables();
+
+        variables["secret-name"] = "fake-secret-name";
+        variables["api-version"] = "fake-api-version";
+        variables["X-API-Version"] = "fake-api-version";
+        variables["payload"] = "fake-payload";
+
+        return variables;
+    }
+
+    #endregion
 }

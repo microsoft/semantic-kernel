@@ -85,7 +85,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
@@ -150,7 +150,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
@@ -206,7 +206,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
-        await sut.RunAsync(operation, arguments);
+        await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert - 2 headers: 1 from the test and the useragent added internally
         Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
@@ -242,7 +242,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
 
         // Act
-        await sut.RunAsync(operation, arguments);
+        await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.RequestHeaders);
@@ -287,7 +287,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
@@ -354,7 +354,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         var messageContent = this._httpMessageHandlerStub.RequestContent;
@@ -444,7 +444,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             enablePayloadNamespacing: true);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
@@ -508,7 +508,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             enableDynamicPayload: true);
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(async () => await sut.RunAsync(operation, arguments));
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments)));
 
         Assert.Contains("No content type is provided", exception.Message, StringComparison.InvariantCulture);
     }
@@ -536,7 +536,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             enableDynamicPayload: false);
 
         // Act
-        var exception = await Assert.ThrowsAsync<SKException>(async () => await sut.RunAsync(operation, arguments));
+        var exception = await Assert.ThrowsAsync<SKException>(async () => await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments)));
 
         Assert.Contains("No content type is provided", exception.Message, StringComparison.InvariantCulture);
     }
@@ -568,7 +568,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
@@ -610,7 +610,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
 
         // Act
-        var result = await sut.RunAsync(operation, arguments);
+        var result = await sut.RunAsync(operation, new RestApiOperationRunConfig(arguments));
 
         // Assert
         Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);

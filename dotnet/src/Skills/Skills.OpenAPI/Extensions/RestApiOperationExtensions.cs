@@ -49,7 +49,7 @@ internal static class RestApiOperationExtensions
                 false,
                 RestApiOperationParameterLocation.Path,
                 RestApiOperationParameterStyle.Simple,
-                defaultValue: GetServerUrlParameter(operation, serverUrlOverride, documentUri))
+                defaultValue: serverUrlOverride?.AbsoluteUri ?? operation.GetServerUrlParameter(documentUri))
         };
 
         //Add payload parameters
@@ -65,6 +65,25 @@ internal static class RestApiOperationExtensions
         }
 
         return parameters;
+    }
+
+    /// <summary>
+    /// Returns server URL from OpenAPI document parameter or document URI.
+    /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
+    public static string? GetServerUrlParameter(this RestApiOperation operation, Uri? documentUri)
+    {
+        const string SchemeAuthorityDelimiter = "://";
+
+        var serverUrl = operation.ServerUrl?.AbsoluteUri;
+
+        if (!string.IsNullOrWhiteSpace(serverUrl))
+        {
+            return serverUrl;
+        }
+
+        return documentUri is not null ? documentUri.Scheme + SchemeAuthorityDelimiter + documentUri.Authority : null;
     }
 
     /// <summary>
@@ -182,26 +201,6 @@ internal static class RestApiOperationExtensions
         }
 
         return property.Name;
-    }
-
-    /// <summary>
-    /// Returns server URL parameter.
-    /// </summary>
-    /// <param name="operation">The REST API operation.</param>
-    /// <param name="serverUrlOverride">The server URL override.</param>
-    /// <param name="documentUri">The URI of OpenApi document.</param>
-    private static string? GetServerUrlParameter(RestApiOperation operation, Uri? serverUrlOverride, Uri? documentUri)
-    {
-        const string SchemeAuthorityDelimiter = "://";
-
-        var serverUrl = serverUrlOverride?.AbsoluteUri ?? operation.ServerUrl?.AbsoluteUri;
-
-        if (!string.IsNullOrWhiteSpace(serverUrl))
-        {
-            return serverUrl;
-        }
-
-        return documentUri is not null ? documentUri.Scheme + SchemeAuthorityDelimiter + documentUri.Authority : null;
     }
 
     private const string MediaTypeTextPlain = "text/plain";

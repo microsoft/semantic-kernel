@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 public sealed class RestApiOperation
 {
     /// <summary>
-    /// An artificial parameter that is added to be able to override RESP API operation server url.
+    /// An artificial parameter that is added to be able to override REST API operation server url.
     /// </summary>
     public const string ServerUrlArgumentName = "server-url";
 
@@ -105,32 +105,38 @@ public sealed class RestApiOperation
     /// Builds operation Url.
     /// </summary>
     /// <param name="arguments">The operation arguments.</param>
+    /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <returns>The operation Url.</returns>
-    public Uri BuildOperationUrl(IDictionary<string, string> arguments)
+    public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? documentUri = null)
     {
         var path = this.ReplacePathParameters(this.Path, arguments);
 
         path = this.AddQueryString(path, arguments);
 
-        Uri serverUrl;
+        string serverUrl;
 
-        //Override defined server url - https://api.example.com/v1 by the one from arguments.
-        if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlString))
+        if (serverUrlOverride is not null)
         {
-            serverUrl = new Uri(serverUrlString);
+            serverUrl = serverUrlOverride.AbsoluteUri;
+        }
+        else if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlFromArgument))
+        {
+            // Override defined server url - https://api.example.com/v1 by the one from arguments.
+            serverUrl = serverUrlFromArgument;
         }
         else
         {
-            serverUrl = this.ServerUrl ?? throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
+            serverUrl = this.GetServerUrlParameter(documentUri) ?? throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
         }
 
         // make sure base url ends with trailing slash
-        if (!serverUrl.AbsoluteUri.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+        if (!serverUrl.EndsWith("/", StringComparison.OrdinalIgnoreCase))
         {
-            serverUrl = new Uri(serverUrl.AbsoluteUri + "/");
+            serverUrl += "/";
         }
 
-        return new Uri(serverUrl, $"{path.TrimStart('/')}");
+        return new Uri(new Uri(serverUrl), $"{path.TrimStart('/')}");
     }
 
     /// <summary>

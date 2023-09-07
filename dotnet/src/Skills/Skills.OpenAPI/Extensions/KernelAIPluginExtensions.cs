@@ -355,7 +355,14 @@ public static class KernelAIPluginExtensions
                     }
                 }
 
-                var result = await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
+                var configuration = new RestApiOperationRunConfig(arguments)
+                {
+                    ServerUrlOverride = executionParameters?.ServerUrlOverride,
+                    DocumentUri = documentUri
+                };
+
+                var result = await runner.RunAsync(operation, configuration, cancellationToken).ConfigureAwait(false);
+
                 if (result != null)
                 {
                     context.Variables.Update(result.ToString());
