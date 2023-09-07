@@ -12,7 +12,9 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
-
+/// <summary>
+/// A class for generating images using OpenAI's API.
+/// </summary>
 public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
 {
     /// <summary>
@@ -31,7 +33,7 @@ public class OpenAIImageGeneration : OpenAIClientBase, IImageGeneration
     private readonly string _authorizationHeaderValue;
 
     /// <summary>
-    /// Create a new instance of OpenAI image generation service
+    /// Initializes a new instance of the <see cref="OpenAIImageGeneration"/> class.
     /// </summary>
     /// <param name="apiKey">OpenAI API key, see https://platform.openai.com/account/api-keys</param>
     /// <param name="organization">OpenAI organization id. This is usually optional unless your account belongs to multiple organizations.</param>

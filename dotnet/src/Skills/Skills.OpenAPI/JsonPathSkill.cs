@@ -10,6 +10,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI;
 
+/// <summary>
+/// Provides methods to retrieve JSON elements from a JSON string using JsonPath queries.
+/// </summary>
 public sealed class JsonPathSkill
 {
     /// <summary>
@@ -26,6 +29,10 @@ public sealed class JsonPathSkill
     /// <summary>
     /// Retrieve the value of a JSON element from a JSON string using a JsonPath query.
     /// </summary>
+    /// <param name="json">The JSON string to query.</param>
+    /// <param name="jsonPath">The JsonPath query to use.</param>
+    /// <returns>The value of the JSON element as a string.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided JSON string is null or whitespace.</exception>
     [SKFunction, Description("Retrieve the value of a JSON element from a JSON string using a JsonPath query.")]
     public string GetJsonElementValue(
         [Description("JSON string")] string json,
@@ -46,6 +53,10 @@ public sealed class JsonPathSkill
     /// <summary>
     /// Retrieve a collection of JSON elements from a JSON string using a JsonPath query.
     /// </summary>
+    /// <param name="json">The JSON string to query.</param>
+    /// <param name="jsonPath">The JsonPath query to use.</param>
+    /// <returns>A JSON string representing the collection of JSON elements.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided JSON string is null or whitespace.</exception>
     [SKFunction, Description("Retrieve a collection of JSON elements from a JSON string using a JsonPath query.")]
     public string GetJsonElements(
         [Description("JSON string")] string json,

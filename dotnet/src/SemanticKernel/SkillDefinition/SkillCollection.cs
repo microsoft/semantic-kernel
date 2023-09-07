@@ -23,6 +23,10 @@ public class SkillCollection : ISkillCollection
 {
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SkillCollection"/> class.
+    /// </summary>
+    /// <param name="loggerFactory">The logger factory.</param>
     public SkillCollection(ILoggerFactory? loggerFactory = null)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SkillCollection)) : NullLogger.Instance;
@@ -31,6 +35,11 @@ public class SkillCollection : ISkillCollection
         this._skillCollection = new(StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Adds a function to the skill collection.
+    /// </summary>
+    /// <param name="functionInstance">The function instance to add.</param>
+    /// <returns>The updated skill collection.</returns>
     public ISkillCollection AddFunction(ISKFunction functionInstance)
     {
         Verify.NotNull(functionInstance);

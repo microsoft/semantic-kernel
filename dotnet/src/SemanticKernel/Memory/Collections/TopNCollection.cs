@@ -15,21 +15,31 @@ internal class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     private readonly MinHeap<ScoredValue<T>> _heap;
     private bool _sorted = false;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TopNCollection{T}"/> class.
+    /// </summary>
+    /// <param name="maxItems">The maximum number of items to keep in the collection.</param>
     public TopNCollection(int maxItems)
     {
         this.MaxItems = maxItems;
         this._heap = new MinHeap<ScoredValue<T>>(ScoredValue<T>.Min(), maxItems);
     }
 
+    /// <summary>
+    /// Gets the maximum number of items allowed in the collection.
+    /// </summary>
     public int MaxItems { get; }
 
+    /// <summary>
+    /// Gets the current number of items in the collection.
+    /// </summary>
     public int Count => this._heap.Count;
 
     internal ScoredValue<T> this[int i] => this._heap[i];
     internal ScoredValue<T> Top => this._heap.Top;
 
     /// <summary>
-    /// Call this to reuse the buffer
+    /// Resets the collection, allowing it to be reused.
     /// </summary>
     public void Reset()
     {
@@ -37,8 +47,9 @@ internal class TopNCollection<T> : IEnumerable<ScoredValue<T>>
     }
 
     /// <summary>
-    /// Adds a single scored value
+    /// Adds a single scored value to the collection.
     /// </summary>
+    /// <param name="value">The scored value to add.</param>
     public void Add(ScoredValue<T> value)
     {
         if (this._sorted)
@@ -62,13 +73,18 @@ internal class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         this._heap.Add(value);
     }
 
+    /// <summary>
+    /// Adds a value with a specified score to the collection.
+    /// </summary>
+    /// <param name="value">The value to add.</param>
+    /// <param name="score">The score associated with the value.</param>
     public void Add(T value, double score)
     {
         this.Add(new ScoredValue<T>(value, score));
     }
 
     /// <summary>
-    /// Sort in relevancy order.
+    /// Sorts the collection in descending order by score.
     /// </summary>
     public void SortByScore()
     {
@@ -79,6 +95,10 @@ internal class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         }
     }
 
+    /// <summary>
+    /// Returns a list containing the scored values in the collection.
+    /// </summary>
+    /// <returns>A list of scored values.</returns>
     public IList<ScoredValue<T>> ToList()
     {
         var list = new List<ScoredValue<T>>(this.Count);
@@ -90,6 +110,10 @@ internal class TopNCollection<T> : IEnumerable<ScoredValue<T>>
         return list;
     }
 
+    /// <summary>
+    /// Returns an enumerator that iterates through the collection.
+    /// </summary>
+    /// <returns>An enumerator for the collection.</returns>
     public IEnumerator<ScoredValue<T>> GetEnumerator()
     {
         return this._heap.GetEnumerator();

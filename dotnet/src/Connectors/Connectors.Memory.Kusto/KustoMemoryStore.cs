@@ -297,12 +297,19 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes the <see cref="KustoMemoryStore"/> instance.
+    /// </summary>
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Disposes the resources used by the <see cref="KustoMemoryStore"/> instance.
+    /// </summary>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)

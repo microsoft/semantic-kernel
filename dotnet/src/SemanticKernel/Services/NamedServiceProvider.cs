@@ -5,15 +5,23 @@ using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Services;
 
+/// <summary>
+/// Provides named services of type <typeparamref name="TService"/>. Allows for the registration and retrieval of services by name.
+/// </summary>
+/// <typeparam name="TService">The type of service provided by this provider.</typeparam>
 public class NamedServiceProvider<TService> : INamedServiceProvider<TService>
 {
     // A dictionary that maps a service type to a nested dictionary of names and service instances or factories
-    //private readonly Dictionary<Type, Dictionary<string, object>> _services = new();
     private readonly Dictionary<Type, Dictionary<string, Func<object>>> _services;
 
     // A dictionary that maps a service type to the name of the default service
     private readonly Dictionary<Type, string> _defaultIds;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NamedServiceProvider{TService}"/> class.
+    /// </summary>
+    /// <param name="services">A dictionary that maps a service type to a nested dictionary of names and service instances or factories.</param>
+    /// <param name="defaultIds">A dictionary that maps a service type to the name of the default service.</param>
     public NamedServiceProvider(
         Dictionary<Type, Dictionary<string, Func<object>>> services,
         Dictionary<Type, string> defaultIds)

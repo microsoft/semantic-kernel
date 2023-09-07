@@ -17,7 +17,8 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
 /// </summary>
-/// <remarks>The embedded data is saved to the Postgres database specified in the constructor.
+/// <remarks>
+/// The embedded data is saved to the Postgres database specified in the constructor.
 /// Similarity search capability is provided through the pgvector extension. Use Postgres's "Table" to implement "Collection".
 /// </remarks>
 public class PostgresMemoryStore : IMemoryStore
@@ -35,6 +36,10 @@ public class PostgresMemoryStore : IMemoryStore
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
+    /// </summary>
+    /// <param name="postgresDbClient">An instance of <see cref="IPostgresDbClient"/>.</param>
     public PostgresMemoryStore(IPostgresDbClient postgresDbClient)
     {
         this._postgresDbClient = postgresDbClient;

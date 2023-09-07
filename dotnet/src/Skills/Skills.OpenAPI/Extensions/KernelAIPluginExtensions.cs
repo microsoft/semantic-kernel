@@ -21,6 +21,9 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
+/// <summary>
+/// Provides extension methods for importing AI plugins exposed as OpenAPI v3 endpoints or through OpenAI's ChatGPT format.
+/// </summary>
 public static class KernelAIPluginExtensions
 {
     /// <summary>

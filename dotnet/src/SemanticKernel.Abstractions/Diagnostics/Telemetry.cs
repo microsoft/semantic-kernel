@@ -3,22 +3,25 @@
 using System;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
-
+/// <summary>
+/// Provides functionality to manage telemetry settings.
+/// </summary>
 public static class Telemetry
 {
     /// <summary>
-    /// Env var used in Azure to enable/disable telemetry
+    /// Environment variable used in Azure to enable/disable telemetry.
     /// See: https://learn.microsoft.com/en-us/dotnet/api/azure.core.diagnosticsoptions.istelemetryenabled?view=azure-dotnet
     /// </summary>
     private const string TelemetryDisabledEnvVar = "AZURE_TELEMETRY_DISABLED";
 
     /// <summary>
-    /// HTTP User Agent
-    /// Note: Azure max length 24 chars
+    /// HTTP User Agent.
+    /// Note: Azure max length 24 chars.
     /// </summary>
     public const string HttpUserAgent = "Semantic-Kernel";
 
     /// <summary>
+    /// Gets a value indicating whether telemetry is enabled or not.
     /// Source: https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/DiagnosticsOptions.cs
     /// Azure customers setting AZURE_TELEMETRY_DISABLED=1 expect telemetry to be disabled.
     /// </summary>

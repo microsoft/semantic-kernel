@@ -38,6 +38,12 @@ public class OneDriveConnector : ICloudDriveConnector
             .Request().GetAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Checks if a file exists at the specified path in OneDrive.
+    /// </summary>
+    /// <param name="filePath">The path to the file in OneDrive.</param>
+    /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+    /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation. True if the file exists, false otherwise.</returns>
     public async Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)
     {
         Ensure.NotNullOrWhitespace(filePath, nameof(filePath));
