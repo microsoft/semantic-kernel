@@ -142,14 +142,16 @@ public record class USearchCollectionStorage : IUSearchCollectionStorage
 
         for (int i = 0; i < usearchKeys.Length; i++)
         {
-            if (distanceToScore(distances[i]) >= minRelevanceScore && this._usearchRecords.TryGetValue(usearchKeys[i], out MemoryRecord record))
+            double score = distanceToScore(distances[i]);
+            if (Math.Abs(score - minRelevanceScore) > _EpsilonComparing
+                && this._usearchRecords.TryGetValue(usearchKeys[i], out MemoryRecord record))
             {
                 this._usearchIndex.Get(usearchKeys[i], out float[] vector);
                 record = withEmbeddings
                     ? MemoryRecord.FromMetadata(record.Metadata, embedding: vector, key: record.Key, timestamp: record.Timestamp)
                     : record;
 
-                result.Add((record, (double)distances[i]));
+                result.Add((record, score));
             }
         }
 
@@ -187,6 +189,8 @@ public record class USearchCollectionStorage : IUSearchCollectionStorage
     private ulong _nextFreeUSearchKey = 0;
 
     private bool _disposedValue;
+
+    private const double _EpsilonComparing = -0.0000001;
 
     private static float[] GetOrCreateArray(System.ReadOnlyMemory<float> memory) =>
         MemoryMarshal.TryGetArray(memory, out ArraySegment<float> array) &&

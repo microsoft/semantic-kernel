@@ -190,6 +190,8 @@ public class USearchMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         CancellationToken cancellationToken = default)
     {
+        minRelevanceScore = minRelevanceScore > 0 ? (minRelevanceScore < 1 ? minRelevanceScore : 1) : 0;
+
         if (limit <= 0)
         {
             return AsyncEnumerable.Empty<(MemoryRecord, double)>();
