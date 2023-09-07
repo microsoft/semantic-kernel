@@ -105,7 +105,7 @@ public static class KernelGrpcExtensions
 
         var skill = new Dictionary<string, ISKFunction>();
 
-        var client = HttpClientProvider.GetHttpClient(kernel.Config, httpClient, kernel.LoggerFactory);
+        var client = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, httpClient, kernel.LoggerFactory);
 
         var runner = new GrpcOperationRunner(client);
 
