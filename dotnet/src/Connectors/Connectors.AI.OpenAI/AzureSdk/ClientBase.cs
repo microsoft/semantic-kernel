@@ -23,7 +23,9 @@ using Text;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
-
+/// <summary>
+/// Base class for AI clients that provides common functionality for interacting with OpenAI services.
+/// </summary>
 public abstract class ClientBase
 {
     private const int MaxResultsPerPrompt = 128;

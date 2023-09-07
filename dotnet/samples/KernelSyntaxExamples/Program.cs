@@ -66,10 +66,11 @@ public static class Program
         // await Example48_GroundednessChecks.RunAsync().SafeWaitAsync(cancelToken);
         // await Example49_LogitBias.RunAsync().SafeWaitAsync(cancelToken);
         await Example51_StepwisePlanner.RunAsync().SafeWaitAsync(cancelToken);
-        // await Example52_ApimAuth.RunAsync().SafeWaitAsync(cancelToken);
-        // await Example54_AzureChatCompletionWithData.RunAsync().SafeWaitAsync(cancelToken);
-        // await Example55_TextChunker.RunAsync().SafeWaitAsync(cancelToken);
-        // await Example56_OpenAIChatCompletionWithFunctionCalling.RunAsync().SafeWaitAsync(cancelToken);
+        await Example52_ApimAuth.RunAsync().SafeWaitAsync(cancelToken);
+        await Example54_AzureChatCompletionWithData.RunAsync().SafeWaitAsync(cancelToken);
+        await Example55_TextChunker.RunAsync().SafeWaitAsync(cancelToken);
+        await Example56_TemplateNativeFunctionsWithMultipleArguments.RunAsync().SafeWaitAsync(cancelToken);
+        await Example56_OpenAIChatCompletionWithFunctionCalling.RunAsync().SafeWaitAsync(cancelToken);
     }
 
 
