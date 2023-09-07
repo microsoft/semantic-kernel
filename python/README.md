@@ -36,7 +36,7 @@ kernel.add_chat_service("chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_ke
 
 # Alternative using Azure:
 # deployment, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-# kernel.add_text_completion_service("dv", AzureChatCompletion(deployment, endpoint, api_key))
+# kernel.add_chat_service("dv", AzureChatCompletion(deployment, endpoint, api_key))
 
 # Wrap your prompt in a function
 prompt = kernel.create_semantic_function("""
