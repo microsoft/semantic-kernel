@@ -179,7 +179,7 @@ Chosen option: "{title of option 1}", because
 Main categories for the projects will be:
 
 1. `connectors`: ***A connector project allows the Semantic Kernel to connect to AI and Memory services***. Some of the existing connector projects may move to other repositories.
-1. `planning`: ***A planning project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask***. This category will include the current action, sequential and stepwise planner (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
+1. `planners`: ***A planner project provides one or more planner implementations which take an ask and convert it into an executable plan to achieve that ask***. This category will include the current action, sequential and stepwise planners (these could be merged into a single project). Additional planning implementations e.g., planners that generate Powershell or Python code can be added as separate projects.
 1. `functions`: ***A function project that enables the Semantic Kernel to access the functions it will orchestrate***. This category will include:
     1. Native functions i.e., arbitrary .Net functions for the .Net Semantic Kernel
     1. Semantic functions i.e., prompts executed against an LLM
@@ -199,9 +199,9 @@ SK-dotnet
     │   ├── ...
     │   └── Connectors.UnitTests
     ├── planners/
-    │   ├── Planners.ActionPlanner*
-    │   ├── Planners.SequentialPlanner*
-    │   └── Planners.StepwisePlanner*
+    │   ├── Planners.Action*
+    │   ├── Planners.Sequential*
+    │   └── Planners.Stepwise*
     ├── functions/
     │   ├── Functions.Native*
     │   ├── Functions.Semantic*
