@@ -19,9 +19,9 @@ public static class EmbeddingGenerationExtensions
     /// <typeparam name="TValue">The type from which embeddings will be generated.</typeparam>
     /// <typeparam name="TEmbedding">The numeric type of the embedding data.</typeparam>
     /// <param name="generator">The embedding generator.</param>
-    /// <param name="value">A value from which an <see cref="Embedding{TEmbedding}"/> will be generated.</param>
+    /// <param name="value">A value from which an embedding will be generated.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>A list of <see cref="Embedding{TEmbedding}"/> structs representing the input <paramref name="value"/>.</returns>
+    /// <returns>A list of embedding structs representing the input <paramref name="value"/>.</returns>
     public static async Task<ReadOnlyMemory<TEmbedding>> GenerateEmbeddingAsync<TValue, TEmbedding>
         (this IEmbeddingGeneration<TValue, TEmbedding> generator, TValue value, CancellationToken cancellationToken = default)
         where TEmbedding : unmanaged

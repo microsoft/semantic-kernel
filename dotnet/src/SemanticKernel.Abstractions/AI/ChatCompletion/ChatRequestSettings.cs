@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.SemanticKernel.SemanticFunctions;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -64,4 +65,22 @@ public class ChatRequestSettings
     /// Possible values are none, auto, or a specific function.
     /// </summary>
     //public bool FunctionCall { get; set; } = false; // This is not needed. Will default to "auto" when functions present and "none" when functions not present.
+
+    /// <summary>
+    /// Create a new settings object with the values from another settings object.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns>An instance of <see cref="ChatRequestSettings"/> </returns>
+    public static ChatRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
+    {
+        return new ChatRequestSettings
+        {
+            Temperature = config.Temperature,
+            TopP = config.TopP,
+            PresencePenalty = config.PresencePenalty,
+            FrequencyPenalty = config.FrequencyPenalty,
+            MaxTokens = config.MaxTokens,
+            StopSequences = config.StopSequences,
+        };
+    }
 }

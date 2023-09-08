@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 /**
@@ -52,11 +53,13 @@ public class MyChatStreamingResult : IChatStreamingResult
 {
     private readonly ChatMessageBase _message;
     private readonly MyRoles _role;
+    public ModelResult ModelResult { get; private set; }
 
     public MyChatStreamingResult(MyRoles role, string content)
     {
         this._role = role;
         this._message = new MyChatMessage(role, content);
+        this.ModelResult = new ModelResult(content);
     }
 
     public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
