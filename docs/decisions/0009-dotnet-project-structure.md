@@ -244,6 +244,8 @@ This diagram how functions and plugins would be integrated with the Semantic Ker
 SK-dotnet
 ├── samples/
 └── libraries/
+    ├── SK-dotnet.sln
+    │
     ├── Microsoft.SemanticKernel.Connectors.AI.OpenAI*
     │   ├── src
     │   └── tests 
