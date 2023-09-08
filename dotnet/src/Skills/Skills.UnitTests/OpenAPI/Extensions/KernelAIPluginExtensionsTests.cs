@@ -91,7 +91,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
         var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient, ServerUrlOverride = new Uri(ServerUrlOverride) };
-        var variables = this.GetContextVariables();
+        var variables = this.GetFakeContextVariables();
 
         // Act
         var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(DocumentUri), executionParameters);
@@ -129,7 +129,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
         var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient };
-        var variables = this.GetContextVariables();
+        var variables = this.GetFakeContextVariables();
 
         // Act
         var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(DocumentUri), executionParameters);
@@ -174,7 +174,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
         var executionParameters = new OpenApiSkillExecutionParameters { HttpClient = httpClient };
-        var variables = this.GetContextVariables();
+        var variables = this.GetFakeContextVariables();
 
         // Act
         var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(documentUri), executionParameters);
@@ -204,7 +204,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
 
     #region private ================================================================================
 
-    private ContextVariables GetContextVariables()
+    private ContextVariables GetFakeContextVariables()
     {
         var variables = new ContextVariables();
 

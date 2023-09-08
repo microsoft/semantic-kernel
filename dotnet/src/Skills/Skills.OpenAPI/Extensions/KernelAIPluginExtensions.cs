@@ -102,7 +102,7 @@ public static class KernelAIPluginExtensions
             httpClient,
             executionParameters,
             uri,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
