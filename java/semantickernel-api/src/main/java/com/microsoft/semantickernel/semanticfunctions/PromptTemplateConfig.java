@@ -390,7 +390,7 @@ public class PromptTemplateConfig {
             @JsonProperty("schema") int schema,
             @JsonProperty("description") String description,
             @JsonProperty("type") String type,
-            @JsonProperty("serviceId") String serviceId,
+            @JsonProperty("service_id") String serviceId,
             @Nullable @JsonProperty("completion") CompletionConfig completionConfig,
             @Nullable @JsonProperty("input") InputConfig input) {
         if (completionConfig == null) {
