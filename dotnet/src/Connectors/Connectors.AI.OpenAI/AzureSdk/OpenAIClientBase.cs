@@ -104,7 +104,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// Options used by the OpenAI client, e.g. User Agent.
     /// </summary>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/> with the configured options.</returns>
-    private static OpenAIClientOptions GetClientOptions()
+    private static OpenAIClientOptions GetClientOptions() => new()
     {
         Diagnostics =
         {
