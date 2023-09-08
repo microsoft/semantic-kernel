@@ -168,7 +168,7 @@ public static class KernelAIPluginExtensions
             httpClient,
             pluginContents,
             documentUri,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<IDictionary<string, ISKFunction>> LoadSkill(
