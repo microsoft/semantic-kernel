@@ -179,21 +179,18 @@ jobs:
         shell: bash
         run: |
           echo "run_type=Daily" >> "$GITHUB_ENV"
-          echo "MSTEAMS_WEBHOOK=${{ secrets.MSTEAMS_WEBHOOK }}" >> "$GITHUB_ENV
 
       - name: Run Type is Manual
         if: ${{ github.event_name == 'workflow_dispatch' }}
         shell: bash
         run: |
           echo "run_type=Manual" >> "$GITHUB_ENV"
-          echo "MSTEAMS_WEBHOOK=${{ secrets.MSTEAMS_WEBHOOK }}" >> "$GITHUB_ENV
 
       - name: Run Type is ${{ github.event_name }}
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'}}
         shell: bash
         run: |
           echo "run_type=${{ github.event_name }}" >> "$GITHUB_ENV"
-          echo "MSTEAMS_WEBHOOK=None" >> "$GITHUB_ENV
 
       - name: Fail workflow if tests failed
         id: check_tests_failed
@@ -213,7 +210,7 @@ jobs:
         uses: skitionek/notify-microsoft-teams@master
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
-          webhook_url: ${{ env.MSTEAMS_WEBHOOK }}
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
           dry_run: ${{ env.run_type != 'Daily' && env.run_type != 'Manual'}}
           job: ${{ toJson(job) }}
           steps: ${{ toJson(steps) }}
