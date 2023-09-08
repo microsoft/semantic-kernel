@@ -8,6 +8,7 @@ import com.microsoft.semantickernel.SamplesConfig;
 import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.coreskills.TextMemorySkill;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -46,7 +47,7 @@ public class Example15_MemorySkill {
                         .withModelId("text-embedding-ada-002")
                         .build();
 
-        MemoryStore memoryStore = SKBuilders.memoryStore().build();
+        MemoryStore memoryStore = new VolatileMemoryStore.Builder().build();
 
         Kernel kernel = SKBuilders.kernel()
                 .withDefaultAIService(textCompletionService)

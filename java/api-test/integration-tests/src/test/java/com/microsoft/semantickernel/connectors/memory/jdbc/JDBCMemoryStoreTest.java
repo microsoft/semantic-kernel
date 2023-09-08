@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.sqlite;
+package com.microsoft.semantickernel.connectors.memory.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,6 +13,8 @@ import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
+import java.awt.*;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -28,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-public class SQLiteMemoryStoreTest {
+public class JDBCMemoryStoreTest {
 
     private static MemoryStore db;
     private static int collectionNum = 0;
@@ -38,7 +40,11 @@ public class SQLiteMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        db = new SQLiteMemoryStore.Builder().withFilename(":memory:").buildAsync().block();
+        db =
+                new JDBCMemoryStore.Builder()
+                        .withConnection(DriverManager.getConnection("jdbc:sqlite::memory:"))
+                        .buildAsync()
+                        .block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -404,7 +410,7 @@ public class SQLiteMemoryStoreTest {
         String collection = setUpNearestMatches();
 
         // Act
-        float threshold = -1f;
+        double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 db.getNearestMatchesAsync(collection, compareEmbedding, topN, threshold, false)
                         .block();
@@ -427,7 +433,7 @@ public class SQLiteMemoryStoreTest {
         String collection = setUpNearestMatches();
 
         // Act
-        float threshold = -1f;
+        double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
@@ -444,7 +450,7 @@ public class SQLiteMemoryStoreTest {
         String collection = setUpNearestMatches();
 
         // Act
-        float threshold = -1f;
+        double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 db.getNearestMatchesAsync(collection, compareEmbedding, 0, threshold, false)
                         .block();
@@ -463,7 +469,7 @@ public class SQLiteMemoryStoreTest {
         db.createCollectionAsync(collection).block();
 
         // Act
-        float threshold = -1f;
+        double threshold = -1;
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
                 db.getNearestMatchesAsync(
                                 collection, compareEmbedding, Integer.MAX_VALUE, threshold, false)
@@ -483,7 +489,7 @@ public class SQLiteMemoryStoreTest {
         String collection = setUpNearestMatches();
 
         // Act
-        float threshold = 0.75f;
+        double threshold = 0.75;
         Tuple2<MemoryRecord, Float> topNResultDefault =
                 db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
         Tuple2<MemoryRecord, Float> topNResultWithEmbedding =
@@ -508,7 +514,7 @@ public class SQLiteMemoryStoreTest {
         String collection = setUpNearestMatches();
 
         // Act
-        float threshold = 0.75f;
+        double threshold = 0.75;
         Tuple2<MemoryRecord, Float> topNResult =
                 db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
 
@@ -528,7 +534,7 @@ public class SQLiteMemoryStoreTest {
         db.createCollectionAsync(collection).block();
 
         // Act
-        float threshold = -1f;
+        double threshold = -1;
         Tuple2<MemoryRecord, Float> topNResults =
                 db.getNearestMatchAsync(collection, compareEmbedding, threshold, false).block();
 
@@ -560,7 +566,7 @@ public class SQLiteMemoryStoreTest {
 
         // Act
         Collection<Tuple2<MemoryRecord, Float>> topNResults =
-                db.getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75f, true).block();
+                db.getNearestMatchesAsync(collection, compareEmbedding, topN, 0.75, true).block();
         Collection<String> topNKeys =
                 topNResults.stream()
                         .map(tuple -> tuple.getT1().getKey())

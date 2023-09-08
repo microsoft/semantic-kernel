@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-parent</artifactId>
@@ -10,10 +10,8 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-connectors-memory-sqlite</artifactId>
-
-    <name>Semantic Kernel SQLite Memory Connector</name>
-    <description>Defines connector for SQLite to be used with the Semantic Kernel</description>
+    <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
+    <name>Semantic Kernel PostgreSQL Memory Connector</name>
 
     <dependencies>
         <dependency>
@@ -40,8 +38,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>LATEST</version>
         </dependency>
 
         <dependency>
@@ -50,7 +49,5 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-
     </dependencies>
-
 </project>
