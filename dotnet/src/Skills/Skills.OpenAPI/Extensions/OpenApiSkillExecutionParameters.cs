@@ -23,7 +23,7 @@ public class OpenApiSkillExecutionParameters
     public AuthenticateRequestAsyncCallback? AuthCallback { get; set; }
 
     /// <summary>
-    /// Override for RESP API operation server url.
+    /// Override for REST API operation server url.
     /// </summary>
     public Uri? ServerUrlOverride { get; set; }
 
@@ -59,7 +59,7 @@ public class OpenApiSkillExecutionParameters
     /// </summary>
     /// <param name="httpClient">The HttpClient to use for sending HTTP requests.</param>
     /// <param name="authCallback">The callback for adding authentication data to HTTP requests.</param>
-    /// <param name="serverUrlOverride">The override for the RESP API operation server URL.</param>
+    /// <param name="serverUrlOverride">The override for the REST API operation server URL.</param>
     /// <param name="userAgent">Optional user agent header value.</param>
     /// <param name="ignoreNonCompliantErrors">A flag indicating whether to ignore non-compliant errors or not
     /// If set to true, the operation execution will not throw exceptions for non-compliant documents.
