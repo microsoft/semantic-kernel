@@ -63,5 +63,5 @@ public class ChatRequestSettings
     /// Enabling or disabling function calling is done by setting this parameter.
     /// Possible values are none, auto, or a specific function.
     /// </summary>
-    public string? FunctionCall { get; set; }
+    //public bool FunctionCall { get; set; } = false; // This is not needed. Will default to "auto" when functions present and "none" when functions not present.
 }

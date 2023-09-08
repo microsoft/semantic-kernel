@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -22,9 +23,10 @@ public static class ChatCompletionExtensions
         this IChatCompletion chatCompletion,
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
+        FunctionsView? functions = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chatCompletionResult in chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false))
+        await foreach (var chatCompletionResult in chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, functions, cancellationToken).ConfigureAwait(false))
         {
             await foreach (var chatMessageStream in chatCompletionResult.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -48,9 +50,10 @@ public static class ChatCompletionExtensions
         this IChatCompletion chatCompletion,
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
+        FunctionsView? functions = null,
         CancellationToken cancellationToken = default)
     {
-        var chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        var chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, functions, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
 
         return firstChatMessage.Content;

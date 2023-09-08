@@ -69,7 +69,7 @@ public class CompleteRequestSettings
     /// Enabling or disabling function calling is done by setting this parameter.
     /// Possible values are none, auto, or a specific function.
     /// </summary>
-    public string? FunctionCall { get; set; }
+    //public bool FunctionCall { get; set; } = false
 
     // TODO: should this be a bool or an enum? what should default value be?
 
@@ -88,7 +88,7 @@ public class CompleteRequestSettings
             FrequencyPenalty = config.FrequencyPenalty,
             MaxTokens = config.MaxTokens,
             StopSequences = config.StopSequences,
-            FunctionCall = config.FunctionCall,
+            //FunctionCall = config.FunctionCall,
         };
     }
 }

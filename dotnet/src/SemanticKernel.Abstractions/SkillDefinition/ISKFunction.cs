@@ -38,7 +38,7 @@ public interface ISKFunction
     /// <summary>
     /// Whether the function can be used as a function call that is passed to the API.
     /// </summary>
-    bool FunctionCallingEnabled { get; }
+    //bool FunctionCallingEnabled { get; }
 
     /// <summary>
     /// AI service settings

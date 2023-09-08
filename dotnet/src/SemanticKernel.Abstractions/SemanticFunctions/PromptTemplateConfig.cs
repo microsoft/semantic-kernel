@@ -70,9 +70,9 @@ public class PromptTemplateConfig
         /// Enabling or disabling function calling is done by setting this parameter.
         /// Possible values are none, auto, or a specific function.
         /// </summary>
-        [JsonPropertyName("function_call")]
-        [JsonPropertyOrder(7)]
-        public string? FunctionCall { get; set; }
+        //[JsonPropertyName("function_call")]
+        //[JsonPropertyOrder(7)]
+        //public string? FunctionCall { get; set; }
     }
 
     /// <summary>

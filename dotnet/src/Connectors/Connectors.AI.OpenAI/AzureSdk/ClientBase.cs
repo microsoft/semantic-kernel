@@ -16,6 +16,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -184,13 +185,14 @@ public abstract class ClientBase
     private protected async Task<IReadOnlyList<IChatResult>> InternalGetChatResultsAsync(
         ChatHistory chat,
         ChatRequestSettings? chatSettings,
+        FunctionsView? functions,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
         chatSettings ??= new();
-
+        
         ValidateMaxTokens(chatSettings.MaxTokens);
-        var chatOptions = CreateChatCompletionsOptions(chatSettings, chat);
+        var chatOptions = CreateChatCompletionsOptions(chatSettings, chat, functions);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
@@ -222,14 +224,15 @@ public abstract class ClientBase
     private protected async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
         IEnumerable<ChatMessageBase> chat,
         ChatRequestSettings? requestSettings,
+        FunctionsView? functions,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
         requestSettings ??= new();
-
+        
         ValidateMaxTokens(requestSettings.MaxTokens);
 
-        var options = CreateChatCompletionsOptions(requestSettings, chat);
+        var options = CreateChatCompletionsOptions(requestSettings, chat, functions); // TODO: include functions here?
 
         Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
             () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
@@ -264,7 +267,7 @@ public abstract class ClientBase
         textSettings ??= new();
         ChatHistory chat = PrepareChatHistory(text, textSettings, out ChatRequestSettings chatSettings);
 
-        return (await this.InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
+        return (await this.InternalGetChatResultsAsync(chat, chatSettings, null, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
     }
@@ -276,7 +279,7 @@ public abstract class ClientBase
     {
         ChatHistory chat = PrepareChatHistory(text, textSettings, out ChatRequestSettings chatSettings);
 
-        await foreach (var chatCompletionStreamingResult in this.InternalGetChatStreamingResultsAsync(chat, chatSettings, cancellationToken))
+        await foreach (var chatCompletionStreamingResult in this.InternalGetChatStreamingResultsAsync(chat, chatSettings, null, cancellationToken))
         {
             yield return (ITextStreamingResult)chatCompletionStreamingResult;
         }
@@ -337,7 +340,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(ChatRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory, FunctionsView? functions)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -351,7 +354,9 @@ public abstract class ClientBase
             NucleusSamplingFactor = (float?)requestSettings.TopP,
             FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
             PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoiceCount = requestSettings.ResultsPerPrompt
+            ChoiceCount = requestSettings.ResultsPerPrompt,
+            //FunctionCall = (requestSettings.FunctionCall ? FunctionDefinition.Auto : FunctionDefinition.None),
+            Functions = new List<FunctionDefinition>(), // TODO: pass in list of functions
         };
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)
