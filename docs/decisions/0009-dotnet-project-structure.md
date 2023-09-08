@@ -246,15 +246,23 @@ SK-dotnet
 └── libraries/
     ├── Microsoft.SemanticKernel.Connectors.AI.OpenAI*
     │   ├── src
-    │   └── tests (Not shown but all projects will have src and tests subfolders)
+    │   └── tests 
+    │ (Not shown but all projects will have src and tests subfolders)
     │
     ├── Microsoft.SemanticKernel.Connectors.AI.HuggingFace
     ├── Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch
     ├── Microsoft.SemanticKernel.Connectors.Memory.Qdrant
     │
-    ├── Microsoft.SemanticKernel.Planners*
+    ├── Microsoft.SemanticKernel.Planners.Action*
+    ├── Microsoft.SemanticKernel.Planners.Sequential*
+    ├── Microsoft.SemanticKernel.Planners.Stepwise*
     │ 
-    ├── Microsoft.SemanticKernel.Functions.Prompt|Semantic*
+    ├── Microsoft.SemanticKernel.Reliability.Basic*
+    ├── Microsoft.SemanticKernel.Reliability.Polly
+    │ 
+    ├── Microsoft.SemanticKernel.TemplateEngines.Basic*
+    │ 
+    ├── Microsoft.SemanticKernel.Functions.Semantic*
     ├── Microsoft.SemanticKernel.Functions.Grpc
     ├── Microsoft.SemanticKernel.Functions.OpenAPI
     │
