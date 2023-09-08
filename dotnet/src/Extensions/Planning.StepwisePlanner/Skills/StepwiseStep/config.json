@@ -13,19 +13,14 @@
   "input": {
     "parameters": [
       {
-        "name": "question",
-        "description": "The question to answer",
-        "defaultValue": ""
-      },
-      {
-        "name": "agentScratchPad",
-        "description": "The agent's scratch pad",
-        "defaultValue": ""
-      },
-      {
         "name": "functionDescriptions",
         "description": "The manual of the agent's functions",
         "defaultValue": ""
+      },
+      {
+        "name": "suffix",
+        "description": "",
+        "defaultValue": "Let's break down the problem step by step and think about the best approach. Label steps as they are taken.\n\nContinue the thought process!"
       }
     ]
   }

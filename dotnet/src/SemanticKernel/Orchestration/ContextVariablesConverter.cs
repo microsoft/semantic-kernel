@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public class ContextVariablesConverter : JsonConverter<ContextVariables>
 {
     /// <summary>
-    /// Read the JSON and convert to ContextVariables
+    /// Read the JSON and convert to ContextVariables.
     /// </summary>
     /// <param name="reader">The JSON reader.</param>
     /// <param name="typeToConvert">The type to convert.</param>
@@ -39,6 +39,12 @@ public class ContextVariablesConverter : JsonConverter<ContextVariables>
         return context;
     }
 
+    /// <summary>
+    /// Write the ContextVariables to JSON.
+    /// </summary>
+    /// <param name="writer">The JSON writer.</param>
+    /// <param name="value">The <see cref="ContextVariables"/> to write.</param>
+    /// <param name="options">The JSON serializer options.</param>
     public override void Write(Utf8JsonWriter writer, ContextVariables value, JsonSerializerOptions options)
     {
         writer.WriteStartArray();
