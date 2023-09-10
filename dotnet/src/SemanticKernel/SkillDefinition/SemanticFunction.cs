@@ -202,7 +202,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         CancellationToken cancellationToken)
     {
         Verify.NotNull(client);
-        Verify.NotNull(requestSettings);
 
         try
         {
