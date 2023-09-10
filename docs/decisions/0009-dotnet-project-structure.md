@@ -282,4 +282,8 @@ SK-dotnet
     └── Microsoft.SemanticKernel.MetaPackage
 ```
 
-***Note:*** Each project folder contains a `src` and `tests` folder.
+***Notes:***
+
+- There will only be a single solution file (initially).
+- Each project folder contains a `src` and `tests` folder.
+- There will be a gradual process to move existing unit tests to the correct location as some projects will need to be broken up.
