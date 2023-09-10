@@ -38,7 +38,7 @@ public interface ISKFunction
     /// <summary>
     /// AI service settings
     /// </summary>
-    CompleteRequestSettings RequestSettings { get; }
+    dynamic? RequestSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
@@ -50,12 +50,12 @@ public interface ISKFunction
     /// Invoke the <see cref="ISKFunction"/>.
     /// </summary>
     /// <param name="context">SK context</param>
-    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        dynamic? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -77,7 +77,7 @@ public interface ISKFunction
     /// <summary>
     /// Set the AI completion settings used with LLM requests
     /// </summary>
-    /// <param name="settings">LLM completion settings</param>
+    /// <param name="requestSettings">LLM completion settings</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+    ISKFunction SetAIConfiguration(dynamic requestSettings);
 }

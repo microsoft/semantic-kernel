@@ -37,7 +37,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        dynamic requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -47,7 +47,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        dynamic requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();

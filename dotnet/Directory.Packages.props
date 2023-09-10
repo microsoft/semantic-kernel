@@ -12,6 +12,7 @@
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.3" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageVersion Include="NRedisStack" Version="0.8.1" />
     <PackageVersion Include="Pgvector" Version="0.1.3" />

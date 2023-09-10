@@ -81,7 +81,7 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public dynamic? RequestSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -310,7 +310,7 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        dynamic? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
@@ -318,7 +318,7 @@ public sealed class Plan : IPlan
             AddVariablesToContext(this.State, context);
             var result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(context, settings, cancellationToken)
+                .InvokeAsync(context, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
 
             if (result.ErrorOccurred)
@@ -359,11 +359,11 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(dynamic requestSettings)
     {
         return this.Function is null
             ? throw new NotImplementedException()
-            : this.Function.SetAIConfiguration(settings);
+            : this.Function.SetAIConfiguration(requestSettings);
     }
 
     #endregion ISKFunction implementation

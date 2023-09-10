@@ -285,7 +285,11 @@ public sealed class Kernel : IKernel, IDisposable
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultSkillCollection(this.Skills);
 
-        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+        /*
+         * TODO Mark
+         * Make Completion dynamic
+        func.SetAIConfiguration(dynamic.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+        */
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
         func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion.ServiceId));

@@ -37,7 +37,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public bool IsSemantic => true;
 
     /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public dynamic? RequestSettings { get; private set; }
 
     /// <summary>
     /// List of function parameters
@@ -89,12 +89,12 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        dynamic? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(this._aiService?.Value, requestSettings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -113,10 +113,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(dynamic requestSettings)
     {
-        Verify.NotNull(settings);
-        this.RequestSettings = settings;
+        Verify.NotNull(requestSettings);
+        this.RequestSettings = requestSettings;
         return this;
     }
 
@@ -197,7 +197,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     private async Task<SKContext> RunPromptAsync(
         ITextCompletion? client,
-        CompleteRequestSettings? requestSettings,
+        dynamic? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {
@@ -207,7 +207,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion

@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -23,11 +22,15 @@ public static class SKFunctionExtensions
     /// <param name="skFunction">Semantic function</param>
     /// <param name="settings">Completion settings</param>
     /// <returns>Self instance</returns>
-    public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, CompleteRequestSettings settings)
+    public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, dynamic settings)
     {
         return skFunction.SetAIConfiguration(settings);
     }
 
+    /*
+     * TODO Mark
+     * These extensions methods need to move to OpenAI project
+     * 
     /// <summary>
     /// Change the LLM Max Tokens configuration
     /// </summary>
@@ -87,6 +90,7 @@ public static class SKFunctionExtensions
         skFunction.RequestSettings.FrequencyPenalty = frequencyPenalty;
         return skFunction;
     }
+    */
 
     /// <summary>
     /// Execute a function allowing to pass the main input separately from the rest of the context.
@@ -95,7 +99,7 @@ public static class SKFunctionExtensions
     /// <param name="variables">Input variables for the function</param>
     /// <param name="skills">Skills that the function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
-    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
@@ -103,7 +107,7 @@ public static class SKFunctionExtensions
         ContextVariables? variables = null,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
-        CompleteRequestSettings? settings = null,
+        dynamic? requestSettings = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
@@ -112,7 +116,7 @@ public static class SKFunctionExtensions
             Culture = culture!
         };
 
-        return function.InvokeAsync(context, settings, cancellationToken);
+        return function.InvokeAsync(context, requestSettings, cancellationToken);
     }
 
     /// <summary>
@@ -122,7 +126,7 @@ public static class SKFunctionExtensions
     /// <param name="input">Input string for the function</param>
     /// <param name="skills">Skills that the function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
-    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
@@ -130,10 +134,10 @@ public static class SKFunctionExtensions
         string input,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
-        CompleteRequestSettings? settings = null,
+        dynamic? requestSettings = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
-        => function.InvokeAsync(new ContextVariables(input), skills, culture, settings, loggerFactory, cancellationToken);
+        => SKFunctionExtensions.InvokeAsync(function, new ContextVariables(input), skills, culture, requestSettings, loggerFactory, cancellationToken);
 
     /// <summary>
     /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.

@@ -69,7 +69,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        dynamic? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -79,7 +79,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        dynamic? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -95,7 +95,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings? requestSettings = null,
+        dynamic? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -105,7 +105,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings? requestSettings = null,
+        dynamic? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();

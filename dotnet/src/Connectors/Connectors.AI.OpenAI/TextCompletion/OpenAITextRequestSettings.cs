@@ -2,15 +2,13 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.SemanticFunctions;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 /// <summary>
-/// Settings for a chat completion request.
-/// For OpenAI see https://platform.openai.com/docs/api-reference/chat
+/// Request settings for an OpenAI text completion request.
 /// </summary>
-public class ChatRequestSettings
+public class OpenAITextRequestSettings
 {
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -39,6 +37,11 @@ public class ChatRequestSettings
     public double FrequencyPenalty { get; set; } = 0;
 
     /// <summary>
+    /// The maximum number of tokens to generate in the completion.
+    /// </summary>
+    public int? MaxTokens { get; set; }
+
+    /// <summary>
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     public IList<string> StopSequences { get; set; } = Array.Empty<string>();
@@ -51,9 +54,10 @@ public class ChatRequestSettings
     public int ResultsPerPrompt { get; set; } = 1;
 
     /// <summary>
-    /// The maximum number of tokens to generate in the completion.
+    /// The system prompt to use when generating text completions using a chat model.
+    /// Defaults to "Assistant is a large language model."
     /// </summary>
-    public int? MaxTokens { get; set; }
+    public string ChatSystemPrompt { get; set; } = "Assistant is a large language model.";
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
@@ -63,18 +67,25 @@ public class ChatRequestSettings
     /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
-    /// <param name="config"></param>
-    /// <returns>An instance of <see cref="ChatRequestSettings"/> </returns>
-    public static ChatRequestSettings FromCompletionConfig(PromptTemplateConfig.CompletionConfig config)
+    /// <param name="config">Template configuration</param>
+    /// <returns>An instance of <see cref="CompleteRequestSettings"/></returns>
+    public static OpenAITextRequestSettings FromCompletionConfig(dynamic completionConfig)
     {
-        return new ChatRequestSettings
+        var settings = new OpenAITextRequestSettings
         {
-            Temperature = config.Temperature,
-            TopP = config.TopP,
-            PresencePenalty = config.PresencePenalty,
-            FrequencyPenalty = config.FrequencyPenalty,
-            MaxTokens = config.MaxTokens,
-            StopSequences = config.StopSequences,
+            Temperature = completionConfig.Temperature,
+            TopP = completionConfig.TopP,
+            PresencePenalty = completionConfig.PresencePenalty,
+            FrequencyPenalty = completionConfig.FrequencyPenalty,
+            MaxTokens = completionConfig.MaxTokens,
+            StopSequences = completionConfig.StopSequences,
         };
+
+        if (!string.IsNullOrWhiteSpace(completionConfig.ChatSystemPrompt))
+        {
+            settings.ChatSystemPrompt = completionConfig.ChatSystemPrompt!;
+        }
+
+        return settings;
     }
 }
