@@ -160,6 +160,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reliability.Basic", "src\Ex
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions.StepwisePlanner.UnitTests", "src\Extensions\Extensions.StepwisePlanner.UnitTests\Extensions.StepwisePlanner.UnitTests.csproj", "{6F651E87-F16E-407B-AF7F-B3475F850E9A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelloOpenAIConsoleApp", "samples\HelloOpenAIConsoleApp\HelloOpenAIConsoleApp.csproj", "{18523378-E32E-4E71-B2B7-055901483C57}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -401,6 +403,12 @@ Global
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18523378-E32E-4E71-B2B7-055901483C57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18523378-E32E-4E71-B2B7-055901483C57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18523378-E32E-4E71-B2B7-055901483C57}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{18523378-E32E-4E71-B2B7-055901483C57}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{18523378-E32E-4E71-B2B7-055901483C57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18523378-E32E-4E71-B2B7-055901483C57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -458,6 +466,7 @@ Global
 		{D4540A0F-98E3-4E70-9093-1948AE5B2AAD} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{3DC4DBD8-20A5-4937-B4F5-BB5E24E7A567} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
+		{18523378-E32E-4E71-B2B7-055901483C57} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
