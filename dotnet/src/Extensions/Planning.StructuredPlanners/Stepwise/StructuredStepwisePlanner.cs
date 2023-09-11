@@ -293,20 +293,14 @@ public class StructuredStepwisePlanner : IStructuredPlanner
         {
             var result = await targetFunction.InvokeAsync(functionCall.FunctionParameters()).ConfigureAwait(false);
 
-            if (result.ErrorOccurred)
-            {
-                _logger.LogError("Error occurred: {Error}", result.LastException);
-                return $"Error occurred: {result.LastException?.Message}";
-            }
-
             _logger.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
 
             return result.Result;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            _logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
-            return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException?.Message}";
+            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            throw;
         }
     }
 
