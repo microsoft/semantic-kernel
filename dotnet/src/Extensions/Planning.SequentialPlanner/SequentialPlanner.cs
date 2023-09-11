@@ -64,11 +64,6 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         var planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if (planResult.ErrorOccurred)
-        {
-            throw new SKException($"Error creating plan for goal: {planResult.LastException?.Message}", planResult.LastException);
-        }
-
         string planResultString = planResult.Result.Trim();
 
         var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);

@@ -252,13 +252,10 @@ public sealed class Plan : IPlan
 
             // Execute the step
             var functionContext = new SKContext(functionVariables, context.Skills, context.LoggerFactory);
-            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
-            var resultValue = result.Result.Trim();
 
-            if (result.ErrorOccurred)
-            {
-                throw new SKException($"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
-            }
+            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var resultValue = result.Result.Trim();
 
             #region Update State
 
@@ -320,11 +317,6 @@ public sealed class Plan : IPlan
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, settings, cancellationToken)
                 .ConfigureAwait(false);
-
-            if (result.ErrorOccurred)
-            {
-                return result;
-            }
 
             context.Variables.Update(result.Result);
         }

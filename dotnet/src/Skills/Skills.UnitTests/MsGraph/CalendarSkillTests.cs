@@ -49,7 +49,6 @@ public class CalendarSkillTests
             ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.False(context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -87,7 +86,6 @@ public class CalendarSkillTests
             ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.False(context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -125,7 +123,6 @@ public class CalendarSkillTests
             ("attendees", string.Join(";", anyAttendees)));
 
         // Assert
-        Assert.False(context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -163,7 +160,6 @@ public class CalendarSkillTests
             ("content", anyContent));
 
         // Assert
-        Assert.False(context.ErrorOccurred);
         connectorMock.VerifyAll();
     }
 
@@ -181,17 +177,14 @@ public class CalendarSkillTests
 
         CalendarSkill target = new(connectorMock.Object);
 
-        // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+        // Act and Assert
+        await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
             ("input", anySubject),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
             ("content", anyContent),
-            ("attendees", string.Join(";", anyAttendees)));
-
-        // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<SKException>(context.LastException);
+            ("attendees", string.Join(";", anyAttendees)))
+        );
     }
 
     [Fact]
@@ -209,16 +202,13 @@ public class CalendarSkillTests
         CalendarSkill target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+        await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
             ("input", anySubject),
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
             ("content", anyContent),
-            ("attendees", string.Join(";", anyAttendees)));
-
-        // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<SKException>(context.LastException);
+            ("attendees", string.Join(";", anyAttendees)))
+        );
     }
 
     [Fact]
@@ -236,16 +226,15 @@ public class CalendarSkillTests
         CalendarSkill target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
             ("content", anyContent),
-            ("attendees", string.Join(";", anyAttendees)));
+            ("attendees", string.Join(";", anyAttendees)))
+        );
 
         // Assert
-        Assert.True(context.ErrorOccurred);
-        ArgumentException e = Assert.IsType<ArgumentException>(context.LastException);
-        Assert.Equal("subject", e.ParamName);
+        Assert.Equal("subject", ex.ParamName);
     }
 }

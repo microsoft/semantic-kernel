@@ -370,9 +370,8 @@ public static class KernelAIPluginExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
-                    ex.Message);
-                throw ex;
+                logger.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", skillName, operation.Id, ex.Message);
+                throw;
             }
 
             return context;
