@@ -131,7 +131,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
+            var timestamp = !reader.IsDBNull(2) ? KustoSerializer.SerializeDateTimeOffset(reader.GetDateTime(2)) : null;
             var embedding = withEmbeddings ? reader.GetString(3) : default;
 
             var kustoRecord = new KustoMemoryRecord(key, metadata, embedding, timestamp);
@@ -214,7 +214,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         {
             var key = reader.GetString(0);
             var metadata = reader.GetString(1);
-            var timestamp = !reader.IsDBNull(2) ? reader.GetString(2) : null;
+            var timestamp = !reader.IsDBNull(2) ? KustoSerializer.SerializeDateTimeOffset(reader.GetDateTime(2)) : null;
             var similarity = reader.GetDouble(3);
             var recordEmbedding = withEmbeddings ? reader.GetString(4) : default;
 
@@ -259,10 +259,10 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         // In Kusto, upserts don't exist because it operates as an append-only store.
         // Nevertheless, given that we have a straightforward primary key (PK), we can simply insert a new record.
         // Our query always selects the latest row of that PK.
-        // An interesting scenario arises when performing deletion after many "upserts". 
+        // An interesting scenario arises when performing deletion after many "upserts".
         // This could turn out to be a heavy operation since, in theory, we might need to remove many outdated versions.
         // Additionally, deleting these records equates to a "soft delete" operation.
-        // For simplicity, and under the assumption that upserts are relatively rare in most systems, 
+        // For simplicity, and under the assumption that upserts are relatively rare in most systems,
         // we will overlook the potential accumulation of "garbage" records.
         // Kusto is generally efficient with handling large volumes of data.
         using var stream = new MemoryStream();

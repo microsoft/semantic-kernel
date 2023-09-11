@@ -38,7 +38,7 @@ public sealed class KustoMemoryRecord
     /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
     /// </summary>
     /// <param name="record">Instance of <see cref="MemoryRecord"/>.</param>
-    public KustoMemoryRecord(MemoryRecord record) : this(record.Key, record.Metadata, record.Embedding, record.Timestamp) { }
+    public KustoMemoryRecord(MemoryRecord record) : this(record.Key, record.Metadata, record.Embedding, record.Timestamp ?? DateTimeOffset.UtcNow) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KustoMemoryRecord"/> class.
