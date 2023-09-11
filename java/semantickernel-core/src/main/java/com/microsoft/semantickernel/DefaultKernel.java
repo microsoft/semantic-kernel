@@ -104,18 +104,20 @@ public class DefaultKernel implements Kernel {
         return defaultSkillCollection.getFunction(skill, function, null);
     }
 
-    /*
-    /// <inheritdoc/>
-    public SKFunction registerSemanticFunction(
-        String skillName, String functionName, SemanticFunctionConfig functionConfig) {
-      // Future-proofing the name not to contain special chars
-      // Verify.ValidSkillName(skillName);
-      // Verify.ValidFunctionName(functionName);
+    @Override
+    public CompletionSKFunction registerSemanticFunction(
+            String skillName, String functionName, SemanticFunctionConfig functionConfig) {
+        // Future-proofing the name not to contain special chars
+        // Verify.ValidSkillName(skillName);
+        // Verify.ValidFunctionName(functionName);
 
-      skillCollection = skillCollection.addSemanticFunction(func);
-
-      return this.createSemanticFunction(skillName, functionName, functionConfig);
-    }*/
+        return SKBuilders.completionFunctions()
+                .withSemanticFunctionConfig(functionConfig)
+                .withFunctionName(functionName)
+                .withSkillName(skillName)
+                .withKernel(this)
+                .build();
+    }
 
     /// <summary>
     /// Import a set of functions from the given skill. The functions must have the `SKFunction`

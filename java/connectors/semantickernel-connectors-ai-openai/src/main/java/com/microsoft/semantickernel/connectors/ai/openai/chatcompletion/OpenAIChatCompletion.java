@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.connectors.ai.openai.chatcompletion;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
+import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatMessage;
@@ -15,9 +16,11 @@ import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
+import com.microsoft.semantickernel.textcompletion.CompletionType;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,6 +29,7 @@ import reactor.core.publisher.Mono;
 
 /** OpenAI chat completion client. */
 public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<OpenAIChatHistory> {
+
     public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
         super(client, modelId);
     }
@@ -37,7 +41,20 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         return generateMessageAsync(createNewChat(text), chatRequestSettings).map(Arrays::asList);
     }
 
+    @Override
+    public Flux<String> completeStreamAsync(
+            @Nonnull String text, @Nonnull CompletionRequestSettings requestSettings) {
+        ChatRequestSettings chatRequestSettings = new ChatRequestSettings(requestSettings);
+        return generateMessageStream(createNewChat(text), chatRequestSettings);
+    }
+
+    @Override
+    public CompletionType defaultCompletionType() {
+        return CompletionType.STREAMING;
+    }
+
     public static class Builder implements ChatCompletion.Builder<OpenAIChatHistory> {
+
         public Builder() {}
 
         @Nullable private OpenAIAsyncClient client;
@@ -133,6 +150,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         options.setLogitBias(new HashMap<>());
         options.setN(requestSettings.getBestOf());
         options.setUser(requestSettings.getUser());
+        options.setStop(requestSettings.getStopSequences());
 
         return options;
     }
@@ -160,18 +178,25 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
     public Flux<String> generateMessageStream(
             OpenAIChatHistory chat, @Nullable ChatRequestSettings requestSettings) {
         return this.getStreamingChatCompletionsAsync(chat, requestSettings)
+                .groupBy(ChatCompletions::getId)
                 .concatMap(
                         chatCompletionResult -> {
-                            return Flux.fromIterable(chatCompletionResult.getChoices());
-                        })
-                .map(
-                        chatChoice -> {
-                            ChatMessage message = chatChoice.getDelta();
-                            if (message == null || message.getContent() == null) {
-                                return "";
-                            }
-                            return message.getContent();
+                            return chatCompletionResult
+                                    .concatMap(
+                                            chatCompletions ->
+                                                    Flux.fromIterable(chatCompletions.getChoices()))
+                                    .reduce("", accumulateString());
                         });
+    }
+
+    private static BiFunction<String, ChatChoice, String> accumulateString() {
+        return (newString, chatChoice) -> {
+            ChatMessage message = chatChoice.getDelta();
+            if (message != null && message.getContent() != null) {
+                return newString + message.getContent();
+            }
+            return newString;
+        };
     }
 
     @Override
@@ -205,6 +230,8 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
         if (instructions == null) {
             instructions = "";
         }
-        return new OpenAIChatHistory(instructions);
+        OpenAIChatHistory history = new OpenAIChatHistory("Assistant is a large language model.");
+        history.addUserMessage(instructions);
+        return history;
     }
 }
