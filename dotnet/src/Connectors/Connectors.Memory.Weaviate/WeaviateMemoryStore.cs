@@ -48,6 +48,11 @@ public class WeaviateMemoryStore : IMemoryStore
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    static WeaviateMemoryStore()
+    {
+        s_jsonSerializerOptions.Converters.Add(new ReadOnlyMemoryConverter());
+    }
+
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly Uri? _endpoint = null;
