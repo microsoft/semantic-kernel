@@ -4,23 +4,29 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using RepoUtils;
 
-Console.WriteLine("Hello AI, what can you do for me?");
+var prompt = "Hello AI, what can you do for me?";
+Console.WriteLine(prompt);
 
 IConfigurationRoot configRoot = new ConfigurationBuilder()
             .AddEnvironmentVariables()
             .AddUserSecrets<Env>()
             .Build();
 
-var section = configRoot.GetSection("AzureOpenAI");
-var deploymentName = section.GetValue<string>("DeploymentName");
-var endpoint = section.GetValue<string>("Endpoint");
-var apiKey = section.GetValue<string>("ApiKey");
+var azureOpenAI = configRoot.GetSection("AzureOpenAI");
+var openAI = configRoot.GetSection("OpenAI");
+var azureDeploymentName = azureOpenAI.GetValue<string>("DeploymentName");
+var azureEndpoint = azureOpenAI.GetValue<string>("Endpoint");
+var azureApiKey = azureOpenAI.GetValue<string>("ApiKey");
+var openaiModelId = openAI.GetValue<string>("ModelId");
+var openaiApiKey = openAI.GetValue<string>("ApiKey");
 
 IKernel kernel = new KernelBuilder()
-            .WithAzureTextCompletionService(deploymentName, endpoint, apiKey)
+            .WithAzureTextCompletionService(deploymentName: azureDeploymentName, endpoint: azureEndpoint, apiKey: azureApiKey, serviceId: "azure")
+            .WithOpenAITextCompletionService(modelId: openaiModelId, apiKey: openaiApiKey, serviceId: "openai")
             .Build();
 
-var result = await kernel.InvokeSemanticFunctionAsync("Hello AI, what can you do for me?");
+var result = await kernel.InvokeSemanticFunctionAsync("Hello AI, what can you do for me?", requestSettings: new { MaxTokens = 16, Temperature = 0.7, ServiceId = "azure" });
+// var result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAITextRequestSettings() { MaxTokens = 256, Temperature = 0.7 });
 
 if (result.LastException is not null)
 {

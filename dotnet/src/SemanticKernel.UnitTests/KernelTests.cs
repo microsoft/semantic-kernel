@@ -231,7 +231,7 @@ public class KernelTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion.ServiceId = "service1";
+        templateConfig.Completion = new { ServiceId = "service1" };
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
@@ -255,7 +255,7 @@ public class KernelTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion.ServiceId = "service3";
+        templateConfig.Completion = new { ServiceId = "service3" };
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act

@@ -113,7 +113,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic requestSettings)
+    public ISKFunction SetAIConfiguration(dynamic? requestSettings)
     {
         Verify.NotNull(requestSettings);
         this.RequestSettings = requestSettings;

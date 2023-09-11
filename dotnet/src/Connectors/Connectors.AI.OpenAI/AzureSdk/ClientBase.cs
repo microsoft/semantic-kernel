@@ -91,7 +91,7 @@ public abstract class ClientBase
         dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        requestSettings ??= new OpenAITextRequestSettings();
+        requestSettings = OpenAITextRequestSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(requestSettings.MaxTokens);
         var options = CreateCompletionsOptions(text, requestSettings);
@@ -128,7 +128,7 @@ public abstract class ClientBase
         dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        requestSettings ??= new OpenAITextRequestSettings();
+        requestSettings = OpenAITextRequestSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(requestSettings.MaxTokens);
         var options = CreateCompletionsOptions(text, requestSettings);

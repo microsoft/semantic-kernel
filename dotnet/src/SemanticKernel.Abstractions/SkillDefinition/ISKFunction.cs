@@ -79,5 +79,5 @@ public interface ISKFunction
     /// </summary>
     /// <param name="requestSettings">LLM completion settings</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIConfiguration(dynamic requestSettings);
+    ISKFunction SetAIConfiguration(dynamic? requestSettings);
 }
