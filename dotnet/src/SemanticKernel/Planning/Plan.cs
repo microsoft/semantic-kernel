@@ -343,7 +343,7 @@ public sealed class Plan : IPlan
     }
 
     public async Task<StreamingSKResult> StreamingInvokeAsync(SKContext context,
-        CompleteRequestSettings? requestSettings = null,
+        CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
         var inputContext = context.Clone();
@@ -353,10 +353,10 @@ public sealed class Plan : IPlan
             AddVariablesToContext(this.State, context);
             var result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .StreamingInvokeAsync(context, requestSettings, cancellationToken)
+                .StreamingInvokeAsync(context, settings, cancellationToken)
                 .ConfigureAwait(false);
 
-            var outputContext = await result.GetOutputSKContextAsync(cancellationToken).ConfigureAwait(false);
+            var outputContext = await result.GetFirstChoiceContextAsync(cancellationToken).ConfigureAwait(false);
 
             if (outputContext.ErrorOccurred)
             {

@@ -229,6 +229,39 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
         }
     }
 
+    public async Task<Stream> GetRawStreamingCompletionsAsync(string text,
+        CompleteRequestSettings requestSettings,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
+
+            var completionRequest = this.CreateOobaboogaRequest(text, requestSettings);
+
+            using var stringContent = new StringContent(
+                JsonSerializer.Serialize(completionRequest),
+                Encoding.UTF8,
+                "application/json");
+
+            using var httpRequestMessage = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Post,
+                RequestUri = this._blockingUri.Uri,
+                Content = stringContent
+            };
+            httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+
+            using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+
+            return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            this.FinishConcurrentCall();
+        }
+    }
+
     #region private ================================================================================
 
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +13,11 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 internal sealed class TextStreamingResult : ITextStreamingResult
 {
-    private readonly StreamingChoice _choice;
+    private readonly Azure.AI.OpenAI.StreamingChoice _choice;
 
     public ModelResult ModelResult { get; }
 
-    public TextStreamingResult(StreamingCompletions resultData, StreamingChoice choice)
+    public TextStreamingResult(StreamingCompletions resultData, Azure.AI.OpenAI.StreamingChoice choice)
     {
         this.ModelResult = new ModelResult(resultData);
         this._choice = choice;
@@ -36,5 +37,23 @@ internal sealed class TextStreamingResult : ITextStreamingResult
     public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
     {
         return this._choice.GetTextStreaming(cancellationToken);
+    }
+
+    public Task<Stream> GetRawStreamAsync(CancellationToken cancellationToken = default)
+    {
+        var memoryStream = new MemoryStream();
+
+        _ = Task.Run(async () =>
+        {
+            using var streamWriter = new StreamWriter(memoryStream);
+            await foreach (var content in this._choice.GetTextStreaming(cancellationToken).ConfigureAwait(false))
+            {
+                await streamWriter.WriteAsync(content).ConfigureAwait(false);
+            }
+            await streamWriter.FlushAsync().ConfigureAwait(false);
+            streamWriter.Close();
+        }, cancellationToken);
+
+        return Task.FromResult<Stream>(memoryStream);
     }
 }

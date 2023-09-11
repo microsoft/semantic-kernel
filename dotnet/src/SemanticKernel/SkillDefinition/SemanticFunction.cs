@@ -98,21 +98,20 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<StreamingSKResult> StreamingInvokeAsync(SKContext context, CompleteRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public async Task<StreamingSKResult> StreamingInvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
         ITextCompletion? completionService = this._aiService?.Value;
-        requestSettings ??= this.RequestSettings;
+        settings ??= this.RequestSettings;
 
         Verify.NotNull(completionService);
-        Verify.NotNull(requestSettings);
+        Verify.NotNull(settings);
 
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
             return new SemanticStreamingSKResult(
                 context,
-                (cancellationToken) => completionService.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken),
-                (cancellationToken) => completionService.GetRawStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken)
+                (cancellationToken) => completionService.GetStreamingCompletionsAsync(renderedPrompt, settings, cancellationToken).ToEnumerable(cancellationToken)
             );
         }
         catch (HttpOperationException ex)

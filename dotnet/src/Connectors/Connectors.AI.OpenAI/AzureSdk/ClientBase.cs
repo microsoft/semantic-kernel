@@ -319,6 +319,16 @@ public abstract class ClientBase
             .ToList();
     }
 
+    private protected async Task<Stream> InternalGetRawChatCompletionAsTextStreamAsync(string text,
+        CompleteRequestSettings? textSettings,
+        CancellationToken cancellationToken = default)
+    {
+        textSettings ??= new();
+        ChatHistory chat = PrepareChatHistory(text, textSettings, out ChatRequestSettings chatSettings);
+
+        return (await this.InternalGetRawChatCompletionsStreamAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false));
+    }
+
     private protected async IAsyncEnumerable<ITextStreamingResult> InternalGetChatStreamingResultsAsTextAsync(
         string text,
         CompleteRequestSettings? textSettings,

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -92,5 +93,10 @@ public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, IT
     {
         this.LogActionDetails();
         return this.InternalGetChatResultsAsTextAsync(text, requestSettings, cancellationToken);
+    }
+
+    public Task<Stream> GetRawStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    {
+        return this.InternalGetRawTextCompletionsStreamAsync(text, requestSettings, cancellationToken);
     }
 }

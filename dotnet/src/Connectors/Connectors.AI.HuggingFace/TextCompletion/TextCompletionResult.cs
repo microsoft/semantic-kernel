@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,5 +29,10 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return await this.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public Task<Stream> GetRawStreamAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(StreamingSKResult.GetStreamFromString(this._responseData.GetResult<TextCompletionResponse>().Text ?? string.Empty));
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -64,5 +65,23 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
         {
             yield return result.Content;
         }
+    }
+
+    public Task<Stream> GetRawStreamAsync(CancellationToken cancellationToken = default)
+    {
+        var memoryStream = new MemoryStream();
+
+        _ = Task.Run(async () =>
+        {
+            using var streamWriter = new StreamWriter(memoryStream);
+            await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
+            {
+                await streamWriter.WriteAsync(result.Content).ConfigureAwait(false);
+            }
+            await streamWriter.FlushAsync().ConfigureAwait(false);
+            streamWriter.Close();
+        }, cancellationToken);
+
+        return Task.FromResult<Stream>(memoryStream);
     }
 }

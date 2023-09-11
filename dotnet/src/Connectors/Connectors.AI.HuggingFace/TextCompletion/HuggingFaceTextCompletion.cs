@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
@@ -117,6 +119,15 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
     }
 
+    private async Task<IEnumerable<IStreamingChoice>> ExecuteGetCompletionsStreamAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    {
+        return new[]
+        {
+            new RawStreamingChoice(
+                await this.GetRawStreamingCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false))
+        };
+    }
+
     /// <summary>
     /// Retrieves the request URI based on the provided endpoint and model information.
     /// </summary>
@@ -137,6 +148,26 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
         }
 
         return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
+    }
+
+    public async Task<Stream> GetRawStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    {
+        var completionRequest = new TextCompletionRequest
+        {
+            Input = text
+        };
+
+        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), completionRequest);
+
+        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
+        if (!string.IsNullOrEmpty(this._apiKey))
+        {
+            httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
+        }
+
+        using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
+
+        return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
     }
 
     #endregion

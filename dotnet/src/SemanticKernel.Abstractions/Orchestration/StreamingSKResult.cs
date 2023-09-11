@@ -4,26 +4,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
 public abstract record StreamingSKResult
 {
-    public SKContext InputSKContext { get; }
+    public SKContext InputContext { get; }
 
     protected StreamingSKResult(SKContext inputContext)
     {
-        this.InputSKContext = inputContext;
+        this.InputContext = inputContext;
     }
 
-    public abstract Task<Stream> GetRawStream(CancellationToken cancellationToken = default);
+    public abstract IEnumerable<IStreamingChoice> GetChoices(CancellationToken cancellationToken = default);
 
-    public abstract IAsyncEnumerable<ITextStreamingResult> GetResults(CancellationToken cancellationToken = default);
+    public abstract Task<IEnumerable<SKContext>> GetChoiceContextsAsync(CancellationToken cancellationToken = default);
 
-    public abstract Task<SKContext> GetOutputSKContextAsync(CancellationToken cancellationToken = default);
-
-    static protected Stream GetStreamFromString(string content)
+    public static Stream GetStreamFromString(string content)
     {
         var memoryStream = new MemoryStream();
         using (var streamWriter = new StreamWriter(memoryStream))
@@ -32,6 +29,13 @@ public abstract record StreamingSKResult
             streamWriter.Flush();
         }
 
+        memoryStream.Position = 0;
         return memoryStream;
+    }
+
+    public static string GetStringFromStream(Stream stream)
+    {
+        using var streamReader = new StreamReader(stream);
+        return streamReader.ReadToEnd();
     }
 }

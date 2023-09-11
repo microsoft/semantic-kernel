@@ -76,10 +76,10 @@ public sealed class InstrumentedSKFunction : ISKFunction
 
     public async Task<StreamingSKResult> StreamingInvokeAsync(
         SKContext context,
-        CompleteRequestSettings? requestSettings = null,
+        CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
         => await this.StreamingInvokeWithInstrumentationAsync(()
-            => this._function.StreamingInvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
+            => this._function.StreamingInvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
 
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
@@ -165,7 +165,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
 
         stopwatch.Stop();
 
-        var outputContext = await result.GetOutputSKContextAsync().ConfigureAwait(false);
+        var outputContext = await result.GetFirstChoiceContextAsync().ConfigureAwait(false);
 
         this.LogResult(stopwatch, outputContext, nameof(this.StreamingInvokeAsync));
 

@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -23,12 +20,9 @@ internal record PlanStreamingSKResult : StreamingSKResult
         this._outputContext = outputContext;
     }
 
-    public override Task<SKContext> GetOutputSKContextAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult(this._outputContext);
+    public override Task<IEnumerable<SKContext>> GetChoiceContextsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<IEnumerable<SKContext>>(new[] { this._outputContext });
 
-    public override Task<Stream> GetRawStream(CancellationToken cancellationToken = default)
-        => Task.FromResult(StreamingSKResult.GetStreamFromString(this._content));
-
-    public override IAsyncEnumerable<ITextStreamingResult> GetResults(CancellationToken cancellationToken = default) =>
-        new[] { new NativeTextStreamingResult(this._content) }.ToAsyncEnumerable();
+    public override IEnumerable<IStreamingChoice> GetChoices(CancellationToken cancellationToken = default) =>
+        new[] { new NativeStreamingChoice(this._content) };
 }

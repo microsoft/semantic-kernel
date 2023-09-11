@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,5 +53,10 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     {
         this.LogActionDetails();
         return this.InternalGetTextResultsAsync(text, requestSettings, cancellationToken);
+    }
+
+    public Task<Stream> GetRawStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+    {
+        return this.InternalGetRawTextCompletionsStreamAsync(text, requestSettings, cancellationToken);
     }
 }

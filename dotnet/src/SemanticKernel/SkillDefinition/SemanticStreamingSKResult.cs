@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using System.Threading.Tasks;
@@ -11,38 +10,42 @@ using System.Threading;
 namespace Microsoft.SemanticKernel.SkillDefinition;
 internal record SemanticStreamingSKResult : StreamingSKResult
 {
-    private readonly Func<CancellationToken, IAsyncEnumerable<ITextStreamingResult>> _streamingResultDelegate;
-    private readonly Func<CancellationToken, Task<Stream>> _rawStreamResultDelegate;
+    private readonly Func<CancellationToken, IEnumerable<ITextStreamingResult>> _getChoicesDelegate;
 
-    public SemanticStreamingSKResult(SKContext inputContext, Func<CancellationToken, IAsyncEnumerable<ITextStreamingResult>> streamingResultDelegate, Func<CancellationToken, Task<Stream>> rawStreamResultDelegate)
+    public SemanticStreamingSKResult(SKContext inputContext,
+        Func<CancellationToken, IEnumerable<ITextStreamingResult>> getChoicesDelegate)
         : base(inputContext)
     {
-        this._streamingResultDelegate = streamingResultDelegate;
-        this._rawStreamResultDelegate = rawStreamResultDelegate;
+        this._getChoicesDelegate = getChoicesDelegate;
     }
 
-    public override Task<Stream> GetRawStream(CancellationToken cancellationToken = default)
-        => this._rawStreamResultDelegate(cancellationToken);
+    public override IEnumerable<IStreamingChoice> GetChoices(CancellationToken cancellationToken = default)
+        => this._getChoicesDelegate(cancellationToken);
 
-    public override IAsyncEnumerable<ITextStreamingResult> GetResults(CancellationToken cancellationToken = default)
-        => this._streamingResultDelegate(cancellationToken);
-
-    public override async Task<SKContext> GetOutputSKContextAsync(CancellationToken cancellationToken = default)
+    public override async Task<IEnumerable<SKContext>> GetChoiceContextsAsync(CancellationToken cancellationToken = default)
     {
-        var outputContext = this.InputSKContext.Clone();
-        ITextStreamingResult? firstResult = null;
-        var modelResults = new List<ModelResult>();
+        var skContexts = new List<SKContext>();
 
-        await foreach (ITextStreamingResult completionResult in this._streamingResultDelegate(cancellationToken))
+        foreach (IStreamingChoice choice in this._getChoicesDelegate(cancellationToken))
         {
-            firstResult ??= completionResult;
-            modelResults.Add(completionResult.ModelResult);
+            var modelResults = new List<ModelResult>();
+            var outputContext = this.InputContext.Clone();
+            if (choice is ITextStreamingResult textChoice)
+            {
+                modelResults.Add(textChoice.ModelResult);
+                outputContext.ModelResults = modelResults;
+                outputContext.Variables.Update(await textChoice.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
+            }
+            else
+            {
+                outputContext.Variables.Update(
+                    StreamingSKResult.GetStringFromStream(
+                        await choice.GetRawStreamAsync(cancellationToken).ConfigureAwait(false)));
+            }
+
+            skContexts.Add(outputContext);
         }
 
-        outputContext.ModelResults = modelResults;
-        outputContext.Variables.Update(await firstResult!.GetCompletionAsync(cancellationToken).ConfigureAwait(false));
-
-        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
-        return outputContext;
+        return skContexts;
     }
 }
