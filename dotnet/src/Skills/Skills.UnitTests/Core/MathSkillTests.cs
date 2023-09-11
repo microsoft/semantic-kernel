@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Skills.Core;
@@ -87,10 +88,10 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", "1"));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", "1")));
 
         // Assert
-        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "value", initialValue);
+        AssertExtensions.AssertIsArgumentOutOfRange(ex, "value", initialValue);
     }
 
     [Theory]
@@ -111,10 +112,10 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "Add", ("input", "1"), ("amount", amount));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Add", ("input", "1"), ("amount", amount)));
 
         // Assert
-        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "amount", amount);
+        AssertExtensions.AssertIsArgumentOutOfRange(ex, "amount", amount);
     }
 
     [Theory]
@@ -135,10 +136,10 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", "1"));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", "1")));
 
         // Assert
-        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "value", initialValue);
+        AssertExtensions.AssertIsArgumentOutOfRange(ex, "value", initialValue);
     }
 
     [Theory]
@@ -159,9 +160,9 @@ public class MathSkillTests
         var target = new MathSkill();
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", "1"), ("amount", amount));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Subtract", ("input", "1"), ("amount", amount)));
 
         // Assert
-        AssertExtensions.AssertIsArgumentOutOfRange(context.LastException, "amount", amount);
+        AssertExtensions.AssertIsArgumentOutOfRange(ex, "amount", amount);
     }
 }
