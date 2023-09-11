@@ -13,10 +13,6 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from numpy import ndarray
-
-from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
 from usearch.index import (
     BatchMatches,
     CompiledMetric,
@@ -25,6 +21,10 @@ from usearch.index import (
     MetricKind,
     ScalarKind,
 )
+
+from semantic_kernel.memory.memory_record import MemoryRecord
+from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.null_logger import NullLogger
 
 
 @dataclass
