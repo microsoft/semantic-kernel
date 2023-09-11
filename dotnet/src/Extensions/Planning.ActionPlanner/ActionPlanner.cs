@@ -154,6 +154,12 @@ public sealed class ActionPlanner : IActionPlanner
 
     // TODO: generate string programmatically
     // TODO: use goal to find relevant examples
+    /// <summary>
+    /// Native function that provides a list of good examples of plans to generate.
+    /// </summary>
+    /// <param name="goal">The current goal processed by the planner.</param>
+    /// <param name="context">Function execution context.</param>
+    /// <returns>List of good examples, formatted accordingly to the prompt.</returns>
     [SKFunction, Description("List a few good examples of plans to generate")]
     public string GoodExamples(
         [Description("The current goal processed by the planner")] string goal,
@@ -189,6 +195,12 @@ Goal: create a file called ""something.txt"".
     }
 
     // TODO: generate string programmatically
+    /// <summary>
+    /// Native function that provides a list of edge case examples of plans to handle.
+    /// </summary>
+    /// <param name="goal">The current goal processed by the planner.</param>
+    /// <param name="context">Function execution context.</param>
+    /// <returns>List of edge case examples, formatted accordingly to the prompt.</returns>
     [SKFunction, Description("List a few edge case examples of plans to handle")]
     public string EdgeCaseExamples(
         [Description("The current goal processed by the planner")] string goal,

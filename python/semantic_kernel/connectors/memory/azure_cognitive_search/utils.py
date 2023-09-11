@@ -53,9 +53,6 @@ def get_search_index_async_client(
             "Please install Azure Cognitive Search client"
         )
 
-    azure_credential: AzureKeyCredential = None
-    token_credential: TokenCredential = None
-
     # Load environment variables
     load_dotenv()
 
