@@ -181,19 +181,19 @@ public abstract class ClientBase
     /// Generate a new chat message
     /// </summary>
     /// <param name="chat">Chat history</param>
-    /// <param name="chatSettings">AI request settings</param>
+    /// <param name="requestSettings">AI request settings</param>
     /// <param name="cancellationToken">Async cancellation token</param>
     /// <returns>Generated chat message in string format</returns>
     private protected async Task<IReadOnlyList<IChatResult>> InternalGetChatResultsAsync(
         ChatHistory chat,
-        OpenAIChatRequestSettings? chatSettings,
+        dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
-        chatSettings ??= new OpenAIChatRequestSettings();
+        requestSettings = OpenAIChatRequestSettings.FromRequestSettings(requestSettings);
 
-        ValidateMaxTokens(chatSettings.MaxTokens);
-        var chatOptions = CreateChatCompletionsOptions(chatSettings, chat);
+        ValidateMaxTokens(requestSettings.MaxTokens);
+        var chatOptions = CreateChatCompletionsOptions(requestSettings, chat);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
@@ -228,7 +228,7 @@ public abstract class ClientBase
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
-        requestSettings ??= new OpenAIChatRequestSettings();
+        requestSettings = OpenAIChatRequestSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(requestSettings.MaxTokens);
 
