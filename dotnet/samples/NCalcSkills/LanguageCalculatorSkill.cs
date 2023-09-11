@@ -97,7 +97,7 @@ Question: {{ $input }}
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("error in calculator for input " + input + " " + ex.Message, ex);
+            throw new InvalidOperationException($"Error in calculator for input {input} {ex.Message}", ex);
         }
 
         string pattern = @"```\s*(.*?)\s*```";

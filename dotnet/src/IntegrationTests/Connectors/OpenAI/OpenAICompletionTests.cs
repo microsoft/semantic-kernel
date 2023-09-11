@@ -157,7 +157,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
-        var context = await target.RunAsync(prompt, skill["Summarize"]);
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, skill["Summarize"]));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -191,7 +191,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
-        var context = await target.RunAsync(prompt, skill["Summarize"]);
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, skill["Summarize"]));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -362,7 +362,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 new PromptTemplate(prompt, azureConfig, target.PromptTemplateEngine)));
 
         // Act
-        await Assert.ThrowsAsync<SKException>(() => target.RunAsync(defaultFunc));
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));
 
         SKContext azureResult = await target.RunAsync(azureFunc);
 
