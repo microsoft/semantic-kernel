@@ -5,9 +5,9 @@ from datetime import datetime
 from typing import Any, Dict, Tuple
 
 import numpy as np
-
 from redis import Redis
 from redis.commands.search.document import Document
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
