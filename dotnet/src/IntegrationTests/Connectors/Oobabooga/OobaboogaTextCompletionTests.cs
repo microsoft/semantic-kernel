@@ -52,7 +52,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             blockingPort: BlockingPort);
 
         // Act
-        var localResponse = await oobaboogaLocal.CompleteAsync(Input, new CompleteRequestSettings()
+        var localResponse = await oobaboogaLocal.CompleteAsync(Input, requestSettings: new
         {
             Temperature = 0.01,
             MaxTokens = 7,
@@ -71,7 +71,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             webSocketFactory: this._webSocketFactory);
 
         // Act
-        var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, new CompleteRequestSettings()
+        var localResponse = oobaboogaLocal.CompleteStreamAsync(Input, requestSettings: new
         {
             Temperature = 0.01,
             MaxTokens = 7,

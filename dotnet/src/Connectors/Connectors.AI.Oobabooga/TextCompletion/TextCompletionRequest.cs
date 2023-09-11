@@ -173,5 +173,5 @@ public sealed class TextCompletionRequest
     /// In addition to the defaults. Written between "" and separated by commas. For instance: "\nYour Assistant:", "\nThe assistant:"
     /// </summary>
     [JsonPropertyName("stopping_strings")]
-    public List<string> StoppingStrings { get; set; } = new List<string>();
+    public IList<string> StoppingStrings { get; set; } = new List<string>();
 }

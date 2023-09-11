@@ -65,6 +65,12 @@ public class OpenAIChatRequestSettings
     public int? MaxTokens { get; set; } = DefaultMaxTokens;
 
     /// <summary>
+    /// The system prompt to use when generating text completions using a chat model.
+    /// Defaults to "Assistant is a large language model."
+    /// </summary>
+    public string ChatSystemPrompt { get; set; } = DefaultChatSystemPrompt;
+
+    /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = DefaultTokenSelectionBiases;
@@ -94,6 +100,7 @@ public class OpenAIChatRequestSettings
             FrequencyPenalty = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "FrequencyPenalty", DefaultFrequencyPenalty),
             MaxTokens = DynamicUtils.TryGetPropertyValue<int?>(requestSettings, "MaxTokens", DefaultMaxTokens),
             StopSequences = DynamicUtils.TryGetPropertyValue<IList<string>>(requestSettings, "StopSequences", DefaultStopSequences),
+            ChatSystemPrompt = DynamicUtils.TryGetPropertyValue<string?>(requestSettings, "ChatSystemPrompt", DefaultChatSystemPrompt),
             TokenSelectionBiases = DynamicUtils.TryGetPropertyValue<IDictionary<int, int>?>(requestSettings, "TokenSelectionBiases", DefaultTokenSelectionBiases)
         };
 

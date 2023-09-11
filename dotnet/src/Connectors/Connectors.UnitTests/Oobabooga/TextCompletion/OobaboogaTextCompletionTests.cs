@@ -57,7 +57,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
+        await sut.GetCompletionsAsync(CompletionText, null);
 
         //Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
@@ -78,7 +78,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
+        await sut.GetCompletionsAsync(CompletionText, null);
 
         //Assert
         Assert.StartsWith(EndPoint, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
@@ -94,7 +94,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
+        await sut.GetCompletionsAsync(CompletionText, null);
         var expectedUri = new UriBuilder(this._endPointUri)
         {
             Path = OobaboogaTextCompletion.BlockingUriPath,
@@ -115,7 +115,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
+        await sut.GetCompletionsAsync(CompletionText, null);
 
         //Assert
         var requestPayload = JsonSerializer.Deserialize<TextCompletionRequest>(this._messageHandlerStub.RequestContent);
@@ -134,7 +134,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        var result = await sut.GetCompletionsAsync(CompletionText, new CompleteRequestSettings());
+        var result = await sut.GetCompletionsAsync(CompletionText, null);
 
         //Assert
         Assert.NotNull(result);
@@ -341,7 +341,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         {
             tasks.Add(Task.Run(() =>
             {
-                var localResponse = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
+                var localResponse = sut.CompleteStreamAsync(requestMessage, new
                 {
                     Temperature = 0.01,
                     MaxTokens = 7,

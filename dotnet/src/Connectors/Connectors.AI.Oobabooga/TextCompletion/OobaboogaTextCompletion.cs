@@ -132,7 +132,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        dynamic? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
@@ -191,7 +191,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        dynamic? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -235,27 +235,42 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     #region private ================================================================================
 
     /// <summary>
-    /// Creates an Oobabooga request, mapping CompleteRequestSettings fields to their Oobabooga API counter parts
+    /// Creates an Oobabooga request, mapping dynamic request setting fields to their Oobabooga API counter parts
     /// </summary>
     /// <param name="text">The text to complete.</param>
     /// <param name="requestSettings">The request settings.</param>
     /// <returns>An Oobabooga TextCompletionRequest object with the text and completion parameters.</returns>
-    private TextCompletionRequest CreateOobaboogaRequest(string text, CompleteRequestSettings requestSettings)
+    private TextCompletionRequest CreateOobaboogaRequest(string text, dynamic? requestSettings)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new ArgumentNullException(nameof(text));
         }
 
+        if (requestSettings is null)
+        {
+            return new TextCompletionRequest()
+            {
+                Prompt = text
+            };
+        }
+
+        if (requestSettings.GetType() == typeof(TextCompletionRequest))
+        {
+            var request = (TextCompletionRequest)requestSettings;
+            request.Prompt = text;
+            return request;
+        }
+
         // Prepare the request using the provided parameters.
         return new TextCompletionRequest()
         {
             Prompt = text,
-            MaxNewTokens = requestSettings.MaxTokens,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
+            MaxNewTokens = DynamicUtils.TryGetPropertyValue<int?>(requestSettings, "MaxTokens", null),
+            Temperature = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "Temperature", 0),
+            TopP = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "TopP", 0),
             RepetitionPenalty = GetRepetitionPenalty(requestSettings),
-            StoppingStrings = requestSettings.StopSequences.ToList()
+            StoppingStrings = DynamicUtils.TryGetPropertyValue<List<string>>(requestSettings, "StopSequences", Array.Empty<string>().ToList())
         };
     }
 
@@ -270,9 +285,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <summary>
     /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/>  and subsequent links for more details.
     /// </summary>
-    private static double GetRepetitionPenalty(CompleteRequestSettings requestSettings)
+    private static double GetRepetitionPenalty(dynamic? requestSettings)
     {
-        return 1 + requestSettings.PresencePenalty / 2;
+        return (1 + DynamicUtils.TryGetPropertyValue<double>(requestSettings, "PresencePenalty", 0)) / 2;
     }
 
     /// <summary>

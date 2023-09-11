@@ -287,7 +287,7 @@ public abstract class ClientBase
 
     private static OpenAIChatHistory PrepareChatHistory(string text, dynamic? requestSettings, out OpenAIChatRequestSettings settings)
     {
-        requestSettings ??= new OpenAIChatRequestSettings();
+        requestSettings = OpenAIChatRequestSettings.FromRequestSettings(requestSettings);
         var chat = InternalCreateNewChat(requestSettings.ChatSystemPrompt);
         chat.AddUserMessage(text);
         settings = new OpenAIChatRequestSettings
@@ -302,8 +302,9 @@ public abstract class ClientBase
         return chat;
     }
 
-    private static CompletionsOptions CreateCompletionsOptions(string text, dynamic requestSettings)
+    private static CompletionsOptions CreateCompletionsOptions(string text, dynamic? requestSettings)
     {
+        requestSettings = OpenAITextRequestSettings.FromRequestSettings(requestSettings);
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
             throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
