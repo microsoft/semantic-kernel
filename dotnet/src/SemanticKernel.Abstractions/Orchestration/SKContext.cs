@@ -76,12 +76,11 @@ public sealed class SKContext
 
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
-    /// If an error occurred, prints the last exception message instead.
     /// </summary>
-    /// <returns>Processed input, aka result, or last exception message if any</returns>
+    /// <returns>Processed input, aka result.</returns>
     public override string ToString()
     {
-        return this.ErrorOccurred ? $"Error: {this.LastException?.Message}" : this.Result;
+        return this.Result;
     }
 
     /// <summary>
@@ -97,7 +96,6 @@ public sealed class SKContext
             loggerFactory: this.LoggerFactory)
         {
             Culture = this.Culture,
-            LastException = this.LastException
         };
     }
 
@@ -106,11 +104,6 @@ public sealed class SKContext
     {
         get
         {
-            if (this.ErrorOccurred)
-            {
-                return $"Error: {this.LastException?.Message}";
-            }
-
             string display = this.Variables.DebuggerDisplay;
 
             if (this.Skills is IReadOnlySkillCollection skills)
@@ -124,17 +117,4 @@ public sealed class SKContext
             return display;
         }
     }
-
-    #region Error handling
-    /// <summary>
-    /// Whether an error occurred while executing functions in the pipeline.
-    /// </summary>
-    public bool ErrorOccurred => this.LastException != null;
-
-    /// <summary>
-    /// When an error occurs, this is the most recent exception.
-    /// </summary>
-    public Exception? LastException { get; internal set; }
-
-    #endregion
 }
