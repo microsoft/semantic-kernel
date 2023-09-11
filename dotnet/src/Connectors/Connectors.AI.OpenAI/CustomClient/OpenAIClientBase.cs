@@ -5,13 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ImageGeneration;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -30,7 +27,7 @@ public abstract class OpenAIClientBase
     private protected OpenAIClientBase(HttpClient? httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
     /// <summary>Adds headers to use for OpenAI HTTP requests.</summary>
@@ -46,7 +43,6 @@ public abstract class OpenAIClientBase
     /// <param name="requestBody">Request payload</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of text embeddings</returns>
-    /// <exception cref="AIException">AIException thrown during the request.</exception>
     private protected async Task<IList<ReadOnlyMemory<float>>> ExecuteTextEmbeddingRequestAsync(
         string url,
         string requestBody,
@@ -55,9 +51,7 @@ public abstract class OpenAIClientBase
         var result = await this.ExecutePostRequestAsync<TextEmbeddingResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         if (result.Embeddings is not { Count: >= 1 })
         {
-            throw new AIException(
-                AIException.ErrorCodes.InvalidResponseContent,
-                "Embeddings not found");
+            throw new SKException("Embeddings not found");
         }
 
         return result.Embeddings.Select(e => e.Values).ToList();
@@ -71,7 +65,6 @@ public abstract class OpenAIClientBase
     /// <param name="extractResponseFunc">Function to invoke to extract the desired portion of the image generation response.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>List of image URLs</returns>
-    /// <exception cref="AIException">AIException thrown during the request.</exception>
     private protected async Task<IList<string>> ExecuteImageGenerationRequestAsync(
         string url,
         string requestBody,
@@ -80,22 +73,6 @@ public abstract class OpenAIClientBase
     {
         var result = await this.ExecutePostRequestAsync<ImageGenerationResponse>(url, requestBody, cancellationToken).ConfigureAwait(false);
         return result.Images.Select(extractResponseFunc).ToList();
-    }
-
-    private protected virtual string? GetErrorMessageFromResponse(string jsonResponsePayload)
-    {
-        try
-        {
-            JsonNode? root = JsonSerializer.Deserialize<JsonNode>(jsonResponsePayload);
-
-            return root?["error"]?["message"]?.GetValue<string>();
-        }
-        catch (Exception ex) when (ex is NotSupportedException or JsonException)
-        {
-            this._logger.LogError(ex, "Unable to extract error from response body content. Exception: {0}:{1}", ex.GetType(), ex.Message);
-        }
-
-        return null;
     }
 
     #region private ================================================================================
@@ -112,20 +89,11 @@ public abstract class OpenAIClientBase
 
     private protected async Task<T> ExecutePostRequestAsync<T>(string url, string requestBody, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
-            using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
-            string responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            T result = this.JsonDeserialize<T>(responseJson);
-            return result;
-        }
-        catch (Exception e) when (e is not AIException)
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
-        }
+        using var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+        using var response = await this.ExecuteRequestAsync(url, HttpMethod.Post, content, cancellationToken).ConfigureAwait(false);
+        string responseJson = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        T result = this.JsonDeserialize<T>(responseJson);
+        return result;
     }
 
     private protected T JsonDeserialize<T>(string responseJson)
@@ -133,7 +101,7 @@ public abstract class OpenAIClientBase
         var result = Json.Deserialize<T>(responseJson);
         if (result is null)
         {
-            throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Response JSON parse error");
+            throw new SKException("Response JSON parse error");
         }
 
         return result;
@@ -141,102 +109,20 @@ public abstract class OpenAIClientBase
 
     private protected async Task<HttpResponseMessage> ExecuteRequestAsync(string url, HttpMethod method, HttpContent? content, CancellationToken cancellationToken = default)
     {
-        try
+        using var request = new HttpRequestMessage(method, url);
+
+        this.AddRequestHeaders(request);
+
+        if (content != null)
         {
-            HttpResponseMessage? response = null;
-            using (var request = new HttpRequestMessage(method, url))
-            {
-                this.AddRequestHeaders(request);
-                if (content != null)
-                {
-                    request.Content = content;
-                }
-
-                response = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            }
-
-            this._logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
-
-            if (response.IsSuccessStatusCode)
-            {
-                return response;
-            }
-
-            string responseJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            string? errorDetail = this.GetErrorMessageFromResponse(responseJson);
-            switch ((HttpStatusCodeType)response.StatusCode)
-            {
-                case HttpStatusCodeType.BadRequest:
-                case HttpStatusCodeType.MethodNotAllowed:
-                case HttpStatusCodeType.NotFound:
-                case HttpStatusCodeType.NotAcceptable:
-                case HttpStatusCodeType.Conflict:
-                case HttpStatusCodeType.Gone:
-                case HttpStatusCodeType.LengthRequired:
-                case HttpStatusCodeType.PreconditionFailed:
-                case HttpStatusCodeType.RequestEntityTooLarge:
-                case HttpStatusCodeType.RequestUriTooLong:
-                case HttpStatusCodeType.UnsupportedMediaType:
-                case HttpStatusCodeType.RequestedRangeNotSatisfiable:
-                case HttpStatusCodeType.ExpectationFailed:
-                case HttpStatusCodeType.HttpVersionNotSupported:
-                case HttpStatusCodeType.UpgradeRequired:
-                case HttpStatusCodeType.MisdirectedRequest:
-                case HttpStatusCodeType.UnprocessableEntity:
-                case HttpStatusCodeType.Locked:
-                case HttpStatusCodeType.FailedDependency:
-                case HttpStatusCodeType.PreconditionRequired:
-                case HttpStatusCodeType.RequestHeaderFieldsTooLarge:
-                    throw new AIException(
-                        AIException.ErrorCodes.InvalidRequest,
-                        $"The request is not valid, HTTP status: {response.StatusCode:G}",
-                        errorDetail);
-
-                case HttpStatusCodeType.Unauthorized:
-                case HttpStatusCodeType.Forbidden:
-                case HttpStatusCodeType.ProxyAuthenticationRequired:
-                case HttpStatusCodeType.UnavailableForLegalReasons:
-                case HttpStatusCodeType.NetworkAuthenticationRequired:
-                    throw new AIException(
-                        AIException.ErrorCodes.AccessDenied,
-                        $"The request is not authorized, HTTP status: {response.StatusCode:G}",
-                        errorDetail);
-
-                case HttpStatusCodeType.RequestTimeout:
-                    throw new AIException(
-                        AIException.ErrorCodes.RequestTimeout,
-                        $"The request timed out, HTTP status: {response.StatusCode:G}");
-
-                case HttpStatusCodeType.TooManyRequests:
-                    throw new AIException(
-                        AIException.ErrorCodes.Throttling,
-                        $"Too many requests, HTTP status: {response.StatusCode:G}",
-                        errorDetail);
-
-                case HttpStatusCodeType.InternalServerError:
-                case HttpStatusCodeType.NotImplemented:
-                case HttpStatusCodeType.BadGateway:
-                case HttpStatusCodeType.ServiceUnavailable:
-                case HttpStatusCodeType.GatewayTimeout:
-                case HttpStatusCodeType.InsufficientStorage:
-                    throw new AIException(
-                        AIException.ErrorCodes.ServiceError,
-                        $"The service failed to process the request, HTTP status: {response.StatusCode:G}",
-                        errorDetail);
-
-                default:
-                    throw new AIException(
-                        AIException.ErrorCodes.UnknownError,
-                        $"Unexpected HTTP response, status: {response.StatusCode:G}",
-                        errorDetail);
-            }
+            request.Content = content;
         }
-        catch (Exception e) when (e is not AIException)
-        {
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Something went wrong: {e.Message}", e);
-        }
+
+        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+
+        this._logger.LogDebug("HTTP response: {0} {1}", (int)response.StatusCode, response.StatusCode.ToString("G"));
+
+        return response;
     }
 
     #endregion

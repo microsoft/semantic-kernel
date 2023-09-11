@@ -5,11 +5,18 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
 /// <summary>
-/// HTTP Schema for streaming completion response. Adapted from <see href="https://github.com/oobabooga/text-generation-webui/blob/main/extensions/api/streaming_api.py"/>
+/// Represents the HTTP schema for streaming completion response. Adapted from <see href="https://github.com/oobabooga/text-generation-webui/blob/main/extensions/api/streaming_api.py"/>.
 /// </summary>
 public sealed class TextCompletionStreamingResponse
 {
+    /// <summary>
+    /// Constant string representing the event that is fired when text is received from a websocket.
+    /// </summary>
     public const string ResponseObjectTextStreamEvent = "text_stream";
+
+    /// <summary>
+    /// Constant string representing the event that is fired when streaming from a websocket ends.
+    /// </summary>
     public const string ResponseObjectStreamEndEvent = "stream_end";
 
     /// <summary>

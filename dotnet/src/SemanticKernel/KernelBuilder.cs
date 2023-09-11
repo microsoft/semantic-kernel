@@ -1,11 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Reliability;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
@@ -17,13 +22,15 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class KernelBuilder
 {
-    private KernelConfig _config = new();
     private Func<ISemanticTextMemory> _memoryFactory = () => NullMemory.Instance;
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
     private Func<IMemoryStore>? _memoryStorageFactory = null;
-    private IDelegatingHandlerFactory? _httpHandlerFactory = null;
+    private IDelegatingHandlerFactory _httpHandlerFactory = NullHttpHandlerFactory.Instance;
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
+
+    private static bool _promptTemplateEngineInitialized = false;
+    private static Type? _promptTemplateEngineType = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -41,17 +48,12 @@ public sealed class KernelBuilder
     /// <returns>Kernel instance</returns>
     public IKernel Build()
     {
-        if (this._httpHandlerFactory != null)
-        {
-            this._config.SetHttpRetryHandlerFactory(this._httpHandlerFactory);
-        }
-
         var instance = new Kernel(
             new SkillCollection(this._loggerFactory),
             this._aiServices.Build(),
-            this._promptTemplateEngine ?? new PromptTemplateEngine(this._loggerFactory),
+            this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),
-            this._config,
+            this._httpHandlerFactory,
             this._loggerFactory
         );
 
@@ -93,10 +95,10 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The store factory.</param>
     /// <returns>Updated kernel builder including the semantic text memory entity.</returns>
-    public KernelBuilder WithMemory<TStore>(Func<ILoggerFactory, KernelConfig, TStore> factory) where TStore : ISemanticTextMemory
+    public KernelBuilder WithMemory<TStore>(Func<ILoggerFactory, TStore> factory) where TStore : ISemanticTextMemory
     {
         Verify.NotNull(factory);
-        this._memoryFactory = () => factory(this._loggerFactory, this._config);
+        this._memoryFactory = () => factory(this._loggerFactory);
         return this;
     }
 
@@ -117,10 +119,22 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The storage factory.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
-    public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, KernelConfig, TStore> factory) where TStore : IMemoryStore
+    public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, TStore> factory) where TStore : IMemoryStore
     {
         Verify.NotNull(factory);
-        this._memoryStorageFactory = () => factory(this._loggerFactory, this._config);
+        this._memoryStorageFactory = () => factory(this._loggerFactory);
+        return this;
+    }
+
+    /// <summary>
+    /// Add memory storage factory to the kernel.
+    /// </summary>
+    /// <param name="factory">The storage factory.</param>
+    /// <returns>Updated kernel builder including the memory storage.</returns>
+    public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, IDelegatingHandlerFactory, TStore> factory) where TStore : IMemoryStore
+    {
+        Verify.NotNull(factory);
+        this._memoryStorageFactory = () => factory(this._loggerFactory, this._httpHandlerFactory);
         return this;
     }
 
@@ -137,11 +151,11 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Add a retry handler factory to the kernel to be built.
+    /// Add a http handler factory to the kernel to be built.
     /// </summary>
-    /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
-    /// <returns>Updated kernel builder including the retry handler factory.</returns>
-    public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
+    /// <param name="httpHandlerFactory">Http handler factory to add.</param>
+    /// <returns>Updated kernel builder including the http handler factory.</returns>
+    public KernelBuilder WithHttpHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
     {
         Verify.NotNull(httpHandlerFactory);
         this._httpHandlerFactory = httpHandlerFactory;
@@ -149,27 +163,14 @@ public sealed class KernelBuilder
     }
 
     /// <summary>
-    /// Use the given configuration with the kernel to be built.
+    /// Add a retry handler factory to the kernel to be built.
     /// </summary>
-    /// <param name="config">Configuration to use.</param>
-    /// <returns>Updated kernel builder including the given configuration.</returns>
-    public KernelBuilder WithConfiguration(KernelConfig config)
+    /// <param name="httpHandlerFactory">Retry handler factory to add.</param>
+    /// <returns>Updated kernel builder including the retry handler factory.</returns>
+    [Obsolete("This method is deprecated, use WithHttpHandlerFactory instead")]
+    public KernelBuilder WithRetryHandlerFactory(IDelegatingHandlerFactory httpHandlerFactory)
     {
-        Verify.NotNull(config);
-        this._config = config;
-        return this;
-    }
-
-    /// <summary>
-    /// Update the configuration using the instructions provided.
-    /// </summary>
-    /// <param name="configure">Action that updates the current configuration.</param>
-    /// <returns>Updated kernel builder including the updated configuration.</returns>
-    public KernelBuilder Configure(Action<KernelConfig> configure)
-    {
-        Verify.NotNull(configure);
-        configure.Invoke(this._config);
-        return this;
+        return this.WithHttpHandlerFactory(httpHandlerFactory);
     }
 
     /// <summary>
@@ -179,6 +180,16 @@ public sealed class KernelBuilder
     public KernelBuilder WithDefaultAIService<TService>(TService instance) where TService : IAIService
     {
         this._aiServices.SetService<TService>(instance);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a <typeparamref name="TService"/> factory method to the services collection
+    /// </summary>
+    /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
+    public KernelBuilder WithDefaultAIService<TService>(Func<ILoggerFactory, TService> factory) where TService : IAIService
+    {
+        this._aiServices.SetService<TService>(() => factory(this._loggerFactory));
         return this;
     }
 
@@ -200,10 +211,15 @@ public sealed class KernelBuilder
     /// <summary>
     /// Adds a <typeparamref name="TService"/> factory method to the services collection
     /// </summary>
+    /// <param name="serviceId">The service ID</param>
     /// <param name="factory">The factory method that creates the AI service instances of type <typeparamref name="TService"/>.</param>
-    public KernelBuilder WithDefaultAIService<TService>(Func<ILoggerFactory, TService> factory) where TService : IAIService
+    /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
+    public KernelBuilder WithAIService<TService>(
+        string? serviceId,
+        Func<ILoggerFactory, TService> factory,
+        bool setAsDefault = false) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(() => factory(this._loggerFactory));
+        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory), setAsDefault);
         return this;
     }
 
@@ -215,10 +231,74 @@ public sealed class KernelBuilder
     /// <param name="setAsDefault">Optional: set as the default AI service for type <typeparamref name="TService"/></param>
     public KernelBuilder WithAIService<TService>(
         string? serviceId,
-        Func<ILoggerFactory, KernelConfig, TService> factory,
+        Func<ILoggerFactory, IDelegatingHandlerFactory, TService> factory,
         bool setAsDefault = false) where TService : IAIService
     {
-        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._config), setAsDefault);
+        this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._httpHandlerFactory), setAsDefault);
         return this;
+    }
+
+    /// <summary>
+    /// Create a default prompt template engine.
+    ///
+    /// This is a temporary solution to avoid breaking existing clients.
+    /// There will be a separate task to add support for registering instances of IPromptTemplateEngine and obsoleting the current approach.
+    ///
+    /// </summary>
+    /// <param name="loggerFactory">Logger factory to be used by the template engine</param>
+    /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
+    private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
+    {
+        if (!_promptTemplateEngineInitialized)
+        {
+            _promptTemplateEngineType = this.GetPromptTemplateEngineType();
+            _promptTemplateEngineInitialized = true;
+        }
+
+        if (_promptTemplateEngineType is not null)
+        {
+            var constructor = _promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+            if (constructor is not null)
+            {
+#pragma warning disable CS8601 // Null logger factory is OK
+                return (IPromptTemplateEngine)constructor.Invoke(new object[] { loggerFactory });
+#pragma warning restore CS8601
+            }
+        }
+
+        return new NullPromptTemplateEngine();
+    }
+
+    /// <summary>
+    /// Get the prompt template engine type if available
+    /// </summary>
+    /// <returns>The type for the prompt template engine if available</returns>
+    private Type? GetPromptTemplateEngineType()
+    {
+        try
+        {
+            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.PromptTemplateEngine");
+
+            return assembly.ExportedTypes.Single(type =>
+                type.Name.Equals("PromptTemplateEngine", StringComparison.Ordinal) &&
+                type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
+        }
+        catch (Exception ex) when (!ex.IsCriticalException())
+        {
+            return null;
+        }
+    }
+}
+
+/// <summary>
+/// No-operation IPromptTemplateEngine which performs no rendering of the template.
+///
+/// This is a temporary solution to avoid breaking existing clients.
+/// </summary>
+internal class NullPromptTemplateEngine : IPromptTemplateEngine
+{
+    public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(templateText);
     }
 }

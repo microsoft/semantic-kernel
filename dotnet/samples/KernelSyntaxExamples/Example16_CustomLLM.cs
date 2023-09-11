@@ -103,7 +103,7 @@ public static class Example16_CustomLLM
             // Add your text completion service as a singleton instance
             .WithAIService<ITextCompletion>("myService1", new MyTextCompletionService())
             // Add your text completion service as a factory method
-            .WithAIService<ITextCompletion>("myService2", (log, config) => new MyTextCompletionService())
+            .WithAIService<ITextCompletion>("myService2", (log) => new MyTextCompletionService())
             .Build();
 
         const string FunctionDefinition = "Does the text contain grammar errors (Y/N)? Text: {{$input}}";

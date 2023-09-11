@@ -32,17 +32,25 @@ public sealed class CloudDriveSkill
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CloudDriveSkill"/> class.
+    /// </summary>
+    /// <param name="connector">The cloud drive connector.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public CloudDriveSkill(ICloudDriveConnector connector, ILoggerFactory? loggerFactory = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(CloudDriveSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CloudDriveSkill)) : NullLogger.Instance;
     }
 
     /// <summary>
     /// Get the contents of a file stored in a cloud drive.
     /// </summary>
+    /// <param name="filePath">The path to the file.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A string containing the file content.</returns>
     [SKFunction, Description("Get the contents of a file in a cloud drive.")]
     public async Task<string> GetFileContentAsync(
         [Description("Path to file")] string filePath,
@@ -60,6 +68,9 @@ public sealed class CloudDriveSkill
     /// <summary>
     /// Upload a small file to OneDrive (less than 4MB).
     /// </summary>
+    /// <param name="filePath">The path to the file.</param>
+    /// <param name="destinationPath">The remote path to store the file.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     [SKFunction, Description("Upload a small file to OneDrive (less than 4MB).")]
     public async Task UploadFileAsync(
         [Description("Path to file")] string filePath,
@@ -80,6 +91,9 @@ public sealed class CloudDriveSkill
     /// <summary>
     /// Create a sharable link to a file stored in a cloud drive.
     /// </summary>
+    /// <param name="filePath">The path to the file.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A string containing the sharable link.</returns>
     [SKFunction, Description("Create a sharable link to a file stored in a cloud drive.")]
     public async Task<string> CreateLinkAsync(
         [Description("Path to file")] string filePath,

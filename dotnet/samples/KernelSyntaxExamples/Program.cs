@@ -34,11 +34,10 @@ public static class Program
         await Example12_SequentialPlanner.RunAsync().SafeWaitAsync(cancelToken);
         await Example13_ConversationSummarySkill.RunAsync().SafeWaitAsync(cancelToken);
         await Example14_SemanticMemory.RunAsync().SafeWaitAsync(cancelToken);
-        await Example15_MemorySkill.RunAsync().SafeWaitAsync(cancelToken);
+        await Example15_TextMemorySkill.RunAsync(cancelToken).SafeWaitAsync(cancelToken);
         await Example16_CustomLLM.RunAsync().SafeWaitAsync(cancelToken);
         await Example17_ChatGPT.RunAsync().SafeWaitAsync(cancelToken);
         await Example18_DallE.RunAsync().SafeWaitAsync(cancelToken);
-        await Example19_Qdrant.RunAsync().SafeWaitAsync(cancelToken);
         await Example20_HuggingFace.RunAsync().SafeWaitAsync(cancelToken);
         await Example21_ChatGptPlugins.RunAsync().SafeWaitAsync(cancelToken);
         await Example22_OpenApiSkill_AzureKeyVault.RunAsync().SafeWaitAsync(cancelToken);
@@ -57,23 +56,19 @@ public static class Program
         await Example35_GrpcSkills.RunAsync().SafeWaitAsync(cancelToken);
         await Example36_MultiCompletion.RunAsync().SafeWaitAsync(cancelToken);
         await Example37_MultiStreamingCompletion.RunAsync().SafeWaitAsync(cancelToken);
-        await Example38_Pinecone.RunAsync().SafeWaitAsync(cancelToken);
-        await Example39_Postgres.RunAsync().SafeWaitAsync(cancelToken);
         await Example40_DIContainer.RunAsync().SafeWaitAsync(cancelToken);
         await Example41_HttpClientUsage.RunAsync().SafeWaitAsync(cancelToken);
         await Example42_KernelBuilder.RunAsync().SafeWaitAsync(cancelToken);
         await Example43_GetModelResult.RunAsync().SafeWaitAsync(cancelToken);
         await Example44_MultiChatCompletion.RunAsync().SafeWaitAsync(cancelToken);
         await Example45_MultiStreamingChatCompletion.RunAsync().SafeWaitAsync(cancelToken);
-        await Example46_Weaviate.RunAsync().SafeWaitAsync(cancelToken);
-        await Example47_Redis.RunAsync().SafeWaitAsync(cancelToken);
         await Example48_GroundednessChecks.RunAsync().SafeWaitAsync(cancelToken);
         await Example49_LogitBias.RunAsync().SafeWaitAsync(cancelToken);
-        await Example50_Chroma.RunAsync().SafeWaitAsync(cancelToken);
         await Example51_StepwisePlanner.RunAsync().SafeWaitAsync(cancelToken);
         await Example52_ApimAuth.RunAsync().SafeWaitAsync(cancelToken);
-        await Example53_Kusto.RunAsync().SafeWaitAsync(cancelToken);
         await Example54_AzureChatCompletionWithData.RunAsync().SafeWaitAsync(cancelToken);
+        await Example55_TextChunker.RunAsync().SafeWaitAsync(cancelToken);
+        await Example56_TemplateNativeFunctionsWithMultipleArguments.RunAsync().SafeWaitAsync(cancelToken);
     }
 
     private static void LoadUserSecrets()

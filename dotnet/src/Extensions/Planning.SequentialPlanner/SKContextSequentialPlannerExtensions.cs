@@ -15,6 +15,9 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace Microsoft.SemanticKernel.Orchestration;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// Provides extension methods for the <see cref="SKContext"/> class to work with sequential planners.
+/// </summary>
 public static class SKContextSequentialPlannerExtensions
 {
     internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
@@ -118,7 +121,7 @@ public static class SKContextSequentialPlannerExtensions
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
             if (function != null)
             {
-                logger ??= context.LoggerFactory.CreateLogger(nameof(SKContext));
+                logger ??= context.LoggerFactory.CreateLogger(typeof(SKContext));
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
                     logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFullyQualifiedName());

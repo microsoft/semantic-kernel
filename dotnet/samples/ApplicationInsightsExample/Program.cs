@@ -35,12 +35,16 @@ public sealed class Program
     /// </remarks>
     private static LogLevel LogLevel = LogLevel.Information;
 
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task Main()
     {
         var serviceProvider = GetServiceProvider();
 
         var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
-        var logger = serviceProvider.GetRequiredService<ILoggerFactory>();
+        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
         using var meterListener = new MeterListener();
         using var activityListener = new ActivityListener();
@@ -48,8 +52,8 @@ public sealed class Program
         ConfigureMetering(meterListener, telemetryClient);
         ConfigureTracing(activityListener, telemetryClient);
 
-        var kernel = GetKernel(logger);
-        var planner = GetSequentialPlanner(kernel, logger);
+        var kernel = GetKernel(loggerFactory);
+        var planner = GetSequentialPlanner(kernel, loggerFactory);
 
         try
         {
@@ -92,7 +96,7 @@ public sealed class Program
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(typeof(Program).FullName, LogLevel);
+            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == LogLevel);
             loggingBuilder.SetMinimumLevel(LogLevel);
         });
 
