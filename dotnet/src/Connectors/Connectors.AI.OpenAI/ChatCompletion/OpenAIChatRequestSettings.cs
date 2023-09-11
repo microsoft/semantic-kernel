@@ -22,6 +22,11 @@ public class OpenAIChatRequestSettings
     private static readonly IDictionary<int, int> DefaultTokenSelectionBiases = new Dictionary<int, int>();
 
     /// <summary>
+    /// Service identifier.
+    /// </summary>
+    public string? ServiceId { get; set; } = null;
+
+    /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
     /// </summary>

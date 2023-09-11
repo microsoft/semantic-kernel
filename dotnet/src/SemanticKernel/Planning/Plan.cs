@@ -359,7 +359,7 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic requestSettings)
+    public ISKFunction SetAIConfiguration(dynamic? requestSettings)
     {
         return this.Function is null
             ? throw new NotImplementedException()

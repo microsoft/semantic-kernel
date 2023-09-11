@@ -176,7 +176,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic requestSettings)
+    public ISKFunction SetAIConfiguration(dynamic? requestSettings)
     {
         this.ThrowNotSemantic();
         return this;

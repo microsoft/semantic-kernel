@@ -77,7 +77,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic requestSettings) =>
+    public ISKFunction SetAIConfiguration(dynamic? requestSettings) =>
         this._function.SetAIConfiguration(requestSettings);
 
     /// <inheritdoc/>

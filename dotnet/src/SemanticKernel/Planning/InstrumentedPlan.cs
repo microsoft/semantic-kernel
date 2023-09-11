@@ -63,7 +63,7 @@ public sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic requestSettings) =>
+    public ISKFunction SetAIConfiguration(dynamic? requestSettings) =>
         this._plan.SetAIConfiguration(requestSettings);
 
     /// <inheritdoc/>

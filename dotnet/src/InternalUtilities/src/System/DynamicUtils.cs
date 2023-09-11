@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Dynamic;
+
 namespace Microsoft.SemanticKernel;
 
 internal static class DynamicUtils
@@ -11,7 +14,18 @@ internal static class DynamicUtils
             return default;
         }
 
-        var prop = obj.GetType().GetProperty(propertyName);
+        var type = obj.GetType();
+        if (type == typeof(ExpandoObject))
+        {
+            IDictionary<string, object> expandoDict = (ExpandoObject)obj;
+            if (expandoDict.TryGetValue(propertyName, out var value))
+            {
+                return (T)value;
+            }
+            return defaultValue;
+        }
+
+        var prop = type.GetProperty(propertyName);
         if (prop == null)
         {
             return defaultValue;

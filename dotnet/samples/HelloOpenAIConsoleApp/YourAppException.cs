@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+#pragma warning disable IDE0130
+#pragma warning disable CS1591
 
 namespace RepoUtils;
 

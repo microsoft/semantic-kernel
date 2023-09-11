@@ -21,6 +21,11 @@ public class OpenAITextRequestSettings
     private static readonly IDictionary<int, int> DefaultTokenSelectionBiases = new Dictionary<int, int>();
 
     /// <summary>
+    /// Service identifier.
+    /// </summary>
+    public string? ServiceId { get; set; } = null;
+
+    /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
     /// </summary>
@@ -97,7 +102,7 @@ public class OpenAITextRequestSettings
             TopP = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "TopP", DefaultTopP),
             PresencePenalty = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "PresencePenalty", DefaultPresencePenalty),
             FrequencyPenalty = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "FrequencyPenalty", DefaultFrequencyPenalty),
-            MaxTokens = DynamicUtils.TryGetPropertyValue<int?>(requestSettings, "MaxTokens", DefaultMaxTokens),
+            MaxTokens = DynamicUtils.TryGetPropertyValue<int>(requestSettings, "MaxTokens", DefaultMaxTokens),
             StopSequences = DynamicUtils.TryGetPropertyValue<IList<string>>(requestSettings, "StopSequences", DefaultStopSequences),
             ChatSystemPrompt = DynamicUtils.TryGetPropertyValue<string?>(requestSettings, "ChatSystemPrompt", DefaultChatSystemPrompt),
             TokenSelectionBiases = DynamicUtils.TryGetPropertyValue<IDictionary<int, int>?>(requestSettings, "TokenSelectionBiases", DefaultTokenSelectionBiases)

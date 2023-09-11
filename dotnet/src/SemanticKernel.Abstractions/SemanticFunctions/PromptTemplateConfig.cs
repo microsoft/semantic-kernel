@@ -82,6 +82,7 @@ public class PromptTemplateConfig
     [JsonPropertyName("completion")]
     [JsonPropertyOrder(4)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(RequestSettingsConverter))]
     public dynamic? Completion { get; set; }
 
     /// <summary>

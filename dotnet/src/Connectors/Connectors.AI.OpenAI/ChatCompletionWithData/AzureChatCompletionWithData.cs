@@ -83,7 +83,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        dynamic requestSettings,
+        dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
         requestSettings ??= new OpenAIChatRequestSettings();
@@ -99,7 +99,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        dynamic requestSettings,
+        dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         requestSettings ??= new OpenAIChatRequestSettings();
