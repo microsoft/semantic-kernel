@@ -174,22 +174,17 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         var exists = await this.Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken).ConfigureAwait(false);
         if (!exists)
         {
-            MilvusCollection collection = await this.Client.CreateCollectionAsync(
-                collectionName,
-                new[]
+            CollectionSchema schema = new()
+            {
+                Fields =
                 {
-                    FieldSchema.Create<bool>(IsReferenceFieldName),
-                    FieldSchema.CreateVarchar(ExternalSourceNameFieldName, DefaultVarcharLength),
                     FieldSchema.CreateVarchar(IdFieldName, maxLength: DefaultVarcharLength, isPrimaryKey: true, autoId: false),
-                    FieldSchema.CreateVarchar(DescriptionFieldName, DefaultVarcharLength),
-                    FieldSchema.CreateVarchar(TextFieldName, DefaultVarcharLength),
-                    FieldSchema.CreateVarchar(AdditionalMetadataFieldName, DefaultVarcharLength),
-                    FieldSchema.CreateVarchar(TimestampFieldName, DefaultVarcharLength),
-                    FieldSchema.CreateFloatVector(EmbeddingFieldName, this._vectorSize),
-                    FieldSchema.CreateVarchar(KeyFieldName, DefaultVarcharLength),
+                    FieldSchema.CreateFloatVector(EmbeddingFieldName, this._vectorSize)
                 },
-                DefaultConsistencyLevel,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                EnableDynamicFields = true
+            };
+
+            MilvusCollection collection = await this.Client.CreateCollectionAsync(collectionName, schema, DefaultConsistencyLevel, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await collection.CreateIndexAsync(EmbeddingFieldName, metricType: this._metricType, cancellationToken: cancellationToken).ConfigureAwait(false);
             await collection.WaitForIndexBuildAsync("float_vector", cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -225,17 +220,18 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         var metadata = record.Metadata;
 
-        FieldData[] fieldData =
+        List<FieldData> fieldData = new()
         {
-            FieldData.Create(IsReferenceFieldName, new[] { metadata.IsReference }),
-            FieldData.Create(ExternalSourceNameFieldName, new[] { metadata.ExternalSourceName }),
             FieldData.Create(IdFieldName, new[] { metadata.Id }),
-            FieldData.Create(DescriptionFieldName, new[] { metadata.Description }),
-            FieldData.Create(TextFieldName, new[] { metadata.Text }),
-            FieldData.Create(AdditionalMetadataFieldName, new[] { metadata.AdditionalMetadata }),
-            FieldData.Create(TimestampFieldName, new[] { record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty }),
             FieldData.CreateFloatVector(EmbeddingFieldName, new[] { record.Embedding }),
-            FieldData.Create(KeyFieldName, new[] { record.Key })
+
+            FieldData.Create(IsReferenceFieldName, new[] { metadata.IsReference }, isDynamic: true),
+            FieldData.Create(ExternalSourceNameFieldName, new[] { metadata.ExternalSourceName }, isDynamic: true),
+            FieldData.Create(DescriptionFieldName, new[] { metadata.Description }, isDynamic: true),
+            FieldData.Create(TextFieldName, new[] { metadata.Text }, isDynamic: true),
+            FieldData.Create(AdditionalMetadataFieldName, new[] { metadata.AdditionalMetadata }, isDynamic: true),
+            FieldData.Create(KeyFieldName, new[] { record.Key }, isDynamic: true),
+            FieldData.Create(TimestampFieldName, new[] { record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty }, isDynamic: true)
         };
 
         MutationResult result = await collection.InsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -291,15 +287,16 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         FieldData[] fieldData =
         {
-            FieldData.Create(IsReferenceFieldName, isReferenceData),
-            FieldData.Create(ExternalSourceNameFieldName, externalSourceNameData),
             FieldData.Create(IdFieldName, idData),
-            FieldData.Create(DescriptionFieldName, descriptionData),
-            FieldData.Create(TextFieldName, textData),
-            FieldData.Create(AdditionalMetadataFieldName, additionalMetadataData),
             FieldData.CreateFloatVector(EmbeddingFieldName, embeddingData),
-            FieldData.Create(KeyFieldName, keyData),
-            FieldData.Create(TimestampFieldName, timestampData)
+
+            FieldData.Create(IsReferenceFieldName, isReferenceData, isDynamic: true),
+            FieldData.Create(ExternalSourceNameFieldName, externalSourceNameData, isDynamic: true),
+            FieldData.Create(DescriptionFieldName, descriptionData, isDynamic: true),
+            FieldData.Create(TextFieldName, textData, isDynamic: true),
+            FieldData.Create(AdditionalMetadataFieldName, additionalMetadataData, isDynamic: true),
+            FieldData.Create(KeyFieldName, keyData, isDynamic: true),
+            FieldData.Create(TimestampFieldName, timestampData, isDynamic: true)
         };
 
         MutationResult result = await collection.InsertAsync(fieldData, cancellationToken: cancellationToken).ConfigureAwait(false);
