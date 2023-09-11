@@ -17,18 +17,19 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class FunctionsView
 {
+    private object _lock = new();
     /// <summary>
     /// Collection of semantic skill names and function names, including function parameters.
     /// Functions are grouped by skill name.
     /// </summary>
-    public ConcurrentDictionary<string, List<FunctionView>> SemanticFunctions { get; set; }
+    public ConcurrentDictionary<string, List<FunctionView>> SemanticFunctions { get; }
         = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Collection of native skill names and function views, including function parameters.
     /// Functions are grouped by skill name.
     /// </summary>
-    public ConcurrentDictionary<string, List<FunctionView>> NativeFunctions { get; set; }
+    public ConcurrentDictionary<string, List<FunctionView>> NativeFunctions { get; }
         = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
@@ -38,23 +39,16 @@ public sealed class FunctionsView
     /// <returns>Current instance</returns>
     public FunctionsView AddFunction(FunctionView view)
     {
-        if (view.IsSemantic)
+        lock (this._lock)
         {
-            if (!this.SemanticFunctions.ContainsKey(view.SkillName))
+            if (view.IsSemantic)
             {
-                this.SemanticFunctions[view.SkillName] = new();
+                this.SemanticFunctions.GetOrAdd(view.SkillName, _ => new()).Add(view);
             }
-
-            this.SemanticFunctions[view.SkillName].Add(view);
-        }
-        else
-        {
-            if (!this.NativeFunctions.ContainsKey(view.SkillName))
+            else
             {
-                this.NativeFunctions[view.SkillName] = new();
+                this.NativeFunctions.GetOrAdd(view.SkillName, _ => new()).Add(view);
             }
-
-            this.NativeFunctions[view.SkillName].Add(view);
         }
 
         return this;
@@ -69,20 +63,7 @@ public sealed class FunctionsView
     /// <exception cref="AmbiguousMatchException"></exception>
     public bool IsSemantic(string skillName, string functionName)
     {
-        var sf = this.SemanticFunctions.ContainsKey(skillName)
-                 && this.SemanticFunctions[skillName]
-                     .Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase));
-
-        var nf = this.NativeFunctions.ContainsKey(skillName)
-                 && this.NativeFunctions[skillName]
-                     .Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase));
-
-        if (sf && nf)
-        {
-            throw new AmbiguousMatchException("There are 2 functions with the same name, one native and one semantic");
-        }
-
-        return sf;
+        return this.IsFunctionCheck(skillName, functionName, nativeFunctionCheck: false);
     }
 
     /// <summary>
@@ -94,20 +75,27 @@ public sealed class FunctionsView
     /// <exception cref="AmbiguousMatchException"></exception>
     public bool IsNative(string skillName, string functionName)
     {
-        var sf = this.SemanticFunctions.ContainsKey(skillName)
-                 && this.SemanticFunctions[skillName]
-                     .Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase));
+        return this.IsFunctionCheck(skillName, functionName, nativeFunctionCheck: true);
+    }
 
-        var nf = this.NativeFunctions.ContainsKey(skillName)
-                 && this.NativeFunctions[skillName]
-                     .Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase));
+    private bool IsFunctionCheck(string skillName, string functionName, bool nativeFunctionCheck)
+    {
+        this.SemanticFunctions.TryGetValue(skillName, out var semanticFunctions);
+        var foundSemanticFunction = semanticFunctions?.Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase))
+                                    ?? false;
 
-        if (sf && nf)
+        this.NativeFunctions.TryGetValue(skillName, out var nativeFunctions);
+        var foundNativeFunction = nativeFunctions?.Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase))
+                                  ?? false;
+
+        if (foundSemanticFunction && foundNativeFunction)
         {
             throw new AmbiguousMatchException("There are 2 functions with the same name, one native and one semantic");
         }
 
-        return nf;
+        return (nativeFunctionCheck)
+            ? foundNativeFunction
+            : foundSemanticFunction;
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

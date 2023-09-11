@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Xunit;
 
@@ -111,5 +112,45 @@ public class FunctionsViewTests
         Assert.Equal("default 2", semFun.First().Parameters[1].DefaultValue);
         Assert.Equal("default 3", natFun.First().Parameters[0].DefaultValue);
         Assert.Equal("default 4", natFun.First().Parameters[1].DefaultValue);
+    }
+
+    [Fact]
+    public async Task ItAddSemanticAndNativeFunctionsShouldBeThreadSafe()
+    {
+        // Arrange
+        var target = new FunctionsView();
+        var tasks = new List<Task>();
+
+        // Construct 10 semantically identical native and semantic functions
+        const int NumOfFunctions = 100;
+
+        var functionsToBeAdded = Enumerable.Range(1, NumOfFunctions)
+                                 .Select(i => new FunctionView($"nativeFunction{i}", "skill", "", new List<ParameterView>(), false))
+                                 .Concat(
+                                 Enumerable.Range(1, NumOfFunctions)
+                                 .Select(i => new FunctionView($"semanticFunction{i}", "skill", "", new List<ParameterView>(), true)))
+                                 .ToArray();
+
+        // Launch a number of tasks that concurrently Calls the AddFunction of FunctionsView to ensure no conflicts
+        for (int i = 0; i < functionsToBeAdded.Length; i++)
+        {
+            int index = i;
+            tasks.Add(Task.Run(() =>
+            {
+                target.AddFunction(functionsToBeAdded[index]);
+            }));
+        }
+
+        // Act
+        await Task.WhenAll(tasks);
+
+        // Assert
+        Assert.Equal(NumOfFunctions, target.SemanticFunctions["skill"].Count);
+        Assert.Equal(NumOfFunctions, target.NativeFunctions["skill"].Count); // Since we added NativeFunctions, there should not be any SemanticFunctions
+        for (int i = 1; i <= NumOfFunctions; i++)
+        {
+            Assert.True(target.IsSemantic("skill", $"semanticFunction{i}")); // Check that semantic functions are indeed present in the Dictionary.
+            Assert.True(target.IsNative("skill", $"nativeFunction{i}")); // Check that semantic functions are indeed present in the Dictionary.
+        }
     }
 }
