@@ -25,7 +25,7 @@ IKernel kernel = new KernelBuilder()
             .WithOpenAITextCompletionService(modelId: openaiModelId, apiKey: openaiApiKey, serviceId: "openai")
             .Build();
 
-var result = await kernel.InvokeSemanticFunctionAsync("Hello AI, what can you do for me?", requestSettings: new { MaxTokens = 16, Temperature = 0.7, ServiceId = "azure" });
+var result = await kernel.InvokeSemanticFunctionAsync("Hello AI, what can you do for me?", requestSettings: new { max_tokens = 16, temperature = 0.7, service_id = "azure" });
 // var result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAITextRequestSettings() { MaxTokens = 256, Temperature = 0.7 });
 
 if (result.LastException is not null)

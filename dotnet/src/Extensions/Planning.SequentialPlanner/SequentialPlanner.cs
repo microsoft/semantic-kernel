@@ -42,9 +42,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            maxTokens: this.Config.MaxTokens ?? 1024,
-            temperature: 0.0,
-            stopSequences: new[] { StopSequence });
+            requestSettings: new { MaxTokens = this.Config.MaxTokens ?? 1024, Temperature = 0.0, StopSequences = new[] { StopSequence } });
 
         this._context = kernel.CreateNewContext();
     }

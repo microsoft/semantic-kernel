@@ -39,25 +39,19 @@ public class ConversationSummarySkill
             SemanticFunctionConstants.SummarizeConversationDefinition,
             skillName: nameof(ConversationSummarySkill),
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
-            maxTokens: MaxTokens,
-            temperature: 0.1,
-            topP: 0.5);
+            requestSettings: new { MaxTokens = MaxTokens, Temperature = 0.1, TopP = 0.5 });
 
         this._conversationActionItemsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
             skillName: nameof(ConversationSummarySkill),
             description: "Given a section of a conversation transcript, identify action items.",
-            maxTokens: MaxTokens,
-            temperature: 0.1,
-            topP: 0.5);
+             requestSettings: new { MaxTokens = MaxTokens, Temperature = 0.1, TopP = 0.5 });
 
         this._conversationTopicsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
             skillName: nameof(ConversationSummarySkill),
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
-            maxTokens: MaxTokens,
-            temperature: 0.1,
-            topP: 0.5);
+            requestSettings: new { MaxTokens = MaxTokens, Temperature = 0.1, TopP = 0.5 });
     }
 
     /// <summary>

@@ -288,8 +288,7 @@ public sealed class Kernel : IKernel, IDisposable
         func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        string? serviceId = DynamicUtils.TryGetPropertyValue<string?>(functionConfig.PromptTemplateConfig.Completion, "ServiceId", null);
-        func.SetAIService(() => this.GetService<ITextCompletion>(serviceId));
+        func.SetAIService(() => this.GetService<ITextCompletion>(DynamicUtils.TryGetPropertyValue<string?>(functionConfig.PromptTemplateConfig.Completion, "ServiceId", null)));
 
         return func;
     }
