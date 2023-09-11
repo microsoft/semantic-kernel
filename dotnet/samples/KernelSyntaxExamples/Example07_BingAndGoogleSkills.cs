@@ -136,7 +136,7 @@ Answer: ";
         var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         Console.WriteLine(questions);
 
-        var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
+        var oracle = kernel.CreateSemanticFunction(SemanticFunction, requestSettings: new { max_tokens = 150, temperature = 0, top_p = 1 });
 
         var answer = await kernel.RunAsync(oracle, new(questions)
         {

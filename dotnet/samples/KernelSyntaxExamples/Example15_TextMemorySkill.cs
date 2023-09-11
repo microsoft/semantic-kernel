@@ -281,7 +281,7 @@ Question: {{$input}}
 Answer:
 ";
 
-        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, maxTokens: 100);
+        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, requestSettings: new { max_tokens = 100 });
 
         result = await kernel.RunAsync(aboutMeOracle, new()
         {

@@ -41,7 +41,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
 
         // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", maxTokens: 150);
+        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new { max_tokens = 150 });
 
         // Define a semantic function inline, with skill name
         var sFun2 = kernel.CreateSemanticFunction(
@@ -49,7 +49,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
             skillName: "Writing",
             functionName: "Novel",
             description: "Write a bedtime story",
-            maxTokens: 150);
+            requestSettings: new { max_tokens = 150 });
 
         FunctionsView functions = kernel.Skills.GetFunctionsView();
         ConcurrentDictionary<string, List<FunctionView>> nativeFunctions = functions.NativeFunctions;

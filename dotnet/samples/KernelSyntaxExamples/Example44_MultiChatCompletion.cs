@@ -47,7 +47,7 @@ public static class Example44_MultiChatCompletion
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
         await MessageOutputAsync(chatHistory);
 
-        var chatRequestSettings = new ChatRequestSettings
+        var chatRequestSettings = new OpenAIChatRequestSettings
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,

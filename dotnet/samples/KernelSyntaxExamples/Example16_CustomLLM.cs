@@ -27,7 +27,7 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, dynamic? requestSettings, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
         {
@@ -35,7 +35,7 @@ public class MyTextCompletionService : ITextCompletion
         });
     }
 
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, dynamic? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
     }
@@ -125,7 +125,7 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw ========");
         var completionService = new MyTextCompletionService();
 
-        var result = await completionService.CompleteAsync("I missed the training session this morning", new CompleteRequestSettings());
+        var result = await completionService.CompleteAsync("I missed the training session this morning");
 
         Console.WriteLine(result);
     }
@@ -143,13 +143,13 @@ public static class Example16_CustomLLM
 
     private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
     {
-        var requestSettings = new CompleteRequestSettings()
+        var requestSettings = new
         {
-            MaxTokens = 100,
-            FrequencyPenalty = 0,
-            PresencePenalty = 0,
-            Temperature = 1,
-            TopP = 0.5
+            max_tokens = 100,
+            frequency_penalty = 0,
+            presence_penalty = 0,
+            temperature = 1,
+            top_p = 0.5
         };
 
         Console.WriteLine("Prompt: " + prompt);

@@ -48,7 +48,7 @@ Excuse: I've been too busy training my pet dragon.
 Event: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 100, temperature: 0.4, topP: 1);
+        var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new { max_tokens = 100, temperature = 0.4, top_p = 1 });
 
         var result = await excuseFunction.InvokeAsync("I missed the F1 final race");
         Console.WriteLine(result);
@@ -56,7 +56,7 @@ Event: {{$input}}
         result = await excuseFunction.InvokeAsync("sorry I forgot your birthday");
         Console.WriteLine(result);
 
-        var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", maxTokens: 100);
+        var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", requestSettings: new { max_tokens = 100 });
 
         result = await fixedFunction.InvokeAsync();
         Console.WriteLine(result);

@@ -55,7 +55,7 @@ Is it weekend time (weekend/not weekend)?
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var kindOfDay = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 150);
+        var kindOfDay = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new { max_tokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
