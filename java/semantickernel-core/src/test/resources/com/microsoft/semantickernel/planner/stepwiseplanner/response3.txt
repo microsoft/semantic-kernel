@@ -1,0 +1,2 @@
+[THOUGHT] Now that we know the year of the first world cup is 1930, we can divide it by 2 to get the answer to the original question.
+[ACTION] {{"action": "AdvancedCalculator.Calculator","action_variables": {"input":"1930/2"}}}

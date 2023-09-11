@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 public interface ChatCompletion<ChatHistoryType extends ChatHistory>
         extends AIService, TextCompletion, Buildable {
+
     /**
      * Generate a new chat message
      *

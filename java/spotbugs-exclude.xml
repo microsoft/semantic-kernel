@@ -70,4 +70,34 @@
     <Bug pattern="EI_EXPOSE_REP"/>
   </Match>
 
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector"/>
+    <Method name="&lt;init&gt;"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore"/>
+    <Method name="&lt;init&gt;"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore$Builder"/>
+    <Method name="withConnection"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.sqlite.SQLiteMemoryStore$Builder"/>
+    <Method name="withConnection"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.postgresql.PostgreSQLMemoryStore$Builder"/>
+    <Method name="withConnection"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
 </FindBugsFilter>

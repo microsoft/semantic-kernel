@@ -86,6 +86,7 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
     }
 
     private static class MethodDetails {
+
         public final boolean hasSkFunctionAttribute;
         public final SKNativeTask<SKContext> function;
         public final List<ParameterView> parameters;

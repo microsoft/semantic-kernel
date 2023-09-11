@@ -148,9 +148,9 @@ public interface MemoryStore extends Buildable {
             double minRelevanceScore,
             boolean withEmbedding);
 
-    static Builder builder() {
+    static <T extends MemoryStore> Builder<T> builder() {
         return BuildersSingleton.INST.getInstance(Builder.class);
     }
 
-    interface Builder extends SemanticKernelBuilder<MemoryStore> {}
+    interface Builder<T extends MemoryStore> extends SemanticKernelBuilder<T> {}
 }
