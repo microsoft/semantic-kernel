@@ -2,7 +2,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -204,7 +203,7 @@ public static class GPT3Tokenizer
         if (token.Length <= 1)
         {
             var list = new List<string>(1) { token };
-            bpeCache.TryAdd(token, list);
+            bpeCache.Add(token, list);
             return list;
         }
 
@@ -215,7 +214,7 @@ public static class GPT3Tokenizer
         }
 
         long smallestRank = long.MaxValue;
-        (string, string) smallestPair = ("", "");
+        (string First, string Second) smallestPair = ("", "");
         List<string>? newWord = null;
 
         while (word.Count >= 2)
@@ -238,8 +237,8 @@ public static class GPT3Tokenizer
                 break;
             }
 
-            string first = smallestPair.Item1;
-            string second = smallestPair.Item2;
+            string first = smallestPair.First;
+            string second = smallestPair.Second;
 
             newWord ??= new List<string>(word.Count);
             for (int i = 0; i < word.Count; i++)
