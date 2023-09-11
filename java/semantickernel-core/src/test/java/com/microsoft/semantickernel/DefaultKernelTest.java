@@ -17,6 +17,7 @@ import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
@@ -182,10 +183,10 @@ public class DefaultKernelTest {
         OpenAIAsyncClient openAIAsyncClient = Mockito.mock(OpenAIAsyncClient.class);
 
         for (Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response : responses) {
-
             mockChatCompletionResponse(openAIAsyncClient, response);
             mockChatCompletionResponseStreaming(openAIAsyncClient, response);
             mockTextCompletionResponse(openAIAsyncClient, response);
+            mockTextCompletionResponseStreaming(openAIAsyncClient, response);
         }
         return openAIAsyncClient;
     }
@@ -197,6 +198,7 @@ public class DefaultKernelTest {
         Mockito.when(choice.getText()).thenReturn(response.getT2());
         Completions completions = Mockito.mock(Completions.class);
         Mockito.when(completions.getChoices()).thenReturn(Collections.singletonList(choice));
+        Mockito.when(completions.getId()).thenReturn(UUID.randomUUID().toString());
 
         Mockito.when(
                         openAIAsyncClient.getCompletions(
@@ -230,6 +232,55 @@ public class DefaultKernelTest {
                 .thenReturn(Mono.just(completions));
     }
 
+    private static void mockTextCompletionResponseStreaming(
+            OpenAIAsyncClient openAIAsyncClient,
+            Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response) {
+        Choice choice = Mockito.mock(Choice.class);
+        Mockito.when(choice.getText()).thenReturn(response.getT2());
+        Completions completions = Mockito.mock(Completions.class);
+        Mockito.when(completions.getChoices()).thenReturn(Collections.singletonList(choice));
+        Mockito.when(completions.getId()).thenReturn(UUID.randomUUID().toString());
+
+        Mockito.when(
+                        openAIAsyncClient.getCompletionsStream(
+                                Mockito.any(String.class),
+                                Mockito.argThat(
+                                        it -> response.getT1().matches(it.getPrompt().get(0)))))
+                .then(
+                        (arg) -> {
+                            response.getT3()
+                                    .accept(
+                                            ((CompletionsOptions) arg.getArgument(1))
+                                                    .getPrompt()
+                                                    .get(0));
+                            return Flux.just(completions);
+                        })
+                .thenReturn(Flux.just(completions));
+
+        Mockito.when(
+                        openAIAsyncClient.getCompletionsStream(
+                                Mockito.any(String.class),
+                                Mockito.argThat(
+                                        it ->
+                                                response.getT1()
+                                                        .matches(
+                                                                it.getPrompt()
+                                                                        .get(
+                                                                                it.getPrompt()
+                                                                                                .size()
+                                                                                        - 1)))))
+                .then(
+                        (arg) -> {
+                            response.getT3()
+                                    .accept(
+                                            ((CompletionsOptions) arg.getArgument(1))
+                                                    .getPrompt()
+                                                    .get(0));
+                            return Flux.just(completions);
+                        })
+                .thenReturn(Flux.just(completions));
+    }
+
     private static void mockChatCompletionResponse(
             OpenAIAsyncClient openAIAsyncClient,
             Tuple3<ArgumentMatcher<String>, String, Consumer<String>> response) {
@@ -241,6 +292,7 @@ public class DefaultKernelTest {
 
         Mockito.when(chatCompletions.getChoices())
                 .thenReturn(Collections.singletonList(chatChoice));
+        Mockito.when(chatCompletions.getId()).thenReturn(UUID.randomUUID().toString());
 
         ArgumentMatcher<ChatCompletionsOptions> completionMatcher =
                 chatCompletionsOptions ->
@@ -283,6 +335,7 @@ public class DefaultKernelTest {
 
         ChatCompletions chatCompletions = Mockito.mock(ChatCompletions.class);
         Mockito.when(chatCompletions.getChoices()).thenReturn(choices);
+        Mockito.when(chatCompletions.getId()).thenReturn(UUID.randomUUID().toString());
 
         ArgumentMatcher<ChatCompletionsOptions> completionMatcher =
                 chatCompletionsOptions ->
@@ -339,9 +392,9 @@ public class DefaultKernelTest {
             OpenAIAsyncClient openAIAsyncClient, String model, String expected) {
 
         Mockito.verify(openAIAsyncClient, Mockito.times(1))
-                .getCompletions(
+                .getCompletionsStream(
                         Mockito.matches(model),
-                        Mockito.<CompletionsOptions>argThat(
+                        Mockito.argThat(
                                 completionsOptions ->
                                         completionsOptions.getPrompt().size() == 1
                                                 && completionsOptions

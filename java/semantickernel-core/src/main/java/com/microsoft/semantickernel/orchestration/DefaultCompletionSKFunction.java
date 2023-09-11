@@ -35,6 +35,7 @@ import reactor.core.publisher.Mono;
 public class DefaultCompletionSKFunction
         extends DefaultSemanticSKFunction<CompletionRequestSettings>
         implements CompletionSKFunction {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCompletionSKFunction.class);
 
     private final SemanticFunctionConfig functionConfig;
@@ -188,16 +189,10 @@ public class DefaultCompletionSKFunction
                     PromptTemplate func = functionConfig.getTemplate();
 
                     return func.renderAsync(context)
-                            .flatMapMany(
-                                    prompt -> {
-                                        LOGGER.debug("RENDERED PROMPT: \n" + prompt);
-                                        return client.completeAsync(prompt, requestSettings);
-                                    })
-                            .single()
-                            .map(
-                                    completion -> {
-                                        return context.update(completion.get(0));
-                                    })
+                            .flatMap(
+                                    prompt ->
+                                            performCompletionRequest(
+                                                    client, requestSettings, prompt, context))
                             .doOnError(
                                     ex -> {
                                         LOGGER.warn(
@@ -238,6 +233,30 @@ public class DefaultCompletionSKFunction
         this.aiService = () -> kernel.getService(null, TextCompletion.class);
     }
 
+    private static Mono<SKContext> performCompletionRequest(
+            TextCompletion client,
+            CompletionRequestSettings requestSettings,
+            String prompt,
+            SKContext context) {
+
+        LOGGER.debug("RENDERED PROMPT: \n{}", prompt);
+
+        switch (client.defaultCompletionType()) {
+            case NON_STREAMING:
+                return client.completeAsync(prompt, requestSettings)
+                        .single()
+                        .map(completion -> context.update(completion.get(0)));
+
+            case STREAMING:
+            default:
+                return client.completeStreamAsync(prompt, requestSettings)
+                        .filter(completion -> !completion.isEmpty())
+                        .take(1)
+                        .single()
+                        .map(context::update);
+        }
+    }
+
     @Override
     public Class<CompletionRequestSettings> getType() {
         return CompletionRequestSettings.class;
@@ -259,6 +278,7 @@ public class DefaultCompletionSKFunction
     }
 
     public static class Builder implements CompletionSKFunction.Builder {
+
         private Kernel kernel;
         @Nullable private String promptTemplate = null;
         @Nullable private String functionName = null;

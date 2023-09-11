@@ -5,14 +5,24 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import javax.annotation.CheckReturnValue;
-import reactor.util.annotation.NonNull;
-import reactor.util.annotation.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** Semantic Kernel context */
 public abstract class AbstractSKContext implements SKContext {
+
     private final ReadOnlySkillCollection skills;
     private final WritableContextVariables variables;
     @Nullable private final SemanticTextMemory memory;
+
+    /** Whether an error occurred while executing functions in the pipeline. */
+    private boolean errorOccurred;
+
+    /** When an error occurs, this is the description of the error. */
+    private String lastErrorDescription = "";
+
+    /** When an error occurs, this is the most recent exception. */
+    @Nullable private Exception lastException;
 
     @Nullable
     @Override
@@ -59,6 +69,13 @@ public abstract class AbstractSKContext implements SKContext {
         }
     }
 
+    protected AbstractSKContext(SKContext toClone, String errorDescription, Exception exception) {
+        this(toClone.getVariables(), toClone.getSemanticMemory(), toClone.getSkills());
+        this.errorOccurred = true;
+        this.lastErrorDescription = errorDescription;
+        this.lastException = exception;
+    }
+
     @CheckReturnValue
     @Override
     public SKContext copy() {
@@ -83,28 +100,41 @@ public abstract class AbstractSKContext implements SKContext {
     }
 
     @Override
-    public SKContext setVariable(@NonNull String key, @NonNull String content) {
+    public SKContext setVariable(@Nonnull String key, @Nonnull String content) {
         variables.setVariable(key, content);
         return getThis();
     }
 
     @Override
-    public SKContext appendToVariable(@NonNull String key, @NonNull String content) {
+    public SKContext appendToVariable(@Nonnull String key, @Nonnull String content) {
         variables.appendToVariable(key, content);
         return getThis();
     }
 
     @Override
-    public SKContext update(@NonNull String content) {
+    public SKContext update(@Nonnull String content) {
         variables.update(content);
         return getThis();
     }
 
     @Override
-    public SKContext update(@NonNull ContextVariables newData) {
+    public SKContext update(@Nonnull ContextVariables newData) {
         variables.update(newData, true);
         return getThis();
     }
 
     protected abstract SKContext getThis();
+
+    public boolean isErrorOccurred() {
+        return errorOccurred;
+    }
+
+    public String getLastErrorDescription() {
+        return lastErrorDescription;
+    }
+
+    @Nullable
+    public Exception getLastException() {
+        return new Exception(lastException);
+    }
 }

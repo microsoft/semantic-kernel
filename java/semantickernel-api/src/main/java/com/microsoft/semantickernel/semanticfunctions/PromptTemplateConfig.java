@@ -25,6 +25,14 @@ public class PromptTemplateConfig {
         return completionConfig;
     }
 
+    public int getSchema() {
+        return schema;
+    }
+
+    public String getType() {
+        return type;
+    }
+
     /** Builder for CompletionConfig */
     public static class CompletionConfigBuilder implements SemanticKernelBuilder<CompletionConfig> {
 
@@ -284,6 +292,10 @@ public class PromptTemplateConfig {
 
         public SemanticKernelBuilder<CompletionConfig> builder() {
             return BuildersSingleton.INST.getInstance(CompletionConfigBuilder.class);
+        }
+
+        public List<String> getStopSequences() {
+            return Collections.unmodifiableList(stopSequences);
         }
     }
 

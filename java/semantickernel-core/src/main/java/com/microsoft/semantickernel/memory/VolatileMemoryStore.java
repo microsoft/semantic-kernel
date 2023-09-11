@@ -279,9 +279,9 @@ public class VolatileMemoryStore implements MemoryStore {
         return collection;
     }
 
-    public static class Builder implements MemoryStore.Builder {
+    public static class Builder implements MemoryStore.Builder<VolatileMemoryStore> {
         @Override
-        public MemoryStore build() {
+        public VolatileMemoryStore build() {
             return new VolatileMemoryStore();
         }
     }
