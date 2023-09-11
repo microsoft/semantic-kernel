@@ -3,6 +3,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using RepoUtils;
 
@@ -31,7 +32,6 @@ IKernel kernel = new KernelBuilder()
 
 
 
-/*
 // Option 1: Use AnonymousType for request settings
 var result = await kernel.InvokeSemanticFunctionAsync("Hello AI, what can you do for me?", requestSettings: new { MaxTokens = 16, Temperature = 0.7, ServiceId = "azure" });
 
@@ -44,7 +44,6 @@ Console.WriteLine(result.LastException is not null ? result.LastException.Messag
 result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAITextRequestSettings() { MaxTokens = 256, Temperature = 0.7, ServiceId = "azure" });
 
 Console.WriteLine(result.LastException is not null ? result.LastException.Message : result.Result);
-*/
 
 
 
@@ -66,6 +65,6 @@ var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayl
 
 var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
 
-var result = await kernel.RunAsync(func);
+result = await kernel.RunAsync(func);
 
 Console.WriteLine(result.LastException is not null ? result.LastException.Message : result.Result);

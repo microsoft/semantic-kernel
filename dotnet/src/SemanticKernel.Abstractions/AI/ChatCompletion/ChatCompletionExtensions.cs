@@ -53,9 +53,8 @@ public static class ChatCompletionExtensions
         dynamic? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<IChatResult> chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
-
         return firstChatMessage.Content;
     }
 }

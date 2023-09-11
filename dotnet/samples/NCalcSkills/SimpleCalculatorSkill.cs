@@ -25,9 +25,6 @@ public class SimpleCalculatorSkill
             skillName: nameof(SimpleCalculatorSkill),
             functionName: "Calculator",
             description: "Evaluate a mathematical expression. Input is a valid mathematical expression that could be executed by a simple calculator i.e. add, subtract, multiply and divide. Cannot use variables.",
-            maxTokens: 256,
-            temperature: 0.0,
-            topP: 1,
-            stopSequences: s_stopSequences);
+            requestSettings: new { max_tokens = 256, temperature = 0.0, top_p = 1, stop_sequences = s_stopSequences });
     }
 }

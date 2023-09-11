@@ -2,7 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -22,20 +25,19 @@ public class OpenAIChatRequestSettings
     private static readonly IDictionary<int, int> DefaultTokenSelectionBiases = new Dictionary<int, int>();
 
     /// <summary>
-    /// Service identifier.
-    /// </summary>
-    public string? ServiceId { get; set; } = null;
-
-    /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
     /// </summary>
+    [JsonPropertyName("temperature")]
+    [JsonPropertyOrder(1)]
     public double Temperature { get; set; } = DefaultTemperature;
 
     /// <summary>
     /// TopP controls the diversity of the completion.
     /// The higher the TopP, the more diverse the completion.
     /// </summary>
+    [JsonPropertyName("top_p")]
+    [JsonPropertyOrder(2)]
     public double TopP { get; set; } = DefaultTopP;
 
     /// <summary>
@@ -43,6 +45,8 @@ public class OpenAIChatRequestSettings
     /// based on whether they appear in the text so far, increasing the
     /// model's likelihood to talk about new topics.
     /// </summary>
+    [JsonPropertyName("presence_penalty")]
+    [JsonPropertyOrder(3)]
     public double PresencePenalty { get; set; } = DefaultPresencePenalty;
 
     /// <summary>
@@ -50,11 +54,22 @@ public class OpenAIChatRequestSettings
     /// based on their existing frequency in the text so far, decreasing
     /// the model's likelihood to repeat the same line verbatim.
     /// </summary>
+    [JsonPropertyName("frequency_penalty")]
+    [JsonPropertyOrder(4)]
     public double FrequencyPenalty { get; set; } = DefaultFrequencyPenalty;
+
+    /// <summary>
+    /// The maximum number of tokens to generate in the completion.
+    /// </summary>
+    [JsonPropertyName("max_tokens")]
+    [JsonPropertyOrder(5)]
+    public int? MaxTokens { get; set; } = DefaultMaxTokens;
 
     /// <summary>
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
+    [JsonPropertyName("stop_sequences")]
+    [JsonPropertyOrder(6)]
     public IList<string> StopSequences { get; set; } = DefaultStopSequences;
 
     /// <summary>
@@ -62,23 +77,31 @@ public class OpenAIChatRequestSettings
     /// Note: Because this parameter generates many completions, it can quickly consume your token quota.
     /// Use carefully and ensure that you have reasonable settings for max_tokens and stop.
     /// </summary>
+    [JsonPropertyName("results_per_prompt")]
+    [JsonPropertyOrder(7)]
     public int ResultsPerPrompt { get; set; } = DefaultResultsPerPrompt;
-
-    /// <summary>
-    /// The maximum number of tokens to generate in the completion.
-    /// </summary>
-    public int? MaxTokens { get; set; } = DefaultMaxTokens;
 
     /// <summary>
     /// The system prompt to use when generating text completions using a chat model.
     /// Defaults to "Assistant is a large language model."
     /// </summary>
+    [JsonPropertyName("chat_system_prompt")]
+    [JsonPropertyOrder(8)]
     public string ChatSystemPrompt { get; set; } = DefaultChatSystemPrompt;
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
+    [JsonPropertyName("token_selection_biases")]
+    [JsonPropertyOrder(9)]
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = DefaultTokenSelectionBiases;
+
+    /// <summary>
+    /// Service identifier.
+    /// </summary>
+    [JsonPropertyName("service_id")]
+    [JsonPropertyOrder(10)]
+    public string? ServiceId { get; set; } = null;
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.
@@ -97,18 +120,11 @@ public class OpenAIChatRequestSettings
             return (OpenAIChatRequestSettings)requestSettings;
         }
 
-        var settings = new OpenAIChatRequestSettings
+        if (requestSettings.GetType() == typeof(JsonElement))
         {
-            Temperature = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "Temperature", DefaultTemperature),
-            TopP = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "TopP", DefaultTopP),
-            PresencePenalty = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "PresencePenalty", DefaultPresencePenalty),
-            FrequencyPenalty = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "FrequencyPenalty", DefaultFrequencyPenalty),
-            MaxTokens = DynamicUtils.TryGetPropertyValue<int?>(requestSettings, "MaxTokens", DefaultMaxTokens),
-            StopSequences = DynamicUtils.TryGetPropertyValue<IList<string>>(requestSettings, "StopSequences", DefaultStopSequences),
-            ChatSystemPrompt = DynamicUtils.TryGetPropertyValue<string?>(requestSettings, "ChatSystemPrompt", DefaultChatSystemPrompt),
-            TokenSelectionBiases = DynamicUtils.TryGetPropertyValue<IDictionary<int, int>?>(requestSettings, "TokenSelectionBiases", DefaultTokenSelectionBiases)
-        };
+            return Json.Deserialize<OpenAIChatRequestSettings>(requestSettings.ToString());
+        }
 
-        return settings;
+        return Json.Deserialize<OpenAIChatRequestSettings>(JsonSerializer.Serialize(requestSettings));
     }
 }

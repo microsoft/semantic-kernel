@@ -69,7 +69,7 @@ public sealed class ActionPlanner : IActionPlanner
         this._plannerFunction = kernel.CreateSemanticFunction(
             skillName: SkillName,
             promptTemplate: promptTemplate,
-            requestSettings: new { MaxTokens = 1024, StopSequences = new[] { StopSequence } });
+            requestSettings: new { max_tokens = 1024, stop_sequences = new[] { StopSequence } });
 
         kernel.ImportSkill(this, skillName: SkillName);
 

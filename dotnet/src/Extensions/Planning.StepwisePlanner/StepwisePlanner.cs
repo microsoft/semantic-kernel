@@ -432,7 +432,7 @@ public class StepwisePlanner : IStepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            var results = (await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.Completion, token).ConfigureAwait(false));
+            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.Completion, token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {

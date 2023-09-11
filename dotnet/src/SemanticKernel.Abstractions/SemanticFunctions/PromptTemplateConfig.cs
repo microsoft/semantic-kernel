@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
 
@@ -82,7 +83,6 @@ public class PromptTemplateConfig
     [JsonPropertyName("completion")]
     [JsonPropertyOrder(4)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonConverter(typeof(RequestSettingsConverter))]
     public dynamic? Completion { get; set; }
 
     /// <summary>
@@ -100,6 +100,39 @@ public class PromptTemplateConfig
     [JsonPropertyOrder(6)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public InputConfig Input { get; set; } = new();
+
+    /// <summary>
+    /// Return the service id
+    /// </summary>
+    internal string? GetServiceId()
+    {
+        if (this.Completion is null)
+        {
+            return null;
+        }
+
+        if (this.Completion.GetType() == typeof(JsonElement))
+        {
+            var jsonElement = (JsonElement)this.Completion;
+            if (jsonElement.TryGetProperty("service_id", out var value1))
+            {
+                return value1.GetString();
+            }
+            if (jsonElement.TryGetProperty("ServiceId", out var value2))
+            {
+                return value2.GetString();
+            }
+            return null;
+        }
+
+        string? serviceId = DynamicUtils.TryGetPropertyValue<string?>(this.Completion, "service_id", null);
+        if (serviceId is null)
+        {
+            serviceId = DynamicUtils.TryGetPropertyValue<string?>(this.Completion, "ServiceId", null);
+        }
+
+        return serviceId;
+    }
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.
