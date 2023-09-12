@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -22,15 +24,16 @@ public sealed class FunctionsView
     /// Collection of semantic skill names and function names, including function parameters.
     /// Functions are grouped by skill name.
     /// </summary>
-    public ConcurrentDictionary<string, List<FunctionView>> SemanticFunctions { get; }
-        = new(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> SemanticFunctions => this.GetFunctions(nativeFunctionCheck: false);
 
     /// <summary>
     /// Collection of native skill names and function views, including function parameters.
     /// Functions are grouped by skill name.
     /// </summary>
-    public ConcurrentDictionary<string, List<FunctionView>> NativeFunctions { get; }
-        = new(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> NativeFunctions => this.GetFunctions(nativeFunctionCheck: true);
+
+    private readonly ConcurrentDictionary<string, List<FunctionView>> _semanticFunctions = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, List<FunctionView>> _nativeFunctions = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Add a function to the list
@@ -43,11 +46,11 @@ public sealed class FunctionsView
         {
             if (view.IsSemantic)
             {
-                this.SemanticFunctions.GetOrAdd(view.SkillName, _ => new()).Add(view);
+                this._semanticFunctions.GetOrAdd(view.SkillName, _ => new()).Add(view);
             }
             else
             {
-                this.NativeFunctions.GetOrAdd(view.SkillName, _ => new()).Add(view);
+                this._nativeFunctions.GetOrAdd(view.SkillName, _ => new()).Add(view);
             }
         }
 
@@ -78,13 +81,104 @@ public sealed class FunctionsView
         return this.IsFunctionCheck(skillName, functionName, nativeFunctionCheck: true);
     }
 
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
+    private IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> GetFunctions(bool nativeFunctionCheck)
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
+    {
+        ConcurrentDictionary<string, List<FunctionView>> targetFunctionDictionary = (nativeFunctionCheck)
+            ? this._nativeFunctions
+            : this._semanticFunctions;
+
+        return new ReadOnlyFunctionsView(targetFunctionDictionary);
+    }
+
+    private class ReadOnlyFunctionsView : IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>>
+    {
+        private readonly ConcurrentDictionary<string, List<FunctionView>> _decorated;
+
+        public IEnumerable<string> Keys => this._decorated.Keys;
+
+        public IEnumerable<IReadOnlyCollection<FunctionView>> Values => this.GetValues();
+
+        public int Count => this._decorated.Count;
+
+        public IReadOnlyCollection<FunctionView> this[string key] => this._decorated[key].ToArray();
+
+        public ReadOnlyFunctionsView(ConcurrentDictionary<string, List<FunctionView>> decorated)
+        {
+            this._decorated = decorated;
+        }
+
+        public bool TryGetValue(string key, out IReadOnlyCollection<FunctionView> value)
+        {
+            bool result = this._decorated.TryGetValue(key, out List<FunctionView>? decoratorValue);
+#pragma warning disable CS8601 // Possible null reference assignment.
+            value = decoratorValue?.ToArray();
+#pragma warning restore CS8601 // Possible null reference assignment.
+
+            return result;
+        }
+
+        public IEnumerator<KeyValuePair<string, IReadOnlyCollection<FunctionView>>> GetEnumerator()
+        {
+            return new ReadOnlyFunctionsViewEnumerator(this._decorated.GetEnumerator());
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return new ReadOnlyFunctionsViewEnumerator(this._decorated.GetEnumerator());
+        }
+
+        public bool ContainsKey(string key)
+        {
+            return this._decorated.ContainsKey(key);
+        }
+
+        private IEnumerable<IReadOnlyCollection<FunctionView>> GetValues()
+        {
+            foreach (var decoratorValue in this._decorated.Values)
+            {
+                yield return decoratorValue.ToArray();
+            }
+        }
+    }
+
+    private class ReadOnlyFunctionsViewEnumerator : IEnumerator<KeyValuePair<string, IReadOnlyCollection<FunctionView>>>
+    {
+        private readonly IEnumerator<KeyValuePair<string, List<FunctionView>>> _decorated;
+
+        public ReadOnlyFunctionsViewEnumerator(IEnumerator<KeyValuePair<string, List<FunctionView>>> decorated)
+        {
+            this._decorated = decorated;
+        }
+
+        public KeyValuePair<string, IReadOnlyCollection<FunctionView>> Current => new(this._decorated.Current.Key, this._decorated.Current.Value.ToArray());
+
+        object IEnumerator.Current => this.Current;
+
+        public void Dispose()
+        {
+            this._decorated.Dispose();
+        }
+
+        public bool MoveNext()
+        {
+            return this._decorated.MoveNext();
+        }
+
+        public void Reset()
+        {
+            this._decorated.Reset();
+        }
+    }
+
     private bool IsFunctionCheck(string skillName, string functionName, bool nativeFunctionCheck)
     {
-        this.SemanticFunctions.TryGetValue(skillName, out var semanticFunctions);
+        this._semanticFunctions.TryGetValue(skillName, out var semanticFunctions);
         var foundSemanticFunction = semanticFunctions?.Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase))
                                     ?? false;
 
-        this.NativeFunctions.TryGetValue(skillName, out var nativeFunctions);
+        this._nativeFunctions.TryGetValue(skillName, out var nativeFunctions);
         var foundNativeFunction = nativeFunctions?.Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase))
                                   ?? false;
 
@@ -99,5 +193,5 @@ public sealed class FunctionsView
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"Native = {this.NativeFunctions.Count}, Semantic = {this.SemanticFunctions.Count}";
+    private string DebuggerDisplay => $"Native = {this._nativeFunctions.Count}, Semantic = {this._semanticFunctions.Count}";
 }

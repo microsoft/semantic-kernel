@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -52,15 +50,15 @@ public static class Example10_DescribeAllSkillsAndFunctions
             maxTokens: 150);
 
         FunctionsView functions = kernel.Skills.GetFunctionsView();
-        ConcurrentDictionary<string, List<FunctionView>> nativeFunctions = functions.NativeFunctions;
-        ConcurrentDictionary<string, List<FunctionView>> semanticFunctions = functions.SemanticFunctions;
+        var nativeFunctions = functions.NativeFunctions;
+        var semanticFunctions = functions.SemanticFunctions;
 
         Console.WriteLine("*****************************************");
         Console.WriteLine("****** Native skills and functions ******");
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (KeyValuePair<string, List<FunctionView>> skill in nativeFunctions)
+        foreach (var skill in nativeFunctions)
         {
             Console.WriteLine("Skill: " + skill.Key);
             foreach (FunctionView func in skill.Value) { PrintFunction(func); }
@@ -71,7 +69,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (KeyValuePair<string, List<FunctionView>> skill in semanticFunctions)
+        foreach (var skill in semanticFunctions)
         {
             Console.WriteLine("Skill: " + skill.Key);
             foreach (FunctionView func in skill.Value) { PrintFunction(func); }

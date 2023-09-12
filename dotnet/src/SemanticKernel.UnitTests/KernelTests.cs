@@ -281,7 +281,7 @@ public class KernelTests
 
             FunctionsView procMem = context.Skills.GetFunctionsView();
 
-            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
+            foreach (KeyValuePair<string, IReadOnlyCollection<FunctionView>> list in procMem.SemanticFunctions)
             {
                 foreach (FunctionView f in list.Value)
                 {
@@ -289,7 +289,7 @@ public class KernelTests
                 }
             }
 
-            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.NativeFunctions)
+            foreach (KeyValuePair<string, IReadOnlyCollection<FunctionView>> list in procMem.NativeFunctions)
             {
                 foreach (FunctionView f in list.Value)
                 {

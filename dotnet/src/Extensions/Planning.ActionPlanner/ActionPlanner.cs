@@ -269,9 +269,9 @@ Goal: tell me a joke.
         }
     }
 
-    private void PopulateList(StringBuilder list, IDictionary<string, List<FunctionView>> functions)
+    private void PopulateList(StringBuilder list, IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> functions)
     {
-        foreach (KeyValuePair<string, List<FunctionView>> skill in functions)
+        foreach (KeyValuePair<string, IReadOnlyCollection<FunctionView>> skill in functions)
         {
             // Skip this planner skills
             if (string.Equals(skill.Key, SkillName, StringComparison.OrdinalIgnoreCase)) { continue; }

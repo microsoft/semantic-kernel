@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -94,8 +96,8 @@ public class FunctionsViewTests
             .AddFunction(new FunctionView("natFun", "s1", "", params2, false));
 
         // Act
-        List<FunctionView> semFun = target.SemanticFunctions["s1"];
-        List<FunctionView> natFun = target.NativeFunctions["s1"];
+        var semFun = target.SemanticFunctions["s1"];
+        var natFun = target.NativeFunctions["s1"];
 
         // Assert
         Assert.Single(semFun);
@@ -112,6 +114,48 @@ public class FunctionsViewTests
         Assert.Equal("default 2", semFun.First().Parameters[1].DefaultValue);
         Assert.Equal("default 3", natFun.First().Parameters[0].DefaultValue);
         Assert.Equal("default 4", natFun.First().Parameters[1].DefaultValue);
+    }
+
+    [Fact]
+    public void ItCannotAccessByCastSemanticFunctionsDirectly()
+    {
+        // Arrange
+        var target = new FunctionsView();
+        target.AddFunction(new FunctionView("semFun", "s1", "", new List<ParameterView>(), true));
+
+        var result = target.SemanticFunctions;
+
+        // Act
+        CannotAccessByCastAssert(result);
+    }
+
+    [Fact]
+    public void ItCannotAccessByCastNativeFunctionsDirectly()
+    {
+        // Arrange
+        var target = new FunctionsView();
+        target.AddFunction(new FunctionView("natFun", "s1", "", new List<ParameterView>(), false));
+        var result = target.NativeFunctions;
+
+        // Act
+        CannotAccessByCastAssert(result);
+    }
+
+    private static void CannotAccessByCastAssert(IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> result)
+    {
+        Assert.ThrowsAny<Exception>(() => (ConcurrentDictionary<string, List<FunctionView>>)result);
+        Assert.ThrowsAny<Exception>(() => (Dictionary<string, List<FunctionView>>)result);
+        Assert.ThrowsAny<Exception>(() => (IDictionary<string, List<FunctionView>>)result);
+        Assert.ThrowsAny<Exception>(() => (IReadOnlyDictionary<string, List<FunctionView>>)result);
+        Assert.ThrowsAny<Exception>(() => (IReadOnlyDictionary<string, ICollection<FunctionView>>)result);
+        Assert.ThrowsAny<Exception>(() => (IReadOnlyDictionary<string, IList<FunctionView>>)result);
+
+        Assert.ThrowsAny<Exception>(() => (List<FunctionView>)result.Values);
+        Assert.ThrowsAny<Exception>(() => (IList<FunctionView>)result.Values);
+        Assert.ThrowsAny<Exception>(() => (ICollection<FunctionView>)result.Values);
+        Assert.ThrowsAny<Exception>(() => (List<FunctionView>)result.GetEnumerator().Current.Value);
+        Assert.ThrowsAny<Exception>(() => (IList<FunctionView>)result.GetEnumerator().Current.Value);
+        Assert.ThrowsAny<Exception>(() => (ICollection<FunctionView>)result.GetEnumerator().Current.Value);
     }
 
     [Fact]
