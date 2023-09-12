@@ -114,7 +114,8 @@ def pyarrow_table_to_memoryrecords(
     """
     result_memory_records = [
         MemoryRecord(
-            **row.to_dict(), embedding=vectors[index] if vectors is not None else None
+            **row.to_dict(),
+            embedding=vectors[index][0] if vectors is not None else None,
         )
         for index, row in table.to_pandas().iterrows()
     ]
@@ -211,16 +212,7 @@ class USearchMemoryStore(MemoryStoreBase):
         if collection_name in self._collections:
             raise ValueError(f"Collection with name {collection_name} already exists.")
 
-        embeddings_index_path = (
-            self._get_collection_path(
-                collection_name, file_type=_CollectionFileType.USEARCH
-            )
-            if self._persist_directory
-            else None
-        )
-
         embeddings_index = Index(
-            path=embeddings_index_path,
             ndim=ndim,
             metric=metric,
             dtype=dtype,
@@ -333,7 +325,6 @@ class USearchMemoryStore(MemoryStoreBase):
         copy: bool = True,
         threads: int = 0,
         log: Union[str, bool] = False,
-        batch_size: int = 0,
     ) -> List[str]:
         """Upsert a batch of MemoryRecords and return their IDs.
 
@@ -344,7 +335,6 @@ class USearchMemoryStore(MemoryStoreBase):
             copy (bool, optional): Should the index store a copy of vectors. Defaults to True.
             threads (int, optional): Optimal number of cores to use. Defaults to 0.
             log (Union[str, bool], optional): Whether to print the progress bar. Defaults to False.
-            batch_size (int, optional): Number of vectors to process at once. Defaults to 0.
 
         Raises:
             KeyError: If collection not exist
@@ -382,7 +372,6 @@ class USearchMemoryStore(MemoryStoreBase):
             copy=copy,
             threads=threads,
             log=log,
-            batch_size=batch_size,
         )
 
         # Update embeddings_table
@@ -436,9 +425,7 @@ class USearchMemoryStore(MemoryStoreBase):
         if not labels:
             return []
         vectors = (
-            ucollection.embeddings_index.get_vectors(labels, dtype)
-            if with_embeddings
-            else None
+            ucollection.embeddings_index.get(labels, dtype) if with_embeddings else None
         )
 
         return pyarrow_table_to_memoryrecords(
@@ -518,7 +505,6 @@ class USearchMemoryStore(MemoryStoreBase):
         threads: int = 0,
         exact: bool = False,
         log: Union[str, bool] = False,
-        batch_size: int = 0,
     ) -> List[Tuple[MemoryRecord, float]]:
         """Get the nearest matches to a given embedding.
 
@@ -539,7 +525,6 @@ class USearchMemoryStore(MemoryStoreBase):
             threads (int, optional): Optimal number of cores to use. Defaults to 0.
             exact (bool, optional): Perform exhaustive linear-time exact search. Defaults to False.
             log (Union[str, bool], optional): Whether to print the progress bar. Defaults to False.
-            batch_size (int, optional): Number of vectors to process at once. Defaults to 0.
 
         Raises:
             KeyError: if a collection with specified name does not exist
@@ -552,11 +537,10 @@ class USearchMemoryStore(MemoryStoreBase):
 
         result: Union[Matches, BatchMatches] = ucollection.embeddings_index.search(
             vectors=embedding,
-            k=limit,
+            count=limit,
             threads=threads,
             exact=exact,
             log=log,
-            batch_size=batch_size,
         )
 
         assert isinstance(result, Matches)
@@ -567,7 +551,7 @@ class USearchMemoryStore(MemoryStoreBase):
 
         filtered_vectors: Optional[np.ndarray] = None
         if with_embeddings:
-            filtered_vectors = ucollection.embeddings_index.get_vectors(filtered_labels)
+            filtered_vectors = ucollection.embeddings_index.get(filtered_labels)
 
         return [
             (mem_rec, result.distances[index].item())

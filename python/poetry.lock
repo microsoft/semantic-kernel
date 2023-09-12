@@ -1904,6 +1904,16 @@ files = [
     {file = "MarkupSafe-2.1.3-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:5bbe06f8eeafd38e5d0a4894ffec89378b6c6a625ff57e3028921f8ff59318ac"},
     {file = "MarkupSafe-2.1.3-cp311-cp311-win32.whl", hash = "sha256:dd15ff04ffd7e05ffcb7fe79f1b98041b8ea30ae9234aed2a9168b5797c3effb"},
     {file = "MarkupSafe-2.1.3-cp311-cp311-win_amd64.whl", hash = "sha256:134da1eca9ec0ae528110ccc9e48041e0828d79f24121a1a146161103c76e686"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:f698de3fd0c4e6972b92290a45bd9b1536bffe8c6759c62471efaa8acb4c37bc"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:aa57bd9cf8ae831a362185ee444e15a93ecb2e344c8e52e4d721ea3ab6ef1823"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ffcc3f7c66b5f5b7931a5aa68fc9cecc51e685ef90282f4a82f0f5e9b704ad11"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:47d4f1c5f80fc62fdd7777d0d40a2e9dda0a05883ab11374334f6c4de38adffd"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:1f67c7038d560d92149c060157d623c542173016c4babc0c1913cca0564b9939"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:9aad3c1755095ce347e26488214ef77e0485a3c34a50c5a5e2471dff60b9dd9c"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-musllinux_1_1_i686.whl", hash = "sha256:14ff806850827afd6b07a5f32bd917fb7f45b046ba40c57abdb636674a8b559c"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:8f9293864fe09b8149f0cc42ce56e3f0e54de883a9de90cd427f191c346eb2e1"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-win32.whl", hash = "sha256:715d3562f79d540f251b99ebd6d8baa547118974341db04f5ad06d5ea3eb8007"},
+    {file = "MarkupSafe-2.1.3-cp312-cp312-win_amd64.whl", hash = "sha256:1b8dd8c3fd14349433c79fa8abeb573a55fc0fdd769133baac1f5e07abf54aeb"},
     {file = "MarkupSafe-2.1.3-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:8e254ae696c88d98da6555f5ace2279cf7cd5b3f52be2b5cf97feafe883b58d2"},
     {file = "MarkupSafe-2.1.3-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cb0932dc158471523c9637e807d9bfb93e06a95cbf010f1a38b98623b929ef2b"},
     {file = "MarkupSafe-2.1.3-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9402b03f1a1b4dc4c19845e5c749e3ab82d5078d16a2a4c2cd2df62d57bb0707"},
@@ -4857,44 +4867,43 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "usearch"
-version = "1.1.1"
+version = "2.4.0"
 description = "Smaller & Faster Single-File Vector Search Engine from Unum"
 optional = false
 python-versions = "*"
 files = [
-    {file = "usearch-1.1.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:1a68a223be42573a036c76e516f30c076b16dd38d8cfe9ca79a1cc0e4d60e8a8"},
-    {file = "usearch-1.1.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:bf2d8246a23e5a232a9389f4efd25e0bd10624a96f0f95d0cd415945a6be84ee"},
-    {file = "usearch-1.1.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:8692dbd0b66874e6b01e2dd7c50216347f52d175bc7e072712a5e0646ec9295b"},
-    {file = "usearch-1.1.1-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:5be4ede1592b056714e3f529cd17e69907364e3c0ee6eee5cf1498f946f0c2ec"},
-    {file = "usearch-1.1.1-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:6230b0583779f43dba2da3865dd398f8cf88daa6427d60afff3348bbdea6652f"},
-    {file = "usearch-1.1.1-cp310-cp310-win_amd64.whl", hash = "sha256:eb731f74a7a8208e0fa5b04d9488d1dfc177e253b9c761687cb51d38138d5b93"},
-    {file = "usearch-1.1.1-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:7fbb82767109d03c807678664ab02383e31db778adb1d3602da347613fdbf15e"},
-    {file = "usearch-1.1.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:c7e1f81a92f3fcc091400f2997b7b12b6d53f7abf4edf87e8a17b5eede350431"},
-    {file = "usearch-1.1.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:7027cdc4c733d6926fc2a58e77cb9b14528a3f585b5d738ad6c5f14dc6e027ca"},
-    {file = "usearch-1.1.1-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:e1bb1b238390cc990d051a07fe2a0f173e60bc9e82b7f0f34eb9ddf5bef2b1f8"},
-    {file = "usearch-1.1.1-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:42711bad96f487f5d31ac7be1685797fb4b26904328bc855182e8d6c83b9e538"},
-    {file = "usearch-1.1.1-cp311-cp311-win_amd64.whl", hash = "sha256:ebc34eb7cf0b9f7e52b0f176c48d374f19668ad9653533bdd2e5be1463435d66"},
-    {file = "usearch-1.1.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:36059015e49f9ea303a1d823b80113ce96833330563a54ceac447e4218d63a2c"},
-    {file = "usearch-1.1.1-cp37-cp37m-manylinux_2_28_aarch64.whl", hash = "sha256:918830e1876064227f0a6a17bd4f92c985d8df4856b0370c7729b6e43721b3cc"},
-    {file = "usearch-1.1.1-cp37-cp37m-manylinux_2_28_x86_64.whl", hash = "sha256:a59dfd5d848c484448470e613514f636cf42acac3eab1a9fb9b98d9511de2a97"},
-    {file = "usearch-1.1.1-cp37-cp37m-win_amd64.whl", hash = "sha256:70d1f5148a1032da5b0e6651371d29643bf302c0d24a2896d6969d504fccac15"},
-    {file = "usearch-1.1.1-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:5112ebd545ad63b7a63d68838da8a56cfcd313c9ade86bfbe30061c946cbc5dc"},
-    {file = "usearch-1.1.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:0f1e58d11d9dfe1d499e86c108a21f7deb85fe4f40e54b042e057b5df5ead036"},
-    {file = "usearch-1.1.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:fbd08ecbf2225f16b9f4b8190cff53de372baddc173e5ba7854425392552013b"},
-    {file = "usearch-1.1.1-cp38-cp38-manylinux_2_28_aarch64.whl", hash = "sha256:b8040aa9f448ddfaac5528ec1a1c216351cf7a17af35ddf169b239282f7fa4c4"},
-    {file = "usearch-1.1.1-cp38-cp38-manylinux_2_28_x86_64.whl", hash = "sha256:479fcf8b884d1a822b83c7cfb853c090f0db4386e86ef790f2c820f96de70140"},
-    {file = "usearch-1.1.1-cp38-cp38-win_amd64.whl", hash = "sha256:b0338b054fde34ab0a42a786bae43ae1793412995f6a87122850fc0318cb5955"},
-    {file = "usearch-1.1.1-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:12121e7ac82868877ae9e6b513a61c1113afc8a28d793f9350719ef94ac33091"},
-    {file = "usearch-1.1.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:33255b29bd7fc1feb6584887f6489bf9f896bd9d79b9ce423ff7185b2c2059e5"},
-    {file = "usearch-1.1.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:9bb5464473e8ceeef6237285fc0e86a0b77a75304397db3365cb011761fd6abe"},
-    {file = "usearch-1.1.1-cp39-cp39-manylinux_2_28_aarch64.whl", hash = "sha256:6d84c5771aa37584a335f4b3392185782da785733aab4c3a4ae9949434cbe679"},
-    {file = "usearch-1.1.1-cp39-cp39-manylinux_2_28_x86_64.whl", hash = "sha256:02167b0c03062a6d28926535ee862401669b6d6f303e99d2cd1232dc610d2a25"},
-    {file = "usearch-1.1.1-cp39-cp39-win_amd64.whl", hash = "sha256:8300ba31fcc3ace452429781f517273e1297a5881cff629e2f1c6a3a411a48fc"},
+    {file = "usearch-2.4.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:133e5a599e424a2668546f457ceb49163ec733fba6a427d6d78089687ff8821e"},
+    {file = "usearch-2.4.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:6ee619e6ef9febde24423b0951a7cf7e4419842f844475875e5f801bffa9b6dd"},
+    {file = "usearch-2.4.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:96c7fe6d46d980d439651155a7ab0c9f3e208d6a93e22b9a301de76f6af9d208"},
+    {file = "usearch-2.4.0-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:510d958b2a5d7769bb71add85d596529bbed87dcc26e2f18ce7068aa166d0ffe"},
+    {file = "usearch-2.4.0-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:fc32d52b1e0f25ebe5208012117adfbdb982591a95d89ef1d349e3720a004c9d"},
+    {file = "usearch-2.4.0-cp310-cp310-win_amd64.whl", hash = "sha256:f97302fd69a87f1096a125300a96a6c56e2283cd9356af2c31105a47924275c2"},
+    {file = "usearch-2.4.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:ad51c23f60ae6e8d27d1dfa99f7035e229fb4840810ab5f4a532bb85fb6c1aae"},
+    {file = "usearch-2.4.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:a93b8f56bcc246c1c5f32dd0cbb0c7384a5c5de62c659b147e1f3f67563324bd"},
+    {file = "usearch-2.4.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:7d9d70ffc10473e5c392e1eca45f3c3a0afce8ec8613346d3ed82f54b7ae0c4f"},
+    {file = "usearch-2.4.0-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:df90cf3e8a95412088884eb0d19449afbf2876035897cf58c64cb511fbf19dcb"},
+    {file = "usearch-2.4.0-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:fbb86f73bc4c5b9ea91a56d6c1d3315c917bfa0c66bc1b57f8e6235b30e24f97"},
+    {file = "usearch-2.4.0-cp311-cp311-win_amd64.whl", hash = "sha256:2f5d70cd562107711d552fb812cf90c14b7706793e4e94d6a14b692fcb0af122"},
+    {file = "usearch-2.4.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:d4652e1604efb6af0fafcaa35d32fc21805f7cba6c036bf3b0d42d353260603f"},
+    {file = "usearch-2.4.0-cp37-cp37m-manylinux_2_28_aarch64.whl", hash = "sha256:88fbb5c62e923f7790f574d9d0b3875df065d476d98ca20d6c5b70fe80f1ea13"},
+    {file = "usearch-2.4.0-cp37-cp37m-manylinux_2_28_x86_64.whl", hash = "sha256:6bab76fdb1cd78c36bb6d19ed42c0d85c193d269a5461a4d74cad733289360af"},
+    {file = "usearch-2.4.0-cp37-cp37m-win_amd64.whl", hash = "sha256:2e75b776d1564f00590434bfb71694d957a937679360d8cfff98c14ca0e975f8"},
+    {file = "usearch-2.4.0-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:021982898e02be6a4f49a91670108aae8afffac2a69d3c8de37fe37e602c5e6e"},
+    {file = "usearch-2.4.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:fcb5dc4ab24db90dc99397ff80f2384f71214e9a9d920c9a0e47f419c931bdb4"},
+    {file = "usearch-2.4.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:90c23d59de45b650d5fa4a96c248711a56b796b5843746ff14e94c122d886a3a"},
+    {file = "usearch-2.4.0-cp38-cp38-manylinux_2_28_aarch64.whl", hash = "sha256:749e4d2760f17de378e0a8a6f411e866c82fef198dcbc2a4b189a81de1524527"},
+    {file = "usearch-2.4.0-cp38-cp38-manylinux_2_28_x86_64.whl", hash = "sha256:4c34a6ae112e2a373d3dfb6ef96bb96e74abdf6feb6aaf88cb62c1d993cdfb7e"},
+    {file = "usearch-2.4.0-cp38-cp38-win_amd64.whl", hash = "sha256:01c6af4af5c7eaf6bf13e9967bb84cf6c997e92b37dd6769ac5445dc65e46911"},
+    {file = "usearch-2.4.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:4bb85acd97fe36a8c53e852be2382218f5c5b624c5da8f00400f521e2961c73d"},
+    {file = "usearch-2.4.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:6e493df70bf083d7fb7f92b210341602a53c9cabd8715b8c2874c16cde864ffc"},
+    {file = "usearch-2.4.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:5429ea8374ad4b78f1e153bd70eb1395672fb46f315b08f26771cf55972db067"},
+    {file = "usearch-2.4.0-cp39-cp39-manylinux_2_28_aarch64.whl", hash = "sha256:7a3061272151d4711c33edd790c44ad1da9c3ca3dae5bfd2d93a8da2da074e3d"},
+    {file = "usearch-2.4.0-cp39-cp39-manylinux_2_28_x86_64.whl", hash = "sha256:f6a2d1fc9ad422592512fcf8ac72215bfd0b16a09c1e12b892463b881d6fd5b2"},
+    {file = "usearch-2.4.0-cp39-cp39-win_amd64.whl", hash = "sha256:ceb55df0305d70f96f0649da2395199a3a8a0274676972aecf0e4113c6aa7679"},
 ]
 
 [package.dependencies]
 numpy = "*"
-pandas = "*"
 tqdm = "*"
 ucall = {version = "*", markers = "python_version >= \"3.9\""}
 
@@ -5293,4 +5302,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "36b5293ce1687c9cad6e548c73b691aff0015c2de8e3abeeaa6f6a1edfd92a1b"
+content-hash = "f3b63d2f3215a8103895f02bbae1eb5e43c2beca4cccfd51d8a8c222da20ed1e"
