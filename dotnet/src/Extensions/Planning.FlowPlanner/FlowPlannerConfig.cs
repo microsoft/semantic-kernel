@@ -65,17 +65,29 @@ public sealed class FlowPlannerConfig
     /// </remarks>
     public ModelName? ReActModel { get; set; } = null;
 
+    /// <summary>
+    /// Name of LLM model
+    /// </summary>
     public enum ModelName
     {
 #pragma warning disable CA1707 // Identifiers should not contain underscores
         // ReSharper disable once IdentifierTypo
         // ReSharper disable once InconsistentNaming
+        /// <summary>
+        /// text-davinci-003 model
+        /// </summary>
         TEXT_DAVINCI_003,
 
         // ReSharper disable once InconsistentNaming
+        /// <summary>
+        /// gpt-35-turbo model
+        /// </summary>
         GPT35_TURBO,
 
         // ReSharper disable once InconsistentNaming
+        /// <summary>
+        /// gpt4-32k model
+        /// </summary>
         GPT4_32k,
 #pragma warning restore CA1707 // Identifiers should not contain underscores
     }

@@ -13,7 +13,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -134,12 +133,6 @@ internal sealed class ReActEngine
         this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
         var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
-        if (llmResponse.ErrorOccurred)
-        {
-            string message = $"Error occurred while executing action step: {llmResponse.LastException?.Message}";
-            throw new SKException(message, llmResponse.LastException);
-        }
-
         string llmResponseText = llmResponse.Result.Trim();
         this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
 
@@ -177,12 +170,6 @@ internal sealed class ReActEngine
             var actionContext = this.CreateActionContext(variables, kernel, context);
 
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
-
-            if (result.ErrorOccurred)
-            {
-                this._logger?.LogError("Error occurred: {Error}", result.LastException);
-                return $"Error occurred: {result.LastException}";
-            }
 
             foreach (var variable in actionContext.Variables)
             {

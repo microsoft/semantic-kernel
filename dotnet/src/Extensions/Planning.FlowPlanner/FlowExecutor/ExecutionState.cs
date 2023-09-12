@@ -74,8 +74,19 @@ public sealed class ExecutionState
     /// </summary>
     public enum Status
     {
+        /// <summary>
+        /// Not started
+        /// </summary>
         NotStarted,
+
+        /// <summary>
+        /// In progress
+        /// </summary>
         InProgress,
+
+        /// <summary>
+        /// Completed
+        /// </summary>
         Completed
     }
 }

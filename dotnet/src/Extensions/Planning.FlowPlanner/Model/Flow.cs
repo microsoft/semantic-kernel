@@ -23,6 +23,11 @@ public sealed class Flow : FlowStep
 {
     private List<FlowStep> _steps;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Flow"/> class.
+    /// </summary>
+    /// <param name="name">The name of flow</param>
+    /// <param name="goal">The goal of flow</param>
     public Flow(string name, string goal) : base(goal, null)
     {
         this.Name = name;

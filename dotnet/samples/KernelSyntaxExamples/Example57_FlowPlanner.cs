@@ -24,7 +24,7 @@ using Microsoft.SemanticKernel.Skills.Web.Bing;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example55_FlowPlanner
+public static class Example57_FlowPlanner
 {
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
 name: FlowPlanner_Example_Flow

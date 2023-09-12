@@ -19,10 +19,17 @@ public class FlowStep
 
     private List<string> _provides = new();
 
+    private List<string> _passthrough = new();
+
     private Dictionary<string, Type?> _skillTypes = new();
 
     private Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? _skillsFactory;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FlowStep"/> class.
+    /// </summary>
+    /// <param name="goal">The goal of step</param>
+    /// <param name="skillsFactory">The factory to get skills</param>
     public FlowStep(string goal, Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? skillsFactory = null)
     {
         this.Goal = goal;
@@ -47,6 +54,16 @@ public class FlowStep
     public CompletionType CompletionType { get; set; } = CompletionType.Once;
 
     /// <summary>
+    /// If the CompletionType is CompletionType.ZeroOrMore, this message will be used to ask the user if they want to execute the current step or skip it.
+    /// </summary>
+    public string? StartingMessage { get; set; }
+
+    /// <summary>
+    /// If the CompletionType is CompletionType.AtleastOnce or CompletionType.ZeroOrMore, this message will be used to ask the user if they want to try the step again.
+    /// </summary>
+    public string TransitionMessage { get; set; } = "Did you want to try the previous step again?";
+
+    /// <summary>
     /// Parameters required for executing the step
     /// </summary>
     public List<string> Requires
@@ -62,6 +79,15 @@ public class FlowStep
     {
         get => this._provides;
         set => this._provides = value;
+    }
+
+    /// <summary>
+    /// Variables to be passed through on iterations of the step
+    /// </summary>
+    public List<string> Passthrough
+    {
+        get => this._passthrough;
+        set => this._passthrough = value;
     }
 
     /// <summary>
@@ -160,6 +186,21 @@ public class FlowStep
     {
         this.ValidateArguments(providedArguments);
         this._provides.AddRange(providedArguments);
+    }
+
+    /// <summary>
+    /// Register the arguments passed through by the step
+    /// </summary>
+    /// <param name="passthroughArguments">Array of passthrough arguments</param>
+    public void AddPassthrough(params string[] passthroughArguments)
+    {
+        if (this.CompletionType != CompletionType.AtLeastOnce && this.CompletionType != CompletionType.ZeroOrMore)
+        {
+            throw new ArgumentException("Passthrough arguments can only be set for the AtLeastOnce or ZeroOrMore completion type");
+        }
+
+        this.ValidateArguments(passthroughArguments);
+        this._passthrough.AddRange(passthroughArguments);
     }
 
     /// <summary>

@@ -12,12 +12,20 @@ using System.Threading.Tasks;
 using AI.ChatCompletion;
 using Microsoft.SemanticKernel.Memory;
 
+/// <summary>
+/// Default flow status provider implemented on top of <see cref="IMemoryStore"/>
+/// </summary>
 public class FlowStatusProvider : IFlowStatusProvider
 {
     private readonly IMemoryStore _memoryStore;
 
     private readonly string _collectionName;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FlowStatusProvider"/> class.
+    /// </summary>
+    /// <param name="memoryStore"><see cref="IMemoryStore"/> instance</param>
+    /// <param name="collectionName">Collection name in <see cref="IMemoryStore"/> instance</param>
     public FlowStatusProvider(IMemoryStore memoryStore, string? collectionName = null)
     {
         this._memoryStore = memoryStore;
@@ -29,6 +37,7 @@ public class FlowStatusProvider : IFlowStatusProvider
         }
     }
 
+    /// <inheritdoc/>
     public async Task<ExecutionState> GetExecutionStateAsync(string sessionId)
     {
         var result = await (this._memoryStore.GetAsync(this._collectionName, this.GetExecutionStateStorageKey(sessionId))).ConfigureAwait(false);
@@ -52,6 +61,7 @@ public class FlowStatusProvider : IFlowStatusProvider
         }
     }
 
+    /// <inheritdoc/>
     public async Task SaveExecutionStateAsync(string sessionId, ExecutionState state)
     {
         var json = JsonSerializer.Serialize(state);
@@ -64,6 +74,7 @@ public class FlowStatusProvider : IFlowStatusProvider
         return $"FlowStatus_{sessionId}";
     }
 
+    /// <inheritdoc/>
     public async Task<ChatHistory?> GetChatHistoryAsync(string sessionId, string stepId)
     {
         var result = await this._memoryStore.GetAsync(this._collectionName, this.GetChatHistoryStorageKey(sessionId, stepId)).ConfigureAwait(false);
@@ -87,6 +98,7 @@ public class FlowStatusProvider : IFlowStatusProvider
         }
     }
 
+    /// <inheritdoc/>
     public async Task SaveChatHistoryAsync(string sessionId, string stepId, ChatHistory history)
     {
         var json = ChatHistorySerializer.Serialize(history);
@@ -99,6 +111,7 @@ public class FlowStatusProvider : IFlowStatusProvider
         return $"ChatHistory_{sessionId}_{stepId}";
     }
 
+    /// <inheritdoc/>
     public async Task<List<ReActStep>> GetReActStepsAsync(string sessionId, string stepId)
     {
         var result = await this._memoryStore.GetAsync(this._collectionName, this.GetStepsStorageKey(sessionId, stepId)).ConfigureAwait(false);
@@ -120,6 +133,7 @@ public class FlowStatusProvider : IFlowStatusProvider
         return new List<ReActStep>();
     }
 
+    /// <inheritdoc/>
     public async Task SaveReActStepsAsync(string sessionId, string stepId, List<ReActStep> steps)
     {
         var json = JsonSerializer.Serialize(steps);
@@ -129,7 +143,6 @@ public class FlowStatusProvider : IFlowStatusProvider
 
     private string GetStepsStorageKey(string sessionId, string stepId)
     {
-        // TODO: handle potential steps with multiple goals
         return $"Steps_{sessionId}_{stepId}";
     }
 

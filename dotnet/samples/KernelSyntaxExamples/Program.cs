@@ -68,8 +68,8 @@ public static class Program
         await Example52_ApimAuth.RunAsync().SafeWaitAsync(cancelToken);
         await Example54_AzureChatCompletionWithData.RunAsync().SafeWaitAsync(cancelToken);
         await Example55_TextChunker.RunAsync().SafeWaitAsync(cancelToken);
-        await Example55_FlowPlanner.RunAsync().SafeWaitAsync(cancelToken);
         await Example56_TemplateNativeFunctionsWithMultipleArguments.RunAsync().SafeWaitAsync(cancelToken);
+        await Example57_FlowPlanner.RunAsync().SafeWaitAsync(cancelToken);
     }
 
     private static void LoadUserSecrets()
