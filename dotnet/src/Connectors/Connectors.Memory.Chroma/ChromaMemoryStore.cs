@@ -234,11 +234,7 @@ public class ChromaMemoryStore : IMemoryStore
 
     internal static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
-        Converters =
-        {
-            new ChromaBooleanConverter(),
-            new ReadOnlyMemoryConverter(),
-        }
+        Converters = { new ReadOnlyMemoryConverter() }
     };
 
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
