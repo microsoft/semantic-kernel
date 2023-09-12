@@ -360,7 +360,9 @@
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj"
+        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj",
+        "--args",
+        "${input:filter}"
       ],
       "problemMatcher": "$msCompile",
       "group": "test",
@@ -440,7 +442,7 @@
       "id": "filter",
       "type": "promptString",
       "default": "",
-      "description": "Enter a filter for the tests"
+      "description": "Enter a filter to pass as argument or filter"
     }
   ]
 }
