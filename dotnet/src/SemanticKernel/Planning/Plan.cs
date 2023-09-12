@@ -91,7 +91,7 @@ public sealed class Plan : IPlan
     /// <param name="goal">The goal of the plan used as description.</param>
     public Plan(string goal)
     {
-        this.Name = RandomPlanName();
+        this.Name = GetRandomPlanName();
         this.Description = goal;
         this.SkillName = nameof(Plan);
     }
@@ -589,7 +589,7 @@ public sealed class Plan : IPlan
         this.RequestSettings = function.RequestSettings;
     }
 
-    private static string RandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
+    private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 
     private ISKFunction? Function { get; set; } = null;
 
