@@ -24,6 +24,11 @@ using SkillDefinition;
 public sealed class SKFunctionCall : ISKFunction, IDisposable
 {
 
+    /// <summary>
+    /// The maximum number of callable functions to include in a FunctionCall request
+    /// </summary>
+    public const int MaxCallableFunctions = 64;
+
     /// <inheritdoc />
     public string Name { get; }
 
@@ -107,6 +112,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
         var requestSettings = GetRequestSettings(settings ?? RequestSettings);
 
+        // trim any skills from the 
         IReadOnlyList<IChatResult> results = await RunPromptAsync(_aiService?.Value, requestSettings, context, cancellationToken).ConfigureAwait(false);
         context.ModelResults = results.Select(c => c.ModelResult).ToArray();
 
@@ -126,12 +132,15 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     {
         _skillCollection = skills;
         CallableFunctions.Clear();
-        CallableFunctions.AddRange(skills.GetFunctionDefinitions(new[] { SkillName }).ToList());
 
         if (_targetFunctionDefinition != FunctionDefinition.Auto)
         {
             CallableFunctions.Add(_targetFunctionDefinition);
         }
+
+        List<FunctionDefinition> functionDefinitions = skills.GetFunctionDefinitions(new[] { SkillName }).Take(MaxCallableFunctions - 1).ToList();
+        CallableFunctions.AddRange(functionDefinitions);
+
         return this;
     }
 
