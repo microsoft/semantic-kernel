@@ -43,6 +43,8 @@ public class WeaviateMemoryStore : IMemoryStore
     // https://weaviate.io/developers/weaviate/configuration/schema-configuration#class
     private static readonly Regex s_classNameRegEx = new("[^0-9a-zA-Z]+", RegexOptions.Compiled);
 
+    private const string DefaultApiVersion = "v1";
+
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -53,6 +55,7 @@ public class WeaviateMemoryStore : IMemoryStore
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
     private readonly Uri? _endpoint = null;
+    private readonly string? _apiVersion;
     private string? _apiKey;
 
     /// <summary>
@@ -60,13 +63,19 @@ public class WeaviateMemoryStore : IMemoryStore
     /// </summary>
     /// <param name="endpoint">The Weaviate server endpoint URL.</param>
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
+    /// <param name="apiVersion">The API version to use.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public WeaviateMemoryStore(string endpoint, string? apiKey = null, ILoggerFactory? loggerFactory = null)
+    public WeaviateMemoryStore(
+        string endpoint,
+        string? apiKey = null,
+        string? apiVersion = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNullOrWhiteSpace(endpoint);
 
         this._endpoint = new Uri(endpoint);
         this._apiKey = apiKey;
+        this._apiVersion = apiVersion;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
     }
@@ -77,8 +86,14 @@ public class WeaviateMemoryStore : IMemoryStore
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
     /// <param name="endpoint">The optional Weaviate server endpoint URL. If not specified, the base address of the HTTP client is used.</param>
+    /// <param name="apiVersion">The API version to use.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public WeaviateMemoryStore(HttpClient httpClient, string? apiKey = null, string? endpoint = null, ILoggerFactory? loggerFactory = null)
+    public WeaviateMemoryStore(
+        HttpClient httpClient,
+        string? apiKey = null,
+        string? endpoint = null,
+        string? apiVersion = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
@@ -88,6 +103,7 @@ public class WeaviateMemoryStore : IMemoryStore
         }
 
         this._apiKey = apiKey;
+        this._apiVersion = apiVersion;
         this._endpoint = string.IsNullOrEmpty(endpoint) ? null : new Uri(endpoint);
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WeaviateMemoryStore)) : NullLogger.Instance;
         this._httpClient = httpClient;
@@ -509,10 +525,10 @@ public class WeaviateMemoryStore : IMemoryStore
         HttpRequestMessage request,
         CancellationToken cancel = default)
     {
-        if (this._endpoint != null)
-        {
-            request.RequestUri = new Uri(this._endpoint, request.RequestUri);
-        }
+        var apiVersion = !string.IsNullOrWhiteSpace(this._apiVersion) ? this._apiVersion : DefaultApiVersion;
+        var baseAddress = this._endpoint ?? this._httpClient.BaseAddress;
+
+        request.RequestUri = new Uri(baseAddress, $"{apiVersion}/{request.RequestUri}");
 
         if (!string.IsNullOrEmpty(this._apiKey))
         {
