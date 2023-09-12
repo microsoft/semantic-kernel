@@ -35,7 +35,7 @@ public class CodeBlockTests
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<SKException>(() => target.RenderCodeAsync(context));
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class CodeBlockTests
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<RuntimeWrappedException>(() => target.RenderCodeAsync(context));
     }
 
     [Fact]
@@ -97,22 +97,40 @@ public class CodeBlockTests
         var funcId = new FunctionIdBlock("funcName");
         var valBlock = new ValBlock("'value'");
         var varBlock = new VarBlock("$var");
+        var namedArgBlock = new NamedArgBlock("varName='foo'");
 
         // Act
         var codeBlock1 = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLoggerFactory.Instance);
         var codeBlock2 = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
         var codeBlock3 = new CodeBlock(new List<Block> { funcId, funcId }, "", NullLoggerFactory.Instance);
         var codeBlock4 = new CodeBlock(new List<Block> { funcId, varBlock, varBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock5 = new CodeBlock(new List<Block> { funcId, varBlock, namedArgBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock6 = new CodeBlock(new List<Block> { varBlock, valBlock }, "", NullLoggerFactory.Instance);
+        var codeBlock7 = new CodeBlock(new List<Block> { namedArgBlock }, "", NullLoggerFactory.Instance);
 
         // Assert
         Assert.True(codeBlock1.IsValid(out _));
         Assert.True(codeBlock2.IsValid(out _));
 
         // Assert - Can't pass a function to a function
-        Assert.False(codeBlock3.IsValid(out _));
+        Assert.False(codeBlock3.IsValid(out var errorMessage3));
+        Assert.Equal(errorMessage3, "The first arg of a function must be a quoted string, variable or named argument");
 
-        // Assert - Can't pass more than one param
-        Assert.False(codeBlock4.IsValid(out _));
+        // Assert - Can't pass more than one unnamed param
+        Assert.False(codeBlock4.IsValid(out var errorMessage4));
+        Assert.Equal(errorMessage4, "Functions only support named arguments after the first argument. Argument 2 is not named.");
+
+        // Assert - Can pass one unnamed param and named args
+        Assert.True(codeBlock5.IsValid(out var errorMessage5));
+        Assert.Empty(errorMessage5);
+
+        // Assert - Can't use > 1 block if not a function call
+        Assert.False(codeBlock6.IsValid(out var errorMessage6));
+        Assert.Equal(errorMessage6, "Unexpected second token found: 'value'");
+
+        // Assert - Can't use a named argument without a function block
+        Assert.False(codeBlock7.IsValid(out var errorMessage7));
+        Assert.Equal(errorMessage7, "Unexpected named argument found. Expected function name first.");
     }
 
     [Fact]
@@ -290,5 +308,47 @@ public class CodeBlockTests
         // Assert
         Assert.Equal(Value, result);
         Assert.Equal(Value, canary);
+    }
+
+    [Fact]
+    public async Task ItInvokesFunctionWithNamedArgsAsync()
+    {
+        // Arrange
+        const string Func = "funcName";
+        const string Value = "value";
+        const string FooValue = "bar";
+        const string BobValue = "bob's value";
+        var variables = new ContextVariables();
+        variables.Set("bob", BobValue);
+        variables.Set("input", Value);
+        var context = new SKContext(variables: variables, skills: this._skills.Object);
+        var funcId = new FunctionIdBlock(Func);
+        var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
+        var namedArgBlock2 = new NamedArgBlock("baz=$bob");
+
+        var foo = string.Empty;
+        var baz = string.Empty;
+        var function = new Mock<ISKFunction>();
+        function
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((context, _, _) =>
+            {
+                foo = context!.Variables["foo"];
+                baz = context!.Variables["baz"];
+            })
+            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+
+        ISKFunction? outFunc = function.Object;
+        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+
+        // Act
+        var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);
+        string result = await codeBlock.RenderCodeAsync(context);
+
+        // Assert
+        Assert.Equal(FooValue, foo);
+        Assert.Equal(BobValue, baz);
+        Assert.Equal(Value, result);
     }
 }

@@ -67,11 +67,18 @@ public class PromptTemplateConfig
         public List<string> StopSequences { get; set; } = new();
 
         /// <summary>
-        /// When provided will be used to set the system prompt while using Chat Completions
+        /// When provided will be used to set the system prompt while using Chat Completions.
         /// </summary>
         [JsonPropertyName("chat_system_prompt")]
         [JsonPropertyOrder(7)]
         public string? ChatSystemPrompt { get; set; }
+
+        /// <summary>
+        /// When provided will be used to select the AI service used.
+        /// </summary>
+        [JsonPropertyName("service_id")]
+        [JsonPropertyOrder(8)]
+        public string? ServiceId { get; set; }
     }
 
     /// <summary>
@@ -107,6 +114,9 @@ public class PromptTemplateConfig
     /// </summary>
     public class InputConfig
     {
+        /// <summary>
+        /// Gets or sets the list of input parameters.
+        /// </summary>
         [JsonPropertyName("parameters")]
         [JsonPropertyOrder(1)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -160,7 +170,7 @@ public class PromptTemplateConfig
     public InputConfig Input { get; set; } = new();
 
     /// <summary>
-    /// Remove some default properties to reduce the JSON complexity.
+    /// Removes some default properties to reduce the JSON complexity.
     /// </summary>
     /// <returns>Compacted prompt template configuration.</returns>
     public PromptTemplateConfig Compact()
@@ -183,6 +193,7 @@ public class PromptTemplateConfig
     /// </summary>
     /// <param name="json">JSON of the prompt template configuration.</param>
     /// <returns>Prompt template configuration.</returns>
+    /// <exception cref="ArgumentException">Thrown when the deserialization returns null.</exception>
     public static PromptTemplateConfig FromJson(string json)
     {
         var result = Json.Deserialize<PromptTemplateConfig>(json);

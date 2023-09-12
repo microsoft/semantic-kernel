@@ -6,6 +6,10 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Events;
+
+/// <summary>
+/// Base arguments for events.
+/// </summary>
 public abstract class SKEventArgs : EventArgs
 {
     /// <summary>

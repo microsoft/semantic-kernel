@@ -21,6 +21,9 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
+/// <summary>
+/// Provides extension methods for importing AI plugins exposed as OpenAPI v3 endpoints or through OpenAI's ChatGPT format.
+/// </summary>
 public static class KernelAIPluginExtensions
 {
     /// <summary>
@@ -59,7 +62,7 @@ public static class KernelAIPluginExtensions
             skillName,
             httpClient,
             executionParameters,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -98,6 +101,7 @@ public static class KernelAIPluginExtensions
             skillName,
             httpClient,
             executionParameters,
+            uri,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -132,7 +136,7 @@ public static class KernelAIPluginExtensions
             skillName,
             httpClient,
             executionParameters,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     #region private
@@ -143,7 +147,8 @@ public static class KernelAIPluginExtensions
         string skillName,
         HttpClient httpClient,
         OpenApiSkillExecutionParameters? executionParameters,
-        CancellationToken cancellationToken)
+        Uri? documentUri = null,
+        CancellationToken cancellationToken = default)
     {
         if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
@@ -162,6 +167,7 @@ public static class KernelAIPluginExtensions
             executionParameters,
             httpClient,
             pluginContents,
+            documentUri,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -171,7 +177,8 @@ public static class KernelAIPluginExtensions
         OpenApiSkillExecutionParameters? executionParameters,
         HttpClient httpClient,
         string pluginJson,
-        CancellationToken cancellationToken)
+        Uri? documentUri = null,
+        CancellationToken cancellationToken = default)
     {
         var parser = new OpenApiDocumentParser(kernel.LoggerFactory);
 
@@ -194,7 +201,7 @@ public static class KernelAIPluginExtensions
                 try
                 {
                     logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters, cancellationToken);
+                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters, documentUri, cancellationToken);
                     skill[function.Name] = function;
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
@@ -298,6 +305,7 @@ public static class KernelAIPluginExtensions
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterRestApiFunction(
@@ -306,12 +314,14 @@ public static class KernelAIPluginExtensions
         RestApiOperationRunner runner,
         RestApiOperation operation,
         OpenApiSkillExecutionParameters? executionParameters,
+        Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
         var restOperationParameters = operation.GetParameters(
             executionParameters?.ServerUrlOverride,
             executionParameters?.EnableDynamicPayload ?? false,
-            executionParameters?.EnablePayloadNamespacing ?? false
+            executionParameters?.EnablePayloadNamespacing ?? false,
+            documentUri
         );
 
         var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)) : NullLogger.Instance;
@@ -345,7 +355,14 @@ public static class KernelAIPluginExtensions
                     }
                 }
 
-                var result = await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
+                var options = new RestApiOperationRunOptions
+                {
+                    ServerUrlOverride = executionParameters?.ServerUrlOverride,
+                    ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
+                };
+
+                var result = await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
+
                 if (result != null)
                 {
                     context.Variables.Update(result.ToString());
@@ -353,9 +370,8 @@ public static class KernelAIPluginExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}", skillName, operation.Id,
-                    ex.Message);
-                throw ex;
+                logger.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", skillName, operation.Id, ex.Message);
+                throw;
             }
 
             return context;

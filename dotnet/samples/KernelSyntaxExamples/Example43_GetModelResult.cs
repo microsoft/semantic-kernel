@@ -60,12 +60,17 @@ public static class Example43_GetModelResult
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
-        var failedContext = await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
 
-        if (failedContext.ErrorOccurred)
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
         {
-            Console.WriteLine(OutputExceptionDetail(failedContext.LastException?.InnerException));
+            await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine(OutputExceptionDetail(ex.InnerException));
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         string OutputExceptionDetail(Exception? exception)
         {

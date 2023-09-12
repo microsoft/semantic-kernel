@@ -187,22 +187,15 @@ public sealed class Kernel : IKernel, IDisposable
             this._skillCollection,
             this.LoggerFactory);
 
-        int pipelineStepCount = -1;
+        int pipelineStepCount = 0;
         foreach (ISKFunction skFunction in pipeline)
-        {
-            if (context.ErrorOccurred)
-            {
-                this._logger.LogError(
-                    context.LastException,
-                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastException?.Message);
-                return context;
-            }
 
-            pipelineStepCount++;
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
                 var functionDetails = skFunction.Describe();
 
                 var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
@@ -220,13 +213,6 @@ public sealed class Kernel : IKernel, IDisposable
 
                 context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                if (context.ErrorOccurred)
-                {
-                    this._logger.LogError("Function call fail in pipeline step {0}: {1}.{2}. Error: {3}",
-                        pipelineStepCount, skFunction.SkillName, skFunction.Name, context.LastException?.Message);
-                    return context;
-                }
-
                 var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, context);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
@@ -234,13 +220,13 @@ public sealed class Kernel : IKernel, IDisposable
                     break;
                 }
             }
-            catch (Exception e) when (!e.IsCriticalException())
+            catch (Exception ex)
             {
-                this._logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
-                    pipelineStepCount, skFunction.SkillName, skFunction.Name, e.Message);
-                context.LastException = e;
-                return context;
+                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.SkillName, skFunction.Name, pipelineStepCount, ex.Message);
+                throw;
             }
+
+            pipelineStepCount++;
         }
 
         return context;
@@ -349,7 +335,7 @@ public sealed class Kernel : IKernel, IDisposable
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>());
+        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion.ServiceId));
 
         return func;
     }
