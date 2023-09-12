@@ -62,7 +62,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
 
         // Initialize prompt renderer
-        this._promptRenderer = new PromptTemplateEngine();
+        this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportSkill(this, RestrictedSkillName);
@@ -549,20 +549,14 @@ public class StepwisePlanner : IStepwisePlanner
 
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
 
-            if (result.ErrorOccurred)
-            {
-                this._logger?.LogError("Error occurred: {Error}", result.LastException);
-                return $"Error occurred: {result.LastException}";
-            }
-
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
 
             return result.Result;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in system step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
-            return $"Something went wrong in system step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException.Message}";
+            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            throw;
         }
     }
 
