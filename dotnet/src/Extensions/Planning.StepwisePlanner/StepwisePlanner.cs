@@ -62,7 +62,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
 
         // Initialize prompt renderer
-        this._promptRenderer = new PromptTemplateEngine();
+        this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportSkill(this, RestrictedSkillName);
