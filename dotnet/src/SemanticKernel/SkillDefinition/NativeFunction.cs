@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,10 +29,27 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// with additional methods required by the kernel.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class NativeFunction : FunctionBase, IDisposable
+internal sealed class NativeFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
-    public override bool IsSemantic { get; } = false;
+    public string Name { get; }
+
+    /// <inheritdoc/>
+    public string SkillName { get; }
+
+    /// <inheritdoc/>
+    public string Description { get; }
+
+    /// <inheritdoc/>
+    public bool IsSemantic { get; } = false;
+
+    /// <inheritdoc/>
+    public CompleteRequestSettings RequestSettings { get; } = new();
+
+    /// <summary>
+    /// List of function parameters
+    /// </summary>
+    public IList<ParameterView> Parameters { get; }
 
     /// <summary>
     /// Create a native function instance, wrapping a native object method
@@ -111,7 +129,20 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
     }
 
     /// <inheritdoc/>
-    public override async Task<SKContext> InvokeAsync(
+    public FunctionView Describe()
+    {
+        return new FunctionView
+        {
+            IsSemantic = this.IsSemantic,
+            Name = this.Name,
+            SkillName = this.SkillName,
+            Description = this.Description,
+            Parameters = this.Parameters,
+        };
+    }
+
+    /// <inheritdoc/>
+    public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
@@ -122,15 +153,13 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-            this.Logger.LogError(e, Message, this._function.Method.Name, e.Message);
-            context.LastException = e;
-            return context;
+            this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, e.Message);
+            throw;
         }
     }
 
     /// <inheritdoc/>
-    public override ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
         // No-op for native functions; do not throw, as both Plan and PromptFunctions use this,
         // and we don't have a way to distinguish between a native function and a Plan.
@@ -138,14 +167,14 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
     }
 
     /// <inheritdoc/>
-    public override ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
         this.ThrowNotSemantic();
         return this;
     }
 
     /// <inheritdoc/>
-    public override ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
     {
         this.ThrowNotSemantic();
         return this;
@@ -158,9 +187,24 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
     {
     }
 
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public string ToString(bool writeIndented)
+        => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+
     #region private
 
+    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
+    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> _function;
+    private readonly ILogger _logger;
 
     private struct MethodDetails
     {
@@ -182,10 +226,21 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
         string skillName,
         string functionName,
         string description,
-        ILogger logger) : base(functionName, skillName, description, parameters, logger)
+        ILogger logger)
     {
         Verify.NotNull(delegateFunction);
+        Verify.ValidSkillName(skillName);
+        Verify.ValidFunctionName(functionName);
+        Verify.ParametersUniqueness(parameters);
+
+        this._logger = logger;
+
         this._function = delegateFunction;
+        this.Parameters = parameters;
+
+        this.Name = functionName;
+        this.SkillName = skillName;
+        this.Description = description;
     }
 
     /// <summary>
@@ -195,7 +250,7 @@ internal sealed class NativeFunction : FunctionBase, IDisposable
     [DoesNotReturn]
     private void ThrowNotSemantic()
     {
-        this.Logger.LogError("The function is not semantic");
+        this._logger.LogError("The function is not semantic");
         throw new SKException("Invalid operation, the method requires a semantic function");
     }
 

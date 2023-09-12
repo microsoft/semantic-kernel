@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -21,15 +22,27 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
+internal sealed class SemanticFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
-    public override bool IsSemantic => true;
+    public string Name { get; }
+
+    /// <inheritdoc/>
+    public string SkillName { get; }
+
+    /// <inheritdoc/>
+    public string Description { get; }
+
+    /// <inheritdoc/>
+    public bool IsSemantic => true;
+
+    /// <inheritdoc/>
+    public CompleteRequestSettings RequestSettings { get; private set; } = new();
 
     /// <summary>
-    /// Prompt template engine.
+    /// List of function parameters
     /// </summary>
-    public IPromptTemplate PromptTemplate { get; }
+    public IList<ParameterView> Parameters { get; }
 
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
@@ -61,7 +74,20 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public override async Task<SKContext> InvokeAsync(
+    public FunctionView Describe()
+    {
+        return new FunctionView
+        {
+            IsSemantic = this.IsSemantic,
+            Name = this.Name,
+            SkillName = this.SkillName,
+            Description = this.Description,
+            Parameters = this.Parameters,
+        };
+    }
+
+    /// <inheritdoc/>
+    public async Task<SKContext> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
@@ -72,14 +98,14 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public override ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
         this._skillCollection = skills;
         return this;
     }
 
     /// <inheritdoc/>
-    public override ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
         Verify.NotNull(serviceFactory);
         this._aiService = new Lazy<ITextCompletion>(serviceFactory);
@@ -87,7 +113,7 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public override ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
     {
         Verify.NotNull(settings);
         this.RequestSettings = settings;
@@ -105,28 +131,48 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         }
     }
 
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public override string ToString()
+        => this.ToString(false);
+
+    /// <summary>
+    /// JSON serialized string representation of the function.
+    /// </summary>
+    public string ToString(bool writeIndented)
+        => JsonSerializer.Serialize(this, options: writeIndented ? s_toStringIndentedSerialization : s_toStringStandardSerialization);
+
     internal SemanticFunction(
         IPromptTemplate template,
         string skillName,
         string functionName,
         string description,
         ILoggerFactory? loggerFactory = null)
-        : base(
-            functionName,
-            skillName,
-            description,
-            template.GetParameters(),
-            loggerFactory?.CreateLogger(nameof(SemanticFunction)) ?? NullLogger.Instance)
     {
         Verify.NotNull(template);
+        Verify.ValidSkillName(skillName);
+        Verify.ValidFunctionName(functionName);
 
-        this.PromptTemplate = template;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
+
+        this._promptTemplate = template;
+        this.Parameters = template.GetParameters();
+        Verify.ParametersUniqueness(this.Parameters);
+
+        this.Name = functionName;
+        this.SkillName = skillName;
+        this.Description = description;
     }
 
     #region private
 
+    private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
+    private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
+    private readonly ILogger _logger;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
+    public IPromptTemplate _promptTemplate { get; }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
     {
@@ -136,10 +182,9 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";
-    #endregion
 
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
-    internal void AddDefaultValues(ContextVariables variables)
+    private void AddDefaultValues(ContextVariables variables)
     {
         foreach (var parameter in this.Parameters)
         {
@@ -161,7 +206,7 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
 
         try
         {
-            string renderedPrompt = await this.PromptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
             var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
@@ -172,10 +217,12 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this.Logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, ex.Message);
+            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, ex.Message);
             throw;
         }
 
         return context;
     }
+
+    #endregion
 }
