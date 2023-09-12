@@ -264,7 +264,6 @@ public abstract class ClientBase
         dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        requestSettings ??= new OpenAIChatRequestSettings();
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIChatRequestSettings chatSettings);
 
         return (await this.InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
@@ -274,12 +273,13 @@ public abstract class ClientBase
 
     private protected async IAsyncEnumerable<ITextStreamingResult> InternalGetChatStreamingResultsAsTextAsync(
         string text,
-        dynamic? textSettings,
+        dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ChatHistory chat = PrepareChatHistory(text, textSettings, out OpenAIChatRequestSettings chatSettings);
+        ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIChatRequestSettings chatSettings);
 
-        await foreach (var chatCompletionStreamingResult in this.InternalGetChatStreamingResultsAsync(chat, chatSettings, cancellationToken))
+        IAsyncEnumerable<IChatStreamingResult> chatCompletionStreamingResults = this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
+        await foreach (var chatCompletionStreamingResult in chatCompletionStreamingResults)
         {
             yield return (ITextStreamingResult)chatCompletionStreamingResult;
         }
@@ -290,55 +290,45 @@ public abstract class ClientBase
         requestSettings = OpenAIChatRequestSettings.FromRequestSettings(requestSettings);
         var chat = InternalCreateNewChat(requestSettings.ChatSystemPrompt);
         chat.AddUserMessage(text);
-        settings = new OpenAIChatRequestSettings
-        {
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
-            PresencePenalty = requestSettings.PresencePenalty,
-            FrequencyPenalty = requestSettings.FrequencyPenalty,
-            StopSequences = requestSettings.StopSequences,
-        };
+        settings = (OpenAIChatRequestSettings)requestSettings;
         return chat;
     }
 
     private static CompletionsOptions CreateCompletionsOptions(string text, dynamic? requestSettings)
     {
-        requestSettings = OpenAITextRequestSettings.FromRequestSettings(requestSettings);
-        if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
+        OpenAITextRequestSettings textRequestSettings = OpenAITextRequestSettings.FromRequestSettings(requestSettings);
+        if (textRequestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
-            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+            throw new ArgumentOutOfRangeException($"{nameof(textRequestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", textRequestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
         }
 
         var options = new CompletionsOptions
         {
             Prompts = { text.NormalizeLineEndings() },
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = (float?)requestSettings.Temperature,
-            NucleusSamplingFactor = (float?)requestSettings.TopP,
-            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
-            PresencePenalty = (float?)requestSettings.PresencePenalty,
+            MaxTokens = textRequestSettings.MaxTokens,
+            Temperature = (float?)textRequestSettings.Temperature,
+            NucleusSamplingFactor = (float?)textRequestSettings.TopP,
+            FrequencyPenalty = (float?)textRequestSettings.FrequencyPenalty,
+            PresencePenalty = (float?)textRequestSettings.PresencePenalty,
             Echo = false,
-            ChoicesPerPrompt = requestSettings.ResultsPerPrompt,
-            GenerationSampleCount = requestSettings.ResultsPerPrompt,
+            ChoicesPerPrompt = textRequestSettings.ResultsPerPrompt,
+            GenerationSampleCount = textRequestSettings.ResultsPerPrompt,
             LogProbabilityCount = null,
             User = null,
         };
 
-        foreach (var keyValue in requestSettings.TokenSelectionBiases)
+        foreach (var keyValue in textRequestSettings.TokenSelectionBiases)
         {
             options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
         }
 
-        // TODO Mark
-        // Check if this code can simply be removed
-        //if (requestSettings.StopSequences is { Count: > 0 })
-        //{
-        foreach (var s in requestSettings.StopSequences)
+        if (textRequestSettings.StopSequences is { Count: > 0 })
         {
-            options.StopSequences.Add(s);
+            foreach (var s in textRequestSettings.StopSequences)
+            {
+                options.StopSequences.Add(s);
+            }
         }
-        //}
 
         return options;
     }

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
@@ -262,16 +263,12 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             return request;
         }
 
-        // Prepare the request using the provided parameters.
-        return new TextCompletionRequest()
+        if (requestSettings.GetType() == typeof(JsonElement))
         {
-            Prompt = text,
-            MaxNewTokens = DynamicUtils.TryGetPropertyValue<int?>(requestSettings, "MaxTokens", null),
-            Temperature = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "Temperature", 0),
-            TopP = DynamicUtils.TryGetPropertyValue<double>(requestSettings, "TopP", 0),
-            RepetitionPenalty = GetRepetitionPenalty(requestSettings),
-            StoppingStrings = DynamicUtils.TryGetPropertyValue<List<string>>(requestSettings, "StopSequences", Array.Empty<string>().ToList())
-        };
+            return Json.Deserialize<TextCompletionRequest>(requestSettings.ToString());
+        }
+
+        return Json.Deserialize<TextCompletionRequest>(JsonSerializer.Serialize(requestSettings));
     }
 
     /// <summary>
