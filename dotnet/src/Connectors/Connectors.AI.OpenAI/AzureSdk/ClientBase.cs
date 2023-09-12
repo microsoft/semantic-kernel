@@ -357,9 +357,13 @@ public abstract class ClientBase
             FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
             PresencePenalty = (float?)requestSettings.PresencePenalty,
             ChoiceCount = requestSettings.ResultsPerPrompt,
-            //FunctionCall = (requestSettings.FunctionCall ? FunctionDefinition.Auto : FunctionDefinition.None),
-            Functions = new List<FunctionDefinition>(), // TODO: pass in list of functions
         };
+
+        if (functions is not null)
+        {
+            // options.FunctionCall = FunctionDefinition.Auto; // TODO: keep this for clarity?
+            options.Functions = functions.ToFunctionDefinitions();
+        }
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)
         {
