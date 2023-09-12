@@ -128,7 +128,7 @@ public class StepwisePlanner : IStepwisePlanner
             throw new SKException("ChatHistory is null.");
         }
 
-        var startingMessageCount = chatHistory.Messages.Count;
+        var startingMessageCount = chatHistory.Count;
 
         var stepsTaken = new List<SystemStep>();
         SystemStep? lastStep = null;
@@ -205,9 +205,9 @@ public class StepwisePlanner : IStepwisePlanner
 
                 lastStep.OriginalResponse += step.OriginalResponse;
                 step = lastStep;
-                if (chatHistory.Messages.Count > startingMessageCount)
+                if (chatHistory.Count > startingMessageCount)
                 {
-                    chatHistory.Messages.RemoveAt(chatHistory.Messages.Count - 1);
+                    chatHistory.RemoveAt(chatHistory.Count - 1);
                 }
             }
             else
@@ -382,34 +382,28 @@ public class StepwisePlanner : IStepwisePlanner
 
     private Task<string> GetNextStepCompletion(List<SystemStep> stepsTaken, ChatHistory chatHistory, IAIService aiService, int startingMessageCount, CancellationToken token)
     {
-        var tokenCount = this.GetChatHistoryTokens(chatHistory);
+        var skipStart = startingMessageCount;
+        var skipCount = 0;
 
-        var preserveFirstNSteps = 0;
-        var removalIndex = (startingMessageCount) + preserveFirstNSteps;
-        var messagesRemoved = 0;
         string? originalThought = null;
-        while (tokenCount >= this.Config.MaxTokens && chatHistory.Messages.Count > removalIndex)
+
+        var tokenCount = chatHistory.GetTokenCount();
+        while (tokenCount >= this.Config.MaxTokens && chatHistory.Count > skipStart)
         {
-            // something needs to be removed.
-            if (string.IsNullOrEmpty(originalThought))
-            {
-                originalThought = stepsTaken[0].Thought;
-            }
-
-            // Update message history
-            chatHistory.AddAssistantMessage($"{Thought} {originalThought}");
-            preserveFirstNSteps++;
-            chatHistory.AddAssistantMessage("... I've removed some of my previous work to make room for the new stuff ...");
-            preserveFirstNSteps++;
-
-            removalIndex = (startingMessageCount) + preserveFirstNSteps;
-
-            chatHistory.Messages.RemoveAt(removalIndex);
-            tokenCount = this.GetChatHistoryTokens(chatHistory);
-            messagesRemoved++;
+            originalThought = $"{Thought} {stepsTaken.FirstOrDefault()?.Thought}";
+            tokenCount = chatHistory.GetTokenCount($"{originalThought}\n{TrimMessage}", skipStart, ++skipCount);
         }
 
-        return this.GetCompletionAsync(aiService, chatHistory, stepsTaken.Count == 0, token);
+        var reducedChatHistory = new ChatHistory();
+        reducedChatHistory.AddRange(chatHistory.Where((m, i) => i < skipStart || i >= skipStart + skipCount));
+
+        if (skipCount > 0 && originalThought is not null)
+        {
+            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, TrimMessage);
+            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, originalThought);
+        }
+
+        return this.GetCompletionAsync(aiService, reducedChatHistory, stepsTaken.Count == 0, token);
     }
 
     private async Task<string> GetCompletionAsync(IAIService aiService, ChatHistory chatHistory, bool addThought, CancellationToken token)
@@ -421,7 +415,7 @@ public class StepwisePlanner : IStepwisePlanner
         }
         else if (aiService is ITextCompletion textCompletion)
         {
-            var thoughtProcess = string.Join("\n", chatHistory.Messages.Select(m => m.Content));
+            var thoughtProcess = string.Join("\n", chatHistory.Select(m => m.Content));
 
             // Add Thought to the thought process at the start of the first iteration
             if (addThought)
@@ -442,13 +436,6 @@ public class StepwisePlanner : IStepwisePlanner
         }
 
         throw new SKException("No AIService available for getting completions.");
-    }
-
-    private int GetChatHistoryTokens(ChatHistory chatHistory)
-    {
-        var messages = string.Join("\n", chatHistory.Messages);
-        var tokenCount = messages.Length / 4;
-        return tokenCount;
     }
 
     /// <summary>
@@ -748,6 +735,11 @@ public class StepwisePlanner : IStepwisePlanner
     /// The Observation tag
     /// </summary>
     private const string Observation = "[OBSERVATION]";
+
+    /// <summary>
+    /// The chat message to include when trimming thought process history
+    /// </summary>
+    private const string TrimMessage = "... I've removed some of my previous work to make room for the new stuff ...";
 
     /// <summary>
     /// The regex for parsing the thought response
