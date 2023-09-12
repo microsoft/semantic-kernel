@@ -480,14 +480,16 @@ class USearchMemoryStore(MemoryStoreBase):
 
         By default it is approximately search, see `exact` param description.
 
-        Measure of similarity between vectors is relevance score. It is from 0 to 1.
-        USearch returns distances for vectors. Distance is converted to relevance score by inverse function.
+        The relevance score tells us how similar two vectors are.
+        USearch uses distance rather than relevance score.
+        A lower distance between vectors means they are more similar.
+        Only vectors with a distance less than or equal to `min_relevance_score` will be shown.
 
         Args:
             collection_name (str): Name of the collection to search within.
             embedding (ndarray): The embedding vector to search for.
-            min_relevance_score (float, optional): The minimum relevance score for vectors. Supposed to be from 0 to 1.
-                Only vectors with greater or equal relevance score are returned. Defaults to 0.0.
+            min_relevance_score (float, optional): The maximum distance threshold for vectors. Could be -inf to inf.
+                Defaults to 0.0.
             with_embedding (bool, optional): If True, include the embedding in the result. Defaults to True.
             exact (bool, optional): Perform exhaustive linear-time exact search. Defaults to False.
 
@@ -522,15 +524,17 @@ class USearchMemoryStore(MemoryStoreBase):
 
         By default it is approximately search, see `exact` param description.
 
-        Measure of similarity between vectors is relevance score. It is from 0 to 1.
-        USearch returns distances for vectors. Distance is converted to relevance score by inverse function.
+        The relevance score tells us how similar two vectors are.
+        USearch uses distance rather than relevance score.
+        A lower distance between vectors means they are more similar.
+        Only vectors with a distance less than or equal to `min_relevance_score` will be shown.
 
         Args:
             collection_name (str): Name of the collection to search within.
             embedding (ndarray): The embedding vector to search for.
             limit (int): maximum amount of embeddings to search for.
-            min_relevance_score (float, optional): The minimum relevance score for vectors. Supposed to be from 0 to 1.
-                Only vectors with greater or equal relevance score are returned. Defaults to 0.0.
+            min_relevance_score (float, optional): The maximum distance threshold for vectors. Could be -inf to inf.
+                Defaults to 0.0.
             with_embedding (bool, optional): If True, include the embedding in the result. Defaults to True.
             threads (int, optional): Optimal number of cores to use. Defaults to 0.
             exact (bool, optional): Perform exhaustive linear-time exact search. Defaults to False.
@@ -557,9 +561,8 @@ class USearchMemoryStore(MemoryStoreBase):
 
         assert isinstance(result, Matches)
 
-        relevance_score = 1 / (result.distances + 1)
         filtered_labels = result.keys[
-            np.where(relevance_score >= min_relevance_score)[0]
+            np.where(result.distances <= min_relevance_score)[0]
         ]
 
         filtered_vectors: Optional[np.ndarray] = None
@@ -567,7 +570,7 @@ class USearchMemoryStore(MemoryStoreBase):
             filtered_vectors = ucollection.embeddings_index.get_vectors(filtered_labels)
 
         return [
-            (mem_rec, relevance_score[index].item())
+            (mem_rec, result.distances[index].item())
             for index, mem_rec in enumerate(
                 pyarrow_table_to_memoryrecords(
                     ucollection.embeddings_data_table.take(pa.array(filtered_labels)),

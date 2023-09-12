@@ -266,12 +266,15 @@ async def test_get_nearest_match_async(
     await memory.upsert_batch_async(collection_name, [memory_record1, memory_record2])
 
     result = await memory.get_nearest_match_async(
-        collection_name, np.array([0.5, 0.5]), exact=True
+        collection_name,
+        np.array([0.5, 0.5]),
+        min_relevance_score=0.0,
+        exact=True
     )
 
     assert len(result) == 2
     assert isinstance(result[0], MemoryRecord)
-    assert result[1] == pytest.approx(1, abs=1e-5)
+    assert result[1] == pytest.approx(0, abs=1e-5)
 
 
 @pytest.mark.asyncio
@@ -288,13 +291,17 @@ async def test_get_nearest_matches_async(
     await memory.upsert_batch_async(collection_name, [memory_record1, memory_record2])
 
     results = await memory.get_nearest_matches_async(
-        collection_name, np.array([0.5, 0.5]), limit=2, exact=True
+        collection_name,
+        np.array([0.5, 0.5]),
+        min_relevance_score=1,
+        limit=2,
+        exact=True
     )
 
     assert len(results) == 2
     assert isinstance(results[0][0], MemoryRecord)
-    assert results[0][1] == pytest.approx(1, abs=1e-5)
-    assert results[1][1] == pytest.approx(0.90450, abs=1e-5)
+    assert results[0][1] == pytest.approx(0, abs=1e-5)
+    assert results[1][1] == pytest.approx(0.105572, abs=1e-5)
 
 
 @pytest.mark.asyncio
