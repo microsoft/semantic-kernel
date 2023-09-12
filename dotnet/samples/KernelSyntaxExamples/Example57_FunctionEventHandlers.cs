@@ -11,7 +11,7 @@ using RepoUtils;
 #pragma warning disable RCS1214 // Unnecessary interpolated string.
 
 // ReSharper disable once InconsistentNaming
-public static class Example56_FunctionEventHandlers
+public static class Example57_FunctionEventHandlers
 {
     private static string? openAIModelId;
     private static string? openAIApiKey;
