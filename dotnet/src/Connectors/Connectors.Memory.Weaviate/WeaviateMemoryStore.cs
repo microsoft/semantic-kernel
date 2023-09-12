@@ -46,13 +46,9 @@ public class WeaviateMemoryStore : IMemoryStore
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new ReadOnlyMemoryConverter() }
     };
-
-    static WeaviateMemoryStore()
-    {
-        s_jsonSerializerOptions.Converters.Add(new ReadOnlyMemoryConverter());
-    }
 
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
