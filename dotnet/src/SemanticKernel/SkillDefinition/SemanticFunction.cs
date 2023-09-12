@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -67,14 +66,9 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
-        context.InternalVariables.TryGetValue(RenderedPromptKey, out string? renderedPrompt);
-        if (renderedPrompt is null)
-        {
-            this.AddDefaultValues(context.Variables);
-            renderedPrompt = await this.RenderPromptTemplateAsync(context, cancellationToken).ConfigureAwait(false);
-        }
+        this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, renderedPrompt, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -98,22 +92,6 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         Verify.NotNull(settings);
         this.RequestSettings = settings;
         return this;
-    }
-
-    /// <inheritdoc/>
-    public override async Task<FunctionInvokingEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
-    {
-        this.AddDefaultValues(context.Variables);
-        var renderedPrompt = await this.RenderPromptTemplateAsync(context, CancellationToken.None).ConfigureAwait(false);
-        context.InternalVariables.Set(RenderedPromptKey, renderedPrompt);
-
-        return new SemanticFunctionInvokingEventArgs(this.Describe(), context);
-    }
-
-    /// <inheritdoc/>
-    public override Task<FunctionInvokedEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
-    {
-        return Task.FromResult<FunctionInvokedEventArgs>(new SemanticFunctionInvokedEventArgs(this.Describe(), context));
     }
 
     /// <summary>
@@ -160,8 +138,6 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";
     #endregion
 
-    internal const string RenderedPromptKey = "RENDERED_PROMPT";
-
     /// <summary>Add default values to the context variables if the variable is not defined</summary>
     internal void AddDefaultValues(ContextVariables variables)
     {
@@ -174,16 +150,10 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
         }
     }
 
-    internal Task<string> RenderPromptTemplateAsync(SKContext context, CancellationToken cancellationToken)
-    {
-        return this.PromptTemplate!.RenderAsync(context, cancellationToken);
-    }
-
-    internal async Task<SKContext> RunPromptAsync(
+    private async Task<SKContext> RunPromptAsync(
         ITextCompletion? client,
         CompleteRequestSettings? requestSettings,
         SKContext context,
-        string renderedPrompt,
         CancellationToken cancellationToken)
     {
         Verify.NotNull(client);
@@ -191,7 +161,8 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
 
         try
         {
-           var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            string renderedPrompt = await this.PromptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
+            var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
@@ -199,18 +170,9 @@ internal sealed class SemanticFunction : FunctionBase, ISKFunction, IDisposable
 
             context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
         }
-        catch (HttpOperationException ex)
-        {
-            const string Message = "Something went wrong while rendering the semantic function" +
-                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}. {ResponseContent}";
-            this.Logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message, ex.ResponseContent);
-            throw;
-        }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            const string Message = "Something went wrong while rendering the semantic function" +
-                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}";
-            this.Logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message);
+            this.Logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, ex.Message);
             throw;
         }
 

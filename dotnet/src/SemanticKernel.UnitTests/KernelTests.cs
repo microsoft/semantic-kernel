@@ -354,45 +354,6 @@ public class KernelTests
         mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
     }
 
-    [Fact(Skip = "Template Engine is not available. Null template engine will fail the test")]
-    public async Task RunAsyncHandlerEventArgsPromptMatches()
-    {
-        // Arrange
-        var sut = Kernel.Builder.Build();
-        var prompt = "Write a simple phrase about UnitTests {{$input}}";
-        var semanticFunction = sut.CreateSemanticFunction(prompt);
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-
-        semanticFunction.SetAIService(() => mockTextCompletion.Object);
-        var input = "Importance";
-        var generatedPromptPreExecution = string.Empty;
-        var generatedPromptPostExecution = string.Empty;
-
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
-        {
-            if (e is SemanticFunctionInvokingEventArgs se)
-            {
-                generatedPromptPreExecution = se.RenderedPrompt;
-            }
-        };
-
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
-        {
-            if (e is SemanticFunctionInvokedEventArgs se)
-            {
-                generatedPromptPostExecution = se.RenderedPrompt;
-            }
-        };
-
-        // Act
-        var result = await sut.RunAsync(input, semanticFunction);
-
-        // Assert
-        Assert.Equal(prompt.Replace("{{$input}}", input, StringComparison.OrdinalIgnoreCase), generatedPromptPreExecution);
-        Assert.Equal(prompt.Replace("{{$input}}", input, StringComparison.OrdinalIgnoreCase), generatedPromptPostExecution);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once);
-    }
-
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandler()
     {

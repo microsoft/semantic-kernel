@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -16,9 +15,7 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 /// <summary>
 /// Implements base functionality for internal SK functions.
 /// </summary>
-public abstract class FunctionBase : ISKFunction,
-    ISKFunctionEventSupport<FunctionInvokingEventArgs>,
-    ISKFunctionEventSupport<FunctionInvokedEventArgs>
+public abstract class FunctionBase : ISKFunction
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -99,18 +96,6 @@ public abstract class FunctionBase : ISKFunction,
 
     /// <inheritdoc/>
     public abstract ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
-
-    /// <inheritdoc/>
-    public virtual Task<FunctionInvokedEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs = null)
-    {
-        return Task.FromResult(new FunctionInvokedEventArgs(this.Describe(), context));
-    }
-
-    /// <inheritdoc/>
-    public virtual Task<FunctionInvokingEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs = null)
-    {
-        return Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context));
-    }
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };

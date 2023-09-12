@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Events;
 using RepoUtils;
 
@@ -64,10 +63,7 @@ public static class Example56_FunctionEventHandlers
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            if (e is SemanticFunctionInvokingEventArgs se)
-            {
-                Console.WriteLine($"{se.FunctionView.SkillName}.{se.FunctionView.Name} : Pre Execution Handler - Rendered Prompt: {se.RenderedPrompt}");
-            }
+            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
@@ -76,21 +72,12 @@ public static class Example56_FunctionEventHandlers
             e.Cancel();
         }
 
-        void MyPreHandler2(object? sender, FunctionInvokingEventArgs e)
-        {
-            if (e is SemanticFunctionInvokingEventArgs se)
-            {
-                Console.WriteLine($"{se.FunctionView.SkillName}.{se.FunctionView.Name} : Pre Execution Handler 2 - Rendered Prompt Token: {GPT3Tokenizer.Encode(se.RenderedPrompt!).Count}");
-            }
-        }
-
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
             Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
-        kernel.FunctionInvoking += MyPreHandler2;
         kernel.FunctionInvoking += MyRemovedPreExecutionHandler;
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 

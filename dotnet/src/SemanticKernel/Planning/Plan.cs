@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -367,22 +366,6 @@ public sealed class Plan : IPlan
             : this.Function.SetAIConfiguration(settings);
     }
 
-    /// <inheritdoc/>
-    public Task<FunctionInvokingEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokingEventArgs? eventArgs)
-    {
-        return this.Function is null
-            ? Task.FromResult(new FunctionInvokingEventArgs(this.Describe(), context))
-            : this.InternalPrepareArgsAsync<FunctionInvokingEventArgs>(context);
-    }
-
-    /// <inheritdoc/>
-    public Task<FunctionInvokedEventArgs> PrepareEventArgsAsync(SKContext context, FunctionInvokedEventArgs? eventArgs)
-    {
-        return this.Function is null
-            ? Task.FromResult(new FunctionInvokedEventArgs(this.Describe(), context))
-            : this.InternalPrepareArgsAsync<FunctionInvokedEventArgs>(context);
-    }
-
     #endregion ISKFunction implementation
 
     /// <summary>
@@ -406,23 +389,6 @@ public sealed class Plan : IPlan
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Generically handles and prepare event arguments for <see cref="ISKFunctionEventSupport{TEventArgs}"/> support.
-    /// </summary>
-    /// <typeparam name="TEventArgs">EventArgs type</typeparam>
-    /// <param name="context">Context to the event</param>
-    /// <returns>New instance of eventArgs</returns>
-    /// <exception cref="NotSupportedException">Throws when the underlying step don't support event handling</exception>
-    private Task<TEventArgs> InternalPrepareArgsAsync<TEventArgs>(SKContext context) where TEventArgs : SKEventArgs
-    {
-        if (this.Function is ISKFunctionEventSupport<TEventArgs> supportedFunction)
-        {
-            return supportedFunction.PrepareEventArgsAsync(context, (TEventArgs?)null);
-        }
-
-        throw new NotSupportedException($"The instrumented function \"{this.Function!.Name}\" does not supports and implements ISKFunctionHandles<{nameof(TEventArgs)}>");
     }
 
     /// <summary>
