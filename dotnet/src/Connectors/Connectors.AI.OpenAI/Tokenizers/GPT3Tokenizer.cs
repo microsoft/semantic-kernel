@@ -2,7 +2,6 @@
 
 using System;
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -18,8 +17,6 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 /// </summary>
 public static class GPT3Tokenizer
 {
-    private static readonly ConcurrentDictionary<string, List<string>> s_bpeCache = new();
-
     /// <summary>Lookup table from byte (index) to associated char.</summary>
     /// <remarks>Computed result of function at https://github.com/openai/gpt-2/blob/a74da5d99abaaba920de8131d64da2862a8f213b/src/encoder.py#L9-L28.</remarks>
     private static readonly char[] s_bytesToUnicode = new char[]
@@ -75,6 +72,8 @@ public static class GPT3Tokenizer
     /// <returns>List of token IDs</returns>
     public static List<int> Encode(string text)
     {
+        var bpeCache = new Dictionary<string, List<string>>();
+
         var bpeTokens = new List<int>();
 
         if (!string.IsNullOrEmpty(text))
@@ -129,7 +128,7 @@ public static class GPT3Tokenizer
                 }
 
                 // Evaluate the BPE for the encoded chars.
-                foreach (string encoding in BytePairEncoding(chars.Slice(0, bytesWritten).ToString()))
+                foreach (string encoding in BytePairEncoding(chars.Slice(0, bytesWritten).ToString(), bpeCache))
                 {
                     bpeTokens.Add(GPT3Settings.Encoder[encoding]);
                 }
@@ -194,9 +193,9 @@ public static class GPT3Tokenizer
             ? Encode(string.Concat(chars))
             : new List<int>();
 
-    private static List<string> BytePairEncoding(string token)
+    private static List<string> BytePairEncoding(string token, Dictionary<string, List<string>> bpeCache)
     {
-        if (s_bpeCache.TryGetValue(token, out List<string>? value))
+        if (bpeCache.TryGetValue(token, out List<string>? value))
         {
             return value;
         }
@@ -204,7 +203,7 @@ public static class GPT3Tokenizer
         if (token.Length <= 1)
         {
             var list = new List<string>(1) { token };
-            s_bpeCache.TryAdd(token, list);
+            bpeCache.Add(token, list);
             return list;
         }
 
@@ -215,7 +214,7 @@ public static class GPT3Tokenizer
         }
 
         long smallestRank = long.MaxValue;
-        (string, string) smallestPair = ("", "");
+        (string First, string Second) smallestPair = (string.Empty, string.Empty);
         List<string>? newWord = null;
 
         while (word.Count >= 2)
@@ -238,8 +237,8 @@ public static class GPT3Tokenizer
                 break;
             }
 
-            string first = smallestPair.Item1;
-            string second = smallestPair.Item2;
+            string first = smallestPair.First;
+            string second = smallestPair.Second;
 
             newWord ??= new List<string>(word.Count);
             for (int i = 0; i < word.Count; i++)
@@ -280,7 +279,7 @@ public static class GPT3Tokenizer
             smallestRank = long.MaxValue;
         }
 
-        s_bpeCache.TryAdd(token, word);
+        bpeCache.Add(token, word);
         return word;
     }
 }
