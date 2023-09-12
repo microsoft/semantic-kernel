@@ -19,7 +19,10 @@
   <PropertyGroup Condition="'$(Configuration)'=='Publish'">
     <Optimize>True</Optimize>
   </PropertyGroup>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 04c3dee20aa7182d916a235d9cc16eb3458d4b89
   <PropertyGroup>
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
   </PropertyGroup>
