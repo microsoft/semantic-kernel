@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -42,7 +41,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         this._config = config;
 
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -151,9 +150,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        this.EnsureSuccessStatusCode(response);
-
-        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
 
@@ -168,8 +165,6 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        this.EnsureSuccessStatusCode(response);
-
         await foreach (var result in this.GetStreamingResultsAsync(response))
         {
             yield return result;
@@ -183,23 +178,16 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
         request.Headers.Add("Api-Key", this._config.CompletionApiKey);
 
-        return await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-    }
-
-    private void EnsureSuccessStatusCode(HttpResponseMessage response)
-    {
         try
         {
-            response.EnsureSuccessStatusCode();
+            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
             this._logger.LogError(
                 "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
 
-            throw new AIException(
-                AIException.ErrorCodes.UnknownError,
-                $"Error occurred on chat completion with data request execution: {ex.Message}", ex);
+            throw;
         }
     }
 
@@ -207,7 +195,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         const string ServerEventPayloadPrefix = "data:";
 
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
         using var reader = new StreamReader(stream);
 
         while (!reader.EndOfStream)

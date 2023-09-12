@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -155,7 +154,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
 
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(SemanticFunction)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
         this._promptTemplate = template;
         this.Parameters = template.GetParameters();
@@ -216,18 +215,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
             context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
         }
-        catch (AIException ex)
-        {
-            const string Message = "Something went wrong while rendering the semantic function" +
-                                   " or while executing the text completion. Function: {0}.{1}. Error: {2}. Details: {3}";
-            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message, ex.Detail);
-            throw;
-        }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            const string Message = "Something went wrong while rendering the semantic function" +
-                                   " or while executing the text completion. Function: {0}.{1}. Error: {2}";
-            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message);
+            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, ex.Message);
             throw;
         }
 

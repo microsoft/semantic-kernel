@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
@@ -62,6 +60,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(valueProperty);
         Assert.True(valueProperty.IsRequired);
         Assert.Equal("The value of the secret.", valueProperty.Description);
+        Assert.Equal("string", valueProperty.Type);
         Assert.NotNull(valueProperty.Properties);
         Assert.False(valueProperty.Properties.Any());
 
@@ -69,6 +68,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(attributesProperty);
         Assert.False(attributesProperty.IsRequired);
         Assert.Equal("attributes", attributesProperty.Description);
+        Assert.Equal("object", attributesProperty.Type);
         Assert.NotNull(attributesProperty.Properties);
         Assert.True(attributesProperty.Properties.Any());
 
@@ -76,8 +76,8 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         Assert.NotNull(enabledProperty);
         Assert.False(enabledProperty.IsRequired);
         Assert.Equal("Determines whether the object is enabled.", enabledProperty.Description);
-        Assert.NotNull(enabledProperty.Properties);
-        Assert.False(enabledProperty.Properties.Any());
+        Assert.Equal("boolean", enabledProperty.Type);
+        Assert.False(enabledProperty.Properties?.Any());
     }
 
     [Fact]
@@ -239,7 +239,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     public async Task ItCanWorkWithDocumentsWithoutHostAndSchemaAttributesAsync()
     {
         //Arrange
-        using var stream = ModifyOpenApiDocument(this._openApiDocument, (doc) =>
+        using var stream = OpenApiTestHelper.ModifyOpenApiDocument(this._openApiDocument, (doc) =>
         {
             doc.Remove("host");
             doc.Remove("schemes");
@@ -250,21 +250,6 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
 
         //Assert
         Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
-    }
-
-    private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)
-    {
-        var json = JsonSerializer.Deserialize<JsonObject>(openApiDocument);
-
-        transformer(json!);
-
-        var stream = new MemoryStream();
-
-        JsonSerializer.Serialize(stream, json);
-
-        stream.Seek(0, SeekOrigin.Begin);
-
-        return stream;
     }
 
     private static RestApiOperationParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId,

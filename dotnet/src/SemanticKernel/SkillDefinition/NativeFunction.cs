@@ -106,12 +106,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         IEnumerable<ParameterView>? parameters = null,
         ILoggerFactory? loggerFactory = null)
     {
-        ILogger logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ISKFunction)) : NullLogger.Instance;
+        ILogger logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ISKFunction)) : NullLogger.Instance;
 
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, logger);
 
-        functionName ??= nativeFunction.Method.Name;
-        description ??= string.Empty;
+        functionName ??= methodDetails.Name;
+        parameters ??= methodDetails.Parameters;
+        description ??= methodDetails.Description;
 
         if (string.IsNullOrWhiteSpace(skillName))
         {
@@ -152,10 +153,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-            this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
-            context.LastException = e;
-            return context;
+            this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, e.Message);
+            throw;
         }
     }
 

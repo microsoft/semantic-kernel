@@ -20,6 +20,7 @@ class CompleteRequestSettings:
     number_of_responses: int = 1
     logprobs: int = 0
     token_selection_biases: Dict[int, int] = field(default_factory=dict)
+    chat_system_prompt: str = "Assistant is a large language model."
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
@@ -31,6 +32,10 @@ class CompleteRequestSettings:
         self.max_tokens = completion_config.max_tokens
         self.stop_sequences = completion_config.stop_sequences
         self.number_of_responses = completion_config.number_of_responses
+        self.token_selection_biases = completion_config.token_selection_biases
+
+        if completion_config.chat_system_prompt:
+            self.chat_system_prompt = completion_config.chat_system_prompt
 
     @staticmethod
     def from_completion_config(

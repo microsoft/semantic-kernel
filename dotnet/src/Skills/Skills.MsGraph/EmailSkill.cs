@@ -65,7 +65,7 @@ public sealed class EmailSkill
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(EmailSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(EmailSkill)) : NullLogger.Instance;
     }
 
     /// <summary>

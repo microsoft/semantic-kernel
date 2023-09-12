@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
 
 /**
@@ -79,7 +80,6 @@ public static class Example40_DIContainer
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
         collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
-        collection.AddTransient<KernelConfig>();
         collection.AddTransient<ISkillCollection, SkillCollection>();
         collection.AddTransient<IPromptTemplateEngine, PromptTemplateEngine>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);

@@ -119,7 +119,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             await this._ft.InfoAsync(collectionName).ConfigureAwait(false);
             return true;
         }
-        catch (RedisServerException ex) when (ex.Message.Equals(IndexDoesNotExistErrorMessage, StringComparison.Ordinal))
+        catch (RedisServerException ex) when (ex.Message.Equals(IndexDoesNotExistErrorMessage, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -246,12 +246,19 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Disposes the the <see cref="RedisMemoryStore"/> instance.
+    /// </summary>
     public void Dispose()
     {
         this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Disposes the resources used by the <see cref="RedisMemoryStore"/> instance.
+    /// </summary>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
@@ -294,7 +301,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     /// Message when index does not exist.
     /// <see href="https://github.com/RediSearch/RediSearch/blob/master/src/info_command.c#L97"/>
     /// </summary>
-    private const string IndexDoesNotExistErrorMessage = "Unknown Index name";
+    private const string IndexDoesNotExistErrorMessage = "Unknown index name";
 
     private readonly IDatabase _database;
     private readonly int _vectorSize;

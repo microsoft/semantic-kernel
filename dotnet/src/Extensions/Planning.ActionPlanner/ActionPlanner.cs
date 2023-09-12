@@ -62,7 +62,7 @@ public sealed class ActionPlanner : IActionPlanner
     {
         Verify.NotNull(kernel);
 
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(ActionPlanner)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ActionPlanner)) : NullLogger.Instance;
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
@@ -113,12 +113,15 @@ public sealed class ActionPlanner : IActionPlanner
             plan = new Plan(goal);
         }
 
-        // Create a plan using the function and the parameters suggested by the planner
-        foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
+        // Populate plan parameters using the function and the parameters suggested by the planner
+        if (plan.Steps.Count > 0)
         {
-            if (p.Value != null)
+            foreach (KeyValuePair<string, object> p in planData.Plan.Parameters)
             {
-                plan.Parameters[p.Key] = p.Value.ToString();
+                if (p.Value != null)
+                {
+                    plan.Steps[0].Parameters[p.Key] = p.Value.ToString();
+                }
             }
         }
 
@@ -151,6 +154,12 @@ public sealed class ActionPlanner : IActionPlanner
 
     // TODO: generate string programmatically
     // TODO: use goal to find relevant examples
+    /// <summary>
+    /// Native function that provides a list of good examples of plans to generate.
+    /// </summary>
+    /// <param name="goal">The current goal processed by the planner.</param>
+    /// <param name="context">Function execution context.</param>
+    /// <returns>List of good examples, formatted accordingly to the prompt.</returns>
     [SKFunction, Description("List a few good examples of plans to generate")]
     public string GoodExamples(
         [Description("The current goal processed by the planner")] string goal,
@@ -186,6 +195,12 @@ Goal: create a file called ""something.txt"".
     }
 
     // TODO: generate string programmatically
+    /// <summary>
+    /// Native function that provides a list of edge case examples of plans to handle.
+    /// </summary>
+    /// <param name="goal">The current goal processed by the planner.</param>
+    /// <param name="context">Function execution context.</param>
+    /// <returns>List of edge case examples, formatted accordingly to the prompt.</returns>
     [SKFunction, Description("List a few edge case examples of plans to handle")]
     public string EdgeCaseExamples(
         [Description("The current goal processed by the planner")] string goal,

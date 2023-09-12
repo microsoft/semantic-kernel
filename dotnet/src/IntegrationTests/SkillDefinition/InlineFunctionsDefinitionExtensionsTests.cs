@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
@@ -38,8 +38,6 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
         SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
 
         // Assert
-        Assert.Null(actual.LastException);
-        Assert.False(actual.ErrorOccurred);
         Assert.Equal("Hey johndoe1234@example.com", actual.Result);
     }
 
@@ -59,8 +57,6 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
         SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
 
         // Assert
-        Assert.Null(actual.LastException);
-        Assert.False(actual.ErrorOccurred);
         Assert.Equal("Hey a person@example.com", actual.Result);
     }
 
