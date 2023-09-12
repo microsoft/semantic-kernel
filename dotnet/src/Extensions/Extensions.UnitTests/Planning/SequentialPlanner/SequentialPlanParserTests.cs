@@ -231,8 +231,8 @@ public class SequentialPlanParserTests
             Assert.Equal("Echo", plan.Steps[0].Name);
             Assert.Null(plan.Steps[0].Description);
 
-            Assert.Equal(plan.GetType().FullName, plan.Steps[1].SkillName);
-            Assert.Equal(string.Empty, plan.Steps[1].Name);
+            Assert.Equal(plan.GetType().Name, plan.Steps[1].SkillName);
+            Assert.NotEmpty(plan.Steps[1].Name);
             Assert.Equal("MockSkill.DoesNotExist", plan.Steps[1].Description);
         }
         else

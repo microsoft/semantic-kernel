@@ -44,8 +44,8 @@ public sealed class PlanTests : IDisposable
 
         // Assert
         Assert.Equal(prompt, plan.Description);
-        Assert.Equal(string.Empty, plan.Name);
-        Assert.Equal(typeof(Plan).FullName, plan.SkillName);
+        Assert.NotEmpty(plan.Name);
+        Assert.Equal(nameof(Plan), plan.SkillName);
         Assert.Empty(plan.Steps);
     }
 
@@ -466,6 +466,37 @@ public sealed class PlanTests : IDisposable
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData("computers")]
+    public async Task CanImportAndRunPlanAsync(string input)
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel();
+        var emailSkill = target.ImportSkill(new EmailSkillFake());
+
+        var plan = new Plan("Write a poem about a topic and send in an email.");
+
+        var writePoem = new Plan(emailSkill["WritePoem"]);
+        // fileStep.Parameters["input"] = "$INPUT";
+        writePoem.Outputs.Add("POEM");
+
+        var sendEmail = new Plan(emailSkill["SendEmail"]);
+        sendEmail.Parameters["input"] = "$POEM";
+        sendEmail.Outputs.Add("EMAIL_RESULT");
+
+        plan.AddSteps(writePoem, sendEmail);
+        plan.Outputs.Add("EMAIL_RESULT");
+
+        //Act
+        var t = target.ImportPlan(plan);
+
+        var result = await t.InvokeAsync(input);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Sent email to: default@email.com. Body: Roses are red, violets are blue, {input} is hard, so is this test.", result.Result);
+    }
+
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -479,16 +510,16 @@ public sealed class PlanTests : IDisposable
         if (useChatModel)
         {
             builder.WithAzureChatCompletionService(
-                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
         }
         else
         {
             builder.WithAzureTextCompletionService(
-                        deploymentName: azureOpenAIConfiguration.DeploymentName,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
         }
 
         if (useEmbeddings)
