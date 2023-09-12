@@ -195,7 +195,6 @@ public sealed class Kernel : IKernel, IDisposable
 
             try
             {
-                context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
                 var functionDetails = skFunction.Describe();
 
                 var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
