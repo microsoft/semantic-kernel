@@ -49,7 +49,7 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="[1.6.3, )" />
     <PackageVersion Include="Newtonsoft.Json" Version="[13.0.3, )" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.56.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.57.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.26" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
