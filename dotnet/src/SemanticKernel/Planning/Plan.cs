@@ -91,8 +91,9 @@ public sealed class Plan : IPlan
     /// <param name="goal">The goal of the plan used as description.</param>
     public Plan(string goal)
     {
+        this.Name = GetRandomPlanName();
         this.Description = goal;
-        this.SkillName = this.GetType().FullName;
+        this.SkillName = nameof(Plan);
     }
 
     /// <summary>
@@ -209,7 +210,7 @@ public sealed class Plan : IPlan
     /// </remarks>
     public void AddSteps(params ISKFunction[] steps)
     {
-        this._steps.AddRange(steps.Select(step => new Plan(step)));
+        this._steps.AddRange(steps.Select(step => step is Plan plan ? plan : new Plan(step)));
     }
 
     /// <summary>
@@ -301,7 +302,32 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return this.Function?.Describe() ?? new();
+        if (this.Function is not null)
+        {
+            return this.Function.Describe() ?? new();
+        }
+
+        // The parameter mapping definitions from Plan -> Function
+        var stepParameters = this.Steps.SelectMany(s => s.Parameters);
+
+        // The parameter descriptions from the Function
+        var stepDescriptions = this.Steps.SelectMany(s => s.Describe().Parameters);
+
+        // The parameters for the Plan
+        var parameters = this.Parameters.Select(p =>
+        {
+            var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
+            var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
+
+            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type);
+        }
+        ).ToList();
+
+        return new(name: this.Name,
+                   skillName: this.SkillName,
+                   description: this.Description,
+                   parameters: parameters,
+                   isSemantic: false);
     }
 
     /// <inheritdoc/>
@@ -337,25 +363,19 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetDefaultSkillCollection(skills);
+        return this.Function is not null ? this.Function.SetDefaultSkillCollection(skills) : this;
     }
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetAIService(serviceFactory);
+        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
     }
 
     /// <inheritdoc/>
     public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
     {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetAIConfiguration(settings);
+        return this.Function is not null ? this.Function.SetAIConfiguration(settings) : this;
     }
 
     #endregion ISKFunction implementation
@@ -568,6 +588,8 @@ public sealed class Plan : IPlan
         this.IsSemantic = function.IsSemantic;
         this.RequestSettings = function.RequestSettings;
     }
+
+    private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 
     private ISKFunction? Function { get; set; } = null;
 
