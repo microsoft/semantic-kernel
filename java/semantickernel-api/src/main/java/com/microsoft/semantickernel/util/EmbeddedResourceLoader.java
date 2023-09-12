@@ -61,7 +61,8 @@ public class EmbeddedResourceLoader {
                                             break;
                                         case CLASSPATH_ROOT:
                                             try (InputStream inputStream =
-                                                    clazz.getClassLoader()
+                                                    Thread.currentThread()
+                                                            .getContextClassLoader()
                                                             .getResourceAsStream(fileName)) {
                                                 return readInputStream(fileName, inputStream);
                                             } catch (IOException e) {

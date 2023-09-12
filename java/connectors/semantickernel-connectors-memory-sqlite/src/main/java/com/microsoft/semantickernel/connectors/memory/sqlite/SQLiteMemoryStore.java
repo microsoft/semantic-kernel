@@ -62,8 +62,8 @@ public class SQLiteMemoryStore extends JDBCMemoryStore {
         }
 
         /**
-         * Creates and sets an SQLite database connection using the specified filename.
-         * This will overwrite any previously set connection.
+         * Creates and sets an SQLite database connection using the specified filename. This will
+         * overwrite any previously set connection.
          *
          * @param filename The filename of the SQLite database.
          * @return The updated Builder instance with the SQLite database connection set.
