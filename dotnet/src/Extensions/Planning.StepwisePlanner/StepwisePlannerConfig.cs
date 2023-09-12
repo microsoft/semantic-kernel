@@ -51,9 +51,12 @@ public sealed class StepwisePlannerConfig
     #region Execution configuration
 
     /// <summary>
-    /// The maximum number of tokens to allow in a plan.
+    /// The maximum number of tokens to allow in a request and for completion.
     /// </summary>
-    public int MaxTokens { get; set; } = 1024;
+    /// <remarks>
+    /// Default value is 2000.
+    /// </remarks>
+    public int MaxTokens { get; set; } = 2000;
 
     /// <summary>
     /// The maximum number of iterations to allow in a plan.
