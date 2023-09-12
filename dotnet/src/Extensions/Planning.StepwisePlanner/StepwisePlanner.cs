@@ -387,20 +387,20 @@ public class StepwisePlanner : IStepwisePlanner
 
         string? originalThought = null;
 
-        var tokenCount = this.GetChatHistoryTokens(chatHistory);
+        var tokenCount = chatHistory.GetTokenCount();
         while (tokenCount >= this.Config.MaxTokens && chatHistory.Count > skipStart)
         {
             originalThought = $"{Thought} {stepsTaken.FirstOrDefault()?.Thought}";
-            tokenCount = this.GetChatHistoryTokens(chatHistory, $"{originalThought}\n{TrimMessage}", skipStart, ++skipCount);
+            tokenCount = chatHistory.GetTokenCount($"{originalThought}\n{TrimMessage}", skipStart, ++skipCount);
         }
 
         var reducedChatHistory = new ChatHistory();
         reducedChatHistory.AddRange(chatHistory.Where((m, i) => i < skipStart || i >= skipStart + skipCount));
 
-        if (skipCount > 0)
+        if (skipCount > 0 && originalThought is not null)
         {
             reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, TrimMessage);
-            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, TrimMessage);
+            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, originalThought);
         }
 
         return this.GetCompletionAsync(aiService, reducedChatHistory, stepsTaken.Count == 0, token);
@@ -436,19 +436,6 @@ public class StepwisePlanner : IStepwisePlanner
         }
 
         throw new SKException("No AIService available for getting completions.");
-    }
-
-    private int GetChatHistoryTokens(ChatHistory chatHistory, string? additionalMessage = null, int skipStart = 0, int skipCount = 0)
-    {
-        var messages = string.Join("\n", chatHistory.Where((m, i) => i < skipStart || i >= skipStart + skipCount).Select(m => m.Content));
-
-        if (!string.IsNullOrEmpty(additionalMessage))
-        {
-            messages = $"{messages}\n{additionalMessage}";
-        }
-
-        var tokenCount = messages.Length / 4;
-        return tokenCount;
     }
 
     /// <summary>

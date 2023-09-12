@@ -53,6 +53,9 @@ public sealed class StepwisePlannerConfig
     /// <summary>
     /// The maximum number of tokens to allow in a request and for completion.
     /// </summary>
+    /// <remarks>
+    /// Default value is 2000.
+    /// </remarks>
     public int MaxTokens { get; set; } = 2000;
 
     /// <summary>
