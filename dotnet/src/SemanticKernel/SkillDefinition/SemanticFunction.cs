@@ -215,9 +215,18 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
             context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
         }
+        catch (HttpOperationException ex)
+        {
+            const string Message = "Something went wrong while rendering the semantic function" +
+                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}. {ResponseContent}";
+            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message, ex.ResponseContent);
+            throw;
+        }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, ex.Message);
+            const string Message = "Something went wrong while rendering the semantic function" +
+                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}";
+            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message);
             throw;
         }
 
