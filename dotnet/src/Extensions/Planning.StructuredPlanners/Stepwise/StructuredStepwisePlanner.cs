@@ -14,6 +14,7 @@ using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI.FunctionCalling;
 using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Diagnostics;
+using Extensions;
 using Microsoft.Extensions.Logging;
 using Orchestration;
 using SkillDefinition;
@@ -131,7 +132,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
 
     private async Task<StepwiseFunctionCallResult?> StepAsync(SKContext context, List<StepwiseFunctionCallResult> stepsTaken, ChatHistory chatHistory, IChatCompletion chatCompletion, CancellationToken token)
     {
-        var tokenCount = GetChatHistoryTokens(chatHistory);
+        var tokenCount = chatHistory.GetTokenCount();
 
         if (tokenCount >= Config.MaxTokens)
         {
@@ -172,17 +173,17 @@ public class StructuredStepwisePlanner : IStructuredPlanner
                 if (tokenCount + pair.AssistantMessage.Content.Length / 4 + pair.UserMessage.Content.Length / 4 <= Config.MaxTokens)
                 {
                     // If pair fits, insert both
-                    chatHistory.Messages.Insert(removalIndex, pair.AssistantMessage);
-                    chatHistory.Messages.Insert(removalIndex + 1, pair.UserMessage);
+                    chatHistory.InsertMessage(removalIndex, AuthorRole.Assistant, pair.AssistantMessage.Content);
+                    chatHistory.InsertMessage(removalIndex + 1, AuthorRole.User, pair.UserMessage.Content);
                 }
                 else
                 {
                     // If pair doesn't fit, just insert user message
-                    chatHistory.Messages.Insert(removalIndex, pair.UserMessage);
+                    chatHistory.InsertMessage(removalIndex, AuthorRole.User, pair.UserMessage.Content);
                 }
 
                 // Update token count   
-                tokenCount = GetChatHistoryTokens(chatHistory);
+                tokenCount = chatHistory.GetTokenCount();
             }
 
             // Removal during every cycle for next iteration
@@ -192,7 +193,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
             }
             chatHistory.Messages.RemoveAt(removalIndex);
             messagesRemoved++; // Increment messages removed
-            tokenCount = GetChatHistoryTokens(chatHistory);
+            tokenCount = chatHistory.GetTokenCount();
         }
 
         return Task.FromResult(chatHistory);
@@ -299,7 +300,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            _logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
             throw;
         }
     }
@@ -308,21 +309,13 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, string request)
     {
 
-        var systemContext = this._kernel.CreateNewContext();
-        string systemMessage = await this.GetSystemMessage(systemContext).ConfigureAwait(false);
+        var systemContext = _kernel.CreateNewContext();
+        var systemMessage = await GetSystemMessage(systemContext).ConfigureAwait(false);
 
         chatHistory.AddSystemMessage(systemMessage);
         chatHistory.AddUserMessage(request);
 
         return chatHistory;
-    }
-
-
-    private int GetChatHistoryTokens(ChatHistory chatHistory)
-    {
-        var messages = string.Join("\n", chatHistory.Messages);
-        var tokenCount = messages.Length / 4;
-        return tokenCount;
     }
 
 
