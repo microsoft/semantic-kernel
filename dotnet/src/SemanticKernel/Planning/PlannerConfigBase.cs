@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// </summary>
 public abstract class PlannerConfigBase
 {
-    #region Use these to configure which functions to include/exclude
+    #region Use these to configure which functions to exclude
 
     /// <summary>
     /// A list of skills to exclude from the plan creation request.
@@ -20,5 +20,5 @@ public abstract class PlannerConfigBase
     /// </summary>
     public HashSet<string> ExcludedFunctions { get; } = new();
 
-    #endregion Use these to configure which functions to include/exclude
+    #endregion Use these to configure which functions to exclude
 }
