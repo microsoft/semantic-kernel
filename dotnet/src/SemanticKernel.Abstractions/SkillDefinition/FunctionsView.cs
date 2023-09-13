@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,38 +18,38 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 public sealed class FunctionsView
 {
     private object _lock = new();
+
     /// <summary>
     /// Collection of semantic skill names and function names, including function parameters.
     /// Functions are grouped by skill name.
     /// </summary>
-    public IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> SemanticFunctions => this.GetFunctions(nativeFunctionCheck: false);
+    public IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> SemanticFunctions => new ReadOnlyFunctionsView(this._semanticFunctions);
 
     /// <summary>
     /// Collection of native skill names and function views, including function parameters.
     /// Functions are grouped by skill name.
     /// </summary>
-    public IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> NativeFunctions => this.GetFunctions(nativeFunctionCheck: true);
+    public IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> NativeFunctions => new ReadOnlyFunctionsView(this._nativeFunctions);
 
-    private readonly ConcurrentDictionary<string, List<FunctionView>> _semanticFunctions = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, List<FunctionView>> _nativeFunctions = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, List<FunctionView>> _semanticFunctions = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, List<FunctionView>> _nativeFunctions = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Add a function to the list
     /// </summary>
-    /// <param name="view">Function details</param>
+    /// <param name="function">Function details</param>
     /// <returns>Current instance</returns>
-    public FunctionsView AddFunction(FunctionView view)
+    public FunctionsView AddFunction(FunctionView function)
     {
+        var targetedSkills = function.IsSemantic ? this._semanticFunctions : this._nativeFunctions;
         lock (this._lock)
         {
-            if (view.IsSemantic)
+            if (!targetedSkills.TryGetValue(function.SkillName, out var functions))
             {
-                this._semanticFunctions.GetOrAdd(view.SkillName, _ => new()).Add(view);
+                functions = new();
+                targetedSkills.Add(function.SkillName, functions);
             }
-            else
-            {
-                this._nativeFunctions.GetOrAdd(view.SkillName, _ => new()).Add(view);
-            }
+            functions.Add(function);
         }
 
         return this;
@@ -64,9 +63,7 @@ public sealed class FunctionsView
     /// <returns>True if unique and semantic</returns>
     /// <exception cref="AmbiguousMatchException"></exception>
     public bool IsSemantic(string skillName, string functionName)
-    {
-        return this.IsFunctionCheck(skillName, functionName, nativeFunctionCheck: false);
-    }
+        => this.FunctionTypeExists(skillName, functionName, isNative: false);
 
     /// <summary>
     /// Returns true if the function specified is unique and native
@@ -76,24 +73,11 @@ public sealed class FunctionsView
     /// <returns>True if unique and native</returns>
     /// <exception cref="AmbiguousMatchException"></exception>
     public bool IsNative(string skillName, string functionName)
-    {
-        return this.IsFunctionCheck(skillName, functionName, nativeFunctionCheck: true);
-    }
-
-#pragma warning disable CA1859 // Use concrete types when possible for improved performance
-    private IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>> GetFunctions(bool nativeFunctionCheck)
-#pragma warning restore CA1859 // Use concrete types when possible for improved performance
-    {
-        ConcurrentDictionary<string, List<FunctionView>> targetFunctionDictionary = (nativeFunctionCheck)
-            ? this._nativeFunctions
-            : this._semanticFunctions;
-
-        return new ReadOnlyFunctionsView(targetFunctionDictionary);
-    }
+        => this.FunctionTypeExists(skillName, functionName, isNative: true);
 
     private class ReadOnlyFunctionsView : IReadOnlyDictionary<string, IReadOnlyCollection<FunctionView>>
     {
-        private readonly ConcurrentDictionary<string, List<FunctionView>> _decorated;
+        private readonly Dictionary<string, List<FunctionView>> _decorated;
 
         public IEnumerable<string> Keys => this._decorated.Keys;
 
@@ -103,7 +87,7 @@ public sealed class FunctionsView
 
         public IReadOnlyCollection<FunctionView> this[string key] => this._decorated[key].ToArray();
 
-        public ReadOnlyFunctionsView(ConcurrentDictionary<string, List<FunctionView>> decorated)
+        public ReadOnlyFunctionsView(Dictionary<string, List<FunctionView>> decorated)
         {
             this._decorated = decorated;
         }
@@ -142,6 +126,11 @@ public sealed class FunctionsView
         }
     }
 
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"Native = {this._nativeFunctions.Count}, Semantic = {this._semanticFunctions.Count}";
+
+    #region Private Classes
+
     private class ReadOnlyFunctionsViewEnumerator : IEnumerator<KeyValuePair<string, IReadOnlyCollection<FunctionView>>>
     {
         private readonly IEnumerator<KeyValuePair<string, List<FunctionView>>> _decorated;
@@ -171,7 +160,7 @@ public sealed class FunctionsView
         }
     }
 
-    private bool IsFunctionCheck(string skillName, string functionName, bool nativeFunctionCheck)
+    private bool FunctionTypeExists(string skillName, string functionName, bool isNative)
     {
         this._semanticFunctions.TryGetValue(skillName, out var semanticFunctions);
         var foundSemanticFunction = semanticFunctions?.Any(x => string.Equals(x.Name, functionName, StringComparison.OrdinalIgnoreCase))
@@ -186,11 +175,10 @@ public sealed class FunctionsView
             throw new AmbiguousMatchException("There are 2 functions with the same name, one native and one semantic");
         }
 
-        return (nativeFunctionCheck)
+        return (isNative)
             ? foundNativeFunction
             : foundSemanticFunction;
     }
 
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"Native = {this._nativeFunctions.Count}, Semantic = {this._semanticFunctions.Count}";
+    #endregion
 }

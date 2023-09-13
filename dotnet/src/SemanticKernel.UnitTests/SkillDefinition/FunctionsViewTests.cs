@@ -159,7 +159,7 @@ public class FunctionsViewTests
     }
 
     [Fact]
-    public async Task ItAddSemanticAndNativeFunctionsShouldBeThreadSafe()
+    public async Task AddSemanticAndNativeFunctionsShouldBeThreadSafe()
     {
         // Arrange
         var target = new FunctionsView();
