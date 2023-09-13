@@ -24,9 +24,7 @@ public sealed class ActionPlannerTests
         // Arrange
         var skills = this.CreateMockSkillCollection();
 
-        string planString = "Here is a possible plan to accomplish the user intent:\n\n{\"plan\":{\n\"rationale\": \"the list contains a function that allows to list pull requests\",\n\"function\": \"GitHubSkill.PullsList\",\n\"parameters\": {\n\"owner\": \"microsoft\",\n\"repo\": \"semantic-kernel\",\n\"state\": \"open\"\n}}}\n\nThis plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `\"open\"` to filter the results to only show open pull requests.";
-
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(planString, skills);
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
 
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
@@ -61,7 +59,22 @@ public sealed class ActionPlannerTests
         // Arrange
 
         // Extra opening brace before rationale
-        string invalidJsonString = "Here is a possible plan to accomplish the user intent:\n\n{\"plan\": { {\n\"rationale\": \"the list contains a function that allows to list pull requests\",\n\"function\": \"GitHubSkill.PullsList\",\n\"parameters\": {\n\"owner\": \"microsoft\",\n\"repo\": \"semantic-kernel\",\n\"state\": \"open\"\n}}}\n\nThis plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `\"open\"` to filter the results to only show open pull requests.";
+        string invalidJsonString = @"Here is a possible plan to accomplish the user intent:
+
+{
+    ""plan"": { {
+        ""rationale"": ""the list contains a function that allows to list pull requests"",
+        ""function"": ""GitHubSkill.PullsList"",
+        ""parameters"": {
+            ""owner"": ""microsoft"",
+            ""repo"": ""semantic-kernel"",
+            ""state"": ""open""
+        }
+    }
+}
+
+This plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.
+";
 
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString);
 
@@ -76,7 +89,7 @@ public sealed class ActionPlannerTests
     {
         // Arrange
         var skills = this.CreateMockSkillCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(this._validPlanString, skills);
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
         var context = kernel.Object.CreateNewContext();
 
@@ -93,7 +106,7 @@ public sealed class ActionPlannerTests
     {
         // Arrange
         var skills = this.CreateMockSkillCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(this._validPlanString, skills);
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
         var config = new ActionPlannerConfig();
         config.ExcludedSkills.Add("GitHubSkill");
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
@@ -112,7 +125,7 @@ public sealed class ActionPlannerTests
     {
         // Arrange
         var skills = this.CreateMockSkillCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(this._validPlanString, skills);
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
         var config = new ActionPlannerConfig();
         config.ExcludedFunctions.Add("PullsList");
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
@@ -214,5 +227,18 @@ public sealed class ActionPlannerTests
         return skills;
     }
 
-    private readonly string _validPlanString = "Here is a possible plan to accomplish the user intent:\n\n{\"plan\":{\n\"rationale\": \"the list contains a function that allows to list pull requests\",\n\"function\": \"GitHubSkill.PullsList\",\n\"parameters\": {\n\"owner\": \"microsoft\",\n\"repo\": \"semantic-kernel\",\n\"state\": \"open\"\n}}}\n\nThis plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `\"open\"` to filter the results to only show open pull requests.";
+    private const string ValidPlanString = @"Here is a possible plan to accomplish the user intent:
+{
+    ""plan"":{
+        ""rationale"": ""the list contains a function that allows to list pull requests"",
+        ""function"": ""GitHubSkill.PullsList"",
+        ""parameters"": {
+            ""owner"": ""microsoft"",
+            ""repo"": ""semantic-kernel"",
+            ""state"": ""open""
+        }
+    }
+}
+
+This plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
 }
