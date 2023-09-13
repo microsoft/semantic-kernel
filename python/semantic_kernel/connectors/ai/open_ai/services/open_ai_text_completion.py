@@ -60,7 +60,6 @@ class OpenAITextCompletion(TextCompletionClientBase):
         request_settings: CompleteRequestSettings,
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
-        # TODO: tracking on token counts/etc.
         response = await self._send_completion_request(prompt, request_settings, False)
 
         if len(response.choices) == 1:
@@ -161,4 +160,11 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 "OpenAI service failed to complete the prompt",
                 ex,
             )
+        
+        if "usage" in response:
+            self._log.info(
+                f"OpenAI service used {response.usage} tokens for this request"
+            )
+            self.add_tokens(**response.usage)
+
         return response

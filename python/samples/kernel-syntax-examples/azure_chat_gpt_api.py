@@ -20,12 +20,12 @@ flowery prose.
 """
 
 kernel = sk.Kernel()
-
+aoai = sk_oai.AzureChatCompletion(
+        **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
+    )
 kernel.add_chat_service(
     "chat-gpt",
-    sk_oai.AzureChatCompletion(
-        **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
-    ),
+    aoai
 )
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
@@ -65,6 +65,9 @@ async def chat() -> bool:
 
     answer = await kernel.run_async(chat_function, input_vars=context_vars)
     print(f"Mosscap:> {answer}")
+    print("   Prompt tokens: ", aoai.prompt_tokens)
+    print("   Completion tokens: ", aoai.completion_tokens)
+    print("   Total tokens: ", aoai.total_tokens)
     return True
 
 

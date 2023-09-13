@@ -65,7 +65,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         request_settings: ChatRequestSettings,
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
-        # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(messages, request_settings, False)
 
         if len(response.choices) == 1:
@@ -236,7 +235,11 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 ex,
             )
 
-        # TODO: tracking on token counts/etc.
+        if "usage" in response:
+            self._log.info(
+                f"OpenAI service used {response.usage} tokens for this request"
+            )
+            self.add_tokens(**response.usage)
 
         return response
 
