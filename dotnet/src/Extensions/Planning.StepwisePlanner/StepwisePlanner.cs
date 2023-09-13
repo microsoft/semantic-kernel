@@ -58,10 +58,6 @@ public class StepwisePlanner : IStepwisePlanner
         // Load or use default PromptConfig
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
-        // Set MaxTokens for the prompt config
-        // TODO Mark: Fix this
-        // this._promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
-
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine();
 

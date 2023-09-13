@@ -13,23 +13,13 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// </summary>
 public class OpenAITextRequestSettings
 {
-    private static readonly double DefaultTemperature = 0;
-    private static readonly double DefaultTopP = 0;
-    private static readonly double DefaultPresencePenalty = 0;
-    private static readonly double DefaultFrequencyPenalty = 0;
-    private static readonly int DefaultMaxTokens = 256;
-    private static readonly IList<string> DefaultStopSequences = Array.Empty<string>();
-    private static readonly int DefaultResultsPerPrompt = 1;
-    private static readonly string DefaultChatSystemPrompt = "Assistant is a large language model.";
-    private static readonly IDictionary<int, int> DefaultTokenSelectionBiases = new Dictionary<int, int>();
-
     /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
     /// </summary>
     [JsonPropertyName("temperature")]
     [JsonPropertyOrder(1)]
-    public double Temperature { get; set; } = DefaultTemperature;
+    public double Temperature { get; set; } = 0;
 
     /// <summary>
     /// TopP controls the diversity of the completion.
@@ -37,7 +27,7 @@ public class OpenAITextRequestSettings
     /// </summary>
     [JsonPropertyName("top_p")]
     [JsonPropertyOrder(2)]
-    public double TopP { get; set; } = DefaultTopP;
+    public double TopP { get; set; } = 0;
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -46,7 +36,7 @@ public class OpenAITextRequestSettings
     /// </summary>
     [JsonPropertyName("presence_penalty")]
     [JsonPropertyOrder(3)]
-    public double PresencePenalty { get; set; } = DefaultPresencePenalty;
+    public double PresencePenalty { get; set; } = 0;
 
     /// <summary>
     /// Number between -2.0 and 2.0. Positive values penalize new tokens
@@ -55,21 +45,21 @@ public class OpenAITextRequestSettings
     /// </summary>
     [JsonPropertyName("frequency_penalty")]
     [JsonPropertyOrder(4)]
-    public double FrequencyPenalty { get; set; } = DefaultFrequencyPenalty;
+    public double FrequencyPenalty { get; set; } = 0;
 
     /// <summary>
     /// The maximum number of tokens to generate in the completion.
     /// </summary>
     [JsonPropertyName("max_tokens")]
     [JsonPropertyOrder(5)]
-    public int? MaxTokens { get; set; } = DefaultMaxTokens;
+    public int? MaxTokens { get; set; } = 256;
 
     /// <summary>
     /// Sequences where the completion will stop generating further tokens.
     /// </summary>
     [JsonPropertyName("stop_sequences")]
     [JsonPropertyOrder(6)]
-    public IList<string> StopSequences { get; set; } = DefaultStopSequences;
+    public IList<string> StopSequences { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// How many completions to generate for each prompt. Default is 1.
@@ -78,7 +68,7 @@ public class OpenAITextRequestSettings
     /// </summary>
     [JsonPropertyName("results_per_prompt")]
     [JsonPropertyOrder(7)]
-    public int ResultsPerPrompt { get; set; } = DefaultResultsPerPrompt;
+    public int ResultsPerPrompt { get; set; } = 1;
 
     /// <summary>
     /// The system prompt to use when generating text completions using a chat model.
@@ -86,14 +76,14 @@ public class OpenAITextRequestSettings
     /// </summary>
     [JsonPropertyName("chat_system_prompt")]
     [JsonPropertyOrder(8)]
-    public string ChatSystemPrompt { get; set; } = DefaultChatSystemPrompt;
+    public string ChatSystemPrompt { get; set; } = "Assistant is a large language model.";
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     [JsonPropertyName("token_selection_biases")]
     [JsonPropertyOrder(9)]
-    public IDictionary<int, int> TokenSelectionBiases { get; set; } = DefaultTokenSelectionBiases;
+    public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 
     /// <summary>
     /// Service identifier.

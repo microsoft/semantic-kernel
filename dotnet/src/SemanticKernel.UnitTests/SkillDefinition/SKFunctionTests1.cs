@@ -3,10 +3,12 @@
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
+using Xunit;
 
 namespace SemanticKernel.UnitTests.SkillDefinition;
 
@@ -21,9 +23,6 @@ public sealed class SKFunctionTests1
         this._promptTemplate.Setup(x => x.GetParameters()).Returns(new List<ParameterView>());
     }
 
-    /*
-     * TODO Mark
-     * Fix this
     [Fact]
     public void ItHasDefaultRequestSettings()
     {
@@ -35,29 +34,23 @@ public sealed class SKFunctionTests1
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
 
         // Assert
-        Assert.Equal(0, skFunction.RequestSettings.Temperature);
-        Assert.Equal(null, skFunction.RequestSettings.MaxTokens);
+        Assert.Null(skFunction.RequestSettings);
     }
-    */
 
-    /*
-     *  TODO Mark
-     *  Fix this
     [Fact]
     public void ItAllowsToUpdateRequestSettings()
     {
         // Arrange
-        var templateConfig = new PromptTemplateConfig();
+        var requestSettings = new OpenAITextRequestSettings();
+        var templateConfig = new PromptTemplateConfig()
+        {
+            Completion = requestSettings
+        };
         var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
-        var settings = new CompleteRequestSettings
-        {
-            Temperature = 0.9,
-            MaxTokens = 2001,
-        };
 
         // Act
-        skFunction.RequestSettings.Temperature = 1.3;
+        skFunction.RequestSettings!.Temperature = 1.3;
         skFunction.RequestSettings.MaxTokens = 130;
 
         // Assert
@@ -71,13 +64,12 @@ public sealed class SKFunctionTests1
         Assert.Equal(0.7, skFunction.RequestSettings.Temperature);
 
         // Act
-        skFunction.SetAIConfiguration(settings);
+        skFunction.SetAIConfiguration(requestSettings);
 
         // Assert
-        Assert.Equal(settings.Temperature, skFunction.RequestSettings.Temperature);
-        Assert.Equal(settings.MaxTokens, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(requestSettings.Temperature, skFunction.RequestSettings.Temperature);
+        Assert.Equal(requestSettings.MaxTokens, skFunction.RequestSettings.MaxTokens);
     }
-    */
 
     private static Mock<IPromptTemplate> MockPromptTemplate()
     {

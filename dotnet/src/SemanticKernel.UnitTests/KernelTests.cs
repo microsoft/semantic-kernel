@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -126,9 +127,6 @@ public class KernelTests
         Assert.True(skill.ContainsKey("GETANYVALUE"));
     }
 
-    /*
-     * TODO Mark
-     * Fix this
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
     [InlineData("My Chat Prompt", "My Chat Prompt")]
@@ -146,7 +144,10 @@ public class KernelTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion.ChatSystemPrompt = providedSystemChatPrompt;
+        templateConfig.Completion = new OpenAIChatRequestSettings()
+        {
+            ChatSystemPrompt = expectedSystemChatPrompt
+        };
 
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
@@ -154,9 +155,8 @@ public class KernelTests
         kernel.RunAsync(func);
 
         // Assert
-        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<object>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIChatRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
     }
-    */
 
     [Fact]
     public void ItAllowsToImportSkillsInTheGlobalNamespace()
