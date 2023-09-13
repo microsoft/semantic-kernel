@@ -44,6 +44,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         self._model_id = model_id
         self._api_key = api_key
         self._message_history = None
+        super().__init__()
 
     async def complete_chat_async(
         self,

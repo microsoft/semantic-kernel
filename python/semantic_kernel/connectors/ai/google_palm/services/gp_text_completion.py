@@ -33,6 +33,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 
         self._model_id = model_id
         self._api_key = api_key
+        super().__init__()
 
     async def complete_async(
         self,

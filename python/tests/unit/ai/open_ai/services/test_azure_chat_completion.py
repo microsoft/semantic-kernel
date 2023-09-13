@@ -32,9 +32,9 @@ def test_azure_chat_completion_init() -> None:
         logger=logger,
     )
 
-    assert azure_chat_completion._endpoint == endpoint
-    assert azure_chat_completion._api_version == api_version
-    assert azure_chat_completion._api_type == "azure"
+    assert azure_chat_completion.endpoint == endpoint
+    assert azure_chat_completion.api_version == api_version
+    assert azure_chat_completion.api_type == "azure"
     assert isinstance(azure_chat_completion, OpenAIChatCompletion)
 
 

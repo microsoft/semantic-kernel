@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from openai import AsyncOpenAI
 
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-
-if TYPE_CHECKING:
-    from openai.openai_object import OpenAIObject
+# if TYPE_CHECKING:
+#     from openai.openai_object import OpenAIObject
+# import openai
+from pydantic import HttpUrl
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -18,54 +18,21 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
+
+# from semantic_kernel.utils.null_logger import NullLogger
 
 
-class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
-    _model_id: str
-    _api_key: str
-    _org_id: Optional[str] = None
-    _api_type: Optional[str] = None
-    _api_version: Optional[str] = None
-    _endpoint: Optional[str] = None
-    _log: Logger
-    _prompt_tokens: int = 0
-    _completion_tokens: int = 0
-    _total_tokens: int = 0
-
-    def __init__(
-        self,
-        model_id: str,
-        api_key: str,
-        org_id: Optional[str] = None,
-        api_type: Optional[str] = None,
-        api_version: Optional[str] = None,
-        endpoint: Optional[str] = None,
-        log: Optional[Logger] = None,
-    ) -> None:
-        """
-        Initializes a new instance of the OpenAIChatCompletion class.
-
-        Arguments:
-            model_id {str} -- OpenAI model name, see
-                https://platform.openai.com/docs/models
-            api_key {str} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
-            org_id {Optional[str]} -- OpenAI organization ID.
-                This is usually optional unless your
-                account belongs to multiple organizations.
-        """
-        self._model_id = model_id
-        self._api_key = api_key
-        self._org_id = org_id
-        self._api_type = api_type
-        self._api_version = api_version
-        self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
-        self._log = log if log is not None else NullLogger()
-        self._messages = []
+class OpenAIChatCompletionBase(ChatCompletionClientBase, TextCompletionClientBase):
+    model_id: str
+    api_key: str
+    api_type: str
+    org_id: Optional[str] = None
+    api_version: Optional[str] = None
+    endpoint: Optional[HttpUrl] = None
 
     async def complete_chat_async(
         self,
@@ -249,6 +216,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 else {}
             ),
         }
+        if self.api_type in ["azure", "azure_ad"]:
+            model_args["engine"] = self.model_id
+        else:
+            model_args["model"] = self.model_id
 
         if functions and request_settings.function_call is not None:
             model_args["function_call"] = request_settings.function_call
@@ -296,6 +267,38 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     @property
     def total_tokens(self) -> int:
         return self._total_tokens
+
+
+class OpenAIChatCompletion(OpenAIChatCompletionBase):
+    def __init__(
+        self,
+        model_id: str,
+        api_key: str,
+        org_id: Optional[str] = None,
+        log: Optional[Logger] = None,
+    ) -> None:
+        """
+        Initialize an OpenAIChatCompletion service.
+
+        Arguments:
+            model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {str} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys
+            org_id {Optional[str]} -- OpenAI organization ID.
+                This is usually optional unless your
+                account belongs to multiple organizations.
+            log {Optional[Logger]} -- The logger instance to use. (Optional)
+        """
+        kwargs = {
+            "model_id": model_id,
+            "api_key": api_key,
+            "org_id": org_id,
+            "api_type": "open_ai",
+        }
+        if log:
+            kwargs["log"] = log
+        super().__init__(**kwargs)
 
 
 def _parse_choices(chunk):
