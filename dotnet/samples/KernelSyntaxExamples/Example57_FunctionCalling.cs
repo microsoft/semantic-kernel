@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
 
@@ -53,29 +56,44 @@ public static class Example57_FunctionCalling
         ChatRequestSettings requestSettings = new();
         requestSettings.Functions = kernel.Skills.GetFunctionsView();
 
-        var result = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
+        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
 
-        // TODO: how to determine if result is chat message vs. function?
-        var functionCall = result.ModelResult.GetResult<ChatModelResult>().Choice.Message.FunctionCall; // this is AzureSdk specific
+        var chatMessage = await chatResult.GetChatMessageAsync();
+        if (chatMessage.Content.IsNotNullOrEmpty())
+        {
+            Console.WriteLine(chatMessage.Content);
+        }
+
+        var functionCall = chatResult.ModelResult.GetResult<ChatModelResult>().Choice.Message.FunctionCall;
         if (functionCall is not null)
         {
             Console.WriteLine("Function name:" + functionCall.Name);
             Console.WriteLine("Function args: " + functionCall.Arguments);
 
-            //var context = kernel.CreateNewContext();
-            //var func = context.Skills!.GetFunction(functionCall.Name);
-            //foreach (var arg in functionCall.Arguments) // todo parse
-            //{
-            //    // add to context
-            //    context.Variables.Set(arg.ke)
-            //}
-            //var result = func.InvokeAsync(context);
-            //var result = kernel.RunAsync(func, context);
-        }
+            FunctionCallResponse functionResponse = FunctionCallResponse.FromFunctionCall(functionCall);
 
-        // TODO: expose FunctionCall object in ChatMessage?
-        var chatMessage = await result.GetChatMessageAsync();
-        Console.WriteLine(chatMessage.Content);
+            // Validate and retrieve function - move this somewhere else?
+            // TODO: handle global skills
+            try
+            {
+                var context = kernel.CreateNewContext();
+                var func = context.Skills!.GetFunction(functionResponse.SkillName, functionResponse.FunctionName);
+
+                foreach (var parameter in functionResponse.Parameters)
+                {
+                    // add to context
+                    // todo: could determine type of each param? or have dictionary store strings
+                    // todo:" use tostring or json serialization?
+                    context.Variables.Set(parameter.Key, JsonSerializer.Serialize(parameter.Value));
+                }
+                var result = await func.InvokeAsync(context);
+                Console.WriteLine(result.Result);
+            }
+            catch (SKException)
+            {
+                // Invalid function call
+            }
+        }
     }
 
     private static AzureChatCompletion GetAzureChatCompletion()

@@ -24,13 +24,13 @@ internal static class FunctionsViewExtensions
             }
         }
 
-        /*foreach (KeyValuePair<string, List<FunctionView>> skill in semanticFunctions)
+        foreach (KeyValuePair<string, List<FunctionView>> skill in semanticFunctions)
         {
             foreach (FunctionView func in skill.Value)
             {
                 functionDefinitions.Add(func.ToFunctionDefinition());
             }
-        }*/
+        }
 
         return functionDefinitions;
     }

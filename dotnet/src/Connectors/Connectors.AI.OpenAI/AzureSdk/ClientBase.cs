@@ -190,7 +190,7 @@ public abstract class ClientBase
     {
         Verify.NotNull(chat);
         chatSettings ??= new();
-        
+
         ValidateMaxTokens(chatSettings.MaxTokens);
         var chatOptions = CreateChatCompletionsOptions(chatSettings, chat);
 
@@ -228,7 +228,7 @@ public abstract class ClientBase
     {
         Verify.NotNull(chat);
         requestSettings ??= new();
-        
+
         ValidateMaxTokens(requestSettings.MaxTokens);
 
         var options = CreateChatCompletionsOptions(requestSettings, chat);
