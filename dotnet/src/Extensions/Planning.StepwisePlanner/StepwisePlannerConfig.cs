@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,13 @@ namespace Microsoft.SemanticKernel.Planning.Stepwise;
 /// </summary>
 public sealed class StepwisePlannerConfig : PlannerConfigBase
 {
+    #region Use these to configure which functions to include/exclude
+    /// <summary>
+    /// A list of functions to include in the plan creation request.
+    /// </summary>
+    public HashSet<string> IncludedFunctions { get; } = new();
+    #endregion Use these to configure which functions to include/exclude
+
     #region Use these to completely override the functions available for planning
 
     /// <summary>

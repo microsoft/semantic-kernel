@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,13 @@ namespace Microsoft.SemanticKernel.Planning.Sequential;
 /// </summary>
 public sealed class SequentialPlannerConfig : PlannerConfigBase
 {
+    #region Use these to configure which functions to include/exclude
+    /// <summary>
+    /// A list of functions to include in the plan creation request.
+    /// </summary>
+    public HashSet<string> IncludedFunctions { get; } = new();
+    #endregion Use these to configure which functions to include/exclude
+
     /// <summary>
     /// The minimum relevancy score for a function to be considered
     /// </summary>

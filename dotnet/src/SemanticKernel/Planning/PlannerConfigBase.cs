@@ -20,10 +20,5 @@ public abstract class PlannerConfigBase
     /// </summary>
     public HashSet<string> ExcludedFunctions { get; } = new();
 
-    /// <summary>
-    /// A list of functions to include in the plan creation request.
-    /// </summary>
-    public HashSet<string> IncludedFunctions { get; } = new();
-
     #endregion Use these to configure which functions to include/exclude
 }
