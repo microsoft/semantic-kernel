@@ -11,14 +11,12 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
     _model_id: str
     _task: str
     _device: int
-    _log: Logger
 
     def __init__(
         self,
@@ -52,7 +50,6 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         """
         self._model_id = model_id
         self._task = "text2text-generation" if task is None else task
-        self._log = log if log is not None else NullLogger()
         self._model_kwargs = model_kwargs
         self._pipeline_kwargs = pipeline_kwargs
 
@@ -77,6 +74,10 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             model_kwargs=self._model_kwargs,
             **self._pipeline_kwargs
         )
+        if log:
+            super().__init__(log=log)
+        else:
+            super().__init__()
 
     async def complete_async(
         self,

@@ -4,6 +4,7 @@ from logging import Logger
 from typing import Any, List, Optional, Tuple, Union
 
 import openai
+from pydantic import HttpUrl
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -16,48 +17,17 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
-from semantic_kernel.utils.null_logger import NullLogger
+
+# from semantic_kernel.utils.null_logger import NullLogger
 
 
-class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
-    _model_id: str
-    _api_key: str
-    _org_id: Optional[str] = None
-    _api_type: Optional[str] = None
-    _api_version: Optional[str] = None
-    _endpoint: Optional[str] = None
-    _log: Logger
-
-    def __init__(
-        self,
-        model_id: str,
-        api_key: str,
-        org_id: Optional[str] = None,
-        api_type: Optional[str] = None,
-        api_version: Optional[str] = None,
-        endpoint: Optional[str] = None,
-        log: Optional[Logger] = None,
-    ) -> None:
-        """
-        Initializes a new instance of the OpenAIChatCompletion class.
-
-        Arguments:
-            model_id {str} -- OpenAI model name, see
-                https://platform.openai.com/docs/models
-            api_key {str} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
-            org_id {Optional[str]} -- OpenAI organization ID.
-                This is usually optional unless your
-                account belongs to multiple organizations.
-        """
-        self._model_id = model_id
-        self._api_key = api_key
-        self._org_id = org_id
-        self._api_type = api_type
-        self._api_version = api_version
-        self._endpoint = endpoint
-        self._log = log if log is not None else NullLogger()
-        self._messages = []
+class OpenAIChatCompletionBase(ChatCompletionClientBase, TextCompletionClientBase):
+    model_id: str
+    api_key: str
+    api_type: str
+    org_id: Optional[str] = None
+    api_version: Optional[str] = None
+    endpoint: Optional[HttpUrl] = None
 
     async def complete_chat_async(
         self,
@@ -190,10 +160,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             )
 
         model_args = {}
-        if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
+        if self.api_type in ["azure", "azure_ad"]:
+            model_args["engine"] = self.model_id
         else:
-            model_args["model"] = self._model_id
+            model_args["model"] = self.model_id
 
         formatted_messages = [
             {"role": role, "content": message} for role, message in messages
@@ -202,11 +172,11 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         try:
             response: Any = await openai.ChatCompletion.acreate(
                 **model_args,
-                api_key=self._api_key,
-                api_type=self._api_type,
-                api_base=self._endpoint,
-                api_version=self._api_version,
-                organization=self._org_id,
+                api_key=self.api_key,
+                api_type=self.api_type,
+                api_base=self.endpoint,
+                api_version=self.api_version,
+                organization=self.org_id,
                 messages=formatted_messages,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,
@@ -236,12 +206,41 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             )
 
         if "usage" in response:
-            self._log.info(
-                f"OpenAI service used {response.usage} tokens for this request"
-            )
             self.capture_usage_details(**response.usage)
 
         return response
+
+
+class OpenAIChatCompletion(OpenAIChatCompletionBase):
+    def __init__(
+        self,
+        model_id: str,
+        api_key: str,
+        org_id: Optional[str] = None,
+        log: Optional[Logger] = None,
+    ) -> None:
+        """
+        Initialize an OpenAIChatCompletion service.
+
+        Arguments:
+            model_id {str} -- OpenAI model name, see
+                https://platform.openai.com/docs/models
+            api_key {str} -- OpenAI API key, see
+                https://platform.openai.com/account/api-keys
+            org_id {Optional[str]} -- OpenAI organization ID.
+                This is usually optional unless your
+                account belongs to multiple organizations.
+            log {Optional[Logger]} -- The logger instance to use. (Optional)
+        """
+        kwargs = {
+            "model_id": model_id,
+            "api_key": api_key,
+            "org_id": org_id,
+            "api_type": "open_ai",
+        }
+        if log:
+            kwargs["log"] = log
+        super().__init__(**kwargs)
 
 
 def _parse_choices(chunk):
