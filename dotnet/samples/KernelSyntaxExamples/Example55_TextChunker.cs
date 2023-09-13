@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Text;
 
 // ReSharper disable once InconsistentNaming
@@ -49,8 +48,8 @@ known as coral polyps.";
     {
         Console.WriteLine("=== Text chunking with a custom token counter ===");
 
-        var lines = TextChunker.SplitPlainTextLines(text, 40, TokenCounter);
-        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: TokenCounter);
+        var lines = TextChunker.SplitPlainTextLines(text, 40, CustomTokenCounter);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: CustomTokenCounter);
 
         WriteParagraphsToConsole(paragraphs);
     }
@@ -68,10 +67,8 @@ known as coral polyps.";
         }
     }
 
-    private static int TokenCounter(string input)
+    private static int CustomTokenCounter(string input)
     {
-        var tokens = GPT3Tokenizer.Encode(input);
-
-        return tokens.Count;
+        return input.Length / 4;
     }
 }
