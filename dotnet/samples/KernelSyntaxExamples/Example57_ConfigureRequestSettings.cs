@@ -43,12 +43,12 @@ public static class Example57_ConfigureRequestSettings
         // Option 1:
         // Invoke the semantic function and pass an AnonymousType containing the request settings
         var result = await kernel.InvokeSemanticFunctionAsync("Hello AI, what can you do for me?", requestSettings: new { MaxTokens = 256, Temperature = 0.7 });
-        Console.WriteLine(result.LastException is not null ? result.LastException.Message : result.Result);
+        Console.WriteLine(result.Result);
 
         // Option 2:
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
         result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAITextRequestSettings() { MaxTokens = 256, Temperature = 0.7 });
-        Console.WriteLine(result.LastException is not null ? result.LastException.Message : result.Result);
+        Console.WriteLine(result.Result);
 
         // Option 3:
         // Load prompt template configuration including the request settings from a JSON payload
@@ -70,7 +70,7 @@ public static class Example57_ConfigureRequestSettings
         var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
 
         result = await kernel.RunAsync(func);
-        Console.WriteLine(result.LastException is not null ? result.LastException.Message : result.Result);
+        Console.WriteLine(result.Result);
 
         /* OUTPUT (using gpt4):
 Hello! As an AI language model, I can help you with a variety of
