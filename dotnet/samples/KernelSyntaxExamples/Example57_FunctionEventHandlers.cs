@@ -9,8 +9,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Events;
 using RepoUtils;
 
-#pragma warning disable RCS1214 // Unnecessary interpolated string.
-
 // ReSharper disable once InconsistentNaming
 public static class Example57_FunctionEventHandlers
 {
@@ -86,7 +84,6 @@ public static class Example57_FunctionEventHandlers
         // Adding and Removing a handler
         kernel.FunctionInvoking += MyRemovedPreExecutionHandler;
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
-
 
         const string input = "I missed the F1 final race";
         var result = await kernel.RunAsync(input, excuseFunction);
@@ -280,7 +277,7 @@ public static class Example57_FunctionEventHandlers
                 e.SKContext.Variables.Update(repeatSubjects.Dequeue());
 
                 repeatTimes++;
-                Console.WriteLine($"Repeat requested!");
+                Console.WriteLine("Repeat requested!");
 
                 return;
             }
