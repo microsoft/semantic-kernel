@@ -148,11 +148,9 @@ public sealed class ActionPlanner : IActionPlanner
         [Description("The current goal processed by the planner")] string goal,
         SKContext context)
     {
-        Verify.NotNull(context.Skills);
-
         // Prepare list using the format used by skprompt.txt
         var list = new StringBuilder();
-        var availableFunctions = this.GetAvailableFunctions();
+        var availableFunctions = this.GetAvailableFunctions(context);
         this.PopulateList(list, availableFunctions);
 
         return list.ToString();
@@ -312,9 +310,10 @@ Goal: tell me a joke.
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
     }
 
-    private IOrderedEnumerable<FunctionView> GetAvailableFunctions()
+    private IOrderedEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
     {
-        FunctionsView functionsView = this._context.Skills!.GetFunctionsView();
+        Verify.NotNull(context.Skills);
+        FunctionsView functionsView = context.Skills.GetFunctionsView();
 
         var excludedSkills = this._config.ExcludedSkills ?? new();
         var excludedFunctions = this._config.ExcludedFunctions ?? new();
