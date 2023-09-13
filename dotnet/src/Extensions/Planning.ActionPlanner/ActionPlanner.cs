@@ -238,6 +238,7 @@ Goal: tell me a joke.
     }
 
     #region private ================================================================================
+
     /// <summary>
     /// The configuration for the ActionPlanner
     /// </summary>
