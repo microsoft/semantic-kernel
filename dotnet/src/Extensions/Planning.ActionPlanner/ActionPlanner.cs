@@ -61,8 +61,7 @@ public sealed class ActionPlanner : IActionPlanner
         IKernel kernel,
         ActionPlannerConfig? config = null,
         string? prompt = null,
-        ILoggerFactory? loggerFactory = null
-        )
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(kernel);
 
