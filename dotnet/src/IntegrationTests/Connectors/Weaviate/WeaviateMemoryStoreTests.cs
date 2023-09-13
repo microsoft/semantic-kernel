@@ -19,6 +19,9 @@ namespace SemanticKernel.IntegrationTests.Connectors.Weaviate;
 [Collection("Sequential")]
 public sealed class WeaviateMemoryStoreTests : IDisposable
 {
+    // If null, all tests will be enabled
+    private const string SkipReason = "Requires Weaviate server up and running";
+
     private readonly HttpClient httpClient;
     private readonly WeaviateMemoryStore weaviateMemoryStore;
     private readonly string authToken;
@@ -32,7 +35,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         this.weaviateMemoryStore = new(this.httpClient, this.authToken);
     }
 
-    [Fact(Skip = "Do not run on CI")]
+    [Fact(Skip = SkipReason)]
     public async Task EnsureConflictingCollectionNamesAreHandledForCreateAsync()
     {
         var collectionName = "SK" + Guid.NewGuid();
@@ -41,11 +44,11 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
-        await Assert.ThrowsAsync<SKException>(async () =>
+        await Assert.ThrowsAsync<HttpOperationException>(async () =>
             await this.weaviateMemoryStore.CreateCollectionAsync(conflictingCollectionName));
     }
 
-    [Fact(Skip = "Do not run on CI")]
+    [Fact(Skip = SkipReason)]
     public async Task EnsureConflictingCollectionNamesAreHandledForDoesExistAsync()
     {
         var collectionName = "SK" + Guid.NewGuid();
@@ -58,7 +61,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             await this.weaviateMemoryStore.DoesCollectionExistAsync(conflictingCollectionName));
     }
 
-    [Fact(Skip = "Do not run on CI")]
+    [Fact(Skip = SkipReason)]
     public async Task EnsureConflictingCollectionNamesAreHandledForDeleteAsync()
     {
         var collectionName = "SK" + Guid.NewGuid();
@@ -71,7 +74,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             await this.weaviateMemoryStore.DeleteCollectionAsync(conflictingCollectionName));
     }
 
-    [Fact(Skip = "Do not run on CI")]
+    [Fact(Skip = SkipReason)]
     public async Task ItCreatesNewCollectionAsync()
     {
         var collectionName = "SK" + Guid.NewGuid();
@@ -80,7 +83,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
     }
 
-    [Fact(Skip = "Do not run on CI")]
+    [Fact(Skip = SkipReason)]
     public async Task ItListsCollectionsAsync()
     {
         await this.DeleteAllClassesAsync();
@@ -100,7 +103,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(2, (await this.weaviateMemoryStore.GetCollectionsAsync().ToListAsync()).Count);
     }
 
-    [Fact(Skip = "Do not run on CI")]
+    [Fact(Skip = SkipReason)]
     public async Task ItDeletesCollectionAsync()
     {
         await this.DeleteAllClassesAsync();
@@ -118,7 +121,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Empty((await this.weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
     }
 
-    [Fact(Skip = "Do not run on CI")]
+    [Fact(Skip = SkipReason)]
     public async Task CrudOperationsAsync()
     {
         var id = Guid.NewGuid().ToString();
@@ -181,7 +184,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         }
     }
 
-    [Fact(Skip = "Do not run on CI")]
+    [Fact(Skip = SkipReason)]
     public async Task BatchCrudOperationsAsync()
     {
         var collectionName = "SK" + Guid.NewGuid();
@@ -280,7 +283,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         var classes = this.weaviateMemoryStore.GetCollectionsAsync();
         await foreach (var @class in classes)
         {
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Delete, $"schema/{@class}");
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Delete, $"v1/schema/{@class}");
             requestMessage.Headers.Add("authorization", this.authToken);
             var result = await this.httpClient.SendAsync(requestMessage);
             result.EnsureSuccessStatusCode();
