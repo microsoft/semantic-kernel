@@ -13,7 +13,6 @@ if TYPE_CHECKING:
 
 
 class TextCompletionClientBase(CompletionClientBase):
-        
     @abstractmethod
     async def complete_async(
         self,
