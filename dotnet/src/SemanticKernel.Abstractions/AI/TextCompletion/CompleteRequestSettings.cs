@@ -66,14 +66,6 @@ public class CompleteRequestSettings
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 
     /// <summary>
-    /// Enabling or disabling function calling is done by setting this parameter.
-    /// Possible values are none, auto, or a specific function.
-    /// </summary>
-    //public bool FunctionCall { get; set; } = false
-
-    // TODO: should this be a bool or an enum? what should default value be?
-
-    /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
     /// <param name="config">Template configuration</param>
@@ -88,7 +80,6 @@ public class CompleteRequestSettings
             FrequencyPenalty = config.FrequencyPenalty,
             MaxTokens = config.MaxTokens,
             StopSequences = config.StopSequences,
-            //FunctionCall = config.FunctionCall,
         };
 
         if (!string.IsNullOrWhiteSpace(config.ChatSystemPrompt))

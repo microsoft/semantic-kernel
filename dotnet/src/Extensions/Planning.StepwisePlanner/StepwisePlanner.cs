@@ -416,7 +416,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (aiService is IChatCompletion chatCompletion)
         {
-            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, ChatRequestSettings.FromCompletionConfig(this._promptConfig.Completion), cancellationToken: token).ConfigureAwait(false));
+            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, ChatRequestSettings.FromCompletionConfig(this._promptConfig.Completion), token).ConfigureAwait(false));
             return llmResponse;
         }
         else if (aiService is ITextCompletion textCompletion)

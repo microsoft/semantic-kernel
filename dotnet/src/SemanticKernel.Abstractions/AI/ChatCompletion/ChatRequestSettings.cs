@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -61,10 +62,9 @@ public class ChatRequestSettings
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 
     /// <summary>
-    /// Enabling or disabling function calling is done by setting this parameter.
-    /// Possible values are none, auto, or a specific function.
+    /// The set of functions to choose from if function calling is enabled by the model.
     /// </summary>
-    //public bool FunctionCall { get; set; } = false; // This is not needed. Will default to "auto" when functions present and "none" when functions not present.
+    public FunctionsView? Functions { get; set; } = null;
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.

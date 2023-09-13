@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletionWithData;
@@ -55,7 +54,6 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
-        FunctionsView? functions = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
@@ -64,14 +62,13 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
         ValidateMaxTokens(requestSettings.MaxTokens);
 
-        return await this.ExecuteCompletionRequestAsync(chat, requestSettings, functions, cancellationToken).ConfigureAwait(false);
+        return await this.ExecuteCompletionRequestAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
-        FunctionsView? functions = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
@@ -80,7 +77,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
         ValidateMaxTokens(requestSettings.MaxTokens);
 
-        return this.ExecuteCompletionStreamingRequestAsync(chat, requestSettings, functions, cancellationToken);
+        return this.ExecuteCompletionStreamingRequestAsync(chat, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -94,7 +91,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         var chat = this.PrepareChatHistory(text, requestSettings);
         var chatRequestSettings = this.PrepareChatRequestSettings(requestSettings);
 
-        return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken: cancellationToken).ConfigureAwait(false))
+        return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
     }
@@ -110,7 +107,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         var chat = this.PrepareChatHistory(text, requestSettings);
         var chatRequestSettings = this.PrepareChatRequestSettings(requestSettings);
 
-        await foreach (var result in this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken:  cancellationToken))
+        await foreach (var result in this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken))
         {
             yield return (ITextStreamingResult)result;
         }
@@ -148,7 +145,6 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     private async Task<IReadOnlyList<IChatResult>> ExecuteCompletionRequestAsync(
         ChatHistory chat,
         ChatRequestSettings requestSettings,
-        FunctionsView? functions, // TODO
         CancellationToken cancellationToken = default)
     {
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
@@ -164,7 +160,6 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     private async IAsyncEnumerable<IChatStreamingResult> ExecuteCompletionStreamingRequestAsync(
         ChatHistory chat,
         ChatRequestSettings requestSettings,
-        FunctionsView? functions, // TODO
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
@@ -259,7 +254,6 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             TokenSelectionBiases = requestSettings.TokenSelectionBiases,
             DataSources = this.GetDataSources(),
             Messages = this.GetMessages(chat)
-            // TODO: function call?
         };
 
         return HttpRequest.CreatePostRequest(this.GetRequestUri(), payload);
@@ -311,7 +305,6 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             PresencePenalty = requestSettings.PresencePenalty,
             FrequencyPenalty = requestSettings.FrequencyPenalty,
             StopSequences = requestSettings.StopSequences,
-            //FunctionCall = requestSettings.FunctionCall,
         };
     }
 

@@ -21,7 +21,7 @@ internal static class FunctionViewExtensions
                 new
                 {
                     // what are possible values for type? what if unrecognized?
-                    type = param.Type?.Name ?? "object",
+                    type = param.Type?.Name ?? "string",
                     description = param.Description ?? "",
                 });
         }

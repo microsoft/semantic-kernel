@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -30,7 +29,6 @@ public interface IChatCompletion : IAIService
     Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
-        FunctionsView? functions = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -43,6 +41,5 @@ public interface IChatCompletion : IAIService
     IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
-        FunctionsView? functions = null,
         CancellationToken cancellationToken = default);
 }

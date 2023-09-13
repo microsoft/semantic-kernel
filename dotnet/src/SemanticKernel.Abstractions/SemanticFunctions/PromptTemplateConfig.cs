@@ -67,14 +67,6 @@ public class PromptTemplateConfig
         public List<string> StopSequences { get; set; } = new();
 
         /// <summary>
-        /// Enabling or disabling function calling is done by setting this parameter.
-        /// Possible values are none, auto, or a specific function.
-        /// </summary>
-        //[JsonPropertyName("function_call")]
-        //[JsonPropertyOrder(7)]
-        //public string? FunctionCall { get; set; }
-
-        /// <summary>
         /// When provided will be used to set the system prompt while using Chat Completions.
         /// </summary>
         [JsonPropertyName("chat_system_prompt")]

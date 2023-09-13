@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -71,22 +70,20 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
-        FunctionsView? functions = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetChatResultsAsync(chat, requestSettings, functions, cancellationToken);
+        return this.InternalGetChatResultsAsync(chat, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
         ChatRequestSettings? requestSettings = null,
-        FunctionsView? functions = null,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
-        return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, functions, cancellationToken);
+        return this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
