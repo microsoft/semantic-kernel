@@ -268,6 +268,40 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.All(operations, (op) => Assert.Null(op.ServerUrl));
     }
 
+    [Theory]
+    [InlineData("explodeFormParam")]
+    [InlineData("anotherExplodeFormParam")]
+    public async Task ItShouldSupportsAmpersandSeparatedParametersForFormStyleArrayQueryStringParameters(string parameterName)
+    {
+        //Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        //Assert
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "GetSecret");
+
+        var explodeFormParam = operation.Parameters.Single(p => p.Name == parameterName);
+
+        Assert.True(explodeFormParam.Explode);
+    }
+
+    [Fact]
+    public async Task ItShouldSupportsCommaSeparatedValuesForFormStyleArrayQueryStringParameters()
+    {
+        //Act
+        var operations = await this._sut.ParseAsync(this._openApiDocument);
+
+        //Assert
+        Assert.True(operations.Any());
+
+        var operation = operations.Single(o => o.Id == "GetSecret");
+
+        var explodeFormParam = operation.Parameters.Single(p => p.Name == "nonExplodeFormParam");
+
+        Assert.False(explodeFormParam.Explode);
+    }
+
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
     {
         var serializer = new SharpYaml.Serialization.Serializer();

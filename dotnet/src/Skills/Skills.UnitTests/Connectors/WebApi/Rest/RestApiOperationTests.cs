@@ -95,6 +95,7 @@ public class RestApiOperationTests
             "fake-path-parameter",
             "fake_type",
             true,
+            false,
             RestApiOperationParameterLocation.Path,
             defaultValue: "fake-default-path");
 
@@ -124,12 +125,14 @@ public class RestApiOperationTests
             "p1",
             "fake_type",
             true,
+            false,
             RestApiOperationParameterLocation.Query);
 
         var secondParameterMetadata = new RestApiOperationParameter(
             "p2",
             "fake_type",
             true,
+            false,
             RestApiOperationParameterLocation.Query);
 
         var sut = new RestApiOperation(
@@ -162,6 +165,7 @@ public class RestApiOperationTests
             "p1",
             "fake_type",
             true,
+            false,
             RestApiOperationParameterLocation.Query,
             defaultValue: "dv1");
 
@@ -169,6 +173,7 @@ public class RestApiOperationTests
             "p2",
             "fake_type",
             true,
+            false,
             RestApiOperationParameterLocation.Query,
             defaultValue: "dv2");
 
@@ -198,11 +203,13 @@ public class RestApiOperationTests
             "p1",
             "fake_type",
             false,
+            false,
             RestApiOperationParameterLocation.Query);
 
         var secondParameterMetadata = new RestApiOperationParameter(
             "p2",
             "fake_type",
+            false,
             false,
             RestApiOperationParameterLocation.Query);
 
@@ -235,11 +242,13 @@ public class RestApiOperationTests
             "p1",
             "fake_type",
             true,
+            false,
             RestApiOperationParameterLocation.Query);
 
         var secondParameterMetadata = new RestApiOperationParameter(
             "p2",
             "fake_type",
+            false,
             false,
             RestApiOperationParameterLocation.Query);
 
@@ -271,7 +280,7 @@ public class RestApiOperationTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter("fake_query_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
+            new RestApiOperationParameter("fake_query_param", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, string>
@@ -298,12 +307,14 @@ public class RestApiOperationTests
             "p1",
             "fake_type",
             false,
+            false,
             RestApiOperationParameterLocation.Query,
             defaultValue: "dv1");
 
         var secondParameterMetadata = new RestApiOperationParameter(
             "p2",
             "fake_type",
+            false,
             false,
             RestApiOperationParameterLocation.Query);
 
@@ -420,8 +431,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
-            new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple)
+            new RestApiOperationParameter("fake_header_one", "string", true, false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
+            new RestApiOperationParameter("fake_header_two", "string", false, false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple)
         };
 
         var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
@@ -445,8 +456,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
-            new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple)
+            new RestApiOperationParameter("fake_header_one", "string", true, false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
+            new RestApiOperationParameter("fake_header_two", "string", false, false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, string>
@@ -478,8 +489,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter("fake_header_one", "string", true, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
-            new RestApiOperationParameter("fake_header_two", "string", false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value")
+            new RestApiOperationParameter("fake_header_one", "string", true, false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple),
+            new RestApiOperationParameter("fake_header_two", "string", false, false, RestApiOperationParameterLocation.Header, RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value")
         };
 
         var arguments = new Dictionary<string, string>
@@ -508,7 +519,7 @@ public class RestApiOperationTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter("fake_query_string_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
+            new RestApiOperationParameter("fake_query_string_param", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, string>
