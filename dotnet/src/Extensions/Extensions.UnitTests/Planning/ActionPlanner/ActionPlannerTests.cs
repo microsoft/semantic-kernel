@@ -216,11 +216,10 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(context);
                 });
-
-            skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
+            skills.Setup(x => x.GetFunction(skillName, name))
                 .Returns(mockFunction.Object);
             ISKFunction? outFunc = mockFunction.Object;
-            skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
+            skills.Setup(x => x.TryGetFunction(skillName, name, out outFunc)).Returns(true);
         }
 
         skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
