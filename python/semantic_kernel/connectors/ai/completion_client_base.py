@@ -17,7 +17,7 @@ class CompletionClientBase(ABC):
             int -- The number of prompt tokens used.
         """
         return self._prompt_tokens
-    
+
     @property
     def completion_tokens(self) -> int:
         """
@@ -27,7 +27,7 @@ class CompletionClientBase(ABC):
             int -- The number of completion tokens used.
         """
         return self._completion_tokens
-    
+
     @property
     def total_tokens(self) -> int:
         """
@@ -37,8 +37,10 @@ class CompletionClientBase(ABC):
             int -- The total number of tokens used.
         """
         return self._total_tokens
-    
-    def add_tokens(self, prompt_tokens: int = 0, completion_tokens: int = 0, total_tokens: int = 0) -> None:
+
+    def capture_usage_details(
+        self, prompt_tokens: int = 0, completion_tokens: int = 0, total_tokens: int = 0
+    ) -> None:
         """
         Adds tokens to the total number of tokens used.
 

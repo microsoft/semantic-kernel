@@ -21,12 +21,9 @@ flowery prose.
 
 kernel = sk.Kernel()
 aoai = sk_oai.AzureChatCompletion(
-        **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
-    )
-kernel.add_chat_service(
-    "chat-gpt",
-    aoai
+    **azure_openai_settings_from_dot_env_as_dict(include_api_version=True)
 )
+kernel.add_chat_service("chat-gpt", aoai)
 
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     max_tokens=2000, temperature=0.7, top_p=0.8

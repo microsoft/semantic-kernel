@@ -160,11 +160,11 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 "OpenAI service failed to complete the prompt",
                 ex,
             )
-        
+
         if "usage" in response:
             self._log.info(
                 f"OpenAI service used {response.usage} tokens for this request"
             )
-            self.add_tokens(**response.usage)
+            self.capture_usage_details(**response.usage)
 
         return response

@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class ChatCompletionClientBase(CompletionClientBase):
-
     @abstractmethod
     async def complete_chat_async(
         self,
