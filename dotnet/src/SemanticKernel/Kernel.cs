@@ -189,8 +189,8 @@ public sealed class Kernel : IKernel, IDisposable
 
         int pipelineStepCount = 0;
         foreach (ISKFunction skFunction in pipeline)
-
         {
+repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -217,6 +217,12 @@ public sealed class Kernel : IKernel, IDisposable
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
                     break;
+                }
+
+                if (functionInvokedArgs?.IsRepeatRequested ?? false)
+                {
+                    this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    goto repeat;
                 }
             }
             catch (Exception ex)
@@ -279,11 +285,11 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly IDelegatingHandlerFactory _httpHandlerFactory;
 
     /// <summary>
-    /// Execute the FunctionInvoking event handlers and returns true if no cancellation was attempted.
+    /// Execute the OnFunctionInvoking event handlers.
     /// </summary>
     /// <param name="functionView">Function view details</param>
     /// <param name="context">SKContext before function invocation</param>
-    /// <returns>Returns true if no cancellation was attempted.</returns>
+    /// <returns>FunctionInvokingEventArgs if the event was handled, null otherwise</returns>
     private FunctionInvokingEventArgs? OnFunctionInvoking(FunctionView functionView, SKContext context)
     {
         if (this.FunctionInvoking is not null)
@@ -302,12 +308,18 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     /// <param name="functionView">Function view details</param>
     /// <param name="context">SKContext after function invocation</param>
-    private FunctionInvokedEventArgs OnFunctionInvoked(FunctionView functionView, SKContext context)
+    /// <returns>FunctionInvokedEventArgs if the event was handled, null otherwise</returns>
+    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, SKContext context)
     {
-        var args = new FunctionInvokedEventArgs(functionView, context);
-        this.FunctionInvoked?.Invoke(this, args);
+        if (this.FunctionInvoked is not null)
+        {
+            var args = new FunctionInvokedEventArgs(functionView, context);
+            this.FunctionInvoked.Invoke(this, args);
 
-        return args;
+            return args;
+        }
+
+        return null;
     }
 
     private ISKFunction CreateSemanticFunction(

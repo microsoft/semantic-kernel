@@ -11,6 +11,11 @@ namespace Microsoft.SemanticKernel.Events;
 public class FunctionInvokedEventArgs : SKCancelEventArgs
 {
     /// <summary>
+    /// Indicates if the function execution should repeat.
+    /// </summary>
+    public bool IsRepeatRequested => this._repeatRequested;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
     /// </summary>
     /// <param name="functionView">Function view details</param>
@@ -18,4 +23,14 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     public FunctionInvokedEventArgs(FunctionView functionView, SKContext context) : base(functionView, context)
     {
     }
+
+    /// <summary>
+    /// Repeat the current function invocation.
+    /// </summary>
+    public void Repeat()
+    {
+        this._repeatRequested = true;
+    }
+
+    private bool _repeatRequested;
 }

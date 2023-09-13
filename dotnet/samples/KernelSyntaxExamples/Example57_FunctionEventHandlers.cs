@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ public static class Example57_FunctionEventHandlers
     {
         Console.WriteLine("\n======== Using Function Execution Handlers ========\n");
 
-        openAIModelId = TestConfiguration.OpenAI.ModelId;
+        openAIModelId = TestConfiguration.OpenAI.ChatModelId;
         openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
         if (openAIModelId == null || openAIApiKey == null)
@@ -29,7 +30,7 @@ public static class Example57_FunctionEventHandlers
             return;
         }
 
-        await GetPromptAndUsageAsync();
+        await GetUsageAsync();
 
         await ChangingResultAsync();
 
@@ -38,20 +39,22 @@ public static class Example57_FunctionEventHandlers
         await AfterInvokeCancellationAsync();
 
         await SkippingFunctionsAsync();
+
+        await RepeatFunctionsAsync();
     }
 
-    private static async Task GetPromptAndUsageAsync()
+    private static async Task GetUsageAsync()
     {
         Console.WriteLine("\n======== Get Rendered Prompt and Usage Data ========\n");
 
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAITextCompletionService(
+            .WithOpenAIChatCompletionService(
                 modelId: openAIModelId!,
                 apiKey: openAIApiKey!)
             .Build();
 
-        const string functionPrompt = "Write a paragraph about: {{$input}}.";
+        const string functionPrompt = "Write a random paragraph about: {{$input}}.";
 
         var excuseFunction = kernel.CreateSemanticFunction(
             functionPrompt,
@@ -74,17 +77,18 @@ public static class Example57_FunctionEventHandlers
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAITextResult().Usage.TotalTokens}");
+            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
+        kernel.FunctionInvoked += MyPostExecutionHandler;
+
+        // Adding and Removing a handler
         kernel.FunctionInvoking += MyRemovedPreExecutionHandler;
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
-        kernel.FunctionInvoked += MyPostExecutionHandler;
 
         const string input = "I missed the F1 final race";
-
         var result = await kernel.RunAsync(input, excuseFunction);
         Console.WriteLine($"Function Result: {result}");
     }
@@ -95,7 +99,7 @@ public static class Example57_FunctionEventHandlers
 
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAITextCompletionService(
+           .WithOpenAIChatCompletionService(
                modelId: openAIModelId!,
                apiKey: openAIApiKey!)
            .Build();
@@ -133,7 +137,7 @@ public static class Example57_FunctionEventHandlers
 
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAITextCompletionService(
+           .WithOpenAIChatCompletionService(
                modelId: openAIModelId!,
                apiKey: openAIApiKey!)
            .Build();
@@ -144,9 +148,9 @@ public static class Example57_FunctionEventHandlers
             functionPrompt,
             skillName: "MySkill",
             functionName: "Writer",
-            maxTokens: 100,
-            temperature: 0.4,
-            topP: 1);
+            maxTokens: 1000,
+            temperature: 1,
+            topP: 0.5);
 
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -172,7 +176,7 @@ public static class Example57_FunctionEventHandlers
 
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAITextCompletionService(
+           .WithOpenAIChatCompletionService(
                modelId: openAIModelId!,
                apiKey: openAIApiKey!)
            .Build();
@@ -203,11 +207,11 @@ public static class Example57_FunctionEventHandlers
 
     private static async Task SkippingFunctionsAsync()
     {
-        Console.WriteLine("\n======== Skip Function in the Pipeline ========\n");
+        Console.WriteLine("\n======== Skipping a Function in the Pipeline ========\n");
 
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-           .WithOpenAITextCompletionService(
+           .WithOpenAIChatCompletionService(
                modelId: openAIModelId!,
                apiKey: openAIApiKey!)
            .Build();
@@ -242,5 +246,46 @@ public static class Example57_FunctionEventHandlers
             dontSkipMeFunction);
 
         Console.WriteLine($"Final result: {context.Result}");
+    }
+
+    private static async Task RepeatFunctionsAsync()
+    {
+        Console.WriteLine("\n======== Repeating a Function in the Pipeline ========");
+
+        IKernel kernel = new KernelBuilder()
+           .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+           .WithOpenAIChatCompletionService(
+               modelId: openAIModelId!,
+               apiKey: openAIApiKey!)
+           .Build();
+
+        var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
+
+        var repeatMeFunction = kernel.CreateSemanticFunction("Write a sentence about {{$input}}",
+            skillName: "MySkill",
+            functionName: "RepeatMe");
+
+        var repeatTimes = 0;
+        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            Console.WriteLine($"\nFunction {e.FunctionView.Name} executed:");
+            Console.WriteLine($"Result: {e.SKContext.Result}");
+
+            if (repeatTimes < 3)
+            {
+                // Flag the Kernel to repeat the function
+                e.Repeat();
+
+                // Redefine the input variable to repeat the function
+                e.SKContext.Variables.Update(repeatSubjects.Dequeue());
+
+                repeatTimes++;
+                Console.WriteLine($"Repeat requested!");
+
+                return;
+            }
+        };
+
+        var context = await kernel.RunAsync("Repetition", repeatMeFunction);
     }
 }
