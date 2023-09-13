@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Action;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -20,35 +23,7 @@ public sealed class ActionPlannerTests
     public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResult()
     {
         // Arrange
-        var functions = new List<(string name, string skillName, string description, bool isSemantic)>()
-        {
-            ("SendEmail", "email", "Send an e-mail", false),
-            ("PullsList", "GitHubSkill", "List pull requests", true)
-        };
-
-        var functionsView = new FunctionsView();
-        var skills = new Mock<ISkillCollection>();
-        foreach (var (name, skillName, description, isSemantic) in functions)
-        {
-            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
-            var mockFunction = CreateMockFunction(functionView);
-            functionsView.AddFunction(functionView);
-
-            mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
-                {
-                    context.Variables.Update("MOCK FUNCTION CALLED");
-                    return Task.FromResult(context);
-                });
-
-            skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
-                .Returns(mockFunction.Object);
-            ISKFunction? outFunc = mockFunction.Object;
-            skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
-        }
-
-        skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+        var skills = this.CreateMockSkillCollection();
 
         string planString = "Here is a possible plan to accomplish the user intent:\n\n{\"plan\":{\n\"rationale\": \"the list contains a function that allows to list pull requests\",\n\"function\": \"GitHubSkill.PullsList\",\n\"parameters\": {\n\"owner\": \"microsoft\",\n\"repo\": \"semantic-kernel\",\n\"state\": \"open\"\n}}}\n\nThis plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `\"open\"` to filter the results to only show open pull requests.";
 
@@ -95,6 +70,61 @@ public sealed class ActionPlannerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+    }
+
+    [Fact]
+    public void ListOfFunctionsIncludesNativeAndSemanticFunctions()
+    {
+        // Arrange
+        var skills = this.CreateMockSkillCollection();
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(this._validPlanString, skills);
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
+        var context = kernel.Object.CreateNewContext();
+
+        // Act
+        var result = planner.ListOfFunctions("goal", context);
+
+        // Assert
+        var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubSkill.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubSkill.RepoList{Environment.NewLine}";
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ListOfFunctionsExcludesExcludedSkills()
+    {
+        // Arrange
+        var skills = this.CreateMockSkillCollection();
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(this._validPlanString, skills);
+        var config = new ActionPlannerConfig();
+        config.ExcludedSkills.Add("GitHubSkill");
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
+        var context = kernel.Object.CreateNewContext();
+
+        // Act
+        var result = planner.ListOfFunctions("goal", context);
+
+        // Assert
+        var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}";
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ListOfFunctionsExcludesExcludedFunctions()
+    {
+        // Arrange
+        var skills = this.CreateMockSkillCollection();
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(this._validPlanString, skills);
+        var config = new ActionPlannerConfig();
+        config.ExcludedFunctions.Add("PullsList");
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
+        var context = kernel.Object.CreateNewContext();
+
+        // Act
+        var result = planner.ListOfFunctions("goal", context);
+
+        // Assert
+        var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubSkill.RepoList{Environment.NewLine}";
+        Assert.Equal(expected, result);
     }
 
     private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? skills = null)
@@ -149,4 +179,41 @@ public sealed class ActionPlannerTests
         mockFunction.Setup(x => x.SkillName).Returns(functionView.SkillName);
         return mockFunction;
     }
+
+    private Mock<ISkillCollection> CreateMockSkillCollection()
+    {
+        var functions = new List<(string name, string skillName, string description, bool isSemantic)>()
+        {
+            ("SendEmail", "email", "Send an e-mail", false),
+            ("PullsList", "GitHubSkill", "List pull requests", true),
+            ("RepoList", "GitHubSkill", "List repositories", true),
+        };
+
+        var functionsView = new FunctionsView();
+        var skills = new Mock<ISkillCollection>();
+        foreach (var (name, skillName, description, isSemantic) in functions)
+        {
+            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
+            var mockFunction = CreateMockFunction(functionView);
+            functionsView.AddFunction(functionView);
+
+            mockFunction.Setup(x =>
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+                .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
+                {
+                    context.Variables.Update("MOCK FUNCTION CALLED");
+                    return Task.FromResult(context);
+                });
+
+            skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
+                .Returns(mockFunction.Object);
+            ISKFunction? outFunc = mockFunction.Object;
+            skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
+        }
+
+        skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+        return skills;
+    }
+
+    private readonly string _validPlanString = "Here is a possible plan to accomplish the user intent:\n\n{\"plan\":{\n\"rationale\": \"the list contains a function that allows to list pull requests\",\n\"function\": \"GitHubSkill.PullsList\",\n\"parameters\": {\n\"owner\": \"microsoft\",\n\"repo\": \"semantic-kernel\",\n\"state\": \"open\"\n}}}\n\nThis plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `\"open\"` to filter the results to only show open pull requests.";
 }
