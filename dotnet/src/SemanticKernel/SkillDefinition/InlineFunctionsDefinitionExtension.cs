@@ -27,7 +27,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="skillName">Optional skill name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
-    /// <param name="requestSettings">Opetional LLM request settings</param>
+    /// <param name="requestSettings">Optional LLM request settings</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
@@ -93,7 +93,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="skillName">Optional skill name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
-    /// <param name="requestSettings">Opetional LLM request settings</param>
+    /// <param name="requestSettings">Optional LLM request settings</param>
     /// <returns>A function ready to use</returns>
     public static Task<SKContext> InvokeSemanticFunctionAsync(
         this IKernel kernel,
