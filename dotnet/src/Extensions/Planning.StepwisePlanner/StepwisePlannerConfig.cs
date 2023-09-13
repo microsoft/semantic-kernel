@@ -20,6 +20,7 @@ public sealed class StepwisePlannerConfig : PlannerConfigBase
     /// A list of functions to include in the plan creation request.
     /// </summary>
     public HashSet<string> IncludedFunctions { get; } = new();
+
     #endregion Use these to configure which functions to include/exclude
 
     #region Use these to completely override the functions available for planning

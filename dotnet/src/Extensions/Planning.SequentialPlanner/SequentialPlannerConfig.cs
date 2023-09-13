@@ -15,13 +15,6 @@ namespace Microsoft.SemanticKernel.Planning.Sequential;
 /// </summary>
 public sealed class SequentialPlannerConfig : PlannerConfigBase
 {
-    #region Use these to configure which functions to include/exclude
-    /// <summary>
-    /// A list of functions to include in the plan creation request.
-    /// </summary>
-    public HashSet<string> IncludedFunctions { get; } = new();
-    #endregion Use these to configure which functions to include/exclude
-
     /// <summary>
     /// The minimum relevancy score for a function to be considered
     /// </summary>
@@ -38,10 +31,15 @@ public sealed class SequentialPlannerConfig : PlannerConfigBase
     /// <remarks>
     /// Limits the number of relevant functions as result of semantic
     /// search included in the plan creation request.
-    /// <see cref="PlannerConfigBase.IncludedFunctions"/> will be included
+    /// <see cref="IncludedFunctions"/> will be included
     /// in the plan regardless of this limit.
     /// </remarks>
     public int MaxRelevantFunctions { get; set; } = 100;
+
+    /// <summary>
+    /// A list of functions to include in the plan creation request.
+    /// </summary>
+    public HashSet<string> IncludedFunctions { get; } = new();
 
     /// <summary>
     /// The maximum number of tokens to allow in a plan.
