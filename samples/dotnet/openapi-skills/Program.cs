@@ -111,11 +111,11 @@ internal sealed class Program
 
             // Remove earlier messages until we are back within our token limit.
             // (Note this sample does not implement long-term memory)
-            int tokenCount = GPT3Tokenizer.Encode(JsonSerializer.Serialize(chatHistory)).Count;
+            int tokenCount = CountTokens(JsonSerializer.Serialize(chatHistory));
             while (tokenCount > aiOptions.TokenLimit)
             {
                 chatHistory.Messages.RemoveAt(1);
-                tokenCount = GPT3Tokenizer.Encode(JsonSerializer.Serialize(chatHistory)).Count;
+                tokenCount = CountTokens(JsonSerializer.Serialize(chatHistory));
             }
             Console.WriteLine($"(tokens: {tokenCount})");
 
@@ -175,12 +175,12 @@ internal sealed class Program
 
             // tokens
             result = JsonSerializer.Serialize(pullRequests);
-            int tokensUsed = GPT3Tokenizer.Encode(result).Count;
+            int tokensUsed = CountTokens(result);
             while (tokensUsed > tokenAllowance)
             {
                 pullRequests.RemoveAt(pullRequests.Count - 1);
                 result = JsonSerializer.Serialize(pullRequests);
-                tokensUsed = GPT3Tokenizer.Encode(result).Count;
+                tokensUsed = CountTokens(result);
             }
         }
         else
@@ -222,5 +222,13 @@ internal sealed class Program
 
         json = string.Empty;
         return false;
+    }
+
+    /// <summary>
+    /// Custom token counter.
+    /// </summary>
+    private static int CountTokens(string input)
+    {
+        return input.Length / 4;
     }
 }
