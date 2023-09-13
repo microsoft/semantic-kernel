@@ -54,14 +54,15 @@ public sealed class ActionPlanner : IActionPlanner
     /// Initialize a new instance of the <see cref="ActionPlanner"/> class.
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="config">The planner configuration.</param>
     /// <param name="prompt">Optional prompt override</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <param name="config">The planner configuration.</param>
     public ActionPlanner(
         IKernel kernel,
+        ActionPlannerConfig? config = null,
         string? prompt = null,
-        ILoggerFactory? loggerFactory = null,
-        ActionPlannerConfig? config = null)
+        ILoggerFactory? loggerFactory = null
+        )
     {
         Verify.NotNull(kernel);
 
