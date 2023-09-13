@@ -110,10 +110,26 @@ public sealed class RestApiOperation
     /// <returns>The operation Url.</returns>
     public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
+        var serverUrl = this.GetServerUrl(arguments, serverUrlOverride, apiHostUrl);
+
         var path = this.ReplacePathParameters(this.Path, arguments);
 
-        path = this.AddQueryString(path, arguments);
+        var queryString = this.CreateQueryString(arguments);
 
+        var relativeUrl = string.IsNullOrEmpty(queryString) ? path : $"{path}?{queryString}";
+
+        return new Uri(serverUrl, $"{relativeUrl.TrimStart('/')}");
+    }
+
+    /// <summary>
+    /// Returns operation server Url.
+    /// </summary>
+    /// <param name="arguments">The operation arguments.</param>
+    /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
+    /// <param name="apiHostUrl">The URL of REST API host.</param>
+    /// <returns>The operation server url.</returns>
+    private Uri GetServerUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride, Uri? apiHostUrl)
+    {
         string serverUrlString;
 
         if (serverUrlOverride is not null)
@@ -139,7 +155,7 @@ public sealed class RestApiOperation
             serverUrlString += "/";
         }
 
-        return new Uri(new Uri(serverUrlString), $"{path.TrimStart('/')}");
+        return new Uri(serverUrlString);
     }
 
     /// <summary>
@@ -227,12 +243,10 @@ public sealed class RestApiOperation
     }
 
     /// <summary>
-    /// Adds query string to the operation path.
+    /// Create query string.
     /// </summary>
-    /// <param name="path">The operation path.</param>
-    /// <param name="arguments">The operation arguments.</param>
     /// <returns>Path with query string.</returns>
-    private string AddQueryString(string path, IDictionary<string, string> arguments)
+    private string CreateQueryString(IDictionary<string, string> arguments)
     {
         var queryStringSegments = new List<string>();
 
@@ -260,9 +274,7 @@ public sealed class RestApiOperation
             }
         }
 
-        var queryString = string.Join("&", queryStringSegments);
-
-        return string.IsNullOrEmpty(queryString) ? path : $"{path}?{queryString}";
+        return string.Join("&", queryStringSegments);
     }
 
     private static readonly Regex s_urlParameterMatch = new(@"\{([\w-]+)\}");
