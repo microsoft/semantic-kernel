@@ -312,11 +312,8 @@ Goal: tell me a joke.
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
     }
 
-    // TODO try uncommenting
     private IOrderedEnumerable<FunctionView> GetAvailableFunctions()
     {
-        //if (this._config.GetAvailableFunctionsAsync is null)
-        //{
         FunctionsView functionsView = this._context.Skills!.GetFunctionsView();
 
         var excludedSkills = this._config.ExcludedSkills ?? new();
@@ -331,10 +328,6 @@ Goal: tell me a joke.
                 .ThenBy(x => x.Name);
 
         return availableFunctions;
-        //return Task.FromResult(availableFunctions);
-        //}
-
-        //return this._config.GetAvailableFunctionsAsync(this._config, null, CancellationToken.None);
     }
 
     #endregion
