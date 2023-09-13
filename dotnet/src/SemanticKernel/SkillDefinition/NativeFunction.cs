@@ -153,10 +153,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-            this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
-            context.LastException = e;
-            return context;
+            this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, e.Message);
+            throw;
         }
     }
 

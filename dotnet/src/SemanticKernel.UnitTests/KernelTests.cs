@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -87,12 +88,7 @@ public class KernelTests
         cts.Cancel();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, skill["GetAnyValue"]);
-
-        // Assert
-        Assert.True(string.IsNullOrEmpty(result.Result));
-        Assert.True(result.ErrorOccurred);
-        Assert.True(result.LastException is OperationCanceledException);
+        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, skill["GetAnyValue"]));
     }
 
     [Fact]
@@ -110,8 +106,6 @@ public class KernelTests
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.Result));
-        Assert.False(result.ErrorOccurred);
-        Assert.False(result.LastException is OperationCanceledException);
     }
 
     [Fact]
@@ -259,12 +253,10 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        SKContext result = await kernel.RunAsync(func);
+        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
 
         // Assert
-        Assert.NotNull(result.LastException);
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", result.LastException.Message);
-        Assert.True(result.ErrorOccurred);
+        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
     }
 
     public class MySkill

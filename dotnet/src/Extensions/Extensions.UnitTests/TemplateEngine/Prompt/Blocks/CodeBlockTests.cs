@@ -34,7 +34,7 @@ public class CodeBlockTests
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<SKException>(() => target.RenderCodeAsync(context));
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class CodeBlockTests
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
-        await Assert.ThrowsAsync<SKException>(async () => await target.RenderCodeAsync(context));
+        await Assert.ThrowsAsync<RuntimeWrappedException>(() => target.RenderCodeAsync(context));
     }
 
     [Fact]
