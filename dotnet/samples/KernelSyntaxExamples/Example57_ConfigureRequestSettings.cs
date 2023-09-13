@@ -42,7 +42,7 @@ public static class Example57_ConfigureRequestSettings
 
         // Option 1:
         // Invoke the semantic function and pass an AnonymousType containing the request settings
-        var result = await kernel.InvokeSemanticFunctionAsync("Hello AI, what can you do for me?", requestSettings: new { max_tokens = 16, temperature = 0.7 });
+        var result = await kernel.InvokeSemanticFunctionAsync("Hello AI, what can you do for me?", requestSettings: new { MaxTokens = 256, Temperature = 0.7 });
         Console.WriteLine(result.LastException is not null ? result.LastException.Message : result.Result);
 
         // Option 2:

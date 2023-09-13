@@ -35,7 +35,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress}}";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new { MaxTokens = 150 });
+        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new { max_tokens = 150 });
 
         // Assert
         Assert.Null(actual.LastException);
@@ -56,7 +56,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress \"a person\"}}";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new { MaxTokens = 150 });
+        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new { max_tokens = 150 });
 
         // Assert
         Assert.Null(actual.LastException);

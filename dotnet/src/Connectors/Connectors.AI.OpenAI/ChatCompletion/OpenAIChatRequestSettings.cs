@@ -115,6 +115,8 @@ public class OpenAIChatRequestSettings
             return Json.Deserialize<OpenAIChatRequestSettings>(requestSettings.ToString());
         }
 
-        return Json.Deserialize<OpenAIChatRequestSettings>(JsonSerializer.Serialize(requestSettings));
+        var json = JsonSerializer.Serialize(requestSettings);
+        var obj = Json.Deserialize<OpenAIChatRequestSettings>(json);
+        return obj;
     }
 }

@@ -20,7 +20,7 @@ public static class Program
         CancellationToken cancelToken = cancellationTokenSource.ConsoleCancellationToken();
 
         // Run examples
-        await Example01_NativeFunctions.RunAsync().SafeWaitAsync(cancelToken);
+        /*await Example01_NativeFunctions.RunAsync().SafeWaitAsync(cancelToken);
         await Example02_Pipeline.RunAsync().SafeWaitAsync(cancelToken);
         await Example03_Variables.RunAsync().SafeWaitAsync(cancelToken);
         await Example04_CombineLLMPromptsAndNativeCode.RunAsync().SafeWaitAsync(cancelToken);
@@ -68,7 +68,7 @@ public static class Program
         await Example52_ApimAuth.RunAsync().SafeWaitAsync(cancelToken);
         await Example54_AzureChatCompletionWithData.RunAsync().SafeWaitAsync(cancelToken);
         await Example55_TextChunker.RunAsync().SafeWaitAsync(cancelToken);
-        await Example56_TemplateNativeFunctionsWithMultipleArguments.RunAsync().SafeWaitAsync(cancelToken);
+        await Example56_TemplateNativeFunctionsWithMultipleArguments.RunAsync().SafeWaitAsync(cancelToken);*/
         await Example57_ConfigureRequestSettings.RunAsync().SafeWaitAsync(cancelToken);
     }
 
