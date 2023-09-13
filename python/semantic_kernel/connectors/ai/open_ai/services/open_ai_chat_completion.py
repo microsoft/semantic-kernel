@@ -278,10 +278,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
         # streaming does not have usage info, therefore checking the type of the response
         if not stream and "usage" in response:
-            self._log.info(f"OpenAI usage: {response.usage}")
-            self._prompt_tokens += response.usage.prompt_tokens
-            self._completion_tokens += response.usage.completion_tokens
-            self._total_tokens += response.usage.total_tokens
+            self._log.info(
+                f"OpenAI service used {response.usage} tokens for this request"
+            )
+            self.add_tokens(**response.usage)
 
         return response
 

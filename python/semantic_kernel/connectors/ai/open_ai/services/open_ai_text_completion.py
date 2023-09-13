@@ -63,7 +63,6 @@ class OpenAITextCompletion(TextCompletionClientBase):
         request_settings: CompleteRequestSettings,
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
-        # TODO: tracking on token counts/etc.
         response = await self._send_completion_request(prompt, request_settings, False)
 
         if len(response.choices) == 1:
@@ -167,10 +166,10 @@ class OpenAITextCompletion(TextCompletionClientBase):
             )
 
         if "usage" in response:
-            self._log.info(f"OpenAI usage: {response.usage}")
-            self._prompt_tokens += response.usage.prompt_tokens
-            self._completion_tokens += response.usage.completion_tokens
-            self._total_tokens += response.usage.total_tokens
+            self._log.info(
+                f"OpenAI service used {response.usage} tokens for this request"
+            )
+            self.add_tokens(**response.usage)
 
         return response
 
