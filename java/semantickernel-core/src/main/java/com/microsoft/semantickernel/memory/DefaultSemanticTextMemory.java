@@ -42,28 +42,41 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
             @Nullable String description,
             @Nullable String additionalMetadata) {
 
-        return _embeddingGenerator
-                .generateEmbeddingsAsync(Collections.singletonList(text))
-                .flatMap(
-                        embeddings -> {
-                            if (embeddings.isEmpty()) {
-                                return Mono.empty();
-                            }
-                            MemoryRecordMetadata data =
-                                    new MemoryRecordMetadata(
-                                            true, id, text, description, "", additionalMetadata);
-                            MemoryRecord memoryRecord =
-                                    new MemoryRecord(data, embeddings.iterator().next(), id, null);
+        Mono<String> embedAndSave =
+                _embeddingGenerator
+                        .generateEmbeddingsAsync(Collections.singletonList(text))
+                        .flatMap(
+                                embeddings -> {
+                                    if (embeddings.isEmpty()) {
+                                        return Mono.empty();
+                                    }
+                                    MemoryRecordMetadata data =
+                                            new MemoryRecordMetadata(
+                                                    true,
+                                                    id,
+                                                    text,
+                                                    description,
+                                                    "",
+                                                    additionalMetadata);
+                                    MemoryRecord memoryRecord =
+                                            new MemoryRecord(
+                                                    data, embeddings.iterator().next(), id, null);
 
-                            return _storage.upsertAsync(collection, memoryRecord)
-                                    .onErrorResume(
-                                            e -> {
-                                                return _storage.createCollectionAsync(collection)
-                                                        .then(
-                                                                _storage.upsertAsync(
-                                                                        collection, memoryRecord));
-                                            });
-                        });
+                                    return _storage.upsertAsync(collection, memoryRecord)
+                                            .onErrorResume(
+                                                    e -> {
+                                                        return _storage.createCollectionAsync(
+                                                                        collection)
+                                                                .then(
+                                                                        _storage.upsertAsync(
+                                                                                collection,
+                                                                                memoryRecord));
+                                                    });
+                                });
+
+        return _storage.getAsync(collection, id, false)
+                .map(record -> record.getMetadata().getId())
+                .switchIfEmpty(embedAndSave);
     }
 
     public Mono<MemoryQueryResult> getAsync(String collection, String key, boolean withEmbedding) {

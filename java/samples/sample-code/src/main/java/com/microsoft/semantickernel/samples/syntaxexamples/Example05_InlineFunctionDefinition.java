@@ -15,20 +15,20 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
 public class Example05_InlineFunctionDefinition {
-    public static void main(String[] args) throws ConfigurationException {
-        OpenAIAsyncClient client = SamplesConfig.getClient();
+  public static void main(String[] args) throws ConfigurationException {
+    OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletion()
-                .withModelId("text-davinci-003")
-                .withOpenAIClient(client)
-                .build();
+    TextCompletion textCompletion = SKBuilders.textCompletion()
+        .withModelId("text-davinci-003")
+        .withOpenAIClient(client)
+        .build();
 
-        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
+    Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
 
-        System.out.println("======== Inline Function Definition ========");
+    System.out.println("======== Inline Function Definition ========");
 
-        // Function defined using few-shot design pattern
-        String functionDefinition = """
+    // Function defined using few-shot design pattern
+    String functionDefinition = """
                     Generate a creative reason or excuse for the given event.
                     Be creative and be funny. Let your imagination run wild.
                     
@@ -41,39 +41,39 @@ public class Example05_InlineFunctionDefinition {
                     Event: {{$input}}
                 """.stripIndent();
 
-        // Create function via builder
-        var excuseFunction = SKBuilders
-                .completionFunctions()
-                .withKernel(kernel)
-                .withPromptTemplate(functionDefinition)
-                .withCompletionConfig(
-                        new PromptTemplateConfig.CompletionConfigBuilder()
-                                .maxTokens(100)
-                                .temperature(0.4)
-                                .topP(1)
-                                .build())
-                .build();
+    // Create function via builder
+    var excuseFunction = SKBuilders
+        .completionFunctions()
+        .withKernel(kernel)
+        .withPromptTemplate(functionDefinition)
+        .withCompletionConfig(
+            new PromptTemplateConfig.CompletionConfigBuilder()
+                .maxTokens(100)
+                .temperature(0.4)
+                .topP(1)
+                .build())
+        .build();
 
 
-        var result = excuseFunction.invokeAsync("I missed the F1 final race").block();
-        System.out.println(result.getResult());
+    var result = excuseFunction.invokeAsync("I missed the F1 final race").block();
+    System.out.println(result.getResult());
 
-        result = excuseFunction.invokeAsync("sorry I forgot your birthday").block();
-        System.out.println(result.getResult());
+    result = excuseFunction.invokeAsync("sorry I forgot your birthday").block();
+    System.out.println(result.getResult());
 
-        // Create function via kernel
-        var fixedFunction = kernel.
-                getSemanticFunctionBuilder()
-                .withPromptTemplate("Translate this date " +
-                        DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(LocalDateTime.now()) + " to French format")
-                .withCompletionConfig(
-                        new PromptTemplateConfig.CompletionConfigBuilder()
-                                .maxTokens(100)
-                                .temperature(0.4)
-                                .topP(1)
-                                .build())
-                .build();
+    // Create function via kernel
+    var fixedFunction = kernel.
+        getSemanticFunctionBuilder()
+        .withPromptTemplate("Translate this date " +
+            DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(LocalDateTime.now()) + " to French format")
+        .withCompletionConfig(
+            new PromptTemplateConfig.CompletionConfigBuilder()
+                .maxTokens(100)
+                .temperature(0.4)
+                .topP(1)
+                .build())
+        .build();
 
-        System.out.println(fixedFunction.invokeAsync().block().getResult());
-    }
+    System.out.println(fixedFunction.invokeAsync().block().getResult());
+  }
 }
