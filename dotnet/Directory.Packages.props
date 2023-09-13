@@ -16,7 +16,7 @@
     <PackageVersion Include="NRedisStack" Version="0.8.1" />
     <PackageVersion Include="Pgvector" Version="0.1.3" />
     <PackageVersion Include="Polly" Version="7.2.4" />
-    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="6.0.0" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
     <!-- Microsoft.Extensions.Logging -->
