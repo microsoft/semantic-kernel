@@ -17,7 +17,7 @@ async def test_text2text_generation_input_str_multiple(setup_hf_text_completion_
 
     output = str(summary)
     print(f"Completion using input string: '{output}'")
-    print(f'n_responses : {n_responses}'+'num_resp : ',{output.count('\n')})
+    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
     assert len(output) > 0 and output.count('\n')==n_responses-1
 
 
@@ -31,7 +31,7 @@ async def test_text2text_generation_input_vars_multiple(setup_hf_text_completion
 
     output = str(summary)
     print(f"Completion using context variables: '{output}'")
-    print(f'n_responses : {n_responses}'+'num_resp : ',{output.count('\n')})
+    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
     assert len(output) > 0 and output.count('\n')==n_responses-1
 
 @pytest.mark.asyncio
@@ -45,7 +45,7 @@ async def test_text2text_generation_input_context_multiple(setup_hf_text_complet
 
     output = str(summary)
     print(f"Completion using input context: '{output}'")
-    print(f'n_responses : {n_responses}'+'num_resp : ',{output.count('\n')})
+    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
     assert len(output) > 0 and output.count('\n')==n_responses-1
 
 @pytest.mark.asyncio
@@ -64,7 +64,7 @@ async def test_text2text_generation_input_context_with_vars_multiple(
 
     output = str(summary)
     print(f"Completion using context and additional variables: '{output}'")
-    print(f'n_responses : {n_responses}'+'num_resp : ',{output.count('\n')})
+    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
     assert len(output) > 0 and output.count('\n')==n_responses-1
 
 @pytest.mark.asyncio
@@ -82,7 +82,7 @@ async def test_text2text_generation_input_context_with_str_multiple(
 
     output = str(summary)
     print(f"Completion using context and additional string: '{output}'")
-    print(f'n_responses : {n_responses}'+'num_resp : ',{output.count('\n')})
+    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
     assert len(output) > 0 and output.count('\n')==n_responses-1
 
 @pytest.mark.asyncio
@@ -106,7 +106,7 @@ async def test_text2text_generation_input_context_with_vars_and_str_multiple(
     print(
         f"Completion using context, additional variables, and additional string: '{output}'"
     )
-    print(f'n_responses : {n_responses}'+'num_resp : ',{output.count('\n')})
+    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
     assert len(output) > 0 and output.count('\n')==n_responses-1
 
 @pytest.mark.asyncio
@@ -152,4 +152,5 @@ async def test_text_generation_with_kwargs():
     print(
         f"Completion using context, additional variables, and additional string: '{output}'"
     )
+    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
     assert len(output) > 0 and output.count('\n')==num_of_responses-1
