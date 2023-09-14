@@ -221,7 +221,6 @@ public abstract class ClientBase
             throw new SKException("Chat completions not found");
         }
 
-        Console.WriteLine($"Total Tokens: {responseData.Usage.TotalTokens} Prompt Tokens: {responseData.Usage.PromptTokens} Completion Tokens: {responseData.Usage.CompletionTokens}");
         CaptureUsageDetails(responseData.Usage);
 
         if (functionNames is null)

@@ -256,7 +256,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         //check if the first completion is a function call
         var message = await completions[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
 
-        return message?.ToFunctionCall();
+        return message?.ToFunctionCallResult();
     }
 
 

@@ -61,16 +61,16 @@ public class StepwiseFunctionCallResult : FunctionCallResult
 
         if (!string.IsNullOrEmpty(Thought))
         {
-            sb.AppendLine($"Thought: {Thought}");
+            sb.AppendLine($" -Thought: {Thought}");
         }
 
-        if (FunctionCall != null)
+        if (!string.IsNullOrEmpty(Function))
         {
-            sb.AppendLine($" Function_Call => {FunctionCall.Function}");
+            sb.AppendLine($" -Function_Call => {Function}");
 
-            sb.AppendLine(" Parameters:");
+            sb.AppendLine(" -Parameters:");
 
-            foreach (var parameter in FunctionCall.Parameters)
+            foreach (var parameter in Parameters)
             {
                 sb.AppendLine($"  {parameter.Name}: {parameter.Value}");
             }
@@ -78,14 +78,42 @@ public class StepwiseFunctionCallResult : FunctionCallResult
 
         if (!string.IsNullOrEmpty(FunctionResult))
         {
-            sb.AppendLine($" Function_Result: {FunctionResult}");
+            sb.AppendLine($" -Function_Result: {FunctionResult}");
         }
 
         if (!string.IsNullOrEmpty(FinalAnswer))
         {
-            sb.AppendLine($" Final_Answer: {FinalAnswer}");
+            sb.AppendLine($" -Final_Answer: {FinalAnswer}");
         }
         return sb.ToString();
+    }
+
+
+    public string GetAssistantMessage()
+    {
+        var stringBuilder = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(Observation))
+        {
+            stringBuilder.AppendLine($"{nameof(Observation)}: {Observation}");
+        }
+
+        if (!string.IsNullOrEmpty(Thought))
+        {
+            stringBuilder.AppendLine($"{nameof(Thought)}: {Thought}");
+        }
+
+        if (!string.IsNullOrEmpty(Function))
+        {
+            stringBuilder.AppendLine($"Function_Call: {JsonSerializer.Serialize(new { function_call = Function, parameters = Parameters })}");
+        }
+
+        if (!string.IsNullOrEmpty(FinalAnswer))
+        {
+            stringBuilder.AppendLine($"{nameof(FinalAnswer)}: {FinalAnswer}");
+        }
+
+        return stringBuilder.ToString().Trim();
     }
 
 
@@ -132,10 +160,12 @@ public class StepwiseFunctionCallResult : FunctionCallResult
     {
         if (obj is StepwiseFunctionCallResult other)
         {
-            var functionEquality = FunctionCall?.Equals(other.FunctionCall) == true;
-            var thoughtEquality = Thought?.Equals(other.Thought, StringComparison.OrdinalIgnoreCase) == true;
-            var observationEquality = Observation?.Equals(other.Observation, StringComparison.OrdinalIgnoreCase) == true;
-            return functionEquality && thoughtEquality && observationEquality;
+            bool functionEquality = Function.Equals(other.Function, StringComparison.Ordinal);
+            bool parametersEquality = Parameters.Equals(other.Parameters);
+            bool thoughtEquality = Thought?.Equals(other.Thought, StringComparison.Ordinal) ?? other.Thought == null;
+            bool observationEquality = Observation?.Equals(other.Observation, StringComparison.Ordinal) ?? other.Observation == null;
+            bool resultEquality = FunctionResult?.Equals(other.FunctionResult, StringComparison.Ordinal) ?? other.FunctionResult == null;
+            return functionEquality && parametersEquality && thoughtEquality && observationEquality && resultEquality;
         }
 
         return base.Equals(obj);

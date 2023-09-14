@@ -77,35 +77,40 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     }
 
 
-    [SKFunction] [SKName("ExecutePlan")] [Description("Execute a plan")]
+    [SKFunction]
+    [SKName("ExecutePlan")]
+    [Description("Execute a plan")]
     public async Task<SKContext> ExecutePlanAsync(
-        [Description("The problem to solve")] string problem,
+        [Description("The request to fulfill")] string request,
         SKContext context,
         CancellationToken token)
     {
 
-        if (string.IsNullOrEmpty(problem))
+        if (string.IsNullOrEmpty(request))
         {
-            context.Variables.Update("Question not found.");
+            context.Variables.Update("No request specified");
             return context;
         }
 
         List<StepwiseFunctionCallResult> stepsTaken = new();
         var lastStep = new StepwiseFunctionCallResult();
 
-        _chatHistory = await InitializeChatHistoryAsync(_chatHistory, problem).ConfigureAwait(false);
+        _chatHistory = await InitializeChatHistoryAsync(_chatHistory, request).ConfigureAwait(false);
+        // var chatCompletion = await GetChatCompletionAsync().ConfigureAwait(false);
+        var chatCompletion = _kernel.GetService<IChatCompletion>();
 
         for (var i = 0; i < Config.MaxIterations; i++)
         {
-            var chatCompletion = _kernel.GetService<IChatCompletion>();
-
             if (i > 0)
             {
                 await Task.Delay(Config.MinIterationTimeMs, token).ConfigureAwait(false);
             }
 
+            var requestSettings = GetRequestSettings(context);
             context.Variables.Set("stepsTaken", string.Join("\n", stepsTaken.Select((result, step) => result.ToStepResult(step + 1))));
-            var nextStep = await StepAsync(context, stepsTaken, _chatHistory, chatCompletion, token).ConfigureAwait(false);
+            var nextStep = await StepAsync(stepsTaken, _chatHistory, chatCompletion, requestSettings, token).ConfigureAwait(false);
+
+            _logger.LogInformation("Next Step Result: {NextStep}", JsonSerializer.Serialize(nextStep, Config.SerializerOptions));
 
             if (nextStep == null)
             {
@@ -119,9 +124,11 @@ public class StructuredStepwisePlanner : IStructuredPlanner
                 return finalContext;
             }
 
-            nextStep = AddNextStep(stepsTaken, nextStep, lastStep, _chatHistory, _chatHistory.Messages.Count);
-            await Task.Delay(Config.MinIterationTimeMs, token).ConfigureAwait(false); // A
-            lastStep = nextStep;
+            nextStep = await GetStepResultAsync(nextStep).ConfigureAwait(false);
+            lastStep = AddNextStep(stepsTaken, nextStep, lastStep, _chatHistory, _chatHistory.Count);
+
+            await Task.Delay(Config.MinIterationTimeMs, token).ConfigureAwait(false);
+
         }
 
         context.Variables.Update($"Result not found, review _stepsTaken to see what happened.\n{JsonSerializer.Serialize(stepsTaken)}");
@@ -130,22 +137,139 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     }
 
 
-    private async Task<StepwiseFunctionCallResult?> StepAsync(SKContext context, List<StepwiseFunctionCallResult> stepsTaken, ChatHistory chatHistory, IChatCompletion chatCompletion, CancellationToken token)
+    private async Task<StepwiseFunctionCallResult?> StepAsync( List<StepwiseFunctionCallResult> stepsTaken, ChatHistory chatHistory, IChatCompletion chatCompletion, FunctionCallRequestSettings requestSettings, CancellationToken token)
     {
         var tokenCount = chatHistory.GetTokenCount();
 
         if (tokenCount >= Config.MaxTokens)
         {
-            chatHistory = await TrimChatHistoryAsync(tokenCount, chatHistory, chatCompletion, stepsTaken).ConfigureAwait(false);
+            chatHistory = await TrimChatHistoryAsync(tokenCount, chatHistory, stepsTaken).ConfigureAwait(false);
         }
-        var requestSettings = GetRequestSettings(context);
+
         return await GetNextStepAsync(chatHistory, chatCompletion, requestSettings, token).ConfigureAwait(false);
     }
 
 
-    private Task<ChatHistory> TrimChatHistoryAsync(int tokenCount, ChatHistory chatHistory, IChatCompletion chatCompletion, List<StepwiseFunctionCallResult> stepsTaken)
+    private async Task<StepwiseFunctionCallResult> GetNextStepAsync(ChatHistory chatHistory, IChatCompletion chatCompletion,  FunctionCallRequestSettings requestSettings, CancellationToken token)
     {
-        _logger?.LogInformation("Trimming chat history");
+        var nextStep = await chatCompletion.GenerateResponseAsync<StepwiseFunctionCallResult>(
+                chatHistory,
+                requestSettings,
+                Config.SerializerOptions,
+                s => s.ToFunctionCallResult(), token)
+            .ConfigureAwait(false);
+
+        if (nextStep == null)
+        {
+            throw new InvalidOperationException("Failed to parse step from response text.");
+        }
+
+        return nextStep;
+    }
+
+
+    private SKContext? TryGetFinalAnswer(StepwiseFunctionCallResult step, SKContext context, List<StepwiseFunctionCallResult> stepsTaken)
+    {
+        if (string.IsNullOrEmpty(step.FinalAnswer))
+        {
+            return null;
+        }
+        _logger.LogInformation("Final Answer: {FinalAnswer}", step.FinalAnswer);
+        context.Variables.Update(step.FinalAnswer);
+        stepsTaken.Add(step);
+        AddExecutionStatsToContext(stepsTaken, context, stepsTaken.Count);
+        return context;
+    }
+
+
+    private StepwiseFunctionCallResult AddNextStep(List<StepwiseFunctionCallResult> stepsTaken, StepwiseFunctionCallResult step, StepwiseFunctionCallResult lastStep, ChatHistory chatHistory, int startingMessageCount)
+    {
+        var assistantMessage = step.GetAssistantMessage();
+        var userMessage = "Observation: " + step.FunctionResult;
+        _logger.LogInformation("Assistant: {Assistant}", assistantMessage);
+        _logger.LogInformation("User: {User}", userMessage);
+
+        if (string.IsNullOrEmpty(lastStep.Function) || !string.IsNullOrEmpty(step.FinalAnswer))
+        {
+            stepsTaken.Add(step);
+            chatHistory.AddAssistantMessage(assistantMessage);
+            chatHistory.AddUserMessage(userMessage!);
+
+            return step;
+        }
+
+        if (lastStep.Equals(step))
+        {
+            lastStep.FunctionResult += step.FunctionResult;
+            chatHistory.Messages.RemoveAt(chatHistory.Count - 1);
+            _logger.LogInformation("Removed last message");
+            step = lastStep;
+        }
+
+        else
+        {
+            stepsTaken.Add(step);
+        }
+
+        chatHistory.AddAssistantMessage(assistantMessage);
+        chatHistory.AddUserMessage(userMessage!);
+
+        return step;
+    }
+
+
+    private async Task<StepwiseFunctionCallResult> GetStepResultAsync(StepwiseFunctionCallResult nextStep)
+    {
+        if (nextStep.FunctionCall == null)
+        {
+            return nextStep;
+        }
+
+        var functionCall = nextStep.FunctionCall;
+        nextStep.FunctionCall = null;
+        nextStep.Function = functionCall.Function;
+        nextStep.Parameters = functionCall.Parameters;
+        _context.Skills.TryGetFunction(functionCall, out var targetFunction);
+
+        if (targetFunction == null)
+        {
+            throw new SKException($"The function '{functionCall.Function}' was not found.");
+        }
+
+        try
+        {
+            var result = await targetFunction.InvokeAsync(functionCall.FunctionParameters()).ConfigureAwait(false);
+
+            _logger.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
+
+            nextStep.FunctionResult = result.Result.Trim();
+            return nextStep;
+        }
+        catch (Exception e) when (!e.IsCriticalException())
+        {
+            _logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            throw;
+        }
+    }
+
+
+    private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, string request)
+    {
+        var systemMessage = await GetSystemMessage(_context).ConfigureAwait(false);
+
+        chatHistory.AddSystemMessage(systemMessage);
+        chatHistory.AddUserMessage(request);
+
+        return chatHistory;
+    }
+
+
+    private Task<string> GetSystemMessage(SKContext context) => _promptRenderer.RenderAsync(_promptTemplate, context);
+
+
+    private Task<ChatHistory> TrimChatHistoryAsync(int tokenCount, ChatHistory chatHistory, List<StepwiseFunctionCallResult> stepsTaken)
+    {
+        _logger.LogInformation("Trimming chat history");
         var removalIndex = chatHistory.Messages.Count;
         List<ChatMessageBase> userMessages = chatHistory.Messages.Where(m => m.Role == AuthorRole.User).ToList();
         Queue<ChatMessageBase> stepwiseFunctionResults = new(chatHistory.Messages.Where(m => m.Role == AuthorRole.Assistant));
@@ -200,128 +324,6 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     }
 
 
-    private async Task<StepwiseFunctionCallResult> GetNextStepAsync(ChatHistory chatHistory, IChatCompletion chatCompletion, FunctionCallRequestSettings requestSettings, CancellationToken token)
-    {
-
-        var nextStep = await chatCompletion.GenerateResponseAsync<StepwiseFunctionCallResult>(
-                chatHistory,
-                requestSettings,
-                Config.SerializerOptions,
-                s => s.ToFunctionCallResult(), token)
-            .ConfigureAwait(false);
-
-        if (nextStep == null)
-        {
-            throw new InvalidOperationException("Failed to parse step from response text.");
-        }
-
-        var assistantMessage = nextStep.ToString();
-        _logger?.LogInformation("Assistant message: {AssistantMessage}", assistantMessage);
-        Console.WriteLine(assistantMessage);
-        _chatHistory.AddAssistantMessage(assistantMessage);
-
-        if (nextStep.FunctionCall == null)
-        {
-            return nextStep;
-        }
-
-        var actionResult = await InvokeActionAsync(nextStep.FunctionCall).ConfigureAwait(false);
-        nextStep.FunctionResult = actionResult;
-        var userMessage = $"Observation: {actionResult}";
-        Console.WriteLine(userMessage);
-        chatHistory.AddUserMessage("Observation: " + actionResult);
-        return nextStep;
-    }
-
-
-    private SKContext? TryGetFinalAnswer(StepwiseFunctionCallResult step, SKContext context, List<StepwiseFunctionCallResult> stepsTaken)
-    {
-        if (!string.IsNullOrEmpty(step.FinalAnswer))
-        {
-            _logger?.LogInformation("Final Answer: {FinalAnswer}", step.FinalAnswer);
-            context.Variables.Update(step.FinalAnswer);
-            stepsTaken.Add(step);
-            AddExecutionStatsToContext(stepsTaken, context, stepsTaken.Count);
-            return context;
-        }
-        return null;
-    }
-
-
-    private StepwiseFunctionCallResult AddNextStep(List<StepwiseFunctionCallResult> stepsTaken, StepwiseFunctionCallResult step, StepwiseFunctionCallResult lastStep, ChatHistory chatHistory, int startingMessageCount)
-    {
-        if (lastStep.FunctionCall == null)
-        {
-            stepsTaken.Add(step);
-            return step;
-        }
-
-        if (step.FunctionCall != null
-            && step.FunctionCall.Function.Equals(lastStep.FunctionCall.Function, StringComparison.Ordinal)
-            && step.FunctionCall.Parameters.Equals(lastStep.FunctionCall.Parameters))
-        {
-            lastStep.FunctionCall = step.FunctionCall;
-            lastStep.FunctionResult += step.FunctionResult;
-
-            if (chatHistory.Messages.Count > startingMessageCount)
-            {
-                chatHistory.Messages.RemoveAt(chatHistory.Messages.Count - 1);
-            }
-
-            step = lastStep;
-        }
-
-        else
-        {
-            _logger.LogInformation("Thought: {Thought}", step.Thought);
-            stepsTaken.Add(step);
-        }
-
-        return step;
-    }
-
-
-    private async Task<string> InvokeActionAsync(FunctionCallResult functionCall)
-    {
-        _context.Skills.TryGetFunction(functionCall, out var targetFunction);
-
-        if (targetFunction == null)
-        {
-            throw new SKException($"The function '{functionCall.Function}' was not found.");
-        }
-
-        try
-        {
-            var result = await targetFunction.InvokeAsync(functionCall.FunctionParameters()).ConfigureAwait(false);
-
-            _logger.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
-
-            return result.Result;
-        }
-        catch (Exception e) when (!e.IsCriticalException())
-        {
-            _logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
-            throw;
-        }
-    }
-
-
-    private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, string request)
-    {
-
-        var systemContext = _kernel.CreateNewContext();
-        var systemMessage = await GetSystemMessage(systemContext).ConfigureAwait(false);
-
-        chatHistory.AddSystemMessage(systemMessage);
-        chatHistory.AddUserMessage(request);
-
-        return chatHistory;
-    }
-
-
-    private Task<string> GetSystemMessage(SKContext context) => _promptRenderer.RenderAsync(_promptTemplate, context);
-
-
     private static void AddExecutionStatsToContext(List<StepwiseFunctionCallResult> stepsTaken, SKContext context, int iteration)
     {
         context.Variables.Set("stepCount", stepsTaken.Count.ToString(CultureInfo.InvariantCulture));
@@ -330,13 +332,13 @@ public class StructuredStepwisePlanner : IStructuredPlanner
 
         Dictionary<string, int> functionCounts = new();
 
-        foreach (var step in stepsTaken.Where(step => !string.IsNullOrEmpty(step.FunctionCall?.Function)))
+        foreach (var step in stepsTaken.Where(step => !string.IsNullOrEmpty(step.Function)))
         {
-            if (!functionCounts.TryGetValue(step.FunctionCall!.Function, out var currentCount))
+            if (!functionCounts.TryGetValue(step!.Function, out var currentCount))
             {
                 currentCount = 0;
             }
-            functionCounts[step.FunctionCall.Function] = currentCount + 1;
+            functionCounts[step.Function] = currentCount + 1;
         }
 
         var functionCallListWithCounts = string.Join(", ", functionCounts.Keys.Select(func =>
@@ -361,8 +363,8 @@ public class StructuredStepwisePlanner : IStructuredPlanner
             Temperature = 0.0,
             StopSequences = new List<string>()
             {
-                "Observation:",
-                "Thought:"
+                "Observation: ",
+                "Thought: "
             }
         };
     }

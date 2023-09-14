@@ -95,7 +95,7 @@ public static class ChatMessageExtensions
     /// </summary>
     /// <param name="chatMessage"></param>
     /// <returns></returns>
-    public static FunctionCallResult? ToFunctionCall(this ChatMessageBase chatMessage)
+    public static FunctionCallResult? ToFunctionCallResult(this ChatMessageBase chatMessage)
     {
         FunctionCallResult? functionCall = default;
         var firstElementJsonString = "";
