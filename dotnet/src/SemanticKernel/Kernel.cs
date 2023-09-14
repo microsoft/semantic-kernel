@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -238,12 +239,6 @@ repeat:
     }
 
     /// <inheritdoc/>
-    public ISKFunction Func(string skillName, string functionName)
-    {
-        return this.Skills.GetFunction(skillName, functionName);
-    }
-
-    /// <inheritdoc/>
     public SKContext CreateNewContext()
     {
         return new SKContext(
@@ -383,6 +378,18 @@ repeat:
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
+    }
+
+    #endregion
+
+    #region Obsolete ===============================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction Func(string skillName, string functionName)
+    {
+        return this.Skills.GetFunction(skillName, functionName);
     }
 
     #endregion
