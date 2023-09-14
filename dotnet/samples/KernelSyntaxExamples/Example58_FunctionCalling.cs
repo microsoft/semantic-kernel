@@ -17,7 +17,7 @@ using RepoUtils;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example57_FunctionCalling
+public static class Example58_FunctionCalling
 {
     public static async Task RunAsync()
     {
