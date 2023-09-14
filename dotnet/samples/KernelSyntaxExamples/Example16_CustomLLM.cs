@@ -145,11 +145,11 @@ public static class Example16_CustomLLM
     {
         var requestSettings = new
         {
-            max_tokens = 100,
-            frequency_penalty = 0,
-            presence_penalty = 0,
-            temperature = 1,
-            top_p = 0.5
+            MaxTokens = 100,
+            FrequencyPenalty = 0,
+            PresencePenalty = 0,
+            Temperature = 1,
+            TopP = 0.5
         };
 
         Console.WriteLine("Prompt: " + prompt);

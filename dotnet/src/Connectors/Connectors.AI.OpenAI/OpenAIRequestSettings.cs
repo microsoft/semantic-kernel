@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -136,6 +137,7 @@ public abstract class OpenAIRequestSettings
         };
 
         options.Converters.Add(new OpenAIRequestSettingsConverter<OpenAITextRequestSettings>());
+        options.Converters.Add(new OpenAIRequestSettingsConverter<OpenAIChatRequestSettings>());
 
         return options;
     }

@@ -82,10 +82,10 @@ public class OpenAIRequestSettingsConverter<T> : JsonConverter<T> where T : Open
     {
         writer.WriteStartObject();
 
-        writer.WriteNumber("", value.Temperature);
-        writer.WriteNumber("", value.TopP);
-        writer.WriteNumber("", value.FrequencyPenalty);
-        writer.WriteNumber("", value.PresencePenalty);
+        writer.WriteNumber("temperature", value.Temperature);
+        writer.WriteNumber("top_p", value.TopP);
+        writer.WriteNumber("frequency_penalty", value.FrequencyPenalty);
+        writer.WriteNumber("presence_penalty", value.PresencePenalty);
         if (value.MaxTokens is null)
         {
             writer.WriteNull("max_tokens");

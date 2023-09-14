@@ -59,7 +59,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var haiku = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new { max_tokens = 100 });
+        var haiku = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new { MaxTokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");

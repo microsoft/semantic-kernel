@@ -306,7 +306,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new { max_tokens = 150 });
+        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new { MaxTokens = 150 });
 
         // Assert
         Assert.Contains("Pike Place", actual.Result, StringComparison.OrdinalIgnoreCase);

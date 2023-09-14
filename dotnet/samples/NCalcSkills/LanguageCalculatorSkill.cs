@@ -72,7 +72,7 @@ Question: {{ $input }}
             skillName: nameof(LanguageCalculatorSkill),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            requestSettings: new { max_tokens = 256, temperature = 0.0, top_p = 1 });
+            requestSettings: new { MaxTokens = 256, Temperature = 0.0, TopP = 1 });
     }
 
     /// <summary>
