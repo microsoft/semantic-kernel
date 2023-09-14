@@ -263,12 +263,26 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             return request;
         }
 
+        TextCompletionRequest? textCompletionRequest = null;
+
         if (requestSettings.GetType() == typeof(JsonElement))
         {
-            return Json.Deserialize<TextCompletionRequest>(requestSettings.ToString());
+            textCompletionRequest = Json.Deserialize<TextCompletionRequest>(requestSettings.ToString());
+        }
+        else
+        {
+            textCompletionRequest = Json.Deserialize<TextCompletionRequest>(JsonSerializer.Serialize(requestSettings));
         }
 
-        return Json.Deserialize<TextCompletionRequest>(JsonSerializer.Serialize(requestSettings));
+        if (textCompletionRequest is null)
+        {
+            textCompletionRequest = new TextCompletionRequest()
+            {
+                Prompt = text
+            };
+        }
+
+        return textCompletionRequest;
     }
 
     /// <summary>
