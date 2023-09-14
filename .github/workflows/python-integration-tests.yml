@@ -91,7 +91,10 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
-          docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          if ${{ matrix.os == 'ubuntu-latest' }}; then
+            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          fi
+
           cd python
           poetry run pytest ./tests/integration -v
 
@@ -150,7 +153,10 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ADMIN_KEY: ${{secrets.AZURE_COGNITIVE_SEARCH_ADMIN_KEY}}
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
         run: |
-          docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          if ${{ matrix.os == 'ubuntu-latest' }}; then
+            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          fi
+
           cd python
           poetry run pytest ./tests/integration -v
 

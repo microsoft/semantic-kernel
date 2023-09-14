@@ -2,14 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -80,12 +76,11 @@ public sealed class SKContext
 
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
-    /// If an error occurred, prints the last exception message instead.
     /// </summary>
-    /// <returns>Processed input, aka result, or last exception message if any</returns>
+    /// <returns>Processed input, aka result.</returns>
     public override string ToString()
     {
-        return this.ErrorOccurred ? $"Error: {this.LastException?.Message}" : this.Result;
+        return this.Result;
     }
 
     /// <summary>
@@ -101,7 +96,6 @@ public sealed class SKContext
             loggerFactory: this.LoggerFactory)
         {
             Culture = this.Culture,
-            LastException = this.LastException
         };
     }
 
@@ -110,11 +104,6 @@ public sealed class SKContext
     {
         get
         {
-            if (this.ErrorOccurred)
-            {
-                return $"Error: {this.LastException?.Message}";
-            }
-
             string display = this.Variables.DebuggerDisplay;
 
             if (this.Skills is IReadOnlySkillCollection skills)
@@ -128,95 +117,4 @@ public sealed class SKContext
             return display;
         }
     }
-
-    #region Error handling
-    /// <summary>
-    /// Whether an error occurred while executing functions in the pipeline.
-    /// </summary>
-    public bool ErrorOccurred => this.LastException != null;
-
-    /// <summary>
-    /// When an error occurs, this is the most recent exception.
-    /// </summary>
-    public Exception? LastException { get; internal set; }
-
-    #endregion
-
-    #region Obsolete
-    /// <summary>
-    /// Shortcut into user data, access variables by name
-    /// </summary>
-    /// <param name="name">Variable name</param>
-    [Obsolete("Use SKContext.Variables instead. This property will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string this[string name]
-    {
-        get => this.Variables[name];
-        set => this.Variables[name] = value;
-    }
-
-    /// <summary>
-    /// App logger (obsolete - use 'Logger' instead).
-    /// </summary>
-    [Obsolete("Use SKContext.Logger instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogger Log => this.LoggerFactory.CreateLogger<SKContext>();
-
-    /// <summary>
-    /// The token to monitor for cancellation requests.
-    /// </summary>
-    [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public CancellationToken CancellationToken { get; } = default;
-
-    /// <summary>
-    /// Semantic memory
-    /// </summary>
-    [Obsolete("Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISemanticTextMemory Memory
-    {
-        get => throw new InvalidOperationException(
-            "Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.");
-    }
-
-    /// <summary>
-    /// Error details.
-    /// </summary>
-    [Obsolete("Use LastException.Message instead. This property will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public string? LastErrorDescription => this.LastException?.Message;
-
-    /// <summary>
-    /// Call this method to signal when an error occurs.
-    /// In the usual scenarios this is also how execution is stopped, e.g. to inform the user or take necessary steps.
-    /// </summary>
-    /// <param name="errorDescription">Error description</param>
-    /// <param name="exception">If available, the exception occurred</param>
-    /// <returns>The current instance</returns>
-    [Obsolete("Throw exception from SKFunction implementation instead. The Kernel will set the failure properties. " +
-        "This method will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public SKContext Fail(string errorDescription, Exception? exception = null)
-    {
-        // Temporary workaround: if no exception is provided, create a new one.
-        this.LastException = exception ?? new SKException(errorDescription);
-        return this;
-    }
-
-    /// <summary>
-    /// Access registered functions by skill + name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    [Obsolete("Use SKContext.Skills.GetFunction(skillName, functionName) instead. " +
-    "This method will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction Func(string skillName, string functionName)
-    {
-        return this.Skills.GetFunction(skillName, functionName);
-    }
-    #endregion
 }

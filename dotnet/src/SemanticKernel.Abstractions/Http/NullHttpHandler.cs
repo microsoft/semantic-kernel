@@ -5,7 +5,7 @@ using System.Net.Http;
 namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>
-/// A http retry handler that does not retry.
+/// A http retry handler that does nothing.
 /// </summary>
 public sealed class NullHttpHandler : DelegatingHandler
 {
