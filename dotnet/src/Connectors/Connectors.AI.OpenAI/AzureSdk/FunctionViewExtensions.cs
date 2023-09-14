@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -12,6 +11,8 @@ internal static class FunctionViewExtensions
 {
     public static FunctionDefinition ToFunctionDefinition(this FunctionView functionView)
     {
+        var requiredParams = new List<string>();
+
         var paramProperties = new Dictionary<string, object>();
         foreach (var param in functionView.Parameters)
         {
@@ -24,10 +25,12 @@ internal static class FunctionViewExtensions
                     type = param.Type?.Name ?? "string",
                     description = param.Description ?? "",
                 });
-        }
 
-        // TODO: how do I get required parameters?
-        // paramProperties.Add("required",
+            if (param.IsRequired)
+            {
+                requiredParams.Add(param.Name);
+            }
+        }
 
         var functionDefinition = new FunctionDefinition
         {
@@ -38,11 +41,9 @@ internal static class FunctionViewExtensions
                 {
                     type = "object",
                     properties = paramProperties,
+                    required = requiredParams,
                 }),
         };
-
-        // Debug only
-        var test = JsonSerializer.Serialize(paramProperties);
 
         return functionDefinition;
     }

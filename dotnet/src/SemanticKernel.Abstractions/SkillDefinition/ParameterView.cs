@@ -43,6 +43,11 @@ public sealed class ParameterView
     public ParameterViewType? Type { get; set; }
 
     /// <summary>
+    /// Whether the parameter is required.
+    /// </summary>
+    public bool IsRequired { get; set; } = false;
+
+    /// <summary>
     /// Constructor
     /// </summary>
     public ParameterView()
@@ -60,12 +65,14 @@ public sealed class ParameterView
         string name,
         string? description = null,
         string? defaultValue = null,
-        ParameterViewType? type = null)
+        ParameterViewType? type = null,
+        bool isRequired = false)
     {
         this.Name = name;
         this.Description = description;
         this.DefaultValue = defaultValue;
         this.Type = type;
+        this.IsRequired = isRequired;
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]

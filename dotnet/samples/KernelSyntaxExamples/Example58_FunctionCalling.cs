@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using RepoUtils;
 
 /**
@@ -21,12 +20,16 @@ public static class Example58_FunctionCalling
 {
     public static async Task RunAsync()
     {
-        IKernel kernel = InitializeKernel();
+        IKernel kernel = await InitializeKernelAsync();
+        var chatCompletion = kernel.GetService<IChatCompletion>();
+        var chatHistory = chatCompletion.CreateNewChat();
 
-        await UseChatCompletionInterfaceAsync(kernel);
+        await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel);
+
+        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel);
     }
 
-    public static IKernel InitializeKernel()
+    private static async Task<IKernel> InitializeKernelAsync()
     {
         // Create kernel with chat completions service
         IKernel kernel = new KernelBuilder()
@@ -35,42 +38,46 @@ public static class Example58_FunctionCalling
             //.WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey, serviceId: "chat")
             .Build();
 
-        // Load functions
+        // Load functions to kernel
         string folder = RepoFiles.SampleSkillsPath();
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimeSkill(), "TimeSkill");
+
+        await kernel.ImportAIPluginAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters());
 
         return kernel;
     }
 
-    public static async Task UseChatCompletionInterfaceAsync(IKernel kernel)
+    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel)
     {
-        var chatCompletion = kernel.GetService<IChatCompletion>();
-        var chatHistory = chatCompletion.CreateNewChat();
+        Console.WriteLine($"User message: {ask}");
+        chatHistory.AddUserMessage(ask);
 
-        chatHistory.AddUserMessage("What day is today?");
-        //chatHistory.AddUserMessage("Tell me a joke!");
-
+        // Retrieve available functions from the kernel and add to request settings
         ChatRequestSettings requestSettings = new();
         requestSettings.Functions = kernel.Skills.GetFunctionsView();
 
+        // Send request
         var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
 
+        // Check for message response
         var chatMessage = await chatResult.GetChatMessageAsync();
         if (chatMessage.Content.IsNotNullOrEmpty())
         {
             Console.WriteLine(chatMessage.Content);
         }
 
+        // Check for function response
         var functionCall = chatResult.ModelResult.GetResult<ChatModelResult>().Choice.Message.FunctionCall;
         if (functionCall is not null)
         {
-            Console.WriteLine("Function name:" + functionCall.Name);
-            Console.WriteLine("Function args: " + functionCall.Arguments);
-
             FunctionCallResponse functionResponse = FunctionCallResponse.FromFunctionCall(functionCall);
+
+            Console.WriteLine("Skill name: " + functionResponse.SkillName);
+            Console.WriteLine("Function name: " + functionResponse.FunctionName);
+            Console.WriteLine("Arguments: ");
 
             // Validate and retrieve function - move this somewhere else?
             // TODO: handle global skills
@@ -81,11 +88,13 @@ public static class Example58_FunctionCalling
 
                 foreach (var parameter in functionResponse.Parameters)
                 {
-                    // add to context
-                    // todo: could determine type of each param? or have dictionary store strings
-                    // todo:" use tostring or json serialization?
-                    context.Variables.Set(parameter.Key, JsonSerializer.Serialize(parameter.Value));
+                    Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
+
+                    // Add to parameters to context
+                    context.Variables.Set(parameter.Key, parameter.Value.ToString());
                 }
+
+                // Invoke the function
                 var result = await func.InvokeAsync(context);
                 Console.WriteLine(result.Result);
             }
@@ -94,20 +103,5 @@ public static class Example58_FunctionCalling
                 // Invalid function call
             }
         }
-    }
-
-    private static AzureChatCompletion GetAzureChatCompletion()
-    {
-        return new(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey);
-    }
-
-    private static OpenAIChatCompletion GetOpenAIChatCompletion()
-    {
-        return new OpenAIChatCompletion(
-            TestConfiguration.OpenAI.ChatModelId,
-            TestConfiguration.OpenAI.ApiKey);
     }
 }
