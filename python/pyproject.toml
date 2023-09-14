@@ -21,7 +21,7 @@ pydantic = "<2"
 pre-commit = "3.3.3"
 black = {version = "23.7.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
-pytest = "7.4.0"
+pytest = "7.4.2"
 ruff = "0.0.285"
 pytest-asyncio = "0.21.1"
 snoop = "0.4.3"
