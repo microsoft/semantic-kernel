@@ -58,11 +58,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         Verify.NotNull(chat);
 
-        requestSettings ??= new OpenAIChatRequestSettings();
+        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
-        ValidateMaxTokens(requestSettings.MaxTokens);
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        return await this.ExecuteCompletionRequestAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        return await this.ExecuteCompletionRequestAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -73,11 +73,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         Verify.NotNull(chat);
 
-        requestSettings ??= new OpenAIChatRequestSettings();
+        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
-        ValidateMaxTokens(requestSettings.MaxTokens);
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        return this.ExecuteCompletionStreamingRequestAsync(chat, requestSettings, cancellationToken);
+        return this.ExecuteCompletionStreamingRequestAsync(chat, chatRequestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -86,12 +86,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        requestSettings ??= new OpenAIChatRequestSettings();
+        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
         var chat = this.PrepareChatHistory(text, requestSettings);
-        var OpenAIChatRequestSettings = this.PrepareOpenAIChatRequestSettings(requestSettings);
 
-        return (await this.GetChatCompletionsAsync(chat, OpenAIChatRequestSettings, cancellationToken).ConfigureAwait(false))
+        return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
     }
@@ -102,12 +101,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        requestSettings ??= new OpenAIChatRequestSettings();
+        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
         var chat = this.PrepareChatHistory(text, requestSettings);
-        var OpenAIChatRequestSettings = this.PrepareOpenAIChatRequestSettings(requestSettings);
 
-        IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken);
+        IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
         await foreach (var result in results)
         {
             yield return (ITextStreamingResult)result;
@@ -294,19 +292,6 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         chat.AddUserMessage(text);
 
         return chat;
-    }
-
-    private OpenAIChatRequestSettings PrepareOpenAIChatRequestSettings(dynamic requestSettings)
-    {
-        return new OpenAIChatRequestSettings
-        {
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
-            PresencePenalty = requestSettings.PresencePenalty,
-            FrequencyPenalty = requestSettings.FrequencyPenalty,
-            StopSequences = requestSettings.StopSequences,
-        };
     }
 
     private string GetRequestUri()
