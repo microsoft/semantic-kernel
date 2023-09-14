@@ -116,7 +116,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ShouldBuildResourceUrlWitoutQueryString()
+    public void ShouldBuildResourceUrlWithoutQueryString()
     {
         // Arrange
         var firstParameterMetadata = new RestApiOperationParameter(
