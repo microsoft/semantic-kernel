@@ -101,7 +101,7 @@ public class KernelTests
         using CancellationTokenSource cts = new();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));
+        SKContext result = await kernel.RunAsync(cts.Token, kernel.Skills.GetFunction("mySk", "GetAnyValue"));
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.Result));
