@@ -42,7 +42,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
         ILoggerFactory? loggerFactory = null)
     {
         this._function = function;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(InstrumentedSKFunction)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedSKFunction)) : NullLogger.Instance;
 
         this._executionTimeHistogram = s_meter.CreateHistogram<double>(
             name: $"SK.{this.SkillName}.{this.Name}.ExecutionTime",
@@ -134,36 +134,40 @@ public sealed class InstrumentedSKFunction : ISKFunction
         this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution started.", this.SkillName, this.Name);
 
         var stopwatch = new Stopwatch();
-
         stopwatch.Start();
 
-        var result = await func().ConfigureAwait(false);
+        SKContext result;
 
-        stopwatch.Stop();
-
-        if (result.ErrorOccurred)
+        try
+        {
+            result = await func().ConfigureAwait(false);
+        }
+        catch (Exception ex)
         {
             this._logger.LogWarning("{SkillName}.{FunctionName}: Function execution status: {Status}",
                 this.SkillName, this.Name, "Failed");
 
-            this._logger.LogError(result.LastException, "{SkillName}.{FunctionName}: Function execution exception details: {Message}",
-                this.SkillName, this.Name, result.LastException?.Message);
+            this._logger.LogError(ex, "{SkillName}.{FunctionName}: Function execution exception details: {Message}",
+                this.SkillName, this.Name, ex.Message);
 
             this._executionFailureCounter.Add(1);
+
+            throw;
         }
-        else
+        finally
         {
-            this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution status: {Status}",
+            stopwatch.Stop();
+            this._executionTotalCounter.Add(1);
+            this._executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
+        }
+
+        this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution status: {Status}",
                 this.SkillName, this.Name, "Success");
 
-            this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution finished in {ExecutionTime}ms",
-                this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
+        this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution finished in {ExecutionTime}ms",
+            this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
 
-            this._executionSuccessCounter.Add(1);
-        }
-
-        this._executionTotalCounter.Add(1);
-        this._executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
+        this._executionSuccessCounter.Add(1);
 
         return result;
     }

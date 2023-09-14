@@ -43,7 +43,7 @@ public sealed class InstrumentedPlan : IPlan
         ILoggerFactory? loggerFactory = null)
     {
         this._plan = plan;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(nameof(InstrumentedPlan)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedPlan)) : NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -126,30 +126,33 @@ public sealed class InstrumentedPlan : IPlan
         this._logger.LogInformation("Plan execution started.");
 
         var stopwatch = new Stopwatch();
-
         stopwatch.Start();
 
-        var result = await func().ConfigureAwait(false);
+        SKContext result;
 
-        stopwatch.Stop();
-
-        if (result.ErrorOccurred)
+        try
+        {
+            result = await func().ConfigureAwait(false);
+        }
+        catch (Exception ex)
         {
             this._logger.LogWarning("Plan execution status: {Status}", "Failed");
-            this._logger.LogError(result.LastException, "Plan execution exception details: {Message}", result.LastException?.Message);
+            this._logger.LogError(ex, "Plan execution exception details: {Message}", ex.Message);
 
             s_executionFailureCounter.Add(1);
+            throw;
         }
-        else
+        finally
         {
-            this._logger.LogInformation("Plan execution status: {Status}", "Success");
-            this._logger.LogInformation("Plan execution finished in {ExecutionTime}ms", stopwatch.ElapsedMilliseconds);
-
-            s_executionSuccessCounter.Add(1);
+            stopwatch.Stop();
+            s_executionTotalCounter.Add(1);
+            s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
         }
 
-        s_executionTotalCounter.Add(1);
-        s_executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
+        this._logger.LogInformation("Plan execution status: {Status}", "Success");
+        this._logger.LogInformation("Plan execution finished in {ExecutionTime}ms", stopwatch.ElapsedMilliseconds);
+
+        s_executionSuccessCounter.Add(1);
 
         return result;
     }

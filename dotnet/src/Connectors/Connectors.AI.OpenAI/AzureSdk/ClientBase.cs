@@ -21,6 +21,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
+/// <summary>
+/// Base class for AI clients that provides common functionality for interacting with OpenAI services.
+/// </summary>
 public abstract class ClientBase
 {
     private const int MaxResultsPerPrompt = 128;
@@ -28,7 +31,7 @@ public abstract class ClientBase
     // Prevent external inheritors
     private protected ClientBase(ILoggerFactory? loggerFactory = null)
     {
-        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType().Name) : NullLogger.Instance;
+        this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
     /// <summary>

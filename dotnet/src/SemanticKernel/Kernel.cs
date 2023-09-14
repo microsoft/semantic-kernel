@@ -2,13 +2,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -33,9 +33,6 @@ namespace Microsoft.SemanticKernel;
 public sealed class Kernel : IKernel, IDisposable
 {
     /// <inheritdoc/>
-    public KernelConfig Config { get; }
-
-    /// <inheritdoc/>
     public ILoggerFactory LoggerFactory { get; }
 
     /// <inheritdoc/>
@@ -52,32 +49,35 @@ public sealed class Kernel : IKernel, IDisposable
     /// </summary>
     public static KernelBuilder Builder => new();
 
+    /// <inheritdoc/>
+    public IDelegatingHandlerFactory HttpHandlerFactory => this._httpHandlerFactory;
+
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="skillCollection"></param>
-    /// <param name="aiServiceProvider"></param>
-    /// <param name="promptTemplateEngine"></param>
-    /// <param name="memory"></param>
-    /// <param name="config"></param>
+    /// <param name="skillCollection">Skill collection</param>
+    /// <param name="aiServiceProvider">AI Service Provider</param>
+    /// <param name="promptTemplateEngine">Prompt template engine</param>
+    /// <param name="memory">Semantic text Memory</param>
+    /// <param name="httpHandlerFactory"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public Kernel(
         ISkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
-        KernelConfig config,
+        IDelegatingHandlerFactory httpHandlerFactory,
         ILoggerFactory loggerFactory)
     {
         this.LoggerFactory = loggerFactory;
-        this.Config = config;
+        this._httpHandlerFactory = httpHandlerFactory;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
         this._skillCollection = skillCollection;
 
-        this._logger = loggerFactory.CreateLogger(nameof(Kernel));
+        this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
 
     /// <inheritdoc/>
@@ -180,38 +180,23 @@ public sealed class Kernel : IKernel, IDisposable
             this._skillCollection,
             this.LoggerFactory);
 
-        int pipelineStepCount = -1;
+        int pipelineStepCount = 0;
+
         foreach (ISKFunction f in pipeline)
         {
-            if (context.ErrorOccurred)
-            {
-                this._logger.LogError(
-                    context.LastException,
-                    "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, context.LastException?.Message);
-                return context;
-            }
-
-            pipelineStepCount++;
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
                 context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                if (context.ErrorOccurred)
-                {
-                    this._logger.LogError("Function call fail during pipeline step {0}: {1}.{2}. Error: {3}",
-                        pipelineStepCount, f.SkillName, f.Name, context.LastException?.Message);
-                    return context;
-                }
             }
-            catch (Exception e) when (!e.IsCriticalException())
+            catch (Exception ex)
             {
-                this._logger.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}",
-                    pipelineStepCount, f.SkillName, f.Name, e.Message);
-                context.LastException = e;
-                return context;
+                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", f.SkillName, f.Name, pipelineStepCount, ex.Message);
+                throw;
             }
+
+            pipelineStepCount++;
         }
 
         return context;
@@ -262,6 +247,7 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly ILogger _logger;
+    private readonly IDelegatingHandlerFactory _httpHandlerFactory;
 
     private ISKFunction CreateSemanticFunction(
         string skillName,
@@ -287,7 +273,7 @@ public sealed class Kernel : IKernel, IDisposable
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>());
+        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion.ServiceId));
 
         return func;
     }
@@ -324,27 +310,6 @@ public sealed class Kernel : IKernel, IDisposable
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
-    }
-
-    #endregion
-
-    #region Obsolete
-
-    /// <inheritdoc/>
-    [Obsolete("Use Logger instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogger Log => this._logger;
-
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token for operations in context.</param>
-    /// <returns>SK context</returns>
-    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public SKContext CreateNewContext(CancellationToken cancellationToken)
-    {
-        return this.CreateNewContext();
     }
 
     #endregion

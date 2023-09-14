@@ -25,8 +25,10 @@ public sealed class WeaviateKernelBuilderExtensionsTests : IDisposable
         this.httpClient = new HttpClient(this.messageHandlerStub, false);
     }
 
-    [Fact]
-    public async Task WeaviateMemoryStoreShouldBeProperlyInitialized()
+    [Theory]
+    [InlineData(null, "https://fake-random-test-weaviate-host/v1/objects/fake-key")]
+    [InlineData("v2", "https://fake-random-test-weaviate-host/v2/objects/fake-key")]
+    public async Task WeaviateMemoryStoreShouldBeProperlyInitialized(string? apiVersion, string expectedAddress)
     {
         //Arrange
         var getResponse = new
@@ -42,7 +44,7 @@ public sealed class WeaviateKernelBuilderExtensionsTests : IDisposable
         this.messageHandlerStub.ResponseToReturn.Content = new StringContent(JsonSerializer.Serialize(getResponse, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }), Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new KernelBuilder();
-        builder.WithWeaviateMemoryStore(this.httpClient, "https://fake-random-test-weaviate-host", "fake-api-key");
+        builder.WithWeaviateMemoryStore(this.httpClient, "https://fake-random-test-weaviate-host", "fake-api-key", apiVersion);
         builder.WithAzureTextEmbeddingGenerationService("fake-deployment-name", "https://fake-random-test-host/fake-path", "fake -api-key");
         var kernel = builder.Build(); //This call triggers the internal factory registered by WithWeaviateMemoryStore method to create an instance of the WeaviateMemoryStore class.
 
@@ -50,7 +52,7 @@ public sealed class WeaviateKernelBuilderExtensionsTests : IDisposable
         await kernel.Memory.GetAsync("fake-collection", "fake-key"); //This call triggers a subsequent call to Weaviate memory store.
 
         //Assert
-        Assert.Equal("https://fake-random-test-weaviate-host/objects/fake-key", this.messageHandlerStub?.RequestUri?.AbsoluteUri);
+        Assert.Equal(expectedAddress, this.messageHandlerStub?.RequestUri?.AbsoluteUri);
 
         var headerValues = Enumerable.Empty<string>();
         var headerExists = this.messageHandlerStub?.RequestHeaders?.TryGetValues("Authorization", out headerValues);
