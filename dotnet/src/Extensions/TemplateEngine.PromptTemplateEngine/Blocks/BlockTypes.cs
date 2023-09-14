@@ -10,4 +10,5 @@ internal enum BlockTypes
     Variable = 3,
     Value = 4,
     FunctionId = 5,
+    NamedArg = 6,
 }

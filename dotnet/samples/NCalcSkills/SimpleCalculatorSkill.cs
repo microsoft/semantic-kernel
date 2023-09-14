@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 namespace NCalcSkills;
 
 /// <summary>
-///  Simple calculator skill
+/// Simple calculator skill that evaluates a mathematical expression.
 /// </summary>
 public class SimpleCalculatorSkill
 {
@@ -14,6 +14,10 @@ public class SimpleCalculatorSkill
 
     private static readonly string[] s_stopSequences = new[] { "Problem:", "Solution:" };
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SimpleCalculatorSkill"/> class.
+    /// </summary>
+    /// <param name="kernel">The kernel used to create the semantic function.</param>
     public SimpleCalculatorSkill(IKernel kernel)
     {
         this._mathTranslator = kernel.CreateSemanticFunction(

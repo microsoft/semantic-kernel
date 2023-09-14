@@ -10,6 +10,9 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
+/// <summary>
+/// Base class for OpenAI clients, providing common functionality and properties.
+/// </summary>
 public abstract class OpenAIClientBase : ClientBase
 {
     /// <summary>
@@ -18,11 +21,11 @@ public abstract class OpenAIClientBase : ClientBase
     private protected override OpenAIClient Client { get; }
 
     /// <summary>
-    /// Create an instance of the OpenAI connector
+    /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class.
     /// </summary>
-    /// <param name="modelId">Model name</param>
-    /// <param name="apiKey">OpenAI API Key</param>
-    /// <param name="organization">OpenAI Organization Id (usually optional)</param>
+    /// <param name="modelId">Model name.</param>
+    /// <param name="apiKey">OpenAI API Key.</param>
+    /// <param name="organization">OpenAI Organization Id (usually optional).</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     private protected OpenAIClientBase(
@@ -52,7 +55,7 @@ public abstract class OpenAIClientBase : ClientBase
     }
 
     /// <summary>
-    /// Creates a new OpenAI client instance using the specified OpenAIClient
+    /// Initializes a new instance of the <see cref="OpenAIClientBase"/> class using the specified OpenAIClient.
     /// Note: instances created this way might not have the default diagnostics settings,
     /// it's up to the caller to configure the client.
     /// </summary>
@@ -83,6 +86,7 @@ public abstract class OpenAIClientBase : ClientBase
     /// <summary>
     /// Options used by the OpenAI client, e.g. User Agent.
     /// </summary>
+    /// <returns>An instance of <see cref="OpenAIClientOptions"/> with the configured options.</returns>
     private static OpenAIClientOptions GetClientOptions()
     {
         return new OpenAIClientOptions
