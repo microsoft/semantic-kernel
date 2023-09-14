@@ -68,6 +68,10 @@ known as coral polyps.";
         }
     }
 
+    /// <summary>
+    /// Custom token counter implementation using SharpToken.
+    /// Note: SharpToken is used for demonstration purposes only, it's possible to use any available or custom tokenization logic.
+    /// </summary>
     private static int CustomTokenCounter(string input)
     {
         // Initialize encoding by encoding name
