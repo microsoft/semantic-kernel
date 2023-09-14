@@ -36,7 +36,7 @@ To call a function, follow these steps:
 5. Functions do not have access to the context variables of other functions. Do not attempt to use context variables as arrays or objects. Instead, use available functions to extract specific elements or properties from context variables.
 
 DO NOT DO THIS, THE PARAMETER VALUE IS NOT XML ESCAPED:
-<function.Name4 input="$SOME_PREVIOUS_OUTPUT" parameter_name="some value with a <!-- comment in it-->"/>
+<function.Name4 input="$SOME_PREVIOUS_OUTPUT" parameter_name="some value with a <!-- 'comment' in it-->"/>
 
 DO NOT DO THIS, THE PARAMETER VALUE IS ATTEMPTING TO USE A CONTEXT VARIABLE AS AN ARRAY/OBJECT:
 <function.CallFunction input="$OTHER_OUTPUT[1]"/>
@@ -48,7 +48,7 @@ Here is a valid example of how to call a function "FunctionName2" with a single 
 <function.FunctionName2 input="Hello $INPUT" appendToResult="RESULT__FINAL_ANSWER"/>
 
 Here is a valid example of how to call a function "Name3" with multiple inputs:
-<function.Name3 input="$SOME_PREVIOUS_OUTPUT" parameter_name="some value with a &lt;!-- comment in it--&gt;"/>
+<function.Name3 input="$SOME_PREVIOUS_OUTPUT" parameter_name="some value with a &lt;!-- &apos;comment&apos; in it--&gt;"/>
 
 Begin!
 
