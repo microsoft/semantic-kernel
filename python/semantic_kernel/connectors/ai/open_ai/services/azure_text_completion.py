@@ -67,6 +67,8 @@ class AzureTextCompletion(OpenAITextCompletionBase):
 
         Arguments:
             settings: A dictionary of settings for the service.
+                should contains keys: deployment_name, endpoint, api_key 
+                and optionally: api_version, ad_auth, log
         """
         if "api_type" in settings:
             settings["ad_auth"] = settings["api_type"] == "azure_ad"
