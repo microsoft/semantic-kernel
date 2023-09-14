@@ -618,7 +618,7 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
-    public void CanSplitMarkdownParagraphsWithverlapAndHeader()
+    public void CanSplitMarkdownParagraphsWithOverlapAndHeader()
     {
         const string chunkHeader = "DOCUMENT NAME: test.txt\n\n";
         List<string> input = new()
