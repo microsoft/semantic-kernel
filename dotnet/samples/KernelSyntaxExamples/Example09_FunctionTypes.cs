@@ -16,12 +16,12 @@ public static class Example09_FunctionTypes
     {
         Console.WriteLine("======== Native function types ========");
 
-        var fakeContext = new SKContext(loggerFactory: ConsoleLogger.LoggerFactory);
-
         var kernel = Kernel.Builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
+
+        var fakeContext = new SKContext(kernel, loggerFactory: ConsoleLogger.LoggerFactory);
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         var test = kernel.ImportSkill(new LocalExampleSkill(), "test");
@@ -52,14 +52,14 @@ public static class Example09_FunctionTypes
             test["type18"]
         );
 
-        await kernel.Func("test", "type01").InvokeAsync();
-        await test["type01"].InvokeAsync();
+        await kernel.Func("test", "type01").InvokeAsync(kernel);
+        await test["type01"].InvokeAsync(kernel);
 
-        await kernel.Func("test", "type02").InvokeAsync();
-        await test["type02"].InvokeAsync();
+        await kernel.Func("test", "type02").InvokeAsync(kernel);
+        await test["type02"].InvokeAsync(kernel);
 
-        await kernel.Func("test", "type03").InvokeAsync();
-        await test["type03"].InvokeAsync();
+        await kernel.Func("test", "type03").InvokeAsync(kernel);
+        await test["type03"].InvokeAsync(kernel);
 
         await kernel.Func("test", "type04").InvokeAsync(fakeContext);
         await test["type04"].InvokeAsync(fakeContext);
@@ -73,23 +73,23 @@ public static class Example09_FunctionTypes
         await kernel.Func("test", "type07").InvokeAsync(fakeContext);
         await test["type07"].InvokeAsync(fakeContext);
 
-        await kernel.Func("test", "type08").InvokeAsync("");
-        await test["type08"].InvokeAsync("");
+        await kernel.Func("test", "type08").InvokeAsync("", kernel);
+        await test["type08"].InvokeAsync("", kernel);
 
-        await kernel.Func("test", "type09").InvokeAsync("");
-        await test["type09"].InvokeAsync("");
+        await kernel.Func("test", "type09").InvokeAsync("", kernel);
+        await test["type09"].InvokeAsync("", kernel);
 
-        await kernel.Func("test", "type10").InvokeAsync("");
-        await test["type10"].InvokeAsync("");
+        await kernel.Func("test", "type10").InvokeAsync("", kernel);
+        await test["type10"].InvokeAsync("", kernel);
 
-        await kernel.Func("test", "type11").InvokeAsync("");
-        await test["type11"].InvokeAsync("");
+        await kernel.Func("test", "type11").InvokeAsync("", kernel);
+        await test["type11"].InvokeAsync("", kernel);
 
         await kernel.Func("test", "type12").InvokeAsync(fakeContext);
         await test["type12"].InvokeAsync(fakeContext);
 
-        await kernel.Func("test", "type18").InvokeAsync();
-        await test["type18"].InvokeAsync();
+        await kernel.Func("test", "type18").InvokeAsync(kernel);
+        await test["type18"].InvokeAsync(kernel);
     }
 }
 
@@ -132,7 +132,7 @@ public class LocalExampleSkill
     [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
-        var summarizer = context.Skills.GetFunction("SummarizeSkill", "Summarize");
+        var summarizer = context.skills.GetFunction("SummarizeSkill", "Summarize");
 
         var summary = await summarizer.InvokeAsync("blah blah blah");
 

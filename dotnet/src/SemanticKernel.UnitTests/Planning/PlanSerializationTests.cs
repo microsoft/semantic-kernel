@@ -19,6 +19,8 @@ namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
+    private Mock<IKernel> _kernel = new();
+
     [Fact]
     public void CanSerializePlan()
     {
@@ -89,6 +91,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -126,6 +129,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -163,6 +167,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -200,6 +205,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -236,6 +242,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -272,6 +279,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -329,6 +337,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -399,6 +408,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -446,6 +456,7 @@ public sealed class PlanSerializationTests
         cv.Set("variables", "bar");
         cv.Update(string.Empty);
         var nextContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(),
             skills.Object,
             logger.Object
@@ -483,6 +494,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object
@@ -540,6 +552,7 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
             skills.Object,
             logger.Object

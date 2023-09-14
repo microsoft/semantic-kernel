@@ -109,13 +109,15 @@ public sealed class ActionPlannerTests
             skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
         }
 
-        var returnContext = new SKContext(
+        var returnContext = new SKContext(kernel.Object,
             new ContextVariables(testPlanString),
             skills.Object
         );
 
         var context = new SKContext(
-            skills: skills.Object
+            kernel.Object,
+            skills: skills.Object,
+            loggerFactory: kernel.Object.LoggerFactory
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();

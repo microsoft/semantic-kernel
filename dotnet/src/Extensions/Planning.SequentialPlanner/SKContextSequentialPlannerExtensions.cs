@@ -62,7 +62,7 @@ public static class SKContextSequentialPlannerExtensions
         string? semanticQuery = null,
         CancellationToken cancellationToken = default)
     {
-        var functionsView = context.Skills.GetFunctionsView();
+        var functionsView = context.skills.GetFunctionsView();
 
         var availableFunctions = functionsView.SemanticFunctions
             .Concat(functionsView.NativeFunctions)

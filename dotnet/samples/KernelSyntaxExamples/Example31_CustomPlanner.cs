@@ -153,7 +153,7 @@ public class MarkupSkill
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(this._kernel.Object);
         return result.Result;
     }
 }
@@ -200,8 +200,8 @@ public static class XmlMarkupPlanParser
             else
             {
                 if (string.IsNullOrEmpty(skillName)
-                        ? !context.Skills!.TryGetFunction(functionName, out var _)
-                        : !context.Skills!.TryGetFunction(skillName, functionName, out var _))
+                        ? !context.skills!.TryGetFunction(functionName, out var _)
+                        : !context.skills!.TryGetFunction(skillName, functionName, out var _))
                 {
                     var planStep = new Plan(node.InnerText);
                     planStep.Parameters.Update(node.InnerText);
@@ -212,8 +212,8 @@ public static class XmlMarkupPlanParser
                 else
                 {
                     var command = string.IsNullOrEmpty(skillName)
-                        ? context.Skills.GetFunction(functionName)
-                        : context.Skills.GetFunction(skillName, functionName);
+                        ? context.skills.GetFunction(functionName)
+                        : context.skills.GetFunction(skillName, functionName);
                     var planStep = new Plan(command);
                     planStep.Parameters.Update(node.InnerText);
                     planStep.Outputs.Add($"markup.{functionName}.result");

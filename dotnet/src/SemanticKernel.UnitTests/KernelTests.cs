@@ -494,12 +494,12 @@ public class KernelTests
         {
             await Task.Delay(0);
 
-            if (context.Skills == null)
+            if (context.skills == null)
             {
                 Assert.Fail("Skills collection is missing");
             }
 
-            FunctionsView procMem = context.Skills.GetFunctionsView();
+            FunctionsView procMem = context.skills.GetFunctionsView();
 
             foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
             {

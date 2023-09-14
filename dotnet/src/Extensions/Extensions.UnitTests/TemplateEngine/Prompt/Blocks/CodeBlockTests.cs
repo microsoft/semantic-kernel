@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -283,7 +284,8 @@ public class CodeBlockTests
         const string Func = "funcName";
         const string Value = "value";
 
-        var context = new SKContext(skills: this._skills.Object);
+        var kernel = new Mock<IKernel>();
+        var context = new SKContext(kernel.Object, variables: null, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
         var valBlock = new ValBlock($"'{Value}'");
 

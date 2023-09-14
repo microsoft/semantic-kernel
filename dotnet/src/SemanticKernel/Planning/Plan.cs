@@ -228,6 +228,7 @@ public sealed class Plan : IPlan
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
+            kernel,
             variables,
             kernel.Skills,
             kernel.LoggerFactory);
@@ -252,7 +253,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Skills, context.LoggerFactory);
+            var functionContext = new SKContext(context.Kernel, functionVariables, context.skills, context.LoggerFactory);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -414,12 +415,12 @@ public sealed class Plan : IPlan
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.Skills == null)
+            if (context.skills == null)
             {
                 throw new SKException("Skill collection not found in the context");
             }
 
-            if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
+            if (context.skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }
