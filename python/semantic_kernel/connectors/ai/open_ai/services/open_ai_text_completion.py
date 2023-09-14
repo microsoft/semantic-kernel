@@ -5,6 +5,7 @@ from typing import Any, List, Optional, Union
 
 import openai
 
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -134,6 +135,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 api_base=self._endpoint,
                 api_version=self._api_version,
                 organization=self._org_id,
+                headers={"User-Agent": HTTP_USER_AGENT},
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,

@@ -5,6 +5,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 import openai
 
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -207,7 +208,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 api_type=self._api_type,
                 api_base=self._endpoint,
                 api_version=self._api_version,
-                organization=self._org_id,
+                organization=self._org_id,                
+                headers={"User-Agent": HTTP_USER_AGENT},
                 messages=formatted_messages,
                 temperature=request_settings.temperature,
                 top_p=request_settings.top_p,

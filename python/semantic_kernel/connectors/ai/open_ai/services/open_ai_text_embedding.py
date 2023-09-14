@@ -6,6 +6,7 @@ from typing import Any, List, Optional
 import openai
 from numpy import array, ndarray
 
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
@@ -73,6 +74,7 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
                     api_base=self._endpoint,
                     api_version=self._api_version,
                     organization=self._org_id,
+                    headers={"User-Agent": HTTP_USER_AGENT},
                     input=batch,
                 )
                 # make numpy arrays from the response
