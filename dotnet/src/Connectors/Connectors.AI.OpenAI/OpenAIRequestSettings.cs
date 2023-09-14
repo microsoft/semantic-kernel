@@ -119,13 +119,27 @@ public class OpenAIRequestSettings
             };
         }
 
+        OpenAIRequestSettings? openAIRequestSettings = null;
+
         if (requestSettings.GetType() == typeof(OpenAIRequestSettings))
         {
-            return (OpenAIRequestSettings)requestSettings;
+            openAIRequestSettings = (OpenAIRequestSettings)requestSettings;
+        }
+        else
+        {
+            var json = JsonSerializer.Serialize(requestSettings);
+            openAIRequestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
         }
 
-        var json = JsonSerializer.Serialize(requestSettings);
-        return JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
+        if (openAIRequestSettings is null)
+        {
+            openAIRequestSettings = new OpenAIRequestSettings()
+            {
+                MaxTokens = defaultMaxTokens
+            };
+        }
+
+        return openAIRequestSettings;
     }
 
     #region private ================================================================================
