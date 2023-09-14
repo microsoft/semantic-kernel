@@ -26,6 +26,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Polly" />
+    <PackageReference Include="SharpToken" />
     <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
   <ItemGroup>

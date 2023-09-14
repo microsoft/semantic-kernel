@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Text;
+using SharpToken;
 
 // ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
@@ -49,8 +49,8 @@ known as coral polyps.";
     {
         Console.WriteLine("=== Text chunking with a custom token counter ===");
 
-        var lines = TextChunker.SplitPlainTextLines(text, 40, TokenCounter);
-        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: TokenCounter);
+        var lines = TextChunker.SplitPlainTextLines(text, 40, CustomTokenCounter);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: CustomTokenCounter);
 
         WriteParagraphsToConsole(paragraphs);
     }
@@ -68,9 +68,19 @@ known as coral polyps.";
         }
     }
 
-    private static int TokenCounter(string input)
+    /// <summary>
+    /// Custom token counter implementation using SharpToken.
+    /// Note: SharpToken is used for demonstration purposes only, it's possible to use any available or custom tokenization logic.
+    /// </summary>
+    private static int CustomTokenCounter(string input)
     {
-        var tokens = GPT3Tokenizer.Encode(input);
+        // Initialize encoding by encoding name
+        var encoding = GptEncoding.GetEncoding("cl100k_base");
+
+        // Initialize encoding by model name
+        // var encoding = GptEncoding.GetEncodingForModel("gpt-4");
+
+        var tokens = encoding.Encode(input);
 
         return tokens.Count;
     }
