@@ -58,7 +58,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         Verify.NotNull(chat);
 
-        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -73,7 +73,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         Verify.NotNull(chat);
 
-        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -86,7 +86,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
@@ -101,7 +101,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
@@ -143,7 +143,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private async Task<IReadOnlyList<IChatResult>> ExecuteCompletionRequestAsync(
         ChatHistory chat,
-        OpenAIChatRequestSettings requestSettings,
+        OpenAIRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
@@ -158,7 +158,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private async IAsyncEnumerable<IChatStreamingResult> ExecuteCompletionStreamingRequestAsync(
         ChatHistory chat,
-        OpenAIChatRequestSettings requestSettings,
+        OpenAIRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
@@ -238,7 +238,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private HttpRequestMessage GetRequest(
         ChatHistory chat,
-        OpenAIChatRequestSettings requestSettings,
+        OpenAIRequestSettings requestSettings,
         bool isStreamEnabled)
     {
         var payload = new ChatWithDataRequest

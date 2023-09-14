@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI;
@@ -15,15 +14,15 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 public class OpenAIRequestSettingsConverterTests
 {
     [Fact]
-    public void ItDeserialisesOpenAITextRequestSettingsWithCorrectDefaults()
+    public void ItDeserialisesOpenAIRequestSettingsWithCorrectDefaults()
     {
         // Arrange
         JsonSerializerOptions options = new();
-        options.Converters.Add(new OpenAIRequestSettingsConverter<OpenAITextRequestSettings>());
+        options.Converters.Add(new OpenAIRequestSettingsConverter());
         var json = "{}";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAITextRequestSettings>(json, options);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, options);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -35,15 +34,15 @@ public class OpenAIRequestSettingsConverterTests
         Assert.Equal(Array.Empty<string>(), requestSettings.StopSequences);
         Assert.Equal(new Dictionary<int, int>(), requestSettings.TokenSelectionBiases);
         Assert.Null(requestSettings.ServiceId);
-        Assert.Equal(256, requestSettings.MaxTokens);
+        Assert.Equal(null, requestSettings.MaxTokens);
     }
 
     [Fact]
-    public void ItDeserialisesOpenAITextRequestSettingsWithCamelCaseNaming()
+    public void ItDeserialisesOpenAIRequestSettingsWithCamelCaseNaming()
     {
         // Arrange
         JsonSerializerOptions options = new();
-        options.Converters.Add(new OpenAIRequestSettingsConverter<OpenAITextRequestSettings>());
+        options.Converters.Add(new OpenAIRequestSettingsConverter());
         var json = @"{
   ""temperature"": 0.7,
   ""top_p"": 0.7,
@@ -57,7 +56,7 @@ public class OpenAIRequestSettingsConverterTests
 }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAITextRequestSettings>(json, options);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, options);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -73,11 +72,11 @@ public class OpenAIRequestSettingsConverterTests
     }
 
     [Fact]
-    public void ItDeserialisesOpenAITextRequestSettingsWithPascalCaseNaming()
+    public void ItDeserialisesOpenAIRequestSettingsWithPascalCaseNaming()
     {
         // Arrange
         JsonSerializerOptions options = new();
-        options.Converters.Add(new OpenAIRequestSettingsConverter<OpenAITextRequestSettings>());
+        options.Converters.Add(new OpenAIRequestSettingsConverter());
         var json = @"{
   ""Temperature"": 0.7,
   ""TopP"": 0.7,
@@ -91,7 +90,7 @@ public class OpenAIRequestSettingsConverterTests
 }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAITextRequestSettings>(json, options);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, options);
 
         // Assert
         Assert.NotNull(requestSettings);

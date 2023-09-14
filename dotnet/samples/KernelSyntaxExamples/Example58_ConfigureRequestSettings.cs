@@ -4,7 +4,7 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using RepoUtils;
 
@@ -47,7 +47,7 @@ public static class Example58_ConfigureRequestSettings
 
         // Option 2:
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
-        result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAITextRequestSettings() { MaxTokens = 256, Temperature = 0.7 });
+        result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 256, Temperature = 0.7 });
         Console.WriteLine(result.Result);
 
         // Option 3:

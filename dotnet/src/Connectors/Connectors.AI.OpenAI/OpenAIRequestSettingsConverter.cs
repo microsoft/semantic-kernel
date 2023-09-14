@@ -8,14 +8,14 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// JSON converter for <see cref="OpenAIRequestSettings"/>
+/// JSON converter for <see cref="OpenAIRequestSettingsConverter"/>
 /// </summary>
-public class OpenAIRequestSettingsConverter<T> : JsonConverter<T> where T : OpenAIRequestSettings, new()
+public class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSettings>
 {
     /// <inheritdoc/>
-    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override OpenAIRequestSettings? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var requestSettings = new T();
+        var requestSettings = new OpenAIRequestSettings();
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
@@ -78,7 +78,7 @@ public class OpenAIRequestSettingsConverter<T> : JsonConverter<T> where T : Open
     }
 
     /// <inheritdoc/>
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, OpenAIRequestSettings value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
 

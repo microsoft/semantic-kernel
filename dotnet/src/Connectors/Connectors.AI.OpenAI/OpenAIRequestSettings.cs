@@ -6,15 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Request settings for an OpenAI completion request.
 /// </summary>
-public abstract class OpenAIRequestSettings
+public class OpenAIRequestSettings
 {
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -101,24 +99,33 @@ public abstract class OpenAIRequestSettings
     internal static string DefaultChatSystemPrompt { get; } = "Assistant is a large language model.";
 
     /// <summary>
+    /// Default max tokens for a chat completion
+    /// </summary>
+    internal static int DefaultTextMaxTokens { get; } = 256;
+
+    /// <summary>
     /// Create a new settings object with the values from another settings object.
     /// </summary>
     /// <param name="requestSettings">Template configuration</param>
-    /// <returns>An instance of OpenAITextRequestSettings</returns>
-    public static T FromRequestSettings<T>(dynamic? requestSettings) where T : OpenAIRequestSettings, new()
+    /// <param name="defaultMaxTokens">Default max tokens</param>
+    /// <returns>An instance of OpenAIRequestSettings</returns>
+    public static OpenAIRequestSettings FromRequestSettings(dynamic? requestSettings, int? defaultMaxTokens = null)
     {
         if (requestSettings is null)
         {
-            return new T();
+            return new OpenAIRequestSettings()
+            {
+                MaxTokens = defaultMaxTokens
+            };
         }
 
-        if (requestSettings.GetType() == typeof(T))
+        if (requestSettings.GetType() == typeof(OpenAIRequestSettings))
         {
-            return (T)requestSettings;
+            return (OpenAIRequestSettings)requestSettings;
         }
 
         var json = JsonSerializer.Serialize(requestSettings);
-        return JsonSerializer.Deserialize<T>(json, s_options);
+        return JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
     }
 
     #region private ================================================================================
@@ -136,8 +143,7 @@ public abstract class OpenAIRequestSettings
             ReadCommentHandling = JsonCommentHandling.Skip,
         };
 
-        options.Converters.Add(new OpenAIRequestSettingsConverter<OpenAITextRequestSettings>());
-        options.Converters.Add(new OpenAIRequestSettingsConverter<OpenAIChatRequestSettings>());
+        options.Converters.Add(new OpenAIRequestSettingsConverter());
 
         return options;
     }

@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 
@@ -91,7 +90,7 @@ public abstract class ClientBase
         dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        OpenAITextRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
+        OpenAIRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
         var options = CreateCompletionsOptions(text, textRequestSettings);
@@ -128,7 +127,7 @@ public abstract class ClientBase
         dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        OpenAITextRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
+        OpenAIRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings, OpenAIRequestSettings.DefaultTextMaxTokens);
 
         ValidateMaxTokens(textRequestSettings.MaxTokens);
 
@@ -192,7 +191,7 @@ public abstract class ClientBase
     {
         Verify.NotNull(chat);
 
-        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -232,7 +231,7 @@ public abstract class ClientBase
     {
         Verify.NotNull(chat);
 
-        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
         ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
@@ -268,7 +267,7 @@ public abstract class ClientBase
         dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIChatRequestSettings chatSettings);
+        ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIRequestSettings chatSettings);
 
         return (await this.InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
@@ -280,7 +279,7 @@ public abstract class ClientBase
         dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIChatRequestSettings chatSettings);
+        ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIRequestSettings chatSettings);
 
         IAsyncEnumerable<IChatStreamingResult> chatCompletionStreamingResults = this.InternalGetChatStreamingResultsAsync(chat, chatSettings, cancellationToken);
         await foreach (var chatCompletionStreamingResult in chatCompletionStreamingResults)
@@ -289,46 +288,44 @@ public abstract class ClientBase
         }
     }
 
-    private static OpenAIChatHistory PrepareChatHistory(string text, dynamic? requestSettings, out OpenAIChatRequestSettings settings)
+    private static OpenAIChatHistory PrepareChatHistory(string text, dynamic? requestSettings, out OpenAIRequestSettings settings)
     {
-        settings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+        settings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
         var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
         chat.AddUserMessage(text);
         return chat;
     }
 
-    private static CompletionsOptions CreateCompletionsOptions(string text, dynamic? requestSettings)
+    private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIRequestSettings requestSettings)
     {
-        OpenAITextRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
-
-        if (textRequestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
+        if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
-            throw new ArgumentOutOfRangeException($"{nameof(textRequestSettings)}.{nameof(textRequestSettings.ResultsPerPrompt)}", textRequestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+            throw new ArgumentOutOfRangeException($"{nameof(requestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", requestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
         }
 
         var options = new CompletionsOptions
         {
             Prompts = { text.NormalizeLineEndings() },
-            MaxTokens = textRequestSettings.MaxTokens,
-            Temperature = (float?)textRequestSettings.Temperature,
-            NucleusSamplingFactor = (float?)textRequestSettings.TopP,
-            FrequencyPenalty = (float?)textRequestSettings.FrequencyPenalty,
-            PresencePenalty = (float?)textRequestSettings.PresencePenalty,
+            MaxTokens = requestSettings.MaxTokens,
+            Temperature = (float?)requestSettings.Temperature,
+            NucleusSamplingFactor = (float?)requestSettings.TopP,
+            FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
+            PresencePenalty = (float?)requestSettings.PresencePenalty,
             Echo = false,
-            ChoicesPerPrompt = textRequestSettings.ResultsPerPrompt,
-            GenerationSampleCount = textRequestSettings.ResultsPerPrompt,
+            ChoicesPerPrompt = requestSettings.ResultsPerPrompt,
+            GenerationSampleCount = requestSettings.ResultsPerPrompt,
             LogProbabilityCount = null,
             User = null,
         };
 
-        foreach (var keyValue in textRequestSettings.TokenSelectionBiases)
+        foreach (var keyValue in requestSettings.TokenSelectionBiases)
         {
             options.TokenSelectionBiases.Add(keyValue.Key, keyValue.Value);
         }
 
-        if (textRequestSettings.StopSequences is { Count: > 0 })
+        if (requestSettings.StopSequences is { Count: > 0 })
         {
-            foreach (var s in textRequestSettings.StopSequences)
+            foreach (var s in requestSettings.StopSequences)
             {
                 options.StopSequences.Add(s);
             }
@@ -337,7 +334,7 @@ public abstract class ClientBase
         return options;
     }
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIChatRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
+    private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {

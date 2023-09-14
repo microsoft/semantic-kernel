@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -41,7 +41,7 @@ public sealed class SKFunctionTests1
     public void ItAllowsToUpdateRequestSettings()
     {
         // Arrange
-        var requestSettings = new OpenAITextRequestSettings();
+        var requestSettings = new OpenAIRequestSettings();
         var templateConfig = new PromptTemplateConfig()
         {
             Completion = requestSettings

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.SkillDefinition;
@@ -21,7 +21,7 @@ public class PromptTemplateConfigTests
         }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIChatRequestSettings>(configPayload);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
 
         // Assert
         Assert.NotNull(requestSettings);
@@ -43,7 +43,7 @@ public class PromptTemplateConfigTests
         }";
 
         // Act
-        var requestSettings = JsonSerializer.Deserialize<OpenAIChatRequestSettings>(configPayload);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
 
         // Assert
         Assert.NotNull(requestSettings);

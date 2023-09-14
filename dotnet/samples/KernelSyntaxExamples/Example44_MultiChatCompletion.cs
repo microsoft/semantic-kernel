@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -47,7 +48,7 @@ public static class Example44_MultiChatCompletion
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
         await MessageOutputAsync(chatHistory);
 
-        var chatRequestSettings = new OpenAIChatRequestSettings
+        var chatRequestSettings = new OpenAIRequestSettings
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,

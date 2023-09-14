@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 /**
@@ -44,7 +45,7 @@ public static class Example32_StreamingCompletion
 
     private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
     {
-        var requestSettings = new OpenAITextRequestSettings()
+        var requestSettings = new OpenAIRequestSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,
