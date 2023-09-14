@@ -116,14 +116,8 @@ public abstract class OpenAIRequestSettings
             return (T)requestSettings;
         }
 
-        if (requestSettings.GetType() == typeof(JsonElement))
-        {
-            return JsonSerializer.Deserialize<T>(requestSettings.ToString(), s_options);
-        }
-
         var json = JsonSerializer.Serialize(requestSettings);
-        var obj = JsonSerializer.Deserialize<T>(json, s_options);
-        return obj;
+        return JsonSerializer.Deserialize<T>(json, s_options);
     }
 
     #region private ================================================================================
