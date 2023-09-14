@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Text;
+using SharpToken;
 
 // ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
@@ -69,6 +70,9 @@ known as coral polyps.";
 
     private static int CustomTokenCounter(string input)
     {
-        return input.Length / 4;
+        var encoding = GptEncoding.GetEncoding("p50k_base");
+        var tokens = encoding.Encode(input);
+
+        return tokens.Count;
     }
 }
