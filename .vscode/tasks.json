@@ -361,7 +361,6 @@
         "run",
         "--project",
         "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj",
-        "--args",
         "${input:filter}"
       ],
       "problemMatcher": "$msCompile",
