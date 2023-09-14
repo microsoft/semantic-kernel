@@ -68,7 +68,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        dynamic? requestSettings,
+        object? requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -78,7 +78,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        dynamic? requestSettings,
+        object? requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();

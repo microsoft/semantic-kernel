@@ -30,7 +30,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public bool IsSemantic => this._function.IsSemantic;
 
     /// <inheritdoc/>
-    public dynamic? RequestSettings => this._function.RequestSettings;
+    public object? RequestSettings => this._function.RequestSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
@@ -69,7 +69,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
@@ -77,7 +77,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic? requestSettings) =>
+    public ISKFunction SetAIConfiguration(object? requestSettings) =>
         this._function.SetAIConfiguration(requestSettings);
 
     /// <inheritdoc/>

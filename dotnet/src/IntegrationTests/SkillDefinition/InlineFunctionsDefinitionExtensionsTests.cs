@@ -70,12 +70,12 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
 
     private sealed class RedirectTextCompletion : ITextCompletion
     {
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, dynamic? requestSettings, CancellationToken cancellationToken)
+        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, object? requestSettings, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
         }
 
-        IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, dynamic? requestSettings, CancellationToken cancellationToken)
+        IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, object? requestSettings, CancellationToken cancellationToken)
         {
             throw new NotImplementedException(); // TODO
         }

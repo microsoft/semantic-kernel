@@ -31,7 +31,7 @@ public sealed class MyChatCompletionService : IChatCompletion
         return chatHistory;
     }
 
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, dynamic? requestSettings = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, object? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<IChatResult>>(new List<IChatResult>
         {
@@ -39,7 +39,7 @@ public sealed class MyChatCompletionService : IChatCompletion
         });
     }
 
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, dynamic? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, object? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return (new List<IChatStreamingResult>
         {

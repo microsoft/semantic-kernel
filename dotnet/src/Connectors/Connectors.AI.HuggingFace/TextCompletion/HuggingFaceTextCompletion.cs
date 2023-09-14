@@ -65,7 +65,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         foreach (var completion in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
@@ -77,7 +77,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);

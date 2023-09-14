@@ -536,7 +536,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic?, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, object?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);

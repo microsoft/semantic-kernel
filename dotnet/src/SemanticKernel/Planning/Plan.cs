@@ -81,7 +81,7 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public dynamic? RequestSettings { get; private set; }
+    public object? RequestSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -333,7 +333,7 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
@@ -373,7 +373,7 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic? requestSettings)
+    public ISKFunction SetAIConfiguration(object? requestSettings)
     {
         return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }

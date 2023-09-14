@@ -23,11 +23,11 @@ public static class ChatCompletionExtensions
     public static async IAsyncEnumerable<string> GenerateMessageStreamAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Using var below results in Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'
-        IAsyncEnumerable<IChatStreamingResult> chatCompletionResults = chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        IAsyncEnumerable<IChatStreamingResult> chatCompletionResults = chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken);
         await foreach (var chatCompletionResult in chatCompletionResults)
         {
             await foreach (var chatMessageStream in chatCompletionResult.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
@@ -51,7 +51,7 @@ public static class ChatCompletionExtensions
     public static async Task<string> GenerateMessageAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         // Using var below results in Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'

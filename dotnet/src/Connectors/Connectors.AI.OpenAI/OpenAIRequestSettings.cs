@@ -109,7 +109,7 @@ public class OpenAIRequestSettings
     /// <param name="requestSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIRequestSettings</returns>
-    public static OpenAIRequestSettings FromRequestSettings(dynamic? requestSettings, int? defaultMaxTokens = null)
+    public static OpenAIRequestSettings FromRequestSettings(object? requestSettings, int? defaultMaxTokens = null)
     {
         if (requestSettings is null)
         {

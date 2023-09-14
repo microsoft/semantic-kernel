@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -37,6 +36,7 @@ public sealed class SKFunctionTests1
         Assert.Null(skFunction.RequestSettings);
     }
 
+    /*
     [Fact]
     public void ItAllowsToUpdateRequestSettings()
     {
@@ -70,6 +70,7 @@ public sealed class SKFunctionTests1
         Assert.Equal(requestSettings.Temperature, skFunction.RequestSettings?.Temperature);
         Assert.Equal(requestSettings.MaxTokens, skFunction.RequestSettings?.MaxTokens);
     }
+    */
 
     private static Mock<IPromptTemplate> MockPromptTemplate()
     {

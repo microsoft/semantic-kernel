@@ -83,7 +83,7 @@ public class PromptTemplateConfig
     [JsonPropertyName("completion")]
     [JsonPropertyOrder(4)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public dynamic? Completion { get; set; }
+    public object? Completion { get; set; }
 
     /// <summary>
     /// Default AI services to use.

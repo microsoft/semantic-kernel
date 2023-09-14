@@ -31,7 +31,7 @@ public sealed class InstrumentedPlan : IPlan
     public bool IsSemantic => this._plan.IsSemantic;
 
     /// <inheritdoc/>
-    public dynamic? RequestSettings => this._plan.RequestSettings;
+    public object? RequestSettings => this._plan.RequestSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
@@ -55,7 +55,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
@@ -63,7 +63,7 @@ public sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic? requestSettings) =>
+    public ISKFunction SetAIConfiguration(object? requestSettings) =>
         this._plan.SetAIConfiguration(requestSettings);
 
     /// <inheritdoc/>

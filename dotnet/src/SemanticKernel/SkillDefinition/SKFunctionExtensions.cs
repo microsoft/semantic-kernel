@@ -42,7 +42,7 @@ public static class SKFunctionExtensions
         ContextVariables? variables = null,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
@@ -69,7 +69,7 @@ public static class SKFunctionExtensions
         string input,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
         => SKFunctionExtensions.InvokeAsync(function, new ContextVariables(input), skills, culture, requestSettings, loggerFactory, cancellationToken);

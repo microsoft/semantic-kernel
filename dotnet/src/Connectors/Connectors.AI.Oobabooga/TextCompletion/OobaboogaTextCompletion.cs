@@ -133,7 +133,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await this.StartConcurrentCallAsync(cancellationToken).ConfigureAwait(false);
@@ -192,7 +192,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -241,7 +241,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <param name="text">The text to complete.</param>
     /// <param name="requestSettings">The request settings.</param>
     /// <returns>An Oobabooga TextCompletionRequest object with the text and completion parameters.</returns>
-    private TextCompletionRequest CreateOobaboogaRequest(string text, dynamic? requestSettings)
+    private TextCompletionRequest CreateOobaboogaRequest(string text, object? requestSettings)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -282,7 +282,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     /// <summary>
     /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/>  and subsequent links for more details.
     /// </summary>
-    private static double GetRepetitionPenalty(dynamic? requestSettings)
+    private static double GetRepetitionPenalty(object? requestSettings)
     {
         return (1 + DynamicUtils.TryGetPropertyValue<double>(requestSettings, "PresencePenalty", 0)) / 2;
     }

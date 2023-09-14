@@ -53,7 +53,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
@@ -68,7 +68,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
@@ -83,7 +83,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        dynamic? requestSettings,
+        object? requestSettings,
         CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
@@ -98,7 +98,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        dynamic? requestSettings,
+        object? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);

@@ -27,7 +27,7 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, dynamic? requestSettings, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, object? requestSettings, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
         {
@@ -35,7 +35,7 @@ public class MyTextCompletionService : ITextCompletion
         });
     }
 
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, dynamic? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, object? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
     }

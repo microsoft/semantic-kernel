@@ -37,7 +37,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public bool IsSemantic => true;
 
     /// <inheritdoc/>
-    public dynamic? RequestSettings { get; private set; }
+    public object? RequestSettings { get; private set; }
 
     /// <summary>
     /// List of function parameters
@@ -90,7 +90,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
@@ -114,7 +114,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic? requestSettings)
+    public ISKFunction SetAIConfiguration(object? requestSettings)
     {
         this.RequestSettings = requestSettings;
         return this;
@@ -197,7 +197,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     private async Task<SKContext> RunPromptAsync(
         ITextCompletion? client,
-        dynamic? requestSettings,
+        object? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {

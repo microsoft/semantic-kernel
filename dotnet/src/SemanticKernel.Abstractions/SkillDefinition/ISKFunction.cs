@@ -38,7 +38,7 @@ public interface ISKFunction
     /// <summary>
     /// AI service settings
     /// </summary>
-    dynamic? RequestSettings { get; }
+    object? RequestSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
@@ -55,7 +55,7 @@ public interface ISKFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        object? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -79,5 +79,5 @@ public interface ISKFunction
     /// </summary>
     /// <param name="requestSettings">LLM completion settings</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIConfiguration(dynamic? requestSettings);
+    ISKFunction SetAIConfiguration(object? requestSettings);
 }
