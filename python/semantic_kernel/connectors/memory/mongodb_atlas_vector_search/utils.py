@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from numpy import array
 from pymongo.operations import SearchIndexModel
+
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 _DEFAULT_DIMENSIONS = 384

@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
+import random
 import time
+
+import numpy as np
 import pytest
 import pytest_asyncio
-import numpy as np
-import random
-
 from pymongo import errors
 
-from semantic_kernel.connectors.memory.mongodb_atlas_vector_search.atlas_vector_search import (
+from semantic_kernel.connectors.memory.mongodb_atlas_vector_search.atlas_vector_search_memory_store import (
     MongoDBAtlasVectorSearchMemoryStore,
 )
 from semantic_kernel.connectors.memory.mongodb_atlas_vector_search.utils import (
@@ -17,7 +17,7 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 
 mongodb_atlas_vector_search_installed: bool
 try:
-    import motor
+    import motor  # noqa: F401
 
     mongodb_atlas_vector_search_installed = True
 except ImportError:

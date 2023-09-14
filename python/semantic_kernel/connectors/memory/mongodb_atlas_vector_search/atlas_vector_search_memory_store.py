@@ -10,6 +10,7 @@ from motor import MotorCommandCursor, motor_asyncio
 from numpy import ndarray
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.operations import SearchIndexModel
+
 from semantic_kernel.connectors.memory.mongodb_atlas_vector_search.utils import (
     _DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_FIELD_EMBEDDING,
