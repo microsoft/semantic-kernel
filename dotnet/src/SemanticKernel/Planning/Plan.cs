@@ -163,7 +163,7 @@ public sealed class Plan : IPlan
     /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
-    /// <param name="skills">The collection of avaiable skills/functions..</param>
+    /// <param name="skills">The collection of available skills/functions..</param>
     /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
