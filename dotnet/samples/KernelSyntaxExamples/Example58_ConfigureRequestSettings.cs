@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.SemanticFunctions;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example57_ConfigureRequestSettings
+public static class Example58_ConfigureRequestSettings
 {
     /// <summary>
     /// Show how to configure model request settings
