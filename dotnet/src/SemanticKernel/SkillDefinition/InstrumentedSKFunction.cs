@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -30,7 +31,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public bool IsSemantic => this._function.IsSemantic;
 
     /// <inheritdoc/>
-    public dynamic? RequestSettings => this._function.RequestSettings;
+    public AIRequestSettings? RequestSettings => this._function.RequestSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
@@ -69,7 +70,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
@@ -77,7 +78,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic? requestSettings) =>
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
         this._function.SetAIConfiguration(requestSettings);
 
     /// <inheritdoc/>

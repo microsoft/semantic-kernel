@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
@@ -41,7 +42,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
 
         // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new { MaxTokens = 150 });
+        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Define a semantic function inline, with skill name
         var sFun2 = kernel.CreateSemanticFunction(
@@ -49,7 +50,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
             skillName: "Writing",
             functionName: "Novel",
             description: "Write a bedtime story",
-            requestSettings: new { MaxTokens = 150 });
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         FunctionsView functions = kernel.Skills.GetFunctionsView();
         ConcurrentDictionary<string, List<FunctionView>> nativeFunctions = functions.NativeFunctions;

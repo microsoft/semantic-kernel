@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Sequential;
@@ -42,7 +44,15 @@ public sealed class SequentialPlanner : ISequentialPlanner
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            requestSettings: new { MaxTokens = this.Config.MaxTokens ?? 1024, Temperature = 0.0, StopSequences = new[] { StopSequence } });
+            requestSettings: new AIRequestSettings()
+            {
+                ExtraProperties = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.0 },
+                    { "StopSequences", new[] { StopSequence } },
+                    { "MaxTokens", this.Config.MaxTokens ?? 1024 },
+                }
+            });
 
         this._context = kernel.CreateNewContext();
     }

@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
@@ -59,7 +60,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var haiku = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new { MaxTokens = 100 });
+        var haiku = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");

@@ -341,10 +341,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         {
             tasks.Add(Task.Run(() =>
             {
-                var localResponse = sut.CompleteStreamAsync(requestMessage, new
+                var localResponse = sut.CompleteStreamAsync(requestMessage, new TextCompletionRequest()
                 {
                     Temperature = 0.01,
-                    MaxTokens = 7,
+                    MaxNewTokens = 7,
                     TopP = 0.1,
                 }, cancellationToken: cleanupToken.Token);
                 return localResponse;

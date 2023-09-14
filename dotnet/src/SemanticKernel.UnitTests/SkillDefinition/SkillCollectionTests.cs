@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
@@ -17,14 +18,14 @@ public class SkillCollectionTests
         functionOne.SetupGet(x => x.SkillName).Returns("sName");
         functionOne.SetupGet(x => x.Description).Returns("ONE");
         functionOne.SetupGet(x => x.IsSemantic).Returns(false);
-        functionOne.SetupGet(x => x.RequestSettings).Returns(null);
+        functionOne.SetupGet(x => x.RequestSettings).Returns(new AIRequestSettings());
 
         var functionTwo = new Mock<ISKFunction>();
         functionTwo.SetupGet(x => x.Name).Returns("fName");
         functionTwo.SetupGet(x => x.SkillName).Returns("sName");
         functionTwo.SetupGet(x => x.Description).Returns("TWO");
         functionTwo.SetupGet(x => x.IsSemantic).Returns(false);
-        functionTwo.SetupGet(x => x.RequestSettings).Returns(null);
+        functionTwo.SetupGet(x => x.RequestSettings).Returns(new AIRequestSettings());
 
         var target = new SkillCollection();
 

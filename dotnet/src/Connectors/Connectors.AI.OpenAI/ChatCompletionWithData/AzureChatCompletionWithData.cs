@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -53,7 +54,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        dynamic? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
@@ -68,7 +69,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        dynamic? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
@@ -83,7 +84,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        dynamic? requestSettings,
+        AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
@@ -98,7 +99,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        dynamic? requestSettings,
+        AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);

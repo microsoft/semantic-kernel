@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -42,7 +43,7 @@ public static class SKFunctionExtensions
         ContextVariables? variables = null,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
-        dynamic? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
@@ -69,7 +70,7 @@ public static class SKFunctionExtensions
         string input,
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
-        dynamic? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
         => SKFunctionExtensions.InvokeAsync(function, new ContextVariables(input), skills, culture, requestSettings, loggerFactory, cancellationToken);

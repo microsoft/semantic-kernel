@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -536,7 +537,7 @@ public sealed class PlanTests
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-            .Callback<SKContext, dynamic?, CancellationToken>((c, s, ct) =>
+            .Callback<SKContext, AIRequestSettings?, CancellationToken>((c, s, ct) =>
             {
                 c.Variables.TryGetValue("type", out string? t);
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);

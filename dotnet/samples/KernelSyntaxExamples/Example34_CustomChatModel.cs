@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -31,7 +32,7 @@ public sealed class MyChatCompletionService : IChatCompletion
         return chatHistory;
     }
 
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, dynamic? requestSettings = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<IChatResult>>(new List<IChatResult>
         {
@@ -39,7 +40,7 @@ public sealed class MyChatCompletionService : IChatCompletion
         });
     }
 
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, dynamic? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return (new List<IChatStreamingResult>
         {

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace NCalcSkills;
@@ -25,6 +27,14 @@ public class SimpleCalculatorSkill
             skillName: nameof(SimpleCalculatorSkill),
             functionName: "Calculator",
             description: "Evaluate a mathematical expression. Input is a valid mathematical expression that could be executed by a simple calculator i.e. add, subtract, multiply and divide. Cannot use variables.",
-            requestSettings: new { MaxTokens = 256, Temperature = 0.0, TopP = 1, StopSequences = s_stopSequences });
+            requestSettings: new AIRequestSettings()
+            {
+                ExtraProperties = new Dictionary<string, object>()
+                {
+                    { "MaxTokens", 256 },
+                    { "Temperature", 0.0 },
+                    { "StopSequences", s_stopSequences },
+                }
+            });
     }
 }

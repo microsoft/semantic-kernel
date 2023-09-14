@@ -346,7 +346,7 @@ repeat:
         func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.GetServiceId()));
+        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
 
         return func;
     }

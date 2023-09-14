@@ -3,6 +3,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -38,7 +39,7 @@ public interface ISKFunction
     /// <summary>
     /// AI service settings
     /// </summary>
-    dynamic? RequestSettings { get; }
+    AIRequestSettings? RequestSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
@@ -55,7 +56,7 @@ public interface ISKFunction
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -79,5 +80,5 @@ public interface ISKFunction
     /// </summary>
     /// <param name="requestSettings">LLM completion settings</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIConfiguration(dynamic? requestSettings);
+    ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
 }

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -37,7 +38,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public bool IsSemantic => true;
 
     /// <inheritdoc/>
-    public dynamic? RequestSettings { get; private set; }
+    public AIRequestSettings? RequestSettings { get; private set; }
 
     /// <summary>
     /// List of function parameters
@@ -90,7 +91,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
@@ -114,7 +115,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic? requestSettings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
         this.RequestSettings = requestSettings;
         return this;
@@ -197,7 +198,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     private async Task<SKContext> RunPromptAsync(
         ITextCompletion? client,
-        dynamic? requestSettings,
+        AIRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {

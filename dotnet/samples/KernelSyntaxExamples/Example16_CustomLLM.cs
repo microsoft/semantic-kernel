@@ -7,7 +7,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
@@ -27,7 +29,7 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextCompletion
 {
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, dynamic? requestSettings, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
         {
@@ -35,7 +37,7 @@ public class MyTextCompletionService : ITextCompletion
         });
     }
 
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, dynamic? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
     }
@@ -143,7 +145,7 @@ public static class Example16_CustomLLM
 
     private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
     {
-        var requestSettings = new
+        var requestSettings = new OpenAIRequestSettings()
         {
             MaxTokens = 100,
             FrequencyPenalty = 0,

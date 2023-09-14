@@ -6,13 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
 /// Request settings for an OpenAI completion request.
 /// </summary>
-public class OpenAIRequestSettings
+public class OpenAIRequestSettings : AIRequestSettings
 {
     /// <summary>
     /// Temperature controls the randomness of the completion.
@@ -87,13 +88,6 @@ public class OpenAIRequestSettings
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 
     /// <summary>
-    /// Service identifier.
-    /// </summary>
-    [JsonPropertyName("service_id")]
-    [JsonPropertyOrder(10)]
-    public string? ServiceId { get; set; } = null;
-
-    /// <summary>
     /// Default value for chat system property.
     /// </summary>
     internal static string DefaultChatSystemPrompt { get; } = "Assistant is a large language model.";
@@ -109,7 +103,7 @@ public class OpenAIRequestSettings
     /// <param name="requestSettings">Template configuration</param>
     /// <param name="defaultMaxTokens">Default max tokens</param>
     /// <returns>An instance of OpenAIRequestSettings</returns>
-    public static OpenAIRequestSettings FromRequestSettings(dynamic? requestSettings, int? defaultMaxTokens = null)
+    public static OpenAIRequestSettings FromRequestSettings(AIRequestSettings? requestSettings, int? defaultMaxTokens = null)
     {
         if (requestSettings is null)
         {

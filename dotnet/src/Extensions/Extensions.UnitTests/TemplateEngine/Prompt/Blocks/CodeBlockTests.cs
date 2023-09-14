@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -44,7 +45,7 @@ public class CodeBlockTests
         var context = new SKContext(skills: this._skills.Object, loggerFactory: this._logger);
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<object?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
             .Throws(new RuntimeWrappedException("error"));
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
@@ -207,7 +208,7 @@ public class CodeBlockTests
         var canary2 = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<object?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
             .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
             {
                 canary0 = context!.Variables["input"];
@@ -255,7 +256,7 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<object?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
             .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
             {
                 canary = context!.Variables["input"];
@@ -289,7 +290,7 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<object?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
             .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
             {
                 canary = context!.Variables["input"];
@@ -329,7 +330,7 @@ public class CodeBlockTests
         var baz = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<object?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
             .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
             {
                 foo = context!.Variables["foo"];

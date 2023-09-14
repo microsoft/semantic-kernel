@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -81,7 +82,7 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public dynamic? RequestSettings { get; private set; }
+    public AIRequestSettings? RequestSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -333,7 +334,7 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        dynamic? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
@@ -373,7 +374,7 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(dynamic? requestSettings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
         return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }
