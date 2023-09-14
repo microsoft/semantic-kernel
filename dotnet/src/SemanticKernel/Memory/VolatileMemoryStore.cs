@@ -131,6 +131,16 @@ public class VolatileMemoryStore : IMemoryStore
         return Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancellationToken)));
     }
 
+    /// <summary>
+    /// Retrieves the nearest matches to the given embedding in the specified collection.
+    /// </summary>
+    /// <param name="collectionName">The name of the collection to search.</param>
+    /// <param name="embedding">The embedding to find the nearest matches for.</param>
+    /// <param name="limit">The maximum number of matches to return.</param>
+    /// <param name="minRelevanceScore">The minimum relevance score for a match to be included in the results.</param>
+    /// <param name="withEmbeddings">Whether to include the embeddings in the returned memory records.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>An asynchronous enumerable of memory records and their relevance scores.</returns>
     public IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
         ReadOnlyMemory<float> embedding,
@@ -174,7 +184,7 @@ public class VolatileMemoryStore : IMemoryStore
 
         embeddings.SortByScore();
 
-        return embeddings.Select(x => (x.Value, x.Score.Value)).ToAsyncEnumerable();
+        return embeddings.Select(x => (x.Value, x.Score)).ToAsyncEnumerable();
     }
 
     /// <inheritdoc/>
@@ -195,7 +205,13 @@ public class VolatileMemoryStore : IMemoryStore
     }
 
     #region protected ================================================================================
-
+    /// <summary>
+    /// Tries to get the collection with the specified name.
+    /// </summary>
+    /// <param name="name">The name of the collection to get.</param>
+    /// <param name="collection">The retrieved collection, if found.</param>
+    /// <param name="create">Whether to create the collection if it does not exist.</param>
+    /// <returns>True if the collection was found or created, false otherwise.</returns>
     protected bool TryGetCollection(
         string name,
         [NotNullWhen(true)] out ConcurrentDictionary<string,

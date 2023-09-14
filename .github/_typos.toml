@@ -10,9 +10,6 @@ extend-exclude = [
     "_typos.toml",
     "package-lock.json",
     "*.bicep",
-    "encoder.json",
-    "vocab.bpe",
-    "GPT3TokenizerTests.cs",
     "CodeTokenizerTests.cs",
     "test_code_tokenizer.py",
 ]

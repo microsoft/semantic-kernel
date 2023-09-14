@@ -72,7 +72,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             await this._chromaClient.DeleteCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
+        catch (HttpOperationException e) when (VerifyCollectionDoesNotExistMessage(e.ResponseContent, collectionName))
         {
             this._logger.LogError("Cannot delete non-existent collection {0}", collectionName);
             throw new SKException($"Cannot delete non-existent collection {collectionName}", e);
@@ -234,11 +234,7 @@ public class ChromaMemoryStore : IMemoryStore
 
     internal static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
-        Converters =
-        {
-            new ChromaBooleanConverter(),
-            new ReadOnlyMemoryConverter(),
-        }
+        Converters = { new ReadOnlyMemoryConverter() }
     };
 
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)
@@ -254,7 +250,7 @@ public class ChromaMemoryStore : IMemoryStore
         {
             return await this._chromaClient.GetCollectionAsync(collectionName, cancellationToken).ConfigureAwait(false);
         }
-        catch (SKException e) when (CollectionDoesNotExistException(e, collectionName))
+        catch (HttpOperationException e) when (VerifyCollectionDoesNotExistMessage(e.ResponseContent, collectionName))
         {
             this._logger.LogDebug("Collection {0} does not exist", collectionName);
 
@@ -325,7 +321,7 @@ public class ChromaMemoryStore : IMemoryStore
 
     private double GetSimilarityScore(List<double>? distances, int recordIndex)
     {
-        var similarityScore = distances != null ? 1 - distances[recordIndex] : default;
+        var similarityScore = distances != null ? 1.0 / (1.0 + distances[recordIndex]) : default;
 
         if (similarityScore < 0)
         {
@@ -338,11 +334,11 @@ public class ChromaMemoryStore : IMemoryStore
     /// <summary>
     /// Checks if Chroma API error means that collection does not exist.
     /// </summary>
-    /// <param name="exception">Chroma exception.</param>
+    /// <param name="responseContent">Response content.</param>
     /// <param name="collectionName">Collection name.</param>
-    private static bool CollectionDoesNotExistException(Exception exception, string collectionName)
+    private static bool VerifyCollectionDoesNotExistMessage(string? responseContent, string collectionName)
     {
-        return exception?.Message?.Contains(string.Format(CultureInfo.InvariantCulture, "Collection {0} does not exist", collectionName)) ?? false;
+        return responseContent?.Contains(string.Format(CultureInfo.InvariantCulture, "Collection {0} does not exist", collectionName)) ?? false;
     }
 
     #endregion

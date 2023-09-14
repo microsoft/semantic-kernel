@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel.Skills.Web.Google;
 
 /// <summary>
 /// Google search connector.
+/// Provides methods to search using Google Custom Search API.
 /// </summary>
 public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
@@ -23,7 +24,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     private readonly string? _searchEngineId;
 
     /// <summary>
-    /// Google search connector.
+    /// Initializes a new instance of the <see cref="GoogleConnector"/> class.
     /// </summary>
     /// <param name="apiKey">Google Custom Search API (looks like "ABcdEfG1...")</param>
     /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
@@ -37,7 +38,7 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     }
 
     /// <summary>
-    /// Google search connector.
+    /// Initializes a new instance of the <see cref="GoogleConnector"/> class.
     /// </summary>
     /// <param name="initializer">The connector initializer</param>
     /// <param name="searchEngineId">Google Search Engine ID (looks like "a12b345...")</param>
@@ -79,6 +80,10 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         return results.Items.Select(item => item.Snippet);
     }
 
+    /// <summary>
+    /// Disposes the resources used by the <see cref="GoogleConnector"/> instance.
+    /// </summary>
+    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
     private void Dispose(bool disposing)
     {
         if (disposing)
@@ -87,6 +92,9 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         }
     }
 
+    /// <summary>
+    /// Disposes the <see cref="GoogleConnector"/> instance.
+    /// </summary>
     public void Dispose()
     {
         this.Dispose(disposing: true);

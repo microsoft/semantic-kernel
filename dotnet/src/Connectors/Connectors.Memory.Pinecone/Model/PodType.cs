@@ -15,6 +15,9 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 [JsonConverter(typeof(PodTypeJsonConverter))]
 public enum PodType
 {
+    /// <summary>
+    /// Represents an undefined or uninitialized PodType.
+    /// </summary>
     None = 0,
 
     /// <summary>
