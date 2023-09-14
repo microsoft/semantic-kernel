@@ -91,10 +91,10 @@ public abstract class ClientBase
         dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        requestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
+        OpenAITextRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
 
-        ValidateMaxTokens(requestSettings.MaxTokens);
-        var options = CreateCompletionsOptions(text, requestSettings);
+        ValidateMaxTokens(textRequestSettings.MaxTokens);
+        var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
             () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
@@ -128,10 +128,11 @@ public abstract class ClientBase
         dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        requestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
+        OpenAITextRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
 
-        ValidateMaxTokens(requestSettings.MaxTokens);
-        var options = CreateCompletionsOptions(text, requestSettings);
+        ValidateMaxTokens(textRequestSettings.MaxTokens);
+
+        var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
             () => this.Client.GetCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
@@ -190,10 +191,12 @@ public abstract class ClientBase
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
-        requestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
-        ValidateMaxTokens(requestSettings.MaxTokens);
-        var chatOptions = CreateChatCompletionsOptions(requestSettings, chat);
+        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
+
+        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
             () => this.Client.GetChatCompletionsAsync(this.ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
@@ -224,15 +227,16 @@ public abstract class ClientBase
     /// <returns>Streaming of generated chat message in string format</returns>
     private protected async IAsyncEnumerable<IChatStreamingResult> InternalGetChatStreamingResultsAsync(
         IEnumerable<ChatMessageBase> chat,
-        OpenAIChatRequestSettings? requestSettings,
+        dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
-        requestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
-        ValidateMaxTokens(requestSettings.MaxTokens);
+        OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
-        var options = CreateChatCompletionsOptions(requestSettings, chat);
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
+
+        var options = CreateChatCompletionsOptions(chatRequestSettings, chat);
 
         Response<StreamingChatCompletions>? response = await RunRequestAsync<Response<StreamingChatCompletions>>(
             () => this.Client.GetChatCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
@@ -278,7 +282,7 @@ public abstract class ClientBase
     {
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIChatRequestSettings chatSettings);
 
-        IAsyncEnumerable<IChatStreamingResult> chatCompletionStreamingResults = this.InternalGetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
+        IAsyncEnumerable<IChatStreamingResult> chatCompletionStreamingResults = this.InternalGetChatStreamingResultsAsync(chat, chatSettings, cancellationToken);
         await foreach (var chatCompletionStreamingResult in chatCompletionStreamingResults)
         {
             yield return (ITextStreamingResult)chatCompletionStreamingResult;
@@ -296,9 +300,10 @@ public abstract class ClientBase
     private static CompletionsOptions CreateCompletionsOptions(string text, dynamic? requestSettings)
     {
         OpenAITextRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
+
         if (textRequestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
-            throw new ArgumentOutOfRangeException($"{nameof(textRequestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", textRequestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
+            throw new ArgumentOutOfRangeException($"{nameof(textRequestSettings)}.{nameof(textRequestSettings.ResultsPerPrompt)}", textRequestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
         }
 
         var options = new CompletionsOptions

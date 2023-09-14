@@ -50,25 +50,25 @@ public sealed class SKFunctionTests1
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
 
         // Act
-        skFunction.RequestSettings!.Temperature = 1.3;
-        skFunction.RequestSettings.MaxTokens = 130;
+        requestSettings.Temperature = 1.3;
+        requestSettings.MaxTokens = 130;
 
         // Assert
-        Assert.Equal(1.3, skFunction.RequestSettings.Temperature);
-        Assert.Equal(130, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(1.3, skFunction.RequestSettings?.Temperature);
+        Assert.Equal(130, skFunction.RequestSettings?.MaxTokens);
 
         // Act
-        skFunction.RequestSettings.Temperature = 0.7;
+        requestSettings.Temperature = 0.7;
 
         // Assert
-        Assert.Equal(0.7, skFunction.RequestSettings.Temperature);
+        Assert.Equal(0.7, skFunction.RequestSettings?.Temperature);
 
         // Act
         skFunction.SetAIConfiguration(requestSettings);
 
         // Assert
-        Assert.Equal(requestSettings.Temperature, skFunction.RequestSettings.Temperature);
-        Assert.Equal(requestSettings.MaxTokens, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal(requestSettings.Temperature, skFunction.RequestSettings?.Temperature);
+        Assert.Equal(requestSettings.MaxTokens, skFunction.RequestSettings?.MaxTokens);
     }
 
     private static Mock<IPromptTemplate> MockPromptTemplate()

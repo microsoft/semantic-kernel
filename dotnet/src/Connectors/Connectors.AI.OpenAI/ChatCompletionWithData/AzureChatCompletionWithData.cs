@@ -88,7 +88,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
-        var chat = this.PrepareChatHistory(text, requestSettings);
+        var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
         return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
@@ -103,7 +103,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         OpenAIChatRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
-        var chat = this.PrepareChatHistory(text, requestSettings);
+        var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
         IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
         await foreach (var result in results)
