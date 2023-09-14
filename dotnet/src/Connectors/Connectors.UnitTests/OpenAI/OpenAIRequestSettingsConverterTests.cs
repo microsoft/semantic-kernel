@@ -15,7 +15,7 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI;
 public class OpenAIRequestSettingsConverterTests
 {
     [Fact]
-    public void ItDeserialiseOpenAITextRequestSettingsWithCorrectDefaults()
+    public void ItDeserialisesOpenAITextRequestSettingsWithCorrectDefaults()
     {
         // Arrange
         JsonSerializerOptions options = new();
@@ -39,7 +39,7 @@ public class OpenAIRequestSettingsConverterTests
     }
 
     [Fact]
-    public void ItDeserialiseOpenAITextRequestSettingsWithCamelCaseNaming()
+    public void ItDeserialisesOpenAITextRequestSettingsWithCamelCaseNaming()
     {
         // Arrange
         JsonSerializerOptions options = new();
@@ -73,7 +73,7 @@ public class OpenAIRequestSettingsConverterTests
     }
 
     [Fact]
-    public void ItDeserialiseOpenAITextRequestSettingsWithPascalCaseNaming()
+    public void ItDeserialisesOpenAITextRequestSettingsWithPascalCaseNaming()
     {
         // Arrange
         JsonSerializerOptions options = new();
