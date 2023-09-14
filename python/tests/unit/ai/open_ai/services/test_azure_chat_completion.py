@@ -29,7 +29,7 @@ def test_azure_chat_completion_init() -> None:
         endpoint=endpoint,
         api_key=api_key,
         api_version=api_version,
-        logger=logger,
+        log=logger,
     )
 
     assert azure_chat_completion.endpoint == endpoint
@@ -53,7 +53,7 @@ def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            logger=logger,
+            log=logger,
         )
 
 
@@ -72,7 +72,7 @@ def test_azure_chat_completion_init_with_empty_api_key() -> None:
             endpoint=endpoint,
             api_key="",
             api_version=api_version,
-            logger=logger,
+            log=logger,
         )
 
 
@@ -91,7 +91,7 @@ def test_azure_chat_completion_init_with_empty_endpoint() -> None:
             endpoint="",
             api_key=api_key,
             api_version=api_version,
-            logger=logger,
+            log=logger,
         )
 
 
@@ -108,7 +108,7 @@ def test_azure_chat_completion_init_with_invalid_endpoint() -> None:
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            logger=logger,
+            log=logger,
         )
 
 
@@ -134,7 +134,7 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            logger=logger,
+            log=logger,
         )
 
         await azure_chat_completion.complete_async(prompt, complete_request_settings)
@@ -184,7 +184,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            logger=logger,
+            log=logger,
         )
 
         await azure_chat_completion.complete_async(prompt, complete_request_settings)
@@ -234,7 +234,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> 
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            logger=logger,
+            log=logger,
         )
 
         await azure_chat_completion.complete_async(prompt, complete_request_settings)
@@ -257,3 +257,24 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> 
             frequency_penalty=complete_request_settings.frequency_penalty,
             logit_bias={},
         )
+
+
+def test_azure_chat_completion_serialize() -> None:
+
+    deployment_name = "test_deployment"
+    endpoint = "https://test-endpoint.com"
+    api_key = "test_api_key"
+    api_version = "2023-03-15-preview"
+    logger = Logger("test_logger")
+
+    settings = {
+        "deployment_name": deployment_name,
+        "endpoint": endpoint,
+        "api_key": api_key,
+        "api_version": api_version,
+        "log": logger,
+    }
+
+    azure_chat_completion = AzureChatCompletion.from_dict(settings)
+    dumped_settings = azure_chat_completion.to_dict()
+    assert dumped_settings == settings

@@ -2,24 +2,27 @@
 
 
 from logging import Logger
-from typing import Optional
+from typing import Dict, Optional
 
-from pydantic import HttpUrl
+from pydantic import Field, HttpUrl
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
 )
 
 
 class AzureTextCompletion(OpenAITextCompletionBase):
+    model_id: str = Field(..., alias="deployment_name")
+
     def __init__(
         self,
         deployment_name: str,
         endpoint: HttpUrl,
         api_key: str,
         api_version: str = "2022-12-01",
-        log: Optional[Logger] = None,
         ad_auth=False,
+        log: Optional[Logger] = None,
+        logger: Optional[Logger] = None,
     ) -> None:
         """
         Initialize an AzureTextCompletion service.
@@ -41,6 +44,7 @@ class AzureTextCompletion(OpenAITextCompletionBase):
             ad_auth: Whether to use Azure Active Directory authentication. (Optional)
                 The default value is False.
             log: The logger instance to use. (Optional)
+            logger: deprecated, use 'log' instead.
         """
         kwargs = {
             "model_id": deployment_name,
@@ -49,6 +53,44 @@ class AzureTextCompletion(OpenAITextCompletionBase):
             "api_version": api_version,
             "api_type": "azure_ad" if ad_auth else "azure",
         }
+        if logger:
+            logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
+            kwargs["log"] = logger
         if log:
             kwargs["log"] = log
         super().__init__(**kwargs)
+
+    @classmethod
+    def from_dict(cls, settings: Dict[str, str]) -> "AzureTextCompletion":
+        """
+        Initialize an AzureChatCompletion service from a dictionary of settings.
+
+        Arguments:
+            settings: A dictionary of settings for the service.
+        """
+        if "api_type" in settings:
+            settings["ad_auth"] = settings["api_type"] == "azure_ad"
+            del settings["api_type"]
+
+        return AzureTextCompletion(
+            deployment_name=settings["deployment_name"],
+            endpoint=settings["endpoint"],
+            api_key=settings["api_key"],
+            api_version=settings.get("api_version"),
+            ad_auth=settings.get("ad_auth", False),
+            log=settings.get("log"),
+            # TODO: figure out if we need to be able to reinitialize the token counters.
+        )
+
+    def to_dict(self) -> Dict[str, str]:
+        # TODO: figure out if we need to be able to reinitialize the token counters.
+        return self.dict(
+            exclude={
+                "prompt_tokens",
+                "completion_tokens",
+                "total_tokens",
+                "api_type",
+                "org_id",
+            },
+            by_alias=True,
+        )
