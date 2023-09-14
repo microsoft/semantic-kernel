@@ -91,7 +91,7 @@ public abstract class ClientBase
         dynamic? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        requestSettings = OpenAITextRequestSettings.FromRequestSettings(requestSettings);
+        requestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
 
         ValidateMaxTokens(requestSettings.MaxTokens);
         var options = CreateCompletionsOptions(text, requestSettings);
@@ -128,7 +128,7 @@ public abstract class ClientBase
         dynamic? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        requestSettings = OpenAITextRequestSettings.FromRequestSettings(requestSettings);
+        requestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
 
         ValidateMaxTokens(requestSettings.MaxTokens);
         var options = CreateCompletionsOptions(text, requestSettings);
@@ -190,7 +190,7 @@ public abstract class ClientBase
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
-        requestSettings = OpenAIChatRequestSettings.FromRequestSettings(requestSettings);
+        requestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
         ValidateMaxTokens(requestSettings.MaxTokens);
         var chatOptions = CreateChatCompletionsOptions(requestSettings, chat);
@@ -228,7 +228,7 @@ public abstract class ClientBase
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
-        requestSettings = OpenAIChatRequestSettings.FromRequestSettings(requestSettings);
+        requestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
 
         ValidateMaxTokens(requestSettings.MaxTokens);
 
@@ -287,16 +287,15 @@ public abstract class ClientBase
 
     private static OpenAIChatHistory PrepareChatHistory(string text, dynamic? requestSettings, out OpenAIChatRequestSettings settings)
     {
-        requestSettings = OpenAIChatRequestSettings.FromRequestSettings(requestSettings);
-        var chat = InternalCreateNewChat(requestSettings.ChatSystemPrompt);
+        settings = OpenAIRequestSettings.FromRequestSettings<OpenAIChatRequestSettings>(requestSettings);
+        var chat = InternalCreateNewChat(settings.ChatSystemPrompt);
         chat.AddUserMessage(text);
-        settings = (OpenAIChatRequestSettings)requestSettings;
         return chat;
     }
 
     private static CompletionsOptions CreateCompletionsOptions(string text, dynamic? requestSettings)
     {
-        OpenAITextRequestSettings textRequestSettings = OpenAITextRequestSettings.FromRequestSettings(requestSettings);
+        OpenAITextRequestSettings textRequestSettings = OpenAIRequestSettings.FromRequestSettings<OpenAITextRequestSettings>(requestSettings);
         if (textRequestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
             throw new ArgumentOutOfRangeException($"{nameof(textRequestSettings)}.{nameof(requestSettings.ResultsPerPrompt)}", textRequestSettings.ResultsPerPrompt, $"The value must be in range between 1 and {MaxResultsPerPrompt}, inclusive.");
