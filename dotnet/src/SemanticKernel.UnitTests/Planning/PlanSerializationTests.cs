@@ -450,7 +450,7 @@ public sealed class PlanSerializationTests
             skills.Object,
             logger.Object
         );
-        plan = Plan.FromJson(serializedPlan1, nextContext);
+        plan = Plan.FromJson(serializedPlan1, skills.Object);
         plan = await kernel.Object.StepAsync(cv, plan);
 
         // Assert
@@ -507,7 +507,7 @@ public sealed class PlanSerializationTests
 
         // Act
         var serializedPlan = plan.ToJson();
-        var deserializedPlan = Plan.FromJson(serializedPlan, returnContext, requireFunctions);
+        var deserializedPlan = Plan.FromJson(serializedPlan, skills.Object, requireFunctions);
 
         // Assert
         Assert.NotNull(deserializedPlan);
@@ -558,12 +558,12 @@ public sealed class PlanSerializationTests
         if (requireFunctions)
         {
             // Act + Assert
-            Assert.Throws<SKException>(() => Plan.FromJson(serializedPlan, returnContext));
+            Assert.Throws<SKException>(() => Plan.FromJson(serializedPlan, skills.Object));
         }
         else
         {
             // Act
-            var deserializedPlan = Plan.FromJson(serializedPlan, returnContext, requireFunctions);
+            var deserializedPlan = Plan.FromJson(serializedPlan, skills.Object, requireFunctions);
 
             // Assert
             Assert.NotNull(deserializedPlan);

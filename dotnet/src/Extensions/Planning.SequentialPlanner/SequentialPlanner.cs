@@ -46,7 +46,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
             temperature: 0.0,
             stopSequences: new[] { StopSequence });
 
-        this._context = kernel.CreateNewContext();
+        this._kernel = kernel;
     }
 
     /// <inheritdoc />
@@ -57,16 +57,15 @@ public sealed class SequentialPlanner : ISequentialPlanner
             throw new SKException("The goal specified is empty");
         }
 
-        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
-        this._context.Variables.Set("available_functions", relevantFunctionsManual);
+        string relevantFunctionsManual = await this._kernel.CreateNewContext().GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
 
-        this._context.Variables.Update(goal);
+        ContextVariables vars = new(goal) { ["available_functions"] = relevantFunctionsManual };
 
-        var planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
 
         string planResultString = planResult.Result.Trim();
 
-        var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+        var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._kernel.Skills);
         var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
 
         if (plan.Steps.Count == 0)
@@ -79,7 +78,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
     private SequentialPlannerConfig Config { get; }
 
-    private readonly SKContext _context;
+    private readonly IKernel _kernel;
 
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed
