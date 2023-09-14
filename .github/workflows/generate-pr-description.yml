@@ -8,6 +8,7 @@ jobs:
   generate-pr-description:
     permissions:
       pull-requests: write
+      statuses: write
     runs-on: ubuntu-latest
     if: github.event.issue.pull_request && contains(github.event.comment.body, '/sk generate-pr-description')
     steps:
