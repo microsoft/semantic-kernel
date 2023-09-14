@@ -70,7 +70,12 @@ known as coral polyps.";
 
     private static int CustomTokenCounter(string input)
     {
-        var encoding = GptEncoding.GetEncoding("p50k_base");
+        // Initialize encoding by encoding name
+        var encoding = GptEncoding.GetEncoding("cl100k_base");
+
+        // Initialize encoding by model name
+        // var encoding = GptEncoding.GetEncodingForModel("gpt-4");
+
         var tokens = encoding.Encode(input);
 
         return tokens.Count;
