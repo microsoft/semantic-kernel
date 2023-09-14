@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
+import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryStore;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,7 +38,7 @@ public class Example14_SemanticMemory {
          * need to worry about embedding generation.
          */
         var kernelWithACS = SKBuilders.kernel()
-                .withMemory(new AzureCognitiveSearchMemory(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
+                .withMemoryStorage(new AzureCognitiveSearchMemoryStore(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
                 .build();
 
         runExampleAsync(kernelWithACS).block();

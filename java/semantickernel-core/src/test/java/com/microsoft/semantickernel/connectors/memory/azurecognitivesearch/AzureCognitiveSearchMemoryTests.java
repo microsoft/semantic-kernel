@@ -56,7 +56,7 @@ class AzureCognitiveSearchMemoryTests {
         }
     }
 
-    // Kernel is configured with a real AzureCognitiveSearchMemory which is backed
+    // Kernel is configured with a real AzureCognitiveSearchMemoryStore which is backed
     // by a mocked HttpPipeline. The HttpPipeline is mocked to return a mocked
     // HttpResponse whose body and status code are configured by the test.
     Kernel kernel;
@@ -82,12 +82,13 @@ class AzureCognitiveSearchMemoryTests {
     @BeforeEach
     void setUp() {
 
+      String apiKey = "fake-key";
         HttpPipeline pipeline = setUpHttpPipeline();
 
         SearchIndexAsyncClient searchIndexAsyncClient =
                 new SearchIndexClientBuilder()
                         .endpoint("https://fake-random-test-host/fake-path")
-                        .credential(new AzureKeyCredential("fake-key"))
+                        .credential(new AzureKeyCredential(apiKey))
                         .pipeline(pipeline)
                         .httpLogOptions(
                                 new HttpLogOptions()
@@ -96,7 +97,12 @@ class AzureCognitiveSearchMemoryTests {
 
         kernel =
                 SKBuilders.kernel()
-                        .withMemory(new AzureCognitiveSearchMemory(searchIndexAsyncClient))
+                        .withMemoryStorage(
+                            new AzureCognitiveSearchMemoryStore(
+                              searchIndexAsyncClient.getEndpoint(),
+                              apiKey
+                            )
+                        )
                         .build();
     }
 
