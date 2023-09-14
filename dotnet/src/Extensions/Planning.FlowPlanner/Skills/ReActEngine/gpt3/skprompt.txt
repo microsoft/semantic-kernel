@@ -61,7 +61,7 @@ I should use Calculator.Divide function to calculate the result.
     }
 }
 
-IMOPRTANT REMINDER: your each response should contain only one next step and only single one [ACTION] part. Do not provide more than one step.  
+IMPORTANT REMINDER: your each response should contain only one next step and only single one [ACTION] part. Do not provide more than one step.  
 Let's break down the problem step by step and think about the best approach.
 
 Begin!

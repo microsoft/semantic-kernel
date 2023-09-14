@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Given the chat history, determine if user would like to execute the previous task for one more time. If not concluded, generate the next message for follow up.",
+  "description": "Given the chat history, determine if user would like to begin executing the current task. If not concluded, generate the next message for follow up.",
   "type": "completion",
   "completion": {
     "max_tokens": 400,
@@ -18,9 +18,9 @@
         "defaultValue": ""
       },
       {
-        "name": "transitionMessage",
-        "description": "The transition message",
-        "defaultValue": "Did you want to try the previous step again?"
+        "name": "message",
+        "description": "The message to display to the user",
+        "defaultValue": ""
       },
       {
         "name": "agentScratchPad",

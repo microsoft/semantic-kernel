@@ -1,17 +1,17 @@
 [INSTRUCTION]
-Work with user to determine if he or she would like to work on the previous step for one more time.
+Work with user to determine if he or she would like to execute the current step for the first time.
 
 [THOUGHT PROCESS]
 [Goal]
 The goal of proposed step.
 [THOUGHT]
-To solve this problem, I should carefully analyze the previous question and response to identify if user is willing to repeat the action again. 
+To solve this problem, I should carefully analyze the question and response to identify if user is willing to begin the current action. 
 Any facts I discover earlier in my thought process should be repeated here to keep them readily available.
 [QUESTION]
 If there is any ambiguity in the chat history, ask the follow up question to the user to get clarification on whether the user wants to repeat the previous step.
-The way you will check if the user wants to repeat the step is by asking the question "{{$transitionMessage}}". 
+The way you will check if the user wants to execute the step is by asking the question "{{$message}}". 
 IMPORTANT: Do NOT update the wording in the question stated above. If you need clarification, you will ask that question word for word.
-If the user says something along the lines of "yes", "sure", "fine", "ok", then they are asking to repeat the step.
+If the user says something along the lines of "yes", "sure", "fine", "ok", then they are asking to start the step.
 [RESPONSE]
 The result of the action will be provided here. It could be result or error message of the action, or chat history between assistant and user to tackle the problem.
 ... (These THOUGHT/QUESTION/RESPONSE can repeat until the final answer is reached.)
@@ -27,7 +27,7 @@ Example:
 [RESPONSE]
 yes
 [THOUGHT]
-Based on the response, the user wants to try the previous step again.
+Based on the response, the user wants to execute the current step.
 [FINAL ANSWER]
 TRUE
 

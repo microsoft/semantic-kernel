@@ -24,7 +24,7 @@ using Microsoft.SemanticKernel.Skills.Web.Bing;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example55_FlowPlanner
+public static class Example57_FlowPlanner
 {
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
 name: FlowPlanner_Example_Flow
@@ -39,8 +39,11 @@ steps:
   - goal: Collect email address
     skills:
       - CollectEmailSkill
+    completionType: AtLeastOnce
+    transitionMessage: do you want to send it to another email address?
     provides:
       - email_address
+
   - goal: Send email
     skills:
       - SendEmail
@@ -102,7 +105,7 @@ steps:
         Console.WriteLine("*****************************************************");
     }
 
-    public static async Task RunExampleAsync()
+    private static async Task RunExampleAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
@@ -119,18 +122,26 @@ steps:
         Stopwatch sw = new();
         sw.Start();
         Console.WriteLine("Flow: " + s_flow.Name);
-        var result = await planner.ExecuteFlowAsync(s_flow, sessionId, "Execute the flow");
+        var result = await planner.ExecuteFlowAsync(s_flow, sessionId, "Execute the flow").ConfigureAwait(false);
         Console.WriteLine("Assistant: " + result.Result);
         Console.WriteLine("\tAnswer: " + result.Variables["answer"]);
 
-        string input = "my email is bad*email&address";
-        Console.WriteLine($"User: {input}");
-        result = await planner.ExecuteFlowAsync(s_flow, sessionId, input);
-        Console.WriteLine("Assistant: " + result.Result);
+        string[] userInputs = new[]
+        {
+            "my email is bad*email&address",
+            "my email is sample@xyz.com",
+            "yes", // confirm to add another email address
+            "I also want to notify foo@bar.com",
+            "no", // end of collect emails
+        };
 
-        input = "my email is sample@xyz.com";
-        Console.WriteLine($"User: {input}");
-        result = await planner.ExecuteFlowAsync(s_flow, sessionId, input);
+        foreach (var t in userInputs)
+        {
+            Console.WriteLine($"User: {t}");
+            result = await planner.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
+            Console.WriteLine("Assistant: " + result.Result);
+        }
+
         Console.WriteLine("\tEmail Address: " + result.Variables["email_address"]);
         Console.WriteLine("\tEmail Payload: " + result.Variables["email"]);
 
@@ -256,14 +267,21 @@ If I cannot answer, say that I don't know.
 //*****************************************************
 //Flow: FlowPlanner_Example_Flow
 //Assistant: ["Please provide a valid email address in the following format: example@example.com"]
-//        Answer: The current president of the United States is Joe Biden. His current age divided by 2 is 39.
+//        Answer: Joe Biden is the current president of the United States. His age is (2023 - 1942) = 81 years old. When divided by 2, his age is 40.5 years.
 //User: my email is bad*email&address
 //Assistant: ["The email address you provided is not valid. Please provide a valid email address in the following format: example@example.com"]
 //User: my email is sample@xyz.com
-//        Email Address: The collected email address is sample@xyz.com.
+//Assistant: ["Do you want to send it to another email address?"]
+//User: yes
+//Assistant: ["Please provide a valid email address in the following format: example@example.com"]
+//User: I also want to notify foo@bar.com
+//Assistant: ["Do you want to send it to another email address?"]
+//User: no
+//Assistant: []
+//        Email Address: ["The collected email address is sample@xyz.com.","foo@bar.com"]
 //        Email Payload: {
-//  "Address": "sample@xyz.com",
-//  "Content": "The current president of the United States is Joe Biden. His current age divided by 2 is 39."
+//  "Address": "[\u0022sample@xyz.com\u0022,\u0022foo@bar.com\u0022]",
+//  "Content": "Joe Biden is the current president of the United States. His age is (2023 - 1942) = 81 years old. When divided by 2, his age is 40.5 years."
 //}
-//Time Taken: 00:01:05.3375146
+//Time Taken: 00:01:15.1529717
 //*****************************************************

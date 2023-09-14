@@ -36,5 +36,10 @@ internal static class Constants
         /// Variable value to prompt input
         /// </summary>
         public const string PromptInputValue = "True";
+
+        /// <summary>
+        /// Variable name to exit out the of AtLeastOnce or ZeroOrMore loop
+        /// </summary>
+        public const string ExitLoopName = "ExitLoop";
     }
 }

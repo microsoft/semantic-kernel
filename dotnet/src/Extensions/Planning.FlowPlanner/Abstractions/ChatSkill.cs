@@ -56,6 +56,24 @@ public abstract class ChatSkill
     /// <param name="context">context</param>
     protected void PromptInput(SKContext context)
     {
-        context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, Constants.ChatSkillVariables.PromptInputValue);
+        // Cant prompt the user for input and exit the execution at the same time
+        if (!context.Variables.ContainsKey(Constants.ChatSkillVariables.ExitLoopName))
+        {
+            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, Constants.ChatSkillVariables.PromptInputValue);
+        }
+    }
+
+    /// <summary>
+    /// Signal the orchestrator to exit out of the AtLeastOnce or ZeroOrMore loop. If response is non-null, that value will be outputted to the user.
+    /// </summary>
+    /// <param name="context">context</param>
+    /// <param name="response">context</param>
+    protected void ExitLoop(SKContext context, string? response = null)
+    {
+        // Cant prompt the user for input and exit the execution at the same time
+        if (!context.Variables.ContainsKey(Constants.ChatSkillVariables.PromptInputName))
+        {
+            context.Variables.Set(Constants.ChatSkillVariables.ExitLoopName, response ?? string.Empty);
+        }
     }
 }
