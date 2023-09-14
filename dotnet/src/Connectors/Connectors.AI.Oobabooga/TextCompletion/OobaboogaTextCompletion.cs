@@ -24,6 +24,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// </summary>
 public sealed class OobaboogaTextCompletion : ITextCompletion
 {
+    /// <summary>
+    /// The URI path for blocking API requests.
+    /// </summary>
     public const string BlockingUriPath = "/api/v1/generate";
     private const string StreamingUriPath = "/api/v1/stream";
 
@@ -41,7 +44,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private long _lastCallTicks = long.MaxValue;
 
     /// <summary>
-    /// Controls the size of the buffer used to received websocket packets
+    /// Controls the size of the buffer used to receive websocket packets.
     /// </summary>
     public int WebSocketBufferSize { get; set; } = 2048;
 
@@ -210,10 +213,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             };
             httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
 
-            using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            using var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
 
-            var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
             TextCompletionResponse? completionResponse = JsonSerializer.Deserialize<TextCompletionResponse>(body);
 
