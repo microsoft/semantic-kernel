@@ -60,7 +60,7 @@ public class OpenAIRequestSettingsTests
     }
 
     [Fact]
-    public void ItCreatesOpenAIRequestSettingsFromAnonymousTypeCamelCase()
+    public void ItCreatesOpenAIRequestSettingsFromAnonymousTypeSnakeCase()
     {
         // Arrange
         var actualSettings = new
@@ -130,7 +130,7 @@ public class OpenAIRequestSettingsTests
     }
 
     [Fact]
-    public void ItCreatesOpenAIRequestSettingsFromJsonCamelCase()
+    public void ItCreatesOpenAIRequestSettingsFromJsonSnakeCase()
     {
         // Arrange
         var json = @"{

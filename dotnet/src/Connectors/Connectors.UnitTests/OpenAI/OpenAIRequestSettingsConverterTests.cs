@@ -38,7 +38,7 @@ public class OpenAIRequestSettingsConverterTests
     }
 
     [Fact]
-    public void ItDeserialisesOpenAIRequestSettingsWithCamelCaseNaming()
+    public void ItDeserialisesOpenAIRequestSettingsWithSnakeCaseNaming()
     {
         // Arrange
         JsonSerializerOptions options = new();
