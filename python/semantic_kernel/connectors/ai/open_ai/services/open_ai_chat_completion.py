@@ -46,6 +46,8 @@ class OpenAIChatCompletion(OpenAIChatCompletionBase):
 
         Arguments:
             settings: A dictionary of settings for the service.
+                should contain keys: model_id, api_key
+                and optionally: org_id, log
         """
         if "api_type" in settings:
             settings["ad_auth"] = settings["api_type"] == "azure_ad"
