@@ -64,7 +64,7 @@ public class StepwisePlanner : IStepwisePlanner
         {
             this._promptConfig.Completion = new AIRequestSettings();
         }
-        this._promptConfig.Completion.ExtensionData["max_tokens"] = this.Config.MaxTokens;
+        this._promptConfig.Completion.ExtensionData["max_tokens"] = this.Config.MaxCompletionTokens;
 
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
@@ -389,14 +389,21 @@ public class StepwisePlanner : IStepwisePlanner
     {
         var skipStart = startingMessageCount;
         var skipCount = 0;
+        var lastObservationIndex = chatHistory.FindLastIndex(m => m.Content.StartsWith(Observation, StringComparison.OrdinalIgnoreCase));
+        var messagesToKeep = lastObservationIndex >= 0 ? chatHistory.Count - lastObservationIndex : 0;
 
         string? originalThought = null;
 
         var tokenCount = chatHistory.GetTokenCount();
-        while (tokenCount >= this.Config.MaxTokens && chatHistory.Count > skipStart)
+        while (tokenCount >= this.Config.MaxPromptTokens && chatHistory.Count > (skipStart + skipCount + messagesToKeep))
         {
             originalThought = $"{Thought} {stepsTaken.FirstOrDefault()?.Thought}";
-            tokenCount = chatHistory.GetTokenCount($"{originalThought}\n{TrimMessage}", skipStart, ++skipCount);
+            tokenCount = chatHistory.GetTokenCount($"{originalThought}\n{string.Format(CultureInfo.InvariantCulture, TrimMessageFormat, skipCount)}", skipStart, ++skipCount);
+        }
+
+        if (tokenCount >= this.Config.MaxPromptTokens)
+        {
+            throw new SKException("ChatHistory is too long to get a completion. Try reducing the available functions.");
         }
 
         var reducedChatHistory = new ChatHistory();
@@ -404,7 +411,7 @@ public class StepwisePlanner : IStepwisePlanner
 
         if (skipCount > 0 && originalThought is not null)
         {
-            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, TrimMessage);
+            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, string.Format(CultureInfo.InvariantCulture, TrimMessageFormat, skipCount));
             reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, originalThought);
         }
 
@@ -742,7 +749,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The chat message to include when trimming thought process history
     /// </summary>
-    private const string TrimMessage = "... I've removed some of my previous work to make room for the new stuff ...";
+    private const string TrimMessageFormat = "... I've removed the first {0} steps of my previous work to make room for the new stuff ...";
 
     /// <summary>
     /// The regex for parsing the thought response
