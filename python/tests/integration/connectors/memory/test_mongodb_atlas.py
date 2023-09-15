@@ -7,24 +7,24 @@ import pytest
 import pytest_asyncio
 from pymongo import errors
 
-from semantic_kernel.connectors.memory.mongodb_atlas_vector_search.atlas_vector_search_memory_store import (
-    MongoDBAtlasVectorSearchMemoryStore,
+from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import (
+    MongoDBAtlasMemoryStore,
 )
-from semantic_kernel.connectors.memory.mongodb_atlas_vector_search.utils import (
+from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     MONGODB_FIELD_DESC,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-mongodb_atlas_vector_search_installed: bool
+mongodb_atlas_installed: bool
 try:
     import motor  # noqa: F401
 
-    mongodb_atlas_vector_search_installed = True
+    mongodb_atlas_installed = True
 except ImportError:
-    mongodb_atlas_vector_search_installed = False
+    mongodb_atlas_installed = False
 
 pytestmark = pytest.mark.skipif(
-    not mongodb_atlas_vector_search_installed,
+    not mongodb_atlas_installed,
     reason="MongoDB Atlas Vector Search not installed; pip install motor",
 )
 DUPLICATE_INDEX_ERR_CODE = 68
@@ -65,7 +65,7 @@ def test_collection():
 
 @pytest_asyncio.fixture
 async def vector_search_store():
-    async with MongoDBAtlasVectorSearchMemoryStore(dimensions=4) as memory:
+    async with MongoDBAtlasMemoryStore(dimensions=4) as memory:
         # Delete all collections before and after
         for cname in await memory.get_collections_async():
             await memory.delete_collection_async(cname)
@@ -85,7 +85,7 @@ async def vector_search_store():
 
 @pytest.mark.asyncio
 async def test_constructor(vector_search_store):
-    assert isinstance(vector_search_store, MongoDBAtlasVectorSearchMemoryStore)
+    assert isinstance(vector_search_store, MongoDBAtlasMemoryStore)
 
 
 @pytest.mark.asyncio

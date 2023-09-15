@@ -11,7 +11,7 @@ from numpy import ndarray
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 from pymongo.operations import SearchIndexModel
 
-from semantic_kernel.connectors.memory.mongodb_atlas_vector_search.utils import (
+from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     _DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
@@ -28,7 +28,7 @@ _DEFAULT_DB_NAME = "default"
 _POLL_INTERVAL = 1.0
 
 
-class MongoDBAtlasVectorSearchMemoryStore(MemoryStoreBase):
+class MongoDBAtlasMemoryStore(MemoryStoreBase):
     """Memory Store for MongoDB Atlas Vector Search Connections"""
 
     __slots__ = ("_mongo_client", "_logger", "__database_name", "__search_index_model")
@@ -382,4 +382,4 @@ class MongoDBAtlasVectorSearchMemoryStore(MemoryStoreBase):
         return matches[0] if matches else None
 
 
-__all__ = ["MongoDBAtlasVectorSearchMemoryStore"]
+__all__ = ["MongoDBAtlasMemoryStore"]
