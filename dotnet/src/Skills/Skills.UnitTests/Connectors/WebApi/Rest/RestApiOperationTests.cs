@@ -12,7 +12,7 @@ namespace SemanticKernel.Skills.UnitTests.Connectors.WebApi.Rest;
 public class RestApiOperationTests
 {
     [Fact]
-    public void ShouldUseHostUrlIfNoOverrideProvided()
+    public void ItShouldUseHostUrlIfNoOverrideProvided()
     {
         // Arrange
         var sut = new RestApiOperation(
@@ -35,7 +35,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ShouldUseHostUrlOverrideIfProvided()
+    public void ItShouldUseHostUrlOverrideIfProvided()
     {
         // Arrange
         var sut = new RestApiOperation(
@@ -61,7 +61,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ShouldReplacePathParametersByValuesFromArguments()
+    public void ItShouldReplacePathParametersByValuesFromArguments()
     {
         // Arrange
         var sut = new RestApiOperation(
@@ -87,7 +87,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ShouldReplacePathParametersByDefaultValues()
+    public void ItShouldReplacePathParametersByDefaultValues()
     {
         // Arrange
         var parameterMetadata = new RestApiOperationParameter(

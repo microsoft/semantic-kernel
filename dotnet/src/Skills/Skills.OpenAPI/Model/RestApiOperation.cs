@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Web;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Model;
@@ -199,41 +198,6 @@ public sealed class RestApiOperation
         }
 
         return s_urlParameterMatch.Replace(path, ReplaceParameter);
-    }
-
-    /// <summary>
-    /// Create query string.
-    /// </summary>
-    /// <returns>Path with query string.</returns>
-    private string CreateQueryString(IDictionary<string, string> arguments)
-    {
-        var queryStringSegments = new List<string>();
-
-        var queryStringParameters = this.Parameters.Where(p => p.Location == RestApiOperationParameterLocation.Query);
-
-        foreach (var parameter in queryStringParameters)
-        {
-            //Resolve argument for the parameter.
-            if (!arguments.TryGetValue(parameter.Name, out var argument))
-            {
-                argument = parameter.DefaultValue;
-            }
-
-            //Add the parameter to the query string if there's an argument for it.
-            if (!string.IsNullOrEmpty(argument))
-            {
-                queryStringSegments.Add($"{parameter.Name}={HttpUtility.UrlEncode(argument)}");
-                continue;
-            }
-
-            //Throw an exception if the parameter is a required one but no value is provided.
-            if (parameter.IsRequired)
-            {
-                throw new SKException($"No argument found for required query string parameter - '{parameter.Name}' for operation - '{this.Id}'");
-            }
-        }
-
-        return string.Join("&", queryStringSegments);
     }
 
     /// <summary>

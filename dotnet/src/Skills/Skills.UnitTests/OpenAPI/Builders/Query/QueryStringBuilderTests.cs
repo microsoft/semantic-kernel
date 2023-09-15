@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Query;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.OpenAPI.Builders;
+namespace SemanticKernel.Skills.UnitTests.OpenAPI.Builders.Query;
 public class QueryStringBuilderTests
 {
     private readonly QueryStringBuilder sut;
@@ -28,14 +28,16 @@ public class QueryStringBuilderTests
             "fake_type",
             true,
             false,
-            RestApiOperationParameterLocation.Query);
+            RestApiOperationParameterLocation.Query,
+            RestApiOperationParameterStyle.Form);
 
         var secondParameterMetadata = new RestApiOperationParameter(
             "p2",
             "fake_type",
             true,
             false,
-            RestApiOperationParameterLocation.Query);
+            RestApiOperationParameterLocation.Query,
+            RestApiOperationParameterStyle.Form);
 
         var operation = new RestApiOperation(
             "fake_id",
@@ -62,45 +64,7 @@ public class QueryStringBuilderTests
     }
 
     [Fact]
-    public void ShouldAddQueryStringParametersAndUseTheirDefaultValues()
-    {
-        // Arrange
-        var firstParameterMetadata = new RestApiOperationParameter(
-            "p1",
-            "fake_type",
-            true,
-            false,
-            RestApiOperationParameterLocation.Query,
-            defaultValue: "dv1");
-
-        var secondParameterMetadata = new RestApiOperationParameter(
-            "p2",
-            "fake_type",
-            true,
-            false,
-            RestApiOperationParameterLocation.Query,
-            defaultValue: "dv2");
-
-        var operation = new RestApiOperation(
-            "fake_id",
-            new Uri("https://fake-random-test-host"),
-            "/",
-            HttpMethod.Get,
-            "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
-
-        var arguments = new Dictionary<string, string>();
-
-        // Act
-        var queryString = this.sut.Build(operation, arguments);
-
-        // Assert
-        Assert.Equal("p1=dv1&p2=dv2", queryString);
-    }
-
-    [Fact]
-    public void ShouldSkipNotRequiredQueryStringParametersIfTheirValuesMissing()
+    public void ShouldSkipNotRequiredQueryStringParametersIfTheirArgumentsMissing()
     {
         // Arrange
         var firstParameterMetadata = new RestApiOperationParameter(
@@ -108,14 +72,16 @@ public class QueryStringBuilderTests
             "fake_type",
             false,
             false,
-            RestApiOperationParameterLocation.Query);
+            RestApiOperationParameterLocation.Query,
+            RestApiOperationParameterStyle.Form);
 
         var secondParameterMetadata = new RestApiOperationParameter(
             "p2",
             "fake_type",
             false,
             false,
-            RestApiOperationParameterLocation.Query);
+            RestApiOperationParameterLocation.Query,
+            RestApiOperationParameterStyle.Form);
 
         var operation = new RestApiOperation(
             "fake_id",
@@ -184,7 +150,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter("fake_query_param", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
+            new RestApiOperationParameter("fake_query_param", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form)
         };
 
         var arguments = new Dictionary<string, string>
@@ -209,7 +175,7 @@ public class QueryStringBuilderTests
         // Arrange
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter("fake_query_string_param", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
+            new RestApiOperationParameter("fake_query_string_param", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form)
         };
 
         var arguments = new Dictionary<string, string>
