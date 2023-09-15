@@ -92,7 +92,13 @@ internal static class SequentialPlanParser
             // '(.*?)': Captures the content between the opening and closing <plan> tags using a non-greedy match. It matches any character (except newline) in a lazy manner, i.e., it captures the smallest possible match.
             // '</plan>': Matches the literal string "</plan>", indicating the closing tag of the <plan> element.
             Regex planRegex = new(@"<plan\b[^>]*>(.*?)</plan>", RegexOptions.Singleline);
-            var match = planRegex.Match(xmlString);
+            Match match = planRegex.Match(xmlString);
+
+            if (!match.Success)
+            {
+                match = planRegex.Match($"{xmlString}</plan>"); // try again with a closing tag
+            }
+
 
             if (match.Success)
             {
@@ -213,7 +219,7 @@ internal static class SequentialPlanParser
     private static void GetSkillFunctionNames(string skillFunctionName, out string skillName, out string functionName)
     {
         var skillFunctionNameParts = skillFunctionName.Split('.');
-        skillName = skillFunctionNameParts?.Length > 0 ? skillFunctionNameParts[0] : string.Empty;
+        skillName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[0] : string.Empty;
         functionName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[1] : skillFunctionName;
     }
 
