@@ -7,7 +7,7 @@ using Moq;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.Planning.StepwisePlanner;
-internal class StepwisePlannerTests
+internal sealed class StepwisePlannerTests
 {
     [Fact]
     public void UsesPromptDelegateWhenProvided()
