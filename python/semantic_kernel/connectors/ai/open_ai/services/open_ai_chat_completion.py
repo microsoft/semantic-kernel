@@ -238,7 +238,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 ex,
             )
 
-        if 'usage' in response:
+        if "usage" in response:
             self._log.info("OpenAI usage: %s", response.usage)
             self._prompt_tokens += response.usage.prompt_tokens
             self._completion_tokens += response.usage.completion_tokens
@@ -249,11 +249,11 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     @property
     def prompt_tokens(self) -> int:
         return self._prompt_tokens
-    
+
     @property
     def completion_tokens(self) -> int:
         return self._completion_tokens
-    
+
     @property
     def total_tokens(self) -> int:
         return self._total_tokens
