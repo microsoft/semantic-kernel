@@ -12,7 +12,9 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
 
 
 class AzureTextCompletion(OpenAITextCompletionBase):
-    model_id: constr(strip_whitespace=True, min_length=1) = Field(..., alias="deployment_name")
+    model_id: constr(strip_whitespace=True, min_length=1) = Field(
+        ..., alias="deployment_name"
+    )
 
     def __init__(
         self,
@@ -67,7 +69,7 @@ class AzureTextCompletion(OpenAITextCompletionBase):
 
         Arguments:
             settings: A dictionary of settings for the service.
-                should contains keys: deployment_name, endpoint, api_key 
+                should contains keys: deployment_name, endpoint, api_key
                 and optionally: api_version, ad_auth, log
         """
         if "api_type" in settings:

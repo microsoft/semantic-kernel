@@ -46,9 +46,7 @@ def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
 
-    with pytest.raises(
-        ValidationError, match="deployment_name"
-    ):
+    with pytest.raises(ValidationError, match="deployment_name"):
         AzureChatCompletion(
             deployment_name="",
             endpoint=endpoint,
@@ -65,9 +63,7 @@ def test_azure_chat_completion_init_with_empty_api_key() -> None:
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
 
-    with pytest.raises(
-        ValidationError, match="api_key"
-    ):
+    with pytest.raises(ValidationError, match="api_key"):
         AzureChatCompletion(
             deployment_name=deployment_name,
             endpoint=endpoint,
@@ -84,9 +80,7 @@ def test_azure_chat_completion_init_with_empty_endpoint() -> None:
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
 
-    with pytest.raises(
-        ValidationError, match="endpoint"
-    ):
+    with pytest.raises(ValidationError, match="endpoint"):
         AzureChatCompletion(
             deployment_name=deployment_name,
             endpoint="",
@@ -261,7 +255,6 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> 
 
 
 def test_azure_chat_completion_serialize() -> None:
-
     deployment_name = "test_deployment"
     endpoint = "https://test-endpoint.com"
     api_key = "test_api_key"
