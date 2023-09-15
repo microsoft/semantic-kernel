@@ -50,8 +50,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         """
         self.model_id = model_id
         self.task = "text2text-generation" if task is None else task
-        self._model_kwargs = model_kwargs
-        self._pipeline_kwargs = pipeline_kwargs
+        self.model_kwargs = model_kwargs
+        self.pipeline_kwargs = pipeline_kwargs
 
         try:
             import torch
@@ -71,8 +71,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             task=self.task,
             model=self.model_id,
             device=self.device,
-            model_kwargs=self._model_kwargs,
-            **self._pipeline_kwargs
+            model_kwargs=self.model_kwargs,
+            **self.pipeline_kwargs
         )
         if log:
             super().__init__(log=log)

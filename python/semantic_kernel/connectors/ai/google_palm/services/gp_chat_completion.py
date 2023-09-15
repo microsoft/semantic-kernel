@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple, Union
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, ExampleOptions, MessagePromptOptions
+from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -20,31 +21,18 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
-    model_id: str
-    api_key: str
-    message_history: ChatResponse
+    """
+    Initializes a new instance of the GooglePalmChatCompletion class.
 
-    def __init__(
-        self,
-        model_id: str,
-        api_key: str,
-    ) -> None:
-        """
-        Initializes a new instance of the GooglePalmChatCompletion class.
-
-        Arguments:
-            model_id {str} -- GooglePalm model name, see
-            https://developers.generativeai.google/models/language
-            api_key {str} -- GooglePalm API key, see
-            https://developers.generativeai.google/products/palm
-        """
-        if not api_key:
-            raise ValueError("The Google PaLM API key cannot be `None` or empty`")
-
-        self.model_id = model_id
-        self.api_key = api_key
-        self.message_history = None
-        super().__init__()
+    Arguments:
+        model_id {str} -- GooglePalm model name, see
+        https://developers.generativeai.google/models/language
+        api_key {str} -- GooglePalm API key, see
+        https://developers.generativeai.google/products/palm
+    """
+    model_id: constr(strip_whitespace=True, min_length=1)
+    api_key: constr(strip_whitespace=True, min_length=1)
+    message_history: Optional[ChatResponse] = None
 
     async def complete_chat_async(
         self,
