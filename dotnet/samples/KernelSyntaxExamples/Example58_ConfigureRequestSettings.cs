@@ -45,7 +45,7 @@ public static class Example58_ConfigureRequestSettings
         var result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 256, Temperature = 0.7 });
         Console.WriteLine(result.Result);
 
-        // Option 3:
+        // Option 2:
         // Load prompt template configuration including the request settings from a JSON payload
         // Create the semantic functions using the prompt template and the configuration (loaded in the previous step)
         // Invoke the semantic function using the implicitly set request settings
