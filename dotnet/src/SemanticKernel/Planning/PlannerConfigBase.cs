@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -18,4 +19,9 @@ public abstract class PlannerConfigBase
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
     public HashSet<string> ExcludedFunctions { get; } = new();
+
+    /// <summary>
+    /// Delegate to get the prompt template string.
+    /// </summary>
+    public Func<string>? GetPromptTemplate { get; set; } = null;
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -172,6 +173,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),

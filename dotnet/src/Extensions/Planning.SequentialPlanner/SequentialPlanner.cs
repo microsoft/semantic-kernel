@@ -24,25 +24,25 @@ public sealed class SequentialPlanner : ISequentialPlanner
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
-    /// <param name="prompt">Optional prompt override</param>
     public SequentialPlanner(
         IKernel kernel,
-        SequentialPlannerConfig? config = null,
-        string? prompt = null)
+        SequentialPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
-        this.Config = config ?? new();
 
-        this.Config.ExcludedSkills.Add(RestrictedSkillName);
+        // Set up config with default value and excluded skills
+        this._config = config ?? new();
+        this._config.ExcludedSkills.Add(RestrictedSkillName);
 
-        string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
+        // Set up prompt template
+        string promptTemplate = this._config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("skprompt.txt");
 
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            maxTokens: this.Config.MaxTokens ?? 1024,
+            maxTokens: this._config.MaxTokens ?? 1024,
             temperature: 0.0,
             stopSequences: new[] { StopSequence });
 
@@ -57,7 +57,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
             throw new SKException("The goal specified is empty");
         }
 
-        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
+        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this._config, cancellationToken).ConfigureAwait(false);
         this._context.Variables.Set("available_functions", relevantFunctionsManual);
 
         this._context.Variables.Update(goal);
@@ -66,12 +66,12 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         string planResultString = planResult.Result.Trim();
 
-        var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+        var getSkillFunction = this._config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
 
         Plan plan;
         try
         {
-            plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+            plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this._config.AllowMissingFunctions);
         }
         catch (SKException e)
         {
@@ -86,7 +86,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
         return plan;
     }
 
-    private SequentialPlannerConfig Config { get; }
+    private SequentialPlannerConfig _config { get; }
 
     private readonly SKContext _context;
 

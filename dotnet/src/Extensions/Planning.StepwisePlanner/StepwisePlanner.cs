@@ -46,20 +46,20 @@ public class StepwisePlanner : IStepwisePlanner
         Verify.NotNull(kernel);
         this._kernel = kernel;
 
-        // Set up Config with default values and excluded skills
-        this.Config = config ?? new();
-        this.Config.ExcludedSkills.Add(RestrictedSkillName);
+        // Set up config with default values and excluded skills
+        this._config = config ?? new();
+        this._config.ExcludedSkills.Add(RestrictedSkillName);
 
         // Set up prompt templates
-        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
+        this._promptTemplate = this._config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
         this._manualTemplate = EmbeddedResource.Read("Skills.RenderFunctionManual.skprompt.txt");
         this._questionTemplate = EmbeddedResource.Read("Skills.RenderQuestion.skprompt.txt");
 
         // Load or use default PromptConfig
-        this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
+        this._promptConfig = this._config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
-        this._promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
+        this._promptConfig.Completion.MaxTokens = this._config.MaxTokens;
 
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
@@ -273,12 +273,12 @@ public class StepwisePlanner : IStepwisePlanner
             return false;
         };
 
-        for (int i = 0; i < this.Config.MaxIterations; i++)
+        for (int i = 0; i < this._config.MaxIterations; i++)
         {
             // sleep for a bit to avoid rate limiting
             if (i > 0)
             {
-                await Task.Delay(this.Config.MinIterationTimeMs, token).ConfigureAwait(false);
+                await Task.Delay(this._config.MinIterationTimeMs, token).ConfigureAwait(false);
             }
 
             // Get next step from LLM
@@ -316,7 +316,7 @@ public class StepwisePlanner : IStepwisePlanner
             }
         }
 
-        AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
+        AddExecutionStatsToContext(stepsTaken, context, this._config.MaxIterations);
         context.Variables.Update("Result not found, review 'stepsTaken' to see what happened.");
 
         return context;
@@ -331,7 +331,7 @@ public class StepwisePlanner : IStepwisePlanner
 
         var systemContext = this._kernel.CreateNewContext();
 
-        systemContext.Variables.Set("suffix", this.Config.Suffix);
+        systemContext.Variables.Set("suffix", this._config.Suffix);
         systemContext.Variables.Set("functionDescriptions", userManual);
         string systemMessage = await this.GetSystemMessage(systemContext).ConfigureAwait(false);
 
@@ -388,7 +388,7 @@ public class StepwisePlanner : IStepwisePlanner
         string? originalThought = null;
 
         var tokenCount = chatHistory.GetTokenCount();
-        while (tokenCount >= this.Config.MaxTokens && chatHistory.Count > skipStart)
+        while (tokenCount >= this._config.MaxTokens && chatHistory.Count > skipStart)
         {
             originalThought = $"{Thought} {stepsTaken.FirstOrDefault()?.Thought}";
             tokenCount = chatHistory.GetTokenCount($"{originalThought}\n{TrimMessage}", skipStart, ++skipCount);
@@ -553,7 +553,7 @@ public class StepwisePlanner : IStepwisePlanner
         {
             return this._kernel.Skills.GetFunction(skillName, functionName);
         };
-        var getSkillFunction = this.Config.GetSkillFunction ?? getFunction;
+        var getSkillFunction = this._config.GetSkillFunction ?? getFunction;
         var function = getSkillFunction(targetFunction.SkillName, targetFunction.Name);
         return function;
     }
@@ -568,12 +568,12 @@ public class StepwisePlanner : IStepwisePlanner
 
     private Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync()
     {
-        if (this.Config.GetAvailableFunctionsAsync is null)
+        if (this._config.GetAvailableFunctionsAsync is null)
         {
             FunctionsView functionsView = this._context.Skills!.GetFunctionsView();
 
-            var excludedSkills = this.Config.ExcludedSkills ?? new();
-            var excludedFunctions = this.Config.ExcludedFunctions ?? new();
+            var excludedSkills = this._config.ExcludedSkills ?? new();
+            var excludedFunctions = this._config.ExcludedFunctions ?? new();
 
             var availableFunctions =
                 functionsView.NativeFunctions
@@ -586,7 +586,7 @@ public class StepwisePlanner : IStepwisePlanner
             return Task.FromResult(availableFunctions);
         }
 
-        return this.Config.GetAvailableFunctionsAsync(this.Config, null, CancellationToken.None);
+        return this._config.GetAvailableFunctionsAsync(this._config, null, CancellationToken.None);
     }
 
     private SKContext CreateActionContext(Dictionary<string, string> actionVariables)
@@ -679,7 +679,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The configuration for the StepwisePlanner
     /// </summary>
-    private StepwisePlannerConfig Config { get; }
+    private StepwisePlannerConfig _config { get; }
 
     // Context used to access the list of functions in the kernel
     private readonly SKContext _context;

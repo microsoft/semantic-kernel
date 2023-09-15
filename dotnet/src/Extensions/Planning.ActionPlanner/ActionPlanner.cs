@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
@@ -55,19 +54,18 @@ public sealed class ActionPlanner : IActionPlanner
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
-    /// <param name="prompt">Optional prompt override</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public ActionPlanner(
         IKernel kernel,
-        ActionPlannerConfig? config = null,
-        string? prompt = null,
-        ILoggerFactory? loggerFactory = null)
+        ActionPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
+        this._kernel = kernel;
 
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ActionPlanner)) : NullLogger.Instance;
+        // Set up Config with default values and excluded skills
+        this._config = config ?? new();
+        this._config.ExcludedSkills.Add(SkillName);
 
-        string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
+        string promptTemplate = this._config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("skprompt.txt");
 
         this._plannerFunction = kernel.CreateSemanticFunction(
             skillName: SkillName,
@@ -77,12 +75,9 @@ public sealed class ActionPlanner : IActionPlanner
 
         kernel.ImportSkill(this, skillName: SkillName);
 
-        this._kernel = kernel;
+        // Create context and logger
         this._context = kernel.CreateNewContext();
-
-        // Set up Config with default values and excluded skills
-        this._config = config ?? new();
-        this._config.ExcludedSkills.Add(SkillName);
+        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
     /// <inheritdoc />
