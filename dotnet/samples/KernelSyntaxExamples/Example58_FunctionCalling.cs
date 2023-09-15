@@ -6,13 +6,14 @@ using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using RepoUtils;
 
 /**
  * This example shows how to use OpenAI's function calling capability via the chat completions interface.
+ * For more information, see https://platform.openai.com/docs/guides/gpt/function-calling.
  */
 
 // ReSharper disable once InconsistentNaming
@@ -75,22 +76,18 @@ public static class Example58_FunctionCalling
         {
             FunctionCallResponse functionResponse = FunctionCallResponse.FromFunctionCall(functionCall);
 
-            Console.WriteLine("Skill name: " + functionResponse.SkillName);
             Console.WriteLine("Function name: " + functionResponse.FunctionName);
+            Console.WriteLine("Skill name: " + functionResponse.SkillName);
             Console.WriteLine("Arguments: ");
 
-            // Validate and retrieve function - move this somewhere else?
-            // TODO: handle global skills
-            try
+            var context = kernel.CreateNewContext();
+            if (context.Skills!.TryGetFunction(functionResponse.SkillName, functionResponse.FunctionName, out ISKFunction? func))
             {
-                var context = kernel.CreateNewContext();
-                var func = context.Skills!.GetFunction(functionResponse.SkillName, functionResponse.FunctionName);
-
                 foreach (var parameter in functionResponse.Parameters)
                 {
                     Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
 
-                    // Add to parameters to context
+                    // Add parameter to context
                     context.Variables.Set(parameter.Key, parameter.Value.ToString());
                 }
 
@@ -98,9 +95,9 @@ public static class Example58_FunctionCalling
                 var result = await func.InvokeAsync(context);
                 Console.WriteLine(result.Result);
             }
-            catch (SKException)
+            else
             {
-                // Invalid function call
+                Console.WriteLine($"Error: Function {functionResponse.SkillName}.{functionResponse.FunctionName} not found.");
             }
         }
     }

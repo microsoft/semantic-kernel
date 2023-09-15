@@ -358,7 +358,6 @@ public abstract class ClientBase
 
         if (requestSettings.Functions is not null)
         {
-            // options.FunctionCall = FunctionDefinition.Auto; // TODO: keep this for clarity?
             options.Functions = requestSettings.Functions.ToFunctionDefinitions();
         }
 

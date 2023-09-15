@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -16,12 +17,10 @@ internal static class FunctionViewExtensions
         var paramProperties = new Dictionary<string, object>();
         foreach (var param in functionView.Parameters)
         {
-            // TODO: what if type is empty?
             paramProperties.Add(
                 param.Name,
                 new
                 {
-                    // what are possible values for type? what if unrecognized?
                     type = param.Type?.Name ?? "string",
                     description = param.Description ?? "",
                 });
@@ -34,7 +33,7 @@ internal static class FunctionViewExtensions
 
         var functionDefinition = new FunctionDefinition
         {
-            Name = string.Join("-", functionView.SkillName, functionView.Name),
+            Name = (functionView.SkillName.IsNullOrEmpty() ? functionView.Name : string.Join("-", functionView.SkillName, functionView.Name)),
             Description = functionView.Description,
             Parameters = BinaryData.FromObjectAsJson(
                 new

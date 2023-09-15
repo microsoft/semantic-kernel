@@ -33,7 +33,6 @@ public class FunctionCallResponse
     /// <returns>Instance of <see cref="FunctionCallResponse"/>.</returns>
     public static FunctionCallResponse FromFunctionCall(FunctionCall functionCall)
     {
-        // TODO: error handling - what can go wrong?
         FunctionCallResponse response = new();
         if (functionCall.Name.Contains("-"))
         {
