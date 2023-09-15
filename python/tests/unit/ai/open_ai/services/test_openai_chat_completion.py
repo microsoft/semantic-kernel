@@ -37,7 +37,7 @@ def test_open_ai_chat_completion_init_with_empty_model_id() -> None:
 
     with pytest.raises(ValidationError, match="model_id"):
         OpenAIChatCompletion(
-            model_id='',
+            model_id="",
             api_key=api_key,
             log=logger,
         )
@@ -51,7 +51,7 @@ def test_open_ai_chat_completion_init_with_empty_api_key() -> None:
     with pytest.raises(ValidationError, match="api_key"):
         OpenAIChatCompletion(
             model_id=model_id,
-            api_key='',
+            api_key="",
             log=logger,
         )
 
