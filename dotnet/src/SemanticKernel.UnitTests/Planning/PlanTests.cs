@@ -85,8 +85,7 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext(kernel.Object, new ContextVariables(stepOutput)
-        );
+        var returnContext = new SKContext(kernel.Object, new ContextVariables(stepOutput));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
