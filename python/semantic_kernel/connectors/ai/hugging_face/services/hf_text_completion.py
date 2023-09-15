@@ -14,9 +14,9 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
-    _model_id: str
-    _task: str
-    _device: int
+    model_id: str
+    task: str
+    device: int
 
     def __init__(
         self,
@@ -48,8 +48,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        self._model_id = model_id
-        self._task = "text2text-generation" if task is None else task
+        self.model_id = model_id
+        self.task = "text2text-generation" if task is None else task
         self._model_kwargs = model_kwargs
         self._pipeline_kwargs = pipeline_kwargs
 
@@ -68,8 +68,8 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         )
 
         self.generator = transformers.pipeline(
-            task=self._task,
-            model=self._model_id,
+            task=self.task,
+            model=self.model_id,
             device=self.device,
             model_kwargs=self._model_kwargs,
             **self._pipeline_kwargs
@@ -103,7 +103,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             )
 
             completions = list()
-            if self._task == "text-generation" or self._task == "text2text-generation":
+            if self.task == "text-generation" or self.task == "text2text-generation":
                 for response in results:
                     completions.append(response["generated_text"])
                 if len(completions) == 1:
@@ -111,7 +111,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 else:
                     return completions
 
-            elif self._task == "summarization":
+            elif self.task == "summarization":
                 for response in results:
                     completions.append(response["summary_text"])
                 if len(completions) == 1:
@@ -162,7 +162,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 pad_token_id=50256,  # EOS token
             )
 
-            tokenizer = transformers.AutoTokenizer.from_pretrained(self._model_id)
+            tokenizer = transformers.AutoTokenizer.from_pretrained(self.model_id)
             streamer = transformers.TextIteratorStreamer(tokenizer)
             args = {prompt}
             kwargs = {

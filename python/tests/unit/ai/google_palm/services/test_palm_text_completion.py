@@ -30,8 +30,8 @@ def test_google_palm_text_completion_init() -> None:
         api_key=api_key,
     )
 
-    assert gp_text_completion._model_id == model_id
-    assert gp_text_completion._api_key == api_key
+    assert gp_text_completion.model_id == model_id
+    assert gp_text_completion.api_key == api_key
     assert isinstance(gp_text_completion, GooglePalmTextCompletion)
 
 

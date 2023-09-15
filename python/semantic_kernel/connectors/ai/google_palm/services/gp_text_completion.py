@@ -15,8 +15,8 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 
 
 class GooglePalmTextCompletion(TextCompletionClientBase):
-    _model_id: str
-    _api_key: str
+    model_id: str
+    api_key: str
 
     def __init__(self, model_id: str, api_key: str) -> None:
         """
@@ -31,8 +31,8 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         if not api_key:
             raise ValueError("The Google PaLM API key cannot be `None` or empty`")
 
-        self._model_id = model_id
-        self._api_key = api_key
+        self.model_id = model_id
+        self.api_key = api_key
         super().__init__()
 
     async def complete_async(
@@ -83,7 +83,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                 f"but was {request_settings.max_tokens}",
             )
         try:
-            palm.configure(api_key=self._api_key)
+            palm.configure(api_key=self.api_key)
         except Exception as ex:
             raise PermissionError(
                 "Google PaLM service failed to configure. Invalid API key provided.",
@@ -91,7 +91,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
             )
         try:
             response = palm.generate_text(
-                model=self._model_id,
+                model=self.model_id,
                 prompt=prompt,
                 temperature=request_settings.temperature,
                 max_output_tokens=request_settings.max_tokens,
