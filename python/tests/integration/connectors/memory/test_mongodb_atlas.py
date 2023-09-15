@@ -70,17 +70,34 @@ async def vector_search_store():
         for cname in await memory.get_collections_async():
             await memory.delete_collection_async(cname)
 
+        def patch_index_exception(fn):
+            """Function patch for collection creation call to retry
+            on duplicate index errors
+            """
+
+            async def _patch(collection_name):
+                while True:
+                    try:
+                        await fn(collection_name)
+                        break
+                    except errors.OperationFailure as e:
+                        # In this test instance, this error code is indicative
+                        # of a previous index not completing teardown
+                        if e.code != DUPLICATE_INDEX_ERR_CODE:
+                            raise
+                        time.sleep(1)
+
+            return _patch
+
+        memory.create_collection_async = patch_index_exception(
+            memory.create_collection_async
+        )
+
         try:
             yield memory
-        except errors.OperationFailure as e:
-            # DuplicateIndex failures in test are due to lag in index deletions
-            if e.code != DUPLICATE_INDEX_ERR_CODE:
-                raise
         finally:
             for cname in await memory.get_collections_async():
                 await memory.delete_collection_async(cname)
-            # TODO Possibly remove
-            time.sleep(1)
 
 
 @pytest.mark.asyncio
