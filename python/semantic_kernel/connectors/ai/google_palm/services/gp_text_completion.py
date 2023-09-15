@@ -4,6 +4,7 @@ from logging import Logger
 from typing import List, Optional, Union
 
 import google.generativeai as palm
+from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -15,25 +16,17 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 
 
 class GooglePalmTextCompletion(TextCompletionClientBase):
-    model_id: str
-    api_key: str
+    """
+    Initializes a new instance of the GooglePalmTextCompletion class.
 
-    def __init__(self, model_id: str, api_key: str) -> None:
-        """
-        Initializes a new instance of the GooglePalmTextCompletion class.
-
-        Arguments:
-            model_id {str} -- GooglePalm model name, see
-            https://developers.generativeai.google/models/language
-            api_key {str} -- GooglePalm API key, see
-            https://developers.generativeai.google/products/palm
-        """
-        if not api_key:
-            raise ValueError("The Google PaLM API key cannot be `None` or empty`")
-
-        self.model_id = model_id
-        self.api_key = api_key
-        super().__init__()
+    Arguments:
+        model_id {str} -- GooglePalm model name, see
+        https://developers.generativeai.google/models/language
+        api_key {str} -- GooglePalm API key, see
+        https://developers.generativeai.google/products/palm
+    """
+    model_id: constr(strip_whitespace=True, min_length=1)
+    api_key: constr(strip_whitespace=True, min_length=1)
 
     async def complete_async(
         self,

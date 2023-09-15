@@ -74,4 +74,5 @@ class OpenAITextCompletion(OpenAITextCompletionBase):
                 "api_type",
             },
             by_alias=True,
+            exclude_none=True,
         )

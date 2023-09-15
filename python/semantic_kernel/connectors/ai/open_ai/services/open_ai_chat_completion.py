@@ -300,6 +300,24 @@ class OpenAIChatCompletion(OpenAIChatCompletionBase):
             kwargs["log"] = log
         super().__init__(**kwargs)
 
+    def to_dict(self) -> Dict[str, str]:
+        """
+        Create a dict of the service settings.
+        """
+        # TODO: figure out if we need to be able to reinitialize the token counters.
+        return self.dict(
+            exclude={
+                "prompt_tokens",
+                "completion_tokens",
+                "total_tokens",
+                "api_version",
+                "endpoint",
+                "api_type",
+            },
+            by_alias=True,
+            exclude_none=True,
+        )
+
 
 def _parse_choices(chunk):
     message = ""
