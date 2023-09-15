@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Dict, List
 
 
@@ -47,21 +47,10 @@ class PromptTemplateConfig:
         config.description = data.get("description")
 
         # Some skills may not have all completion parameters defined
-        config.completion = PromptTemplateConfig.CompletionConfig()
         completion_dict = data["completion"]
-        config.completion.temperature = completion_dict.get("temperature")
-        config.completion.top_p = completion_dict.get("top_p")
-        config.completion.presence_penalty = completion_dict.get("presence_penalty")
-        config.completion.frequency_penalty = completion_dict.get("frequency_penalty")
-        config.completion.max_tokens = completion_dict.get("max_tokens")
-        config.completion.number_of_responses = completion_dict.get(
-            "number_of_responses"
+        config.completion = replace(
+            PromptTemplateConfig.CompletionConfig(), **completion_dict
         )
-        config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
-        config.completion.token_selection_biases = completion_dict.get(
-            "token_selection_biases", {}
-        )
-        config.completion.chat_system_prompt = completion_dict.get("chat_system_prompt")
 
         config.default_services = data.get("default_services", [])
 
