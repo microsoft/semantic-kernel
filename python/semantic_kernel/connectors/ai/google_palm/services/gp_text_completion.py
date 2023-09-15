@@ -19,17 +19,18 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
     model_id: constr(strip_whitespace=True, min_length=1)
     api_key: constr(strip_whitespace=True, min_length=1)
 
-    def __init__(self, model_id: str, api_key: str):
+    def __init__(self, model_id: str, api_key: str, log: Optional[Logger] = None):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
 
         Arguments:
             model_id {str} -- GooglePalm model name, see
-            https://developers.generativeai.google/models/language
+                https://developers.generativeai.google/models/language
             api_key {str} -- GooglePalm API key, see
-            https://developers.generativeai.google/products/palm
+                https://developers.generativeai.google/products/palm
+            log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
-        super().__init__(model_id, api_key)
+        super().__init__(model_id=model_id, api_key=api_key, log=log)
 
     async def complete_async(
         self,
@@ -41,8 +42,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
 
         if request_settings.number_of_responses > 1:
             return [candidate["output"] for candidate in response.candidates]
-        else:
-            return response.result
+        return response.result
 
     async def complete_stream_async(
         self,

@@ -29,15 +29,13 @@ class OpenAITextCompletion(OpenAITextCompletionBase):
                 account belongs to multiple organizations.
             log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
-        kwargs = {
-            "model_id": model_id,
-            "api_key": api_key,
-            "org_id": org_id,
-            "api_type": "open_ai",
-        }
-        if log:
-            kwargs["log"] = log
-        super().__init__(**kwargs)
+        super().__init__(
+            model_id=model_id,
+            api_key=api_key,
+            org_id=org_id,
+            api_type="open_ai",
+            log=log,
+        )
 
     @classmethod
     def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextCompletion":
@@ -56,14 +54,12 @@ class OpenAITextCompletion(OpenAITextCompletionBase):
             api_key=settings["api_key"],
             org_id=settings.get("org_id"),
             log=settings.get("log"),
-            # TODO: figure out if we need to be able to reinitialize the token counters.
         )
 
     def to_dict(self) -> Dict[str, str]:
         """
         Create a dict of the service settings.
         """
-        # TODO: figure out if we need to be able to reinitialize the token counters.
         return self.dict(
             exclude={
                 "prompt_tokens",

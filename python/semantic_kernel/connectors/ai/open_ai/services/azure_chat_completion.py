@@ -48,19 +48,16 @@ class AzureChatCompletion(OpenAIChatCompletionBase):
             log: The logger instance to use. (Optional)
             logger: deprecated, use 'log' instead.
         """
-        kwargs = {
-            "model_id": deployment_name,
-            "endpoint": endpoint,
-            "api_key": api_key,
-            "api_version": api_version,
-            "api_type": "azure_ad" if ad_auth else "azure",
-        }
         if logger:
             logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
-            kwargs["log"] = logger
-        if log:
-            kwargs["log"] = log
-        super().__init__(**kwargs)
+        super().__init__(
+            model_id=deployment_name,
+            endpoint=endpoint,
+            api_key=api_key,
+            api_version=api_version,
+            api_type="azure_ad" if ad_auth else "azure",
+            log=log or logger,
+        )
 
     @classmethod
     def from_dict(cls, settings: Dict[str, str]) -> "AzureChatCompletion":
@@ -83,14 +80,12 @@ class AzureChatCompletion(OpenAIChatCompletionBase):
             api_version=settings.get("api_version"),
             ad_auth=settings.get("ad_auth", False),
             log=settings.get("log"),
-            # TODO: figure out if we need to be able to reinitialize the token counters.
         )
 
     def to_dict(self) -> Dict[str, str]:
         """
         Create a dict of the service settings.
         """
-        # TODO: figure out if we need to be able to reinitialize the token counters.
         return self.dict(
             exclude={
                 "prompt_tokens",

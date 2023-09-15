@@ -290,21 +290,39 @@ class OpenAIChatCompletion(OpenAIChatCompletionBase):
                 account belongs to multiple organizations.
             log {Optional[Logger]} -- The logger instance to use. (Optional)
         """
-        kwargs = {
-            "model_id": model_id,
-            "api_key": api_key,
-            "org_id": org_id,
-            "api_type": "open_ai",
-        }
-        if log:
-            kwargs["log"] = log
-        super().__init__(**kwargs)
+        super().__init__(
+            model_id=model_id,
+            api_key=api_key,
+            org_id=org_id,
+            api_type="open_ai",
+            log=log,
+        )
+
+    @classmethod
+    def from_dict(cls, settings: Dict[str, str]) -> "OpenAIChatCompletion":
+        """
+        Initialize an OpenAIChatCompletion service from a dictionary of settings.
+
+        Arguments:
+            settings: A dictionary of settings for the service.
+                should contain keys: model_id, api_key
+                and optionally: org_id, log
+        """
+        if "api_type" in settings:
+            settings["ad_auth"] = settings["api_type"] == "azure_ad"
+            del settings["api_type"]
+
+        return OpenAIChatCompletion(
+            model_id=settings["model_id"],
+            api_key=settings["api_key"],
+            org_id=settings.get("org_id"),
+            log=settings.get("log"),
+        )
 
     def to_dict(self) -> Dict[str, str]:
         """
         Create a dict of the service settings.
         """
-        # TODO: figure out if we need to be able to reinitialize the token counters.
         return self.dict(
             exclude={
                 "prompt_tokens",

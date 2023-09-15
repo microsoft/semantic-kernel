@@ -19,14 +19,14 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 class HuggingFaceTextCompletion(TextCompletionClientBase):
     model_id: str
     task: str
-    device: int
-    generator: transformers.pipeline
+    device: str
+    generator: Any
 
     def __init__(
         self,
         model_id: str,
-        device: Optional[int] = -1,
         task: Optional[str] = "text2text-generation",
+        device: Optional[int] = -1,
         log: Optional[Logger] = None,
         model_kwargs: Optional[Dict[str, Any]] = None,
         pipeline_kwargs: Optional[Dict[str, Any]] = None,
@@ -60,21 +60,19 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             if device >= 0 and torch.cuda.is_available()
             else "cpu"
         )
-        settings = {
-            "model_id": model_id,
-            "task": task,
-            "device": device,
-            "generator": transformers.pipeline(
+        super().__init__(
+            model_id=model_id,
+            task=task,
+            device=device,
+            generator=transformers.pipeline(
                 task=task,
                 model=model_id,
                 device=device,
                 model_kwargs=model_kwargs,
                 **pipeline_kwargs or {}
             ),
-        }
-        if log:
-            settings["log"] = log
-        super().__init__(**settings)
+            log=log,
+        )
 
     async def complete_async(
         self,
