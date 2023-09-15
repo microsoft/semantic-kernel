@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -184,4 +186,16 @@ public interface IKernel
     /// <typeparam name="T">Service type</typeparam>
     /// <returns>Instance of T</returns>
     T GetService<T>(string? name = null) where T : IAIService;
+
+    /// <summary>
+    /// Used for registering a function invoking event handler.
+    /// Triggers before each function invocation.
+    /// </summary>
+    event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
+
+    /// <summary>
+    /// Used for registering a function invoked event handler.
+    /// Triggers after each function invocation.
+    /// </summary>
+    event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 }
