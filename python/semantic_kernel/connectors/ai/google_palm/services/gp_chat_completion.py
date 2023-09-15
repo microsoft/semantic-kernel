@@ -20,9 +20,9 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 
 
 class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
-    _model_id: str
-    _api_key: str
-    _message_history: ChatResponse
+    model_id: str
+    api_key: str
+    message_history: ChatResponse
 
     def __init__(
         self,
@@ -41,9 +41,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
         if not api_key:
             raise ValueError("The Google PaLM API key cannot be `None` or empty`")
 
-        self._model_id = model_id
-        self._api_key = api_key
-        self._message_history = None
+        self.model_id = model_id
+        self.api_key = api_key
+        self.message_history = None
         super().__init__()
 
     async def complete_chat_async(
@@ -182,14 +182,14 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                 "The last message must be from the user",
             )
         try:
-            palm.configure(api_key=self._api_key)
+            palm.configure(api_key=self.api_key)
         except Exception as ex:
             raise PermissionError(
                 "Google PaLM service failed to configure. Invalid API key provided.",
                 ex,
             )
         if (
-            self._message_history is None and context is None
+            self.message_history is None and context is None
         ):  # If the conversation hasn't started yet and no context is provided
             context = ""
             if len(messages) > 1:  # Check if we need context from messages
@@ -200,9 +200,9 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                         else:
                             context += role + ": " + message + "\n"
         try:
-            if self._message_history is None:
+            if self.message_history is None:
                 response = palm.chat(  # Start a new conversation
-                    model=self._model_id,
+                    model=self.model_id,
                     context=context,
                     examples=examples,
                     temperature=request_settings.temperature,
@@ -212,10 +212,10 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                     messages=messages[-1][1],
                 )
             else:
-                response = self._message_history.reply(  # Continue the conversation
+                response = self.message_history.reply(  # Continue the conversation
                     messages[-1][1],
                 )
-            self._message_history = response  # Store response object for future use
+            self.message_history = response  # Store response object for future use
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
