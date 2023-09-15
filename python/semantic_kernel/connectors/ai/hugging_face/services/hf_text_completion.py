@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import torch
 import transformers
+from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -17,10 +18,10 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 
 
 class HuggingFaceTextCompletion(TextCompletionClientBase):
-    model_id: str
-    task: str
+    model_id: constr(strip_whitespace=True, min_length=1)
+    task: constr(strip_whitespace=True, min_length=1)
     device: str
-    generator: Any
+    generator: transformers.Pipeline
 
     def __init__(
         self,
@@ -56,9 +57,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         Note that this model will be downloaded from the Hugging Face model hub.
         """
         device = (
-            "cuda:" + str(device)
-            if device >= 0 and torch.cuda.is_available()
-            else "cpu"
+            f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         )
         super().__init__(
             model_id=model_id,
@@ -69,7 +68,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
                 model=model_id,
                 device=device,
                 model_kwargs=model_kwargs,
-                **pipeline_kwargs or {}
+                **pipeline_kwargs or {},
             ),
             log=log,
         )
