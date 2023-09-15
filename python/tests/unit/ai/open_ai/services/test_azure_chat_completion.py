@@ -12,8 +12,8 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
-    OpenAIChatCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
+    OpenAIChatCompletionBase,
 )
 
 
@@ -36,7 +36,7 @@ def test_azure_chat_completion_init() -> None:
     assert azure_chat_completion.endpoint == endpoint
     assert azure_chat_completion.api_version == api_version
     assert azure_chat_completion.api_type == "azure"
-    assert isinstance(azure_chat_completion, OpenAIChatCompletion)
+    assert isinstance(azure_chat_completion, OpenAIChatCompletionBase)
 
 
 def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
