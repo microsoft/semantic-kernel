@@ -92,4 +92,3 @@ class SKGenericModel(GenericModel):
 
 class HttpsUrl(pdt.HttpUrl):
     allowed_schemes = {"https"}
-    
