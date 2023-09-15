@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Structured.Action;
+using Microsoft.SemanticKernel.Planning.Action;
 using RepoUtils;
 
 
@@ -27,6 +28,14 @@ public static class Example28_ActionPlanner
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+
+        // Create an optional config for the ActionPlanner. Use this to exclude skills and functions if needed
+        var config = new ActionPlannerConfig();
+        config.ExcludedFunctions.Add("MakeAbstractReadable");
+
+        // Create an instance of ActionPlanner.
+        // The ActionPlanner takes one goal and returns a single function to execute.
+        var planner = new ActionPlanner(kernel, config: config);
 
         // We're going to ask the planner to find a function to achieve this goal.
         var goal = "Write a joke about Cleopatra in the style of Hulk Hogan.";
