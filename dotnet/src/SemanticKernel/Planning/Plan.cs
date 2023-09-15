@@ -253,7 +253,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(context.Kernel, functionVariables, context.skills, context.LoggerFactory);
+            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills, context.LoggerFactory);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -415,12 +415,12 @@ public sealed class Plan : IPlan
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.skills == null)
+            if (context.Skills == null)
             {
                 throw new SKException("Skill collection not found in the context");
             }
 
-            if (context.skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
+            if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }

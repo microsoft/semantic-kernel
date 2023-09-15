@@ -47,12 +47,12 @@ internal static class SequentialPlanParser
         {
             if (string.IsNullOrEmpty(skillName))
             {
-                if (context.skills!.TryGetFunction(functionName, out var skillFunction))
+                if (context.Skills!.TryGetFunction(functionName, out var skillFunction))
                 {
                     return skillFunction;
                 }
             }
-            else if (context.skills!.TryGetFunction(skillName, functionName, out var skillFunction))
+            else if (context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
             {
                 return skillFunction;
             }

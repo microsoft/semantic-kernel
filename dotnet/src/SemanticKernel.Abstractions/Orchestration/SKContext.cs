@@ -18,16 +18,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class SKContext
 {
     /// <summary>
-    /// The culture currently associated with this context.
-    /// </summary>
-    private CultureInfo _culture;
-
-    /// <summary>
-    /// Kernel instance reference for this context.
-    /// </summary>
-    private readonly IKernel _originalKernel;
-
-    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
@@ -56,7 +46,7 @@ public sealed class SKContext
     /// <summary>
     /// Read only skills collection
     /// </summary>
-    public IReadOnlySkillCollection skills { get; }
+    public IReadOnlySkillCollection Skills { get; }
 
     /// <summary>
     /// App logger
@@ -96,7 +86,7 @@ public sealed class SKContext
         // 
         this._originalKernel = kernel;
         this.Variables = variables ?? new();
-        this.skills = skills ?? NullReadOnlySkillCollection.Instance;
+        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = CultureInfo.CurrentCulture;
     }
@@ -116,7 +106,7 @@ public sealed class SKContext
     /// Constructor for the context.
     /// </summary>
     /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="skills">Context variables to include in context.</param>
+    /// <param name="skills">Skills to include in context.</param>
     public SKContext(
         IKernel kernel,
         IReadOnlySkillCollection? skills = null) : this(kernel, null, skills, kernel.LoggerFactory)
@@ -135,8 +125,8 @@ public sealed class SKContext
     /// Constructor for the context.
     /// </summary>
     /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="variables"></param>
-    /// <param name="skills"></param>
+    /// <param name="variables">Context variables to include in context.</param>
+    /// <param name="skills">Skills to include in context.</param>
     public SKContext(
         IKernel kernel,
         ContextVariables? variables = null,
@@ -169,6 +159,16 @@ public sealed class SKContext
         };
     }
 
+    /// <summary>
+    /// The culture currently associated with this context.
+    /// </summary>
+    private CultureInfo _culture;
+
+    /// <summary>
+    /// Kernel instance reference for this context.
+    /// </summary>
+    private readonly IKernel _originalKernel;
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
@@ -176,7 +176,7 @@ public sealed class SKContext
         {
             string display = this.Variables.DebuggerDisplay;
 
-            if (this.skills is IReadOnlySkillCollection skills)
+            if (this.Skills is IReadOnlySkillCollection skills)
             {
                 var view = skills.GetFunctionsView();
                 display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";

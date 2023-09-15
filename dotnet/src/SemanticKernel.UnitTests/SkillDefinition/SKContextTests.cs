@@ -56,10 +56,10 @@ public class SKContextTests
         IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
         this._skills.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
         var target = new SKContext(this._kernel.Object, new ContextVariables(), this._skills.Object, this._logger.Object);
-        Assert.NotNull(target.skills);
+        Assert.NotNull(target.Skills);
 
         // Act
-        var say = target.skills.GetFunction("func");
+        var say = target.Skills.GetFunction("func");
         SKContext result = await say.InvokeAsync("ciao", this._kernel.Object);
 
         // Assert

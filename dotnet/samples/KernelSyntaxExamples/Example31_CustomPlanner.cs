@@ -200,8 +200,8 @@ public static class XmlMarkupPlanParser
             else
             {
                 if (string.IsNullOrEmpty(skillName)
-                        ? !context.skills!.TryGetFunction(functionName, out var _)
-                        : !context.skills!.TryGetFunction(skillName, functionName, out var _))
+                        ? !context.Skills!.TryGetFunction(functionName, out var _)
+                        : !context.Skills!.TryGetFunction(skillName, functionName, out var _))
                 {
                     var planStep = new Plan(node.InnerText);
                     planStep.Parameters.Update(node.InnerText);
@@ -212,8 +212,8 @@ public static class XmlMarkupPlanParser
                 else
                 {
                     var command = string.IsNullOrEmpty(skillName)
-                        ? context.skills.GetFunction(functionName)
-                        : context.skills.GetFunction(skillName, functionName);
+                        ? context.Skills.GetFunction(functionName)
+                        : context.Skills.GetFunction(skillName, functionName);
                     var planStep = new Plan(command);
                     planStep.Parameters.Update(node.InnerText);
                     planStep.Outputs.Add($"markup.{functionName}.result");

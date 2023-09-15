@@ -102,12 +102,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
     private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context)
     {
-        if (context.skills == null)
+        if (context.Skills == null)
         {
             throw new SKException("Skill collection not found in the context");
         }
 
-        if (!this.GetFunctionFromSkillCollection(context.skills!, fBlock, out ISKFunction? function))
+        if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
         {
             var errorMsg = $"Function `{fBlock.Content}` not found";
             this.Logger.LogError(errorMsg);

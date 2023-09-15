@@ -101,11 +101,11 @@ public sealed class ActionPlanner : IActionPlanner
         if (planData.Plan.Function.Contains("."))
         {
             var parts = planData.Plan.Function.Split('.');
-            plan = new Plan(goal, this._context.skills!.GetFunction(parts[0], parts[1]));
+            plan = new Plan(goal, this._context.Skills!.GetFunction(parts[0], parts[1]));
         }
         else if (!string.IsNullOrWhiteSpace(planData.Plan.Function))
         {
-            plan = new Plan(goal, this._context.skills!.GetFunction(planData.Plan.Function));
+            plan = new Plan(goal, this._context.Skills!.GetFunction(planData.Plan.Function));
         }
         else
         {
@@ -141,8 +141,8 @@ public sealed class ActionPlanner : IActionPlanner
         [Description("The current goal processed by the planner")] string goal,
         SKContext context)
     {
-        Verify.NotNull(context.skills);
-        var functionsAvailable = context.skills.GetFunctionsView();
+        Verify.NotNull(context.Skills);
+        var functionsAvailable = context.Skills.GetFunctionsView();
 
         // Prepare list using the format used by skprompt.txt
         var list = new StringBuilder();
