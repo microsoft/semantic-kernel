@@ -18,15 +18,21 @@ public static class WeaviateKernelBuilderExtensions
     /// <param name="builder">The <see cref="KernelBuilder"/> instance.</param>
     /// <param name="endpoint">The Weaviate server endpoint URL.</param>
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
+    /// <param name="apiVersion">The API version to use.</param>
     /// <returns>Self instance</returns>
-    public static KernelBuilder WithWeaviateMemoryStore(this KernelBuilder builder, string endpoint, string? apiKey)
+    public static KernelBuilder WithWeaviateMemoryStore(
+        this KernelBuilder builder,
+        string endpoint,
+        string? apiKey,
+        string? apiVersion = null)
     {
-        builder.WithMemoryStorage((loggerFactory, config) =>
+        builder.WithMemoryStorage((loggerFactory, httpHandlerFactory) =>
         {
             return new WeaviateMemoryStore(
-                HttpClientProvider.GetHttpClient(config, null, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, null, loggerFactory),
                 apiKey,
                 endpoint,
+                apiVersion,
                 loggerFactory);
         });
 
@@ -40,18 +46,21 @@ public static class WeaviateKernelBuilderExtensions
     /// <param name="httpClient">The optional <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="endpoint">The Weaviate server endpoint URL. If not specified, the base address of the HTTP client is used.</param>
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
+    /// <param name="apiVersion">The API version to use.</param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithWeaviateMemoryStore(this KernelBuilder builder,
         HttpClient httpClient,
         string? endpoint = null,
-        string? apiKey = null)
+        string? apiKey = null,
+        string? apiVersion = null)
     {
-        builder.WithMemoryStorage((loggerFactory, config) =>
+        builder.WithMemoryStorage((loggerFactory, httpHandlerFactory) =>
         {
             return new WeaviateMemoryStore(
-                HttpClientProvider.GetHttpClient(config, httpClient, loggerFactory),
+                HttpClientProvider.GetHttpClient(httpHandlerFactory, httpClient, loggerFactory),
                 apiKey,
                 endpoint,
+                apiVersion,
                 loggerFactory);
         });
 

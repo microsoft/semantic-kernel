@@ -100,11 +100,16 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     /// <param name="operation">The REST API operation to execute.</param>
     /// <param name="arguments">The dictionary of arguments to be passed to the operation.</param>
+    /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task execution result.</returns>
-    public Task<JsonNode?> RunAsync(RestApiOperation operation, IDictionary<string, string> arguments, CancellationToken cancellationToken = default)
+    public Task<JsonNode?> RunAsync(
+        RestApiOperation operation,
+        IDictionary<string, string> arguments,
+        RestApiOperationRunOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
-        var url = operation.BuildOperationUrl(arguments);
+        var url = operation.BuildOperationUrl(arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
         var headers = operation.RenderHeaders(arguments);
 
@@ -152,11 +157,9 @@ internal sealed class RestApiOperationRunner
             }
         }
 
-        using var responseMessage = await this._httpClient.SendAsync(requestMessage, cancellationToken).ConfigureAwait(false);
+        using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        responseMessage.EnsureSuccessStatusCode();
-
-        var content = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var content = await responseMessage.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         // First iteration allowing to associate additional metadata with the returned content.
         var result = new RestApiOperationResponse(
@@ -250,12 +253,16 @@ internal sealed class RestApiOperationRunner
                 continue;
             }
 
-            if (!arguments.TryGetValue(argumentName, out var propertyValue))
+            if (arguments.TryGetValue(argumentName, out var propertyValue))
+            {
+                result.Add(propertyMetadata.Name, ConvertJsonPropertyValueType(propertyValue, propertyMetadata));
+                continue;
+            }
+
+            if (propertyMetadata.IsRequired)
             {
                 throw new SKException($"No argument is found for the '{propertyMetadata.Name}' payload property.");
             }
-
-            result.Add(propertyMetadata.Name, ConvertJsonPropertyValueType(propertyValue, propertyMetadata));
         }
 
         return result;

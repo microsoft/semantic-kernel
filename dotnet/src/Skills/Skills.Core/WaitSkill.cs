@@ -18,8 +18,16 @@ public sealed class WaitSkill
 {
     private readonly IWaitProvider _waitProvider;
 
+    /// <summary>
+    /// Interface for providing wait functionality.
+    /// </summary>
     public interface IWaitProvider
     {
+        /// <summary>
+        /// Delays the execution for a specified number of milliseconds.
+        /// </summary>
+        /// <param name="milliSeconds">The number of milliseconds to wait.</param>
+        /// <returns>A task that represents the asynchronous delay operation.</returns>
         Task DelayAsync(int milliSeconds);
     }
 
@@ -31,6 +39,10 @@ public sealed class WaitSkill
         }
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WaitSkill"/> class.
+    /// </summary>
+    /// <param name="waitProvider">An optional wait provider. If not provided, a default wait provider will be used.</param>
     public WaitSkill(IWaitProvider? waitProvider = null)
     {
         this._waitProvider = waitProvider ?? new WaitProvider();

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -127,9 +126,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             await request.ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException($"Failed to upsert due to HttpRequestException: {ex.Message}", ex);
+            this._logger.LogError(ex, "Failed to upsert: {Message}", ex.Message);
+            throw;
         }
 
         return vectorData.Id;
@@ -207,9 +207,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException($"Failed to upsert due to HttpRequestException: {ex.Message}", ex);
+            this._logger.LogError(ex, "Failed to upsert batch: {Message}", ex.Message);
+            throw;
         }
 
         foreach (PineconeDocument? v in vectorData)
@@ -252,9 +253,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 return record?.ToMemoryRecord(transferVectorOwnership: true);
             }
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException($"Failed to get vector data from Pinecone: {ex.Message}", ex);
+            this._logger.LogError(ex, "Failed to get vector data from Pinecone: {Message}", ex.Message);
+            throw;
         }
 
         return null;
@@ -371,10 +373,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 .ToListAsync(cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (HttpRequestException e)
+        catch (HttpOperationException ex)
         {
-            this._logger.LogError(e, "Error getting batch with filter from Pinecone.");
-            yield break;
+            this._logger.LogError(ex, "Error getting batch with filter from Pinecone: {Message}", ex.Message);
+            throw;
         }
 
         foreach (PineconeDocument? record in vectorDataList)
@@ -404,9 +406,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 indexNamespace,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException($"Failed to remove vector data from Pinecone {ex.Message}", ex);
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -441,9 +444,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 filter,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException($"Failed to remove vector data from Pinecone {ex.Message}", ex);
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -465,9 +469,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                 { "document_Id", documentId }
             }, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException($"Failed to remove vector data from Pinecone {ex.Message}", ex);
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
         }
     }
 
@@ -494,9 +499,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
-            throw new SKException($"Error in batch removing data from Pinecone {ex.Message}", ex);
+            this._logger.LogError(ex, "Error in batch removing data from Pinecone: {Message}", ex.Message);
+            throw;
         }
     }
 

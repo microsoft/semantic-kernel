@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -20,11 +22,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public interface IKernel
 {
-    /// <summary>
-    /// Settings required to execute functions, including details about AI dependencies, e.g. endpoints and API keys.
-    /// </summary>
-    KernelConfig Config { get; }
-
     /// <summary>
     /// App logger
     /// </summary>
@@ -44,6 +41,11 @@ public interface IKernel
     /// Reference to the read-only skill collection containing all the imported functions
     /// </summary>
     IReadOnlySkillCollection Skills { get; }
+
+    /// <summary>
+    /// Reference to Http handler factory
+    /// </summary>
+    IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <summary>
     /// Build and register a function in the internal skill collection, in a global generic skill.
@@ -164,15 +166,6 @@ public interface IKernel
         params ISKFunction[] pipeline);
 
     /// <summary>
-    /// Access registered functions by skill + name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    ISKFunction Func(string skillName, string functionName);
-
-    /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <returns>SK context</returns>
@@ -186,23 +179,30 @@ public interface IKernel
     /// <returns>Instance of T</returns>
     T GetService<T>(string? name = null) where T : IAIService;
 
+    /// <summary>
+    /// Used for registering a function invoking event handler.
+    /// Triggers before each function invocation.
+    /// </summary>
+    event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
+
+    /// <summary>
+    /// Used for registering a function invoked event handler.
+    /// Triggers after each function invocation.
+    /// </summary>
+    event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
+
     #region Obsolete
 
     /// <summary>
-    /// App logger
+    /// Access registered functions by skill + name. Not case sensitive.
+    /// The function might be native or semantic, it's up to the caller handling it.
     /// </summary>
-    [Obsolete("Use Logger instead. This will be removed in a future release.")]
+    /// <param name="skillName">Skill name</param>
+    /// <param name="functionName">Function name</param>
+    /// <returns>Delegate to execute the function</returns>
+    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    ILogger Log { get; }
-
-    /// <summary>
-    /// Create a new instance of a context, linked to the kernel internal state.
-    /// </summary>
-    /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
-    /// <returns>SK context</returns>
-    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    SKContext CreateNewContext(CancellationToken cancellationToken);
+    ISKFunction Func(string skillName, string functionName);
 
     #endregion
 }
