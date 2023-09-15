@@ -4,7 +4,7 @@
 from logging import Logger
 from typing import Dict, Optional
 
-from pydantic import Field, HttpUrl
+from pydantic import Field, constr
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
     OpenAITextCompletionBase,
@@ -12,12 +12,12 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base
 
 
 class AzureTextCompletion(OpenAITextCompletionBase):
-    model_id: str = Field(..., alias="deployment_name")
+    model_id: constr(strip_whitespace=True, min_length=1) = Field(..., alias="deployment_name")
 
     def __init__(
         self,
         deployment_name: str,
-        endpoint: HttpUrl,
+        endpoint: str,
         api_key: str,
         api_version: str = "2022-12-01",
         ad_auth=False,

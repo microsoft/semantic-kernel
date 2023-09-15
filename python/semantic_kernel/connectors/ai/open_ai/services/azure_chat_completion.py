@@ -4,7 +4,7 @@
 from logging import Logger
 from typing import Dict, Optional
 
-from pydantic import Field, HttpUrl
+from pydantic import Field, HttpUrl, constr
 
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
     OpenAIChatCompletionBase,
@@ -12,7 +12,7 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base
 
 
 class AzureChatCompletion(OpenAIChatCompletionBase):
-    model_id: str = Field(..., alias="deployment_name")
+    model_id: constr(strip_whitespace=True, min_length=1) = Field(..., alias="deployment_name")
 
     def __init__(
         self,

@@ -4,6 +4,7 @@ from logging import Logger
 from typing import Any, List, Optional, Union
 
 import openai
+from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -12,15 +13,16 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.sk_pydantic import HttpsUrl
 
 
 class OpenAITextCompletionBase(TextCompletionClientBase):
-    model_id: str
-    api_key: str
+    model_id: constr(strip_whitespace=True, min_length=1)
+    api_key: constr(strip_whitespace=True, min_length=1)
     api_type: str
     org_id: Optional[str] = None
     api_version: Optional[str] = None
-    endpoint: Optional[str] = None
+    endpoint: Optional[HttpsUrl] = None
 
     async def complete_async(
         self,

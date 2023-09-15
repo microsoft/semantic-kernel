@@ -4,6 +4,7 @@ from logging import Logger
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -46,7 +47,7 @@ def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
     logger = Logger("test_logger")
 
     with pytest.raises(
-        ValueError, match="The deployment name cannot be `None` or empty"
+        ValidationError, match="deployment_name"
     ):
         AzureChatCompletion(
             deployment_name="",
@@ -65,7 +66,7 @@ def test_azure_chat_completion_init_with_empty_api_key() -> None:
     logger = Logger("test_logger")
 
     with pytest.raises(
-        ValueError, match="The Azure API key cannot be `None` or empty`"
+        ValidationError, match="api_key"
     ):
         AzureChatCompletion(
             deployment_name=deployment_name,
@@ -84,7 +85,7 @@ def test_azure_chat_completion_init_with_empty_endpoint() -> None:
     logger = Logger("test_logger")
 
     with pytest.raises(
-        ValueError, match="The Azure endpoint cannot be `None` or empty"
+        ValidationError, match="endpoint"
     ):
         AzureChatCompletion(
             deployment_name=deployment_name,
@@ -102,7 +103,7 @@ def test_azure_chat_completion_init_with_invalid_endpoint() -> None:
     api_version = "2023-03-15-preview"
     logger = Logger("test_logger")
 
-    with pytest.raises(ValueError, match="The Azure endpoint must start with https://"):
+    with pytest.raises(ValidationError, match="https"):
         AzureChatCompletion(
             deployment_name=deployment_name,
             endpoint=endpoint,
