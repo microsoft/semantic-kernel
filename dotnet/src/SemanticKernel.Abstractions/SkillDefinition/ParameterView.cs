@@ -61,6 +61,7 @@ public sealed class ParameterView
     /// <param name="description">Parameter description</param>
     /// <param name="defaultValue">Default parameter value, if not provided</param>
     /// <param name="type">Parameter type.</param>
+    /// <param name="isRequired">Whether the parameter is required.</param>
     public ParameterView(
         string name,
         string? description = null,
