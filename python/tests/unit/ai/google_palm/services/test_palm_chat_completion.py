@@ -40,9 +40,7 @@ def test_google_palm_chat_completion_init_with_empty_api_key() -> None:
     model_id = "test_model_id"
     # api_key = "test_api_key"
 
-    with pytest.raises(
-        ValidationError, match="api_key"
-    ):
+    with pytest.raises(ValidationError, match="api_key"):
         GooglePalmChatCompletion(
             model_id=model_id,
             api_key="",

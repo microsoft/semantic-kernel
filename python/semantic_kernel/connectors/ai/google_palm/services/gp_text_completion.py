@@ -25,6 +25,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
         api_key {str} -- GooglePalm API key, see
         https://developers.generativeai.google/products/palm
     """
+
     model_id: constr(strip_whitespace=True, min_length=1)
     api_key: constr(strip_whitespace=True, min_length=1)
 

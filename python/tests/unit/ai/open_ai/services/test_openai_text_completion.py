@@ -51,9 +51,10 @@ def test_open_ai_text_completion_init_with_empty_api_key() -> None:
     with pytest.raises(ValidationError, match="api_key"):
         OpenAITextCompletion(
             model_id=model_id,
-            api_key='',
+            api_key="",
             log=logger,
         )
+
 
 def test_open_ai_text_completion_serialize() -> None:
     model_id = "test_model_id"
@@ -69,6 +70,7 @@ def test_open_ai_text_completion_serialize() -> None:
     open_ai_text_completion = OpenAITextCompletion.from_dict(settings)
     dumped_settings = open_ai_text_completion.to_dict()
     assert dumped_settings == settings
+
 
 def test_open_ai_text_completion_serialize_with_org_id() -> None:
     model_id = "test_model_id"
