@@ -4,6 +4,8 @@
 # An object of Flask class is our WSGI application.
 import argparse
 
+from huggingface_hub.hf_api import HfFolder
+
 from flask import Flask, json, jsonify, render_template, request
 from utils import (
     CompletionGenerator,
@@ -75,6 +77,9 @@ def receive_image_generation_by_organization_model(organization, model):
 def process_completion_request(request, model):
     request_data = request.data
     json_data = json.loads(request_data)
+
+    save_api_key(request)
+
     try:
         prompt = json_data["inputs"]
         if "context" in json_data:
@@ -85,7 +90,7 @@ def process_completion_request(request, model):
         if "max_tokens" in json_data:
             max_tokens = json_data["max_tokens"]
         else:
-            max_tokens = 32
+            max_tokens = 64
 
         inference_generator = CompletionGenerator.CompletionGenerator(model)
         (
@@ -108,6 +113,9 @@ def process_completion_request(request, model):
 def process_embedding_request(request, model):
     request_data = request.data
     json_data = json.loads(request_data)
+
+    save_api_key(request)
+
     try:
         sentences = json_data["inputs"]
         inference_generator = EmbeddingGenerator.EmbeddingGenerator(model)
@@ -126,6 +134,9 @@ def process_image_generation_request(request, model):
     num_images = json_data["n"]
     prompt = json_data["inputs"]
     image_size = json_data["size"]
+
+    save_api_key(request)
+
     try:
         image_generator = ImageGenerator.ImageGenerator(model)
         image_data = image_generator.perform_inference(prompt, num_images, image_size)
@@ -134,6 +145,15 @@ def process_image_generation_request(request, model):
         print(e)
         return "Sorry, unable to generate images with model {}".format(model)
 
+def save_api_key(request):
+    auth_header = request.headers.get('Authorization')
+    header_prefix = 'Bearer '
+
+    if auth_header and auth_header.startswith(header_prefix):
+        token = auth_header[len(header_prefix):]
+
+        if token:
+            HfFolder.save_token(token)
 
 # main driver function
 if __name__ == "__main__":
