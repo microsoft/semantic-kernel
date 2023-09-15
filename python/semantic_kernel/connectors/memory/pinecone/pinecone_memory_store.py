@@ -3,10 +3,10 @@
 from logging import Logger
 from typing import List, Optional, Tuple
 
-from numpy import ndarray
-
 import pinecone
+from numpy import ndarray
 from pinecone import FetchResponse, IndexDescription
+
 from semantic_kernel.connectors.memory.pinecone.utils import (
     build_payload,
     parse_payload,

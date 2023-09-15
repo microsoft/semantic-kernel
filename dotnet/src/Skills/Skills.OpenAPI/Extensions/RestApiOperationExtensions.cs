@@ -31,9 +31,23 @@ internal static class RestApiOperationExtensions
     /// would be resolved from the same 'email' argument, which is incorrect. However, by employing namespaces,
     /// the parameters 'sender.email' and 'receiver.mail' will be correctly resolved from arguments with the same names.
     /// </param>
+    /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <returns>The list of parameters.</returns>
-    public static IReadOnlyList<RestApiOperationParameter> GetParameters(this RestApiOperation operation, Uri? serverUrlOverride = null, bool addPayloadParamsFromMetadata = false, bool enablePayloadNamespacing = false)
+    public static IReadOnlyList<RestApiOperationParameter> GetParameters(
+        this RestApiOperation operation,
+        Uri? serverUrlOverride = null,
+        bool addPayloadParamsFromMetadata = false,
+        bool enablePayloadNamespacing = false,
+        Uri? documentUri = null)
     {
+        string? serverUrlString = null;
+        Uri? serverUrl = serverUrlOverride ?? operation.ServerUrl ?? documentUri;
+
+        if (serverUrl is not null)
+        {
+            serverUrlString = $"{serverUrl.GetLeftPart(UriPartial.Authority)}/";
+        }
+
         var parameters = new List<RestApiOperationParameter>(operation.Parameters)
         {
             // Register the "server-url" parameter if override is provided
@@ -43,7 +57,7 @@ internal static class RestApiOperationExtensions
                 false,
                 RestApiOperationParameterLocation.Path,
                 RestApiOperationParameterStyle.Simple,
-                defaultValue: serverUrlOverride?.AbsoluteUri ?? operation.ServerUrl?.AbsoluteUri)
+                defaultValue: serverUrlString)
         };
 
         //Add payload parameters
