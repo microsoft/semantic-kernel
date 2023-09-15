@@ -144,6 +144,40 @@ def test_custom_prompt_template_config_from_json():
     )
 
 
+def test_custom_prompt_template_config_from_dict_default_completion():
+    prompt_template_dict = {"completion": {}}
+    base = PromptTemplateConfig.CompletionConfig()
+    updated = PromptTemplateConfig().from_dict(prompt_template_dict)
+    assert updated.completion.temperature == base.temperature
+    assert updated.completion.top_p == base.top_p
+    assert updated.completion.presence_penalty == base.presence_penalty
+    assert updated.completion.frequency_penalty == base.frequency_penalty
+    assert updated.completion.max_tokens == base.max_tokens
+    assert updated.completion.number_of_responses == base.number_of_responses
+    assert updated.completion.stop_sequences == base.stop_sequences
+    assert updated.completion.token_selection_biases == base.token_selection_biases
+    assert updated.completion.chat_system_prompt == base.chat_system_prompt
+
+
+def test_custom_prompt_template_config_from_json_default_completion():
+    prompt_template_json = """
+    {
+        "completion": {}
+    }
+    """
+    base = PromptTemplateConfig.CompletionConfig()
+    updated = PromptTemplateConfig().from_json(prompt_template_json)
+    assert updated.completion.temperature == base.temperature
+    assert updated.completion.top_p == base.top_p
+    assert updated.completion.presence_penalty == base.presence_penalty
+    assert updated.completion.frequency_penalty == base.frequency_penalty
+    assert updated.completion.max_tokens == base.max_tokens
+    assert updated.completion.number_of_responses == base.number_of_responses
+    assert updated.completion.stop_sequences == base.stop_sequences
+    assert updated.completion.token_selection_biases == base.token_selection_biases
+    assert updated.completion.chat_system_prompt == base.chat_system_prompt
+
+
 def test_chat_prompt_template():
     chat_prompt_template = ChatPromptTemplate(
         "{{$user_input}}",
