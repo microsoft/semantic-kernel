@@ -33,7 +33,7 @@ MONGODB_FIELD_TIMESTAMP = "timestamp"
 def generate_search_index_model(
     dimensions: int | None, similarity: str | None
 ) -> SearchIndexModel:
-    """Generates a search model index object given dimesions and similarity"""
+    """Generates a search model index object given dimensions and similarity"""
     dimensions = dimensions or _DEFAULT_DIMENSIONS
     similarity = similarity or _DEFAULT_SIMILARITY
     if (

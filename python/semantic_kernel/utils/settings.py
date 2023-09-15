@@ -169,7 +169,7 @@ def bing_search_settings_from_dot_env() -> str:
 
 
 def mongodb_atlas_settings_from_dot_env() -> str:
-    """Returns the Atlas MongoDB Connection String from the .env file
+    """Returns the Atlas MongoDB Connection String from the .env file.
 
     Returns:
         str: MongoDB Connection String URI
