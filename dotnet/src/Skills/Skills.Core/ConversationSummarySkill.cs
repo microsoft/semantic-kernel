@@ -42,7 +42,7 @@ public class ConversationSummarySkill
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             requestSettings: new AIRequestSettings()
             {
-                ExtraProperties = new Dictionary<string, object>()
+                ExtensionData = new Dictionary<string, object>()
                 {
                     { "Temperature", 0.1 },
                     { "TopP", 0.5 },
@@ -56,7 +56,7 @@ public class ConversationSummarySkill
             description: "Given a section of a conversation transcript, identify action items.",
             requestSettings: new AIRequestSettings()
             {
-                ExtraProperties = new Dictionary<string, object>()
+                ExtensionData = new Dictionary<string, object>()
                 {
                     { "Temperature", 0.1 },
                     { "TopP", 0.5 },
@@ -70,7 +70,7 @@ public class ConversationSummarySkill
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             requestSettings: new AIRequestSettings()
             {
-                ExtraProperties = new Dictionary<string, object>()
+                ExtensionData = new Dictionary<string, object>()
                 {
                     { "Temperature", 0.1 },
                     { "TopP", 0.5 },

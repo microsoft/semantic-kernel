@@ -84,7 +84,7 @@ public class OpenAIRequestSettingsTests
         AIRequestSettings actualSettings = new()
         {
             ServiceId = "service",
-            ExtraProperties = new Dictionary<string, object>()
+            ExtensionData = new Dictionary<string, object>()
             {
                 { "temperature", 0.7 },
                 { "top_p", 0.7 },
@@ -113,7 +113,7 @@ public class OpenAIRequestSettingsTests
         AIRequestSettings actualSettings = new()
         {
             ServiceId = "service",
-            ExtraProperties = new Dictionary<string, object>()
+            ExtensionData = new Dictionary<string, object>()
             {
                 { "Temperature", 0.7 },
                 { "TopP", 0.7 },

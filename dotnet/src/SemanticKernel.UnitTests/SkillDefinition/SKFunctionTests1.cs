@@ -44,7 +44,7 @@ public sealed class SKFunctionTests1
         var requestSettings = new AIRequestSettings()
         {
             ServiceId = "service",
-            ExtraProperties = new Dictionary<string, object>()
+            ExtensionData = new Dictionary<string, object>()
             {
                 { "MaxTokens", 1024 },
             }
@@ -58,25 +58,25 @@ public sealed class SKFunctionTests1
 
         // Act
         requestSettings.ServiceId = "service1";
-        requestSettings.ExtraProperties["MaxTokens"] = 130;
+        requestSettings.ExtensionData["MaxTokens"] = 130;
 
         // Assert
         Assert.Equal("service1", skFunction.RequestSettings?.ServiceId);
-        Assert.Equal(130, skFunction.RequestSettings?.ExtraProperties?["MaxTokens"]);
+        Assert.Equal(130, skFunction.RequestSettings?.ExtensionData?["MaxTokens"]);
 
         // Act
-        requestSettings.ExtraProperties["Temperature"] = 0.7;
+        requestSettings.ExtensionData["Temperature"] = 0.7;
 
         // Assert
-        Assert.Equal(0.7, skFunction.RequestSettings?.ExtraProperties?["Temperature"]);
+        Assert.Equal(0.7, skFunction.RequestSettings?.ExtensionData?["Temperature"]);
 
         // Act
         skFunction.SetAIConfiguration(requestSettings);
 
         // Assert
         Assert.Equal("service1", skFunction.RequestSettings?.ServiceId);
-        Assert.Equal(130, skFunction.RequestSettings?.ExtraProperties?["MaxTokens"]);
-        Assert.Equal(0.7, skFunction.RequestSettings?.ExtraProperties?["Temperature"]);
+        Assert.Equal(130, skFunction.RequestSettings?.ExtensionData?["MaxTokens"]);
+        Assert.Equal(0.7, skFunction.RequestSettings?.ExtensionData?["Temperature"]);
     }
 
     private static Mock<IPromptTemplate> MockPromptTemplate()

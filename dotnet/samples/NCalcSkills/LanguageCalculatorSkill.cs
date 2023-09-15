@@ -76,7 +76,7 @@ Question: {{ $input }}
             description: "Used by 'Calculator' function.",
             requestSettings: new AIRequestSettings()
             {
-                ExtraProperties = new Dictionary<string, object>()
+                ExtensionData = new Dictionary<string, object>()
                 {
                     { "MaxTokens", 256 },
                     { "Temperature", 0.0 },

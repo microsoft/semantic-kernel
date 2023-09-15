@@ -72,7 +72,7 @@ public sealed class ActionPlanner : IActionPlanner
             promptTemplate: promptTemplate,
             requestSettings: new AIRequestSettings()
             {
-                ExtraProperties = new Dictionary<string, object>()
+                ExtensionData = new Dictionary<string, object>()
                 {
                     { "StopSequences", new[] { StopSequence } },
                     { "MaxTokens", 1024 },

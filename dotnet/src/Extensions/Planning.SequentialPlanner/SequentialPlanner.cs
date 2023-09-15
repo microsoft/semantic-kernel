@@ -46,7 +46,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
             requestSettings: new AIRequestSettings()
             {
-                ExtraProperties = new Dictionary<string, object>()
+                ExtensionData = new Dictionary<string, object>()
                 {
                     { "Temperature", 0.0 },
                     { "StopSequences", new[] { StopSequence } },
