@@ -105,35 +105,23 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// <returns>An instance of OpenAIRequestSettings</returns>
     public static OpenAIRequestSettings FromRequestSettings(AIRequestSettings? requestSettings, int? defaultMaxTokens = null)
     {
-        if (requestSettings is null)
+        if (requestSettings is OpenAIRequestSettings retval1)
         {
-            return new OpenAIRequestSettings()
-            {
-                MaxTokens = defaultMaxTokens
-            };
+            return retval1;
         }
 
-        OpenAIRequestSettings? openAIRequestSettings = null;
+        var json = JsonSerializer.Serialize(requestSettings);
+        var retval2 = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
 
-        if (requestSettings.GetType() == typeof(OpenAIRequestSettings))
+        if (retval2 is not null)
         {
-            openAIRequestSettings = (OpenAIRequestSettings)requestSettings;
-        }
-        else
-        {
-            var json = JsonSerializer.Serialize(requestSettings);
-            openAIRequestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
+            return retval2;
         }
 
-        if (openAIRequestSettings is null)
+        return new OpenAIRequestSettings()
         {
-            openAIRequestSettings = new OpenAIRequestSettings()
-            {
-                MaxTokens = defaultMaxTokens
-            };
-        }
-
-        return openAIRequestSettings;
+            MaxTokens = defaultMaxTokens
+        };
     }
 
     #region private ================================================================================
@@ -149,9 +137,8 @@ public class OpenAIRequestSettings : AIRequestSettings
             AllowTrailingCommas = true,
             PropertyNameCaseInsensitive = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
+            Converters = { new OpenAIRequestSettingsConverter() }
         };
-
-        options.Converters.Add(new OpenAIRequestSettingsConverter());
 
         return options;
     }

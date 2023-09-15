@@ -295,14 +295,6 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     }
 
     /// <summary>
-    /// Converts the semantic-kernel presence penalty, scaled -2:+2 with default 0 for no penalty to the Oobabooga repetition penalty, strictly positive with default 1 for no penalty. See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/>  and subsequent links for more details.
-    /// </summary>
-    private static double GetRepetitionPenalty(AIRequestSettings? requestSettings)
-    {
-        return (1 + DynamicUtils.TryGetPropertyValue<double>(requestSettings, "PresencePenalty", 0)) / 2;
-    }
-
-    /// <summary>
     /// That method is responsible for processing the websocket messages that build a streaming response object. It is crucial that it is run asynchronously to prevent a deadlock with results iteration
     /// </summary>
     private async Task ProcessWebSocketMessagesAsync(ClientWebSocket clientWebSocket, TextCompletionStreamingResult streamingResult, CancellationToken cancellationToken)
