@@ -89,6 +89,12 @@ internal static class SequentialPlanParser
             // '</plan>': Matches the literal string "</plan>", indicating the closing tag of the <plan> element.
             Regex planRegex = new(@"<plan\b[^>]*>(.*?)</plan>", RegexOptions.Singleline);
             Match match = planRegex.Match(xmlString);
+
+            if (!match.Success)
+            {
+                match = planRegex.Match($"{xmlString}</plan>"); // try again with a closing tag
+            }
+
             if (match.Success)
             {
                 string planXml = match.Value;
@@ -205,7 +211,7 @@ internal static class SequentialPlanParser
     private static void GetSkillFunctionNames(string skillFunctionName, out string skillName, out string functionName)
     {
         var skillFunctionNameParts = skillFunctionName.Split('.');
-        skillName = skillFunctionNameParts?.Length > 0 ? skillFunctionNameParts[0] : string.Empty;
+        skillName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[0] : string.Empty;
         functionName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[1] : skillFunctionName;
     }
 

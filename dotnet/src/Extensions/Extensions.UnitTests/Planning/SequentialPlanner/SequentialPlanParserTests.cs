@@ -66,7 +66,7 @@ public class SequentialPlanParserTests
         var functionsView = new FunctionsView();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
         {
-            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
+            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>() { new(name: "param", description: "description") }, isSemantic, true);
             var mockFunction = CreateMockFunction(functionView);
             functionsView.AddFunction(functionView);
 
@@ -88,6 +88,7 @@ public class SequentialPlanParserTests
                 skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
                     .Returns(mockFunction.Object);
                 ISKFunction? outFunc = mockFunction.Object;
+                skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == name), out outFunc)).Returns(true);
                 skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
             }
         }
@@ -193,6 +194,55 @@ public class SequentialPlanParserTests
         Assert.Equal(goalText, plan.Description);
         Assert.Equal(1, plan.Steps.Count);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
+        Assert.Equal("Echo", plan.Steps[0].Name);
+    }
+
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+    <plan>
+    <function.MockSkill.Echo input=""Hello World"" />")]
+    public void CanCreatePlanWithPartialXml(string goalText, string planText)
+    {
+        // Arrange
+        var functions = new List<(string name, string skillName, string description, bool isSemantic, string result)>()
+        {
+            ("Echo", "MockSkill", "Echo an input", true, "Mock Echo Result"),
+        };
+        this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
+
+        // Act
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
+
+        // Assert
+        Assert.NotNull(plan);
+        Assert.Equal(goalText, plan.Description);
+        Assert.Equal(1, plan.Steps.Count);
+        Assert.Equal("MockSkill", plan.Steps[0].SkillName);
+        Assert.Equal("Echo", plan.Steps[0].Name);
+    }
+
+    [Theory]
+    [InlineData("Test the functionFlowRunner", @"<goal>Test the functionFlowRunner</goal>
+    <plan>
+    <function.Echo input=""Hello World"" />
+    </plan>")]
+    public void CanCreatePlanWithFunctionName(string goalText, string planText)
+    {
+        // Arrange
+        var functions = new List<(string name, string skillName, string description, bool isSemantic, string result)>()
+        {
+            ("Echo", "_GLOBAL_FUNCTIONS_", "Echo an input", true, "Mock Echo Result"),
+        };
+        this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
+
+        // Act
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
+
+        // Assert
+        Assert.NotNull(plan);
+        Assert.Equal(goalText, plan.Description);
+        Assert.Equal(1, plan.Steps.Count);
+        Assert.Equal("_GLOBAL_FUNCTIONS_", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
 
