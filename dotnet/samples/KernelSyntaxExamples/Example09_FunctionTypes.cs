@@ -134,7 +134,7 @@ public class LocalExampleSkill
     {
         var summarizer = context.skills.GetFunction("SummarizeSkill", "Summarize");
 
-        var summary = await summarizer.InvokeAsync("blah blah blah");
+        var summary = await summarizer.InvokeAsync("blah blah blah", context.Kernel);
 
         Console.WriteLine($"Running function type 6 [{summary}]");
         return "";
