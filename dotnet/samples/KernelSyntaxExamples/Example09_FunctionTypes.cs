@@ -31,7 +31,6 @@ public static class Example09_FunctionTypes
 
         // The kernel takes care of wiring the input appropriately
         await kernel.RunAsync(
-            "",
             test["type01"],
             test["type02"],
             test["type03"],
@@ -52,43 +51,42 @@ public static class Example09_FunctionTypes
             test["type18"]
         );
 
-        await kernel.Func("test", "type01").InvokeAsync(kernel);
+        await kernel.Skills.GetFunction("test", "type01").InvokeAsync(kernel);
         await test["type01"].InvokeAsync(kernel);
 
-        await kernel.Func("test", "type02").InvokeAsync(kernel);
+        await kernel.Skills.GetFunction("test", "type02").InvokeAsync(kernel);
         await test["type02"].InvokeAsync(kernel);
 
-        await kernel.Func("test", "type03").InvokeAsync(kernel);
+        await kernel.Skills.GetFunction("test", "type03").InvokeAsync(kernel);
         await test["type03"].InvokeAsync(kernel);
 
-        await kernel.Func("test", "type04").InvokeAsync(fakeContext);
         await test["type04"].InvokeAsync(fakeContext);
 
-        await kernel.Func("test", "type05").InvokeAsync(fakeContext);
+        await kernel.Skills.GetFunction("test", "type05").InvokeAsync(fakeContext);
         await test["type05"].InvokeAsync(fakeContext);
 
-        await kernel.Func("test", "type06").InvokeAsync(fakeContext);
+        await kernel.Skills.GetFunction("test", "type06").InvokeAsync(fakeContext);
         await test["type06"].InvokeAsync(fakeContext);
 
-        await kernel.Func("test", "type07").InvokeAsync(fakeContext);
+        await kernel.Skills.GetFunction("test", "type07").InvokeAsync(fakeContext);
         await test["type07"].InvokeAsync(fakeContext);
 
-        await kernel.Func("test", "type08").InvokeAsync("", kernel);
+        await kernel.Skills.GetFunction("test", "type08").InvokeAsync("", kernel);
         await test["type08"].InvokeAsync("", kernel);
 
-        await kernel.Func("test", "type09").InvokeAsync("", kernel);
+        await kernel.Skills.GetFunction("test", "type09").InvokeAsync("", kernel);
         await test["type09"].InvokeAsync("", kernel);
 
-        await kernel.Func("test", "type10").InvokeAsync("", kernel);
+        await kernel.Skills.GetFunction("test", "type10").InvokeAsync("", kernel);
         await test["type10"].InvokeAsync("", kernel);
 
-        await kernel.Func("test", "type11").InvokeAsync("", kernel);
+        await kernel.Skills.GetFunction("test", "type11").InvokeAsync("", kernel);
         await test["type11"].InvokeAsync("", kernel);
 
-        await kernel.Func("test", "type12").InvokeAsync(fakeContext);
+        await kernel.Skills.GetFunction("test", "type12").InvokeAsync(fakeContext);
         await test["type12"].InvokeAsync(fakeContext);
 
-        await kernel.Func("test", "type18").InvokeAsync(kernel);
+        await kernel.Skills.GetFunction("test", "type18").InvokeAsync(kernel);
         await test["type18"].InvokeAsync(kernel);
     }
 }
