@@ -204,9 +204,6 @@ class OpenAIChatCompletionBase(ChatCompletionClientBase, TextCompletionClientBas
                 ex,
             )
 
-        if "usage" in response:
-            self.capture_usage_details(**response.usage)
-
         return response
 
 

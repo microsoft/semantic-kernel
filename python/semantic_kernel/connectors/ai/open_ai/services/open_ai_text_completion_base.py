@@ -131,10 +131,4 @@ class OpenAITextCompletionBase(TextCompletionClientBase):
                 ex,
             )
 
-        if "usage" in response:
-            self.log.info(
-                f"OpenAI service used {response.usage} tokens for this request"
-            )
-            self.capture_usage_details(**response.usage)
-
         return response
