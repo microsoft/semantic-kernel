@@ -548,7 +548,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         var getFunction = (string skillName, string functionName) =>
         {
-            return this._kernel.Func(skillName, functionName);
+            return this._kernel.Skills.GetFunction(skillName, functionName);
         };
         var getSkillFunction = this.Config.GetSkillFunction ?? getFunction;
         var function = getSkillFunction(targetFunction.SkillName, targetFunction.Name);

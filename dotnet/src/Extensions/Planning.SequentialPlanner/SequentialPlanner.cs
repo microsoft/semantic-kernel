@@ -75,7 +75,16 @@ public sealed class SequentialPlanner : ISequentialPlanner
         string planResultString = planResult.Result.Trim();
 
         var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
-        var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+
+        Plan plan;
+        try
+        {
+            plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+        }
+        catch (SKException e)
+        {
+            throw new SKException($"Unable to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}", e);
+        }
 
         if (plan.Steps.Count == 0)
         {
