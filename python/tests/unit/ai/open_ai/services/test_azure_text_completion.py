@@ -12,8 +12,8 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
     AzureTextCompletion,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
 )
 
 
@@ -33,10 +33,10 @@ def test_azure_text_completion_init() -> None:
         log=logger,
     )
 
-    assert azure_text_completion._endpoint == endpoint
-    assert azure_text_completion._api_version == api_version
-    assert azure_text_completion._api_type == "azure"
-    assert isinstance(azure_text_completion, OpenAITextCompletion)
+    assert azure_text_completion.endpoint == endpoint
+    assert azure_text_completion.api_version == api_version
+    assert azure_text_completion.api_type == "azure"
+    assert isinstance(azure_text_completion, OpenAITextCompletionBase)
 
 
 def test_azure_text_completion_init_with_empty_deployment_name() -> None:
