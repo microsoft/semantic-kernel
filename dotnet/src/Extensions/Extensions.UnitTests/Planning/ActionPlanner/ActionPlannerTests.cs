@@ -55,6 +55,24 @@ public sealed class ActionPlannerTests
     }
 
     [Fact]
+    public void UsesPromptDelegateWhenProvided()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var getPromptTemplateMock = new Mock<Func<string>>();
+        var config = new ActionPlannerConfig()
+        {
+            GetPromptTemplate = getPromptTemplateMock.Object
+        };
+
+        // Act
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config);
+
+        // Assert
+        getPromptTemplateMock.Verify(x => x(), Times.Once());
+    }
+
+    [Fact]
     public async Task MalformedJsonThrowsAsync()
     {
         // Arrange

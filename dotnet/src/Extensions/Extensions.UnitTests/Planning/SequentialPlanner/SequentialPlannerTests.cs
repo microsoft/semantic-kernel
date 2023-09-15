@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,6 +10,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -189,6 +191,24 @@ public sealed class SequentialPlannerTests
 
         // Act
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
+    }
+
+    [Fact]
+    public void UsesPromptDelegateWhenProvided()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        var getPromptTemplateMock = new Mock<Func<string>>();
+        var config = new SequentialPlannerConfig()
+        {
+            GetPromptTemplate = getPromptTemplateMock.Object
+        };
+
+        // Act
+        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object, config);
+
+        // Assert
+        getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
 
     // Method to create Mock<ISKFunction> objects
