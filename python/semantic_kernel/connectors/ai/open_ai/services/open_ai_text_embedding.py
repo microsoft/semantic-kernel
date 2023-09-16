@@ -6,7 +6,7 @@ from typing import Any, List, Optional
 import openai
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, IS_TELEMETRY_ENABLED
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
     EmbeddingGeneratorBase,
@@ -52,6 +52,7 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
         self._endpoint = endpoint
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
+        openai.app_info["name"] = HTTP_USER_AGENT if IS_TELEMETRY_ENABLED else None
 
     async def generate_embeddings_async(
         self, texts: List[str], batch_size: Optional[int] = None
@@ -74,7 +75,6 @@ class OpenAITextEmbedding(EmbeddingGeneratorBase):
                     api_base=self._endpoint,
                     api_version=self._api_version,
                     organization=self._org_id,
-                    headers={"User-Agent": HTTP_USER_AGENT},
                     input=batch,
                 )
                 # make numpy arrays from the response

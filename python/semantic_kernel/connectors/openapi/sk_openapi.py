@@ -24,8 +24,7 @@ class PreparedRestApiRequest:
         self.method = method
         self.url = url
         self.params = params
-        self.headers = {"User-Agent": HTTP_USER_AGENT}
-        self.headers.add(headers)
+        self.headers["User-Agent"] += HTTP_USER_AGENT
         self.request_body = request_body
 
     def __repr__(self):
