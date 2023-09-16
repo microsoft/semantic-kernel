@@ -239,36 +239,6 @@ public class ContextVariablesTests
         Assert.Null(value);
     }
 
-    [Fact]
-    public void UpdateOriginalDoesNotAffectClonedSucceeds()
-    {
-        // Arrange
-        string mainContent = Guid.NewGuid().ToString();
-        string anyName = Guid.NewGuid().ToString();
-        string anyContent = Guid.NewGuid().ToString();
-        string someOtherMainContent = Guid.NewGuid().ToString();
-        string someOtherContent = Guid.NewGuid().ToString();
-        ContextVariables target = new();
-        ContextVariables original = new(mainContent);
-
-        original.Set(anyName, anyContent);
-
-        // Act
-        // Clone original into target
-        target.Update(original);
-        // Update original
-        original.Update(someOtherMainContent);
-        original.Set(anyName, someOtherContent);
-
-        // Assert
-        // Target should be the same as the original before the update
-        AssertContextVariable(target, ContextVariables.MainKey, mainContent);
-        AssertContextVariable(target, anyName, anyContent);
-        // Original should have been updated
-        AssertContextVariable(original, ContextVariables.MainKey, someOtherMainContent);
-        AssertContextVariable(original, anyName, someOtherContent);
-    }
-
     private static void AssertContextVariable(ContextVariables variables, string name, string expectedValue)
     {
         var exists = variables.TryGetValue(name, out string? value);

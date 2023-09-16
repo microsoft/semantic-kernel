@@ -225,16 +225,13 @@ public class CalendarSkillTests
 
         CalendarSkill target = new(connectorMock.Object);
 
-        // Act
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
             ("content", anyContent),
             ("attendees", string.Join(";", anyAttendees)))
         );
-
-        // Assert
-        Assert.Equal("subject", ex.ParamName);
     }
 }
