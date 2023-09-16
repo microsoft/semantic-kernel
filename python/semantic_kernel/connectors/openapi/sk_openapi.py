@@ -11,6 +11,7 @@ from openapi_core.exceptions import OpenAPIError
 from prance import ResolvingParser
 
 from semantic_kernel import Kernel, SKContext
+from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
 from semantic_kernel.utils.null_logger import NullLogger
@@ -23,7 +24,8 @@ class PreparedRestApiRequest:
         self.method = method
         self.url = url
         self.params = params
-        self.headers = headers
+        self.headers = {"User-Agent": HTTP_USER_AGENT}
+        self.headers.add(headers)
         self.request_body = request_body
 
     def __repr__(self):

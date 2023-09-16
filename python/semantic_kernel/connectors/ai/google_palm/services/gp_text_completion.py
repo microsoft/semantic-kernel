@@ -101,7 +101,7 @@ class GooglePalmTextCompletion(TextCompletionClientBase):
                     else None
                 ),
                 candidate_count=request_settings.number_of_responses,
-                top_p=request_settings.top_p,
+                top_p=request_settings.top_p
             )
         except Exception as ex:
             raise AIException(

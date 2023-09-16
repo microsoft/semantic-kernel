@@ -54,7 +54,7 @@ class GooglePalmTextEmbedding(EmbeddingGeneratorBase):
             try:
                 response = palm.generate_embeddings(
                     model=self._model_id,
-                    text=text,
+                    text=text
                 )
                 embeddings.append(array(response["embedding"]))
             except Exception as ex:
