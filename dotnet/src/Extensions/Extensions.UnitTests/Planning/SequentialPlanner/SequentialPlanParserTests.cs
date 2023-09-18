@@ -211,7 +211,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.Skills));
 
         // Assert
         Assert.NotNull(plan);
@@ -236,7 +236,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetSkillFunction(kernel.Skills));
 
         // Assert
         Assert.NotNull(plan);
