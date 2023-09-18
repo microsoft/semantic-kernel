@@ -360,7 +360,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private async Task<string> GetUserManualAsync(SKContext context, CancellationToken cancellationToken)
     {
-        var descriptions = await this.GetFunctionDescriptionsAsync().ConfigureAwait(false);
+        var descriptions = await this.GetFunctionDescriptionsAsync(cancellationToken).ConfigureAwait(false);
         context.Variables.Set("functionDescriptions", descriptions);
         return await this._promptRenderer.RenderAsync(this._manualTemplate, context, cancellationToken).ConfigureAwait(false);
     }
@@ -552,10 +552,10 @@ public class StepwisePlanner : IStepwisePlanner
         return function;
     }
 
-    private async Task<string> GetFunctionDescriptionsAsync()
+    private async Task<string> GetFunctionDescriptionsAsync(CancellationToken cancellationToken)
     {
         // Use configured function provider if available, otherwise use the default SKContext function provider.
-        var availableFunctions = await this.GetAvailableFunctionsAsync().ConfigureAwait(false);
+        var availableFunctions = await this.GetAvailableFunctionsAsync(cancellationToken).ConfigureAwait(false);
         var functionDescriptions = string.Join("\n\n", availableFunctions.Select(x => ToManualString(x)));
         return functionDescriptions;
     }
