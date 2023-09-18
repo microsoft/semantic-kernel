@@ -146,9 +146,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         if (skills is null)
         {
             skills = new Mock<ISkillCollection>();
-
-            var functionsView = new FunctionsView();
-            skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+            skills.Setup(x => x.GetFunctionsView()).Returns(new FunctionsView());
         }
 
         var returnContext = new SKContext(
@@ -222,7 +220,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
             skills.Setup(x => x.TryGetFunction(skillName, name, out outFunc)).Returns(true);
         }
 
-        skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionsView()).Returns(functionsView);
         return skills;
     }
 

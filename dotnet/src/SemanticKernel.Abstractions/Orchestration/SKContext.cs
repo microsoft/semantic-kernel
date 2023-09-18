@@ -109,7 +109,7 @@ public sealed class SKContext
             if (this.Skills is IReadOnlySkillCollection skills)
             {
                 var view = skills.GetFunctionsView();
-                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
+                display += $", Skills = {view.Count}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";

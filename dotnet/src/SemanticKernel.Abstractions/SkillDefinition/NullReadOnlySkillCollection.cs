@@ -38,7 +38,7 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
     }
 
     /// <inheritdoc/>
-    public FunctionsView GetFunctionsView(bool includeSemantic = true, bool includeNative = true)
+    public FunctionsView GetFunctionsView()
     {
         return new();
     }
