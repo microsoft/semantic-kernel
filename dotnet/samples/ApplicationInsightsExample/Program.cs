@@ -207,22 +207,22 @@ public sealed class Program
         var operations = new ConcurrentDictionary<string, IOperationHolder<DependencyTelemetry>>();
 
         // For more detailed tracing we need to attach Activity entity to Application Insights operation manually.
-        Action<Activity> activityStarted = activity =>
+        void activityStarted(Activity activity)
         {
             var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity);
             operation.Telemetry.Type = activity.Kind.ToString();
 
             operations.TryAdd(activity.TraceId.ToString(), operation);
-        };
+        }
 
         // We also need to manually stop Application Insights operation when Activity entity is stopped.
-        Action<Activity> activityStopped = activity =>
+        void activityStopped(Activity activity)
         {
             if (operations.TryRemove(activity.TraceId.ToString(), out var operation))
             {
                 telemetryClient.StopOperation(operation);
             }
-        };
+        }
 
         // Subscribe to all traces in Semantic Kernel
         activityListener.ShouldListenTo =
