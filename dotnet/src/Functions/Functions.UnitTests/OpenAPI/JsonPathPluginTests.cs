@@ -6,7 +6,7 @@ using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
-public class JsonPathSkillTests
+public class JsonPathPluginTests
 {
     private const string Json = @"{
   'Stores': [

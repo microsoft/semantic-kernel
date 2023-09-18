@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
-using SemanticKernel.Functions.UnitTests.Grpc.Protobuf.TestPlugins;
+using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI;

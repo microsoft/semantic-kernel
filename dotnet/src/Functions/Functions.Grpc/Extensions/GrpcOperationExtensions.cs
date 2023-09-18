@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;

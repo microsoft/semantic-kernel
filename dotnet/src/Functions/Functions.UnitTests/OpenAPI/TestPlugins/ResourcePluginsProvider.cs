@@ -19,7 +19,7 @@ internal static class ResourcePluginsProvider
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
         if (stream == null)
         {
-            throw new MissingManifestResourceException($"Unable to load OpenApi skill from assembly resource '{resourceName}'.");
+            throw new MissingManifestResourceException($"Unable to load OpenApi plugin from assembly resource '{resourceName}'.");
         }
 
         return stream;

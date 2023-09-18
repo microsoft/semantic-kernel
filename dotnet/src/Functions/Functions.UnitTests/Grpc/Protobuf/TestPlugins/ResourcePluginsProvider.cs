@@ -19,7 +19,7 @@ internal static class ResourcePluginsProvider
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
         if (stream == null)
         {
-            throw new MissingManifestResourceException($"Unable to load gRPC skill from assembly resource '{resourceName}'.");
+            throw new MissingManifestResourceException($"Unable to load gRPC plugin from assembly resource '{resourceName}'.");
         }
 
         return stream;
