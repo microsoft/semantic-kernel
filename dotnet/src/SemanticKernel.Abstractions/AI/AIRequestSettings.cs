@@ -26,5 +26,5 @@ public class AIRequestSettings
     /// Extra properties
     /// </summary>
     [JsonExtensionData]
-    public Dictionary<string, object>? ExtensionData { get; set; }
+    public Dictionary<string, object> ExtensionData { get; set; } = new Dictionary<string, object>();
 }
