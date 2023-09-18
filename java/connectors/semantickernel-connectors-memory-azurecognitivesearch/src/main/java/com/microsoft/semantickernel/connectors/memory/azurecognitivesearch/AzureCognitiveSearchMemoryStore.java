@@ -195,7 +195,7 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
 
     SearchQueryVector searchVector = new SearchQueryVector()
         .setKNearestNeighborsCount(limit)
-        .setFields("Embedding") // TODO: should be a constant
+        .setFields(AzureCognitiveSearchMemoryRecord.EMBEDDING)
         .setValue(embedding.getVector());
 
     SearchOptions searchOptions = new SearchOptions()
@@ -242,7 +242,7 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
     return Arrays.asList(
         new SearchField(AzureCognitiveSearchMemoryRecord.ID, SearchFieldDataType.STRING).setKey(true).setFilterable(false),
         new SearchField(AzureCognitiveSearchMemoryRecord.EMBEDDING, SearchFieldDataType.collection(SearchFieldDataType.SINGLE))
-            .setSearchable(false)
+            .setSearchable(true)
             .setVectorSearchDimensions(embeddingSize)
             .setVectorSearchConfiguration(configName),
         new SearchField(AzureCognitiveSearchMemoryRecord.TEXT, SearchFieldDataType.STRING)
@@ -324,7 +324,7 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
     List<SearchDocument> documents = records.stream()
         .map(record -> {
           SearchDocument searchDocument = new SearchDocument();
-          searchDocument.put(AzureCognitiveSearchMemoryRecord.ID, record.getId());
+          searchDocument.put(AzureCognitiveSearchMemoryRecord.ID, AzureCognitiveSearchMemoryRecord.encodeId(record.getId()));
           searchDocument.put(AzureCognitiveSearchMemoryRecord.TEXT, record.getText());
           searchDocument.put(AzureCognitiveSearchMemoryRecord.DESCRIPTION, record.getDescription());
           searchDocument.put(AzureCognitiveSearchMemoryRecord.EMBEDDING, record.getEmbedding());

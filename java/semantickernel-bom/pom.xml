@@ -142,7 +142,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-search-documents</artifactId>
-                <version>11.6.0-beta.8</version>
+                <version>11.6.0-beta.9</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.inject</groupId>
