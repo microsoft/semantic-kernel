@@ -15,17 +15,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FA37
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntaxExamples", "samples\KernelSyntaxExamples\KernelSyntaxExamples.csproj", "{47C6F821-5103-431F-B3B8-A2868A68BB78}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphSkillsExample", "..\samples\dotnet\graph-api-skills\MsGraphSkillsExample.csproj", "{3EB61E99-C39B-4620-9482-F8DA18E48525}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphPluginsExample", "..\samples\dotnet\graph-api-skills\MsGraphSkillsExample.csproj", "{3EB61E99-C39B-4620-9482-F8DA18E48525}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelHttpServer", "..\samples\dotnet\KernelHttpServer\KernelHttpServer.csproj", "{34A7F1EF-D243-4160-A413-D713FEABCD94}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "src\IntegrationTests\IntegrationTests.csproj", "{E4B777A1-28E1-41BE-96AE-7F3EC61FD5D4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Document", "src\Skills\Skills.Document\Skills.Document.csproj", "{F94D1938-9DB7-4B24-9FF3-166DDFD96330}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Document", "src\Plugins\Plugins.Document\Plugins.Document.csproj", "{F94D1938-9DB7-4B24-9FF3-166DDFD96330}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.MsGraph", "src\Skills\Skills.MsGraph\Skills.MsGraph.csproj", "{689A5041-BAE7-448F-9BDC-4672E96249AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.MsGraph", "src\Plugins\Plugins.MsGraph\Plugins.MsGraph.csproj", "{689A5041-BAE7-448F-9BDC-4672E96249AA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Web", "src\Skills\Skills.Web\Skills.Web.csproj", "{EEA87FBC-4ED5-458C-ABD3-BEAEEB535BAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Web", "src\Plugins\Plugins.Web\Plugins.Web.csproj", "{EEA87FBC-4ED5-458C-ABD3-BEAEEB535BAF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{158A4E5E-AEE0-4D60-83C7-8E089B2D881D}"
 	ProjectSection(SolutionItems) = preProject
@@ -140,9 +140,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10
 		src\InternalUtilities\src\System\EnvExtensions.cs = src\InternalUtilities\src\System\EnvExtensions.cs
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Core", "src\Skills\Skills.Core\Skills.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Core", "src\Plugins\Plugins.Core\Plugins.Core.csproj", "{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalcSkills", "samples\NCalcSkills\NCalcSkills.csproj", "{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalcPlugins", "samples\NCalcPlugins\NCalcPlugins.csproj", "{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.Oobabooga", "src\Connectors\Connectors.AI.Oobabooga\Connectors.AI.Oobabooga.csproj", "{677F1381-7830-4115-9C1A-58B282629DC6}"
 EndProject

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Skills.Document</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Plugins.MsGraph</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
@@ -11,12 +11,14 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Document Skill</Title>
-    <Description>Semantic Kernel Document Skill: Word processing, OpenXML, etc.</Description>
+    <Title>Semantic Kernel - Microsoft Graph Plugins</Title>
+    <Description>Semantic Kernel Microsoft Graph Plugins: access your tenant data, schedule meetings, send emails, etc.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Graph" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
   </ItemGroup>
 
   <ItemGroup>

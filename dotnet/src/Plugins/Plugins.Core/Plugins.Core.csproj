@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Skills.Core</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Plugins.Core</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
@@ -12,8 +12,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Core Skills</Title>
-    <Description>Semantic Kernel core skills.</Description>
+    <Title>Semantic Kernel - Core Plugins</Title>
+    <Description>Semantic Kernel core plugins.</Description>
   </PropertyGroup>
 
   <ItemGroup>

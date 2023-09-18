@@ -2,24 +2,21 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Skills.Web</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Plugins.Document</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-  
+
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Microsoft Bing Connector</Title>
-    <Description>Semantic Kernel Web Skill: search the web, download files, etc.</Description>
+    <Title>Semantic Kernel - Document Plugins</Title>
+    <Description>Semantic Kernel Document Plugins: Word processing, OpenXML, etc.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="Google.Apis.CustomSearchAPI.v1" />
+    <PackageReference Include="DocumentFormat.OpenXml" />
   </ItemGroup>
 
   <ItemGroup>
