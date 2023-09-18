@@ -53,7 +53,7 @@ public sealed class StepwisePlannerTests : IDisposable
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
         kernel.ImportSkill(new TimeSkill(), "time");
 
-        var planner = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
+        var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
         var plan = planner.CreatePlan(prompt);
@@ -81,7 +81,7 @@ public sealed class StepwisePlannerTests : IDisposable
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
         kernel.ImportSkill(new TimeSkill(), "time");
 
-        var planner = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
+        var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
         var plan = planner.CreatePlan(prompt);

@@ -102,7 +102,7 @@ public sealed class SequentialPlannerTests
             It.IsAny<SemanticFunctionConfig>()
         )).Returns(mockFunctionFlowFunction.Object);
 
-        var planner = new Microsoft.SemanticKernel.Planning.Sequential.SequentialPlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);
 
         // Act
         var plan = await planner.CreatePlanAsync(goal, default);
@@ -137,7 +137,7 @@ public sealed class SequentialPlannerTests
         // Arrange
         var kernel = new Mock<IKernel>();
 
-        var planner = new Microsoft.SemanticKernel.Planning.Sequential.SequentialPlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);
 
         // Act
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync(""));
@@ -185,7 +185,7 @@ public sealed class SequentialPlannerTests
             It.IsAny<SemanticFunctionConfig>()
         )).Returns(mockFunctionFlowFunction.Object);
 
-        var planner = new Microsoft.SemanticKernel.Planning.Sequential.SequentialPlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel.Object);
 
         // Act
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));

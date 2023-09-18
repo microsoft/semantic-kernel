@@ -7,10 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Planning.Sequential;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of SKContext
+namespace Microsoft.SemanticKernel.Orchestration;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Provides extension methods for the <see cref="SKContext"/> class to work with sequential planners.
