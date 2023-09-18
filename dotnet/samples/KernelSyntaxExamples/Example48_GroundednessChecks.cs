@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
 // ReSharper disable CommentTypo
@@ -135,7 +135,7 @@ which are not grounded in the original.
             "SummarizeSkill",
             "GroundingSkill");
 
-        kernel.ImportSkill(new TextSkill());
+        kernel.ImportSkill(new TextPlugin());
 
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
