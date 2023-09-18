@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Grpc.Extensions;
+using Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 using RepoUtils;
 
 /**
