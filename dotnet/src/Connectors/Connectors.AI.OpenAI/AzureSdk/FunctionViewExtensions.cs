@@ -22,7 +22,7 @@ internal static class FunctionViewExtensions
                 new
                 {
                     type = param.Type?.Name ?? "string",
-                    description = param.Description ?? "",
+                    description = param.Description ?? string.Empty,
                 });
 
             if (param.IsRequired)

@@ -2,7 +2,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Kusto.Cloud.Platform.Utils;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
@@ -65,7 +64,7 @@ public static class Example58_FunctionCalling
 
         // Check for message response
         var chatMessage = await chatResult.GetChatMessageAsync();
-        if (chatMessage.Content.IsNotNullOrEmpty())
+        if (string.IsNullOrEmpty(chatMessage.Content))
         {
             Console.WriteLine(chatMessage.Content);
         }

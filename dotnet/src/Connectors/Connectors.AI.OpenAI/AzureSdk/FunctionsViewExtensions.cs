@@ -13,10 +13,7 @@ internal static class FunctionsViewExtensions
     {
         var functionDefinitions = new List<FunctionDefinition>();
 
-        ConcurrentDictionary<string, List<FunctionView>> nativeFunctions = functionsView.NativeFunctions;
-        ConcurrentDictionary<string, List<FunctionView>> semanticFunctions = functionsView.SemanticFunctions;
-
-        foreach (KeyValuePair<string, List<FunctionView>> skill in nativeFunctions)
+        foreach (KeyValuePair<string, List<FunctionView>> skill in functionsView.NativeFunctions)
         {
             foreach (FunctionView func in skill.Value)
             {
@@ -24,7 +21,7 @@ internal static class FunctionsViewExtensions
             }
         }
 
-        foreach (KeyValuePair<string, List<FunctionView>> skill in semanticFunctions)
+        foreach (KeyValuePair<string, List<FunctionView>> skill in functionsView.SemanticFunctions)
         {
             foreach (FunctionView func in skill.Value)
             {
