@@ -934,6 +934,54 @@ public sealed class SKFunctionTests2
         Assert.Equal("old", function.Describe().Parameters[2].Name);
     }
 
+    [Fact]
+    public async Task ItCanReturnBasicTypesAsync()
+    {
+        // Arrange
+        static int TestInt(int number) => number;
+        static double TestDouble(double number) => number;
+        static string TestString(string str) => str;
+        static bool TestBool(bool flag) => flag;
+
+        var function1 = SKFunction.FromNativeMethod(Method(TestInt));
+        var function2 = SKFunction.FromNativeMethod(Method(TestDouble));
+        var function3 = SKFunction.FromNativeMethod(Method(TestString));
+        var function4 = SKFunction.FromNativeMethod(Method(TestBool));
+
+        // Act
+        FunctionResult result1 = await function1.InvokeAsync(this.MockContext("42"));
+        FunctionResult result2 = await function2.InvokeAsync(this.MockContext("3.14"));
+        FunctionResult result3 = await function3.InvokeAsync(this.MockContext("test-string"));
+        FunctionResult result4 = await function4.InvokeAsync(this.MockContext("true"));
+
+        // Assert
+        Assert.Equal(42, result1.GetValue<int>());
+        Assert.Equal(3.14, result2.GetValue<double>());
+        Assert.Equal("test-string", result3.GetValue<string>());
+        Assert.Equal(true, result4.GetValue<bool>());
+    }
+
+    [Fact]
+    public async Task ItCanReturnComplexTypeAsync()
+    {
+        // Arrange
+        static MyCustomType TestCustomType(MyCustomType instance) => instance;
+
+        var context = this.MockContext("");
+        context.Variables.Set("instance", "42");
+
+        var function = SKFunction.FromNativeMethod(Method(TestCustomType));
+
+        // Act
+        FunctionResult result = await function.InvokeAsync(context);
+
+        var actualInstance = result.GetValue<MyCustomType>();
+
+        // Assert
+        Assert.NotNull(actualInstance);
+        Assert.Equal(42, actualInstance.Value);
+    }
+
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
