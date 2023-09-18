@@ -178,6 +178,18 @@ def test_custom_prompt_template_config_from_json_default_completion():
     assert updated.completion.chat_system_prompt == base.chat_system_prompt
 
 
+def test_custom_prompt_template_config_from_dict_nonexistent_keys():
+    prompt_template_dict = {"completion": {"bogus_parameter": 1}}
+    with pytest.raises(TypeError):
+        _ = PromptTemplateConfig.from_dict(prompt_template_dict)
+
+
+def test_custom_prompt_template_config_from_json_nonexistent_keys():
+    prompt_template_json = """{ "completion": { "bogus_parameter": 1 }}"""
+    with pytest.raises(TypeError):
+        _ = PromptTemplateConfig.from_json(prompt_template_json)
+
+
 def test_chat_prompt_template():
     chat_prompt_template = ChatPromptTemplate(
         "{{$user_input}}",
