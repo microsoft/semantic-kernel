@@ -25,6 +25,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
   </ItemGroup>
 </Project>

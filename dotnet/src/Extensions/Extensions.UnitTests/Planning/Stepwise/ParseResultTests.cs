@@ -3,12 +3,11 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning.StepwisePlanner;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Extensions.StepwisePlanner.UnitTests.Planning.StepwisePlanner;
+namespace SemanticKernel.Extensions.UnitTests.Planning.Stepwise;
 
 public sealed class ParseResultTests
 {
@@ -29,7 +28,7 @@ public sealed class ParseResultTests
         var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
-        var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlanner(kernel.Object);
 
         // Act
         var result = planner.ParseResult(input);
@@ -81,7 +80,7 @@ public sealed class ParseResultTests
         var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
-        var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlanner(kernel.Object);
 
         // Act
         var result = planner.ParseResult(input);

@@ -28,12 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
-    <ProjectReference Include="..\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
-    <ProjectReference Include="..\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
     <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
+    <ProjectReference Include="..\Planning\Planning.csproj" />
   </ItemGroup>
 
 </Project>

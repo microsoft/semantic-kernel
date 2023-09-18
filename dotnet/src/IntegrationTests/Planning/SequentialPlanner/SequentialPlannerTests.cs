@@ -42,7 +42,7 @@ public sealed class SequentialPlannerTests : IDisposable
         _ = kernel.ImportSkill(new EmailSkillFake());
         TestHelpers.GetSkills(kernel, "FunSkill");
 
-        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
+        var planner = new Microsoft.SemanticKernel.Planning.Sequential.SequentialPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -63,7 +63,7 @@ public sealed class SequentialPlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel();
         TestHelpers.GetSkills(kernel, "WriterSkill");
 
-        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
+        var planner = new Microsoft.SemanticKernel.Planning.Sequential.SequentialPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -89,7 +89,7 @@ public sealed class SequentialPlannerTests : IDisposable
         // Import all sample skills available for demonstration purposes.
         TestHelpers.ImportSampleSkills(kernel);
 
-        var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel,
+        var planner = new Microsoft.SemanticKernel.Planning.Sequential.SequentialPlanner(kernel,
             new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
 
         // Act
