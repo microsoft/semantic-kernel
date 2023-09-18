@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -165,15 +166,6 @@ public interface IKernel
         params ISKFunction[] pipeline);
 
     /// <summary>
-    /// Access registered functions by skill + name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    ISKFunction Func(string skillName, string functionName);
-
-    /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <returns>SK context</returns>
@@ -198,4 +190,19 @@ public interface IKernel
     /// Triggers after each function invocation.
     /// </summary>
     event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
+
+    #region Obsolete
+
+    /// <summary>
+    /// Access registered functions by skill + name. Not case sensitive.
+    /// The function might be native or semantic, it's up to the caller handling it.
+    /// </summary>
+    /// <param name="skillName">Skill name</param>
+    /// <param name="functionName">Function name</param>
+    /// <returns>Delegate to execute the function</returns>
+    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    ISKFunction Func(string skillName, string functionName);
+
+    #endregion
 }
