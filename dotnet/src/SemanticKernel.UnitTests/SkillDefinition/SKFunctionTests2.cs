@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -980,6 +982,45 @@ public sealed class SKFunctionTests2
         // Assert
         Assert.NotNull(actualInstance);
         Assert.Equal(42, actualInstance.Value);
+    }
+
+    [Fact]
+    public async Task ItCanReturnAsyncEnumerableTypeAsync()
+    {
+        // Arrange
+        static async IAsyncEnumerable<int> TestAsyncEnumerableTypeAsync()
+        {
+            yield return 1;
+
+            await Task.Delay(50);
+
+            yield return 2;
+
+            await Task.Delay(50);
+
+            yield return 3;
+        }
+
+        var function = SKFunction.FromNativeMethod(Method(TestAsyncEnumerableTypeAsync));
+
+        // Act
+        FunctionResult result = await function.InvokeAsync(this.MockContext(string.Empty));
+
+        // Assert
+        Assert.NotNull(result);
+
+        var asyncEnumerableResult = result.GetValue<IAsyncEnumerable<int>>();
+
+        Assert.NotNull(asyncEnumerableResult);
+
+        var assertResult = new List<int>();
+
+        await foreach (var value in asyncEnumerableResult)
+        {
+            assertResult.Add(value);
+        }
+
+        Assert.True(assertResult.SequenceEqual(new List<int> { 1, 2, 3 }));
     }
 
     private static MethodInfo Method(Delegate method)

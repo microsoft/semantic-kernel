@@ -658,6 +658,31 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             };
         }
 
+        // IAsyncEnumerable<T>
+        if (returnType.GetGenericTypeDefinition() is Type genericAsyncEnumerable && genericAsyncEnumerable == typeof(IAsyncEnumerable<>))
+        {
+            Type elementType = returnType.GetGenericArguments()[0];
+
+            MethodInfo getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
+                .MakeGenericType(elementType)
+                .GetMethod("GetAsyncEnumerator");
+
+            if (getAsyncEnumeratorMethod is not null)
+            {
+                return (result, context) =>
+                {
+                    var asyncEnumerator = getAsyncEnumeratorMethod.Invoke(result, new object[] { default(CancellationToken) });
+
+                    if (asyncEnumerator is not null)
+                    {
+                        return Task.FromResult(new FunctionResult(context, asyncEnumerator));
+                    }
+
+                    return Task.FromResult(new FunctionResult(context));
+                };
+            }
+        }
+
         // Unrecognized return type.
         throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
 
