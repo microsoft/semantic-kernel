@@ -33,7 +33,7 @@ public sealed class Program
     /// <see cref="LogLevel.Information"/> is set by default. <para />
     /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
     /// </remarks>
-    private static LogLevel LogLevel = LogLevel.Information;
+    private static LogLevel s_logLevel = LogLevel.Information;
 
     /// <summary>
     /// The main entry point for the application.
@@ -96,8 +96,8 @@ public sealed class Program
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == LogLevel);
-            loggingBuilder.SetMinimumLevel(LogLevel);
+            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == s_logLevel);
+            loggingBuilder.SetMinimumLevel(s_logLevel);
         });
 
         services.AddApplicationInsightsTelemetryWorkerService(options =>

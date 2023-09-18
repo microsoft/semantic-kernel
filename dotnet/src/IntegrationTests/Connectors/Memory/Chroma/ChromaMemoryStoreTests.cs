@@ -56,7 +56,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanHandleDuplicateNameDuringCollectionCreationAsync()
     {
         // Arrange
-        const int expectedCollectionCount = 1;
         var collectionName = this.GetRandomCollectionName();
 
         // Act

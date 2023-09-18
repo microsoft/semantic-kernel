@@ -186,7 +186,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             // Simulate different responses for each request
             var responseIndex = int.Parse(Encoding.UTF8.GetString(request.ToArray()), CultureInfo.InvariantCulture);
             byte[] bytes = Encoding.UTF8.GetBytes(expectedResponses[responseIndex]);
-            var toReturn = new List<ArraySegment<byte>> { new ArraySegment<byte>(bytes) };
+            var toReturn = new List<ArraySegment<byte>> { new(bytes) };
             return toReturn;
         });
 

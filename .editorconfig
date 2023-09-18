@@ -110,7 +110,6 @@ dotnet_diagnostic.RCS1211.severity = warning # Remove unnecessary else clause.
 dotnet_diagnostic.RCS1214.severity = warning # Unnecessary interpolated string.
 dotnet_diagnostic.RCS1225.severity = warning # Make class sealed.
 dotnet_diagnostic.RCS1232.severity = warning # Order elements in documentation comment.
-# dotnet_diagnostic.IDE0079.severity = warning # Remove unnecessary suppression operator.
 
 # Commented out because `dotnet format` change can be disruptive.
 # dotnet_diagnostic.RCS1085.severity = warning # Use auto-implemented property.
@@ -149,6 +148,7 @@ dotnet_diagnostic.IDE0060.severity = warning # Remove unused parameter
 dotnet_diagnostic.IDE0070.severity = warning # Use 'System.HashCode.Combine'
 dotnet_diagnostic.IDE0071.severity = warning # Simplify interpolation
 dotnet_diagnostic.IDE0073.severity = warning # Require file header
+dotnet_diagnostic.IDE0079.severity = warning # Remove unnecessary suppression operator.
 dotnet_diagnostic.IDE0082.severity = warning # Convert typeof to nameof
 dotnet_diagnostic.IDE0090.severity = warning # Simplify new expression
 dotnet_diagnostic.IDE0130.severity = warning # Namespace does not match folder structure
