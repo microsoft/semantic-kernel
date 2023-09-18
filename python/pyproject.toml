@@ -57,7 +57,7 @@ psycopg = "^3.1.9"
 psycopg-binary = "^3.1.9"
 
 [tool.poetry.group.redis.dependencies]
-redis = "^4.6.0"
+redis = ">=4.6,<6.0"
 
 [tool.poetry.group.azure_cognitive_search.dependencies]
 azure-search-documents = {version = "11.4.0b8", allow-prereleases = true}
