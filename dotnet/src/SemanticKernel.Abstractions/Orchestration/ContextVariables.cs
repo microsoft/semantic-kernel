@@ -23,10 +23,7 @@ public sealed class ContextVariables : Dictionary<string, string>
     public ContextVariables(string? value = null)
         : base(StringComparer.OrdinalIgnoreCase)
     {
-        if (value != null)
-        {
-            this[MainKey] = value;
-        }
+        this.Set(MainKey, value);
     }
 
     /// <summary>

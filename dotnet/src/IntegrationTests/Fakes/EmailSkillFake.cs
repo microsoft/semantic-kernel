@@ -21,7 +21,7 @@ internal sealed class EmailSkillFake
     [SKFunction, Description("Lookup an email address for a person given a name")]
     public Task<string> GetEmailAddressAsync(
         ILogger logger,
-        [Description("The name of the person to email.")] string input = "")
+        [Description("The name of the person to email.")] string? input = null)
     {
         if (string.IsNullOrEmpty(input))
         {
