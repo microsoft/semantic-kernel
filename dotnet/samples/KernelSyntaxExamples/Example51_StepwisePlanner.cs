@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using NCalcSkills;
+using NCalcPlugins;
 using RepoUtils;
 
 /**
@@ -111,7 +111,7 @@ public static class Example51_StepwisePlanner
         var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "semanticCalculator");
+        kernel.ImportSkill(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
         kernel.ImportSkill(new TimePlugin(), "time");
 
         // StepwisePlanner is instructed to depend on available functions.

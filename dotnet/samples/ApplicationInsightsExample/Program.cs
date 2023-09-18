@@ -19,7 +19,7 @@ using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using NCalcSkills;
+using NCalcPlugins;
 
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
@@ -123,7 +123,7 @@ public sealed class Program
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill", "WriterSkill");
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "advancedCalculator");
+        kernel.ImportSkill(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
         kernel.ImportSkill(new TimePlugin(), "time");
 
         return kernel;

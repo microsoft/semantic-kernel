@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using NCalc;
 
-namespace NCalcSkills;
+namespace NCalcPlugins;
 
 /// <summary>
 /// Skill that enables the comprehension of mathematical problems presented in English / natural-language text, followed by the execution of the necessary calculations to solve those problems.
@@ -18,12 +18,12 @@ namespace NCalcSkills;
 /// usage :
 /// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 /// var question = "what is the square root of 625";
-/// var calculatorSkill = kernel.ImportSkill(new LanguageCalculatorSkill(kernel));
+/// var calculatorSkill = kernel.ImportSkill(new LanguageCalculatorPlugin(kernel));
 /// var summary = await kernel.RunAsync(questions, calculatorSkill["Calculate"]);
 /// Console.WriteLine("Result :");
 /// Console.WriteLine(summary.Result);
 /// </example>
-public class LanguageCalculatorSkill
+public class LanguageCalculatorPlugin
 {
     private readonly ISKFunction _mathTranslator;
 
@@ -62,14 +62,14 @@ Question: {{ $input }}
 ";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LanguageCalculatorSkill"/> class.
+    /// Initializes a new instance of the <see cref="LanguageCalculatorPlugin"/> class.
     /// </summary>
     /// <param name="kernel">The kernel to be used for creating the semantic function.</param>
-    public LanguageCalculatorSkill(IKernel kernel)
+    public LanguageCalculatorPlugin(IKernel kernel)
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
             MathTranslatorPrompt,
-            skillName: nameof(LanguageCalculatorSkill),
+            skillName: nameof(LanguageCalculatorPlugin),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
             maxTokens: 256,
