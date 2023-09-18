@@ -34,13 +34,13 @@ public sealed class SequentialPlannerTests
             ("Summarize", "SummarizeSkill", "Summarize something", true)
         };
 
-        var functionsView = new FunctionsView();
+        var functionsView = new List<FunctionView>();
         var skills = new Mock<ISkillCollection>();
         foreach (var (name, skillName, description, isSemantic) in input)
         {
             var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
             var mockFunction = CreateMockFunction(functionView);
-            functionsView.AddFunction(functionView);
+            functionsView.Add(functionView);
 
             mockFunction.Setup(x =>
                     x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
@@ -150,8 +150,7 @@ public sealed class SequentialPlannerTests
         var kernel = new Mock<IKernel>();
         var skills = new Mock<ISkillCollection>();
 
-        var functionsView = new FunctionsView();
-        skills.Setup(x => x.GetFunctionsView()).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionsView()).Returns(new List<FunctionView>());
 
         var planString = "<plan>notvalid<</plan>";
         var returnContext = new SKContext(

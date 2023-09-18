@@ -570,7 +570,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (this.Config.GetAvailableFunctionsAsync is null)
         {
-            FunctionsView functionsView = this._context.Skills!.GetFunctionsView();
+            var functionsView = this._context.Skills!.GetFunctionsView();
 
             var excludedSkills = this.Config.ExcludedSkills ?? new();
             var excludedFunctions = this.Config.ExcludedFunctions ?? new();

@@ -85,15 +85,15 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
-    public FunctionsView GetFunctionsView()
+    public IReadOnlyList<FunctionView> GetFunctionsView()
     {
-        var result = new FunctionsView();
+        var result = new List<FunctionView>();
 
-        foreach (var skill in this._skillCollection)
+        foreach (var skill in this._skillCollection.Values)
         {
-            foreach (KeyValuePair<string, ISKFunction> f in skill.Value)
+            foreach (ISKFunction f in skill.Values)
             {
-                result.AddFunction(f.Value.Describe());
+                result.Add(f.Describe());
             }
         }
 
