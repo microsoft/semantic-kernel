@@ -26,8 +26,8 @@ jobs:
       - name: Generate PR description
         uses: mkarle/skonsole-generate-pr-description@v1
         with:
-          target-branch: ${{ steps.comment-branch.outputs.base_ref }}
-          source-branch: ${{ steps.comment-branch.outputs.head_ref }}
+          pull-request-number: ${{ github.event.issue.number }}
+          pull-request-diff-url: ${{ github.event.issue.pull_request.diff_url }}
           token: ${{ secrets.GITHUB_TOKEN }}
           update-type:  ${{ contains(github.event.comment.body, 'replace') && 'replace' || (contains(github.event.comment.body, 'prefix') && 'prefix' || 'suffix') }}
         env: # Set Azure credentials secret as an input
