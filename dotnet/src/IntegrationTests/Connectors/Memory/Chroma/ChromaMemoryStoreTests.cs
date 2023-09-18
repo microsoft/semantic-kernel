@@ -67,7 +67,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
         var filteredCollections = collections.Where(collection => collection.Equals(collectionName, StringComparison.Ordinal)).ToList();
 
-        Assert.Equal(expectedCollectionCount, filteredCollections.Count);
+        Assert.Single(filteredCollections);
     }
 
     [Theory(Skip = SkipReason)]
