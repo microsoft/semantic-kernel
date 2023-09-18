@@ -110,11 +110,12 @@ public sealed class PlanTests : IDisposable
         cv.Update(inputToTranslate);
         cv.Set("email_address", expectedEmail);
         cv.Set("language", language);
-        var result = await target.RunAsync(cv, plan);
+        var result = (await target.RunAsync(cv, plan)).GetValue<string>();
 
         // Assert
-        Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
-        Assert.True(expectedBody.Length < result.GetValue<string>().Length);
+        Assert.NotNull(result);
+        Assert.Contains(expectedBody, result, StringComparison.OrdinalIgnoreCase);
+        Assert.True(expectedBody.Length < result.Length);
     }
 
     [Fact]
@@ -367,11 +368,12 @@ public sealed class PlanTests : IDisposable
         plan.AddSteps(summarizePlan, translatePlan, getEmailPlan, sendEmailPlan);
 
         // Act
-        var result = await target.RunAsync(inputToSummarize, plan);
+        var result = (await target.RunAsync(inputToSummarize, plan)).GetValue<string>();
 
         // Assert
-        Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
-        Assert.True(expectedBody.Length < result.GetValue<string>().Length);
+        Assert.NotNull(result);
+        Assert.Contains(expectedBody, result, StringComparison.OrdinalIgnoreCase);
+        Assert.True(expectedBody.Length < result.Length);
     }
 
     [Theory]
@@ -428,11 +430,12 @@ public sealed class PlanTests : IDisposable
         // Act
         var serializedPlan = plan.ToJson();
         var deserializedPlan = Plan.FromJson(serializedPlan, target.CreateNewContext());
-        var result = await target.RunAsync(inputToSummarize, deserializedPlan);
+        var result = (await target.RunAsync(inputToSummarize, deserializedPlan)).GetValue<string>();
 
         // Assert
-        Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
-        Assert.True(expectedBody.Length < result.GetValue<string>().Length);
+        Assert.NotNull(result);
+        Assert.Contains(expectedBody, result, StringComparison.OrdinalIgnoreCase);
+        Assert.True(expectedBody.Length < result.Length);
     }
 
     [Theory]

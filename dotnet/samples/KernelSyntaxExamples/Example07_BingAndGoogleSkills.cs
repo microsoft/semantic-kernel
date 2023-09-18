@@ -143,7 +143,7 @@ Answer: ";
             ["externalInformation"] = string.Empty
         });
 
-        var result = answer.GetValue<string>();
+        var result = answer.GetValue<string>()!;
 
         // If the answer contains commands, execute them using the prompt renderer.
         if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))

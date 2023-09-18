@@ -67,7 +67,7 @@ public static class Example51_StepwisePlanner
             Console.WriteLine("Mode\tModel\tAnswer\tStepsTaken\tIterations\tTimeTaken");
             foreach (var er in ExecutionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
             {
-                Console.WriteLine($"{er.mode}\t{er.model}\t{er.stepsTaken}\t{er.iterations}\t{er.timeTaken}\t{er.answer}");
+                Console.WriteLine($"{er.mode}\t{er.model}\t{er.timeTaken}\t{er.answer}");
             }
         }
     }
@@ -78,8 +78,6 @@ public static class Example51_StepwisePlanner
         public string? model;
         public string? question;
         public string? answer;
-        public string? stepsTaken;
-        public string? iterations;
         public string? timeTaken;
     }
 

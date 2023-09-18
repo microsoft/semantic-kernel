@@ -9,7 +9,7 @@ public sealed class FunctionResult
 {
     public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
 
-    public object? Value { get; private set; } = null;
+    internal object? Value { get; private set; } = null;
 
     internal SKContext Context { get; private set; }
 

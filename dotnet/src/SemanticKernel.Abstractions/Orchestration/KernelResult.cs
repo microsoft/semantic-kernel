@@ -7,18 +7,23 @@ namespace Microsoft.SemanticKernel.Orchestration;
 
 public sealed class KernelResult
 {
-    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
+    public IReadOnlyCollection<ModelResult> ModelResults { get; private set; } = Array.Empty<ModelResult>();
 
-    public object? Value { get; private set; } = null;
+    internal object? Value { get; private set; } = null;
 
-    public T GetValue<T>()
+    public T? GetValue<T>()
     {
+        if (this.Value is null)
+        {
+            return default;
+        }
+
         if (this.Value is T typedResult)
         {
             return typedResult;
         }
 
-        throw new InvalidCastException($"Cannot cast {this.Value!.GetType()} to {typeof(T)}");
+        throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
 
     internal static KernelResult FromFunctionResult(FunctionResult functionResult)
