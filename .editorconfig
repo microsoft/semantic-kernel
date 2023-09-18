@@ -96,10 +96,6 @@ dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_code_quality_unused_parameters = all:suggestion
 
 [*.cs]
-
-# TODO: enable this but stop "dotnet format" from applying incorrect fixes and introducing a lot of unwanted changes.
-dotnet_analyzer_diagnostic.severity = none
-
 # Note: these settings cause "dotnet format" to fix the code. You should review each change if you uses "dotnet format".
 dotnet_diagnostic.RCS1036.severity = warning # Remove unnecessary blank line.
 dotnet_diagnostic.RCS1037.severity = warning # Remove trailing white-space.
@@ -114,6 +110,7 @@ dotnet_diagnostic.RCS1211.severity = warning # Remove unnecessary else clause.
 dotnet_diagnostic.RCS1214.severity = warning # Unnecessary interpolated string.
 dotnet_diagnostic.RCS1225.severity = warning # Make class sealed.
 dotnet_diagnostic.RCS1232.severity = warning # Order elements in documentation comment.
+# dotnet_diagnostic.IDE0079.severity = warning # Remove unnecessary suppression operator.
 
 # Commented out because `dotnet format` change can be disruptive.
 # dotnet_diagnostic.RCS1085.severity = warning # Use auto-implemented property.
@@ -172,6 +169,7 @@ dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing th
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
 
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
+dotnet_diagnostic.VSTHRD200.severity = none # Use Async suffix for async methods
 dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
 
 dotnet_diagnostic.RCS1021.severity = none # Use expression-bodied lambda.
@@ -244,7 +242,6 @@ dotnet_naming_style.uppercase_with_underscore_separator.capitalization = all_upp
 dotnet_naming_style.uppercase_with_underscore_separator.word_separator = _
 
 dotnet_naming_style.end_in_async.required_prefix =
-dotnet_naming_style.end_in_async.required_suffix = Async
 dotnet_naming_style.end_in_async.capitalization = pascal_case
 dotnet_naming_style.end_in_async.word_separator =
 
