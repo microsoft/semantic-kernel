@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.connectors.memory.azurecognitivesearch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipeline;
@@ -82,7 +83,7 @@ class AzureCognitiveSearchMemoryTests {
     @BeforeEach
     void setUp() {
 
-      String apiKey = "fake-key";
+        String apiKey = "fake-key";
         HttpPipeline pipeline = setUpHttpPipeline();
 
         SearchIndexAsyncClient searchIndexAsyncClient =
@@ -95,14 +96,18 @@ class AzureCognitiveSearchMemoryTests {
                                         .setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
                         .buildAsyncClient();
 
+        OpenAIAsyncClient openAIAsyncClient = Mockito.mock(OpenAIAsyncClient.class);
+
         kernel =
                 SKBuilders.kernel()
                         .withMemoryStorage(
-                            new AzureCognitiveSearchMemoryStore(
-                              searchIndexAsyncClient.getEndpoint(),
-                              apiKey
-                            )
-                        )
+                                new AzureCognitiveSearchMemoryStore(
+                                        searchIndexAsyncClient.getEndpoint(), apiKey))
+                        .withDefaultAIService(
+                                SKBuilders.textEmbeddingGeneration()
+                                        .withOpenAIClient(openAIAsyncClient)
+                                        .withModelId("fake-model-id")
+                                        .build())
                         .build();
     }
 

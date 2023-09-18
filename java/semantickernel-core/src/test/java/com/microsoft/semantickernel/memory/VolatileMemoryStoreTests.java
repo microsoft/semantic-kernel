@@ -102,7 +102,8 @@ class VolatileMemoryStoreTests {
                 "Should not be able to create collection with null name");
     }
 
-    @Test @Disabled("inconsistency between memory store implementations")
+    @Test
+    @Disabled("inconsistency between memory store implementations")
     void itCannotInsertIntoNonExistentCollectionAsync() {
 
         // Arrange
