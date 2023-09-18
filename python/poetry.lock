@@ -2494,13 +2494,13 @@ wandb = ["numpy", "openpyxl (>=3.0.7)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1
 
 [[package]]
 name = "openapi-core"
-version = "0.18.0"
+version = "0.18.1"
 description = "client-side and server-side support for the OpenAPI Specification v3"
 optional = false
 python-versions = ">=3.8.0,<4.0.0"
 files = [
-    {file = "openapi_core-0.18.0-py3-none-any.whl", hash = "sha256:7a9396797ba4163cea832e32be877e474229d12386c03a36920d56dd95bc915d"},
-    {file = "openapi_core-0.18.0.tar.gz", hash = "sha256:ede9fe3a2b0a7f8870249c085b2d7e64b7bb169b46ceeaa3b812cceff2b05548"},
+    {file = "openapi_core-0.18.1-py3-none-any.whl", hash = "sha256:603983137a2b954843ef4b85fa36e2d5cceaba50add44c1c2a5165ba5d2954b4"},
+    {file = "openapi_core-0.18.1.tar.gz", hash = "sha256:63fa13d9af226ac00119b0531ac9929e3dbb4cbe00216770784473fa6a03bc27"},
 ]
 
 [package.dependencies]
@@ -2520,7 +2520,7 @@ django = ["django (>=3.0)"]
 falcon = ["falcon (>=3.0)"]
 flask = ["flask"]
 requests = ["requests"]
-starlette = ["starlette (>=0.26.1,<0.29.0)"]
+starlette = ["starlette (>=0.26.1,<0.32.0)"]
 
 [[package]]
 name = "openapi-schema-validator"
