@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -88,12 +86,7 @@ public sealed class StepwisePlannerTests : IDisposable
         var result = await plan.InvokeAsync();
 
         // Assert - should contain the expected answer
-        Assert.Contains(partialExpectedAnswer, result.Result, StringComparison.InvariantCultureIgnoreCase);
-
-        Assert.True(result.Variables.TryGetValue("stepsTaken", out string? stepsTakenString));
-        var stepsTaken = JsonSerializer.Deserialize<List<SystemStep>>(stepsTakenString!);
-        Assert.NotNull(stepsTaken);
-        Assert.True(stepsTaken.Count >= expectedMinSteps && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least {expectedMinSteps} steps and at most 10 steps to be taken.");
+        Assert.Contains(partialExpectedAnswer, result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)

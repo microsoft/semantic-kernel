@@ -534,11 +534,12 @@ public class StepwisePlanner : IStepwisePlanner
 
             var actionContext = this.CreateActionContext(actionVariables);
 
-            var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
+            var functionResult = await function.InvokeAsync(actionContext).ConfigureAwait(false);
+            var result = functionResult.GetValue<string>();
 
-            this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
+            this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
 
-            return result.Result;
+            return result;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {

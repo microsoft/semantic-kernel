@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -16,12 +18,18 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     public bool IsRepeatRequested => this._repeatRequested;
 
     /// <summary>
+    /// Model results after function execution.
+    /// </summary>
+    public IReadOnlyCollection<ModelResult> ModelResults { get; private set; } = Array.Empty<ModelResult>();
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
     /// </summary>
     /// <param name="functionView">Function view details</param>
-    /// <param name="context">Context related to the event</param>
-    public FunctionInvokedEventArgs(FunctionView functionView, SKContext context) : base(functionView, context)
+    /// <param name="result">Function result</param>
+    public FunctionInvokedEventArgs(FunctionView functionView, FunctionResult result) : base(functionView, result.Context)
     {
+        this.ModelResults = result.ModelResults;
     }
 
     /// <summary>

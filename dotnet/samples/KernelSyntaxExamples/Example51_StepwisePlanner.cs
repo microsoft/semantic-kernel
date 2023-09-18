@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.Core;
 using Microsoft.SemanticKernel.Skills.Web;
@@ -147,7 +146,6 @@ public static class Example51_StepwisePlanner
             plannerConfig.MaxTokens = MaxTokens.Value;
         }
 
-        SKContext result;
         sw.Start();
 
         try
@@ -155,34 +153,18 @@ public static class Example51_StepwisePlanner
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
             var plan = planner.CreatePlan(question);
 
-            result = await plan.InvokeAsync(kernel.CreateNewContext());
+            var planResult = await plan.InvokeAsync(kernel.CreateNewContext());
+            var result = planResult.GetValue<string>();
 
-            if (result.Result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
+            if (result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine("Could not answer question in " + plannerConfig.MaxIterations + " iterations");
                 currentExecutionResult.answer = "Could not answer question in " + plannerConfig.MaxIterations + " iterations";
             }
             else
             {
-                Console.WriteLine("Result: " + result.Result);
-                currentExecutionResult.answer = result.Result;
-            }
-
-            if (result.Variables.TryGetValue("stepCount", out string? stepCount))
-            {
-                Console.WriteLine("Steps Taken: " + stepCount);
-                currentExecutionResult.stepsTaken = stepCount;
-            }
-
-            if (result.Variables.TryGetValue("skillCount", out string? skillCount))
-            {
-                Console.WriteLine("Skills Used: " + skillCount);
-            }
-
-            if (result.Variables.TryGetValue("iterations", out string? iterations))
-            {
-                Console.WriteLine("Iterations: " + iterations);
-                currentExecutionResult.iterations = iterations;
+                Console.WriteLine("Result: " + result);
+                currentExecutionResult.answer = result;
             }
         }
 #pragma warning disable CA1031

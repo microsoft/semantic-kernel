@@ -53,13 +53,13 @@ public sealed class WebSkillTests : IDisposable
         var search = kernel.ImportSkill(skill, "WebSearchEngine");
 
         // Act
-        SKContext result = await kernel.RunAsync(
+        KernelResult result = await kernel.RunAsync(
             prompt,
             search["Search"]
         );
 
         // Assert
-        Assert.Contains(expectedAnswerContains, result.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedAnswerContains, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

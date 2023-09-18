@@ -136,12 +136,12 @@ Jane: Goodbye!
         IDictionary<string, ISKFunction> conversationSummarySkill =
             kernel.ImportSkill(new ConversationSummarySkill(kernel));
 
-        SKContext summary = await kernel.RunAsync(
+        KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
             conversationSummarySkill["SummarizeConversation"]);
 
         Console.WriteLine("Generated Summary:");
-        Console.WriteLine(summary.Result);
+        Console.WriteLine(summary.GetValue<string>());
     }
 
     private static async Task GetConversationActionItemsAsync()
@@ -152,12 +152,12 @@ Jane: Goodbye!
         IDictionary<string, ISKFunction> conversationSummarySkill =
             kernel.ImportSkill(new ConversationSummarySkill(kernel));
 
-        SKContext summary = await kernel.RunAsync(
+        KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
             conversationSummarySkill["GetConversationActionItems"]);
 
         Console.WriteLine("Generated Action Items:");
-        Console.WriteLine(summary.Result);
+        Console.WriteLine(summary.GetValue<string>());
     }
 
     private static async Task GetConversationTopicsAsync()
@@ -168,12 +168,12 @@ Jane: Goodbye!
         IDictionary<string, ISKFunction> conversationSummarySkill =
             kernel.ImportSkill(new ConversationSummarySkill(kernel));
 
-        SKContext summary = await kernel.RunAsync(
+        KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
             conversationSummarySkill["GetConversationTopics"]);
 
         Console.WriteLine("Generated Topics:");
-        Console.WriteLine(summary.Result);
+        Console.WriteLine(summary.GetValue<string>());
     }
 
     private static IKernel InitializeKernel()

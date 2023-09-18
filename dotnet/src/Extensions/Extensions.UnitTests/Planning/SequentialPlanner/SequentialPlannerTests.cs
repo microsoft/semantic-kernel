@@ -47,7 +47,7 @@ public sealed class SequentialPlannerTests
                 .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, cancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
-                    return Task.FromResult(context);
+                    return Task.FromResult(new FunctionResult(context));
                 });
 
             skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
@@ -90,7 +90,7 @@ public sealed class SequentialPlannerTests
             default
         )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
-        ).Returns(() => Task.FromResult(returnContext));
+        ).Returns(() => Task.FromResult(new FunctionResult(returnContext, planString)));
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
@@ -173,7 +173,7 @@ public sealed class SequentialPlannerTests
             default
         )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
-        ).Returns(() => Task.FromResult(returnContext));
+        ).Returns(() => Task.FromResult(new FunctionResult(returnContext, planString)));
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);

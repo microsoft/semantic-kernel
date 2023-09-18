@@ -167,7 +167,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
             default
         )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
-        ).Returns(() => Task.FromResult(returnContext));
+        ).Returns(() => Task.FromResult(new FunctionResult(returnContext, testPlanString)));
 
         // Mock Skills
         kernel.Setup(x => x.Skills).Returns(skills.Object);
@@ -214,7 +214,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
                 .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
-                    return Task.FromResult(context);
+                    return Task.FromResult(new FunctionResult(context));
                 });
             skills.Setup(x => x.GetFunction(skillName, name))
                 .Returns(mockFunction.Object);

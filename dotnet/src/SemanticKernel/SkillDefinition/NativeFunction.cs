@@ -142,7 +142,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
@@ -203,12 +203,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> _function;
+    private NativeFunctionDelegate _function;
     private readonly ILogger _logger;
 
     private struct MethodDetails
     {
-        public Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> Function { get; set; }
+        public NativeFunctionDelegate Function { get; set; }
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -221,7 +221,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     internal NativeFunction(
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
+        NativeFunctionDelegate delegateFunction,
         IList<ParameterView> parameters,
         string skillName,
         string functionName,
@@ -319,7 +319,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     // Inspect a method and returns the corresponding delegate and related info
-    private static (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
+    private static (NativeFunctionDelegate function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
 
@@ -341,10 +341,10 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
 
         // Get marshaling func for the return value.
-        Func<object?, SKContext, Task<SKContext>> returnFunc = GetReturnValueMarshalerDelegate(method);
+        Func<object?, SKContext, Task<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> function = (_, _, context, cancellationToken) =>
+        NativeFunctionDelegate function = (_, _, context, cancellationToken) =>
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -517,7 +517,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{SKContext}"/> to return from the invocation.
     /// </summary>
-    private static Func<object?, SKContext, Task<SKContext>> GetReturnValueMarshalerDelegate(MethodInfo method)
+    private static Func<object?, SKContext, Task<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
     {
         // Handle each known return type for the method
         Type returnType = method.ReturnType;
@@ -526,7 +526,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (returnType == typeof(void))
         {
-            return static (result, context) => Task.FromResult(context);
+            return static (result, context) => Task.FromResult(new FunctionResult(context));
         }
 
         if (returnType == typeof(Task))
@@ -534,7 +534,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return async static (result, context) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return context;
+                return new FunctionResult(context);
             };
         }
 
@@ -543,7 +543,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return async static (result, context) =>
             {
                 await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return context;
+                return new FunctionResult(context);
             };
         }
 
@@ -551,17 +551,25 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (returnType == typeof(SKContext))
         {
-            return static (result, _) => Task.FromResult((SKContext)ThrowIfNullResult(result));
+            return static (result, _) => Task.FromResult(new FunctionResult((SKContext)ThrowIfNullResult(result)));
         }
 
         if (returnType == typeof(Task<SKContext>))
         {
-            return static (result, _) => (Task<SKContext>)ThrowIfNullResult(result);
+            return static async (result, _) =>
+            {
+                var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return new FunctionResult(context);
+            };
         }
 
         if (returnType == typeof(ValueTask<SKContext>))
         {
-            return static (result, context) => ((ValueTask<SKContext>)ThrowIfNullResult(result)).AsTask();
+            return static async (result, _) =>
+            {
+                var context = await ((ValueTask<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return new FunctionResult(context);
+            };
         }
 
         // string (which is special as no marshaling is required), either synchronous (string) or asynchronous (Task<string> / ValueTask<string>)
@@ -570,8 +578,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         {
             return static (result, context) =>
             {
-                context.Variables.Update((string?)result);
-                return Task.FromResult(context);
+                var resultString = (string?)result;
+                context.Variables.Update(resultString);
+                return Task.FromResult(new FunctionResult(context, resultString));
             };
         }
 
@@ -579,8 +588,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         {
             return async static (result, context) =>
             {
-                context.Variables.Update(await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
-                return context;
+                var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                context.Variables.Update(resultString);
+                return new FunctionResult(context, resultString);
             };
         }
 
@@ -588,8 +598,9 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         {
             return async static (result, context) =>
             {
-                context.Variables.Update(await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
-                return context;
+                var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                context.Variables.Update(resultString);
+                return new FunctionResult(context, resultString);
             };
         }
 
@@ -605,7 +616,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return (result, context) =>
             {
                 context.Variables.Update(formatter(result, context.Culture));
-                return Task.FromResult(context);
+                return Task.FromResult(new FunctionResult(context, result));
             };
         }
 
@@ -620,8 +631,11 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return async (result, context) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                context.Variables.Update(taskResultFormatter(taskResultGetter.Invoke(result!, Array.Empty<object>()), context.Culture));
-                return context;
+
+                var taskResult = taskResultGetter.Invoke(result!, Array.Empty<object>());
+
+                context.Variables.Update(taskResultFormatter(taskResult, context.Culture));
+                return new FunctionResult(context, taskResult);
             };
         }
 
@@ -636,8 +650,11 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             {
                 Task task = (Task)valueTaskAsTask.Invoke(ThrowIfNullResult(result), Array.Empty<object>());
                 await task.ConfigureAwait(false);
-                context.Variables.Update(asTaskResultFormatter(asTaskResultGetter.Invoke(task!, Array.Empty<object>()), context.Culture));
-                return context;
+
+                var taskResult = asTaskResultGetter.Invoke(task!, Array.Empty<object>());
+
+                context.Variables.Update(asTaskResultFormatter(taskResult, context.Culture));
+                return new FunctionResult(context, taskResult);
             };
         }
 

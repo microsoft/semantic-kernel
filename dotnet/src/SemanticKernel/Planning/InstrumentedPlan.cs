@@ -53,7 +53,7 @@ public sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
@@ -121,14 +121,14 @@ public sealed class InstrumentedPlan : IPlan
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async Task<SKContext> InvokeWithInstrumentationAsync(Func<Task<SKContext>> func)
+    private async Task<FunctionResult> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
     {
         this._logger.LogInformation("Plan execution started.");
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        SKContext result;
+        FunctionResult result;
 
         try
         {

@@ -95,7 +95,7 @@ public sealed class ActionPlanner : IActionPlanner
 
         this._context.Variables.Update(goal);
 
-        SKContext result = await this._plannerFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await this._plannerFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionPlanResponse? planData = this.ParsePlannerResult(result);
 
         if (planData == null)
@@ -248,11 +248,11 @@ Goal: tell me a joke.
     /// Native function that filters out good JSON from planner result in case additional text is present
     /// using a similar regex to the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions
     /// </summary>
-    /// <param name="plannerResult">Result context of planner function.</param>
+    /// <param name="plannerResult">Result of planner function.</param>
     /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
-    private ActionPlanResponse? ParsePlannerResult(SKContext plannerResult)
+    private ActionPlanResponse? ParsePlannerResult(FunctionResult plannerResult)
     {
-        Match match = PlanRegex.Match(plannerResult.ToString());
+        Match match = PlanRegex.Match(plannerResult.GetValue<string>());
 
         if (match.Success && match.Groups["Close"].Length > 0)
         {

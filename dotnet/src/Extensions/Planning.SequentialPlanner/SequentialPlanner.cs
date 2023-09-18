@@ -62,9 +62,11 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         this._context.Variables.Update(goal);
 
-        var planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        FunctionResult planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        string planResultString = planResult.Result.Trim();
+        string planResultString =
+            planResult.GetValue<string>()?.Trim() ??
+            throw new SKException($"Plan was not generated successfully.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
 
         var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
 

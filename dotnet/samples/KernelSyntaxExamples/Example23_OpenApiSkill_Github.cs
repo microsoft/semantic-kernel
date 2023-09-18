@@ -47,7 +47,7 @@ public static class Example23_OpenApiSkill_GitHub
         var result = await kernel.RunAsync(contextVariables, skill["PullsList"]);
 
         Console.WriteLine("Successful GitHub List Pull Requests skill response.");
-        var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.Result);
+        var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.GetValue<string>());
         var pullRequests = JArray.Parse((string)resultJson!["content"]);
 
         if (pullRequests != null && pullRequests.First != null)

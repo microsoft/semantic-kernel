@@ -67,7 +67,7 @@ public sealed class PlanTests : IDisposable
         var result = await target.RunAsync(cv, plan);
 
         // Assert
-        Assert.Equal(expectedBody, result.Result);
+        Assert.Equal(expectedBody, result.GetValue<string>());
     }
 
     [Theory]
@@ -89,7 +89,7 @@ public sealed class PlanTests : IDisposable
         var result = await target.RunAsync(cv, plan);
 
         // Assert
-        Assert.Equal(expectedBody, result.Result);
+        Assert.Equal(expectedBody, result.GetValue<string>());
     }
 
     [Theory]
@@ -113,8 +113,8 @@ public sealed class PlanTests : IDisposable
         var result = await target.RunAsync(cv, plan);
 
         // Assert
-        Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
-        Assert.True(expectedBody.Length < result.Result.Length);
+        Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(expectedBody.Length < result.GetValue<string>().Length);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class PlanTests : IDisposable
         Assert.NotNull(result);
         Assert.Equal(
             "Sent email to: something@email.com. Body: Roses are red, violets are blue, Roses are red, violets are blue, Roses are red, violets are blue, PlanInput is hard, so is this test. is hard, so is this test. is hard, so is this test.",
-            result.Result);
+            result.GetValue<string>());
     }
 
     [Theory]
@@ -370,8 +370,8 @@ public sealed class PlanTests : IDisposable
         var result = await target.RunAsync(inputToSummarize, plan);
 
         // Assert
-        Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
-        Assert.True(expectedBody.Length < result.Result.Length);
+        Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(expectedBody.Length < result.GetValue<string>().Length);
     }
 
     [Theory]
@@ -431,8 +431,8 @@ public sealed class PlanTests : IDisposable
         var result = await target.RunAsync(inputToSummarize, deserializedPlan);
 
         // Assert
-        Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
-        Assert.True(expectedBody.Length < result.Result.Length);
+        Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(expectedBody.Length < result.GetValue<string>().Length);
     }
 
     [Theory]
@@ -463,7 +463,7 @@ public sealed class PlanTests : IDisposable
         var result = await target.RunAsync(cv, plan);
 
         // Assert
-        Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedBody, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -494,7 +494,7 @@ public sealed class PlanTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal($"Sent email to: default@email.com. Body: Roses are red, violets are blue, {input} is hard, so is this test.", result.Result);
+        Assert.Equal($"Sent email to: default@email.com. Body: Roses are red, violets are blue, {input} is hard, so is this test.", result.GetValue<string>());
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)

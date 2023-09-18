@@ -219,7 +219,7 @@ public class CodeBlockTests
                 context.Variables["var1"] = "overridden";
                 context.Variables["var2"] = "overridden";
             })
-            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => new FunctionResult(inputcontext));
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -261,7 +261,7 @@ public class CodeBlockTests
             {
                 canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => new FunctionResult(inputcontext));
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -295,7 +295,7 @@ public class CodeBlockTests
             {
                 canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => new FunctionResult(inputcontext));
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -336,7 +336,7 @@ public class CodeBlockTests
                 foo = context!.Variables["foo"];
                 baz = context!.Variables["baz"];
             })
-            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => new FunctionResult(inputcontext));
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);

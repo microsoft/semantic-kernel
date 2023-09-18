@@ -22,11 +22,11 @@ public static class Example02_Pipeline
         // Load native skill
         var text = kernel.ImportSkill(new TextSkill());
 
-        SKContext result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
+        KernelResult result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
             text["TrimStart"],
             text["TrimEnd"],
             text["Uppercase"]);
 
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

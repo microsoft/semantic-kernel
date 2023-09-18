@@ -128,7 +128,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="chatSystemPrompt">When provided will be used to set the system prompt while using Chat Completions</param>
     /// <param name="serviceId">When provided will be used to select the AI service used</param>
     /// <returns>A function ready to use</returns>
-    public static Task<SKContext> InvokeSemanticFunctionAsync(
+    public static Task<KernelResult> InvokeSemanticFunctionAsync(
         this IKernel kernel,
         string promptTemplate,
         string? functionName = null,

@@ -125,7 +125,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
         try
         {
-            contextClone = await function!.InvokeAsync(contextClone).ConfigureAwait(false);
+            await function!.InvokeAsync(contextClone).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

@@ -98,7 +98,7 @@ internal static class Example12_SequentialPlanner
         var result = await kernel.RunAsync(plan);
 
         Console.WriteLine("Result:");
-        Console.WriteLine(result.Result);
+        Console.WriteLine(result.GetValue<string>());
     }
 
     private static async Task EmailSamplesWithRecallAsync()
@@ -186,7 +186,7 @@ internal static class Example12_SequentialPlanner
             var result = await kernel.RunAsync(newInput, restoredPlan);
 
             Console.WriteLine("Result:");
-            Console.WriteLine(result.Result);
+            Console.WriteLine(result.GetValue<string>());
         }
     }
 

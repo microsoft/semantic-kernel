@@ -29,45 +29,45 @@ public class MathSkillTests
     }
 
     [Theory]
-    [InlineData("10", "10", "20")]
-    [InlineData("0", "10", "10")]
-    [InlineData("0", "-10", "-10")]
-    [InlineData("10", "0", "10")]
-    [InlineData("-1", "10", "9")]
-    [InlineData("-10", "10", "0")]
-    [InlineData("-192", "13", "-179")]
-    [InlineData("-192", "-13", "-205")]
-    public async Task AddWhenValidParametersShouldSucceedAsync(string initialValue, string amount, string expectedResult)
+    [InlineData(10, 10, 20)]
+    [InlineData(0, 10, 10)]
+    [InlineData(0, -10, -10)]
+    [InlineData(10, 0, 10)]
+    [InlineData(-1, 10, 9)]
+    [InlineData(-10, 10, 0)]
+    [InlineData(-192, 13, -179)]
+    [InlineData(-192, -13, -205)]
+    public async Task AddWhenValidParametersShouldSucceedAsync(int initialValue, int amount, int expectedResult)
     {
         // Arrange
         var target = new MathSkill();
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", amount));
+        var result = await FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", amount));
 
         // Assert
-        Assert.Equal(expectedResult, context.Variables.Input);
+        Assert.Equal(expectedResult, result.GetValue<int>());
     }
 
     [Theory]
-    [InlineData("10", "10", "0")]
-    [InlineData("0", "10", "-10")]
-    [InlineData("10", "0", "10")]
-    [InlineData("100", "-10", "110")]
-    [InlineData("100", "102", "-2")]
-    [InlineData("-1", "10", "-11")]
-    [InlineData("-10", "10", "-20")]
-    [InlineData("-192", "13", "-205")]
-    public async Task SubtractWhenValidParametersShouldSucceedAsync(string initialValue, string amount, string expectedResult)
+    [InlineData(10, 10, 0)]
+    [InlineData(0, 10, -10)]
+    [InlineData(10, 0, 10)]
+    [InlineData(100, -10, 110)]
+    [InlineData(100, 102, -2)]
+    [InlineData(-1, 10, -11)]
+    [InlineData(-10, 10, -20)]
+    [InlineData(-192, 13, -205)]
+    public async Task SubtractWhenValidParametersShouldSucceedAsync(int initialValue, int amount, int expectedResult)
     {
         // Arrange
         var target = new MathSkill();
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", amount));    // Assert
+        var result = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", amount));    // Assert
 
         // Assert
-        Assert.Equal(expectedResult, context.Variables.Input);
+        Assert.Equal(expectedResult, result.GetValue<int>());
     }
 
     [Theory]

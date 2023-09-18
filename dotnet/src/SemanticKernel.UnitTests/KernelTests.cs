@@ -52,31 +52,6 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
-    {
-        // Arrange
-        var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("x", factory.Object)
-            .Build();
-
-        var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
-        var skill = kernel.ImportSkill(nativeSkill, "mySk");
-
-        // Act
-        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
-
-        // Assert - 3 functions, var name is not case sensitive
-        Assert.Equal("Nice fun", result.Variables["jk.joker"]);
-        Assert.Equal("Nice fun", result.Variables["JK.JOKER"]);
-        Assert.Equal("Just say hello", result.Variables["mySk.sayhello"]);
-        Assert.Equal("Just say hello", result.Variables["mySk.SayHello"]);
-        Assert.Equal("Export info.", result.Variables["mySk.ReadSkillCollectionAsync"]);
-        Assert.Equal("Export info.", result.Variables["mysk.readskillcollectionasync"]);
-    }
-
-    [Fact]
     public async Task RunAsyncDoesNotRunWhenCancelledAsync()
     {
         // Arrange
@@ -102,10 +77,10 @@ public class KernelTests
         using CancellationTokenSource cts = new();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, kernel.Skills.GetFunction("mySk", "GetAnyValue"));
+        KernelResult result = await kernel.RunAsync(cts.Token, kernel.Skills.GetFunction("mySk", "GetAnyValue"));
 
         // Assert
-        Assert.False(string.IsNullOrEmpty(result.Result));
+        Assert.False(string.IsNullOrEmpty(result.GetValue<string>()));
     }
 
     [Fact]
@@ -305,7 +280,7 @@ public class KernelTests
 
         // Assert
         Assert.True(invoked);
-        Assert.Equal(input, result.Result);
+        Assert.Equal(input, result.GetValue<string>());
     }
 
     [Fact]
@@ -436,20 +411,20 @@ public class KernelTests
         var semanticFunction = sut.CreateSemanticFunction(prompt);
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
+
         var originalInput = "Importance";
         var newInput = "Problems";
 
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            e.SKContext.Variables.Update(newInput);
-            e.SKContext.Variables.TryAdd("new", newInput);
+            originalInput = newInput;
         };
 
         // Act
-        var context = await sut.RunAsync(originalInput, semanticFunction);
+        await sut.RunAsync(originalInput, semanticFunction);
 
         // Assert
-        Assert.Equal(context.Variables["new"], newInput);
+        Assert.Equal(newInput, originalInput);
     }
 
     [Fact]
@@ -460,19 +435,20 @@ public class KernelTests
         var semanticFunction = sut.CreateSemanticFunction(prompt);
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
+
         var originalInput = "Importance";
         var newInput = "Problems";
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            e.SKContext.Variables.Update(newInput);
+            originalInput = newInput;
         };
 
         // Act
-        var context = await sut.RunAsync(originalInput, semanticFunction);
+        await sut.RunAsync(originalInput, semanticFunction);
 
         // Assert
-        Assert.Equal(context.Variables.Input, newInput);
+        Assert.Equal(newInput, originalInput);
     }
 
     public class MySkill

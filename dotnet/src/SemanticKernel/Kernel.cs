@@ -155,38 +155,40 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ISKFunction skFunction,
+    public Task<KernelResult> RunAsync(ISKFunction skFunction,
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default)
         => this.RunAsync(variables ?? new(), cancellationToken, skFunction);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(string input, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(input), pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
         => this.RunAsync(variables, CancellationToken.None, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = new SKContext(
             variables,
             this._skillCollection,
             this.LoggerFactory);
+
+        var functionResult = new FunctionResult(context, variables.Input);
 
         int pipelineStepCount = 0;
         foreach (ISKFunction skFunction in pipeline)
@@ -211,9 +213,11 @@ repeat:
                     continue;
                 }
 
-                context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, context);
+                context = functionResult.Context;
+
+                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
@@ -235,7 +239,7 @@ repeat:
             pipelineStepCount++;
         }
 
-        return context;
+        return KernelResult.FromFunctionResult(functionResult);
     }
 
     /// <inheritdoc/>
@@ -302,13 +306,13 @@ repeat:
     /// Execute the OnFunctionInvoked event handlers.
     /// </summary>
     /// <param name="functionView">Function view details</param>
-    /// <param name="context">SKContext after function invocation</param>
+    /// <param name="result">Function result after invocation</param>
     /// <returns>FunctionInvokedEventArgs if the event was handled, null otherwise</returns>
-    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, SKContext context)
+    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, FunctionResult result)
     {
         if (this.FunctionInvoked is not null)
         {
-            var args = new FunctionInvokedEventArgs(functionView, context);
+            var args = new FunctionInvokedEventArgs(functionView, result);
             this.FunctionInvoked.Invoke(this, args);
 
             return args;

@@ -256,7 +256,7 @@ public sealed class Plan : IPlan
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            var resultValue = result.Result.Trim();
+            var resultValue = result.Context.Result.Trim();
 
             #region Update State
 
@@ -279,7 +279,7 @@ public sealed class Plan : IPlan
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Variables.TryGetValue(item, out string? val))
+                if (result.Context.Variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -331,20 +331,23 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
+        var result = new FunctionResult(context);
+
         if (this.Function is not null)
         {
             AddVariablesToContext(this.State, context);
-            var result = await this.Function
+
+            result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, settings, cancellationToken)
                 .ConfigureAwait(false);
 
-            context.Variables.Update(result.Result);
+            context.Variables.Update(result.Context.Result);
         }
         else
         {
@@ -357,7 +360,7 @@ public sealed class Plan : IPlan
             }
         }
 
-        return context;
+        return result;
     }
 
     /// <inheritdoc/>

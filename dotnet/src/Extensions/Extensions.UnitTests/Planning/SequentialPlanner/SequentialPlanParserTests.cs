@@ -70,10 +70,10 @@ public class SequentialPlanParserTests
             var mockFunction = CreateMockFunction(functionView);
             functionsView.AddFunction(functionView);
 
-            var result = this.CreateSKContext(kernel);
-            result.Variables.Update(resultString);
+            var context = this.CreateSKContext(kernel);
+            context.Variables.Update(resultString);
             mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(result);
+                .ReturnsAsync(new FunctionResult(context));
 
             if (string.IsNullOrEmpty(name))
             {

@@ -87,7 +87,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
@@ -195,7 +195,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
     }
 
-    private async Task<SKContext> RunPromptAsync(
+    private async Task<FunctionResult> RunPromptAsync(
         ITextCompletion? client,
         CompleteRequestSettings? requestSettings,
         SKContext context,
@@ -203,6 +203,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         Verify.NotNull(client);
         Verify.NotNull(requestSettings);
+
+        FunctionResult result;
 
         try
         {
@@ -213,7 +215,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             // Update the result with the completion
             context.Variables.Update(completion);
 
-            context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
+            result = new FunctionResult(context, completion);
+
+            result.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
@@ -221,7 +225,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             throw;
         }
 
-        return context;
+        return result;
     }
 
     #endregion
