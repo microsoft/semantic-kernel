@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
 
@@ -36,7 +36,7 @@ public static class Example06_TemplateLanguage
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimePlugin(), "time");
 
         // Semantic Function invoking time.Date and time.Time native functions
         const string FunctionDefinition = @"

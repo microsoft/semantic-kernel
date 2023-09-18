@@ -180,7 +180,7 @@ FileIOSkill.WriteAsync
 Parameter ""path"": Destination file. (default value: sample.txt)
 Parameter ""content"": File content.
 // Get the current time.
-TimeSkill.Time
+TimePlugin.Time
 No parameters.
 // Makes a POST request to a uri.
 HttpSkill.PostAsync
@@ -214,7 +214,7 @@ Goal: create a file called ""something.txt"".
 [EXAMPLE]
 - List of functions:
 // Get the current time.
-TimeSkill.Time
+TimePlugin.Time
 No parameters.
 // Write a file.
 FileIOSkill.WriteAsync

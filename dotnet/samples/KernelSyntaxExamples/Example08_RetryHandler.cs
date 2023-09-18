@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Reliability.Basic;
-using Microsoft.SemanticKernel.Skills.Core;
 using Polly;
 using RepoUtils;
 
@@ -110,7 +110,7 @@ public static class Example08_RetryHandler
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
 
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimePlugin(), "time");
 
         var qaSkill = kernel.ImportSemanticSkillFromDirectory(
             folder,

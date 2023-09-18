@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 
-internal static class Example13_ConversationSummarySkill
+internal static class Example13_ConversationSummaryPlugin
 {
     private const string ChatTranscript =
         @"
@@ -123,18 +123,18 @@ Jane: Goodbye!
 
     public static async Task RunAsync()
     {
-        await ConversationSummarySkillAsync();
+        await ConversationSummaryPluginAsync();
         await GetConversationActionItemsAsync();
         await GetConversationTopicsAsync();
     }
 
-    private static async Task ConversationSummarySkillAsync()
+    private static async Task ConversationSummaryPluginAsync()
     {
         Console.WriteLine("======== SampleSkills - Conversation Summary Skill - Summarize ========");
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummarySkill(kernel));
+            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
@@ -150,7 +150,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummarySkill(kernel));
+            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
@@ -166,7 +166,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummarySkill(kernel));
+            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,

@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Skills;
 
-public sealed class StaticTextSkill
+public sealed class StaticTextPlugin
 {
     [SKFunction, Description("Change all string chars to uppercase")]
     public static string Uppercase([Description("Text to uppercase")] string input) =>

@@ -42,12 +42,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\Skills.Core\Skills.Core.csproj" />
-    <ProjectReference Include="..\Skills.Document\Skills.Document.csproj" />
     <ProjectReference Include="..\Skills.Grpc\Skills.Grpc.csproj" />
-    <ProjectReference Include="..\Skills.MsGraph\Skills.MsGraph.csproj" />
     <ProjectReference Include="..\Skills.OpenAPI\Skills.OpenAPI.csproj" />
-    <ProjectReference Include="..\Skills.Web\Skills.Web.csproj" />
   </ItemGroup>
 
 </Project>
