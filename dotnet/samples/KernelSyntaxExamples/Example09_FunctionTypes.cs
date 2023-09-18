@@ -21,7 +21,7 @@ public static class Example09_FunctionTypes
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var fakeContext = new SKContext(kernel, loggerFactory: ConsoleLogger.LoggerFactory);
+        var fakeContext = new SKContext(kernel);
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
         var test = kernel.ImportSkill(new LocalExampleSkill(), "test");

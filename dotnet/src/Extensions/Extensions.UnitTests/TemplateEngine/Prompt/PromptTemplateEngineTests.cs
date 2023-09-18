@@ -390,7 +390,6 @@ public sealed class PromptTemplateEngineTests
         return new SKContext(
             this._kernel.Object,
             this._variables,
-            skills: this._skills.Object,
-            loggerFactory: TestConsoleLogger.LoggerFactory);
+            skills: this._skills.Object);
     }
 }

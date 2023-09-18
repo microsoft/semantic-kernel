@@ -97,7 +97,6 @@ public static class SKFunctionExtensions
     /// <param name="skills">Skills that the function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
@@ -106,10 +105,9 @@ public static class SKFunctionExtensions
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
         CompleteRequestSettings? settings = null,
-        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        var context = new SKContext(kernel, variables, skills, loggerFactory)
+        var context = new SKContext(kernel, variables, skills)
         {
             Culture = culture!
         };
@@ -126,7 +124,6 @@ public static class SKFunctionExtensions
     /// <param name="skills">Skills that the function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="settings">LLM completion settings (for semantic functions only)</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function execution</returns>
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
@@ -135,9 +132,8 @@ public static class SKFunctionExtensions
         IReadOnlySkillCollection? skills = null,
         CultureInfo? culture = null,
         CompleteRequestSettings? settings = null,
-        ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
-        => function.InvokeAsync(kernel, new ContextVariables(input), skills, culture, settings, loggerFactory, cancellationToken);
+        => function.InvokeAsync(kernel, new ContextVariables(input), skills, culture, settings, cancellationToken);
 
     /// <summary>
     /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.

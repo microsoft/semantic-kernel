@@ -158,8 +158,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
 
         var context = new SKContext(
             kernel.Object,
-            skills: skills.Object,
-            loggerFactory: kernel.Object.LoggerFactory
+            skills: skills.Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();

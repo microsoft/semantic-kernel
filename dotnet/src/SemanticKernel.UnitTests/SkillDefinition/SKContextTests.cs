@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -16,13 +15,11 @@ namespace SemanticKernel.UnitTests.SkillDefinition;
 public class SKContextTests
 {
     private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly Mock<ILoggerFactory> _logger;
     private readonly Mock<IKernel> _kernel;
 
     public SKContextTests()
     {
         this._skills = new Mock<IReadOnlySkillCollection>();
-        this._logger = new Mock<ILoggerFactory>();
         this._kernel = new Mock<IKernel>();
     }
 
@@ -31,7 +28,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(this._kernel.Object, variables, skills: this._skills.Object, loggerFactory: this._logger.Object);
+        var target = new SKContext(this._kernel.Object, variables, skills: this._skills.Object);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -55,7 +52,7 @@ public class SKContextTests
         // Arrange
         IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
         this._skills.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
-        var target = new SKContext(this._kernel.Object, new ContextVariables(), this._skills.Object, this._logger.Object);
+        var target = new SKContext(this._kernel.Object, new ContextVariables(), this._skills.Object);
         Assert.NotNull(target.Skills);
 
         // Act

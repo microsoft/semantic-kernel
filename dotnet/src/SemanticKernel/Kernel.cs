@@ -240,8 +240,7 @@ repeat:
     {
         return new SKContext(
             this,
-            skills: this._skillCollection,
-            loggerFactory: this.LoggerFactory);
+            skills: this._skillCollection);
     }
 
     /// <inheritdoc/>

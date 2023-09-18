@@ -64,15 +64,13 @@ public sealed class SequentialPlannerTests
         var context = new SKContext(
             kernel.Object,
             new ContextVariables(),
-            skills.Object,
-            new Mock<ILoggerFactory>().Object
+            skills.Object
         );
 
         var returnContext = new SKContext(
             kernel.Object,
             new ContextVariables(),
-            skills.Object,
-            new Mock<ILoggerFactory>().Object
+            skills.Object
         );
         var planString =
             @"
@@ -159,15 +157,13 @@ public sealed class SequentialPlannerTests
         var returnContext = new SKContext(
             kernel.Object,
             new ContextVariables(planString),
-            skills.Object,
-            new Mock<ILoggerFactory>().Object
+            skills.Object
         );
 
         var context = new SKContext(
             kernel.Object,
             new ContextVariables(),
-            skills.Object,
-            new Mock<ILoggerFactory>().Object
+            skills.Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();

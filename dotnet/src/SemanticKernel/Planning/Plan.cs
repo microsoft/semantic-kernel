@@ -230,8 +230,7 @@ public sealed class Plan : IPlan
         var context = new SKContext(
             kernel,
             variables,
-            kernel.Skills,
-            kernel.LoggerFactory);
+            kernel.Skills);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -253,7 +252,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills, context.LoggerFactory);
+            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 

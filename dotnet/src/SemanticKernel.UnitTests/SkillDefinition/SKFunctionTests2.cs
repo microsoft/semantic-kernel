@@ -911,7 +911,6 @@ public sealed class SKFunctionTests2
         return new SKContext(
             this._kernel.Object,
             new ContextVariables(input),
-            skills: this._skills.Object,
-            loggerFactory: this._logger.Object);
+            skills: this._skills.Object);
     }
 }

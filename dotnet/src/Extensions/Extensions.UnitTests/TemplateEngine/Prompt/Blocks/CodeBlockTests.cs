@@ -32,7 +32,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var context = new SKContext(this._kernel.Object, skills: this._skills.Object, loggerFactory: this._logger);
+        var context = new SKContext(this._kernel.Object, skills: this._skills.Object);
         this._skills.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._logger);
 
@@ -44,7 +44,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(this._kernel.Object, skills: this._skills.Object, loggerFactory: this._logger);
+        var context = new SKContext(this._kernel.Object, skills: this._skills.Object);
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))

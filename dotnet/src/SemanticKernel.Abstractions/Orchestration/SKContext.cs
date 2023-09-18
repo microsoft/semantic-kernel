@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SkillDefinition;
 
@@ -74,20 +73,17 @@ public sealed class SKContext
     /// <param name="kernel">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="skills">Skills to include in context.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public SKContext(
         IKernel kernel,
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null,
-        ILoggerFactory? loggerFactory = null)
+        IReadOnlySkillCollection? skills = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
 
-        // 
         this._originalKernel = kernel;
         this.Variables = variables ?? new();
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this.LoggerFactory = kernel.LoggerFactory;
         this._culture = CultureInfo.CurrentCulture;
     }
 
@@ -98,7 +94,7 @@ public sealed class SKContext
     /// <param name="variables">Context variables to include in context.</param>
     public SKContext(
         IKernel kernel,
-        ContextVariables? variables = null) : this(kernel, variables, kernel.Skills, kernel.LoggerFactory)
+        ContextVariables? variables = null) : this(kernel, variables, kernel.Skills)
     {
     }
 
@@ -109,7 +105,7 @@ public sealed class SKContext
     /// <param name="skills">Skills to include in context.</param>
     public SKContext(
         IKernel kernel,
-        IReadOnlySkillCollection? skills = null) : this(kernel, null, skills, kernel.LoggerFactory)
+        IReadOnlySkillCollection? skills = null) : this(kernel, null, skills)
     {
     }
 
@@ -117,21 +113,7 @@ public sealed class SKContext
     /// Constructor for the context.
     /// </summary>
     /// <param name="kernel">Kernel instance parameter</param>
-    public SKContext(IKernel kernel) : this(kernel, null, kernel.Skills, kernel.LoggerFactory)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
-    public SKContext(
-        IKernel kernel,
-        ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null)
-        : this(kernel, variables, skills, kernel.LoggerFactory)
+    public SKContext(IKernel kernel) : this(kernel, null, kernel.Skills)
     {
     }
 
