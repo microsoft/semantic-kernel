@@ -232,7 +232,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
 
         var properties = payload.Properties;
         Assert.NotNull(properties);
-        Assert.Equal(0, properties.Count);
+        Assert.Empty(properties);
     }
 
     [Fact]
