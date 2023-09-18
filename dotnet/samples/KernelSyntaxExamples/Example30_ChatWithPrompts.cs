@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
 using Resources;
@@ -69,7 +69,7 @@ public static class Example30_ChatWithPrompts
 
         // As an example, we import the time skill, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimePlugin(), "time");
 
         // We need a kernel context to store some information to pass to the prompts and the list
         // of available skills needed to render prompt templates.
