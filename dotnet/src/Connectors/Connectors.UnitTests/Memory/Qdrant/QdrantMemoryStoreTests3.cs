@@ -264,7 +264,7 @@ public class QdrantMemoryStoreTests3
                 var result = await client.GetVectorByPayloadIdAsync(payloadId, metadataId);
 
                 //Assert
-                Assert.Equal<string>(result!.PointId, expectedId.ToString(CultureInfo.InvariantCulture));
+                Assert.Equal(result!.PointId, expectedId.ToString(CultureInfo.InvariantCulture));
             }
         }
     }

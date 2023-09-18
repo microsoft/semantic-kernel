@@ -339,26 +339,21 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
         for (int i = 0; i < nbConcurrentCalls; i++)
         {
-            tasks.Add(Task.Run(() =>
+            tasks.Add(Task.FromResult(sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
             {
-                var localResponse = sut.CompleteStreamAsync(requestMessage, new CompleteRequestSettings()
-                {
-                    Temperature = 0.01,
-                    MaxTokens = 7,
-                    TopP = 0.1,
-                }, cancellationToken: cleanupToken.Token);
-                return localResponse;
-            }));
+                Temperature = 0.01,
+                MaxTokens = 7,
+                TopP = 0.1,
+            }, cancellationToken: cleanupToken.Token)));
         }
 
         var callEnumerationTasks = new List<Task<List<string>>>();
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        foreach (var callTask in tasks)
+        foreach (var completion in results)
         {
             callEnumerationTasks.AddRange(Enumerable.Range(0, nbConcurrentEnumeration).Select(_ => Task.Run(async () =>
             {
-                var completion = await callTask.ConfigureAwait(false);
                 var result = new List<string>();
                 await foreach (var chunk in completion)
                 {

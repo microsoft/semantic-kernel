@@ -749,7 +749,7 @@ public class RedisMemoryStoreTests
             // Act
             await store.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);
         });
-        Assert.Equal(ex.Message, "Invalid or missing vector score value.");
+        Assert.Equal("Invalid or missing vector score value.", ex.Message);
     }
 
     #region private

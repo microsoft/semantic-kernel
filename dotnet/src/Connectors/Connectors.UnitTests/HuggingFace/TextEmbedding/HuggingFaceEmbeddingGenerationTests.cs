@@ -128,7 +128,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
         //Assert
 
         Assert.NotNull(embeddings);
-        Assert.Equal(1, embeddings.Count);
+        Assert.Single(embeddings);
         Assert.Equal(8, embeddings.First().Length);
     }
 
