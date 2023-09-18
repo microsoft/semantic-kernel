@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#pragma warning disable CA1510 // Use 'ArgumentNullException.ThrowIfNull' (.NET 8)
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
 
 // Used for compatibility with System.Linq.Async Nuget pkg
 namespace System.Linq;
