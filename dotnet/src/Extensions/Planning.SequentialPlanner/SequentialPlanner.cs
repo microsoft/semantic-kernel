@@ -18,6 +18,7 @@ namespace Microsoft.SemanticKernel.Planning;
 public sealed class SequentialPlanner : ISequentialPlanner
 {
     private const string StopSequence = "<!-- END -->";
+    private const string AvailableFunctionsKey = "available_functions";
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
@@ -59,7 +60,10 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         string relevantFunctionsManual = await this._kernel.CreateNewContext().GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
 
-        ContextVariables vars = new(goal) { ["available_functions"] = relevantFunctionsManual };
+        ContextVariables vars = new(goal)
+        {
+            [AvailableFunctionsKey] = relevantFunctionsManual
+        };
 
         var planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
 

@@ -515,7 +515,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private async Task<string> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables, CancellationToken cancellationToken)
     {
-        var availableFunctions = await this.GetAvailableFunctionsAsync().ConfigureAwait(false);
+        var availableFunctions = await this.GetAvailableFunctionsAsync(cancellationToken).ConfigureAwait(false);
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
         if (targetFunction == null)
         {
@@ -560,7 +560,7 @@ public class StepwisePlanner : IStepwisePlanner
         return functionDescriptions;
     }
 
-    private Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync()
+    private Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(CancellationToken cancellationToken)
     {
         if (this.Config.GetAvailableFunctionsAsync is null)
         {
@@ -580,7 +580,7 @@ public class StepwisePlanner : IStepwisePlanner
             return Task.FromResult(availableFunctions);
         }
 
-        return this.Config.GetAvailableFunctionsAsync(this.Config, null, CancellationToken.None);
+        return this.Config.GetAvailableFunctionsAsync(this.Config, null, cancellationToken);
     }
 
     private ContextVariables CreateActionContextVariables(Dictionary<string, string> actionVariables)
