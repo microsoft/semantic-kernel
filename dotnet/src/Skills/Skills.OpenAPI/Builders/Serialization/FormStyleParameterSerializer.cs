@@ -7,15 +7,20 @@ using System.Web;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Query;
+namespace Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Serialization;
 
 /// <summary>
-/// Serializes REST API operation query string parameters of the 'Form' style.
+/// Serializes REST API operation parameter of the 'Form' style.
 /// </summary>
-internal class FormStyleQueryParametersSerializer : IQueryStringParameterSerializer
+internal class FormStyleParameterSerializer
 {
-    /// <inheritdoc/>
-    public string Serialize(RestApiOperationParameter parameter, string argument)
+    /// <summary>
+    /// Serializes a REST API operation `Form` style parameter.
+    /// </summary>
+    /// <param name="parameter">The REST API operation parameter to serialize.</param>
+    /// <param name="argument">The parameter argument.</param>
+    /// <returns>The serialized parameter.</returns>
+    public static string Serialize(RestApiOperationParameter parameter, string argument)
     {
         const string ArrayType = "array";
 
@@ -40,11 +45,11 @@ internal class FormStyleQueryParametersSerializer : IQueryStringParameterSeriali
     }
 
     /// <summary>
-    /// Serializes a query string parameter of array type.
+    /// Serializes an array-type parameter.
     /// </summary>
     /// <seealso cref="https://swagger.io/docs/specification/serialization/"/>
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
-    /// <param name="argument">The argument value as a JSON array.</param>
+    /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
     private static string SerializeArrayParameter(RestApiOperationParameter parameter, string argument)
     {
@@ -55,7 +60,7 @@ internal class FormStyleQueryParametersSerializer : IQueryStringParameterSeriali
 
         if (parameter.Explode)
         {
-            return SerializeArrayItemsAsSeparateParameters(parameter.Name, array);  //id=1&id=2&id=3
+            return SerializeArrayItemsAsSeparateParameters(parameter.Name, array);              //id=1&id=2&id=3
         }
 
         return SerializeArrayItemsAsParameterWithCommaSeparatedValues(parameter.Name, array);   //id=1,2,3
@@ -69,19 +74,14 @@ internal class FormStyleQueryParametersSerializer : IQueryStringParameterSeriali
     /// <returns>A string containing the serialized parameters in the format "name=item1&name=item2&...".</returns>
     private static string SerializeArrayItemsAsSeparateParameters(string name, JsonArray array)
     {
-        var segments = HttpUtility.ParseQueryString(string.Empty);
+        var segments = new List<string>();
 
         foreach (var item in array)
         {
-            if (item == null)
-            {
-                continue; // It's not clear how to handle null array items. Skipping them for now until we have more information to make an informed decision.
-            }
-
-            segments.Add(name, item.ToString());
+            segments.Add($"{name}={HttpUtility.UrlEncode(item?.ToString())}");
         }
 
-        return segments.ToString(); //id=1&id=2&id=3
+        return string.Join("&", segments); ; //id=1&id=2&id=3
     }
 
     /// <summary>
@@ -93,20 +93,14 @@ internal class FormStyleQueryParametersSerializer : IQueryStringParameterSeriali
     private static string SerializeArrayItemsAsParameterWithCommaSeparatedValues(string name, JsonArray array)
     {
         const string ValuesSeparator = ",";
-        const string NameValuesSeparator = "=";
 
         var values = new List<string>();
 
         foreach (var item in array)
         {
-            if (item == null)
-            {
-                continue; // It's not clear how to handle null array items. Skipping them for now until we have more information to make an informed decision.
-            }
-
-            values.Add(HttpUtility.UrlEncode(item.ToString()));
+            values.Add(HttpUtility.UrlEncode(item?.ToString()));
         }
 
-        return $"{name}{NameValuesSeparator}{string.Join(ValuesSeparator, values)}"; //id=1,2,3
+        return $"{name}={string.Join(ValuesSeparator, values)}"; //id=1,2,3
     }
 }

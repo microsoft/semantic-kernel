@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Serialization;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 
 namespace Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Query;
@@ -15,9 +17,9 @@ internal class QueryStringBuilder : IQueryStringBuilder
     /// <summary>
     /// Query string parameter serializers.
     /// </summary>
-    private static Dictionary<RestApiOperationParameterStyle, IQueryStringParameterSerializer> s_queryStringParameterSerializers = new()
+    private static Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_queryStringParameterSerializers = new()
     {
-        { RestApiOperationParameterStyle.Form, new FormStyleQueryParametersSerializer() }
+        { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize }
     };
 
     ///<inheritdoc/>
@@ -45,11 +47,11 @@ internal class QueryStringBuilder : IQueryStringBuilder
 
             if (!s_queryStringParameterSerializers.TryGetValue(parameterStyle, out var serializer))
             {
-                throw new SKException($"The query string parameter `{parameterStyle}` serializatoin style is not supported.");
+                throw new SKException($"The query string parameter `{parameterStyle}` serialization style is not supported.");
             }
 
             //Serializing the parameter and adding it to the query string if there's an argument for it.
-            segments.Add(serializer.Serialize(parameter, argument));
+            segments.Add(serializer.Invoke(parameter, argument));
         }
 
         return string.Join("&", segments);

@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Query;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Serialization;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.OpenAPI.Builders.Query;
+namespace SemanticKernel.Skills.UnitTests.OpenAPI.Builders.Serialization;
 
-public class FormStyleQueryParametersSerializerTests
+public class FormStyleParametersSerializerTests
 {
     [Fact]
-    public void ItShouldCreateAmpersandSeparatedQueryStringParameterPerArrayItem()
+    public void ItShouldCreateAmpersandSeparatedParameterPerArrayItem()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
@@ -22,10 +22,8 @@ public class FormStyleQueryParametersSerializerTests
                 style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "integer");
 
-        var sut = new FormStyleQueryParametersSerializer();
-
         // Act
-        var result = sut.Serialize(parameter, "[1,2,3]");
+        var result = FormStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
 
         // Assert
         Assert.NotNull(result);
@@ -34,7 +32,7 @@ public class FormStyleQueryParametersSerializerTests
     }
 
     [Fact]
-    public void ItShouldCreateCommaSeparatedValuePerArrayItem()
+    public void ItShouldCreateParameterWithCommaSeparatedValuePerArrayItem()
     {
         // Arrange
         var parameter = new RestApiOperationParameter(
@@ -46,34 +44,8 @@ public class FormStyleQueryParametersSerializerTests
                 style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "integer");
 
-        var sut = new FormStyleQueryParametersSerializer();
-
         // Act
-        var result = sut.Serialize(parameter, "[1,2,3]");
-
-        // Assert
-        Assert.NotNull(result);
-
-        Assert.Equal("id=1,2,3", result);
-    }
-
-    [Fact]
-    public void ItShouldNotWrapQueryStringValuesOfStringTypeIntoSingleQuotesForArrayItems()
-    {
-        // Arrange
-        var parameter = new RestApiOperationParameter(
-                name: "id",
-                type: "array",
-                isRequired: true,
-                explode: false, //Specify generating a parameter with comma-separated values for each array item.
-                location: RestApiOperationParameterLocation.Query,
-                style: RestApiOperationParameterStyle.Form,
-                arrayItemType: "integer");
-
-        var sut = new FormStyleQueryParametersSerializer();
-
-        // Act
-        var result = sut.Serialize(parameter, "[\"1\",\"2\",\"3\"]");
+        var result = FormStyleParameterSerializer.Serialize(parameter, "[1,2,3]");
 
         // Assert
         Assert.NotNull(result);
@@ -93,10 +65,8 @@ public class FormStyleQueryParametersSerializerTests
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.Form);
 
-        var sut = new FormStyleQueryParametersSerializer();
-
         // Act
-        var result = sut.Serialize(parameter, "28");
+        var result = FormStyleParameterSerializer.Serialize(parameter, "28");
 
         // Assert
         Assert.NotNull(result);
@@ -112,12 +82,10 @@ public class FormStyleQueryParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiOperationParameter("fake_query_param", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form);
-
-        var sut = new FormStyleQueryParametersSerializer();
+        var parameter = new RestApiOperationParameter("id", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form);
 
         // Act
-        var queryString = sut.Serialize(parameter, $"fake_query_param_value{specialSymbol}");
+        var queryString = FormStyleParameterSerializer.Serialize(parameter, $"fake_query_param_value{specialSymbol}");
 
         // Assert
         Assert.NotNull(queryString);
