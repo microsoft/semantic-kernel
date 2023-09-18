@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
 public sealed class KernelResult
 {
-    public IReadOnlyCollection<ModelResult> ModelResults { get; private set; } = Array.Empty<ModelResult>();
+    public IReadOnlyCollection<ModelResult> ModelResults { get; internal set; } = Array.Empty<ModelResult>();
 
     internal object? Value { get; private set; } = null;
 

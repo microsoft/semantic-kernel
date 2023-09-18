@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 
 public sealed class FunctionResult
 {
-    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
+    public IReadOnlyCollection<ModelResult> ModelResults { get; internal set; } = Array.Empty<ModelResult>();
 
     internal object? Value { get; private set; } = null;
 
