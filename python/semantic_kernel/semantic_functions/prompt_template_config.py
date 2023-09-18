@@ -41,18 +41,13 @@ class PromptTemplateConfig:
 
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateConfig":
-        config = PromptTemplateConfig()
-        config.schema = data.get("schema")
-        config.type = data.get("type")
-        config.description = data.get("description")
+        config = replace(PromptTemplateConfig(), **data)
 
         # Some skills may not have all completion parameters defined
         completion_dict = data["completion"]
         config.completion = replace(
             PromptTemplateConfig.CompletionConfig(), **completion_dict
         )
-
-        config.default_services = data.get("default_services", [])
 
         # Some skills may not have input parameters defined
         config.input = PromptTemplateConfig.InputConfig()
