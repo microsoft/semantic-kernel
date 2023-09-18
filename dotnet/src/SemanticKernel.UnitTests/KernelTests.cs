@@ -124,7 +124,7 @@ public class KernelTests
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
     [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public void ItUsesChatSystemPromptWhenProvided(string providedSystemChatPrompt, string expectedSystemChatPrompt)
+    public async Task ItUsesChatSystemPromptWhenProvided(string providedSystemChatPrompt, string expectedSystemChatPrompt)
     {
         // Arrange
         var mockTextCompletion = new Mock<ITextCompletion>();
@@ -143,7 +143,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<CompleteRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
@@ -177,7 +177,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItUsesDefaultServiceWhenSpecified()
+    public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -197,7 +197,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
@@ -205,7 +205,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItUsesServiceIdWhenProvided()
+    public async Task ItUsesServiceIdWhenProvidedAsync()
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -226,7 +226,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
