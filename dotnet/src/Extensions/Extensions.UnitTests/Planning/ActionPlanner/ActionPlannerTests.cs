@@ -34,9 +34,9 @@ public sealed class ActionPlannerTests
         // Assert
         Assert.Equal("goal", plan.Description);
 
-        Assert.Equal(plan.Steps.Count, 1);
-        Assert.Equal(plan.Steps[0].SkillName, "GitHubSkill");
-        Assert.Equal(plan.Steps[0].Name, "PullsList");
+        Assert.Single(plan.Steps);
+        Assert.Equal("GitHubSkill", plan.Steps[0].SkillName);
+        Assert.Equal("PullsList", plan.Steps[0].Name);
     }
 
     [Fact]
