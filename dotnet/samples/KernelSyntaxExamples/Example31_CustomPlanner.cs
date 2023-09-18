@@ -154,7 +154,7 @@ public class MarkupSkill
         Console.WriteLine();
 
         var result = await plan.InvokeAsync();
-        return result.GetValue<string>();
+        return result.GetValue<string>()!;
     }
 }
 

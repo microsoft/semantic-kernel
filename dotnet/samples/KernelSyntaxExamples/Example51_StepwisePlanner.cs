@@ -154,7 +154,7 @@ public static class Example51_StepwisePlanner
             var plan = planner.CreatePlan(question);
 
             var planResult = await plan.InvokeAsync(kernel.CreateNewContext());
-            var result = planResult.GetValue<string>();
+            var result = planResult.GetValue<string>()!;
 
             if (result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
             {

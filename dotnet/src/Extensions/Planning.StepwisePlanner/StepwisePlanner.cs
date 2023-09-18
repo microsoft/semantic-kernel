@@ -535,7 +535,7 @@ public class StepwisePlanner : IStepwisePlanner
             var actionContext = this.CreateActionContext(actionVariables);
 
             var functionResult = await function.InvokeAsync(actionContext).ConfigureAwait(false);
-            var result = functionResult.GetValue<string>();
+            var result = functionResult.GetValue<string>() ?? throw new InvalidOperationException($"No result from function: {targetFunction.SkillName}.{targetFunction.Name}");
 
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
 

@@ -94,7 +94,7 @@ Question: {{ $input }}
         try
         {
             var result = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
-            answer = result.GetValue<string>();
+            answer = result.GetValue<string>() ?? throw new InvalidOperationException("No result from Math Translator function.");
         }
         catch (Exception ex)
         {
