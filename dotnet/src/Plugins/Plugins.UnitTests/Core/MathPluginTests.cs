@@ -3,19 +3,19 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Core;
+namespace SemanticKernel.Plugins.UnitTests.Core;
 
-public class MathSkillTests
+public class MathPluginTests
 {
     [Fact]
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        var _ = new MathSkill();
+        var _ = new MathPlugin();
     }
 
     [Fact]
@@ -25,7 +25,7 @@ public class MathSkillTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportSkill(new MathSkill(), "math");
+        kernel.ImportSkill(new MathPlugin(), "math");
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public class MathSkillTests
     public async Task AddWhenValidParametersShouldSucceedAsync(string initialValue, string amount, string expectedResult)
     {
         // Arrange
-        var target = new MathSkill();
+        var target = new MathPlugin();
 
         // Act
         var context = await FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", amount));
@@ -61,7 +61,7 @@ public class MathSkillTests
     public async Task SubtractWhenValidParametersShouldSucceedAsync(string initialValue, string amount, string expectedResult)
     {
         // Arrange
-        var target = new MathSkill();
+        var target = new MathPlugin();
 
         // Act
         var context = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", amount));    // Assert
@@ -85,7 +85,7 @@ public class MathSkillTests
     public async Task AddWhenInvalidInitialValueShouldThrowAsync(string initialValue)
     {
         // Arrange
-        var target = new MathSkill();
+        var target = new MathPlugin();
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", "1")));
@@ -109,7 +109,7 @@ public class MathSkillTests
     public async Task AddWhenInvalidAmountShouldThrowAsync(string amount)
     {
         // Arrange
-        var target = new MathSkill();
+        var target = new MathPlugin();
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Add", ("input", "1"), ("amount", amount)));
@@ -133,7 +133,7 @@ public class MathSkillTests
     public async Task SubtractWhenInvalidInitialValueShouldThrowAsync(string initialValue)
     {
         // Arrange
-        var target = new MathSkill();
+        var target = new MathPlugin();
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", "1")));
@@ -157,7 +157,7 @@ public class MathSkillTests
     public async Task SubtractAsyncWhenInvalidAmountShouldThrowAsync(string amount)
     {
         // Arrange
-        var target = new MathSkill();
+        var target = new MathPlugin();
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Subtract", ("input", "1"), ("amount", amount)));

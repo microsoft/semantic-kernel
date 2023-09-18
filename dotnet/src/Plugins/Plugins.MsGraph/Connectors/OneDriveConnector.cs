@@ -8,8 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Diagnostics;
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
 /// Connector for OneDrive API

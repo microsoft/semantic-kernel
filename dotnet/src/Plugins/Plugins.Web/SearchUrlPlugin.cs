@@ -5,13 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Web;
+namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Get search URLs for various websites
 /// </summary>
 [SuppressMessage("Design", "CA1055:URI return values should not be strings", Justification = "Semantic Kernel operates on strings")]
-public sealed class SearchUrlSkill
+public sealed class SearchUrlPlugin
 {
     /**
      * Amazon Search URLs

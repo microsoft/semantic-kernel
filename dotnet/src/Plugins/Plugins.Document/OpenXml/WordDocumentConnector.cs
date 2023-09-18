@@ -3,9 +3,9 @@
 using System.IO;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
-using Microsoft.SemanticKernel.Skills.Document.OpenXml.Extensions;
+using Microsoft.SemanticKernel.Plugins.Document.OpenXml.Extensions;
 
-namespace Microsoft.SemanticKernel.Skills.Document.OpenXml;
+namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml;
 
 /// <summary>
 /// Connector for Microsoft Word (.docx) files

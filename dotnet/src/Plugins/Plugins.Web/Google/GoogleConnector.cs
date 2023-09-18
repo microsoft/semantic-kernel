@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Web.Google;
+namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 
 /// <summary>
 /// Google search connector.

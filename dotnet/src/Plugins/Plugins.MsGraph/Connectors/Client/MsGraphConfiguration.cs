@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 
 /// <summary>
 /// Graph API connector configuration model.

@@ -4,9 +4,9 @@ using System;
 using System.Linq;
 using Microsoft.Graph;
 using Microsoft.Graph.Extensions;
-using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
 /// Extensions for converting between Microsoft Graph models and skill models.

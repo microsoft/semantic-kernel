@@ -7,9 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Diagnostics;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 
 /// <summary>
 /// Manages acquiring and caching MSAL credentials locally.

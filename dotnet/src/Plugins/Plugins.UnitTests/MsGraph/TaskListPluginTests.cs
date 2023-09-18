@@ -3,15 +3,15 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.MsGraph;
-using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 using Moq;
 using Xunit;
-using static Microsoft.SemanticKernel.Skills.MsGraph.TaskListSkill;
+using static Microsoft.SemanticKernel.Plugins.MsGraph.TaskListPlugin;
 
-namespace SemanticKernel.Skills.UnitTests.MsGraph;
+namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
-public class TaskListSkillTests
+public class TaskListPluginTests
 {
     private readonly TaskManagementTaskList _anyTaskList = new(
         id: Guid.NewGuid().ToString(),
@@ -37,7 +37,7 @@ public class TaskListSkillTests
         connectorMock.Setup(c => c.AddTaskAsync(It.IsAny<string>(), It.IsAny<TaskManagementTask>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(this._anyTask);
 
-        TaskListSkill target = new(connectorMock.Object);
+        TaskListPlugin target = new(connectorMock.Object);
 
         // Act
         await target.AddTaskAsync(anyTitle);
@@ -61,7 +61,7 @@ public class TaskListSkillTests
 
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
-        TaskListSkill target = new(connectorMock.Object);
+        TaskListPlugin target = new(connectorMock.Object);
 
         // Act
         await target.AddTaskAsync(anyTitle, anyReminder);
@@ -84,7 +84,7 @@ public class TaskListSkillTests
 
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
-        TaskListSkill target = new(connectorMock.Object);
+        TaskListPlugin target = new(connectorMock.Object);
 
         // Act/Assert
         await Assert.ThrowsAnyAsync<InvalidOperationException>(() =>

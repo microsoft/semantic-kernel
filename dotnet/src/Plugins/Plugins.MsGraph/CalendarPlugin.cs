@@ -12,15 +12,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
-using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Skill for calendar operations.
 /// </summary>
-public sealed class CalendarSkill
+public sealed class CalendarPlugin
 {
     /// <summary>
     /// <see cref="ContextVariables"/> parameter names.
@@ -72,16 +72,16 @@ public sealed class CalendarSkill
     };
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CalendarSkill"/> class.
+    /// Initializes a new instance of the <see cref="CalendarPlugin"/> class.
     /// </summary>
     /// <param name="connector">Calendar connector.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public CalendarSkill(ICalendarConnector connector, ILoggerFactory? loggerFactory = null)
+    public CalendarPlugin(ICalendarConnector connector, ILoggerFactory? loggerFactory = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CalendarSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CalendarPlugin)) : NullLogger.Instance;
     }
 
     /// <summary>

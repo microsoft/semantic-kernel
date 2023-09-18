@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Skills.Document.FileSystem;
+namespace Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 
 #pragma warning disable CA1031 // Exceptions are caught and returned in a task
 

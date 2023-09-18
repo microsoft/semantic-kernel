@@ -3,9 +3,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Interface for email connections (e.g. Outlook).

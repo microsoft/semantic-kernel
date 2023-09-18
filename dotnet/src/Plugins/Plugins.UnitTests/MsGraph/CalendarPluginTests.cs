@@ -5,15 +5,15 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Skills.MsGraph;
-using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 using Moq;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.MsGraph;
+namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
-public class CalendarSkillTests
+public class CalendarPluginTests
 {
     [Fact]
     public async Task AddEventAsyncSucceedsAsync()
@@ -37,7 +37,7 @@ public class CalendarSkillTests
         connectorMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarPlugin target = new(connectorMock.Object);
 
         // Act
         var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
@@ -75,7 +75,7 @@ public class CalendarSkillTests
         connectorMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarPlugin target = new(connectorMock.Object);
 
         // Act
         var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
@@ -112,7 +112,7 @@ public class CalendarSkillTests
         connectorMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarPlugin target = new(connectorMock.Object);
 
         // Act
         var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
@@ -149,7 +149,7 @@ public class CalendarSkillTests
         connectorMock.Setup(c => c.AddEventAsync(It.IsAny<CalendarEvent>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expected);
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarPlugin target = new(connectorMock.Object);
 
         // Act
         var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
@@ -175,7 +175,7 @@ public class CalendarSkillTests
 
         Mock<ICalendarConnector> connectorMock = new();
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarPlugin target = new(connectorMock.Object);
 
         // Act and Assert
         await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
@@ -199,7 +199,7 @@ public class CalendarSkillTests
 
         Mock<ICalendarConnector> connectorMock = new();
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarPlugin target = new(connectorMock.Object);
 
         // Act
         await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
@@ -223,7 +223,7 @@ public class CalendarSkillTests
 
         Mock<ICalendarConnector> connectorMock = new();
 
-        CalendarSkill target = new(connectorMock.Object);
+        CalendarPlugin target = new(connectorMock.Object);
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",

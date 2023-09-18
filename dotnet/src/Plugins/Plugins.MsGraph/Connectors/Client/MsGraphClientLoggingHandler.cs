@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 
 /// <summary>
 /// An HTTPClient logging handler for ensuring diagnostic headers for Graph API calls are available.

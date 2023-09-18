@@ -4,14 +4,14 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.Document;
-using Microsoft.SemanticKernel.Skills.Document.FileSystem;
+using Microsoft.SemanticKernel.Plugins.Document;
+using Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Document;
+namespace SemanticKernel.Plugins.UnitTests.Document;
 
-public class DocumentSkillTests
+public class DocumentPluginTests
 {
     [Fact]
     public async Task ReadTextAsyncSucceedsAsync()
@@ -31,7 +31,7 @@ public class DocumentSkillTests
             .Setup(mock => mock.ReadText(It.IsAny<Stream>()))
             .Returns(expectedText);
 
-        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object);
 
         // Act
         string actual = await target.ReadTextAsync(anyFilePath);
@@ -63,7 +63,7 @@ public class DocumentSkillTests
         documentConnectorMock
             .Setup(mock => mock.AppendText(It.IsAny<Stream>(), It.Is<string>(text => text.Equals(anyText, StringComparison.Ordinal))));
 
-        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object);
 
         // Act
         await target.AppendTextAsync(anyText, anyFilePath);
@@ -96,7 +96,7 @@ public class DocumentSkillTests
         documentConnectorMock
             .Setup(mock => mock.AppendText(It.IsAny<Stream>(), It.Is<string>(text => text.Equals(anyText, StringComparison.Ordinal))));
 
-        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object);
 
         // Act
         await target.AppendTextAsync(anyText, anyFilePath);
@@ -115,7 +115,7 @@ public class DocumentSkillTests
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         var documentConnectorMock = new Mock<IDocumentConnector>();
 
-        var target = new DocumentSkill(documentConnectorMock.Object, fileSystemConnectorMock.Object);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object);
 
         // Act/Assert
         await Assert.ThrowsAnyAsync<ArgumentException>(() =>

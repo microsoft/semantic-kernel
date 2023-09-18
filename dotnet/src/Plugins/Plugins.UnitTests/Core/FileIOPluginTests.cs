@@ -4,18 +4,18 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Core;
+namespace SemanticKernel.Plugins.UnitTests.Core;
 
-public class FileIOSkillTests
+public class FileIOPluginTests
 {
     [Fact]
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        _ = new FileIOSkill();
+        _ = new FileIOPlugin();
     }
 
     [Fact]
@@ -25,14 +25,14 @@ public class FileIOSkillTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        _ = kernel.ImportSkill(new FileIOSkill(), "fileIO");
+        _ = kernel.ImportSkill(new FileIOPlugin(), "fileIO");
     }
 
     [Fact]
     public async Task ItCanReadAsync()
     {
         // Arrange
-        var skill = new FileIOSkill();
+        var skill = new FileIOPlugin();
         var path = Path.GetTempFileName();
         File.WriteAllText(path, "hello world");
 
@@ -47,7 +47,7 @@ public class FileIOSkillTests
     public async Task ItCannotReadAsync()
     {
         // Arrange
-        var skill = new FileIOSkill();
+        var skill = new FileIOPlugin();
         var path = Path.GetTempFileName();
         File.Delete(path);
 
@@ -65,7 +65,7 @@ public class FileIOSkillTests
     public async Task ItCanWriteAsync()
     {
         // Arrange
-        var skill = new FileIOSkill();
+        var skill = new FileIOPlugin();
         var path = Path.GetTempFileName();
 
         // Act
@@ -79,7 +79,7 @@ public class FileIOSkillTests
     public async Task ItCannotWriteAsync()
     {
         // Arrange
-        var skill = new FileIOSkill();
+        var skill = new FileIOPlugin();
         var path = Path.GetTempFileName();
         File.SetAttributes(path, FileAttributes.ReadOnly);
 

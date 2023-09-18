@@ -3,13 +3,13 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Plugins.MsGraph;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.MsGraph;
+namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
-public class EmailSkillTests
+public class EmailPluginTests
 {
     [Fact]
     public async Task SendEmailAsyncSucceedsAsync()
@@ -19,7 +19,7 @@ public class EmailSkillTests
         connectorMock.Setup(c => c.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        EmailSkill target = new(connectorMock.Object);
+        EmailPlugin target = new(connectorMock.Object);
 
         string anyContent = Guid.NewGuid().ToString();
         string anySubject = Guid.NewGuid().ToString();
@@ -37,7 +37,7 @@ public class EmailSkillTests
     {
         // Arrange
         Mock<IEmailConnector> connectorMock = new();
-        EmailSkill target = new(connectorMock.Object);
+        EmailPlugin target = new(connectorMock.Object);
 
         string anyContent = Guid.NewGuid().ToString();
         string anySubject = Guid.NewGuid().ToString();
@@ -55,7 +55,7 @@ public class EmailSkillTests
     {
         // Arrange
         Mock<IEmailConnector> connectorMock = new();
-        EmailSkill target = new(connectorMock.Object);
+        EmailPlugin target = new(connectorMock.Object);
 
         string anyContent = Guid.NewGuid().ToString();
         string anyRecipient = Guid.NewGuid().ToString();
@@ -77,7 +77,7 @@ public class EmailSkillTests
         connectorMock.Setup(c => c.GetMyEmailAddressAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(anyEmailAddress);
 
-        EmailSkill target = new(connectorMock.Object);
+        EmailPlugin target = new(connectorMock.Object);
 
         // Act
         string actual = await target.GetMyEmailAddressAsync();

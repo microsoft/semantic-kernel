@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// A skill that provides HTTP functionality.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("http", new HttpSkill());
+/// Usage: kernel.ImportSkill("http", new HttpPlugin());
 /// Examples:
 /// SKContext.Variables["url"] = "https://www.bing.com"
 /// {{http.getAsync $url}}
@@ -23,25 +23,25 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// </example>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
-public sealed class HttpSkill
+public sealed class HttpPlugin
 {
     private readonly HttpClient _client;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpSkill"/> class.
+    /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
     /// </summary>
-    public HttpSkill() : this(new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false))
+    public HttpPlugin() : this(new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false))
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="HttpSkill"/> class.
+    /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
     /// </summary>
     /// <param name="client">The HTTP client to use.</param>
     /// <remarks>
-    /// <see cref="HttpSkill"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the skill is disposed.
+    /// <see cref="HttpPlugin"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the skill is disposed.
     /// </remarks>
-    public HttpSkill(HttpClient client) =>
+    public HttpPlugin(HttpClient client) =>
         this._client = client;
 
     /// <summary>

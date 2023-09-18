@@ -3,21 +3,21 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Moq;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Core;
+namespace SemanticKernel.Plugins.UnitTests.Core;
 
 // TODO: allow clock injection and test all functions
-public class WaitSkillTests
+public class WaitPluginTests
 {
     [Fact]
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        var _ = new WaitSkill();
+        var _ = new WaitPlugin();
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public class WaitSkillTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportSkill(new WaitSkill(), "wait");
+        kernel.ImportSkill(new WaitPlugin(), "wait");
     }
 
     [Theory]
@@ -43,8 +43,8 @@ public class WaitSkillTests
     public async Task ItWaitSecondsWhenValidParametersSucceedAsync(string textSeconds, int expectedMilliseconds)
     {
         // Arrange
-        var waitProviderMock = new Mock<WaitSkill.IWaitProvider>();
-        var target = new WaitSkill(waitProviderMock.Object);
+        var waitProviderMock = new Mock<WaitPlugin.IWaitProvider>();
+        var target = new WaitPlugin(waitProviderMock.Object);
 
         // Act
         var context = await FunctionHelpers.CallViaKernel(target, "Seconds", ("input", textSeconds));
@@ -68,8 +68,8 @@ public class WaitSkillTests
     public async Task ItWaitSecondsWhenInvalidParametersFailsAsync(string textSeconds)
     {
         // Arrange
-        var waitProviderMock = new Mock<WaitSkill.IWaitProvider>();
-        var target = new WaitSkill(waitProviderMock.Object);
+        var waitProviderMock = new Mock<WaitPlugin.IWaitProvider>();
+        var target = new WaitPlugin(waitProviderMock.Object);
 
         // Act
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Seconds", ("input", textSeconds)));

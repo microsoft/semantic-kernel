@@ -2,12 +2,12 @@
 
 using System.Text.Encodings.Web;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Plugins.Web;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Web;
+namespace SemanticKernel.Plugins.UnitTests.Web;
 
-public class SearchUrlSkillTests
+public class SearchUrlPluginTests
 {
     private const string AnyInput = "<something to search for>";
     private readonly string _encodedInput = UrlEncoder.Default.Encode(AnyInput);
@@ -16,7 +16,7 @@ public class SearchUrlSkillTests
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        var _ = new SearchUrlSkill();
+        var _ = new SearchUrlPlugin();
     }
 
     [Fact]
@@ -26,14 +26,14 @@ public class SearchUrlSkillTests
         IKernel kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportSkill(new SearchUrlSkill(), "search");
+        kernel.ImportSkill(new SearchUrlPlugin(), "search");
     }
 
     [Fact]
     public void AmazonSearchUrlSucceeds()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.AmazonSearchUrl(AnyInput);
@@ -46,7 +46,7 @@ public class SearchUrlSkillTests
     public void BingSearchUrlSucceeds()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.BingSearchUrl(AnyInput);
@@ -59,7 +59,7 @@ public class SearchUrlSkillTests
     public void BingImagesSearchUrlSucceeds()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.BingImagesSearchUrl(AnyInput);
@@ -72,7 +72,7 @@ public class SearchUrlSkillTests
     public void BingMapsSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.BingMapsSearchUrl(AnyInput);
@@ -85,7 +85,7 @@ public class SearchUrlSkillTests
     public void BingShoppingSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.BingShoppingSearchUrl(AnyInput);
@@ -98,7 +98,7 @@ public class SearchUrlSkillTests
     public void BingNewsSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.BingNewsSearchUrl(AnyInput);
@@ -111,7 +111,7 @@ public class SearchUrlSkillTests
     public void BingTravelSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.BingTravelSearchUrl(AnyInput);
@@ -124,7 +124,7 @@ public class SearchUrlSkillTests
     public void FacebookSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.FacebookSearchUrl(AnyInput);
@@ -137,7 +137,7 @@ public class SearchUrlSkillTests
     public void GitHubSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.GitHubSearchUrl(AnyInput);
@@ -150,7 +150,7 @@ public class SearchUrlSkillTests
     public void LinkedInSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.LinkedInSearchUrl(AnyInput);
@@ -163,7 +163,7 @@ public class SearchUrlSkillTests
     public void TwitterSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.TwitterSearchUrl(AnyInput);
@@ -176,7 +176,7 @@ public class SearchUrlSkillTests
     public void WikipediaSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
 
         // Act
         string actual = skill.WikipediaSearchUrl(AnyInput);

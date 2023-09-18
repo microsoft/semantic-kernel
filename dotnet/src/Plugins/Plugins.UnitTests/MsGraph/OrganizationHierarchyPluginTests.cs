@@ -5,13 +5,13 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Plugins.MsGraph;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.MsGraph;
+namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
-public class OrganizationHierarchySkillTests
+public class OrganizationHierarchyPluginTests
 {
     [Fact]
     public async Task GetMyDirectReportsEmailAsyncSucceedsAsync()
@@ -20,7 +20,7 @@ public class OrganizationHierarchySkillTests
         string[] anyDirectReportsEmail = { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
         Mock<IOrganizationHierarchyConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetDirectReportsEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyDirectReportsEmail);
-        OrganizationHierarchySkill target = new(connectorMock.Object);
+        OrganizationHierarchyPlugin target = new(connectorMock.Object);
 
         // Act
         string actual = await target.GetMyDirectReportsEmailAsync();
@@ -43,7 +43,7 @@ public class OrganizationHierarchySkillTests
         string anyManagerEmail = Guid.NewGuid().ToString();
         Mock<IOrganizationHierarchyConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetManagerEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerEmail);
-        OrganizationHierarchySkill target = new(connectorMock.Object);
+        OrganizationHierarchyPlugin target = new(connectorMock.Object);
 
         // Act
         string actual = await target.GetMyManagerEmailAsync();
@@ -60,7 +60,7 @@ public class OrganizationHierarchySkillTests
         string anyManagerName = Guid.NewGuid().ToString();
         Mock<IOrganizationHierarchyConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetManagerNameAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerName);
-        OrganizationHierarchySkill target = new(connectorMock.Object);
+        OrganizationHierarchyPlugin target = new(connectorMock.Object);
 
         // Act
         string actual = await target.GetMyManagerNameAsync();

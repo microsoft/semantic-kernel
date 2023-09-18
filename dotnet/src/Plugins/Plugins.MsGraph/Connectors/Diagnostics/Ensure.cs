@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Diagnostics;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 
 /// <summary>
 /// Internal data validation class.

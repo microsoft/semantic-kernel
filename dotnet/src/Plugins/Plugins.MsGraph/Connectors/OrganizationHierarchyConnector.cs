@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
 /// Connector for Microsoft Graph API for organizational hierarchy.

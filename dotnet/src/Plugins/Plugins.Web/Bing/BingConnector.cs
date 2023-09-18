@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.Web.Bing;
+namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 
 /// <summary>
 /// Bing API connector.

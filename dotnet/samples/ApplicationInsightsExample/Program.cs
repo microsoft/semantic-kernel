@@ -16,9 +16,9 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Action;
 using Microsoft.SemanticKernel.Planning.Sequential;
 using Microsoft.SemanticKernel.Planning.Stepwise;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using NCalcSkills;
 
 /// <summary>
@@ -110,7 +110,7 @@ public sealed class Program
     {
         var folder = RepoFiles.SampleSkillsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
@@ -124,7 +124,7 @@ public sealed class Program
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
         kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "advancedCalculator");
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimePlugin(), "time");
 
         return kernel;
     }

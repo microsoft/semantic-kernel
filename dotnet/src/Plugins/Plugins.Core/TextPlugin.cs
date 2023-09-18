@@ -4,13 +4,13 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
-/// TextSkill provides a set of functions to manipulate strings.
+/// TextPlugin provides a set of functions to manipulate strings.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("text", new TextSkill());
+/// Usage: kernel.ImportSkill("text", new TextPlugin());
 ///
 /// Examples:
 /// SKContext.Variables["input"] = "  hello world  "
@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// SKContext.Variables["input"] = "HELLO WORLD"
 /// {{text.lowercase $input}} => "hello world"
 /// </example>
-public sealed class TextSkill
+public sealed class TextPlugin
 {
     /// <summary>
     /// Trim whitespace from the start and end of a string.

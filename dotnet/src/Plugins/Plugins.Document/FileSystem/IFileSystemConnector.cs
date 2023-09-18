@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Skills.Document.FileSystem;
+namespace Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 
 /// <summary>
 /// Interface for filesystem connections.

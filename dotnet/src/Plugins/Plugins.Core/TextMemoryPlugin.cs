@@ -11,18 +11,18 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
-/// TextMemorySkill provides a skill to save or recall information from the long or short term memory.
+/// TextMemoryPlugin provides a skill to save or recall information from the long or short term memory.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("memory", new TextMemorySkill());
+/// Usage: kernel.ImportSkill("memory", new TextMemoryPlugin());
 /// Examples:
 /// SKContext.Variables["input"] = "what is the capital of France?"
 /// {{memory.recall $input }} => "Paris"
 /// </example>
-public sealed class TextMemorySkill
+public sealed class TextMemoryPlugin
 {
     /// <summary>
     /// Name of the context variable used to specify which memory collection to use.
@@ -51,9 +51,9 @@ public sealed class TextMemorySkill
     private ISemanticTextMemory _memory;
 
     /// <summary>
-    /// Creates a new instance of the TextMemorySkill
+    /// Creates a new instance of the TextMemoryPlugin
     /// </summary>
-    public TextMemorySkill(ISemanticTextMemory memory)
+    public TextMemoryPlugin(ISemanticTextMemory memory)
     {
         this._memory = memory;
     }
@@ -66,7 +66,7 @@ public sealed class TextMemorySkill
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <example>
-    /// SKContext.Variables[TextMemorySkill.KeyParam] = "countryInfo1"
+    /// SKContext.Variables[TextMemoryPlugin.KeyParam] = "countryInfo1"
     /// {{memory.retrieve }}
     /// </example>
     [SKFunction, Description("Key-based lookup for a specific memory")]
@@ -79,7 +79,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(typeof(TextMemorySkill)).LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
+        loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)).LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
 
         var memory = await this._memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -112,7 +112,7 @@ public sealed class TextMemorySkill
         relevance ??= DefaultRelevance;
         limit ??= DefaultLimit;
 
-        ILogger? logger = loggerFactory?.CreateLogger(typeof(TextMemorySkill));
+        ILogger? logger = loggerFactory?.CreateLogger(typeof(TextMemoryPlugin));
 
         logger?.LogDebug("Searching memories in collection '{0}', relevance '{1}'", collection, relevance);
 
@@ -137,7 +137,7 @@ public sealed class TextMemorySkill
     /// </summary>
     /// <example>
     /// SKContext.Variables["input"] = "the capital of France is Paris"
-    /// SKContext.Variables[TextMemorySkill.KeyParam] = "countryInfo1"
+    /// SKContext.Variables[TextMemoryPlugin.KeyParam] = "countryInfo1"
     /// {{memory.save $input }}
     /// </example>
     /// <param name="input">The information to save</param>
@@ -156,7 +156,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(typeof(TextMemorySkill)).LogDebug("Saving memory to collection '{0}'", collection);
+        loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)).LogDebug("Saving memory to collection '{0}'", collection);
 
         await this._memory.SaveInformationAsync(collection, text: input, id: key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
@@ -165,7 +165,7 @@ public sealed class TextMemorySkill
     /// Remove specific memory
     /// </summary>
     /// <example>
-    /// SKContext.Variables[TextMemorySkill.KeyParam] = "countryInfo1"
+    /// SKContext.Variables[TextMemoryPlugin.KeyParam] = "countryInfo1"
     /// {{memory.remove }}
     /// </example>
     /// <param name="collection">Memories collection associated with the information to save</param>
@@ -182,7 +182,7 @@ public sealed class TextMemorySkill
         Verify.NotNullOrWhiteSpace(collection);
         Verify.NotNullOrWhiteSpace(key);
 
-        loggerFactory?.CreateLogger(typeof(TextMemorySkill)).LogDebug("Removing memory from collection '{0}'", collection);
+        loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)).LogDebug("Removing memory from collection '{0}'", collection);
 
         await this._memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }

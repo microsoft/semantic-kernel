@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// <para>Semantic skill that enables conversations summarization.</para>
@@ -15,10 +15,10 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// <example>
 /// <code>
 /// var kernel Kernel.Builder.Build();
-/// kernel.ImportSkill(new ConversationSummarySkill(kernel));
+/// kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
 /// </code>
 /// </example>
-public class ConversationSummarySkill
+public class ConversationSummaryPlugin
 {
     /// <summary>
     /// The max tokens to process in a single semantic function call.
@@ -30,14 +30,14 @@ public class ConversationSummarySkill
     private readonly ISKFunction _conversationTopicsFunction;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ConversationSummarySkill"/> class.
+    /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
     /// </summary>
     /// <param name="kernel">Kernel instance</param>
-    public ConversationSummarySkill(IKernel kernel)
+    public ConversationSummaryPlugin(IKernel kernel)
     {
         this._summarizeConversationFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.SummarizeConversationDefinition,
-            skillName: nameof(ConversationSummarySkill),
+            skillName: nameof(ConversationSummaryPlugin),
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             maxTokens: MaxTokens,
             temperature: 0.1,
@@ -45,7 +45,7 @@ public class ConversationSummarySkill
 
         this._conversationActionItemsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
-            skillName: nameof(ConversationSummarySkill),
+            skillName: nameof(ConversationSummaryPlugin),
             description: "Given a section of a conversation transcript, identify action items.",
             maxTokens: MaxTokens,
             temperature: 0.1,
@@ -53,7 +53,7 @@ public class ConversationSummarySkill
 
         this._conversationTopicsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
-            skillName: nameof(ConversationSummarySkill),
+            skillName: nameof(ConversationSummaryPlugin),
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             maxTokens: MaxTokens,
             temperature: 0.1,

@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Core;
+namespace SemanticKernel.Plugins.UnitTests.Core;
 
-public class TextSkillTests
+public class TextPluginTests
 {
     [Fact]
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        var _ = new TextSkill();
+        var _ = new TextPlugin();
     }
 
     [Fact]
@@ -22,14 +22,14 @@ public class TextSkillTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportSkill(new TextSkill(), "text");
+        kernel.ImportSkill(new TextPlugin(), "text");
     }
 
     [Fact]
     public void ItCanTrim()
     {
         // Arrange
-        var skill = new TextSkill();
+        var skill = new TextPlugin();
 
         // Act
         var result = skill.Trim("  hello world  ");
@@ -42,7 +42,7 @@ public class TextSkillTests
     public void ItCanTrimStart()
     {
         // Arrange
-        var skill = new TextSkill();
+        var skill = new TextPlugin();
 
         // Act
         var result = skill.TrimStart("  hello world  ");
@@ -55,7 +55,7 @@ public class TextSkillTests
     public void ItCanTrimEnd()
     {
         // Arrange
-        var skill = new TextSkill();
+        var skill = new TextPlugin();
 
         // Act
         var result = skill.TrimEnd("  hello world  ");
@@ -68,7 +68,7 @@ public class TextSkillTests
     public void ItCanUppercase()
     {
         // Arrange
-        var skill = new TextSkill();
+        var skill = new TextPlugin();
 
         // Act
         var result = skill.Uppercase("hello world");
@@ -81,7 +81,7 @@ public class TextSkillTests
     public void ItCanLowercase()
     {
         // Arrange
-        var skill = new TextSkill();
+        var skill = new TextPlugin();
 
         // Act
         var result = skill.Lowercase("HELLO WORLD");
@@ -101,7 +101,7 @@ public class TextSkillTests
     public void ItCanLength(string textToLength, int expectedLength)
     {
         // Arrange
-        var target = new TextSkill();
+        var target = new TextPlugin();
 
         // Act
         var result = target.Length(textToLength);
@@ -121,7 +121,7 @@ public class TextSkillTests
     public void ItCanConcat(string textToConcat, string text2ToConcat)
     {
         // Arrange
-        var target = new TextSkill();
+        var target = new TextPlugin();
         var expected = string.Concat(textToConcat, text2ToConcat);
 
         // Act

@@ -5,23 +5,23 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Organizational Hierarchy skill.
 /// Provides methods to get information about the organization hierarchy, such as direct reports and manager details.
 /// </summary>
-public sealed class OrganizationHierarchySkill
+public sealed class OrganizationHierarchyPlugin
 {
     private readonly IOrganizationHierarchyConnector _connector;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OrganizationHierarchySkill"/> class.
+    /// Initializes a new instance of the <see cref="OrganizationHierarchyPlugin"/> class.
     /// </summary>
     /// <param name="connector">The connector to be used for fetching organization hierarchy data.</param>
-    public OrganizationHierarchySkill(IOrganizationHierarchyConnector connector)
+    public OrganizationHierarchyPlugin(IOrganizationHierarchyConnector connector)
     {
         Ensure.NotNull(connector, nameof(connector));
 

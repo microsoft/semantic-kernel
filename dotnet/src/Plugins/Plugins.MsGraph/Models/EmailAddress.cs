@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Models;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 /// <summary>
 /// Model for an email address.

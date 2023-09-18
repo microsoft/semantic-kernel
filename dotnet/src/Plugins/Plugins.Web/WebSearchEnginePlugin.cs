@@ -8,12 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Web;
+namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Web search engine skill (e.g. Bing).
 /// </summary>
-public sealed class WebSearchEngineSkill
+public sealed class WebSearchEnginePlugin
 {
     /// <summary>
     /// The count parameter name.
@@ -28,10 +28,10 @@ public sealed class WebSearchEngineSkill
     private readonly IWebSearchEngineConnector _connector;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="WebSearchEngineSkill"/> class.
+    /// Initializes a new instance of the <see cref="WebSearchEnginePlugin"/> class.
     /// </summary>
     /// <param name="connector">The web search engine connector.</param>
-    public WebSearchEngineSkill(IWebSearchEngineConnector connector)
+    public WebSearchEnginePlugin(IWebSearchEngineConnector connector)
     {
         this._connector = connector;
     }

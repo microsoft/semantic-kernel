@@ -8,36 +8,36 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Document.FileSystem;
 
-namespace Microsoft.SemanticKernel.Skills.Document;
+namespace Microsoft.SemanticKernel.Plugins.Document;
 
 //**********************************************************************************************************************
 // EXAMPLE USAGE
 // Option #1: as a standalone C# function
 //
-// DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalDriveConnector());
+// DocumentPlugin documentPlugin = new(new WordDocumentConnector(), new LocalDriveConnector());
 // string filePath = "PATH_TO_DOCX_FILE.docx";
-// string text = await documentSkill.ReadTextAsync(filePath);
+// string text = await documentPlugin.ReadTextAsync(filePath);
 // Console.WriteLine(text);
 //
 //
 // Option #2: with the Semantic Kernel
 //
-// DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalDriveConnector());
+// DocumentPlugin documentPlugin = new(new WordDocumentConnector(), new LocalDriveConnector());
 // string filePath = "PATH_TO_DOCX_FILE.docx";
 // ISemanticKernel kernel = SemanticKernel.Build();
 // var result = await kernel.RunAsync(
 //      filePath,
-//      documentSkill.ReadTextAsync);
+//      documentPlugin.ReadTextAsync);
 // Console.WriteLine(result);
 //**********************************************************************************************************************
 
 /// <summary>
 /// Skill for interacting with documents (e.g. Microsoft Word)
 /// </summary>
-public sealed class DocumentSkill
+public sealed class DocumentPlugin
 {
     /// <summary>
     /// <see cref="ContextVariables"/> parameter names.
@@ -55,16 +55,16 @@ public sealed class DocumentSkill
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DocumentSkill"/> class.
+    /// Initializes a new instance of the <see cref="DocumentPlugin"/> class.
     /// </summary>
     /// <param name="documentConnector">Document connector</param>
     /// <param name="fileSystemConnector">File system connector</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public DocumentSkill(IDocumentConnector documentConnector, IFileSystemConnector fileSystemConnector, ILoggerFactory? loggerFactory = null)
+    public DocumentPlugin(IDocumentConnector documentConnector, IFileSystemConnector fileSystemConnector, ILoggerFactory? loggerFactory = null)
     {
         this._documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
         this._fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DocumentSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(DocumentPlugin)) : NullLogger.Instance;
     }
 
     /// <summary>

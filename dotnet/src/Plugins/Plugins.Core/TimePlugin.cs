@@ -4,13 +4,13 @@ using System;
 using System.ComponentModel;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
-/// TimeSkill provides a set of functions to get the current time and date.
+/// TimePlugin provides a set of functions to get the current time and date.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("time", new TimeSkill());
+/// Usage: kernel.ImportSkill("time", new TimePlugin());
 /// Examples:
 /// {{time.date}}            => Sunday, 12 January, 2031
 /// {{time.today}}           => Sunday, 12 January, 2031
@@ -38,7 +38,7 @@ namespace Microsoft.SemanticKernel.Skills.Core;
 /// Note: the time represents the time on the hw/vm/machine where the kernel is running.
 /// TODO: import and use user's timezone
 /// </remark>
-public sealed class TimeSkill
+public sealed class TimePlugin
 {
     /// <summary>
     /// Get the current date

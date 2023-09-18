@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Interface for organization hierarchy connections (e.g. Azure AD).

@@ -5,20 +5,20 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.UnitTests;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Core;
+namespace SemanticKernel.Plugins.UnitTests.Core;
 
 // TODO: allow clock injection and test all functions
-public class TimeSkillTests
+public class TimePluginTests
 {
     [Fact]
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        var _ = new TimeSkill();
+        var _ = new TimePlugin();
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class TimeSkillTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimePlugin(), "time");
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class TimeSkillTests
     {
         double interval = 2;
         DateTime expected = DateTime.Now.AddDays(-interval);
-        var skill = new TimeSkill();
+        var skill = new TimePlugin();
         string result = skill.DaysAgo(interval, CultureInfo.CurrentCulture);
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(expected.Day, returned.Day);
@@ -48,7 +48,7 @@ public class TimeSkillTests
     public void Day()
     {
         string expected = DateTime.Now.ToString("dd", CultureInfo.CurrentCulture);
-        var skill = new TimeSkill();
+        var skill = new TimePlugin();
         string result = skill.Day(CultureInfo.CurrentCulture);
         Assert.Equal(expected, result);
         Assert.True(int.TryParse(result, out _));
@@ -57,7 +57,7 @@ public class TimeSkillTests
     [Fact]
     public async Task LastMatchingDayBadInput()
     {
-        var skill = new TimeSkill();
+        var skill = new TimePlugin();
 
         var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(skill, "DateMatchingLastDayName", ("input", "not a day name")));
 
@@ -78,7 +78,7 @@ public class TimeSkillTests
         bool found = date.DayOfWeek == dayName;
         Assert.True(found);
 
-        var skill = new TimeSkill();
+        var skill = new TimePlugin();
         string result = skill.DateMatchingLastDayName(dayName, CultureInfo.CurrentCulture);
         DateTime returned = DateTime.Parse(result, CultureInfo.CurrentCulture);
         Assert.Equal(date.Day, returned.Day);

@@ -8,11 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Diagnostics;
-using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 using TaskStatus = Microsoft.Graph.TaskStatus;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
 /// Connector for Microsoft To-Do API

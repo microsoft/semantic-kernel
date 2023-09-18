@@ -11,12 +11,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Web;
+namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Skill to download web files.
 /// </summary>
-public sealed class WebFileDownloadSkill
+public sealed class WebFileDownloadPlugin
 {
     /// <summary>
     /// Skill parameter: where to save file.
@@ -27,23 +27,23 @@ public sealed class WebFileDownloadSkill
     private readonly HttpClient _httpClient;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="WebFileDownloadSkill"/> class.
+    /// Initializes a new instance of the <see cref="WebFileDownloadPlugin"/> class.
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public WebFileDownloadSkill(ILoggerFactory? loggerFactory = null) :
+    public WebFileDownloadPlugin(ILoggerFactory? loggerFactory = null) :
         this(new HttpClient(NonDisposableHttpClientHandler.Instance, false), loggerFactory)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="WebFileDownloadSkill"/> class.
+    /// Initializes a new instance of the <see cref="WebFileDownloadPlugin"/> class.
     /// </summary>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public WebFileDownloadSkill(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
+    public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WebFileDownloadSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WebFileDownloadPlugin)) : NullLogger.Instance;
     }
 
     /// <summary>

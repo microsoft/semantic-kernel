@@ -9,14 +9,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Cloud drive skill (e.g. OneDrive).
 /// </summary>
-public sealed class CloudDriveSkill
+public sealed class CloudDrivePlugin
 {
     /// <summary>
     /// <see cref="ContextVariables"/> parameter names.
@@ -33,16 +33,16 @@ public sealed class CloudDriveSkill
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CloudDriveSkill"/> class.
+    /// Initializes a new instance of the <see cref="CloudDrivePlugin"/> class.
     /// </summary>
     /// <param name="connector">The cloud drive connector.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public CloudDriveSkill(ICloudDriveConnector connector, ILoggerFactory? loggerFactory = null)
+    public CloudDrivePlugin(ICloudDriveConnector connector, ILoggerFactory? loggerFactory = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CloudDriveSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(CloudDrivePlugin)) : NullLogger.Instance;
     }
 
     /// <summary>

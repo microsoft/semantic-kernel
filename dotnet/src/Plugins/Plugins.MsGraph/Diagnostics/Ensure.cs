@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
 internal static class Ensure
 {

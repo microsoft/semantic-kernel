@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph.Models;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 /// <summary>
 /// Model for a calendar event.

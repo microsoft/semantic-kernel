@@ -4,17 +4,17 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
-/// WaitSkill provides a set of functions to wait before making the rest of operations.
+/// WaitPlugin provides a set of functions to wait before making the rest of operations.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("wait", new WaitSkill());
+/// Usage: kernel.ImportSkill("wait", new WaitPlugin());
 /// Examples:
 /// {{wait.seconds 10}}         => Wait 10 seconds
 /// </example>
-public sealed class WaitSkill
+public sealed class WaitPlugin
 {
     private readonly IWaitProvider _waitProvider;
 
@@ -40,10 +40,10 @@ public sealed class WaitSkill
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="WaitSkill"/> class.
+    /// Initializes a new instance of the <see cref="WaitPlugin"/> class.
     /// </summary>
     /// <param name="waitProvider">An optional wait provider. If not provided, a default wait provider will be used.</param>
-    public WaitSkill(IWaitProvider? waitProvider = null)
+    public WaitPlugin(IWaitProvider? waitProvider = null)
     {
         this._waitProvider = waitProvider ?? new WaitProvider();
     }

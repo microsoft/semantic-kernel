@@ -2,7 +2,7 @@
 
 using System.IO;
 
-namespace Microsoft.SemanticKernel.Skills.Document;
+namespace Microsoft.SemanticKernel.Plugins.Document;
 
 /// <summary>
 /// Interface for document connections (e.g. Microsoft Word)

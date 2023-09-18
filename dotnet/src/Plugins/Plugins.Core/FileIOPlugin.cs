@@ -7,18 +7,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
 /// Read and write from a file.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("file", new FileIOSkill());
+/// Usage: kernel.ImportSkill("file", new FileIOPlugin());
 /// Examples:
 /// {{file.readAsync $path }} => "hello world"
 /// {{file.writeAsync}}
 /// </example>
-public sealed class FileIOSkill
+public sealed class FileIOPlugin
 {
     /// <summary>
     /// Read a file

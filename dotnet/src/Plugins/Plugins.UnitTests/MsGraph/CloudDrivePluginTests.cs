@@ -5,13 +5,13 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Skills.MsGraph;
+using Microsoft.SemanticKernel.Plugins.MsGraph;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.MsGraph;
+namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
-public class CloudDriveSkillTests
+public class CloudDrivePluginTests
 {
     [Fact]
     public async Task UploadSmallFileAsyncSucceedsAsync()
@@ -23,7 +23,7 @@ public class CloudDriveSkillTests
         connectorMock.Setup(c => c.UploadSmallFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        CloudDriveSkill target = new(connectorMock.Object);
+        CloudDrivePlugin target = new(connectorMock.Object);
 
         // Act
         await target.UploadFileAsync(anyFilePath, Guid.NewGuid().ToString());
@@ -43,7 +43,7 @@ public class CloudDriveSkillTests
         connectorMock.Setup(c => c.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(anyLink);
 
-        CloudDriveSkill target = new(connectorMock.Object);
+        CloudDrivePlugin target = new(connectorMock.Object);
 
         // Act
         string actual = await target.CreateLinkAsync(anyFilePath);
@@ -65,7 +65,7 @@ public class CloudDriveSkillTests
         connectorMock.Setup(c => c.GetFileContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStream);
 
-        CloudDriveSkill target = new(connectorMock.Object);
+        CloudDrivePlugin target = new(connectorMock.Object);
 
         // Act
         string actual = await target.GetFileContentAsync(anyFilePath);

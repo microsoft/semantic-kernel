@@ -10,15 +10,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.MsGraph.Diagnostics;
-using Microsoft.SemanticKernel.Skills.MsGraph.Models;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
-namespace Microsoft.SemanticKernel.Skills.MsGraph;
+namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
 /// Task list skill (e.g. Microsoft To-Do)
 /// </summary>
-public sealed class TaskListSkill
+public sealed class TaskListPlugin
 {
     /// <summary>
     /// <see cref="ContextVariables"/> parameter names.
@@ -40,16 +40,16 @@ public sealed class TaskListSkill
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TaskListSkill"/> class.
+    /// Initializes a new instance of the <see cref="TaskListPlugin"/> class.
     /// </summary>
     /// <param name="connector">Task list connector.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public TaskListSkill(ITaskManagementConnector connector, ILoggerFactory? loggerFactory = null)
+    public TaskListPlugin(ITaskManagementConnector connector, ILoggerFactory? loggerFactory = null)
     {
         Ensure.NotNull(connector, nameof(connector));
 
         this._connector = connector;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(TaskListSkill)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(TaskListPlugin)) : NullLogger.Instance;
     }
 
     /// <summary>

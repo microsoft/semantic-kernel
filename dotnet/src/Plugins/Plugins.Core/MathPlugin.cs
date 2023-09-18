@@ -3,17 +3,17 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-namespace Microsoft.SemanticKernel.Skills.Core;
+namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
-/// MathSkill provides a set of functions to make Math calculations.
+/// MathPlugin provides a set of functions to make Math calculations.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("math", new MathSkill());
+/// Usage: kernel.ImportSkill("math", new MathPlugin());
 /// Examples:
 /// {{math.Add}}         => Returns the sum of FirstNumber and SecondNumber (provided in the SKContext)
 /// </example>
-public sealed class MathSkill
+public sealed class MathPlugin
 {
     /// <summary>
     /// Returns the Addition result of initial and amount values provided.

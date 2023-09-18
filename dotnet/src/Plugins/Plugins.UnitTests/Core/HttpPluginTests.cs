@@ -6,14 +6,14 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.Core;
+namespace SemanticKernel.Plugins.UnitTests.Core;
 
-public class HttpSkillTests : IDisposable
+public class HttpPluginTests : IDisposable
 {
     private readonly string _content = "hello world";
     private readonly string _uriString = "http://www.example.com";
@@ -28,7 +28,7 @@ public class HttpSkillTests : IDisposable
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        var skill = new HttpSkill();
+        var skill = new HttpPlugin();
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class HttpSkillTests : IDisposable
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var skill = new HttpSkill();
+        var skill = new HttpPlugin();
 
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportSkill(skill, "http");
@@ -48,7 +48,7 @@ public class HttpSkillTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var skill = new HttpSkill(client);
+        var skill = new HttpPlugin(client);
 
         // Act
         var result = await skill.GetAsync(this._uriString);
@@ -64,7 +64,7 @@ public class HttpSkillTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var skill = new HttpSkill(client);
+        var skill = new HttpPlugin(client);
 
         // Act
         var result = await skill.PostAsync(this._uriString, this._content);
@@ -80,7 +80,7 @@ public class HttpSkillTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var skill = new HttpSkill(client);
+        var skill = new HttpPlugin(client);
 
         // Act
         var result = await skill.PutAsync(this._uriString, this._content);
@@ -96,7 +96,7 @@ public class HttpSkillTests : IDisposable
         // Arrange
         var mockHandler = this.CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var skill = new HttpSkill(client);
+        var skill = new HttpPlugin(client);
 
         // Act
         var result = await skill.DeleteAsync(this._uriString);
