@@ -20,13 +20,16 @@
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.21.0-preview.23266.6" />
+
     <!-- Microsoft.Extensions.Logging -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
     <!-- Microsoft.Extensions.Configuration -->
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
+      Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
