@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Query;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 
 /// <summary>
 /// Represents a query string builder for REST API operations.

@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI;

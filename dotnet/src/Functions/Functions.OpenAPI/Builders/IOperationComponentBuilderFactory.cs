@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Query;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Builders;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 
 /// <summary>
 /// Defines an interface for creating builders used to construct various components(path, query string, payload, etc...) of REST API operations.

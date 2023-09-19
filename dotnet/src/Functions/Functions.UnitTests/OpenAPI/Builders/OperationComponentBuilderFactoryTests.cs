@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Skills.OpenAPI.Builders;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.OpenAPI.Builders;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders;
 public class OperationComponentBuilderFactoryTests
 {
     [Fact]

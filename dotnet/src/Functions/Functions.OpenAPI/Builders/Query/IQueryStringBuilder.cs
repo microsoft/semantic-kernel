@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
-namespace Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Query;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 
 /// <summary>
 /// Represents a query string builder interface for REST API operations.

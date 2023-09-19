@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Moq;
 using Xunit;

@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Query;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.OpenAPI.Builders;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders;
 public class QueryStringBuilderTests
 {
     private readonly QueryStringBuilder sut;
