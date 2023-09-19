@@ -21,7 +21,7 @@ internal sealed class IReadOnlySkillCollectionTypeProxy
     {
         get
         {
-            return this._collection.GetFunctionsView()
+            return this._collection.GetFunctionViews()
                 .GroupBy(f => f.SkillName)
                 .Select(g => new SkillProxy(g) { Name = g.Key })
                 .ToArray();

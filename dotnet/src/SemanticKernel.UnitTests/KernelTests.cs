@@ -492,7 +492,7 @@ public class KernelTests
                 Assert.Fail("Skills collection is missing");
             }
 
-            foreach (var function in context.Skills.GetFunctionsView())
+            foreach (var function in context.Skills.GetFunctionViews())
             {
                 context.Variables[$"{function.SkillName}.{function.Name}"] = function.Description;
             }

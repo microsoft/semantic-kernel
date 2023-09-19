@@ -63,7 +63,7 @@ public static class SKContextSequentialPlannerExtensions
         string? semanticQuery = null,
         CancellationToken cancellationToken = default)
     {
-        var functionsView = context.Skills.GetFunctionsView();
+        var functionsView = context.Skills.GetFunctionViews();
 
         var availableFunctions = functionsView
             .Where(s => !config.ExcludedSkills.Contains(s.SkillName, StringComparer.OrdinalIgnoreCase)

@@ -39,7 +39,7 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<FunctionView> GetFunctionsView()
+    public IReadOnlyList<FunctionView> GetFunctionViews()
     {
         return new List<FunctionView>();
     }

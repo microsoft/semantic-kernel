@@ -85,7 +85,7 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
-    public IReadOnlyList<FunctionView> GetFunctionsView()
+    public IReadOnlyList<FunctionView> GetFunctionViews()
     {
         var result = new List<FunctionView>();
 

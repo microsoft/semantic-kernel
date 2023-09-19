@@ -93,7 +93,7 @@ public class SequentialPlanParserTests
             }
         }
 
-        skills.Setup(x => x.GetFunctionsView()).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
     }
 
     [Fact]

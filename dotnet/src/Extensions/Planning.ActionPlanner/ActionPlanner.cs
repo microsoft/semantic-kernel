@@ -318,7 +318,7 @@ Goal: tell me a joke.
         var excludedSkills = this._config.ExcludedSkills ?? new();
         var excludedFunctions = this._config.ExcludedFunctions ?? new();
 
-        var availableFunctions = context.Skills.GetFunctionsView()
+        var availableFunctions = context.Skills.GetFunctionViews()
                 .Where(s => !excludedSkills.Contains(s.SkillName, StringComparer.CurrentCultureIgnoreCase)
                     && !excludedFunctions.Contains(s.Name, StringComparer.CurrentCultureIgnoreCase))
                 .OrderBy(x => x.SkillName)

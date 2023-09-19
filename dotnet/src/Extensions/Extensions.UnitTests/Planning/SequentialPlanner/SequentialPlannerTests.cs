@@ -56,7 +56,7 @@ public sealed class SequentialPlannerTests
             skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
         }
 
-        skills.Setup(x => x.GetFunctionsView()).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedSkills = input.Select(x => x.skillName).ToList();
@@ -150,7 +150,7 @@ public sealed class SequentialPlannerTests
         var kernel = new Mock<IKernel>();
         var skills = new Mock<ISkillCollection>();
 
-        skills.Setup(x => x.GetFunctionsView()).Returns(new List<FunctionView>());
+        skills.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
 
         var planString = "<plan>notvalid<</plan>";
         var returnContext = new SKContext(

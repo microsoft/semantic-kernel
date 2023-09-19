@@ -47,8 +47,8 @@ public interface IReadOnlySkillCollection
     bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction);
 
     /// <summary>
-    /// Get all registered functions details, minus the delegates
+    /// Get a snapshot all registered functions details, minus the delegates
     /// </summary>
     /// <returns>An object containing all the functions details</returns>
-    IReadOnlyList<FunctionView> GetFunctionsView();
+    IReadOnlyList<FunctionView> GetFunctionViews();
 }

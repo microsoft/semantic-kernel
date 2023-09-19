@@ -108,7 +108,7 @@ public sealed class SKContext
 
             if (this.Skills is IReadOnlySkillCollection skills)
             {
-                var view = skills.GetFunctionsView();
+                var view = skills.GetFunctionViews();
                 display += $", Skills = {view.Count}";
             }
 

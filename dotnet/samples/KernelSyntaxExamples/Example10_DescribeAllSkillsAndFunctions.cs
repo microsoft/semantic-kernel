@@ -49,7 +49,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
             description: "Write a bedtime story",
             maxTokens: 150);
 
-        var functions = kernel.Skills.GetFunctionsView();
+        var functions = kernel.Skills.GetFunctionViews();
 
         Console.WriteLine("*****************************************");
         Console.WriteLine("****** Registered skills and functions ******");
