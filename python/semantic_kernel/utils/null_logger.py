@@ -35,3 +35,6 @@ class NullLogger(Logger, metaclass=_NullerMeta):
 
     def __init__(self):
         super().__init__(None)
+
+
+__all__ = ["NullLogger"]
