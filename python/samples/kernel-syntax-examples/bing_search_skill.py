@@ -19,15 +19,15 @@ async def main():
     connector = BingConnector(api_key=os.getenv("BING_API_KEY"))
     web_skill = kernel.import_skill(WebSearchEngineSkill(connector), "WebSearch")
 
-    prompt = "Who is Leonardo DiCaprio's current girlfriend?"
+    prompt = "How many Oscars has Meryl Streep won?"
     search_async = web_skill["searchAsync"]
     result = await search_async.invoke_async(prompt)
     print(result)
 
     """
     Output:
-    ["Celebrity Celebrity News Everything You Need to Know About Leonardo DiCaprio and Camila Morrone's
-    Relationship From the beginning of their romance to today, we track their relationship here. By..."]
+    ['M eryl Streep has broken her own record to become the most nominated actor in the history 
+    of the Academy Awards for the second year in a row. Streep received her 21st Oscars nomination on...']
     """
 
     prompt = """
