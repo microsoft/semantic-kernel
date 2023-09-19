@@ -59,6 +59,7 @@ public sealed class ActionPlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
         var getPromptTemplateMock = new Mock<Func<string>>();
         var config = new ActionPlannerConfig()
         {

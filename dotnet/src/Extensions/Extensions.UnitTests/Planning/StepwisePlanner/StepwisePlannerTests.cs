@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Planning.Stepwise;
 using Moq;
@@ -15,6 +16,7 @@ public sealed class StepwisePlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
         var getPromptTemplateMock = new Mock<Func<string>>();
         var config = new StepwisePlannerConfig()
         {
