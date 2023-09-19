@@ -322,7 +322,7 @@ public class StepwisePlanner : IStepwisePlanner
         }
 
         AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
-        context.Variables.Update("Result not found, review 'stepsTaken' to see what happened.");
+        context.Variables.Update(NoFinalAnswerFoundMessage);
 
         return context;
     }
@@ -760,6 +760,11 @@ public class StepwisePlanner : IStepwisePlanner
     /// The regex for parsing the final answer response
     /// </summary>
     private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL[_\s\-]?ANSWER\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+    /// <summary>
+    /// The message to include when no final answer is found
+    /// </summary>
+    private const string NoFinalAnswerFoundMessage = "Result not found, review 'stepsTaken' to see what happened.";
 
     #endregion private
 }

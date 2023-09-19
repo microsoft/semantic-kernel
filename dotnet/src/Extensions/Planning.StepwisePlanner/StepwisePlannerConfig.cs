@@ -40,7 +40,8 @@ public sealed class StepwisePlannerConfig : PlannerConfigBase
     #region Execution configuration
 
     /// <summary>
-    /// The maximum number of total tokens to allow in a completion request (prompt + completion)
+    /// The maximum total number of tokens to allow in a completion request,
+    /// which includes the tokens from the prompt and completion
     /// </summary>
     /// <remarks>
     /// Default value is 4000.
