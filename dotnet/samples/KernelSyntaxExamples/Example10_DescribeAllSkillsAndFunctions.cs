@@ -3,8 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
 using Skills;
 
@@ -27,11 +27,11 @@ public static class Example10_DescribeAllSkillsAndFunctions
             .Build();
 
         // Import a native skill
-        var skill1 = new StaticTextSkill();
+        var skill1 = new StaticTextPlugin();
         kernel.ImportSkill(skill1, "StaticTextskill");
 
         // Import another native skill
-        var skill2 = new TextSkill();
+        var skill2 = new TextPlugin();
         kernel.ImportSkill(skill2, "AnotherTextskill");
 
         // Import a semantic skill
