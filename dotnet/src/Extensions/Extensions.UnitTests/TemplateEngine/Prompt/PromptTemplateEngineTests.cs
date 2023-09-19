@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -25,6 +26,7 @@ public sealed class PromptTemplateEngineTests
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlySkillCollection> _skills;
     private readonly ITestOutputHelper _logger;
+    private readonly Mock<IKernel> _kernel;
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
@@ -32,6 +34,7 @@ public sealed class PromptTemplateEngineTests
         this._target = new PromptTemplateEngine(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
+        this._kernel = new Mock<IKernel>();
     }
 
     [Fact]
@@ -385,8 +388,8 @@ public sealed class PromptTemplateEngineTests
     private SKContext MockContext()
     {
         return new SKContext(
+            this._kernel.Object,
             this._variables,
-            skills: this._skills.Object,
-            loggerFactory: TestConsoleLogger.LoggerFactory);
+            skills: this._skills.Object);
     }
 }
