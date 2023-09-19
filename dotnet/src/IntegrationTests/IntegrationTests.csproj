@@ -46,9 +46,9 @@
     <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
-    <ProjectReference Include="..\Skills\Skills.Core\Skills.Core.csproj" />
-    <ProjectReference Include="..\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
-    <ProjectReference Include="..\Skills\Skills.Web\Skills.Web.csproj" />
+    <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
+    <ProjectReference Include="..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
+    <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 

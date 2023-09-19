@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Plugins.Web;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -16,7 +16,7 @@ public static class Example11_WebSearchQueries
         IKernel kernel = Kernel.Builder.WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
         // Load native skills
-        var skill = new SearchUrlSkill();
+        var skill = new SearchUrlPlugin();
         var bing = kernel.ImportSkill(skill, "search");
 
         // Run

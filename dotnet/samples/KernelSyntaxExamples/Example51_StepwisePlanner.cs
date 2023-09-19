@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
-using NCalcSkills;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using NCalcPlugins;
 using RepoUtils;
 
 /**
@@ -108,11 +108,11 @@ public static class Example51_StepwisePlanner
     {
         currentExecutionResult.question = question;
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "semanticCalculator");
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
+        kernel.ImportSkill(new TimePlugin(), "time");
 
         // StepwisePlanner is instructed to depend on available functions.
         // We expose this function to increase the flexibility in it's ability to answer
@@ -155,7 +155,7 @@ public static class Example51_StepwisePlanner
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
             var plan = planner.CreatePlan(question);
 
-            result = await plan.InvokeAsync(kernel.CreateNewContext());
+            result = await kernel.RunAsync(plan);
 
             if (result.Result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
             {
