@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Planning.StepwisePlanner;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
