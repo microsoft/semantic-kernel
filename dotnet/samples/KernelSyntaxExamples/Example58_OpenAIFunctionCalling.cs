@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 /**
@@ -16,7 +16,7 @@ using RepoUtils;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example58_FunctionCalling
+public static class Example58_OpenAIFunctionCalling
 {
     public static async Task RunAsync()
     {
@@ -64,25 +64,23 @@ public static class Example58_FunctionCalling
 
         // Check for message response
         var chatMessage = await chatResult.GetChatMessageAsync();
-        if (string.IsNullOrEmpty(chatMessage.Content))
+        if (!string.IsNullOrEmpty(chatMessage.Content))
         {
             Console.WriteLine(chatMessage.Content);
         }
 
         // Check for function response
-        var functionCall = chatResult.ModelResult.GetResult<ChatModelResult>().Choice.Message.FunctionCall;
-        if (functionCall is not null)
+        OpenAIFunctionResult? functionResult = chatResult.GetFunctionResult();
+        if (functionResult is not null)
         {
-            FunctionCallResponse functionResponse = FunctionCallResponse.FromFunctionCall(functionCall);
-
-            Console.WriteLine("Function name: " + functionResponse.FunctionName);
-            Console.WriteLine("Skill name: " + functionResponse.SkillName);
+            Console.WriteLine("Function name: " + functionResult.FunctionName);
+            Console.WriteLine("Plugin name: " + functionResult.PluginName);
             Console.WriteLine("Arguments: ");
 
             var context = kernel.CreateNewContext();
-            if (context.Skills!.TryGetFunction(functionResponse.SkillName, functionResponse.FunctionName, out ISKFunction? func))
+            if (context.Skills!.TryGetFunction(functionResult.PluginName, functionResult.FunctionName, out ISKFunction? func))
             {
-                foreach (var parameter in functionResponse.Parameters)
+                foreach (var parameter in functionResult.Parameters)
                 {
                     Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
 
@@ -96,7 +94,7 @@ public static class Example58_FunctionCalling
             }
             else
             {
-                Console.WriteLine($"Error: Function {functionResponse.SkillName}.{functionResponse.FunctionName} not found.");
+                Console.WriteLine($"Error: Function {functionResult.PluginName}.{functionResult.FunctionName} not found.");
             }
         }
     }

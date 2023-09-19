@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -32,7 +31,8 @@ public static class FunctionViewExtensions
 
         return new OpenAIFunction
         {
-            Name = (functionView.SkillName.IsNullOrEmpty() ? functionView.Name : string.Join("-", functionView.SkillName, functionView.Name)),
+            FunctionName = functionView.Name,
+            PluginName = functionView.SkillName,
             Description = functionView.Description,
             Parameters = openAIParams,
         };

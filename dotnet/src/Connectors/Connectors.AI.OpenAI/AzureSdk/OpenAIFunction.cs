@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -24,7 +25,7 @@ public class OpenAIFunctionParameter
     /// <summary>
     /// Type of the parameter.
     /// </summary>
-    public string Type { get; set; } = string.Empty; // TODO: enum?
+    public string Type { get; set; } = string.Empty;
 
     /// <summary>
     /// Whether the parameter is required or not.
@@ -38,9 +39,19 @@ public class OpenAIFunctionParameter
 public class OpenAIFunction
 {
     /// <summary>
+    /// Separator between the plugin name and the function name
+    /// </summary>
+    public const string NameSeparator = "-";
+
+    /// <summary>
     /// Name of the function
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string FunctionName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of the function's associated plugin, if applicable
+    /// </summary>
+    public string PluginName { get; set; } = string.Empty;
 
     /// <summary>
     /// Description of the function
@@ -76,18 +87,17 @@ public class OpenAIFunction
                 requiredParams.Add(param.Name);
             }
         }
-
         return new FunctionDefinition
         {
-            Name = this.Name,
+            Name = (this.PluginName.IsNullOrEmpty() ? this.FunctionName : string.Join(OpenAIFunction.NameSeparator, this.PluginName, this.FunctionName)),
             Description = this.Description,
             Parameters = BinaryData.FromObjectAsJson(
-                new
-                {
-                    type = "object",
-                    properties = paramProperties,
-                    required = requiredParams,
-                }),
+            new
+            {
+                type = "object",
+                properties = paramProperties,
+                required = requiredParams,
+            }),
         };
     }
 }
