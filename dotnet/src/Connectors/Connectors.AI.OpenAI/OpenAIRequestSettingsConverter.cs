@@ -23,48 +23,43 @@ public class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSetting
             {
                 string? propertyName = reader.GetString();
 
+                if (propertyName is not null)
+                {
+                    propertyName = propertyName.ToUpperInvariant().Replace("_", string.Empty);
+                }
+
                 reader.Read();
 
                 switch (propertyName)
                 {
-                    case "temperature":
-                    case "Temperature":
+                    case "TEMPERATURE":
                         requestSettings.Temperature = reader.GetDouble();
                         break;
-                    case "top_p":
-                    case "TopP":
+                    case "TOPP":
                         requestSettings.TopP = reader.GetDouble();
                         break;
-                    case "frequency_penalty":
-                    case "FrequencyPenalty":
+                    case "FREQUENCYPENALTY":
                         requestSettings.FrequencyPenalty = reader.GetDouble();
                         break;
-                    case "presence_penalty":
-                    case "PresencePenalty":
+                    case "PRESENCEPENALTY":
                         requestSettings.PresencePenalty = reader.GetDouble();
                         break;
-                    case "max_tokens":
-                    case "MaxTokens":
+                    case "MAXTOKENS":
                         requestSettings.MaxTokens = reader.GetInt32();
                         break;
-                    case "stop_sequences":
-                    case "StopSequences":
+                    case "STOPSEQUENCES":
                         requestSettings.StopSequences = JsonSerializer.Deserialize<IList<string>>(ref reader, options) ?? Array.Empty<string>();
                         break;
-                    case "results_per_prompt":
-                    case "ResultsPerPrompt":
+                    case "RESULTSPERPROMPT":
                         requestSettings.ResultsPerPrompt = reader.GetInt32();
                         break;
-                    case "chat_system_prompt":
-                    case "ChatSystemPrompt":
+                    case "CHATSYSTEMPROMPT":
                         requestSettings.ChatSystemPrompt = reader.GetString() ?? OpenAIRequestSettings.DefaultChatSystemPrompt;
                         break;
-                    case "token_selection_biases":
-                    case "TokenSelectionBiases":
+                    case "TOKENSELECTIONBIASES":
                         requestSettings.TokenSelectionBiases = JsonSerializer.Deserialize<IDictionary<int, int>>(ref reader, options) ?? new Dictionary<int, int>();
                         break;
-                    case "service_id":
-                    case "ServiceId":
+                    case "SERVICEID":
                         requestSettings.ServiceId = reader.GetString();
                         break;
                     default:

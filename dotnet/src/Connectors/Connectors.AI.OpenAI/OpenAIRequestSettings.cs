@@ -105,23 +105,28 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// <returns>An instance of OpenAIRequestSettings</returns>
     public static OpenAIRequestSettings FromRequestSettings(AIRequestSettings? requestSettings, int? defaultMaxTokens = null)
     {
-        if (requestSettings is OpenAIRequestSettings retval1)
+        if (requestSettings is null)
         {
-            return retval1;
+            return new OpenAIRequestSettings()
+            {
+                MaxTokens = defaultMaxTokens
+            };
+        }
+
+        if (requestSettings is OpenAIRequestSettings requestSettingsOpenAIRequestSettings)
+        {
+            return requestSettingsOpenAIRequestSettings;
         }
 
         var json = JsonSerializer.Serialize(requestSettings);
-        var retval2 = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
+        var openAIRequestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(json, s_options);
 
-        if (retval2 is not null)
+        if (openAIRequestSettings is not null)
         {
-            return retval2;
+            return openAIRequestSettings;
         }
 
-        return new OpenAIRequestSettings()
-        {
-            MaxTokens = defaultMaxTokens
-        };
+        throw new ArgumentException("Invalid request settings, cannot convert to OpenAIRequestSettings", nameof(requestSettings));
     }
 
     #region private ================================================================================

@@ -16,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
@@ -257,33 +256,22 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             };
         }
 
-        if (requestSettings.GetType() == typeof(TextCompletionRequest))
+        if (requestSettings is TextCompletionRequest requestSettingsTextCompletionRequest)
         {
-            var request = (TextCompletionRequest)requestSettings;
-            request.Prompt = text;
-            return request;
+            requestSettingsTextCompletionRequest.Prompt = text;
+            return requestSettingsTextCompletionRequest;
         }
 
-        TextCompletionRequest? textCompletionRequest = null;
+        var json = JsonSerializer.Serialize(requestSettings);
+        var textCompletionRequest = JsonSerializer.Deserialize<TextCompletionRequest>(json);
 
-        if (requestSettings.GetType() == typeof(JsonElement))
+        if (textCompletionRequest is not null)
         {
-            textCompletionRequest = Json.Deserialize<TextCompletionRequest>(requestSettings.ToString());
-        }
-        else
-        {
-            textCompletionRequest = Json.Deserialize<TextCompletionRequest>(JsonSerializer.Serialize(requestSettings));
+            textCompletionRequest.Prompt = text;
+            return textCompletionRequest;
         }
 
-        if (textCompletionRequest is null)
-        {
-            textCompletionRequest = new TextCompletionRequest()
-            {
-                Prompt = text
-            };
-        }
-
-        return textCompletionRequest;
+        throw new ArgumentException("Invalid request settings, cannot convert to TextCompletionRequest", nameof(requestSettings));
     }
 
     /// <summary>

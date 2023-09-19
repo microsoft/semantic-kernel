@@ -94,7 +94,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, null);
+        await sut.GetCompletionsAsync(CompletionText);
         var expectedUri = new UriBuilder(this._endPointUri)
         {
             Path = OobaboogaTextCompletion.BlockingUriPath,
