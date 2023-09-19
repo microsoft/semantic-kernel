@@ -256,7 +256,10 @@ public sealed class Plan : IPlan
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            var resultValue = result.Context.Result.Trim();
+            // result.Context.Result is used for backward compatibility and can be removed in the future
+            var resultString = result.GetValue<string>() ?? result.Context.Result;
+
+            var resultValue = resultString.Trim();
 
             #region Update State
 
