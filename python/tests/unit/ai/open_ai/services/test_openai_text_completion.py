@@ -5,11 +5,9 @@ from logging import Logger
 import pytest
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
     OpenAITextCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
-    OpenAITextCompletionBase,
 )
 
 
@@ -27,7 +25,7 @@ def test_open_ai_text_completion_init() -> None:
 
     assert open_ai_text_completion.model_id == model_id
     assert open_ai_text_completion.api_type == "open_ai"
-    assert isinstance(open_ai_text_completion, OpenAITextCompletionBase)
+    assert isinstance(open_ai_text_completion, TextCompletionClientBase)
 
 
 def test_open_ai_text_completion_init_with_empty_model_id() -> None:

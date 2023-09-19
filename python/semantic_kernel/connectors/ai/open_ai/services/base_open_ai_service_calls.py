@@ -87,6 +87,7 @@ class OpenAIServiceCalls(AIServiceClientBase, ABC):
                 and len(request_settings.token_selection_biases) > 0
                 else {}
             ),
+            "n": request_settings.number_of_responses,
         }
         if hasattr(request_settings, "logprobs"):
             base_args["logprobs"] = request_settings.logprobs
@@ -100,7 +101,7 @@ class OpenAIServiceCalls(AIServiceClientBase, ABC):
                     {"role": role, "content": message} for role, message in messages
                 ]
             if prompt:
-                model_args["messages"] = [("user", prompt)]
+                model_args["messages"] = [{"role": "user", "content": prompt}]
             if "messages" not in model_args:
                 raise ValueError(
                     "The messages cannot be `None` or empty, please use either prompt or messages"

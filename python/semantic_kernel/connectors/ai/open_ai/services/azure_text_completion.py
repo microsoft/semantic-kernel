@@ -140,7 +140,7 @@ class AzureTextCompletion(OpenAIServiceCalls, TextCompletionClientBase):
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         response = await self._send_request(
-            prompt=prompt, request_settings=settings, stream=True
+            prompt=prompt, request_settings=settings, stream=False
         )
 
         if len(response.choices) == 1:

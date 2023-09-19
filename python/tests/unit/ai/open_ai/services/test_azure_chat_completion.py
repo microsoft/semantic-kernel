@@ -6,14 +6,12 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from pydantic import ValidationError
 
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.chat_completion_client_base import (
+    ChatCompletionClientBase,
 )
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import (
     AzureChatCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
-    OpenAIChatCompletionBase,
 )
 
 
@@ -36,7 +34,7 @@ def test_azure_chat_completion_init() -> None:
     assert azure_chat_completion.endpoint == endpoint
     assert azure_chat_completion.api_version == api_version
     assert azure_chat_completion.api_type == "azure"
-    assert isinstance(azure_chat_completion, OpenAIChatCompletionBase)
+    assert isinstance(azure_chat_completion, ChatCompletionClientBase)
 
 
 def test_azure_chat_completion_init_with_empty_deployment_name() -> None:
@@ -111,7 +109,7 @@ def test_azure_chat_completion_init_with_invalid_endpoint() -> None:
 async def test_azure_chat_completion_call_with_parameters() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -121,8 +119,9 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
         api_version = "2023-03-15-preview"
         logger = Logger("test_logger")
         prompt = "hello world"
-        messages = [{"role": "user", "content": prompt}]
-        complete_request_settings = CompleteRequestSettings()
+        messages_in = [("user", prompt)]
+        messages_out = [{"role": "user", "content": prompt}]
+        complete_request_settings = ChatRequestSettings()
 
         azure_chat_completion = AzureChatCompletion(
             deployment_name=deployment_name,
@@ -132,16 +131,17 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
             log=logger,
         )
 
-        await azure_chat_completion.complete_async(prompt, complete_request_settings)
+        await azure_chat_completion.complete_chat_async(
+            messages_in, complete_request_settings
+        )
 
         mock_openai.ChatCompletion.acreate.assert_called_once_with(
-            engine=deployment_name,
+            deployment_id=deployment_name,
             api_key=api_key,
             api_type=api_type,
             api_base=endpoint,
             api_version=api_version,
-            organization=None,
-            messages=messages,
+            messages=messages_out,
             temperature=complete_request_settings.temperature,
             top_p=complete_request_settings.top_p,
             n=complete_request_settings.number_of_responses,
@@ -158,7 +158,7 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
 async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -169,7 +169,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         logger = Logger("test_logger")
         prompt = "hello world"
         messages = [{"role": "user", "content": prompt}]
-        complete_request_settings = CompleteRequestSettings()
+        complete_request_settings = ChatRequestSettings()
 
         token_bias = {1: -100}
         complete_request_settings.token_selection_biases = token_bias
@@ -185,12 +185,11 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
         await azure_chat_completion.complete_async(prompt, complete_request_settings)
 
         mock_openai.ChatCompletion.acreate.assert_called_once_with(
-            engine=deployment_name,
+            deployment_id=deployment_name,
             api_key=api_key,
             api_type=api_type,
             api_base=endpoint,
             api_version=api_version,
-            organization=None,
             messages=messages,
             temperature=complete_request_settings.temperature,
             top_p=complete_request_settings.top_p,
@@ -208,7 +207,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -219,7 +218,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> 
         logger = Logger("test_logger")
         prompt = "hello world"
         messages = [{"role": "user", "content": prompt}]
-        complete_request_settings = CompleteRequestSettings()
+        complete_request_settings = ChatRequestSettings()
 
         stop = ["!"]
         complete_request_settings.stop_sequences = stop

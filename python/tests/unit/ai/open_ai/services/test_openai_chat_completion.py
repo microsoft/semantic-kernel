@@ -5,11 +5,9 @@ from logging import Logger
 import pytest
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
     OpenAIChatCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
-    OpenAIChatCompletionBase,
 )
 
 
@@ -27,7 +25,7 @@ def test_open_ai_chat_completion_init() -> None:
 
     assert open_ai_chat_completion.model_id == model_id
     assert open_ai_chat_completion.api_type == "open_ai"
-    assert isinstance(open_ai_chat_completion, OpenAIChatCompletionBase)
+    assert isinstance(open_ai_chat_completion, ChatCompletionClientBase)
 
 
 def test_open_ai_chat_completion_init_with_empty_model_id() -> None:

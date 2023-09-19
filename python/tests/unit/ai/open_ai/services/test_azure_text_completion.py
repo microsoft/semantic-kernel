@@ -6,14 +6,12 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from pydantic import ValidationError
 
+from semantic_kernel.connectors.ai import TextCompletionClientBase
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
     AzureTextCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
-    OpenAITextCompletionBase,
 )
 
 
@@ -36,7 +34,7 @@ def test_azure_text_completion_init() -> None:
     assert azure_text_completion.endpoint == endpoint
     assert azure_text_completion.api_version == api_version
     assert azure_text_completion.api_type == "azure"
-    assert isinstance(azure_text_completion, OpenAITextCompletionBase)
+    assert isinstance(azure_text_completion, TextCompletionClientBase)
 
 
 def test_azure_text_completion_init_with_empty_deployment_name() -> None:
@@ -111,7 +109,7 @@ def test_azure_text_completion_init_with_invalid_endpoint() -> None:
 async def test_azure_text_completion_call_with_parameters() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -133,12 +131,11 @@ async def test_azure_text_completion_call_with_parameters() -> None:
         await azure_text_completion.complete_async(prompt, complete_request_settings)
 
         mock_openai.Completion.acreate.assert_called_once_with(
-            engine=deployment_name,
+            deployment_id=deployment_name,
             api_key=api_key,
             api_type=api_type,
             api_base=endpoint,
             api_version=api_version,
-            organization=None,
             prompt=prompt,
             temperature=complete_request_settings.temperature,
             max_tokens=complete_request_settings.max_tokens,
@@ -149,6 +146,7 @@ async def test_azure_text_completion_call_with_parameters() -> None:
             n=complete_request_settings.number_of_responses,
             stream=False,
             logit_bias={},
+            logprobs=0,
         )
 
 
@@ -156,7 +154,7 @@ async def test_azure_text_completion_call_with_parameters() -> None:
 async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -182,12 +180,11 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() 
         await azure_text_completion.complete_async(prompt, complete_request_settings)
 
         mock_openai.Completion.acreate.assert_called_once_with(
-            engine=deployment_name,
+            deployment_id=deployment_name,
             api_key=api_key,
             api_type=api_type,
             api_base=endpoint,
             api_version=api_version,
-            organization=None,
             prompt=prompt,
             temperature=complete_request_settings.temperature,
             max_tokens=complete_request_settings.max_tokens,
@@ -198,6 +195,7 @@ async def test_azure_text_completion_call_with_parameters_logit_bias_not_none() 
             n=complete_request_settings.number_of_responses,
             stream=False,
             logit_bias=token_bias,
+            logprobs=0,
         )
 
 
