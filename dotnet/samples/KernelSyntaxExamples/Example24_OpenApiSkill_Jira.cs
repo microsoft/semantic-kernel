@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Newtonsoft.Json;
 using RepoUtils;
 
@@ -43,12 +43,12 @@ public static class Example24_OpenApiSkill_Jira
         if (useLocalFile)
         {
             var apiSkillFile = "./../../../Skills/JiraSkill/openapi.json";
-            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillFile, new OpenApiSkillExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillFile, new OpenApiPluginExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
         }
         else
         {
             var apiSkillRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
-            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillRawFileURL, new OpenApiSkillExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillRawFileURL, new OpenApiPluginExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
         }
 
         // GetIssue Skill
