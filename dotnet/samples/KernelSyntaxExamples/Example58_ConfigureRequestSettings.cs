@@ -42,7 +42,7 @@ public static class Example58_ConfigureRequestSettings
 
         // Option 1:
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
-        var result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 256, Temperature = 0.7 });
+        var result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 60, Temperature = 0.7 });
         Console.WriteLine(result.Result);
 
         // Option 2:
@@ -54,7 +54,7 @@ public static class Example58_ConfigureRequestSettings
           ""description"": ""Say hello to an AI"",
           ""type"": ""completion"",
           ""completion"": {
-            ""max_tokens"": 60,
+            ""max_tokens"": 256,
             ""temperature"": 0.5,
             ""top_p"": 0.0,
             ""presence_penalty"": 0.0,
