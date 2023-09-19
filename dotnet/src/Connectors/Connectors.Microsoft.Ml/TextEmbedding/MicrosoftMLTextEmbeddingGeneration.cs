@@ -7,7 +7,6 @@ using System.Threading;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.ML.Tokenizers;
 
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
 namespace Microsoft.SemanticKernel;
@@ -32,8 +31,8 @@ public sealed class MsTextEmbeddingGeneration : ITextEmbeddingGeneration
     /// <param name="mergesFile">The file path containing the tokens's pairs list.</param>
     /// <param name="loggerFactory">Optional logger factory for logging.</param>
     public MsTextEmbeddingGeneration(
-        string mergeFilePath = @"merges.txt",
-        string vocabFilePath = @"vocab.json",
+        string mergeFilePath,
+        string vocabFilePath,
         ILoggerFactory? loggerFactory = null
     )
     {
