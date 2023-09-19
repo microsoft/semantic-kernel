@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.Planning.Stepwise;
+namespace SemanticKernel.Extensions.UnitTests.Planning.StepwisePlanner;
 
 public sealed class ParseResultTests
 {

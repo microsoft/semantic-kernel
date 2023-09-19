@@ -8,14 +8,13 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Action;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.Planning.Action;
+namespace SemanticKernel.Extensions.UnitTests.Planning.ActionPlanner;
 
 public sealed class ActionPlannerTests
 {

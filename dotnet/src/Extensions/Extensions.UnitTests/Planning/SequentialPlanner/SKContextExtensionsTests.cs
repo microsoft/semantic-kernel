@@ -12,7 +12,7 @@ using Moq;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.Planning.Sequential;
+namespace SemanticKernel.Extensions.UnitTests.Planning.SequentialPlanner;
 
 public class SKContextExtensionsTests
 {

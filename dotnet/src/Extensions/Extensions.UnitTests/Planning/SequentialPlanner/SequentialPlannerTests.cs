@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Extensions.UnitTests.Planning.Sequential;
+namespace SemanticKernel.Extensions.UnitTests.Planning.SequentialPlanner;
 
 public sealed class SequentialPlannerTests
 {

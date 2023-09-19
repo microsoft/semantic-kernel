@@ -13,7 +13,7 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.Extensions.UnitTests.Planning.Sequential;
+namespace SemanticKernel.Extensions.UnitTests.Planning.SequentialPlanner;
 
 public class SequentialPlanParserTests
 {
