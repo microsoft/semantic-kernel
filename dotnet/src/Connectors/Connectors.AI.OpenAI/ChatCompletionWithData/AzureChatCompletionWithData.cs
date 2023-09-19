@@ -286,7 +286,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             .ToList();
     }
 
-    private ChatHistory PrepareChatHistory(string text, dynamic requestSettings)
+    private ChatHistory PrepareChatHistory(string text, OpenAIRequestSettings requestSettings)
     {
         var chat = this.CreateNewChat(requestSettings.ChatSystemPrompt);
 

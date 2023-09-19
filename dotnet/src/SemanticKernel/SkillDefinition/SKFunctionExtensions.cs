@@ -21,11 +21,11 @@ public static class SKFunctionExtensions
     /// Configure the LLM settings used by semantic function.
     /// </summary>
     /// <param name="skFunction">Semantic function</param>
-    /// <param name="settings">Completion settings</param>
+    /// <param name="requestSettings">Request settings</param>
     /// <returns>Self instance</returns>
-    public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, dynamic settings)
+    public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, AIRequestSettings requestSettings)
     {
-        return skFunction.SetAIConfiguration(settings);
+        return skFunction.SetAIConfiguration(requestSettings);
     }
 
     /// <summary>
