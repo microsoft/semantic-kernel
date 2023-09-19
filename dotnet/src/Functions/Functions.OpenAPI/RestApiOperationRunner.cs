@@ -29,6 +29,11 @@ internal sealed class RestApiOperationRunner
     private readonly Dictionary<string, HttpContentFactory> _payloadFactoryByMediaType;
 
     /// <summary>
+    /// Factory for creating builders to construct REST API operation components, such as path, query string, payload, etc.
+    /// </summary>
+    private readonly IOperationComponentBuilderFactory _componentBuilderFactory;
+
+    /// <summary>
     /// An instance of the HttpClient class.
     /// </summary>
     private readonly HttpClient _httpClient;
@@ -58,6 +63,7 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
+    /// <param name="componentBuilderFactory">Factory for creating builders to construct REST API operation components, such as path, query string, payload, etc...</param>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="userAgent">Optional request-header field containing information about the user agent originating the request.</param>
@@ -67,12 +73,14 @@ internal sealed class RestApiOperationRunner
     /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
     public RestApiOperationRunner(
+        IOperationComponentBuilderFactory componentBuilderFactory,
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = null,
         bool enableDynamicPayload = false,
         bool enablePayloadNamespacing = false)
     {
+        this._componentBuilderFactory = componentBuilderFactory;
         this._httpClient = httpClient;
         this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
@@ -109,7 +117,7 @@ internal sealed class RestApiOperationRunner
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var url = operation.BuildOperationUrl(arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
+        var url = this.BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
 
         var headers = operation.RenderHeaders(arguments);
 
@@ -350,6 +358,27 @@ internal sealed class RestApiOperationRunner
         }
 
         return string.IsNullOrEmpty(propertyNamespace) ? propertyName : $"{propertyNamespace}.{propertyName}";
+    }
+
+    /// <summary>
+    /// Builds operation Url.
+    /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="arguments">The operation arguments.</param>
+    /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
+    /// <param name="apiHostUrl">The URL of REST API host.</param>
+    /// <returns>The operation Url.</returns>
+    private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    {
+        var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
+
+        var urlBuilder = new UriBuilder(url);
+
+        var queryStringBuilder = this._componentBuilderFactory.CreateQueryStringBuilder();
+
+        urlBuilder.Query = queryStringBuilder.Build(operation, arguments);
+
+        return urlBuilder.Uri;
     }
 
     #endregion
