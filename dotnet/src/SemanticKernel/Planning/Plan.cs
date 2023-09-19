@@ -323,7 +323,7 @@ public sealed class Plan : IPlan
         return new(name: this.Name,
                    skillName: this.SkillName,
                    description: this.Description,
-                   parameters: parameters);
+        };
     }
 
     /// <inheritdoc/>
