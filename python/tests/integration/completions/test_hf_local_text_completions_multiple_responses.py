@@ -152,5 +152,5 @@ async def test_text_generation_with_kwargs():
     print(
         f"Completion using context, additional variables, and additional string: '{output}'"
     )
-    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
+    print(f'n_responses : {num_of_responses}'+' lines : ',{output.count('\n')})
     assert len(output) > 0 and output.count('\n')==num_of_responses-1
