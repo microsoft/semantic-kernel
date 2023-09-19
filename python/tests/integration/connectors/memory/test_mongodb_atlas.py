@@ -12,6 +12,8 @@ from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store 
 )
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     MONGODB_FIELD_DESC,
+    generate_search_index_model,
+    wait_for_search_index_ready,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 
@@ -30,7 +32,9 @@ pytestmark = pytest.mark.skipif(
 DUPLICATE_INDEX_ERR_CODE = 68
 
 
-def is_equal_memory_record(mem1: MemoryRecord, mem2: MemoryRecord, with_embeddings):
+def is_equal_memory_record(
+    mem1: MemoryRecord, mem2: MemoryRecord, with_embeddings: bool
+):
     """Comparator for two memory records"""
 
     def dictify_memory_record(mem):
@@ -65,7 +69,7 @@ def test_collection():
 
 @pytest_asyncio.fixture
 async def vector_search_store():
-    async with MongoDBAtlasMemoryStore(dimensions=4) as memory:
+    async with MongoDBAtlasMemoryStore() as memory:
         # Delete all collections before and after
         for cname in await memory.get_collections_async():
             await memory.delete_collection_async(cname)
@@ -200,7 +204,10 @@ async def test_collection_knn_match(
 ):
     mem = memory_record_gen(3)
     await vector_search_store.upsert_async(test_collection, mem)
-    await vector_search_store.wait_for_search_index_ready(test_collection)
+    await vector_search_store.database[test_collection].create_search_index(
+        generate_search_index_model(dimensions=4)
+    )
+    await wait_for_search_index_ready(vector_search_store.database, test_collection)
     result, score = await vector_search_store.get_nearest_match_async(
         collection_name=test_collection,
         embedding=mem._embedding,
@@ -220,7 +227,10 @@ async def knn_matcher(
     post_filter=None,
 ):
     await vector_search_store.upsert_batch_async(test_collection, list(mems.values()))
-    await vector_search_store.wait_for_search_index_ready(test_collection)
+    await vector_search_store.database[test_collection].create_search_index(
+        generate_search_index_model(dimensions=4)
+    )
+    await wait_for_search_index_ready(vector_search_store.database, test_collection)
     assert await vector_search_store.does_collection_exist_async(test_collection)
     results_and_scores = await vector_search_store.get_nearest_matches_async(
         collection_name=test_collection,

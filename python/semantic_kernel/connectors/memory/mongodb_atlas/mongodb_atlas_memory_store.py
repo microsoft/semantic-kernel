@@ -1,22 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-import time
 import uuid
 from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
-from motor import MotorCommandCursor, motor_asyncio
+from motor import MotorCommandCursor, core, motor_asyncio
 from numpy import ndarray
 from pymongo import DeleteOne, ReadPreference, UpdateOne, results
-from pymongo.operations import SearchIndexModel
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
-    _DEFAULT_SEARCH_INDEX_NAME,
+    DEFAULT_DB_NAME,
+    DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
     document_to_memory_record,
-    generate_search_index_model,
     memory_record_to_mongo_document,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
@@ -24,25 +22,21 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
 from semantic_kernel.utils.settings import mongodb_atlas_settings_from_dot_env
 
-_DEFAULT_DB_NAME = "default"
-_POLL_INTERVAL = 1.0
-
 
 class MongoDBAtlasMemoryStore(MemoryStoreBase):
     """Memory Store for MongoDB Atlas Vector Search Connections"""
 
-    __slots__ = ("_mongo_client", "_logger", "__database_name", "__search_index_model")
+    __slots__ = ("_mongo_client", "_logger", "__database_name")
 
     _mongo_client: motor_asyncio.AsyncIOMotorClient
     _logger: Logger
     __database_name: str
-    __search_index_model: SearchIndexModel
+    __index_name: str
 
     def __init__(
         self,
-        dimensions: int,
+        index_name: Optional[str] = None,
         connection_string: Optional[str] = None,
-        similarity: Optional[str] = None,
         database_name: Optional[str] = None,
         logger: Optional[Logger] = None,
         read_preference: Optional[ReadPreference] = ReadPreference.PRIMARY,
@@ -52,39 +46,20 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             read_preference=read_preference,
         )
         self._logger = logger or NullLogger()
-        self.__database_name = database_name or _DEFAULT_DB_NAME
-        self.__search_index_model = generate_search_index_model(dimensions, similarity)
+        self.__database_name = database_name or DEFAULT_DB_NAME
+        self.__index_name = index_name or DEFAULT_SEARCH_INDEX_NAME
 
     @property
-    def search_index_model(self):
-        return self.__search_index_model
-
-    @property
-    def database_name(self):
+    def database_name(self) -> str:
         return self.__database_name
 
     @property
-    def database(self):
+    def database(self) -> core.AgnosticDatabase:
         return self._mongo_client[self.database_name]
 
-    def _is_queryable(self, indices) -> bool:
-        return indices and indices[0].get("queryable") is True
-
-    async def wait_for_search_index_ready(
-        self, collection_name: str, timeout: float = 60.0
-    ) -> None:
-        """Wait for a search index to be ready."""
-        wait_time = timeout
-
-        while not self._is_queryable(
-            await self.database[collection_name]
-            .list_search_indexes(_DEFAULT_SEARCH_INDEX_NAME)
-            .to_list(length=1)
-        ):
-            if wait_time <= 0:
-                raise TimeoutError(f"Index unavailable after waiting {timeout} seconds")
-            time.sleep(_POLL_INTERVAL)
-            wait_time -= _POLL_INTERVAL
+    @property
+    def index_name(self) -> str:
+        return self.__index_name
 
     async def close_async(self):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()"""
@@ -104,9 +79,6 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         # Defining the search index enforces its creation
         if not await self.does_collection_exist_async(collection_name):
             await self.database.create_collection(collection_name)
-            await self.database[collection_name].create_search_index(
-                self.search_index_model
-            )
 
     async def get_collections_async(
         self,
@@ -311,7 +283,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         pipeline: list[dict[str, Any]] = []
         vector_search_query: List[Mapping[str, Any]] = {
             "$search": {
-                "index": _DEFAULT_SEARCH_INDEX_NAME,
+                "index": DEFAULT_SEARCH_INDEX_NAME,
                 "knnBeta": {
                     "vector": embedding.tolist(),
                     "k": limit,
