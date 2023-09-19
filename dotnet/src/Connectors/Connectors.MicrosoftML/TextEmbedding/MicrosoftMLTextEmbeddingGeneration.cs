@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides text embedding generation using a BPE tokenizer.
 /// </summary>
-public sealed class MsTextEmbeddingGeneration : ITextEmbeddingGeneration
+public sealed class MicrosoftMLTextEmbeddingGeneration : ITextEmbeddingGeneration
 {
     private string vocabFilePath;
     private string mergeFilePath;
@@ -30,12 +30,12 @@ public sealed class MsTextEmbeddingGeneration : ITextEmbeddingGeneration
     private ILogger Logger { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the MsTextEmbeddingGeneration class.
+    /// Initializes a new instance of the MicrosoftMLTextEmbeddingGeneration class.
     /// </summary>
     /// <param name="vocabFile">The JSON file path containing the dictionary of string keys and their ids.</param>
     /// <param name="mergesFile">The file path containing the tokens's pairs list.</param>
     /// <param name="loggerFactory">Optional logger factory for logging.</param>
-    public MsTextEmbeddingGeneration(
+    public MicrosoftMLTextEmbeddingGeneration(
         string mergeFilePath,
         string vocabFilePath,
         ILoggerFactory? loggerFactory = null

@@ -31,7 +31,7 @@ public static class Example36_MicrosoftMLAndMemory
 
         var kernelWithCustomDb = Kernel.Builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithMsTextTextEmbeddingGenerationService()
+            .WithMicrosoftMLTextTextEmbeddingGenerationService()
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
