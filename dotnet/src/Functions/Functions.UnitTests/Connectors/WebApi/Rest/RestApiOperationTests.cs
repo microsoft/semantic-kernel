@@ -284,7 +284,7 @@ public class RestApiOperationTests
         var headers = sut.RenderHeaders(arguments);
 
         // Assert
-        Assert.Equal(1, headers.Count);
+        Assert.Single(headers);
 
         var headerOne = headers["fake_header_one"];
         Assert.Equal("fake_header_one_value", headerOne);
