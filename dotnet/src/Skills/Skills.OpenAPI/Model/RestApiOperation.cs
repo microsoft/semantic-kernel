@@ -110,36 +110,11 @@ public sealed class RestApiOperation
     /// <returns>The operation Url.</returns>
     public Uri BuildOperationUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
     {
+        var serverUrl = this.GetServerUrl(arguments, serverUrlOverride, apiHostUrl);
+
         var path = this.ReplacePathParameters(this.Path, arguments);
 
-        path = this.AddQueryString(path, arguments);
-
-        string serverUrlString;
-
-        if (serverUrlOverride is not null)
-        {
-            serverUrlString = serverUrlOverride.AbsoluteUri;
-        }
-        else if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlFromArgument))
-        {
-            // Override defined server url - https://api.example.com/v1 by the one from arguments.
-            serverUrlString = serverUrlFromArgument;
-        }
-        else
-        {
-            serverUrlString =
-                this.ServerUrl?.AbsoluteUri ??
-                apiHostUrl?.AbsoluteUri ??
-                throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
-        }
-
-        // make sure base url ends with trailing slash
-        if (!serverUrlString.EndsWith("/", StringComparison.OrdinalIgnoreCase))
-        {
-            serverUrlString += "/";
-        }
-
-        return new Uri(new Uri(serverUrlString), $"{path.TrimStart('/')}");
+        return new Uri(serverUrl, $"{path.TrimStart('/')}");
     }
 
     /// <summary>
@@ -263,6 +238,43 @@ public sealed class RestApiOperation
         var queryString = string.Join("&", queryStringSegments);
 
         return string.IsNullOrEmpty(queryString) ? path : $"{path}?{queryString}";
+    }
+
+    /// <summary>
+    /// Returns operation server Url.
+    /// </summary>
+    /// <param name="arguments">The operation arguments.</param>
+    /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
+    /// <param name="apiHostUrl">The URL of REST API host.</param>
+    /// <returns>The operation server url.</returns>
+    private Uri GetServerUrl(IDictionary<string, string> arguments, Uri? serverUrlOverride, Uri? apiHostUrl)
+    {
+        string serverUrlString;
+
+        if (serverUrlOverride is not null)
+        {
+            serverUrlString = serverUrlOverride.AbsoluteUri;
+        }
+        else if (arguments.TryGetValue(ServerUrlArgumentName, out string serverUrlFromArgument))
+        {
+            // Override defined server url - https://api.example.com/v1 by the one from arguments.
+            serverUrlString = serverUrlFromArgument;
+        }
+        else
+        {
+            serverUrlString =
+                this.ServerUrl?.AbsoluteUri ??
+                apiHostUrl?.AbsoluteUri ??
+                throw new InvalidOperationException($"Server url is not defined for operation {this.Id}");
+        }
+
+        // make sure base url ends with trailing slash
+        if (!serverUrlString.EndsWith("/", StringComparison.OrdinalIgnoreCase))
+        {
+            serverUrlString += "/";
+        }
+
+        return new Uri(serverUrlString);
     }
 
     private static readonly Regex s_urlParameterMatch = new(@"\{([\w-]+)\}");
