@@ -88,7 +88,7 @@ her a beggar. My father came to her aid and two years later they married.
         context.Variables.Set("topic", "people and places");
         context.Variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
 
-        var extractionResult = (await entityExtraction.InvokeAsync(context)).Result;
+        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).Result;
 
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
@@ -96,14 +96,14 @@ her a beggar. My father came to her aid and two years later they married.
         context.Variables.Update(extractionResult);
         context.Variables.Set("reference_context", s_groundingText);
 
-        var groundingResult = (await reference_check.InvokeAsync(context)).Result;
+        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).Result;
 
         Console.WriteLine("======== Reference Check ========");
         Console.WriteLine(groundingResult);
 
         context.Variables.Update(summaryText);
         context.Variables.Set("ungrounded_entities", groundingResult);
-        var excisionResult = await entity_excision.InvokeAsync(context);
+        var excisionResult = await kernel.RunAsync(context.Variables, entity_excision);
 
         Console.WriteLine("======== Excise Entities ========");
         Console.WriteLine(excisionResult.Result);
@@ -141,7 +141,7 @@ which are not grounded in the original.
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var results = await plan.InvokeAsync(s_groundingText);
+        var results = await kernel.RunAsync(s_groundingText, plan);
         Console.WriteLine(results.Result);
     }
 }
