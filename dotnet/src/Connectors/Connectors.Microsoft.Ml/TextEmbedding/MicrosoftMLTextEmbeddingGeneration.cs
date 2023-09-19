@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Threading.Tasks;
-using System;
-using System.Threading;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.ML.Tokenizers;
+using Microsoft.SemanticKernel.AI.Embeddings;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
