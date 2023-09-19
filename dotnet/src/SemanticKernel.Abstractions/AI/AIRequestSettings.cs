@@ -19,7 +19,6 @@ public class AIRequestSettings
     /// Service identifier.
     /// </summary>
     [JsonPropertyName("service_id")]
-    [JsonPropertyOrder(1)]
     public string? ServiceId { get; set; } = null;
 
     /// <summary>
