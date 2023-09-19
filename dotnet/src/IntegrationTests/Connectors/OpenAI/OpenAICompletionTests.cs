@@ -98,7 +98,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var func = target.CreateSemanticFunction(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.");
 
-        var result = await func.InvokeAsync("Jupiter");
+        var result = await func.InvokeAsync("Jupiter", target);
 
         Assert.NotNull(result);
         Assert.Contains("Saturn", result.Result, StringComparison.InvariantCultureIgnoreCase);
@@ -265,7 +265,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
+        await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)), target));
     }
 
     [Theory(Skip = "This test is for manual verification.")]

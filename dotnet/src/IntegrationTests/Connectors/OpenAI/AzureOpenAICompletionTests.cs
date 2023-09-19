@@ -56,7 +56,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         // Act
         var func = target.CreateSemanticFunction(prompt);
 
-        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => func.InvokeAsync(string.Empty, requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => func.InvokeAsync(string.Empty, target, requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
 
         // Assert
         Assert.NotNull(exception);
@@ -84,7 +84,7 @@ public sealed class AzureOpenAICompletionTests : IDisposable
         // Act
         var func = target.CreateSemanticFunction(prompt);
 
-        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => func.InvokeAsync(string.Empty, requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
+        var exception = await Assert.ThrowsAsync<HttpOperationException>(() => func.InvokeAsync(string.Empty, target, requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000000, Temperature = 0.5, TopP = 0.5 }));
 
         // Assert
         Assert.NotNull(exception);
