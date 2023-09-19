@@ -236,6 +236,6 @@ public class CalendarSkillTests
         );
 
         Assert.True(ex.InnerException is ArgumentException);
-        Assert.Equal("subject", ((ArgumentException)ex.InnerException).ParamName);
+        Assert.Equal("input", ((ArgumentException)ex.InnerException).ParamName);
     }
 }
