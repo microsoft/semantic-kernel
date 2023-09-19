@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Web;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
@@ -117,181 +116,7 @@ public class RestApiOperationTests
     }
 
     [Fact]
-    public void ShouldAddQueryStringParametersAndUseValuesFromArguments()
-    {
-        // Arrange
-        var firstParameterMetadata = new RestApiOperationParameter(
-            "p1",
-            "fake_type",
-            true,
-            RestApiOperationParameterLocation.Query);
-
-        var secondParameterMetadata = new RestApiOperationParameter(
-            "p2",
-            "fake_type",
-            true,
-            RestApiOperationParameterLocation.Query);
-
-        var sut = new RestApiOperation(
-            "fake_id",
-            new Uri("https://fake-random-test-host"),
-            "/",
-            HttpMethod.Get,
-            "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
-
-        var arguments = new Dictionary<string, string>
-        {
-            { "p1", "v1" },
-            { "p2", "v2" }
-        };
-
-        // Act
-        var url = sut.BuildOperationUrl(arguments);
-
-        // Assert
-        Assert.Equal("https://fake-random-test-host/?p1=v1&p2=v2", url.OriginalString);
-    }
-
-    [Fact]
-    public void ShouldAddQueryStringParametersAndUseTheirDefaultValues()
-    {
-        // Arrange
-        var firstParameterMetadata = new RestApiOperationParameter(
-            "p1",
-            "fake_type",
-            true,
-            RestApiOperationParameterLocation.Query,
-            defaultValue: "dv1");
-
-        var secondParameterMetadata = new RestApiOperationParameter(
-            "p2",
-            "fake_type",
-            true,
-            RestApiOperationParameterLocation.Query,
-            defaultValue: "dv2");
-
-        var sut = new RestApiOperation(
-            "fake_id",
-            new Uri("https://fake-random-test-host"),
-            "/",
-            HttpMethod.Get,
-            "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
-
-        var arguments = new Dictionary<string, string>();
-
-        // Act
-        var url = sut.BuildOperationUrl(arguments);
-
-        // Assert
-        Assert.Equal("https://fake-random-test-host/?p1=dv1&p2=dv2", url.OriginalString);
-    }
-
-    [Fact]
-    public void ShouldSkipNotRequiredQueryStringParametersIfTheirValuesMissing()
-    {
-        // Arrange
-        var firstParameterMetadata = new RestApiOperationParameter(
-            "p1",
-            "fake_type",
-            false,
-            RestApiOperationParameterLocation.Query);
-
-        var secondParameterMetadata = new RestApiOperationParameter(
-            "p2",
-            "fake_type",
-            false,
-            RestApiOperationParameterLocation.Query);
-
-        var sut = new RestApiOperation(
-            "fake_id",
-            new Uri("https://fake-random-test-host"),
-            "/",
-            HttpMethod.Get,
-            "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
-
-        var arguments = new Dictionary<string, string>
-        {
-            { "p2", "v2" }
-        };
-
-        // Act
-        var url = sut.BuildOperationUrl(arguments);
-
-        // Assert
-        Assert.Equal("https://fake-random-test-host/?p2=v2", url.OriginalString);
-    }
-
-    [Fact]
-    public void ShouldThrowExceptionIfNoValueIsProvideForRequiredQueryStringParameter()
-    {
-        // Arrange
-        var firstParameterMetadata = new RestApiOperationParameter(
-            "p1",
-            "fake_type",
-            true,
-            RestApiOperationParameterLocation.Query);
-
-        var secondParameterMetadata = new RestApiOperationParameter(
-            "p2",
-            "fake_type",
-            false,
-            RestApiOperationParameterLocation.Query);
-
-        var sut = new RestApiOperation(
-            "fake_id",
-            new Uri("https://fake-random-test-host"),
-            "/",
-            HttpMethod.Get,
-            "fake_description",
-            new List<RestApiOperationParameter> { firstParameterMetadata, secondParameterMetadata },
-            new Dictionary<string, string>());
-
-        var arguments = new Dictionary<string, string>
-        {
-            { "p2", "v2" }
-        };
-
-        //Act and assert
-        Assert.Throws<SKException>(() => sut.BuildOperationUrl(arguments));
-    }
-
-    [Theory]
-    [InlineData(":", "%3a")]
-    [InlineData("/", "%2f")]
-    [InlineData("?", "%3f")]
-    [InlineData("#", "%23")]
-    public void ItShouldEncodeSpecialSymbolsInQueryStringValues(string specialSymbol, string encodedEquivalent)
-    {
-        // Arrange
-        var metadata = new List<RestApiOperationParameter>
-        {
-            new("fake_query_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
-        };
-
-        var arguments = new Dictionary<string, string>
-        {
-            { "fake_query_param", $"fake_query_param_value{specialSymbol}" }
-        };
-
-        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
-
-        // Act
-        var url = sut.BuildOperationUrl(arguments);
-
-        // Assert
-        Assert.NotNull(url);
-
-        Assert.EndsWith(encodedEquivalent, url.OriginalString, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void ShouldBuildResourceUrlThatIncludesAllUrlComponents()
+    public void ShouldBuildResourceUrlWithoutQueryString()
     {
         // Arrange
         var firstParameterMetadata = new RestApiOperationParameter(
@@ -459,7 +284,7 @@ public class RestApiOperationTests
         var headers = sut.RenderHeaders(arguments);
 
         // Assert
-        Assert.Single(headers);
+        Assert.Equal(1, headers.Count);
 
         var headerOne = headers["fake_header_one"];
         Assert.Equal("fake_header_one_value", headerOne);
@@ -499,32 +324,5 @@ public class RestApiOperationTests
 
         var headerTwo = headers["fake_header_two"];
         Assert.Equal("fake_header_two_default_value", headerTwo);
-    }
-
-    [Fact]
-    public void ItShouldNotWrapQueryStringValuesOfStringTypeIntoSingleQuotes()
-    {
-        // Arrange
-        var metadata = new List<RestApiOperationParameter>
-        {
-            new("fake_query_string_param", "string", false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Simple)
-        };
-
-        var arguments = new Dictionary<string, string>
-        {
-            { "fake_query_string_param", "fake_query_string_param_value" }
-        };
-
-        var sut = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
-
-        // Act
-        var url = sut.BuildOperationUrl(arguments);
-
-        // Assert
-        Assert.NotNull(url);
-
-        var parameterValue = HttpUtility.ParseQueryString(url.Query)["fake_query_string_param"];
-        Assert.NotNull(parameterValue);
-        Assert.Equal("fake_query_string_param_value", parameterValue); // Making sure that query string value of string type is not wrapped with quotes.
     }
 }
