@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Skills.UnitTests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>
