@@ -188,9 +188,11 @@ public sealed class Kernel : IKernel, IDisposable
             this._skillCollection,
             this.LoggerFactory);
 
-        var functionResult = new FunctionResult(context, variables.Input);
+        FunctionResult? functionResult = null;
 
         int pipelineStepCount = 0;
+        var allFunctionResults = new List<FunctionResult>();
+
         foreach (ISKFunction skFunction in pipeline)
         {
 repeat:
@@ -217,6 +219,8 @@ repeat:
 
                 context = functionResult.Context;
 
+                allFunctionResults.Add(functionResult);
+
                 var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
@@ -239,7 +243,7 @@ repeat:
             pipelineStepCount++;
         }
 
-        return KernelResult.FromFunctionResult(functionResult);
+        return KernelResult.FromFunctionResults(functionResult?.Value, allFunctionResults);
     }
 
     /// <inheritdoc/>

@@ -267,7 +267,7 @@ public class KernelTests
         // Arrange
         var sut = Kernel.Builder.Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
-        var input = "This input should not change after cancel";
+        var input = "Test input";
         var invoked = false;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
@@ -280,7 +280,7 @@ public class KernelTests
 
         // Assert
         Assert.True(invoked);
-        Assert.Equal(input, result.GetValue<string>());
+        Assert.Null(result.GetValue<string>());
     }
 
     [Fact]

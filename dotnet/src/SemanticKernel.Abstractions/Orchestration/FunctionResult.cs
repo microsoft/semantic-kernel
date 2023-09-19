@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class FunctionResult
 {
     /// <summary>
-    /// Additional data from model.
+    /// Collection of AI model results after one function execution. AI response can have multiple results.
     /// </summary>
     public IReadOnlyCollection<ModelResult> ModelResults { get; internal set; } = Array.Empty<ModelResult>();
 

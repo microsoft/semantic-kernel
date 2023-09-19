@@ -41,7 +41,7 @@ public static class Example43_GetModelResult
         // Using the Kernel RunAsync
         var kernelResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
         Console.WriteLine(kernelResult.GetValue<string>());
-        Console.WriteLine(kernelResult.ModelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
+        Console.WriteLine(kernelResult.FunctionResults.SelectMany(l => l.ModelResults).LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly

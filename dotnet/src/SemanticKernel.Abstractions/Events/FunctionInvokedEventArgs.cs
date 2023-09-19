@@ -18,7 +18,7 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     public bool IsRepeatRequested => this._repeatRequested;
 
     /// <summary>
-    /// Model results after function execution.
+    /// Collection of AI model results after one function execution. AI response can have multiple results.
     /// </summary>
     public IReadOnlyCollection<ModelResult> ModelResults { get; private set; } = Array.Empty<ModelResult>();
 

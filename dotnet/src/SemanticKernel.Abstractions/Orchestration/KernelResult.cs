@@ -11,9 +11,9 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class KernelResult
 {
     /// <summary>
-    /// Additional data from model.
+    /// Results from all functions in pipeline.
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; internal set; } = Array.Empty<ModelResult>();
+    public IReadOnlyCollection<FunctionResult> FunctionResults { get; internal set; } = Array.Empty<FunctionResult>();
 
     /// <summary>
     /// Kernel result object.
@@ -41,15 +41,16 @@ public sealed class KernelResult
     }
 
     /// <summary>
-    /// Creates instance of <see cref="KernelResult"/> from instance of <see cref="FunctionResult"/>.
+    /// Creates instance of <see cref="KernelResult"/> based on function results.
     /// </summary>
-    /// <param name="functionResult">Instance of <see cref="FunctionResult"/>.</param>
-    internal static KernelResult FromFunctionResult(FunctionResult functionResult)
+    /// <param name="value">Kernel result object.</param>
+    /// <param name="functionResults">Results from all functions in pipeline.</param>
+    internal static KernelResult FromFunctionResults(object? value, IReadOnlyCollection<FunctionResult> functionResults)
     {
         return new KernelResult
         {
-            Value = functionResult.Value,
-            ModelResults = functionResult.ModelResults
+            Value = value,
+            FunctionResults = functionResults
         };
     }
 }
