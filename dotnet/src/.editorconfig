@@ -2,4 +2,4 @@
 [*.cs]
 dotnet_diagnostic.CA2007.severity = error # Do not directly await a Task
 dotnet_diagnostic.VSTHRD111.severity = error # Use .ConfigureAwait(bool)
-dotnet_diagnostic.VSTHRD200.severity = error # Use Async suffix for async methods
+

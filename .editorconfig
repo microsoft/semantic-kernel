@@ -152,6 +152,7 @@ dotnet_diagnostic.IDE0082.severity = warning # Convert typeof to nameof
 dotnet_diagnostic.IDE0090.severity = warning # Simplify new expression
 dotnet_diagnostic.IDE0130.severity = warning # Namespace does not match folder structure
 dotnet_diagnostic.IDE0161.severity = warning # Use file-scoped namespace
+dotnet_diagnostic.IDE1006.severity = warning # Naming rule violation: These words must begin with upper case characters: 'Foo'
 
 # Suppressed diagnostics
 dotnet_diagnostic.CA1002.severity = none # Change 'List<string>' in '...' to use 'Collection<T>' ...
@@ -242,6 +243,7 @@ dotnet_naming_style.uppercase_with_underscore_separator.capitalization = all_upp
 dotnet_naming_style.uppercase_with_underscore_separator.word_separator = _
 
 dotnet_naming_style.end_in_async.required_prefix =
+dotnet_naming_style.end_in_async.required_suffix = Async
 dotnet_naming_style.end_in_async.capitalization = pascal_case
 dotnet_naming_style.end_in_async.word_separator =
 
