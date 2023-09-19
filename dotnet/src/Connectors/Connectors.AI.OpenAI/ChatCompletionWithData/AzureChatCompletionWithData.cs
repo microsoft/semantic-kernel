@@ -227,11 +227,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
         if (response is null)
         {
-            const string errorMessage = "Error occurred on chat completion with data response deserialization";
+            const string ErrorMessage = "Error occurred on chat completion with data response deserialization";
 
-            this._logger.LogError(errorMessage);
+            this._logger.LogError(ErrorMessage);
 
-            throw new SKException(errorMessage);
+            throw new SKException(ErrorMessage);
         }
 
         return response;
