@@ -31,7 +31,7 @@
     <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
-    <ProjectReference Include="..\Planning\Planning.csproj" />
+    <ProjectReference Include="..\Planning\Planning.Core.csproj" />
   </ItemGroup>
 
 </Project>
