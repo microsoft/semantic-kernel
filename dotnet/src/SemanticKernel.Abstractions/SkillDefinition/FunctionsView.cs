@@ -38,26 +38,15 @@ public sealed class FunctionsView
     /// <returns>Current instance</returns>
     public FunctionsView AddFunction(FunctionView view)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        if (view.IsSemantic)
-        {
-            if (!this.SemanticFunctions.ContainsKey(view.SkillName))
-            {
-                this.SemanticFunctions[view.SkillName] = new();
-            }
+        // TODO: PR #2878 removes this class.
+        // Below is incorrect logic, added here as a build workaround - Do not check in before #2878 is merged.
 
-            this.SemanticFunctions[view.SkillName].Add(view);
-        }
-        else
+        if (!this.NativeFunctions.ContainsKey(view.SkillName))
         {
-            if (!this.NativeFunctions.ContainsKey(view.SkillName))
-            {
-                this.NativeFunctions[view.SkillName] = new();
-            }
-
-            this.NativeFunctions[view.SkillName].Add(view);
+            this.NativeFunctions[view.SkillName] = new();
         }
-#pragma warning restore CS0618 // Type or member is obsolete
+
+        this.NativeFunctions[view.SkillName].Add(view);
 
         return this;
     }
