@@ -64,9 +64,9 @@ async def chat() -> bool:
 
     answer = await kernel.run_async(chat_function, input_vars=context_vars)
     print(f"Mosscap:> {answer}")
-    print("   Prompt tokens: ", aoai.prompt_tokens)
-    print("   Completion tokens: ", aoai.completion_tokens)
-    print("   Total tokens: ", aoai.total_tokens)
+    # print("   Prompt tokens: ", aoai.prompt_tokens)
+    # print("   Completion tokens: ", aoai.completion_tokens)
+    # print("   Total tokens: ", aoai.total_tokens)
     return True
 
 

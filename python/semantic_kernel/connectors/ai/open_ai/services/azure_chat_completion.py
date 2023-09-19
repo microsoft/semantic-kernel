@@ -2,27 +2,27 @@
 
 
 from logging import Logger
-from typing import Dict, Optional
+from typing import List, Optional, Tuple, Union
 
-from pydantic import Field, HttpUrl, constr
-
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
-    OpenAIChatCompletionBase,
+from semantic_kernel.connectors.ai import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
+    AzureTextCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls import (
+    OpenAIModelTypes,
+    _parse_choices,
 )
 
 
-class AzureChatCompletion(OpenAIChatCompletionBase):
-    model_id: constr(strip_whitespace=True, min_length=1) = Field(
-        ..., alias="deployment_name"
-    )
-
+class AzureChatCompletion(AzureTextCompletion, ChatCompletionClientBase):
     def __init__(
         self,
         deployment_name: str,
-        endpoint: HttpUrl,
+        endpoint: str,
         api_key: str,
-        api_version: Optional[str] = "2023-03-15-preview",
-        ad_auth: bool = False,
+        api_version: str = "2022-12-01",
+        ad_auth=False,
         log: Optional[Logger] = None,
         logger: Optional[Logger] = None,
     ) -> None:
@@ -51,48 +51,48 @@ class AzureChatCompletion(OpenAIChatCompletionBase):
         if logger:
             logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
         super().__init__(
-            model_id=deployment_name,
+            deployment_name=deployment_name,
             endpoint=endpoint,
             api_key=api_key,
             api_version=api_version,
-            api_type="azure_ad" if ad_auth else "azure",
             log=log or logger,
+            ad_auth=ad_auth,
+        )
+        self.model_type = OpenAIModelTypes.CHAT
+
+    async def complete_chat_async(
+        self,
+        messages: List[Tuple[str, str]],
+        settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
+    ) -> Union[str, List[str]]:
+        response = await self._send_request(
+            messages=messages, request_settings=settings, stream=False
         )
 
-    @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "AzureChatCompletion":
-        """
-        Initialize an AzureChatCompletion service from a dictionary of settings.
+        if len(response.choices) == 1:
+            return response.choices[0].message.content
+        else:
+            return [choice.message.content for choice in response.choices]
 
-        Arguments:
-            settings: A dictionary of settings for the service.
-                should contains keys: deployment_name, endpoint, api_key
-                and optionally: api_version, ad_auth, log
-        """
-        if "api_type" in settings:
-            settings["ad_auth"] = settings["api_type"] == "azure_ad"
-            del settings["api_type"]
-
-        return AzureChatCompletion(
-            deployment_name=settings["deployment_name"],
-            endpoint=settings["endpoint"],
-            api_key=settings["api_key"],
-            api_version=settings.get("api_version"),
-            ad_auth=settings.get("ad_auth", False),
-            log=settings.get("log"),
+    async def complete_chat_stream_async(
+        self,
+        messages: List[Tuple[str, str]],
+        settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
+    ):
+        response = await self._send_request(
+            messages=messages, request_settings=settings, stream=True
         )
 
-    def to_dict(self) -> Dict[str, str]:
-        """
-        Create a dict of the service settings.
-        """
-        return self.dict(
-            exclude={
-                "prompt_tokens",
-                "completion_tokens",
-                "total_tokens",
-                "api_type",
-                "org_id",
-            },
-            by_alias=True,
-        )
+        # parse the completion text(s) and yield them
+        async for chunk in response:
+            text, index = _parse_choices(chunk)
+            # if multiple responses are requested, keep track of them
+            if settings.number_of_responses > 1:
+                completions = [""] * settings.number_of_responses
+                completions[index] = text
+                yield completions
+            # if only one response is requested, yield it
+            else:
+                yield text

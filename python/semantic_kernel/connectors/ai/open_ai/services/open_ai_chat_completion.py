@@ -1,24 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from openai import AsyncOpenAI
-
-# if TYPE_CHECKING:
-#     from openai.openai_object import OpenAIObject
-# import openai
 from pydantic import HttpUrl
 
+from semantic_kernel.connectors.ai import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.chat_completion_client_base import (
-    ChatCompletionClientBase,
-)
 from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls import (
+    OpenAIModelTypes,
+    _parse_choices,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
+    OpenAITextCompletion,
+)
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
@@ -269,7 +270,7 @@ class OpenAIChatCompletionBase(ChatCompletionClientBase, TextCompletionClientBas
         return self._total_tokens
 
 
-class OpenAIChatCompletion(OpenAIChatCompletionBase):
+class OpenAIChatCompletion(OpenAITextCompletion, ChatCompletionClientBase):
     def __init__(
         self,
         model_id: str,
@@ -294,80 +295,43 @@ class OpenAIChatCompletion(OpenAIChatCompletionBase):
             model_id=model_id,
             api_key=api_key,
             org_id=org_id,
-            api_type="open_ai",
             log=log,
         )
+        self.model_type = OpenAIModelTypes.CHAT
 
-    @classmethod
-    def from_dict(cls, settings: Dict[str, str]) -> "OpenAIChatCompletion":
-        """
-        Initialize an OpenAIChatCompletion service from a dictionary of settings.
-
-        Arguments:
-            settings: A dictionary of settings for the service.
-                should contain keys: model_id, api_key
-                and optionally: org_id, log
-        """
-        if "api_type" in settings:
-            settings["ad_auth"] = settings["api_type"] == "azure_ad"
-            del settings["api_type"]
-
-        return OpenAIChatCompletion(
-            model_id=settings["model_id"],
-            api_key=settings["api_key"],
-            org_id=settings.get("org_id"),
-            log=settings.get("log"),
+    async def complete_chat_async(
+        self,
+        messages: List[Tuple[str, str]],
+        settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
+    ) -> Union[str, List[str]]:
+        response = await self._send_request(
+            messages=messages, request_settings=settings, stream=False
         )
 
-    def to_dict(self) -> Dict[str, str]:
-        """
-        Create a dict of the service settings.
-        """
-        return self.dict(
-            exclude={
-                "prompt_tokens",
-                "completion_tokens",
-                "total_tokens",
-                "api_version",
-                "endpoint",
-                "api_type",
-            },
-            by_alias=True,
-            exclude_none=True,
+        if len(response.choices) == 1:
+            return response.choices[0].message.content
+        else:
+            return [choice.message.content for choice in response.choices]
+
+    async def complete_chat_stream_async(
+        self,
+        messages: List[Tuple[str, str]],
+        settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
+    ):
+        response = await self._send_request(
+            messages=messages, request_settings=settings, stream=True
         )
 
-
-def _parse_choices(chunk):
-    message = ""
-    if "role" in chunk.choices[0].delta:
-        message += chunk.choices[0].delta.role + ": "
-    if "content" in chunk.choices[0].delta:
-        message += chunk.choices[0].delta.content
-    if "function_call" in chunk.choices[0].delta:
-        message += chunk.choices[0].delta.function_call
-
-    index = chunk.choices[0].index
-    return message, index
-
-
-def _parse_message(
-    message: "OpenAIObject", logger: Optional[Logger] = None
-) -> Tuple[Optional[str], Optional[FunctionCall]]:
-    """
-    Parses the message.
-
-    Arguments:
-        message {OpenAIObject} -- The message to parse.
-
-    Returns:
-        Tuple[Optional[str], Optional[Dict]] -- The parsed message.
-    """
-    content = message.content if hasattr(message, "content") else None
-    function_call = message.function_call if hasattr(message, "function_call") else None
-    if function_call:
-        function_call = FunctionCall(
-            name=function_call.name,
-            arguments=function_call.arguments,
-        )
-
-    return (content, function_call)
+        # parse the completion text(s) and yield them
+        async for chunk in response:
+            text, index = _parse_choices(chunk)
+            # if multiple responses are requested, keep track of them
+            if settings.number_of_responses > 1:
+                completions = [""] * settings.number_of_responses
+                completions[index] = text
+                yield completions
+            # if only one response is requested, yield it
+            else:
+                yield text

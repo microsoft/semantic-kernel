@@ -4,13 +4,15 @@ from abc import ABC
 from logging import Logger
 from typing import Optional
 
-from pydantic import validator
+from pydantic import constr, validator
 
 from semantic_kernel.sk_pydantic import SKBaseModel
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class CompletionClientBase(SKBaseModel, ABC):
+class AIServiceClientBase(SKBaseModel, ABC):
+    model_id: constr(strip_whitespace=True, min_length=1)
+    api_key: constr(strip_whitespace=True, min_length=1)
     log: Optional[Logger]
 
     @validator("log", pre=True)

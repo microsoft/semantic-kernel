@@ -2,24 +2,32 @@
 
 
 from logging import Logger
-from typing import Optional
+from typing import List, Optional
 
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
-    OpenAITextEmbedding,
+from numpy import ndarray
+
+from semantic_kernel.connectors.ai.complete_request_settings import (
+    CompleteRequestSettings,
+)
+from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
+    EmbeddingGeneratorBase,
+)
+from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
+    AzureTextCompletion,
+)
+from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls import (
+    OpenAIModelTypes,
 )
 
 
-class AzureTextEmbedding(OpenAITextEmbedding):
-    _endpoint: str
-    _api_version: str
-    _api_type: str
-
+class AzureTextEmbedding(AzureTextCompletion, EmbeddingGeneratorBase):
     def __init__(
         self,
         deployment_name: str,
         endpoint: Optional[str] = None,
         api_key: Optional[str] = None,
         api_version: str = "2022-12-01",
+        log: Optional[Logger] = None,
         logger: Optional[Logger] = None,
         ad_auth=False,
     ) -> None:
@@ -46,23 +54,39 @@ class AzureTextEmbedding(OpenAITextEmbedding):
         :param ad_auth: Whether to use Azure Active Directory authentication.
             (Optional) The default value is False.
         """
-        if not deployment_name:
-            raise ValueError("The deployment name cannot be `None` or empty")
-        if not api_key:
-            raise ValueError("The Azure API key cannot be `None` or empty`")
-        if not endpoint:
-            raise ValueError("The Azure endpoint cannot be `None` or empty")
-        if not endpoint.startswith("https://"):
-            raise ValueError("The Azure endpoint must start with https://")
-
-        self._api_type = "azure_ad" if ad_auth else "azure"
-
+        if logger:
+            logger.warning("The 'logger' argument is deprecated, use 'log' instead.")
         super().__init__(
-            deployment_name,
-            api_key,
-            api_type=self._api_type,
-            api_version=api_version,
+            deployment_name=deployment_name,
             endpoint=endpoint,
-            org_id=None,
-            log=logger,
+            api_key=api_key,
+            api_version=api_version,
+            log=log or logger,
+            ad_auth=ad_auth,
+        )
+        self.model_type = OpenAIModelTypes.EMBEDDING
+
+    async def generate_embeddings_async(
+        self, texts: List[str], batch_size: Optional[int] = None
+    ) -> ndarray:
+        return await self._send_embedding_request(texts, batch_size)
+
+    async def complete_stream_async(
+        self,
+        prompt: str,
+        settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
+    ):
+        raise NotImplementedError(
+            "Embedding class does not currently support completions"
+        )
+
+    async def complete_async(
+        self,
+        prompt: str,
+        settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
+    ):
+        raise NotImplementedError(
+            "Embedding class does not currently support completions"
         )

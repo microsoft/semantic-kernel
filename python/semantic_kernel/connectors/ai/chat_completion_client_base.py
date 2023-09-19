@@ -1,17 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from logging import Logger
 from typing import TYPE_CHECKING, List, Optional, Union
-
-from semantic_kernel.connectors.ai.completion_client_base import CompletionClientBase
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
     from semantic_kernel.models.chat.chat_message import ChatMessage
 
 
-class ChatCompletionClientBase(CompletionClientBase):
+class ChatCompletionClientBase(ABC):
     @abstractmethod
     async def complete_chat_async(
         self,
