@@ -56,8 +56,8 @@ public static class Example58_FunctionCalling
         chatHistory.AddUserMessage(ask);
 
         // Retrieve available functions from the kernel and add to request settings
-        ChatRequestSettings requestSettings = new();
-        requestSettings.Functions = kernel.Skills.GetFunctionsView();
+        OpenAIChatRequestSettings requestSettings = new();
+        requestSettings.Functions = kernel.Skills.GetFunctionsView().ToOpenAIFunctions();
 
         // Send request
         var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];

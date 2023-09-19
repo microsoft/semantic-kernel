@@ -1,23 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal static class FunctionsViewExtensions
+/// <summary>
+/// Extensions for <see cref="FunctionsView"/> specific to the OpenAI connector.
+/// </summary>
+public static class FunctionsViewExtensions
 {
-    public static IList<FunctionDefinition> ToFunctionDefinitions(this FunctionsView functionsView)
+    /// <summary>
+    /// Convert a <see cref="FunctionsView"/> object to a list of <see cref="OpenAIFunction"/> objects.
+    /// </summary>
+    /// <param name="functionsView">The <see cref="FunctionsView"/> object to convert.</param>
+    /// <returns>List of <see cref="OpenAIFunction"/> objects.</returns>
+    public static IList<OpenAIFunction> ToOpenAIFunctions(this FunctionsView functionsView)
     {
-        var functionDefinitions = new List<FunctionDefinition>();
+        var openAIFunctions = new List<OpenAIFunction>();
 
         foreach (KeyValuePair<string, List<FunctionView>> skill in functionsView.NativeFunctions)
         {
             foreach (FunctionView func in skill.Value)
             {
-                functionDefinitions.Add(func.ToFunctionDefinition());
+                openAIFunctions.Add(func.ToOpenAIFunction());
             }
         }
 
@@ -25,10 +31,10 @@ internal static class FunctionsViewExtensions
         {
             foreach (FunctionView func in skill.Value)
             {
-                functionDefinitions.Add(func.ToFunctionDefinition());
+                openAIFunctions.Add(func.ToOpenAIFunction());
             }
         }
 
-        return functionDefinitions;
+        return openAIFunctions;
     }
 }

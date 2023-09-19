@@ -356,9 +356,14 @@ public abstract class ClientBase
             ChoiceCount = requestSettings.ResultsPerPrompt,
         };
 
-        if (requestSettings.Functions is not null)
+        // TODO: temporary cast until request settings refactor comes in
+        OpenAIChatRequestSettings? oaiSettings = requestSettings as OpenAIChatRequestSettings;
+        if (oaiSettings is not null)
         {
-            options.Functions = requestSettings.Functions.ToFunctionDefinitions();
+            if (oaiSettings.Functions is not null)
+            {
+                options.Functions = oaiSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
+            }
         }
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)

@@ -1,49 +1,40 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal static class FunctionViewExtensions
+/// <summary>
+/// Extensions for <see cref="FunctionView"/> specific to the OpenAI connector.
+/// </summary>
+public static class FunctionViewExtensions
 {
-    public static FunctionDefinition ToFunctionDefinition(this FunctionView functionView)
+    /// <summary>
+    /// Convert a <see cref="FunctionView"/> to an <see cref="OpenAIFunction"/>.
+    /// </summary>
+    /// <param name="functionView">The <see cref="FunctionView"/> object to convert.</param>
+    /// <returns>An <see cref="OpenAIFunction"/> object.</returns>
+    public static OpenAIFunction ToOpenAIFunction(this FunctionView functionView)
     {
-        var requiredParams = new List<string>();
-
-        var paramProperties = new Dictionary<string, object>();
-        foreach (var param in functionView.Parameters)
+        var openAIParams = new List<OpenAIFunctionParameter>();
+        foreach (ParameterView param in functionView.Parameters)
         {
-            paramProperties.Add(
-                param.Name,
-                new
-                {
-                    type = param.Type?.Name ?? "string",
-                    description = param.Description ?? string.Empty,
-                });
-
-            if (param.IsRequired)
+            openAIParams.Add(new OpenAIFunctionParameter
             {
-                requiredParams.Add(param.Name);
-            }
+                Name = param.Name,
+                Description = param.Description ?? string.Empty,
+                Type = param.Type?.Name ?? "string",
+                IsRequired = param.IsRequired,
+            });
         }
 
-        var functionDefinition = new FunctionDefinition
+        return new OpenAIFunction
         {
             Name = (functionView.SkillName.IsNullOrEmpty() ? functionView.Name : string.Join("-", functionView.SkillName, functionView.Name)),
             Description = functionView.Description,
-            Parameters = BinaryData.FromObjectAsJson(
-                new
-                {
-                    type = "object",
-                    properties = paramProperties,
-                    required = requiredParams,
-                }),
+            Parameters = openAIParams,
         };
-
-        return functionDefinition;
     }
 }

@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 
@@ -60,11 +59,6 @@ public class ChatRequestSettings
     /// Modify the likelihood of specified tokens appearing in the completion.
     /// </summary>
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
-
-    /// <summary>
-    /// The set of functions to choose from if function calling is enabled by the model.
-    /// </summary>
-    public FunctionsView? Functions { get; set; } = null;
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.
