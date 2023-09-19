@@ -263,8 +263,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         return new List<ChatWithDataSource>
         {
-            new ChatWithDataSource
-            {
+            new() {
                 Parameters = new ChatWithDataSourceParameters
                 {
                     Endpoint = this._config.DataSourceEndpoint,
