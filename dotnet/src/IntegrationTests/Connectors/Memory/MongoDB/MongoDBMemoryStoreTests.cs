@@ -16,7 +16,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.MongoDB;
 public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixture>
 {
     // If null, all tests will be enabled
-    private const string? SkipReason = null;//"MongoDB Atlas cluster is required";
+    private const string? SkipReason = "MongoDB Atlas cluster is required";
 
     private readonly MongoDBMemoryStoreTestsFixture _fixture;
 
