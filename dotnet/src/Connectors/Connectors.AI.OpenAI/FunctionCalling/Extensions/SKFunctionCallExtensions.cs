@@ -82,10 +82,12 @@ public static class SKFunctionCallExtensions
         return functionCall;
     }
 
+
     /// <summary>
     /// Call an SKFunctionCall instance directly and return the result in the specified type
     /// </summary>
     /// <param name="function"></param>
+    /// <param name="kernel"></param>
     /// <param name="context"></param>
     /// <param name="serializerOptions"></param>
     /// <param name="deserializationFallback"></param>
@@ -94,12 +96,13 @@ public static class SKFunctionCallExtensions
     /// <returns></returns>
     public static async Task<T?> GetFunctionResult<T>(
         this SKFunctionCall function,
+        IKernel kernel,
         ContextVariables context,
         JsonSerializerOptions? serializerOptions = null,
         Func<string, T>? deserializationFallback = null,
         CancellationToken cancellationToken = default)
     {
-        var answer = await function.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var answer = await function.InvokeAsync(kernel, context, cancellationToken: cancellationToken).ConfigureAwait(false);
         T? result = default;
         string content = answer.Result;
         try

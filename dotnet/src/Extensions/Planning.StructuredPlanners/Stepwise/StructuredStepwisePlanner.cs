@@ -238,7 +238,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
 
         try
         {
-            var result = await targetFunction.InvokeAsync(functionCall.FunctionParameters()).ConfigureAwait(false);
+            var result = await targetFunction.InvokeAsync(_kernel, functionCall.FunctionParameters()).ConfigureAwait(false);
 
             _logger.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
 
