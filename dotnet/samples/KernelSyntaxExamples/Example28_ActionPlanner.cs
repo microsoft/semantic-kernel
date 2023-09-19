@@ -42,7 +42,7 @@ public static class Example28_ActionPlanner
         var plan = await planner.CreatePlanAsync(goal);
 
         // Execute the full plan (which is a single function)
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(kernel);
 
         // Show the result, which should match the given goal
         Console.WriteLine(result.GetValue<string>());

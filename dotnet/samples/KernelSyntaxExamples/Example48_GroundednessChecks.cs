@@ -103,7 +103,7 @@ her a beggar. My father came to her aid and two years later they married.
 
         context.Variables.Update(summaryText);
         context.Variables.Set("ungrounded_entities", groundingResult);
-        var excisionResult = await entity_excision.InvokeAsync(context);
+        var excisionResult = await kernel.RunAsync(context.Variables, entity_excision);
 
         Console.WriteLine("======== Excise Entities ========");
         Console.WriteLine(excisionResult.GetValue<string>());
@@ -141,7 +141,7 @@ which are not grounded in the original.
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var results = await plan.InvokeAsync(s_groundingText);
+        var results = await kernel.RunAsync(s_groundingText, plan);
         Console.WriteLine(results.GetValue<string>());
     }
 }

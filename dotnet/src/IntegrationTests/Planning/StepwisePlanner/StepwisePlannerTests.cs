@@ -83,7 +83,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         // Act
         var plan = planner.CreatePlan(prompt);
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(kernel);
 
         // Assert - should contain the expected answer
         Assert.Contains(partialExpectedAnswer, result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);

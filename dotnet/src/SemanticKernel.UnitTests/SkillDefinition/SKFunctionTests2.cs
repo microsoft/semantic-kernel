@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -19,6 +20,7 @@ public sealed class SKFunctionTests2
 {
     private readonly Mock<ILoggerFactory> _logger;
     private readonly Mock<IReadOnlySkillCollection> _skills;
+    private readonly Mock<IKernel> _kernel;
 
     private static string s_expected = string.Empty;
     private static string s_actual = string.Empty;
@@ -27,6 +29,7 @@ public sealed class SKFunctionTests2
     {
         this._logger = new Mock<ILoggerFactory>();
         this._skills = new Mock<IReadOnlySkillCollection>();
+        this._kernel = new Mock<IKernel>();
 
         s_expected = Guid.NewGuid().ToString("D");
     }
@@ -472,6 +475,7 @@ public sealed class SKFunctionTests2
 
             // This value should overwrite "x y z". Contexts are merged.
             var newContext = new SKContext(
+                context.Kernel,
                 new ContextVariables(input),
                 skills: new Mock<IReadOnlySkillCollection>().Object);
 
@@ -518,6 +522,7 @@ public sealed class SKFunctionTests2
         {
             // This value should overwrite "x y z". Contexts are merged.
             var newCx = new SKContext(
+                context.Kernel,
                 new ContextVariables(input + "abc"),
                 skills: new Mock<IReadOnlySkillCollection>().Object);
 
@@ -1031,8 +1036,8 @@ public sealed class SKFunctionTests2
     private SKContext MockContext(string input)
     {
         return new SKContext(
+            this._kernel.Object,
             new ContextVariables(input),
-            skills: this._skills.Object,
-            loggerFactory: this._logger.Object);
+            skills: this._skills.Object);
     }
 }

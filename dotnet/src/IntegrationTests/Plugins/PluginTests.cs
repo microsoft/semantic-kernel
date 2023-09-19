@@ -4,8 +4,8 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
@@ -30,7 +30,7 @@ public class PluginTests
         var skill = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiSkillExecutionParameters(httpClient));
+            new OpenApiPluginExecutionParameters(httpClient));
 
         var contextVariables = new ContextVariables();
         contextVariables["q"] = query;
@@ -39,7 +39,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(contextVariables));
+        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
     [Theory]
@@ -62,13 +62,13 @@ public class PluginTests
         var skill = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiSkillExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(contextVariables));
+        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
     [Theory]
@@ -93,13 +93,13 @@ public class PluginTests
             var skill = await kernel.ImportAIPluginAsync(
                 name,
                 stream,
-                new OpenApiSkillExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+                new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
             var contextVariables = new ContextVariables();
             contextVariables["payload"] = payload;
 
             // Act
-            await skill[functionName].InvokeAsync(new SKContext(contextVariables));
+            await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
         }
     }
 
@@ -123,12 +123,12 @@ public class PluginTests
         var skill = await kernel.ImportAIPluginAsync(
             name,
             pluginFilePath,
-            new OpenApiSkillExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(contextVariables));
+        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 }

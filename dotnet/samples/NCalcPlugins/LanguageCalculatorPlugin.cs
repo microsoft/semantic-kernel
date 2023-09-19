@@ -26,7 +26,6 @@ namespace NCalcPlugins;
 public class LanguageCalculatorPlugin
 {
     private readonly ISKFunction _mathTranslator;
-
     private const string MathTranslatorPrompt =
         @"Translate a math problem into a expression that can be executed using .net NCalc library. Use the output of running this code to answer the question.
 Available functions: Abs, Acos, Asin, Atan, Ceiling, Cos, Exp, Floor, IEEERemainder, Log, Log10, Max, Min, Pow, Round, Sign, Sin, Sqrt, Tan, and Truncate. in and if are also supported.
@@ -93,8 +92,8 @@ Question: {{ $input }}
 
         try
         {
-            var result = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
-            answer = result.GetValue<string>() ?? throw new InvalidOperationException("No result from Math Translator function.");
+            var result = await context.Kernel.RunAsync(input).ConfigureAwait(false);
+            answer = result.GetValue<string>() ?? throw new InvalidOperationException("No result from kernel.");
         }
         catch (Exception ex)
         {
