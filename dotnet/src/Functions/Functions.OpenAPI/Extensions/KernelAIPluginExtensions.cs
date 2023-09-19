@@ -30,20 +30,20 @@ public static class KernelAIPluginExtensions
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
-    /// <param name="skillName">Skill name.</param>
+    /// <param name="pluginName">Plugin name.</param>
     /// <param name="filePath">The file path to the AI Plugin</param>
-    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
-        string skillName,
+        string pluginName,
         string filePath,
         OpenApiPluginExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(skillName);
+        Verify.ValidSkillName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -59,7 +59,7 @@ public static class KernelAIPluginExtensions
         return await CompleteImport(
             kernel,
             pluginContents,
-            skillName,
+            pluginName,
             httpClient,
             executionParameters,
             cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -69,20 +69,20 @@ public static class KernelAIPluginExtensions
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
-    /// <param name="skillName">Skill name.</param>
+    /// <param name="pluginName">Plugin name.</param>
     /// <param name="uri">A local or remote URI referencing the AI Plugin</param>
-    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
-        string skillName,
+        string pluginName,
         Uri uri,
         OpenApiPluginExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(skillName);
+        Verify.ValidSkillName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -98,7 +98,7 @@ public static class KernelAIPluginExtensions
         return await CompleteImport(
             kernel,
             pluginContents,
-            skillName,
+            pluginName,
             httpClient,
             executionParameters,
             uri,
@@ -109,20 +109,20 @@ public static class KernelAIPluginExtensions
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
-    /// <param name="skillName">Skill name.</param>
+    /// <param name="pluginName">Plugin name.</param>
     /// <param name="stream">A stream representing the AI Plugin</param>
-    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
     public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
         this IKernel kernel,
-        string skillName,
+        string pluginName,
         Stream stream,
         OpenApiPluginExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(skillName);
+        Verify.ValidSkillName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -133,7 +133,7 @@ public static class KernelAIPluginExtensions
         return await CompleteImport(
             kernel,
             pluginContents,
-            skillName,
+            pluginName,
             httpClient,
             executionParameters,
             cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -144,7 +144,7 @@ public static class KernelAIPluginExtensions
     private static async Task<IDictionary<string, ISKFunction>> CompleteImport(
         IKernel kernel,
         string pluginContents,
-        string skillName,
+        string pluginName,
         HttpClient httpClient,
         OpenApiPluginExecutionParameters? executionParameters,
         Uri? documentUri = null,
@@ -154,16 +154,16 @@ public static class KernelAIPluginExtensions
         {
             return await kernel
                 .ImportAIPluginAsync(
-                    skillName,
+                    pluginName,
                     new Uri(openApiUrl),
                     executionParameters,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        return await LoadSkill(
+        return await LoadPlugin(
             kernel,
-            skillName,
+            pluginName,
             executionParameters,
             httpClient,
             pluginContents,
@@ -171,9 +171,9 @@ public static class KernelAIPluginExtensions
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<IDictionary<string, ISKFunction>> LoadSkill(
+    private static async Task<IDictionary<string, ISKFunction>> LoadPlugin(
         IKernel kernel,
-        string skillName,
+        string pluginName,
         OpenApiPluginExecutionParameters? executionParameters,
         HttpClient httpClient,
         string pluginJson,
@@ -193,26 +193,26 @@ public static class KernelAIPluginExtensions
                 executionParameters?.EnableDynamicPayload ?? false,
                 executionParameters?.EnablePayloadNamespacing ?? false);
 
-            var skill = new Dictionary<string, ISKFunction>();
+            var plugin = new Dictionary<string, ISKFunction>();
 
             ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions));
             foreach (var operation in operations)
             {
                 try
                 {
-                    logger.LogTrace("Registering Rest function {0}.{1}", skillName, operation.Id);
-                    var function = kernel.RegisterRestApiFunction(skillName, runner, operation, executionParameters, documentUri, cancellationToken);
-                    skill[function.Name] = function;
+                    logger.LogTrace("Registering Rest function {0}.{1}", pluginName, operation.Id);
+                    var function = kernel.RegisterRestApiFunction(pluginName, runner, operation, executionParameters, documentUri, cancellationToken);
+                    plugin[function.Name] = function;
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
                 {
                     //Logging the exception and keep registering other Rest functions
                     logger.LogWarning(ex, "Something went wrong while rendering the Rest function. Function: {0}.{1}. Error: {2}",
-                        skillName, operation.Id, ex.Message);
+                        pluginName, operation.Id, ex.Message);
                 }
             }
 
-            return skill;
+            return plugin;
         }
     }
 
@@ -301,7 +301,7 @@ public static class KernelAIPluginExtensions
     /// Registers SKFunction for a REST API operation.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
-    /// <param name="skillName">Skill name.</param>
+    /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
     /// <param name="executionParameters">Skill execution parameters.</param>
@@ -310,7 +310,7 @@ public static class KernelAIPluginExtensions
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterRestApiFunction(
         this IKernel kernel,
-        string skillName,
+        string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
         OpenApiPluginExecutionParameters? executionParameters,
@@ -351,7 +351,7 @@ public static class KernelAIPluginExtensions
                     if (parameter.IsRequired)
                     {
                         throw new KeyNotFoundException(
-                            $"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{skillName}.{operation.Id}' Rest function.");
+                            $"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{pluginName}.{operation.Id}' Rest function.");
                     }
                 }
 
@@ -370,7 +370,7 @@ public static class KernelAIPluginExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                logger.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", skillName, operation.Id, ex.Message);
+                logger.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", pluginName, operation.Id, ex.Message);
                 throw;
             }
 
@@ -391,7 +391,7 @@ public static class KernelAIPluginExtensions
             nativeFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
-            skillName: skillName,
+            skillName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: kernel.LoggerFactory);
 

@@ -49,10 +49,10 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
     {
         //Act
-        var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", this._openApiDocument);
+        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", this._openApiDocument);
 
         //Assert
-        var setSecretFunction = skill["SetSecret"];
+        var setSecretFunction = plugin["SetSecret"];
         Assert.NotNull(setSecretFunction);
 
         var functionView = setSecretFunction.Describe();
@@ -94,8 +94,8 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(DocumentUri), executionParameters);
-        var setSecretFunction = skill["SetSecret"];
+        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 
@@ -132,8 +132,8 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(DocumentUri), executionParameters);
-        var setSecretFunction = skill["SetSecret"];
+        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 
@@ -177,8 +177,8 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var skill = await this.kernel.ImportAIPluginAsync("fakeSkill", new Uri(documentUri), executionParameters);
-        var setSecretFunction = skill["SetSecret"];
+        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(documentUri), executionParameters);
+        var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 

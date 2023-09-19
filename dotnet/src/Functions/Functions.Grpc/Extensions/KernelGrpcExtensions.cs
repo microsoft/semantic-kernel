@@ -25,24 +25,24 @@ public static class KernelGrpcExtensions
     /// Imports gRPC document from a directory.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
-    /// <param name="parentDirectory">Directory containing the skill directory.</param>
-    /// <param name="skillDirectoryName">Name of the directory containing the selected skill.</param>
+    /// <param name="parentDirectory">Directory containing the plugin directory.</param>
+    /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
-    /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportGrpcSkillFromDirectory(
+    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    public static IDictionary<string, ISKFunction> ImportGrpcPluginFromDirectory(
         this IKernel kernel,
         string parentDirectory,
-        string skillDirectoryName,
+        string pluginDirectoryName,
         HttpClient? httpClient = null)
     {
         const string ProtoFile = "grpc.proto";
 
-        Verify.ValidSkillName(skillDirectoryName);
+        Verify.ValidSkillName(pluginDirectoryName);
 
-        var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
-        Verify.DirectoryExists(skillDir);
+        var pluginDir = Path.Combine(parentDirectory, pluginDirectoryName);
+        Verify.DirectoryExists(pluginDir);
 
-        var filePath = Path.Combine(skillDir, ProtoFile);
+        var filePath = Path.Combine(pluginDir, ProtoFile);
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
@@ -52,20 +52,20 @@ public static class KernelGrpcExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterGrpcSkill(stream, skillDirectoryName, httpClient);
+        return kernel.RegisterGrpcPlugin(stream, pluginDirectoryName, httpClient);
     }
 
     /// <summary>
     /// Imports gRPC document from a file.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
-    /// <param name="skillName">Name of the skill to register.</param>
+    /// <param name="pluginName">Name of the plugin to register.</param>
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
-    /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> ImportGrpcSkillFromFile(
+    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    public static IDictionary<string, ISKFunction> ImportGrpcPluginFromFile(
         this IKernel kernel,
-        string skillName,
+        string pluginName,
         string filePath,
         HttpClient? httpClient = null)
     {
@@ -78,32 +78,32 @@ public static class KernelGrpcExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterGrpcSkill(stream, skillName, httpClient);
+        return kernel.RegisterGrpcPlugin(stream, pluginName, httpClient);
     }
 
     /// <summary>
-    /// Registers an gRPC skill.
+    /// Registers an gRPC plugin.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="documentStream">.proto document stream.</param>
-    /// <param name="skillName">Skill name.</param>
+    /// <param name="pluginName">Plugin name.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
-    /// <returns>A list of all the semantic functions representing the skill.</returns>
-    public static IDictionary<string, ISKFunction> RegisterGrpcSkill(
+    /// <returns>A list of all the semantic functions representing the plugin.</returns>
+    public static IDictionary<string, ISKFunction> RegisterGrpcPlugin(
         this IKernel kernel,
         Stream documentStream,
-        string skillName,
+        string pluginName,
         HttpClient? httpClient = null)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(skillName);
+        Verify.ValidSkillName(pluginName);
 
         // Parse
         var parser = new ProtoDocumentParser();
 
-        var operations = parser.Parse(documentStream, skillName);
+        var operations = parser.Parse(documentStream, pluginName);
 
-        var skill = new Dictionary<string, ISKFunction>();
+        var plugin = new Dictionary<string, ISKFunction>();
 
         var client = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, httpClient, kernel.LoggerFactory);
 
@@ -114,19 +114,19 @@ public static class KernelGrpcExtensions
         {
             try
             {
-                logger.LogTrace("Registering gRPC function {0}.{1}", skillName, operation.Name);
-                var function = kernel.RegisterGrpcFunction(runner, skillName, operation);
-                skill[function.Name] = function;
+                logger.LogTrace("Registering gRPC function {0}.{1}", pluginName, operation.Name);
+                var function = kernel.RegisterGrpcFunction(runner, pluginName, operation);
+                plugin[function.Name] = function;
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other gRPC functions
                 logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}",
-                    skillName, operation.Name, ex.Message);
+                    pluginName, operation.Name, ex.Message);
             }
         }
 
-        return skill;
+        return plugin;
     }
 
     #region private
@@ -136,13 +136,13 @@ public static class KernelGrpcExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance.</param>
     /// <param name="runner">gRPC operation runner.</param>
-    /// <param name="skillName">Skill name.</param>
+    /// <param name="pluginName">Plugin name.</param>
     /// <param name="operation">The gRPC operation.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
     private static ISKFunction RegisterGrpcFunction(
         this IKernel kernel,
         GrpcOperationRunner runner,
-        string skillName,
+        string pluginName,
         GrpcOperation operation)
     {
         var operationParameters = operation.GetParameters();
@@ -163,7 +163,7 @@ public static class KernelGrpcExtensions
                         continue;
                     }
 
-                    throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{skillName}.{operation.Name}' gRPC function.");
+                    throw new KeyNotFoundException($"No variable found in context to use as an argument for the '{parameter.Name}' parameter of the '{pluginName}.{operation.Name}' gRPC function.");
                 }
 
                 //SKFunction should be extended to pass cancellation token for delegateFunction calls.
@@ -176,7 +176,7 @@ public static class KernelGrpcExtensions
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
-                kernel.LoggerFactory.CreateLogger(typeof(KernelGrpcExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}", skillName, operation.Name,
+                kernel.LoggerFactory.CreateLogger(typeof(KernelGrpcExtensions)).LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}", pluginName, operation.Name,
                     ex.Message);
                 throw;
             }
@@ -188,7 +188,7 @@ public static class KernelGrpcExtensions
             nativeFunction: ExecuteAsync,
             parameters: operationParameters.ToList(),
             description: operation.Name,
-            skillName: skillName,
+            skillName: pluginName,
             functionName: operation.Name,
             loggerFactory: kernel.LoggerFactory);
 
