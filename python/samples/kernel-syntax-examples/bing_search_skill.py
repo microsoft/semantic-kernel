@@ -19,15 +19,17 @@ async def main():
     connector = BingConnector(api_key=os.getenv("BING_API_KEY"))
     web_skill = kernel.import_skill(WebSearchEngineSkill(connector), "WebSearch")
 
-    prompt = "How many Oscars has Meryl Streep won?"
+    prompt = "Who was Ada Lovelace?"
     search_async = web_skill["searchAsync"]
     result = await search_async.invoke_async(prompt)
     print(result)
 
     """
     Output:
-    ['M eryl Streep has broken her own record to become the most nominated actor in the history 
-    of the Academy Awards for the second year in a row. Streep received her 21st Oscars nomination on...']
+    ['Ada Lovelace, English mathematician, an associate of Charles Babbage, 
+    for whose digital computer prototype, the Analytical Engine, she created a program in 1843. 
+    She has been called the first computer programmer. Ada Lovelace Day, the second Tuesday in October, 
+    honors women’s contributions to science and technology.']
     """
 
     prompt = """

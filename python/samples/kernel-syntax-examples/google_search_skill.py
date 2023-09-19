@@ -39,7 +39,7 @@ async def main():
     web_skill = kernel.import_skill(WebSearchEngineSkill(connector), "WebSearch")
 
     # The search query
-    prompt = "How many Oscars has Meryl Streep won?"
+    prompt = "Who was Ada Lovelace?"
     search_async = web_skill["searchAsync"]
 
     # By default, only one search result is provided
@@ -48,8 +48,8 @@ async def main():
 
     """
     Output:
-    ['She has received numerous accolades throughout her career spanning over six decades, 
-    including a record 21 Academy Award nominations, winning three, and a\xa0...']
+    ['Aug 13, 2023 ... Ada Lovelace, English mathematician, an associate of Charles Babbage, 
+    for whose digital computer prototype, the Analytical Engine,\xa0...']
     """
 
     # Following example demonstrates the use of the skill within a semantic function
