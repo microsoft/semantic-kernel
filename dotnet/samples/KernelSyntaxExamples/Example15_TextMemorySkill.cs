@@ -17,14 +17,14 @@ using Microsoft.SemanticKernel.Connectors.Memory.Redis;
 using Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Npgsql;
 using Pgvector.Npgsql;
 using RepoUtils;
 using StackExchange.Redis;
 
 // ReSharper disable once InconsistentNaming
-public static class Example15_TextMemorySkill
+public static class Example15_TextMemoryPlugin
 {
     private const string MemoryCollectionName = "aboutMe";
 
@@ -180,32 +180,32 @@ public static class Example15_TextMemorySkill
         Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // PART 2: Create TextMemorySkill, store and retrieve memories through the Kernel.
+        // PART 2: Create TextMemoryPlugin, store and retrieve memories through the Kernel.
         //
         // This enables semantic functions and the AI (via Planners) to access memories
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Console.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemorySkill and the 'Save' function ==");
+        Console.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
 
-        // Import the TextMemorySkill into the Kernel for other functions
-        var memorySkill = new TextMemorySkill(textMemory);
+        // Import the TextMemoryPlugin into the Kernel for other functions
+        var memorySkill = new TextMemoryPlugin(textMemory);
         var memoryFunctions = kernel.ImportSkill(memorySkill);
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");
         await kernel.RunAsync(memoryFunctions["Save"], new()
         {
-            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-            [TextMemorySkill.KeyParam] = "info5",
+            [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.KeyParam] = "info5",
             ["input"] = "My family is from New York"
         }, cancellationToken);
 
         // Retrieve a specific memory with the Kernel
-        Console.WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemorySkill and the 'Retrieve' function ==");
+        Console.WriteLine("== PART 2b: Retrieving Memories through the Kernel with TextMemoryPlugin and the 'Retrieve' function ==");
         var result = await kernel.RunAsync(memoryFunctions["Retrieve"], new()
         {
-            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-            [TextMemorySkill.KeyParam] = "info5"
+            [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.KeyParam] = "info5"
         }, cancellationToken);
 
         Console.WriteLine("Memory with key 'info5':" + result?.ToString() ?? "ERROR: memory not found");
@@ -233,14 +233,14 @@ public static class Example15_TextMemorySkill
             Console.WriteLine($"Answer: {answer.Metadata.Text}");
         }
 
-        Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemorySkill 'Recall' function ==");
+        Console.WriteLine("== PART 3b: Recall (similarity search) with Kernel and TextMemoryPlugin 'Recall' function ==");
         Console.WriteLine("Ask: where do I live?");
 
         result = await kernel.RunAsync(memoryFunctions["Recall"], new()
         {
-            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-            [TextMemorySkill.LimitParam] = "2",
-            [TextMemorySkill.RelevanceParam] = "0.79",
+            [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.LimitParam] = "2",
+            [TextMemoryPlugin.RelevanceParam] = "0.79",
             ["input"] = "Ask: where do I live?"
         }, cancellationToken);
 
@@ -260,13 +260,13 @@ public static class Example15_TextMemorySkill
         */
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // PART 3: TextMemorySkill Recall in a Semantic Function
+        // PART 3: TextMemoryPlugin Recall in a Semantic Function
         //
         // Looks up related memories when rendering a prompt template, then sends the rendered prompt to
         // the text completion model to answer a natural language query.
         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Console.WriteLine("== PART 4: Using TextMemorySkill 'Recall' function in a Semantic Function ==");
+        Console.WriteLine("== PART 4: Using TextMemoryPlugin 'Recall' function in a Semantic Function ==");
 
         // Build a semantic function that uses memory to find facts
         const string RecallFunctionDefinition = @"
@@ -286,8 +286,8 @@ Answer:
 
         result = await kernel.RunAsync(aboutMeOracle, new()
         {
-            [TextMemorySkill.CollectionParam] = MemoryCollectionName,
-            [TextMemorySkill.RelevanceParam] = "0.79",
+            [TextMemoryPlugin.CollectionParam] = MemoryCollectionName,
+            [TextMemoryPlugin.RelevanceParam] = "0.79",
             ["input"] = "Do I live in the same town where I grew up?"
         }, cancellationToken);
 
