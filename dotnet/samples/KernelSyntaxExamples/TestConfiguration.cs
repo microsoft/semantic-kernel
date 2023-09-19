@@ -37,6 +37,7 @@ public sealed class TestConfiguration
     public static JiraConfig Jira => LoadSection<JiraConfig>();
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
+    public static MongoDBConfig MongoDB => LoadSection<MongoDBConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -161,5 +162,11 @@ public sealed class TestConfiguration
     {
         public string ConnectionString { get; set; }
     }
+
+    public class MongoDBConfig
+    {
+        public string ConnectionString { get; set; }
+    }
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
 }

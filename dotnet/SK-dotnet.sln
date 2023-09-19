@@ -164,6 +164,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{D6D5
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.UnitTests", "src\Plugins\Plugins.UnitTests\Plugins.UnitTests.csproj", "{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.MongoDB", "src\Connectors\Connectors.Memory.MongoDB\Connectors.Memory.MongoDB.csproj", "{09E8D9A7-F68C-4776-841A-7E3FE1D719A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -411,6 +413,12 @@ Global
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09E8D9A7-F68C-4776-841A-7E3FE1D719A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09E8D9A7-F68C-4776-841A-7E3FE1D719A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09E8D9A7-F68C-4776-841A-7E3FE1D719A4}.Publish|Any CPU.ActiveCfg = Publish|Any CPU
+		{09E8D9A7-F68C-4776-841A-7E3FE1D719A4}.Publish|Any CPU.Build.0 = Publish|Any CPU
+		{09E8D9A7-F68C-4776-841A-7E3FE1D719A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09E8D9A7-F68C-4776-841A-7E3FE1D719A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -470,6 +478,7 @@ Global
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{D6D598DF-C17C-46F4-B2B9-CDE82E2DE132} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
+		{09E8D9A7-F68C-4776-841A-7E3FE1D719A4} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

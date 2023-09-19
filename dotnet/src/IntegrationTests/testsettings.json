@@ -30,5 +30,9 @@
   },
   "Postgres": {
     "ConnectionString": ""
+  },
+  "MongoDB": {
+    "ConnectionString": "",
+    "VectorSearchCollection": "sk_test_db.sk_test_collection"
   }
 }
