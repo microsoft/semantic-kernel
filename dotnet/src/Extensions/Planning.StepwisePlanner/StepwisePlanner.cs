@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -61,7 +62,7 @@ public class StepwisePlanner : IStepwisePlanner
         // Set MaxTokens for the prompt config
         if (this._promptConfig.Completion is null)
         {
-            this._promptConfig.Completion = new AI.AIRequestSettings();
+            this._promptConfig.Completion = new AIRequestSettings();
         }
         this._promptConfig.Completion.ExtensionData["max_tokens"] = this.Config.MaxTokens;
 

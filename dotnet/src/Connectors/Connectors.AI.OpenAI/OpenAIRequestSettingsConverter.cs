@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
 /// <summary>
-/// JSON converter for <see cref="OpenAIRequestSettingsConverter"/>
+/// JSON converter for <see cref="OpenAIRequestSettings"/>
 /// </summary>
 public class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSettings>
 {

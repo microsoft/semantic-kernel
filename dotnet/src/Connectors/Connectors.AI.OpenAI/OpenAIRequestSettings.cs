@@ -126,7 +126,7 @@ public class OpenAIRequestSettings : AIRequestSettings
             return openAIRequestSettings;
         }
 
-        throw new ArgumentException("Invalid request settings, cannot convert to OpenAIRequestSettings", nameof(requestSettings));
+        throw new ArgumentException($"Invalid request settings, cannot convert to {nameof(OpenAIRequestSettings)}", nameof(requestSettings));
     }
 
     #region private ================================================================================

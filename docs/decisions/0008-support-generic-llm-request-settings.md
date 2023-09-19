@@ -37,7 +37,7 @@ Link to issue raised by the implementer of the Oobabooga AI service: <https://gi
 * Use `object` to pass request settings
 * Define a base class for AI request settings which all implementations must extend
 
-Note: Using generics was discounted during an earlier investigation which Dmytro conducted, for more details go [here](https://microsofteur-my.sharepoint.com/:w:/g/personal/dmytrostruk_microsoft_com/EYThaoKwtvJLkQ53hv7bg7sBsil-aAHMbIU5jCsiwxofhg?e=hUUGay).
+Note: Using generics was discounted during an earlier investigation which Dmytro conducted.
 
 ## Decision Outcome
 
@@ -56,13 +56,11 @@ public interface IChatCompletion : IAIService
 
     Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
         dynamic? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
         dynamic? requestSettings = null,
         CancellationToken cancellationToken = default);
 }
@@ -114,13 +112,11 @@ public interface IChatCompletion : IAIService
 
     Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
         object? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
         object? requestSettings = null,
         CancellationToken cancellationToken = default);
 }
@@ -147,13 +143,11 @@ public interface IChatCompletion : IAIService
 
     Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 }
