@@ -157,7 +157,7 @@ public class QueryStringBuilderTests
                 false,
                 false,
                 RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.Simple)
+                RestApiOperationParameterStyle.Form)
         };
 
         var arguments = new Dictionary<string, string>
@@ -174,5 +174,161 @@ public class QueryStringBuilderTests
         Assert.NotNull(queryString);
 
         Assert.EndsWith(encodedEquivalent, queryString, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ItShouldCreateAmpersandSeparatedParameterPerArrayItem()
+    {
+        // Arrange
+        var metadata = new List<RestApiOperationParameter>
+        {
+            new RestApiOperationParameter(
+                "p1",
+                "array",
+                false,
+                true,
+                RestApiOperationParameterLocation.Query,
+                RestApiOperationParameterStyle.Form,
+                arrayItemType: "string"),
+            new RestApiOperationParameter(
+                "p2",
+                "array",
+                false,
+                true,
+                RestApiOperationParameterLocation.Query,
+                RestApiOperationParameterStyle.Form,
+                arrayItemType: "integer")
+        };
+
+        var arguments = new Dictionary<string, string>
+        {
+            { "p1", "[\"a\",\"b\",\"c\"]" },
+            { "p2", "[1,2,3]" }
+        };
+
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+
+        // Act
+        var result = this.sut.Build(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Equal("p1=a&p1=b&p1=c&p2=1&p2=2&p2=3", result);
+    }
+
+    [Fact]
+    public void ItShouldCreateParameterWithCommaSeparatedValuePerArrayItem()
+    {
+        // Arrange
+        var metadata = new List<RestApiOperationParameter>
+        {
+            new RestApiOperationParameter(
+                "p1",
+                "array",
+                false,
+                false,
+                RestApiOperationParameterLocation.Query,
+                RestApiOperationParameterStyle.Form,
+                arrayItemType: "string"),
+            new RestApiOperationParameter(
+                "p2",
+                "array",
+                false,
+                false,
+                RestApiOperationParameterLocation.Query,
+                RestApiOperationParameterStyle.Form,
+                arrayItemType: "integer")
+        };
+
+        var arguments = new Dictionary<string, string>
+        {
+            { "p1", "[\"a\",\"b\",\"c\"]" },
+            { "p2", "[1,2,3]" }
+        };
+
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+
+        // Act
+        var result = this.sut.Build(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Equal("p1=a,b,c&p2=1,2,3", result);
+    }
+
+    [Fact]
+    public void ItShouldCreateParameterForPrimitiveValues()
+    {
+        // Arrange
+        var metadata = new List<RestApiOperationParameter>
+        {
+            new RestApiOperationParameter(
+                "p1",
+                "string",
+                false,
+                false,
+                RestApiOperationParameterLocation.Query,
+                RestApiOperationParameterStyle.Form,
+                arrayItemType: "string"),
+            new RestApiOperationParameter(
+                "p2",
+                "boolean",
+                false,
+                false,
+                RestApiOperationParameterLocation.Query,
+                RestApiOperationParameterStyle.Form)
+        };
+
+        var arguments = new Dictionary<string, string>
+        {
+            { "p1", "v1" },
+            { "p2", "true" }
+        };
+
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+
+        // Act
+        var result = this.sut.Build(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Equal("p1=v1&p2=true", result);
+    }
+
+    [Fact]
+    public void ItShouldMixAndMatchParametersOfDifferentTypesAndStyles()
+    {
+        // Arrange
+        var metadata = new List<RestApiOperationParameter>
+        {
+            //'Form' style array parameter with comma separated values
+            new RestApiOperationParameter("p1", "array", true, false,RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form, arrayItemType: "string"),
+
+            //Primitive boolean parameter
+            new RestApiOperationParameter("p2", "boolean", true, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form),
+
+            //'Form' style array parameter with parameter per array item
+            new RestApiOperationParameter("p3", "array", true, true, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form, arrayItemType: "number")
+        };
+
+        var arguments = new Dictionary<string, string>
+        {
+            { "p1", "[\"a\",\"b\"]" },
+            { "p2", "false" },
+            { "p3", "[1,2]" }
+        };
+
+        var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
+
+        // Act
+        var result = this.sut.Build(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Equal("p1=a,b&p2=false&p3=1&p3=2", result);
     }
 }
