@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
@@ -15,32 +17,27 @@ public sealed class FunctionView
     /// <summary>
     /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; internal set; } = string.Empty;
 
     /// <summary>
     /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
     /// </summary>
-    public string SkillName { get; set; } = string.Empty;
+    public string SkillName { get; internal set; } = string.Empty;
 
     /// <summary>
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
     /// </summary>
-    public string Description { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Whether the delegate points to a semantic function
-    /// </summary>
-    public bool IsSemantic { get; set; }
+    public string Description { get; internal set; } = string.Empty;
 
     /// <summary>
     /// Whether the delegate is an asynchronous function
     /// </summary>
-    public bool IsAsynchronous { get; set; }
+    public bool IsAsynchronous { get; internal set; }
 
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IList<ParameterView> Parameters { get; set; } = new List<ParameterView>();
+    public IList<ParameterView> Parameters { get; internal set; } = new List<ParameterView>();
 
     /// <summary>
     /// Constructor
@@ -56,8 +53,36 @@ public sealed class FunctionView
     /// <param name="skillName">Skill name, e.g. the function namespace</param>
     /// <param name="description">Function description</param>
     /// <param name="parameters">List of function parameters provided by the skill developer</param>
+    /// <param name="isAsynchronous">Whether the function is async. Note: all semantic functions are async.</param>
+    public FunctionView(
+        string name,
+        string skillName,
+        string description,
+        IList<ParameterView> parameters,
+        bool isAsynchronous = true)
+    {
+        this.Name = name;
+        this.SkillName = skillName;
+        this.Description = description;
+        this.Parameters = parameters;
+        this.IsAsynchronous = isAsynchronous;
+    }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+
+    #region Obsolete
+
+    /// <summary>
+    /// Create a function view.
+    /// </summary>
+    /// <param name="name">Function name</param>
+    /// <param name="skillName">Skill name, e.g. the function namespace</param>
+    /// <param name="description">Function description</param>
+    /// <param name="parameters">List of function parameters provided by the skill developer</param>
     /// <param name="isSemantic">Whether the function is a semantic one (or native is False)</param>
     /// <param name="isAsynchronous">Whether the function is async. Note: all semantic functions are async.</param>
+    [Obsolete("Use alternate constructor without isSemantic parameter. This will be removed in a future release.")]
     public FunctionView(
         string name,
         string skillName,
@@ -74,6 +99,12 @@ public sealed class FunctionView
         this.IsAsynchronous = isAsynchronous;
     }
 
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{this.Name} ({this.Description})";
+    /// <summary>
+    /// Whether the delegate points to a semantic function
+    /// </summary>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic { get; internal set; }
+
+    #endregion
 }

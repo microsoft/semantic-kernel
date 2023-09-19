@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
@@ -27,13 +28,6 @@ public interface ISKFunction
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
     /// </summary>
     string Description { get; }
-
-    /// <summary>
-    /// Whether the function is defined using a prompt template.
-    /// IMPORTANT: native functions might use semantic functions internally,
-    /// so when this property is False, executing the function might still involve AI calls.
-    /// </summary>
-    bool IsSemantic { get; }
 
     /// <summary>
     /// AI service settings
@@ -80,4 +74,17 @@ public interface ISKFunction
     /// <param name="settings">LLM completion settings</param>
     /// <returns>Self instance</returns>
     ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+
+    #region Obsolete
+
+    /// <summary>
+    /// Whether the function is defined using a prompt template.
+    /// IMPORTANT: native functions might use semantic functions internally,
+    /// so when this property is False, executing the function might still involve AI calls.
+    /// </summary>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    bool IsSemantic { get; }
+
+    #endregion
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -32,9 +33,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public string Description { get; }
-
-    /// <inheritdoc/>
-    public bool IsSemantic => true;
 
     /// <inheritdoc/>
     public CompleteRequestSettings RequestSettings { get; private set; } = new();
@@ -78,11 +76,14 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         return new FunctionView
         {
-            IsSemantic = this.IsSemantic,
             Name = this.Name,
             SkillName = this.SkillName,
             Description = this.Description,
             Parameters = this.Parameters,
+#pragma warning disable CS0618 // Type or member is obsolete
+            IsSemantic = this.IsSemantic,
+#pragma warning restore CS0618 // Type or member is obsolete
+
         };
     }
 
@@ -223,6 +224,15 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         return context;
     }
+
+    #endregion
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic => true;
 
     #endregion
 }

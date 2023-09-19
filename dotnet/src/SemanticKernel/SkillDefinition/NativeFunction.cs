@@ -41,9 +41,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public string Description { get; }
 
     /// <inheritdoc/>
-    public bool IsSemantic { get; } = false;
-
-    /// <inheritdoc/>
     public CompleteRequestSettings RequestSettings { get; } = new();
 
     /// <summary>
@@ -133,11 +130,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         return new FunctionView
         {
-            IsSemantic = this.IsSemantic,
             Name = this.Name,
             SkillName = this.SkillName,
             Description = this.Description,
             Parameters = this.Parameters,
+#pragma warning disable CS0618 // Type or member is obsolete
+            IsSemantic = this.IsSemantic,
+#pragma warning restore CS0618 // Type or member is obsolete
         };
     }
 
@@ -839,6 +838,15 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+
+    #endregion
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic => false;
 
     #endregion
 }

@@ -68,8 +68,8 @@ public class SKContextExtensionsTests
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
         var functionsView = new FunctionsView();
-        var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
-        var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
+        var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), false);
+        var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false);
         functionsView.AddFunction(functionView);
         functionsView.AddFunction(nativeFunctionView);
 
@@ -133,8 +133,8 @@ public class SKContextExtensionsTests
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
         var functionsView = new FunctionsView();
-        var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
-        var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
+        var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), false);
+        var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false);
         functionsView.AddFunction(functionView);
         functionsView.AddFunction(nativeFunctionView);
 
