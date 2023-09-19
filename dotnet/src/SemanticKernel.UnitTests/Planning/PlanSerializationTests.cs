@@ -345,7 +345,7 @@ public sealed class PlanSerializationTests
         {
             Parameters = new ParameterView[]
             {
-                new() { Name = "variables" }
+                new("variables")
             }
         });
 
@@ -415,7 +415,7 @@ public sealed class PlanSerializationTests
         {
             Parameters = new ParameterView[]
             {
-                new() { Name = "variables" }
+                new("variables")
             }
         });
 

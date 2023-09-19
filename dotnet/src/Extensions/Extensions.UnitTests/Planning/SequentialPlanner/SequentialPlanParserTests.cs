@@ -68,7 +68,7 @@ public class SequentialPlanParserTests
         {
             var functionView = new FunctionView(name, skillName, description)
             {
-                Parameters = new ParameterView[] { new(name: "param", description: "description") }
+                Parameters = new ParameterView[] { new("param", "description") }
             };
             var mockFunction = CreateMockFunction(functionView);
             functionsView.AddFunction(functionView);

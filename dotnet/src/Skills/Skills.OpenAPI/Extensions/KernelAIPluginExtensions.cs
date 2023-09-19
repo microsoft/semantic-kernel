@@ -378,9 +378,8 @@ public static class KernelAIPluginExtensions
         }
 
         var parameters = restOperationParameters
-            .Select(p => new ParameterView
+            .Select(p => new ParameterView(p.AlternativeName ?? p.Name)
             {
-                Name = p.AlternativeName ?? p.Name,
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
