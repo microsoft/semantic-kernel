@@ -2,21 +2,25 @@
 
 from functools import wraps
 from logging import Logger
+from typing import Any, Callable
 
 
-def _nullify(fn):
+def _nullify(fn) -> Callable[[Any], None]:
+    """General wrapper to not call wrapped function"""
+
     @wraps(fn)
-    def _inner_nullify(*args, **kwargs):
-        pass
+    def _inner_nullify(*args, **kwargs) -> None:
+        return
 
     return _inner_nullify
 
 
 class _NullerMeta(type):
     def __new__(cls, classname, base_classes, class_dict):
+        """Return a Class that nullifies all Logger object callbacks"""
         nullified_dict = {
             attr_name: _nullify(attr)
-            for attr_name, attr in class_dict.items()
+            for attr_name, attr in Logger.__dict__.items()
             if callable(attr)
         }
         return type.__new__(
@@ -24,9 +28,10 @@ class _NullerMeta(type):
         )
 
 
-class NullLogger(Logger):
+class NullLogger(Logger, metaclass=_NullerMeta):
     """
     A logger that does nothing.
     """
 
-    __metaclass__ = _NullerMeta
+    def __init__(self):
+        super().__init__(None)
