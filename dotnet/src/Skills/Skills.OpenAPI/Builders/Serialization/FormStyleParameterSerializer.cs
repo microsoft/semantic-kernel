@@ -47,7 +47,6 @@ internal class FormStyleParameterSerializer
     /// <summary>
     /// Serializes an array-type parameter.
     /// </summary>
-    /// <seealso cref="https://swagger.io/docs/specification/serialization/"/>
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The argument value.</param>
     /// <returns>The serialized parameter string.</returns>
@@ -71,7 +70,7 @@ internal class FormStyleParameterSerializer
     /// </summary>
     /// <param name="name">The name of the parameter.</param>
     /// <param name="array">The array containing the items to be serialized.</param>
-    /// <returns>A string containing the serialized parameters in the format "name=item1&name=item2&...".</returns>
+    /// <returns>A string containing the serialized parameters.</returns>
     private static string SerializeArrayItemsAsSeparateParameters(string name, JsonArray array)
     {
         var segments = new List<string>();
