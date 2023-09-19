@@ -6,8 +6,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using RepoUtils;
 
 /**
@@ -43,9 +43,9 @@ public static class Example58_FunctionCalling
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
         kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
-        kernel.ImportSkill(new TimeSkill(), "TimeSkill");
+        kernel.ImportSkill(new TimePlugin(), "TimeSkill");
 
-        await kernel.ImportAIPluginAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters());
+        await kernel.ImportAIPluginAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiPluginExecutionParameters());
 
         return kernel;
     }
