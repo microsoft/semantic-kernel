@@ -75,6 +75,7 @@ public class DefaultSemanticTextMemory implements SemanticTextMemory {
                                 });
 
         return _storage.getAsync(collection, id, false)
+                .filter(memoryRecord -> memoryRecord.getMetadata().getText().equals(text))
                 .map(record -> record.getMetadata().getId())
                 .switchIfEmpty(embedAndSave);
     }
