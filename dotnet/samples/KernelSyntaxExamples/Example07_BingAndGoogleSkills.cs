@@ -3,9 +3,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
-using Microsoft.SemanticKernel.Skills.Web.Google;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Web.Google;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
 
@@ -46,7 +46,7 @@ public static class Example07_BingAndGoogleSkills
         else
         {
             var bingConnector = new BingConnector(bingApiKey);
-            var bing = new WebSearchEngineSkill(bingConnector);
+            var bing = new WebSearchEnginePlugin(bingConnector);
             var search = kernel.ImportSkill(bing, "bing");
             await Example1Async(kernel, "bing");
             await Example2Async(kernel);
@@ -65,8 +65,8 @@ public static class Example07_BingAndGoogleSkills
             using var googleConnector = new GoogleConnector(
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
-            var google = new WebSearchEngineSkill(googleConnector);
-            var search = kernel.ImportSkill(new WebSearchEngineSkill(googleConnector), "google");
+            var google = new WebSearchEnginePlugin(googleConnector);
+            var search = kernel.ImportSkill(new WebSearchEnginePlugin(googleConnector), "google");
             await Example1Async(kernel, "google");
         }
     }
