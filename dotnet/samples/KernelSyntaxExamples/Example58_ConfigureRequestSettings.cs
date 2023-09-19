@@ -16,7 +16,7 @@ public static class Example58_ConfigureRequestSettings
     /// </summary>
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Example57_ConfigureRequestSettings ========");
+        Console.WriteLine("======== Example58_ConfigureRequestSettings ========");
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
@@ -42,7 +42,13 @@ public static class Example58_ConfigureRequestSettings
 
         // Option 1:
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
-        var result = await kernel.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 60, Temperature = 0.7 });
+        var result = await kernel.InvokeSemanticFunctionAsync(
+            prompt,
+            requestSettings: new OpenAIRequestSettings()
+            {
+                MaxTokens = 60,
+                Temperature = 0.7
+            });
         Console.WriteLine(result.Result);
 
         // Option 2:
@@ -69,6 +75,7 @@ public static class Example58_ConfigureRequestSettings
 
         /* OUTPUT (using gpt4):
 Hello! As an AI language model, I can help you with a variety of
+
 Hello! As an AI language model, I can help you with a variety of tasks, such as:
 
 1. Answering general questions and providing information on a wide range of topics.
