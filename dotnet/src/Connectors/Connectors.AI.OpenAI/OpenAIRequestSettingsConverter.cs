@@ -25,6 +25,7 @@ public class OpenAIRequestSettingsConverter : JsonConverter<OpenAIRequestSetting
 
                 if (propertyName is not null)
                 {
+                    // normalise property name to uppercase without "_" to support pascalcase, snakecase, etc.
                     propertyName = propertyName.ToUpperInvariant().Replace("_", string.Empty);
                 }
 
