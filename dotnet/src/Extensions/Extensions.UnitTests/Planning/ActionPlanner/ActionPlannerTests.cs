@@ -151,12 +151,13 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
             skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
         }
 
-        var returnContext = new SKContext(
+        var returnContext = new SKContext(kernel.Object,
             new ContextVariables(testPlanString),
             skills.Object
         );
 
         var context = new SKContext(
+            kernel.Object,
             skills: skills.Object
         );
 

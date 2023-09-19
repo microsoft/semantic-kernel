@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -19,6 +18,8 @@ namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
+    private Mock<IKernel> _kernel = new();
+
     [Fact]
     public void CanSerializePlan()
     {
@@ -85,13 +86,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange Mocks
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -122,13 +122,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -159,13 +158,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -196,13 +194,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -232,13 +229,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -268,13 +264,12 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -325,13 +320,12 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -395,13 +389,12 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -446,9 +439,9 @@ public sealed class PlanSerializationTests
         cv.Set("variables", "bar");
         cv.Update(string.Empty);
         var nextContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
         plan = Plan.FromJson(serializedPlan1, nextContext);
         plan = await kernel.Object.StepAsync(cv, plan);
@@ -479,13 +472,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -536,13 +528,12 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var logger = new Mock<ILoggerFactory>();
         var skills = new Mock<ISkillCollection>();
 
         var returnContext = new SKContext(
+            this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object,
-            logger.Object
+            skills.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
