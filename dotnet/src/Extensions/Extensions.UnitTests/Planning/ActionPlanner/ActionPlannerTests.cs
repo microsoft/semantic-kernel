@@ -26,7 +26,7 @@ public sealed class ActionPlannerTests
 
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
 
-        var planner = new ActionPlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
         // Act
         var plan = await planner.CreatePlanAsync("goal");
@@ -47,7 +47,7 @@ public sealed class ActionPlannerTests
 
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString);
 
-        var planner = new ActionPlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
@@ -78,7 +78,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
 
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString);
 
-        var planner = new ActionPlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(async () => await planner.CreatePlanAsync("goal"));
@@ -90,7 +90,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         // Arrange
         var skills = this.CreateMockSkillCollection();
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
-        var planner = new ActionPlanner(kernel.Object);
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
         var context = kernel.Object.CreateNewContext();
 
         // Act
@@ -109,7 +109,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
         var config = new ActionPlannerConfig();
         config.ExcludedSkills.Add("GitHubSkill");
-        var planner = new ActionPlanner(kernel.Object, config: config);
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
         var context = kernel.Object.CreateNewContext();
 
         // Act
@@ -128,7 +128,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
         var config = new ActionPlannerConfig();
         config.ExcludedFunctions.Add("PullsList");
-        var planner = new ActionPlanner(kernel.Object, config: config);
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
         var context = kernel.Object.CreateNewContext();
 
         // Act
