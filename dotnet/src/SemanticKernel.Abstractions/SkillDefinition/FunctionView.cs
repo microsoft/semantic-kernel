@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
@@ -17,34 +18,22 @@ public sealed class FunctionView
     /// <summary>
     /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
     /// </summary>
-    public string Name { get; internal set; } = string.Empty;
+    public string Name { get; }
 
     /// <summary>
     /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
     /// </summary>
-    public string SkillName { get; internal set; } = string.Empty;
+    public string SkillName { get; }
 
     /// <summary>
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
     /// </summary>
-    public string Description { get; internal set; } = string.Empty;
-
-    /// <summary>
-    /// Whether the delegate is an asynchronous function
-    /// </summary>
-    public bool IsAsynchronous { get; internal set; }
+    public string Description { get; }
 
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IList<ParameterView> Parameters { get; internal set; } = new List<ParameterView>();
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    public FunctionView()
-    {
-    }
+    public IReadOnlyList<ParameterView> Parameters { get; }
 
     /// <summary>
     /// Create a function view.
@@ -53,19 +42,18 @@ public sealed class FunctionView
     /// <param name="skillName">Skill name, e.g. the function namespace</param>
     /// <param name="description">Function description</param>
     /// <param name="parameters">List of function parameters provided by the skill developer</param>
-    /// <param name="isAsynchronous">Whether the function is async. Note: all semantic functions are async.</param>
     public FunctionView(
         string name,
         string skillName,
         string description,
-        IList<ParameterView> parameters,
-        bool isAsynchronous = true)
+        IList<ParameterView>? parameters = null)
     {
         this.Name = name;
         this.SkillName = skillName;
         this.Description = description;
-        this.Parameters = parameters;
-        this.IsAsynchronous = isAsynchronous;
+        this.Parameters = parameters is not null
+            ? new List<ParameterView>(parameters)
+            : new List<ParameterView>(0);
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -74,37 +62,20 @@ public sealed class FunctionView
     #region Obsolete
 
     /// <summary>
-    /// Create a function view.
-    /// </summary>
-    /// <param name="name">Function name</param>
-    /// <param name="skillName">Skill name, e.g. the function namespace</param>
-    /// <param name="description">Function description</param>
-    /// <param name="parameters">List of function parameters provided by the skill developer</param>
-    /// <param name="isSemantic">Whether the function is a semantic one (or native is False)</param>
-    /// <param name="isAsynchronous">Whether the function is async. Note: all semantic functions are async.</param>
-    [Obsolete("Use alternate constructor without isSemantic parameter. This will be removed in a future release.")]
-    public FunctionView(
-        string name,
-        string skillName,
-        string description,
-        IList<ParameterView> parameters,
-        bool isSemantic,
-        bool isAsynchronous = true)
-    {
-        this.Name = name;
-        this.SkillName = skillName;
-        this.Description = description;
-        this.Parameters = parameters;
-        this.IsSemantic = isSemantic;
-        this.IsAsynchronous = isAsynchronous;
-    }
-
-    /// <summary>
     /// Whether the delegate points to a semantic function
     /// </summary>
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic { get; internal set; }
+    [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations")]
+    public bool IsSemantic => throw new NotImplementedException("Kernel no longer differentiates between Semantic and Native functions.");
+
+    /// <summary>
+    /// Whether the delegate is an asynchronous function
+    /// </summary>
+    [Obsolete("FunctionView.IsAsynchronous property no longer available.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations")]
+    public bool IsAsynchronous => throw new NotImplementedException("FunctionView.IsAsynchronous property no longer available.");
 
     #endregion
 }

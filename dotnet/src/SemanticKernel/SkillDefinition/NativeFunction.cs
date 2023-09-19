@@ -128,16 +128,11 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView
-        {
-            Name = this.Name,
-            SkillName = this.SkillName,
-            Description = this.Description,
-            Parameters = this.Parameters,
-#pragma warning disable CS0618 // Type or member is obsolete
-            IsSemantic = this.IsSemantic,
-#pragma warning restore CS0618 // Type or member is obsolete
-        };
+        return new FunctionView(
+            this.Name,
+            this.SkillName,
+            this.Description,
+            this.Parameters);
     }
 
     /// <inheritdoc/>

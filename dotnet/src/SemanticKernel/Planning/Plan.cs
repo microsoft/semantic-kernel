@@ -301,7 +301,7 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
-            return this.Function.Describe() ?? new();
+            return this.Function.Describe();
         }
 
         // The parameter mapping definitions from Plan -> Function
@@ -320,13 +320,10 @@ public sealed class Plan : IPlan
         }
         ).ToList();
 
-#pragma warning disable CS0618 // Type or member is obsolete
         return new(name: this.Name,
                    skillName: this.SkillName,
                    description: this.Description,
-                   parameters: parameters,
-                   isSemantic: false);
-#pragma warning restore CS0618 // Type or member is obsolete
+                   parameters: parameters);
     }
 
     /// <inheritdoc/>

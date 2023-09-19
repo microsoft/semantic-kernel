@@ -38,6 +38,7 @@ public sealed class FunctionsView
     /// <returns>Current instance</returns>
     public FunctionsView AddFunction(FunctionView view)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         if (view.IsSemantic)
         {
             if (!this.SemanticFunctions.ContainsKey(view.SkillName))
@@ -56,6 +57,7 @@ public sealed class FunctionsView
 
             this.NativeFunctions[view.SkillName].Add(view);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         return this;
     }

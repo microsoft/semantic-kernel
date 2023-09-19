@@ -38,7 +38,7 @@ public sealed class SequentialPlannerTests
         var skills = new Mock<ISkillCollection>();
         foreach (var (name, skillName, description, isSemantic) in input)
         {
-            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), true);
+            var functionView = new FunctionView(name, skillName, description);
             var mockFunction = CreateMockFunction(functionView);
             functionsView.AddFunction(functionView);
 
