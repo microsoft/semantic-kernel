@@ -69,13 +69,12 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
      * @param apiKey Azure API Key
      */
     public AzureCognitiveSearchMemoryStore(@Nonnull String endpoint, @Nonnull String apiKey) {
-        AzureKeyCredential credentials = new AzureKeyCredential(apiKey);
-        _adminClient =
+        this(
                 new SearchIndexClientBuilder()
                         .endpoint(endpoint)
-                        .credential(credentials)
+                        .credential(new AzureKeyCredential(apiKey))
                         .clientOptions(clientOptions())
-                        .buildAsyncClient();
+                        .buildAsyncClient());
     }
 
     /**
@@ -84,13 +83,23 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
      * @param endpoint Azure Cognitive Search URI, e.g. "https://contoso.search.windows.net"
      * @param credentials Azure service credentials
      */
-    public AzureCognitiveSearchMemoryStore(String endpoint, TokenCredential credentials) {
-        _adminClient =
+    public AzureCognitiveSearchMemoryStore(
+            @Nonnull String endpoint, @Nonnull TokenCredential credentials) {
+        this(
                 new SearchIndexClientBuilder()
                         .endpoint(endpoint)
                         .credential(credentials)
                         .clientOptions(clientOptions())
-                        .buildAsyncClient();
+                        .buildAsyncClient());
+    }
+
+    /**
+     * Create a new instance of memory storage using Azure Cognitive Search.
+     *
+     * @param searchIndexAsyncClient the Azure search documents index client to use
+     */
+    public AzureCognitiveSearchMemoryStore(@Nonnull SearchIndexAsyncClient searchIndexAsyncClient) {
+        this._adminClient = searchIndexAsyncClient;
     }
 
     @Override

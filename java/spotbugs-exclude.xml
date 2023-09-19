@@ -102,8 +102,12 @@
 
   <Match>
     <Class name="com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryRecord"/>
-    <Method name="getEmbedding"/>
     <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+  
+  <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryStore"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
   </Match>
 
 </FindBugsFilter>

@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.connectors.memory.azurecognitivesearch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpPipeline;
@@ -18,19 +17,23 @@ import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.ai.embeddings.Embedding;
+import com.microsoft.semantickernel.ai.embeddings.EmbeddingGeneration;
 import com.microsoft.semantickernel.memory.MemoryQueryResult;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import reactor.core.publisher.Mono;
 
-// TODO: This class is in the core package to avoid a
-//       circular dependency with the connectors module.
+@Disabled("Pending https://github.com/microsoft/semantic-kernel/issues/1797")
 class AzureCognitiveSearchMemoryTests {
 
     // com.azure.core.implementation.http.rest.RestProxyBase.RestProxyBase
@@ -96,18 +99,25 @@ class AzureCognitiveSearchMemoryTests {
                                         .setLogLevel(HttpLogDetailLevel.BODY_AND_HEADERS))
                         .buildAsyncClient();
 
-        OpenAIAsyncClient openAIAsyncClient = Mockito.mock(OpenAIAsyncClient.class);
+        EmbeddingGeneration<String> embeddingGeneration =
+                new EmbeddingGeneration<String>() {
+                    List<Embedding> embeddings = new ArrayList<>();
+
+                    {
+                        embeddings.add(new Embedding(Arrays.asList(1.0f, 2.0f, 3.0f)));
+                    }
+
+                    @Override
+                    public Mono<List<Embedding>> generateEmbeddingsAsync(List<String> data) {
+                        return Mono.just(embeddings);
+                    }
+                };
 
         kernel =
                 SKBuilders.kernel()
                         .withMemoryStorage(
-                                new AzureCognitiveSearchMemoryStore(
-                                        searchIndexAsyncClient.getEndpoint(), apiKey))
-                        .withDefaultAIService(
-                                SKBuilders.textEmbeddingGeneration()
-                                        .withOpenAIClient(openAIAsyncClient)
-                                        .withModelId("fake-model-id")
-                                        .build())
+                                new AzureCognitiveSearchMemoryStore(searchIndexAsyncClient))
+                        .withDefaultAIService(embeddingGeneration)
                         .build();
     }
 
@@ -127,8 +137,11 @@ class AzureCognitiveSearchMemoryTests {
     private Mono<HttpResponse> answerHttpRequest(InvocationOnMock invocation) {
         HttpRequest request = invocation.getArgument(0);
 
+        String query = request.getUrl().getQuery();
+        int offset = query.indexOf("api-version");
+        assertTrue(offset >= 0);
         // HttpResponse is based on this api-version
-        assertTrue(request.getUrl().getQuery().contains("api-version=2021-04-30-Preview"));
+        assertEquals("api-version=2023-07-01-Preview", query.substring(offset));
 
         //        System.err.println(request.getHttpMethod() + " " + request.getUrl() + "\n\t" +
         // request.getHeaders());
