@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Connectors.Memory.Chroma;
 using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
 using Microsoft.SemanticKernel.Connectors.Memory.Kusto;
+using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Microsoft.SemanticKernel.Connectors.Memory.Qdrant;
@@ -44,6 +45,9 @@ public static class Example15_TextMemoryPlugin
 
         // DuckDB Memory Store - a file-based store that persists data in a DuckDB database
         // store = await CreateSampleDuckDbMemoryStoreAsync();
+
+        // MongoDB Memory Store - a store that persists data in a MongoDB database
+        // store = CreateSampleMongoDBMemoryStore();
 
         // Azure Cognitive Search Memory Store - a store that persists data in a hosted Azure Cognitive Search database
         // store = CreateSampleAzureCognitiveSearchMemoryStore();
@@ -81,6 +85,12 @@ public static class Example15_TextMemoryPlugin
     private static async Task<IMemoryStore> CreateSampleDuckDbMemoryStoreAsync()
     {
         IMemoryStore store = await DuckDBMemoryStore.ConnectAsync("memories.duckdb");
+        return store;
+    }
+
+    private static IMemoryStore CreateSampleMongoDBMemoryStore()
+    {
+        IMemoryStore store = new MongoDBMemoryStore(TestConfiguration.MongoDB.ConnectionString, "memorySkillExample");
         return store;
     }
 
