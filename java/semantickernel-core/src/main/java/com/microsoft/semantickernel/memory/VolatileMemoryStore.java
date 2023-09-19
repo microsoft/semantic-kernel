@@ -70,8 +70,8 @@ public class VolatileMemoryStore implements MemoryStore {
                     // Contract:
                     //    Does not guarantee that the collection exists.
 
-                    // getCollection throws MemoryException if the collection does not exist.
-                    Map<String, MemoryRecord> collection = getCollection(collectionName);
+                    Map<String, MemoryRecord> collection =
+                            _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
 
                     String key = record.getMetadata().getId();
                     // Assumption is that MemoryRecord will always have a non-null id.
@@ -93,7 +93,8 @@ public class VolatileMemoryStore implements MemoryStore {
 
         return Mono.fromCallable(
                 () -> {
-                    Map<String, MemoryRecord> collection = getCollection(collectionName);
+                    Map<String, MemoryRecord> collection =
+                            _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
                     Set<String> keys = new HashSet<>();
                     records.forEach(
                             record -> {

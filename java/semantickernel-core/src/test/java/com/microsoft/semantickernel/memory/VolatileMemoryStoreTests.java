@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
@@ -102,6 +103,7 @@ class VolatileMemoryStoreTests {
     }
 
     @Test
+    @Disabled("inconsistency between memory store implementations")
     void itCannotInsertIntoNonExistentCollectionAsync() {
 
         // Arrange
