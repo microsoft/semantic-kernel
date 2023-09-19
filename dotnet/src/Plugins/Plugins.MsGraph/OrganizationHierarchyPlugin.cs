@@ -4,8 +4,8 @@ using System.ComponentModel;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
+using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
