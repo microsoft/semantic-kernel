@@ -40,7 +40,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IList<ParameterView> Parameters { get; }
+    public IReadOnlyList<ParameterView> Parameters { get; }
 
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
@@ -74,11 +74,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView(
-            this.Name,
-            this.SkillName,
-            this.Description,
-            this.Parameters);
+        return new FunctionView(this.Name, this.SkillName, this.Description) { Parameters = this.Parameters };
     }
 
     /// <inheritdoc/>

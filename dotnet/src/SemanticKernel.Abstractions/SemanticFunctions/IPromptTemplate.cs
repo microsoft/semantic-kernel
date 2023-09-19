@@ -17,7 +17,7 @@ public interface IPromptTemplate
     /// Get the list of parameters required by the template, using configuration and template info.
     /// </summary>
     /// <returns>List of parameters</returns>
-    IList<ParameterView> GetParameters();
+    IReadOnlyList<ParameterView> GetParameters();
 
     /// <summary>
     /// Render the template using the information in the context

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -342,11 +341,13 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView(
-            "FunctionName", "SkillName", "Description", new List<ParameterView>()
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
+        {
+            Parameters = new ParameterView[]
             {
-                new ParameterView() { Name = "variables" }
-            }));
+                new() { Name = "variables" }
+            }
+        });
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -410,11 +411,13 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView(
-            "functionName", "skillName", "description", new List<ParameterView>
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
+        {
+            Parameters = new ParameterView[]
             {
                 new() { Name = "variables" }
-            }));
+            }
+        });
 
         ISKFunction? outFunc = mockFunction.Object;
         skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), out outFunc)).Returns(true);

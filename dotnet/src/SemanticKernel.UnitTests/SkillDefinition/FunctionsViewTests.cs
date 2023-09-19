@@ -26,9 +26,9 @@ public class FunctionsViewTests
     {
         // Arrange
         var target = new FunctionsView()
-            .AddFunction(new FunctionView("f1", "s1", ""))
-            .AddFunction(new FunctionView("f2", "s1", ""))
-            .AddFunction(new FunctionView("f1", "s2", ""));
+            .AddFunction(new FunctionView("f1", "s1"))
+            .AddFunction(new FunctionView("f2", "s1"))
+            .AddFunction(new FunctionView("f1", "s2"));
 
         // Assert
         Assert.Equal(2, target.NativeFunctions.Count);
@@ -46,9 +46,9 @@ public class FunctionsViewTests
     {
         // Arrange
         var target = new FunctionsView()
-            .AddFunction(new FunctionView("f1", "s1", ""))
-            .AddFunction(new FunctionView("f2", "s1", ""))
-            .AddFunction(new FunctionView("f1", "s2", ""));
+            .AddFunction(new FunctionView("f1", "s1"))
+            .AddFunction(new FunctionView("f2", "s1"))
+            .AddFunction(new FunctionView("f1", "s2"));
 
         // Assert
         Assert.Equal(2, target.SemanticFunctions.Count);
@@ -66,8 +66,8 @@ public class FunctionsViewTests
     {
         // Arrange
         var target = new FunctionsView()
-            .AddFunction(new FunctionView("f1", "s1", ""))
-            .AddFunction(new FunctionView("f1", "s1", ""));
+            .AddFunction(new FunctionView("f1", "s1"))
+            .AddFunction(new FunctionView("f1", "s1"));
 
         // Assert
         Assert.Throws<AmbiguousMatchException>(() => target.IsSemantic("s1", "f1"));
@@ -78,19 +78,19 @@ public class FunctionsViewTests
     public void ItReturnsFunctionParams()
     {
         // Arrange
-        var params1 = new List<ParameterView>
+        var params1 = new ParameterView[]
         {
             new("p1", "param 1", "default 1"),
             new("p2", "param 2", "default 2")
         };
-        var params2 = new List<ParameterView>
+        var params2 = new ParameterView[]
         {
             new("p3", "param 3", "default 3"),
             new("p4", "param 4", "default 4")
         };
         var target = new FunctionsView()
-            .AddFunction(new FunctionView("semFun", "s1", "", params1))
-            .AddFunction(new FunctionView("natFun", "s1", "", params2));
+            .AddFunction(new FunctionView("semFun", "s1") { Parameters = params1 })
+            .AddFunction(new FunctionView("natFun", "s1") { Parameters = params2 });
 
         // Act
         List<FunctionView> semFun = target.SemanticFunctions["s1"];

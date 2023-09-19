@@ -66,7 +66,10 @@ public class SequentialPlanParserTests
         var functionsView = new FunctionsView();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
         {
-            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>() { new(name: "param", description: "description") });
+            var functionView = new FunctionView(name, skillName, description)
+            {
+                Parameters = new ParameterView[] { new(name: "param", description: "description") }
+            };
             var mockFunction = CreateMockFunction(functionView);
             functionsView.AddFunction(functionView);
 

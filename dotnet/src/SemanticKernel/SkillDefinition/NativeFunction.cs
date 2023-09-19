@@ -46,7 +46,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IList<ParameterView> Parameters { get; }
+    public IReadOnlyList<ParameterView> Parameters { get; }
 
     /// <summary>
     /// Create a native function instance, wrapping a native object method
@@ -118,7 +118,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         return new NativeFunction(
             delegateFunction: methodDetails.Function,
-            parameters: parameters is not null ? parameters.ToList() : (IList<ParameterView>)Array.Empty<ParameterView>(),
+            parameters: parameters is not null ? parameters : Array.Empty<ParameterView>(),
             description: description,
             skillName: skillName!,
             functionName: functionName,
@@ -128,11 +128,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView(
-            this.Name,
-            this.SkillName,
-            this.Description,
-            this.Parameters);
+        return new FunctionView(this.Name, this.SkillName, this.Description) { Parameters = this.Parameters };
     }
 
     /// <inheritdoc/>
@@ -216,7 +212,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     internal NativeFunction(
         Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
-        IList<ParameterView> parameters,
+        IEnumerable<ParameterView> parameters,
         string skillName,
         string functionName,
         string description,
@@ -225,12 +221,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         Verify.NotNull(delegateFunction);
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
-        Verify.ParametersUniqueness(parameters);
 
         this._logger = logger;
 
         this._function = delegateFunction;
-        this.Parameters = parameters;
+        this.Parameters = parameters.ToArray();
+        Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
         this.SkillName = skillName;

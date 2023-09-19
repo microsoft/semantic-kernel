@@ -54,10 +54,10 @@ public sealed class PromptTemplate : IPromptTemplate
     /// TODO: consider caching results - though cache invalidation will add extra complexity
     /// </summary>
     /// <returns>List of parameters</returns>
-    public IList<ParameterView> GetParameters()
+    public IReadOnlyList<ParameterView> GetParameters()
     {
         // Parameters from config.json
-        Dictionary<string, ParameterView> result = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, ParameterView> result = new(this._promptConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var p in this._promptConfig.Input.Parameters)
         {
             result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);

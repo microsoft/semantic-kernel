@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -303,11 +302,10 @@ public sealed class PlanTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView(
-            "functionName", "skillName", "description", new List<ParameterView>
-            {
-                new() { Name = "variables" }
-            }));
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "skillName", "description")
+        {
+            Parameters = new ParameterView[] { new() { Name = "variables" } }
+        });
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
