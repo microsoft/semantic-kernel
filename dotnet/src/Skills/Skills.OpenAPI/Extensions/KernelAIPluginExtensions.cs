@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Skills.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
 using Microsoft.SemanticKernel.Skills.OpenAPI.OpenApi;
 
@@ -187,6 +188,7 @@ public static class KernelAIPluginExtensions
             var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(
+                new OperationComponentBuilderFactory(),
                 httpClient,
                 executionParameters?.AuthCallback,
                 executionParameters?.UserAgent,
