@@ -222,7 +222,7 @@ dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
 dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
 dotnet_diagnostic.IDE0032.severity = none # Use auto property
 dotnet_diagnostic.IDE0160.severity = none # Use block-scoped namespace
-dotnet_diagnostic.IDE1006.severity = none # Naming rule violations
+dotnet_diagnostic.IDE1006.severity = warning # Naming rule violations
 
 ###############################
 # Naming Conventions          #

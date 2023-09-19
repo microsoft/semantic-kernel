@@ -19,7 +19,7 @@ namespace SemanticKernel.Extensions.UnitTests.Planning.ActionPlanner;
 public sealed class ActionPlannerTests
 {
     [Fact]
-    public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResult()
+    public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResultAsync()
     {
         // Arrange
         var skills = this.CreateMockSkillCollection();

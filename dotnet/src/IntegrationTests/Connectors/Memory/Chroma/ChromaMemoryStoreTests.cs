@@ -126,7 +126,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItReturnsNullOnNonExistentRecordRetrieval()
+    public async Task ItReturnsNullOnNonExistentRecordRetrievalAsync()
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();
@@ -314,7 +314,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItReturnsNoMatchesFromEmptyCollection()
+    public async Task ItReturnsNoMatchesFromEmptyCollectionAsync()
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();

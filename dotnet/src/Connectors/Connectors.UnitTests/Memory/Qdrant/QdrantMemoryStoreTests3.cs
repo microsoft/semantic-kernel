@@ -231,7 +231,7 @@ public class QdrantMemoryStoreTests3
     }
 
     [Fact]
-    public async Task ScoredVectorSupportsIntegerIds()
+    public async Task ScoredVectorSupportsIntegerIdsAsync()
     {
         // Arrange
         var payloadId = "payloadId";

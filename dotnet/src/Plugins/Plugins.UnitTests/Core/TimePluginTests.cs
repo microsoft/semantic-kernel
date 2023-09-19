@@ -55,7 +55,7 @@ public class TimePluginTests
     }
 
     [Fact]
-    public async Task LastMatchingDayBadInput()
+    public async Task LastMatchingDayBadInputAsync()
     {
         var skill = new TimePlugin();
 

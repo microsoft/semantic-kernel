@@ -6,17 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
-using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
 
-public sealed class KernelAIPluginExtensionsTests : IDisposable
+public sealed class _kernelAIPluginExtensionsTests : IDisposable
 {
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
@@ -29,16 +23,16 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// Kernel instance.
+    /// _kernel instance.
     /// </summary>
-    private IKernel kernel;
+    private I_kernel _kernel;
 
     /// <summary>
-    /// Creates an instance of a <see cref="KernelAIPluginExtensionsTests"/> class.
+    /// Creates an instance of a <see cref="_kernelAIPluginExtensionsTests"/> class.
     /// </summary>
-    public KernelAIPluginExtensionsTests()
+    public _kernelAIPluginExtensionsTests()
     {
-        this.kernel = KernelBuilder.Create();
+        this._kernel = _kernelBuilder.Create();
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
 
@@ -49,7 +43,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
     {
         //Act
-        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", this._openApiDocument);
+        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", this._openApiDocument);
 
         //Assert
         var setSecretFunction = plugin["SetSecret"];
@@ -94,12 +88,12 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this.kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(setSecretFunction);
@@ -132,12 +126,12 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this.kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(setSecretFunction);
@@ -177,12 +171,12 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(documentUri), executionParameters);
+        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(documentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this.kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(setSecretFunction);
