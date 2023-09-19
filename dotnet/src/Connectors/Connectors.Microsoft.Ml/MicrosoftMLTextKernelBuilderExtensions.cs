@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
 using Microsoft.SemanticKernel.AI.Embeddings;
 
 #pragma warning disable IDE0130

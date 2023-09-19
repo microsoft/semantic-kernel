@@ -55,7 +55,7 @@ public sealed class MsTextEmbeddingGeneration : ITextEmbeddingGeneration
         var result = new List<ReadOnlyMemory<float>>(data.Count);
         foreach (string text in data)
         {
-            var embeddings = GenerateEmbeddingsFromTokens(tokenizer.Encode(text), cancellationToken);
+            var embeddings = this.GenerateEmbeddingsFromTokens(tokenizer.Encode(text), cancellationToken);
 
             // Add the embeddings to the result list
             result.Add(embeddings);
