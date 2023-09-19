@@ -23,5 +23,8 @@
     <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
+  </ItemGroup>
 
 </Project>

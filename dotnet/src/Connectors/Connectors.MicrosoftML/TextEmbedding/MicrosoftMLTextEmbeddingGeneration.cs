@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -32,12 +33,12 @@ public sealed class MicrosoftMLTextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// <summary>
     /// Initializes a new instance of the MicrosoftMLTextEmbeddingGeneration class.
     /// </summary>
-    /// <param name="vocabFile">The JSON file path containing the dictionary of string keys and their ids.</param>
-    /// <param name="mergesFile">The file path containing the tokens's pairs list.</param>
+    /// <param name="vocabFilePath">The JSON file path containing the dictionary of string keys and their ids.</param>
+    /// <param name="mergeFilePath">The file path containing the tokens's pairs list.</param>
     /// <param name="loggerFactory">Optional logger factory for logging.</param>
     public MicrosoftMLTextEmbeddingGeneration(
-        string mergeFilePath,
         string vocabFilePath,
+        string mergeFilePath,
         ILoggerFactory? loggerFactory = null
     )
     {
