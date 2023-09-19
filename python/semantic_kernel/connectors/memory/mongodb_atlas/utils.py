@@ -23,15 +23,15 @@ _SIMILARITY_OPTIONS = [
     "dotProduct",
 ]
 
-MONGODB_FIELD_ID = "MemoryId"
-MONGODB_FIELD_TEXT = "Text"
-MONGODB_FIELD_EMBEDDING = "MemoryRecordEmbedding"
-MONGODB_FIELD_SRC = "ExternalSourceName"
-MONGODB_FIELD_DESC = "Description"
-MONGODB_FIELD_METADATA = "AdditionalMetadata"
-MONGODB_FIELD_IS_REF = "IsReference"
-MONGODB_FIELD_KEY = "Key"
-MONGODB_FIELD_TIMESTAMP = "Timestamp"
+MONGODB_FIELD_ID = "memoryId"
+MONGODB_FIELD_TEXT = "text"
+MONGODB_FIELD_EMBEDDING = "memoryRecordEmbedding"
+MONGODB_FIELD_SRC = "externalSourceName"
+MONGODB_FIELD_DESC = "description"
+MONGODB_FIELD_METADATA = "additionalMetadata"
+MONGODB_FIELD_IS_REF = "isReference"
+MONGODB_FIELD_KEY = "key"
+MONGODB_FIELD_TIMESTAMP = "timestamp"
 
 
 def _is_queryable(indices) -> bool:
