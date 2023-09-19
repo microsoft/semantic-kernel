@@ -2,6 +2,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -233,5 +234,8 @@ public class CalendarSkillTests
             ("content", anyContent),
             ("attendees", string.Join(";", anyAttendees)))
         );
+
+        Assert.True(ex.InnerException is ArgumentException);
+        Assert.Equal("subject", ((ArgumentException)ex.InnerException).ParamName);
     }
 }

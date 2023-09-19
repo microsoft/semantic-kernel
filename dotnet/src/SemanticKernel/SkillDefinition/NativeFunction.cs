@@ -480,9 +480,10 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                 }
 
                 // 4. Otherwise, fail.
-                throw new SKException($"Missing value for parameter '{name}'");
+                throw new SKException($"Missing value for parameter '{name}'",
+                    new ArgumentException("Missing value function parameter", name));
 
-                object? Process(string value)
+                object ? Process(string value)
                 {
                     if (type == typeof(string))
                     {
