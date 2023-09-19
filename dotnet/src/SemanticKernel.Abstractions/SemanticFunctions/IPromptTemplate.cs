@@ -14,10 +14,9 @@ namespace Microsoft.SemanticKernel.SemanticFunctions;
 public interface IPromptTemplate
 {
     /// <summary>
-    /// Get the list of parameters required by the template, using configuration and template info.
+    /// The list of parameters required by the template, using configuration and template info.
     /// </summary>
-    /// <returns>List of parameters</returns>
-    IReadOnlyList<ParameterView> GetParameters();
+    IReadOnlyList<ParameterView> Parameters { get; }
 
     /// <summary>
     /// Render the template using the information in the context

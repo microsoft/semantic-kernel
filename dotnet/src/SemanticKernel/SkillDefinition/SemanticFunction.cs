@@ -40,7 +40,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IReadOnlyList<ParameterView> Parameters { get; }
+    public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
 
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
@@ -148,12 +148,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
         this._promptTemplate = template;
-        this.Parameters = template.GetParameters();
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
         this.SkillName = skillName;
         this.Description = description;
+
+        this._view = new(() => new(functionName, skillName, description, this.Parameters));
     }
 
     #region private
@@ -163,6 +164,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private readonly ILogger _logger;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
+    private Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)

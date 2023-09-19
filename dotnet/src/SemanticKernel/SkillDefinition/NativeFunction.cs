@@ -127,9 +127,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public FunctionView Describe()
-    {
-        return new FunctionView(this.Name, this.SkillName, this.Description) { Parameters = this.Parameters };
-    }
+        => this._view.Value;
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
@@ -231,6 +229,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         this.Name = functionName;
         this.SkillName = skillName;
         this.Description = description;
+
+        this._view = new(() => new (functionName, skillName, description) { Parameters = this.Parameters });
     }
 
     /// <summary>
@@ -829,6 +829,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+
+    private readonly Lazy<FunctionView> _view;
 
     #endregion
 
