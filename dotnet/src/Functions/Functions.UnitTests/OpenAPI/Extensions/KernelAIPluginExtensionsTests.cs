@@ -10,7 +10,7 @@ using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Extensions;
 
-public sealed class _kernelAIPluginExtensionsTests : IDisposable
+public sealed class KernelAIPluginExtensionsTests : IDisposable
 {
     /// <summary>
     /// System under test - an instance of OpenApiDocumentParser class.
@@ -23,16 +23,16 @@ public sealed class _kernelAIPluginExtensionsTests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// _kernel instance.
+    /// IKernel instance.
     /// </summary>
-    private I_kernel _kernel;
+    private IKernel _kernel;
 
     /// <summary>
-    /// Creates an instance of a <see cref="_kernelAIPluginExtensionsTests"/> class.
+    /// Creates an instance of a <see cref="KernelAIPluginExtensionsTests"/> class.
     /// </summary>
-    public _kernelAIPluginExtensionsTests()
+    public KernelAIPluginExtensionsTests()
     {
-        this._kernel = _kernelBuilder.Create();
+        this._kernel = KernelBuilder.Create();
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
 
