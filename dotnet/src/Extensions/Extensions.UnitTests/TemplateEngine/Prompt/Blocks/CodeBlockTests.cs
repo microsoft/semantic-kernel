@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -47,7 +47,7 @@ public class CodeBlockTests
         var context = new SKContext(this._kernel.Object, skills: this._skills.Object);
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
             .Throws(new RuntimeWrappedException("error"));
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
@@ -116,11 +116,11 @@ public class CodeBlockTests
 
         // Assert - Can't pass a function to a function
         Assert.False(codeBlock3.IsValid(out var errorMessage3));
-        Assert.Equal(errorMessage3, "The first arg of a function must be a quoted string, variable or named argument");
+        Assert.Equal("The first arg of a function must be a quoted string, variable or named argument", errorMessage3);
 
         // Assert - Can't pass more than one unnamed param
         Assert.False(codeBlock4.IsValid(out var errorMessage4));
-        Assert.Equal(errorMessage4, "Functions only support named arguments after the first argument. Argument 2 is not named.");
+        Assert.Equal("Functions only support named arguments after the first argument. Argument 2 is not named.", errorMessage4);
 
         // Assert - Can pass one unnamed param and named args
         Assert.True(codeBlock5.IsValid(out var errorMessage5));
@@ -128,11 +128,11 @@ public class CodeBlockTests
 
         // Assert - Can't use > 1 block if not a function call
         Assert.False(codeBlock6.IsValid(out var errorMessage6));
-        Assert.Equal(errorMessage6, "Unexpected second token found: 'value'");
+        Assert.Equal("Unexpected second token found: 'value'", errorMessage6);
 
         // Assert - Can't use a named argument without a function block
         Assert.False(codeBlock7.IsValid(out var errorMessage7));
-        Assert.Equal(errorMessage7, "Unexpected named argument found. Expected function name first.");
+        Assert.Equal("Unexpected named argument found. Expected function name first.", errorMessage7);
     }
 
     [Fact]
@@ -210,8 +210,8 @@ public class CodeBlockTests
         var canary2 = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((context, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
             {
                 canary0 = context!.Variables["input"];
                 canary1 = context.Variables["var1"];
@@ -221,7 +221,7 @@ public class CodeBlockTests
                 context.Variables["var1"] = "overridden";
                 context.Variables["var2"] = "overridden";
             })
-            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -258,12 +258,12 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((context, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
             {
                 canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -292,12 +292,12 @@ public class CodeBlockTests
         var canary = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((context, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
             {
                 canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -332,13 +332,13 @@ public class CodeBlockTests
         var baz = string.Empty;
         var function = new Mock<ISKFunction>();
         function
-            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
-            .Callback<SKContext, CompleteRequestSettings?, CancellationToken>((context, _, _) =>
+            .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
+            .Callback<SKContext, object?, CancellationToken>((context, _, _) =>
             {
                 foo = context!.Variables["foo"];
                 baz = context!.Variables["baz"];
             })
-            .ReturnsAsync((SKContext inputcontext, CompleteRequestSettings _, CancellationToken _) => inputcontext);
+            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);

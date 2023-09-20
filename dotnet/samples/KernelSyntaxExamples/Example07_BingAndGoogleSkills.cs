@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
@@ -137,7 +138,7 @@ Answer: ";
         var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         Console.WriteLine(questions);
 
-        var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
+        var oracle = kernel.CreateSemanticFunction(SemanticFunction, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
         var answer = await kernel.RunAsync(oracle, new(questions)
         {

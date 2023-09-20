@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
@@ -39,25 +40,43 @@ public class ConversationSummaryPlugin
             SemanticFunctionConstants.SummarizeConversationDefinition,
             skillName: nameof(ConversationSummaryPlugin),
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
-            maxTokens: MaxTokens,
-            temperature: 0.1,
-            topP: 0.5);
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.1 },
+                    { "TopP", 0.5 },
+                    { "MaxTokens", MaxTokens }
+                }
+            });
 
         this._conversationActionItemsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
             skillName: nameof(ConversationSummaryPlugin),
             description: "Given a section of a conversation transcript, identify action items.",
-            maxTokens: MaxTokens,
-            temperature: 0.1,
-            topP: 0.5);
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.1 },
+                    { "TopP", 0.5 },
+                    { "MaxTokens", MaxTokens }
+                }
+            });
 
         this._conversationTopicsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
             skillName: nameof(ConversationSummaryPlugin),
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
-            maxTokens: MaxTokens,
-            temperature: 0.1,
-            topP: 0.5);
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.1 },
+                    { "TopP", 0.5 },
+                    { "MaxTokens", MaxTokens }
+                }
+            });
     }
 
     /// <summary>

@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -81,7 +82,7 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public AIRequestSettings? RequestSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -333,7 +334,7 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
@@ -341,7 +342,7 @@ public sealed class Plan : IPlan
             AddVariablesToContext(this.State, context);
             var result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(context, settings, cancellationToken)
+                .InvokeAsync(context, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
 
             context.Variables.Update(result.Result);
@@ -373,9 +374,9 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        return this.Function is not null ? this.Function.SetAIConfiguration(settings) : this;
+        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }
 
     #endregion ISKFunction implementation
