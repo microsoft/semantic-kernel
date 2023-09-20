@@ -110,9 +110,9 @@ public static class Example08_RetryHandler
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
 
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportPlugin(new TimePlugin(), "time");
 
-        var qaSkill = kernel.ImportSemanticSkillFromDirectory(
+        var qaSkill = kernel.ImportSemanticFunctionsFromDirectory(
             folder,
             "QASkill");
 

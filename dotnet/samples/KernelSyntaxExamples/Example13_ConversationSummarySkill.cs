@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -134,7 +133,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
@@ -150,7 +149,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
@@ -166,7 +165,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,

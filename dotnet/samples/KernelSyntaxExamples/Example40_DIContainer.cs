@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
+
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
@@ -80,7 +80,7 @@ public static class Example40_DIContainer
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
         collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
-        collection.AddTransient<ISkillCollection, FunctionCollection>();
+        collection.AddTransient<IFunctionCollection, FunctionCollection>();
         collection.AddTransient<IPromptTemplateEngine, PromptTemplateEngine>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
@@ -122,7 +122,7 @@ public static class Example40_DIContainer
         {
             string folder = RepoFiles.SampleSkillsPath();
 
-            var sumSkill = this._kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+            var sumSkill = this._kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizeSkill");
 
             var result = await this._kernel.RunAsync(ask, sumSkill["Summarize"]);
 

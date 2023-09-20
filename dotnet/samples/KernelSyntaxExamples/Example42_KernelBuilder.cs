@@ -22,7 +22,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
+
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Polly;
 using Polly.Retry;
