@@ -95,36 +95,36 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string skillName, string functionName, SemanticFunctionConfig functionConfig)
+    public ISKFunction RegisterSemanticFunction(string pluginName, string functionName, SemanticFunctionConfig functionConfig)
     {
         // Future-proofing the name not to contain special chars
-        Verify.ValidSkillName(skillName);
+        Verify.ValidPluginName(pluginName);
         Verify.ValidFunctionName(functionName);
 
-        ISKFunction function = this.CreateSemanticFunction(skillName, functionName, functionConfig);
+        ISKFunction function = this.CreateSemanticFunction(pluginName, functionName, functionConfig);
         this._skillCollection.AddFunction(function);
 
         return function;
     }
 
     /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null)
+    public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? pluginName = null)
     {
         Verify.NotNull(skillInstance);
 
-        if (string.IsNullOrWhiteSpace(skillName))
+        if (string.IsNullOrWhiteSpace(pluginName))
         {
-            skillName = SkillCollection.GlobalSkill;
+            pluginName = SkillCollection.GlobalSkill;
             this._logger.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
         }
         else
         {
-            this._logger.LogTrace("Importing skill {0}", skillName);
+            this._logger.LogTrace("Importing skill {0}", pluginName);
         }
 
         Dictionary<string, ISKFunction> skill = ImportSkill(
             skillInstance,
-            skillName!,
+            pluginName!,
             this._logger,
             this.LoggerFactory
         );
@@ -198,13 +198,13 @@ repeat:
                 var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
                 if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
-                    this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     break;
                 }
 
                 if (functionInvokingArgs?.IsSkipRequested ?? false)
                 {
-                    this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     continue;
                 }
 
@@ -213,19 +213,19 @@ repeat:
                 var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, context);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
-                    this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     break;
                 }
 
                 if (functionInvokedArgs?.IsRepeatRequested ?? false)
                 {
-                    this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
                     goto repeat;
                 }
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.SkillName, skFunction.Name, pipelineStepCount, ex.Message);
+                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.PluginName, skFunction.Name, pipelineStepCount, ex.Message);
                 throw;
             }
 
@@ -315,7 +315,7 @@ repeat:
     }
 
     private ISKFunction CreateSemanticFunction(
-        string skillName,
+        string pluginName,
         string functionName,
         SemanticFunctionConfig functionConfig)
     {
@@ -325,7 +325,7 @@ repeat:
         }
 
         ISKFunction func = SemanticFunction.FromSemanticConfig(
-            skillName,
+            pluginName,
             functionName,
             functionConfig,
             this.LoggerFactory
@@ -347,14 +347,14 @@ repeat:
     /// Import a skill into the kernel skill collection, so that semantic functions and pipelines can consume its functions.
     /// </summary>
     /// <param name="skillInstance">Skill class instance</param>
-    /// <param name="skillName">Skill name, used to group functions under a shared namespace</param>
+    /// <param name="pluginName">Skill name, used to group functions under a shared namespace</param>
     /// <param name="logger">Application logger</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string skillName, ILogger logger, ILoggerFactory loggerFactory)
+    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string pluginName, ILogger logger, ILoggerFactory loggerFactory)
     {
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-        logger.LogTrace("Importing skill name: {0}. Potential methods found: {1}", skillName, methods.Length);
+        logger.LogTrace("Importing skill name: {0}. Potential methods found: {1}", pluginName, methods.Length);
 
         // Filter out non-SKFunctions and fail if two functions have the same name
         Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
@@ -362,7 +362,7 @@ repeat:
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, skillName, loggerFactory);
+                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, pluginName, loggerFactory);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new SKException("Function overloads are not supported, please differentiate function names");
@@ -384,9 +384,9 @@ repeat:
     /// <inheritdoc/>
     [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction Func(string skillName, string functionName)
+    public ISKFunction Func(string pluginName, string functionName)
     {
-        return this.Skills.GetFunction(skillName, functionName);
+        return this.Skills.GetFunction(pluginName, functionName);
     }
 
     #endregion

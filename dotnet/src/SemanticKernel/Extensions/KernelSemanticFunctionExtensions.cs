@@ -29,7 +29,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="skillName">Optional skill name, for namespacing and avoid collisions</param>
+    /// <param name="pluginName">Optional skill name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="maxTokens">Max number of tokens to generate</param>
     /// <param name="temperature">Temperature parameter passed to LLM</param>
@@ -44,7 +44,7 @@ public static class InlineFunctionsDefinitionExtension
         this IKernel kernel,
         string promptTemplate,
         string? functionName = null,
-        string? skillName = null,
+        string? pluginName = null,
         string? description = null,
         int? maxTokens = null,
         double temperature = 0,
@@ -78,7 +78,7 @@ public static class InlineFunctionsDefinitionExtension
             promptTemplate: promptTemplate,
             config: config,
             functionName: functionName,
-            skillName: skillName);
+            pluginName: pluginName);
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="config">Optional function settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="skillName">An optional skill name, e.g. to namespace functions with the same name. When empty,
+    /// <param name="pluginName">An optional skill name, e.g. to namespace functions with the same name. When empty,
     /// the function is added to the global namespace, overwriting functions with the same name</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
@@ -96,11 +96,11 @@ public static class InlineFunctionsDefinitionExtension
         string promptTemplate,
         PromptTemplateConfig config,
         string? functionName = null,
-        string? skillName = null)
+        string? pluginName = null)
     {
         functionName ??= RandomFunctionName();
         Verify.ValidFunctionName(functionName);
-        if (!string.IsNullOrEmpty(skillName)) { Verify.ValidSkillName(skillName); }
+        if (!string.IsNullOrEmpty(pluginName)) { Verify.ValidPluginName(pluginName); }
 
         var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
 
@@ -108,9 +108,9 @@ public static class InlineFunctionsDefinitionExtension
         var functionConfig = new SemanticFunctionConfig(config, template);
 
         // TODO: manage overwrites, potentially error out
-        return string.IsNullOrEmpty(skillName)
+        return string.IsNullOrEmpty(pluginName)
             ? kernel.RegisterSemanticFunction(functionName, functionConfig)
-            : kernel.RegisterSemanticFunction(skillName!, functionName, functionConfig);
+            : kernel.RegisterSemanticFunction(pluginName!, functionName, functionConfig);
     }
 
     /// <summary>
@@ -119,7 +119,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="skillName">Optional skill name, for namespacing and avoid collisions</param>
+    /// <param name="pluginName">Optional skill name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="maxTokens">Max number of tokens to generate</param>
     /// <param name="temperature">Temperature parameter passed to LLM</param>
@@ -134,7 +134,7 @@ public static class InlineFunctionsDefinitionExtension
         this IKernel kernel,
         string promptTemplate,
         string? functionName = null,
-        string? skillName = null,
+        string? pluginName = null,
         string? description = null,
         int? maxTokens = null,
         double temperature = 0,
@@ -148,7 +148,7 @@ public static class InlineFunctionsDefinitionExtension
         var skfunction = kernel.CreateSemanticFunction(
             promptTemplate,
             functionName,
-            skillName,
+            pluginName,
             description,
             maxTokens,
             temperature,
@@ -220,7 +220,7 @@ public static class InlineFunctionsDefinitionExtension
         ILogger? logger = null;
         foreach (string skillDirectoryName in skillDirectoryNames)
         {
-            Verify.ValidSkillName(skillDirectoryName);
+            Verify.ValidPluginName(skillDirectoryName);
             var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
             Verify.DirectoryExists(skillDir);
 

@@ -31,7 +31,7 @@ public class KernelTests
             .Build();
 
         var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
         kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
@@ -53,7 +53,7 @@ public class KernelTests
             .Build();
 
         var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
+        kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act
@@ -132,7 +132,7 @@ public class KernelTests
         var templateConfig = new PromptTemplateConfig();
         templateConfig.Completion.ChatSystemPrompt = providedSystemChatPrompt;
 
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -186,7 +186,7 @@ public class KernelTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -215,7 +215,7 @@ public class KernelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.Completion.ServiceId = "service1";
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -239,7 +239,7 @@ public class KernelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.Completion.ServiceId = "service3";
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
@@ -493,7 +493,7 @@ public class KernelTests
 
             foreach (var function in context.Skills.GetFunctionViews())
             {
-                context.Variables[$"{function.SkillName}.{function.Name}"] = function.Description;
+                context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }
 
             return context;

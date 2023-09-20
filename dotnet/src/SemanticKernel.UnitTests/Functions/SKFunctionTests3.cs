@@ -99,7 +99,7 @@ public sealed class SKFunctionTests3
             nativeFunction: ExecuteAsync,
             parameters: null,
             description: "description",
-            skillName: "skillName",
+            pluginName: "pluginName",
             functionName: "functionName");
 
         SKContext result = await function.InvokeAsync(context);
@@ -134,7 +134,7 @@ public sealed class SKFunctionTests3
         ISKFunction function = SKFunction.FromNativeFunction(
             nativeFunction: ExecuteAsync,
             description: "description",
-            skillName: "skillName",
+            pluginName: "pluginName",
             functionName: "functionName");
 
         SKContext result = await function.InvokeAsync(context);

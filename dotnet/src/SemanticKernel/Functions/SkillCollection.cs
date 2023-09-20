@@ -47,7 +47,7 @@ public class SkillCollection : ISkillCollection
     {
         Verify.NotNull(functionInstance);
 
-        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.SkillName, static _ => new(StringComparer.OrdinalIgnoreCase));
+        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.PluginName, static _ => new(StringComparer.OrdinalIgnoreCase));
         skill[functionInstance.Name] = functionInstance;
 
         return this;
@@ -58,11 +58,11 @@ public class SkillCollection : ISkillCollection
         this.GetFunction(GlobalSkill, functionName);
 
     /// <inheritdoc/>
-    public ISKFunction GetFunction(string skillName, string functionName)
+    public ISKFunction GetFunction(string pluginName, string functionName)
     {
-        if (!this.TryGetFunction(skillName, functionName, out ISKFunction? functionInstance))
+        if (!this.TryGetFunction(pluginName, functionName, out ISKFunction? functionInstance))
         {
-            this.ThrowFunctionNotAvailable(skillName, functionName);
+            this.ThrowFunctionNotAvailable(pluginName, functionName);
         }
 
         return functionInstance;
@@ -73,12 +73,12 @@ public class SkillCollection : ISkillCollection
         this.TryGetFunction(GlobalSkill, functionName, out availableFunction);
 
     /// <inheritdoc/>
-    public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
+    public bool TryGetFunction(string pluginName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
     {
-        Verify.NotNull(skillName);
+        Verify.NotNull(pluginName);
         Verify.NotNull(functionName);
 
-        if (this._skillCollection.TryGetValue(skillName, out ConcurrentDictionary<string, ISKFunction>? skill))
+        if (this._skillCollection.TryGetValue(pluginName, out ConcurrentDictionary<string, ISKFunction>? skill))
         {
             return skill.TryGetValue(functionName, out availableFunction);
         }
@@ -109,10 +109,10 @@ public class SkillCollection : ISkillCollection
     #region private ================================================================================
 
     [DoesNotReturn]
-    private void ThrowFunctionNotAvailable(string skillName, string functionName)
+    private void ThrowFunctionNotAvailable(string pluginName, string functionName)
     {
-        this._logger.LogError("Function not available: skill:{0} function:{1}", skillName, functionName);
-        throw new SKException($"Function not available {skillName}.{functionName}");
+        this._logger.LogError("Function not available: skill:{0} function:{1}", pluginName, functionName);
+        throw new SKException($"Function not available {pluginName}.{functionName}");
     }
 
     private readonly ILogger _logger;

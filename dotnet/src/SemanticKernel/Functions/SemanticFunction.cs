@@ -31,7 +31,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string Name { get; }
 
     /// <inheritdoc/>
-    public string SkillName { get; }
+    public string PluginName { get; }
 
     /// <inheritdoc/>
     public string Description { get; }
@@ -50,14 +50,14 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
     /// </summary>
-    /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
+    /// <param name="pluginName">Name of the skill to which the function to create belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="functionConfig">Semantic function configuration.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
-        string skillName,
+        string pluginName,
         string functionName,
         SemanticFunctionConfig functionConfig,
         ILoggerFactory? loggerFactory = null,
@@ -68,7 +68,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         var func = new SemanticFunction(
             template: functionConfig.PromptTemplate,
             description: functionConfig.PromptTemplateConfig.Description,
-            skillName: skillName,
+            pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
         );
@@ -83,7 +83,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         {
             IsSemantic = this.IsSemantic,
             Name = this.Name,
-            SkillName = this.SkillName,
+            PluginName = this.PluginName,
             Description = this.Description,
             Parameters = this.Parameters,
         };
@@ -148,13 +148,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     internal SemanticFunction(
         IPromptTemplate template,
-        string skillName,
+        string pluginName,
         string functionName,
         string description,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
-        Verify.ValidSkillName(skillName);
+        Verify.ValidPluginName(pluginName);
         Verify.ValidFunctionName(functionName);
 
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
@@ -164,7 +164,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
-        this.SkillName = skillName;
+        this.PluginName = pluginName;
         this.Description = description;
     }
 
@@ -220,7 +220,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, ex.Message);
+            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, ex.Message);
             throw;
         }
 

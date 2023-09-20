@@ -69,7 +69,7 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonPropertyName("skill_name")]
-    public string SkillName { get; set; } = string.Empty;
+    public string PluginName { get; set; } = string.Empty;
 
     /// <inheritdoc/>
     [JsonPropertyName("description")]
@@ -93,7 +93,7 @@ public sealed class Plan : IPlan
     {
         this.Name = GetRandomPlanName();
         this.Description = goal;
-        this.SkillName = nameof(Plan);
+        this.PluginName = nameof(Plan);
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public sealed class Plan : IPlan
     /// Initializes a new instance of the <see cref="Plan"/> class with a function and steps.
     /// </summary>
     /// <param name="name">The name of the plan.</param>
-    /// <param name="skillName">The name of the skill.</param>
+    /// <param name="pluginName">The name of the skill.</param>
     /// <param name="description">The description of the plan.</param>
     /// <param name="nextStepIndex">The index of the next step.</param>
     /// <param name="state">The state of the plan.</param>
@@ -139,7 +139,7 @@ public sealed class Plan : IPlan
     [JsonConstructor]
     public Plan(
         string name,
-        string skillName,
+        string pluginName,
         string description,
         int nextStepIndex,
         ContextVariables state,
@@ -148,7 +148,7 @@ public sealed class Plan : IPlan
         IReadOnlyList<Plan> steps)
     {
         this.Name = name;
-        this.SkillName = skillName;
+        this.PluginName = pluginName;
         this.Description = description;
         this.NextStepIndex = nextStepIndex;
         this.State = state;
@@ -324,7 +324,7 @@ public sealed class Plan : IPlan
         ).ToList();
 
         return new(name: this.Name,
-                   skillName: this.SkillName,
+                   pluginName: this.PluginName,
                    description: this.Description,
                    parameters: parameters,
                    isSemantic: false);
@@ -419,13 +419,13 @@ public sealed class Plan : IPlan
                 throw new SKException("Skill collection not found in the context");
             }
 
-            if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
+            if (context.Skills.TryGetFunction(plan.PluginName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }
             else if (requireFunctions)
             {
-                throw new SKException($"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
+                throw new SKException($"Function '{plan.PluginName}.{plan.Name}' not found in skill collection");
             }
         }
         else
@@ -583,7 +583,7 @@ public sealed class Plan : IPlan
     {
         this.Function = function;
         this.Name = function.Name;
-        this.SkillName = function.SkillName;
+        this.PluginName = function.PluginName;
         this.Description = function.Description;
         this.IsSemantic = function.IsSemantic;
         this.RequestSettings = function.RequestSettings;

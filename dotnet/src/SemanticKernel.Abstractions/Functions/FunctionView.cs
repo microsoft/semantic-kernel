@@ -16,14 +16,14 @@ namespace Microsoft.SemanticKernel;
 public sealed class FunctionView
 {
     /// <summary>
-    /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
+    /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
+    /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
-    public string SkillName { get; set; } = string.Empty;
+    public string PluginName { get; set; } = string.Empty;
 
     /// <summary>
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
@@ -56,21 +56,21 @@ public sealed class FunctionView
     /// Create a function view.
     /// </summary>
     /// <param name="name">Function name</param>
-    /// <param name="skillName">Skill name, e.g. the function namespace</param>
+    /// <param name="pluginName">Skill name, e.g. the function namespace</param>
     /// <param name="description">Function description</param>
     /// <param name="parameters">List of function parameters provided by the skill developer</param>
     /// <param name="isSemantic">Whether the function is a semantic one (or native is False)</param>
     /// <param name="isAsynchronous">Whether the function is async. Note: all semantic functions are async.</param>
     public FunctionView(
         string name,
-        string skillName,
+        string pluginName,
         string description,
         IList<ParameterView> parameters,
         bool isSemantic,
         bool isAsynchronous = true)
     {
         this.Name = name;
-        this.SkillName = skillName;
+        this.PluginName = pluginName;
         this.Description = description;
         this.Parameters = parameters;
         this.IsSemantic = isSemantic;

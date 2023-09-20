@@ -59,12 +59,12 @@ public interface IKernel
     /// <summary>
     /// Build and register a function in the internal skill collection.
     /// </summary>
-    /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="pluginName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     ISKFunction RegisterSemanticFunction(
-        string skillName,
+        string pluginName,
         string functionName,
         SemanticFunctionConfig functionConfig);
 
@@ -80,9 +80,9 @@ public interface IKernel
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>
     /// <param name="skillInstance">Instance of a class containing functions</param>
-    /// <param name="skillName">Name of the skill for skill collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
+    /// <param name="pluginName">Name of the skill for skill collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null);
+    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? pluginName = null);
 
     /// <summary>
     /// Set the semantic memory to use
@@ -196,12 +196,12 @@ public interface IKernel
     /// Access registered functions by skill + name. Not case sensitive.
     /// The function might be native or semantic, it's up to the caller handling it.
     /// </summary>
-    /// <param name="skillName">Skill name</param>
+    /// <param name="pluginName">Skill name</param>
     /// <param name="functionName">Function name</param>
     /// <returns>Delegate to execute the function</returns>
     [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    ISKFunction Func(string skillName, string functionName);
+    ISKFunction Func(string pluginName, string functionName);
 
     #endregion
 }

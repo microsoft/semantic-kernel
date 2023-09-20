@@ -22,7 +22,7 @@ public sealed class InstrumentedPlan : IPlan
     public string Name => this._plan.Name;
 
     /// <inheritdoc/>
-    public string SkillName => this._plan.SkillName;
+    public string PluginName => this._plan.PluginName;
 
     /// <inheritdoc/>
     public string Description => this._plan.Description;

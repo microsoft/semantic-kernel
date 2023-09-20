@@ -25,7 +25,7 @@ internal sealed class IReadOnlySkillCollectionTypeProxy
         get
         {
             return this._collection.GetFunctionViews()
-                .GroupBy(f => f.SkillName)
+                .GroupBy(f => f.PluginName)
                 .Select(g => new SkillProxy(g) { Name = g.Key })
                 .ToArray();
         }

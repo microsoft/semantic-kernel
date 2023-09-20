@@ -17,14 +17,14 @@ namespace Microsoft.SemanticKernel;
 public interface ISKFunction
 {
     /// <summary>
-    /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
+    /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
     string Name { get; }
 
     /// <summary>
-    /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
+    /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
-    string SkillName { get; }
+    string PluginName { get; }
 
     /// <summary>
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
