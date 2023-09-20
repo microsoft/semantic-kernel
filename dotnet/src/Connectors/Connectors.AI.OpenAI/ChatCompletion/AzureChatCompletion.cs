@@ -8,10 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using AzureSdk;
-using Extensions.Logging;
-using SemanticKernel.AI.ChatCompletion;
-using SemanticKernel.AI.TextCompletion;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 
 /// <summary>
@@ -73,7 +74,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         LogActionDetails();
@@ -84,7 +85,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         LogActionDetails();
@@ -99,7 +100,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         LogActionDetails();
@@ -110,7 +111,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatCompletion
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         LogActionDetails();

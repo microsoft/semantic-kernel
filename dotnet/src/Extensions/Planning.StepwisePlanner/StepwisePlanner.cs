@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -59,7 +60,11 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
-        this._promptConfig.Completion.MaxTokens = this.Config.MaxTokens;
+        if (this._promptConfig.Completion is null)
+        {
+            this._promptConfig.Completion = new AIRequestSettings();
+        }
+        this._promptConfig.Completion.ExtensionData["max_tokens"] = this.Config.MaxTokens;
 
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
@@ -410,7 +415,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (aiService is IChatCompletion chatCompletion)
         {
-            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, ChatRequestSettings.FromCompletionConfig(this._promptConfig.Completion), token).ConfigureAwait(false));
+            var llmResponse = (await ChatCompletionExtensions.GenerateMessageAsync(chatCompletion, chatHistory, this._promptConfig.Completion, token).ConfigureAwait(false));
             return llmResponse;
         }
         else if (aiService is ITextCompletion textCompletion)
@@ -425,7 +430,7 @@ public class StepwisePlanner : IStepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            var results = (await textCompletion.GetCompletionsAsync(thoughtProcess, CompleteRequestSettings.FromCompletionConfig(this._promptConfig.Completion), token).ConfigureAwait(false));
+            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.Completion, token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {
@@ -570,15 +575,13 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (this.Config.GetAvailableFunctionsAsync is null)
         {
-            FunctionsView functionsView = this._context.Skills!.GetFunctionsView();
+            var functionsView = this._context.Skills!.GetFunctionViews();
 
             var excludedSkills = this.Config.ExcludedSkills ?? new();
             var excludedFunctions = this.Config.ExcludedFunctions ?? new();
 
             var availableFunctions =
-                functionsView.NativeFunctions
-                    .Concat(functionsView.SemanticFunctions)
-                    .SelectMany(x => x.Value)
+                functionsView
                     .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
                     .OrderBy(x => x.SkillName)
                     .ThenBy(x => x.Name);
