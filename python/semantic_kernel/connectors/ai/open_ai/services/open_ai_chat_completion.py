@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import List, Optional, Tuple, Union
+from typing import Dict, Optional
 
 from openai import AsyncOpenAI
 from pydantic import HttpUrl
@@ -13,12 +13,17 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls import (
-    OpenAIModelTypes,
-    _parse_choices,
+from semantic_kernel.connectors.ai.open_ai.services.base_chat_completions import (
+    BaseChatCompletion,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.base_config_open_ai import (
+    BaseOpenAIConfig,
+)
+from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
+    OpenAIModelTypes,
+)
+from semantic_kernel.connectors.ai.open_ai.services.base_text_completion import (
+    BaseTextCompletion,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
@@ -270,7 +275,7 @@ class OpenAIChatCompletionBase(ChatCompletionClientBase, TextCompletionClientBas
         return self._total_tokens
 
 
-class OpenAIChatCompletion(OpenAITextCompletion, ChatCompletionClientBase):
+class OpenAIChatCompletion(BaseOpenAIConfig, BaseChatCompletion, BaseTextCompletion):
     def __init__(
         self,
         model_id: str,
@@ -295,43 +300,22 @@ class OpenAIChatCompletion(OpenAITextCompletion, ChatCompletionClientBase):
             model_id=model_id,
             api_key=api_key,
             org_id=org_id,
+            model_type=OpenAIModelTypes.CHAT,
             log=log,
         )
-        self.model_type = OpenAIModelTypes.CHAT
 
-    async def complete_chat_async(
-        self,
-        messages: List[Tuple[str, str]],
-        settings: ChatRequestSettings,
-        logger: Optional[Logger] = None,
-    ) -> Union[str, List[str]]:
-        response = await self._send_request(
-            messages=messages, request_settings=settings, stream=False
+    @classmethod
+    def from_dict(cls, settings: Dict[str, str]) -> "OpenAIChatCompletion":
+        """
+        Initialize an Open AI service from a dictionary of settings.
+
+        Arguments:
+            settings: A dictionary of settings for the service.
+        """
+
+        return OpenAIChatCompletion(
+            model_id=settings["model_id"],
+            api_key=settings["api_key"],
+            org_id=settings.get("org_id"),
+            log=settings.get("log"),
         )
-
-        if len(response.choices) == 1:
-            return response.choices[0].message.content
-        else:
-            return [choice.message.content for choice in response.choices]
-
-    async def complete_chat_stream_async(
-        self,
-        messages: List[Tuple[str, str]],
-        settings: ChatRequestSettings,
-        logger: Optional[Logger] = None,
-    ):
-        response = await self._send_request(
-            messages=messages, request_settings=settings, stream=True
-        )
-
-        # parse the completion text(s) and yield them
-        async for chunk in response:
-            text, index = _parse_choices(chunk)
-            # if multiple responses are requested, keep track of them
-            if settings.number_of_responses > 1:
-                completions = [""] * settings.number_of_responses
-                completions[index] = text
-                yield completions
-            # if only one response is requested, yield it
-            else:
-                yield text

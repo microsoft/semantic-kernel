@@ -108,7 +108,7 @@ def test_azure_text_embedding_init_with_invalid_endpoint() -> None:
 async def test_azure_text_embedding_calls_with_parameters() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -143,7 +143,7 @@ async def test_azure_text_embedding_calls_with_parameters() -> None:
 async def test_azure_text_embedding_calls_with_batches() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
-from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import openai
@@ -13,12 +12,9 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
-
-
-class OpenAIModelTypes(Enum):
-    TEXT = "text"
-    CHAT = "chat"
-    EMBEDDING = "embedding"
+from semantic_kernel.connectors.ai.open_ai.services.base_model_types import (
+    OpenAIModelTypes,
+)
 
 
 class OpenAIServiceCalls(AIServiceClientBase, ABC):

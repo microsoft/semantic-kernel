@@ -1,25 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import List, Optional
+from typing import Dict, Optional
 
-from numpy import ndarray
-
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.services.base_config_open_ai import (
+    BaseOpenAIConfig,
 )
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls import (
+from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
-    OpenAITextCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.base_text_embedding import (
+    BaseTextEmbedding,
 )
 
 
-class OpenAITextEmbedding(OpenAITextCompletion, EmbeddingGeneratorBase):
+class OpenAITextEmbedding(BaseOpenAIConfig, BaseTextEmbedding):
     def __init__(
         self,
         model_id: str,
@@ -42,32 +37,23 @@ class OpenAITextEmbedding(OpenAITextCompletion, EmbeddingGeneratorBase):
         super().__init__(
             model_id=model_id,
             api_key=api_key,
+            model_type=OpenAIModelTypes.EMBEDDING,
             org_id=org_id,
             log=log,
         )
-        self.model_type = OpenAIModelTypes.EMBEDDING
 
-    async def generate_embeddings_async(
-        self, texts: List[str], batch_size: Optional[int] = None
-    ) -> ndarray:
-        return await self._send_embedding_request(texts, batch_size)
+    @classmethod
+    def from_dict(cls, settings: Dict[str, str]) -> "OpenAITextEmbedding":
+        """
+        Initialize an Open AI service from a dictionary of settings.
 
-    async def complete_stream_async(
-        self,
-        prompt: str,
-        settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
-    ):
-        raise NotImplementedError(
-            "Embedding class does not currently support completions"
-        )
+        Arguments:
+            settings: A dictionary of settings for the service.
+        """
 
-    async def complete_async(
-        self,
-        prompt: str,
-        settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
-    ):
-        raise NotImplementedError(
-            "Embedding class does not currently support completions"
+        return OpenAITextEmbedding(
+            model_id=settings["model_id"],
+            api_key=settings["api_key"],
+            org_id=settings.get("org_id"),
+            log=settings.get("log"),
         )

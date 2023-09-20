@@ -2,25 +2,20 @@
 
 
 from logging import Logger
-from typing import List, Optional
+from typing import Dict, Optional
 
-from numpy import ndarray
-
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.open_ai.services.base_config_azure import (
+    BaseAzureConfig,
 )
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
-from semantic_kernel.connectors.ai.open_ai.services.azure_text_completion import (
-    AzureTextCompletion,
-)
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_service_calls import (
+from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
     OpenAIModelTypes,
 )
+from semantic_kernel.connectors.ai.open_ai.services.base_text_embedding import (
+    BaseTextEmbedding,
+)
 
 
-class AzureTextEmbedding(AzureTextCompletion, EmbeddingGeneratorBase):
+class AzureTextEmbedding(BaseAzureConfig, BaseTextEmbedding):
     def __init__(
         self,
         deployment_name: str,
@@ -63,30 +58,28 @@ class AzureTextEmbedding(AzureTextCompletion, EmbeddingGeneratorBase):
             api_version=api_version,
             log=log or logger,
             ad_auth=ad_auth,
-        )
-        self.model_type = OpenAIModelTypes.EMBEDDING
-
-    async def generate_embeddings_async(
-        self, texts: List[str], batch_size: Optional[int] = None
-    ) -> ndarray:
-        return await self._send_embedding_request(texts, batch_size)
-
-    async def complete_stream_async(
-        self,
-        prompt: str,
-        settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
-    ):
-        raise NotImplementedError(
-            "Embedding class does not currently support completions"
+            model_type=OpenAIModelTypes.EMBEDDING,
         )
 
-    async def complete_async(
-        self,
-        prompt: str,
-        settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None,
-    ):
-        raise NotImplementedError(
-            "Embedding class does not currently support completions"
+    @classmethod
+    def from_dict(cls, settings: Dict[str, str]) -> "AzureTextEmbedding":
+        """
+        Initialize an Azure OpenAI service from a dictionary of settings.
+
+        Arguments:
+            settings: A dictionary of settings for the service.
+                should contains keys: deployment_name, endpoint, api_key
+                and optionally: api_version, ad_auth, log
+        """
+        if "api_type" in settings:
+            settings["ad_auth"] = settings["api_type"] == "azure_ad"
+            del settings["api_type"]
+
+        return AzureTextEmbedding(
+            deployment_name=settings["deployment_name"],
+            endpoint=settings["endpoint"],
+            api_key=settings["api_key"],
+            api_version=settings.get("api_version"),
+            ad_auth=settings.get("ad_auth", False),
+            log=settings.get("log"),
         )
