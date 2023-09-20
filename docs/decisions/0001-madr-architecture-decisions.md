@@ -15,7 +15,7 @@ We need a way to keep the implementations aligned with regard to key architectur
 semantic function configuration (config.json) and when this change is agreed it must be reflected in all of the Semantic Kernel implementations.
 
 MADR is a lean template to capture any decisions in a structured way. The template originated from capturing architectural decisions and developed to a template allowing to capture any decisions taken.
-For more information [see](https://adr.github.io/madr/)
+For more information [see](https://adr.github.io/)
 
 <!-- This is an optional element. Feel free to remove. -->
 ## Decision Drivers
