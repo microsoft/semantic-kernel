@@ -11,19 +11,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Text;
-
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-
+using ChatCompletion;
+using Diagnostics;
+using Extensions.Logging;
+using Extensions.Logging.Abstractions;
+using FunctionCalling;
+using FunctionCalling.Extensions;
+using SemanticKernel.AI;
+using SemanticKernel.AI.ChatCompletion;
+using SemanticKernel.AI.TextCompletion;
+using Text;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
+
 
 /// <summary>
 /// Base class for AI clients that provides common functionality for interacting with OpenAI services.
@@ -103,7 +103,7 @@ public abstract class ClientBase
         var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<Completions>? response = await RunRequestAsync<Response<Completions>?>(
-            () => Client.GetCompletionsAsync(ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
         if (response is null)
         {
@@ -117,7 +117,7 @@ public abstract class ClientBase
             throw new SKException("Text completions not found");
         }
 
-        CaptureUsageDetails(responseData.Usage);
+        this.CaptureUsageDetails(responseData.Usage);
 
         return responseData.Choices.Select(choice => new TextResult(responseData, choice)).ToList();
     }
@@ -142,11 +142,11 @@ public abstract class ClientBase
         var options = CreateCompletionsOptions(text, textRequestSettings);
 
         Response<StreamingCompletions>? response = await RunRequestAsync<Response<StreamingCompletions>>(
-            () => Client.GetCompletionsStreamingAsync(ModelId, options, cancellationToken)).ConfigureAwait(false);
+            () => this.Client.GetCompletionsStreamingAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
 
-        using var streamingChatCompletions = response.Value;
+        using StreamingCompletions streamingChatCompletions = response.Value;
 
-        await foreach (var choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
+        await foreach (StreamingChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken))
         {
             yield return new TextStreamingResult(streamingChatCompletions, choice);
         }
@@ -165,10 +165,8 @@ public abstract class ClientBase
     {
         List<ReadOnlyMemory<float>> result = new(data.Count);
 
-        foreach (var text in data)
+        foreach (var options in data.Select(text => new EmbeddingsOptions(text)))
         {
-            var options = new EmbeddingsOptions(text);
-
             Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
                 () => Client.GetEmbeddingsAsync(ModelId, options, cancellationToken)).ConfigureAwait(false);
 
@@ -198,13 +196,17 @@ public abstract class ClientBase
     /// <returns>Generated chat message in string format</returns>
     protected private async Task<IReadOnlyList<IChatResult>> InternalGetChatResultsAsync(
         ChatHistory chat,
-        ChatRequestSettings? chatSettings,
+        AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
-        chatSettings ??= new ChatRequestSettings();
-        ValidateMaxTokens(chatSettings?.MaxTokens);
-        var chatOptions = CreateChatCompletionsOptions(chatSettings!, chat);
+
+        OpenAIRequestSettings chatRequestSettings = (OpenAIRequestSettings)(requestSettings is FunctionCallRequestSettings
+            ? requestSettings
+            : OpenAIRequestSettings.FromRequestSettings(requestSettings));
+
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
+        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings!, chat);
 
         List<string>? functionNames = chatOptions.Functions?.Select(f => f.Name).ToList();
         Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
@@ -228,50 +230,6 @@ public abstract class ClientBase
         {
             return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
         }
-
-        if (!responseData.IsFunctionCallResponse(functionNames))
-        {
-            return responseData.Choices.Select(chatChoice => new ChatResult(responseData, chatChoice)).ToList();
-        }
-
-        return responseData.Choices.Select(choice => choice.IsFunctionCall(functionNames)
-                ? new ChatResult(responseData, choice, true)
-                : new ChatResult(responseData, choice)).Cast<IChatResult>()
-            .ToList();
-    }
-
-
-    protected private async Task<IReadOnlyList<IChatResult>> InternalGetChatResultsWithFunctionCallsAsync(
-        ChatHistory chat,
-        AIRequestSettings? requestSettings,
-        CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(chat);
-
-        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
-
-        ValidateMaxTokens(chatRequestSettings.MaxTokens);
-
-        var chatOptions = CreateChatCompletionsOptions(chatRequestSettings, chat);
-
-        List<string> functionNames = chatOptions.Functions.Select(f => f.Name).ToList();
-        Response<ChatCompletions>? response = await RunRequestAsync<Response<ChatCompletions>?>(
-            () => Client.GetChatCompletionsAsync(ModelId, chatOptions, cancellationToken)).ConfigureAwait(false);
-
-        if (response is null)
-        {
-            throw new SKException("Chat completions null response");
-        }
-
-        var responseData = response.Value;
-
-        if (responseData.Choices.Count == 0)
-        {
-            throw new SKException("Chat completions not found");
-        }
-
-        Console.WriteLine($"Total Tokens: {responseData.Usage.TotalTokens} Prompt Tokens: {responseData.Usage.PromptTokens} Completion Tokens: {responseData.Usage.CompletionTokens}");
-        CaptureUsageDetails(responseData.Usage);
 
         if (!responseData.IsFunctionCallResponse(functionNames))
         {
@@ -335,7 +293,7 @@ public abstract class ClientBase
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-      
+
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIRequestSettings chatSettings);
 
         return (await InternalGetChatResultsAsync(chat, chatSettings, cancellationToken).ConfigureAwait(false))
@@ -353,11 +311,13 @@ public abstract class ClientBase
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIRequestSettings chatSettings);
 
         IAsyncEnumerable<IChatStreamingResult> chatCompletionStreamingResults = this.InternalGetChatStreamingResultsAsync(chat, chatSettings, cancellationToken);
+
         await foreach (var chatCompletionStreamingResult in chatCompletionStreamingResults)
         {
             yield return (ITextStreamingResult)chatCompletionStreamingResult;
         }
     }
+
 
     private static OpenAIChatHistory PrepareChatHistory(string text, AIRequestSettings? requestSettings, out OpenAIRequestSettings settings)
     {
@@ -366,6 +326,7 @@ public abstract class ClientBase
         chat.AddUserMessage(text);
         return chat;
     }
+
 
     private static CompletionsOptions CreateCompletionsOptions(string text, OpenAIRequestSettings requestSettings)
     {
@@ -404,6 +365,7 @@ public abstract class ClientBase
 
         return options;
     }
+
 
     private static ChatCompletionsOptions CreateChatCompletionsOptions(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory)
     {
@@ -459,7 +421,7 @@ public abstract class ClientBase
     }
 
 
-    private static ChatCompletionsOptions CreateChatCompletionsOptionsWithFunctionCalls(ChatRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory, FunctionDefinition? functionCall = null, IEnumerable<FunctionDefinition>? functions = null)
+    private static ChatCompletionsOptions CreateChatCompletionsOptionsWithFunctionCalls(OpenAIRequestSettings requestSettings, IEnumerable<ChatMessageBase> chatHistory, FunctionDefinition? functionCall = null, IEnumerable<FunctionDefinition>? functions = null)
     {
         if (requestSettings.ResultsPerPrompt is < 1 or > MaxResultsPerPrompt)
         {
@@ -556,7 +518,7 @@ public abstract class ClientBase
     private void CaptureUsageDetails(CompletionsUsage usage)
     {
         Logger.LogInformation(
-            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}.",
+            "Prompt tokens: {PromptTokens}. Completion tokens: {CompletionTokens}. Total tokens: {TotalTokens}",
             usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens);
 
         s_promptTokensCounter.Add(usage.PromptTokens);

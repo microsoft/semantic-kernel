@@ -30,7 +30,7 @@ public static class OpenAIChatCompletionExtensions
     public static async Task<string> GenerateFunctionCallAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        ChatRequestSettings requestSettings,
+        OpenAIRequestSettings requestSettings,
         IEnumerable<FunctionDefinition> callableFunctions,
         FunctionDefinition? functionCall = null,
         CancellationToken cancellationToken = default)
@@ -64,7 +64,6 @@ public static class OpenAIChatCompletionExtensions
         IReadOnlyList<IChatResult>? chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
         T? result = default;
-        var firstElementJsonString = "";
         string content = firstChatMessage.Content;
 
         try
@@ -78,7 +77,7 @@ public static class OpenAIChatCompletionExtensions
             if (propertyEnumerator.MoveNext())
             {
                 var firstProperty = propertyEnumerator.Current.Value;
-                firstElementJsonString = firstProperty.GetRawText().Trim();
+                var firstElementJsonString = firstProperty.GetRawText().Trim();
 
                 result = JsonSerializer.Deserialize<T>(firstElementJsonString, options ?? new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
             }
@@ -100,13 +99,13 @@ public static class OpenAIChatCompletionExtensions
 
 
     /// <summary>
-    ///  Converts the <see cref="ChatRequestSettings"/> to <see cref="FunctionCallRequestSettings"/>
+    ///  Converts the <see cref="OpenAIRequestSettings"/> to <see cref="FunctionCallRequestSettings"/>
     /// </summary>
     /// <param name="settings"></param>
     /// <param name="callableFunctions"></param>
     /// <param name="targetFunctionCall"></param>
     /// <returns></returns>
-    public static FunctionCallRequestSettings ToFunctionCallRequestSettings(this ChatRequestSettings settings, IEnumerable<FunctionDefinition> callableFunctions, FunctionDefinition? targetFunctionCall = null)
+    public static FunctionCallRequestSettings ToFunctionCallRequestSettings(this OpenAIRequestSettings settings, IEnumerable<FunctionDefinition> callableFunctions, FunctionDefinition? targetFunctionCall = null)
     {
         // Remove duplicates, if any, due to the inaccessibility of ReadOnlySkillCollection
         // Can't changes what skills are available to the context because you can't remove skills from the context

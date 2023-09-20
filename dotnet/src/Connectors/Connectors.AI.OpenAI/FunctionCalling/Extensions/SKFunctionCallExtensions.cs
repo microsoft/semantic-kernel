@@ -62,7 +62,7 @@ public static class SKFunctionCallExtensions
         {
             Description = description ?? "Function call",
             Type = "completion",
-            Completion = new PromptTemplateConfig.CompletionConfig
+            Completion = new OpenAIRequestSettings()
             {
                 MaxTokens = maxTokens,
                 Temperature = temperature,
@@ -104,7 +104,8 @@ public static class SKFunctionCallExtensions
     {
         var answer = await function.InvokeAsync(kernel, context, cancellationToken: cancellationToken).ConfigureAwait(false);
         T? result = default;
-        string content = answer.Result;
+        var content = answer.Result;
+
         try
         {
             result = JsonSerializer.Deserialize<T>(content, serializerOptions ?? new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
@@ -123,6 +124,7 @@ public static class SKFunctionCallExtensions
 
         return result;
     }
+
 
     private static string RandomFunctionName() => "functionCall" + Guid.NewGuid().ToString("N");
 }

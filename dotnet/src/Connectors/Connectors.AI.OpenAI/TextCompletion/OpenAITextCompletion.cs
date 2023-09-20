@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
+using AzureSdk;
+using Extensions.Logging;
+using SemanticKernel.AI;
+using SemanticKernel.AI.TextCompletion;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 
 /// <summary>
 /// OpenAI text completion service.
@@ -35,20 +36,22 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     {
     }
 
+
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings,
+        AIRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
         return this.InternalGetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
     }
 
+
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        AIRequestSettings? requestSettings,
+        AIRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();

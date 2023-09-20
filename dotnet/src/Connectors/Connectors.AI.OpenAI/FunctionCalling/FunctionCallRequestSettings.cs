@@ -3,13 +3,12 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 
 using System.Collections.Generic;
 using Azure.AI.OpenAI;
-using SemanticKernel.AI.ChatCompletion;
 
 
 /// <summary>
 ///  Extension of ChatRequestSettings for use with the OpenAI connector for function calling
 /// </summary>
-public class FunctionCallRequestSettings : ChatRequestSettings
+public class FunctionCallRequestSettings : OpenAIRequestSettings
 {
     /// <summary>
     ///  The function to call

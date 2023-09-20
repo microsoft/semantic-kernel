@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
 using SemanticFunctions;
+using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
 using SkillDefinition;
@@ -42,7 +43,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     public bool IsSemantic => true;
 
     /// <inheritdoc />
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public AIRequestSettings RequestSettings { get; private set; } = new();
 
     /// <summary>
     ///  The callable functions for this SKFunctionCall instance
@@ -103,7 +104,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
 
     /// <inheritdoc />
-    public async Task<SKContext> InvokeAsync(SKContext context, CompleteRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(SKContext context, AIRequestSettings? settings = null, CancellationToken cancellationToken = default)
     {
         if (_skillCollection is null)
         {
@@ -163,7 +164,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings settings)
     {
         Verify.NotNull(settings);
         RequestSettings = settings;
@@ -225,8 +226,10 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     private readonly IPromptTemplate _promptTemplate;
 
 
-    private FunctionCallRequestSettings GetRequestSettings(CompleteRequestSettings settings)
+    private FunctionCallRequestSettings GetRequestSettings(AIRequestSettings settings)
     {
+
+        OpenAIRequestSettings openAIRequestSettings = OpenAIRequestSettings.FromRequestSettings(settings);
         // Remove duplicates, if any, due to the inaccessibility of ReadOnlySkillCollection
         // Can't changes what skills are available to the context because you can't remove skills from the context
         List<FunctionDefinition> distinctCallableFunctions = CallableFunctions
@@ -236,12 +239,12 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
         var requestSettings = new FunctionCallRequestSettings()
         {
-            Temperature = settings.Temperature,
-            TopP = settings.TopP,
-            PresencePenalty = settings.PresencePenalty,
-            FrequencyPenalty = settings.FrequencyPenalty,
-            StopSequences = settings.StopSequences,
-            MaxTokens = settings.MaxTokens,
+            Temperature = openAIRequestSettings.Temperature,
+            TopP = openAIRequestSettings.TopP,
+            PresencePenalty = openAIRequestSettings.PresencePenalty,
+            FrequencyPenalty = openAIRequestSettings.FrequencyPenalty,
+            StopSequences = openAIRequestSettings.StopSequences,
+            MaxTokens = openAIRequestSettings.MaxTokens,
             FunctionCall = _targetFunctionDefinition,
             CallableFunctions = distinctCallableFunctions
         };

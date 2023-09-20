@@ -137,12 +137,9 @@ public static class FunctionExtensions
     /// </summary>
     /// <param name="functionsView"></param>
     /// <returns></returns>
-    public static IEnumerable<FunctionDefinition> ToFunctionDefinitions(this FunctionsView functionsView)
+    public static IEnumerable<FunctionDefinition> ToFunctionDefinitions(this IEnumerable<FunctionView> functionsView)
     {
-        List<FunctionView> functionViews = functionsView.NativeFunctions.SelectMany(function => function.Value).ToList();
-        functionViews.AddRange(functionsView.SemanticFunctions.SelectMany(function => function.Value));
-
-        return functionViews.Where(view => view.CanBeCalled()).Select(functionView => functionView.ToFunctionDefinition());
+        return functionsView.Where(view => view.CanBeCalled()).Select(functionView => functionView.ToFunctionDefinition());
     }
 
 
@@ -154,14 +151,12 @@ public static class FunctionExtensions
     /// <returns></returns>
     public static IEnumerable<FunctionDefinition> GetFunctionDefinitions(this IReadOnlySkillCollection skillCollection, IEnumerable<string>? excludedSkills = null, IEnumerable<string>? excludedFunctions = null)
     {
-        var functionsView = skillCollection.GetFunctionsView();
+        IReadOnlyList<FunctionView> functionsView = skillCollection.GetFunctionViews();
 
         excludedSkills ??= Array.Empty<string>();
         excludedFunctions ??= Array.Empty<string>();
 
-        List<FunctionView> availableFunctions = functionsView.SemanticFunctions
-            .Concat(functionsView.NativeFunctions)
-            .SelectMany(x => x.Value)
+        List<FunctionView> availableFunctions = functionsView
             .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
             .OrderBy(x => x.SkillName)
             .ThenBy(x => x.Name)
