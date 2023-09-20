@@ -15,7 +15,7 @@ using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
-/// Task list skill (e.g. Microsoft To-Do)
+/// Task list plugin (e.g. Microsoft To-Do)
 /// </summary>
 public sealed class TaskListPlugin
 {

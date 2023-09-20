@@ -32,12 +32,12 @@ public class FileIOPluginTests
     public async Task ItCanReadAsync()
     {
         // Arrange
-        var skill = new FileIOPlugin();
+        var plugin = new FileIOPlugin();
         var path = Path.GetTempFileName();
         File.WriteAllText(path, "hello world");
 
         // Act
-        var result = await skill.ReadAsync(path);
+        var result = await plugin.ReadAsync(path);
 
         // Assert
         Assert.Equal("hello world", result);
@@ -47,14 +47,14 @@ public class FileIOPluginTests
     public async Task ItCannotReadAsync()
     {
         // Arrange
-        var skill = new FileIOPlugin();
+        var plugin = new FileIOPlugin();
         var path = Path.GetTempFileName();
         File.Delete(path);
 
         // Act
         Task Fn()
         {
-            return skill.ReadAsync(path);
+            return plugin.ReadAsync(path);
         }
 
         // Assert
@@ -65,11 +65,11 @@ public class FileIOPluginTests
     public async Task ItCanWriteAsync()
     {
         // Arrange
-        var skill = new FileIOPlugin();
+        var plugin = new FileIOPlugin();
         var path = Path.GetTempFileName();
 
         // Act
-        await skill.WriteAsync(path, "hello world");
+        await plugin.WriteAsync(path, "hello world");
 
         // Assert
         Assert.Equal("hello world", await File.ReadAllTextAsync(path));
@@ -79,14 +79,14 @@ public class FileIOPluginTests
     public async Task ItCannotWriteAsync()
     {
         // Arrange
-        var skill = new FileIOPlugin();
+        var plugin = new FileIOPlugin();
         var path = Path.GetTempFileName();
         File.SetAttributes(path, FileAttributes.ReadOnly);
 
         // Act
         Task Fn()
         {
-            return skill.WriteAsync(path, "hello world");
+            return plugin.WriteAsync(path, "hello world");
         }
 
         // Assert

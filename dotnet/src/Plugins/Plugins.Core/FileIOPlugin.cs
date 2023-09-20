@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// Read and write from a file.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("file", new FileIOPlugin());
+/// Usage: kernel.ImportPlugin("file", new FileIOPlugin());
 /// Examples:
 /// {{file.readAsync $path }} => "hello world"
 /// {{file.writeAsync}}

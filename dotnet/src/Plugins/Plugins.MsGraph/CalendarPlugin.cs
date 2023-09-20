@@ -17,7 +17,7 @@ using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
-/// Skill for calendar operations.
+/// Plugin for calendar operations.
 /// </summary>
 public sealed class CalendarPlugin
 {

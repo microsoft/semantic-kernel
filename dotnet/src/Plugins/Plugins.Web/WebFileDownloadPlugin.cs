@@ -13,12 +13,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
-/// Skill to download web files.
+/// Plugin to download web files.
 /// </summary>
 public sealed class WebFileDownloadPlugin
 {
     /// <summary>
-    /// Skill parameter: where to save file.
+    /// Plugin parameter: where to save file.
     /// </summary>
     public const string FilePathParamName = "filePath";
 

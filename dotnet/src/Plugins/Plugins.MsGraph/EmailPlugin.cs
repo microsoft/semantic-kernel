@@ -16,7 +16,7 @@ using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
-/// Email skill (e.g. Outlook).
+/// Email plugin (e.g. Outlook).
 /// </summary>
 public sealed class EmailPlugin
 {

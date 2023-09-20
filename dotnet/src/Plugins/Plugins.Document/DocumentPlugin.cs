@@ -34,7 +34,7 @@ namespace Microsoft.SemanticKernel.Plugins.Document;
 //**********************************************************************************************************************
 
 /// <summary>
-/// Skill for interacting with documents (e.g. Microsoft Word)
+/// Plugin for interacting with documents (e.g. Microsoft Word)
 /// </summary>
 public sealed class DocumentPlugin
 {

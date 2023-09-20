@@ -9,12 +9,12 @@ using Microsoft.SemanticKernel.Text;
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
-/// <para>Semantic skill that enables conversations summarization.</para>
+/// <para>Semantic plugin that enables conversations summarization.</para>
 /// </summary>
 /// <example>
 /// <code>
 /// var kernel Kernel.Builder.Build();
-/// kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
+/// kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 /// </code>
 /// </example>
 public class ConversationSummaryPlugin

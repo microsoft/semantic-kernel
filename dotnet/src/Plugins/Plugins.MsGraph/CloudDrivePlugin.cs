@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
-/// Cloud drive skill (e.g. OneDrive).
+/// Cloud drive plugin (e.g. OneDrive).
 /// </summary>
 public sealed class CloudDrivePlugin
 {
