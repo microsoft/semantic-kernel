@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
 using RepoUtils;
 using Skills;
 
@@ -29,11 +28,11 @@ public static class Example10_DescribeAllSkillsAndFunctions
             .Build();
 
         // Import a native skill
-        var skill1 = new StaticTextSkill();
+        var skill1 = new StaticTextPlugin();
         kernel.ImportSkill(skill1, "StaticTextskill");
 
         // Import another native skill
-        var skill2 = new TextSkill();
+        var skill2 = new TextPlugin();
         kernel.ImportSkill(skill2, "AnotherTextskill");
 
         // Import a semantic skill
@@ -41,7 +40,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
 
         // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", maxTokens: 150);
+        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Define a semantic function inline, with skill name
         var sFun2 = kernel.CreateSemanticFunction(
@@ -49,32 +48,18 @@ public static class Example10_DescribeAllSkillsAndFunctions
             skillName: "Writing",
             functionName: "Novel",
             description: "Write a bedtime story",
-            maxTokens: 150);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
-        FunctionsView functions = kernel.Skills.GetFunctionsView();
-        ConcurrentDictionary<string, List<FunctionView>> nativeFunctions = functions.NativeFunctions;
-        ConcurrentDictionary<string, List<FunctionView>> semanticFunctions = functions.SemanticFunctions;
+        var functions = kernel.Skills.GetFunctionViews();
 
         Console.WriteLine("*****************************************");
-        Console.WriteLine("****** Native skills and functions ******");
+        Console.WriteLine("****** Registered skills and functions ******");
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (KeyValuePair<string, List<FunctionView>> skill in nativeFunctions)
+        foreach (FunctionView func in functions)
         {
-            Console.WriteLine("Skill: " + skill.Key);
-            foreach (FunctionView func in skill.Value) { PrintFunction(func); }
-        }
-
-        Console.WriteLine("*****************************************");
-        Console.WriteLine("***** Semantic skills and functions *****");
-        Console.WriteLine("*****************************************");
-        Console.WriteLine();
-
-        foreach (KeyValuePair<string, List<FunctionView>> skill in semanticFunctions)
-        {
-            Console.WriteLine("Skill: " + skill.Key);
-            foreach (FunctionView func in skill.Value) { PrintFunction(func); }
+            PrintFunction(func);
         }
 
         return Task.CompletedTask;

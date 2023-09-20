@@ -3,15 +3,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Stepwise;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -49,9 +50,9 @@ public sealed class StepwisePlannerTests : IDisposable
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimePlugin(), "time");
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
@@ -71,21 +72,21 @@ public sealed class StepwisePlannerTests : IDisposable
     [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(false, "What is the weather in Seattle?", "Seattle", 1)]
     [InlineData(true, "What is the weather in Seattle?", "Seattle", 1)]
-    public async void CanExecuteStepwisePlan(bool useChatModel, string prompt, string partialExpectedAnswer, int expectedMinSteps = 1)
+    public async Task CanExecuteStepwisePlanAsync(bool useChatModel, string prompt, string partialExpectedAnswer, int expectedMinSteps = 1)
     {
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimePlugin(), "time");
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
         var plan = planner.CreatePlan(prompt);
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(kernel);
 
         // Assert - should contain the expected answer
         Assert.Contains(partialExpectedAnswer, result.Result, StringComparison.InvariantCultureIgnoreCase);

@@ -13,15 +13,15 @@ public static class Example20_HuggingFace
 {
     public static async Task RunAsync()
     {
-        await RunInferenceApiExample();
-        await RunLlamaExample();
+        await RunInferenceApiExampleAsync();
+        await RunLlamaExampleAsync();
     }
 
     /// <summary>
     /// This example uses HuggingFace Inference API to access hosted models.
     /// More information here: <see href="https://huggingface.co/inference-api"/>
     /// </summary>
-    private static async Task RunInferenceApiExample()
+    private static async Task RunInferenceApiExampleAsync()
     {
         Console.WriteLine("\n======== HuggingFace Inference API example ========\n");
 
@@ -50,7 +50,7 @@ public static class Example20_HuggingFace
     /// Note: Your Hugging Face account email address MUST match the email you provide on the Meta website, or your request will not be approved.
     /// </remarks>
     /// </summary>
-    private static async Task RunLlamaExample()
+    private static async Task RunLlamaExampleAsync()
     {
         Console.WriteLine("\n======== HuggingFace Llama 2 example ========\n");
 

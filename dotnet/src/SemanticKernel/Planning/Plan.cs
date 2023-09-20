@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -77,11 +79,7 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public bool IsSemantic { get; private set; }
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public AIRequestSettings? RequestSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -228,9 +226,9 @@ public sealed class Plan : IPlan
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
+            kernel,
             variables,
-            kernel.Skills,
-            kernel.LoggerFactory);
+            kernel.Skills);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -252,7 +250,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Skills, context.LoggerFactory);
+            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -304,7 +302,7 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
-            return this.Function.Describe() ?? new();
+            return this.Function.Describe();
         }
 
         // The parameter mapping definitions from Plan -> Function
@@ -323,17 +321,13 @@ public sealed class Plan : IPlan
         }
         ).ToList();
 
-        return new(name: this.Name,
-                   skillName: this.SkillName,
-                   description: this.Description,
-                   parameters: parameters,
-                   isSemantic: false);
+        return new(this.Name, this.SkillName, this.Description, parameters);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
@@ -341,7 +335,7 @@ public sealed class Plan : IPlan
             AddVariablesToContext(this.State, context);
             var result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(context, settings, cancellationToken)
+                .InvokeAsync(context, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
 
             context.Variables.Update(result.Result);
@@ -373,9 +367,9 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        return this.Function is not null ? this.Function.SetAIConfiguration(settings) : this;
+        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }
 
     #endregion ISKFunction implementation
@@ -495,7 +489,7 @@ public sealed class Plan : IPlan
         var input = string.Empty;
         if (!string.IsNullOrEmpty(step.Parameters.Input))
         {
-            input = this.ExpandFromVariables(variables, step.Parameters.Input);
+            input = this.ExpandFromVariables(variables, step.Parameters.Input!);
         }
         else if (!string.IsNullOrEmpty(variables.Input))
         {
@@ -582,8 +576,11 @@ public sealed class Plan : IPlan
         this.Name = function.Name;
         this.SkillName = function.SkillName;
         this.Description = function.Description;
-        this.IsSemantic = function.IsSemantic;
         this.RequestSettings = function.RequestSettings;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        this.IsSemantic = function.IsSemantic;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
@@ -616,4 +613,14 @@ public sealed class Plan : IPlan
             return display;
         }
     }
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic { get; private set; }
+
+    #endregion
 }
