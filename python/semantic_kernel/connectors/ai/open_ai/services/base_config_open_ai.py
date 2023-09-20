@@ -1,25 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
+
 from semantic_kernel.connectors.ai.open_ai.services.base_model_types import (
     OpenAIModelTypes,
 )
-
 from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
     OpenAIServiceCalls,
 )
-
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import (
-        OpenAIChatCompletion,
-    )
-    from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import (
-        OpenAITextCompletion,
-    )
-    from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import (
-        OpenAITextEmbedding,
-    )
 
 
 class BaseOpenAIConfig(OpenAIServiceCalls):
@@ -54,24 +43,6 @@ class BaseOpenAIConfig(OpenAIServiceCalls):
             api_type="open_ai",
             log=log,
             model_type=model_type,
-        )
-
-    @classmethod
-    def from_dict(
-        cls, settings: Dict[str, str]
-    ) -> Union["OpenAITextCompletion", "OpenAIChatCompletion", "OpenAITextEmbedding"]:
-        """
-        Initialize an Open AI service from a dictionary of settings.
-
-        Arguments:
-            settings: A dictionary of settings for the service.
-        """
-
-        return cls(
-            model_id=settings["model_id"],
-            api_key=settings["api_key"],
-            org_id=settings.get("org_id"),
-            log=settings.get("log"),
         )
 
     def to_dict(self) -> Dict[str, str]:
