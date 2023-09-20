@@ -50,14 +50,14 @@ public static class KernelAIPluginExtensions
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromFilePath(
+        var pluginContents = await LoadDocumentFromFilePathAsync(
             kernel,
             filePath,
             executionParameters,
             httpClient,
             cancellationToken).ConfigureAwait(false);
 
-        return await CompleteImport(
+        return await CompleteImportAsync(
             kernel,
             pluginContents,
             pluginName,
@@ -89,14 +89,14 @@ public static class KernelAIPluginExtensions
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromUri(
+        var pluginContents = await LoadDocumentFromUriAsync(
             kernel,
             uri,
             executionParameters,
             httpClient,
             cancellationToken).ConfigureAwait(false);
 
-        return await CompleteImport(
+        return await CompleteImportAsync(
             kernel,
             pluginContents,
             pluginName,
@@ -129,9 +129,9 @@ public static class KernelAIPluginExtensions
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);
+        var pluginContents = await LoadDocumentFromStreamAsync(kernel, stream).ConfigureAwait(false);
 
-        return await CompleteImport(
+        return await CompleteImportAsync(
             kernel,
             pluginContents,
             pluginName,
@@ -142,7 +142,7 @@ public static class KernelAIPluginExtensions
 
     #region private
 
-    private static async Task<IDictionary<string, ISKFunction>> CompleteImport(
+    private static async Task<IDictionary<string, ISKFunction>> CompleteImportAsync(
         IKernel kernel,
         string pluginContents,
         string pluginName,
@@ -162,7 +162,7 @@ public static class KernelAIPluginExtensions
                 .ConfigureAwait(false);
         }
 
-        return await LoadPlugin(
+        return await LoadPluginAsync(
             kernel,
             pluginName,
             executionParameters,
@@ -172,7 +172,7 @@ public static class KernelAIPluginExtensions
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<IDictionary<string, ISKFunction>> LoadPlugin(
+    private static async Task<IDictionary<string, ISKFunction>> LoadPluginAsync(
         IKernel kernel,
         string pluginName,
         OpenApiPluginExecutionParameters? executionParameters,
@@ -218,7 +218,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
-    private static async Task<string> LoadDocumentFromUri(
+    private static async Task<string> LoadDocumentFromUriAsync(
         IKernel kernel,
         Uri uri,
         OpenApiPluginExecutionParameters? executionParameters,
@@ -237,7 +237,7 @@ public static class KernelAIPluginExtensions
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }
 
-    private static async Task<string> LoadDocumentFromFilePath(
+    private static async Task<string> LoadDocumentFromFilePathAsync(
         IKernel kernel,
         string filePath,
         OpenApiPluginExecutionParameters? executionParameters,
@@ -259,7 +259,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
-    private static async Task<string> LoadDocumentFromStream(
+    private static async Task<string> LoadDocumentFromStreamAsync(
         IKernel kernel,
         Stream stream)
     {

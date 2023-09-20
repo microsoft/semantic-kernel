@@ -14,7 +14,7 @@ public class PluginTests
     [Theory]
     [InlineData("https://www.klarna.com/.well-known/ai-plugin.json", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
-    public async Task QueryKlarnaPlugin(
+    public async Task QueryKlarnaPluginAsync(
         string pluginEndpoint,
         string name,
         string functionName,
@@ -48,7 +48,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPlugin(
+    public async Task QueryInstacartPluginAsync(
         string pluginEndpoint,
         string name,
         string functionName,
@@ -77,7 +77,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPluginFromStream(
+    public async Task QueryInstacartPluginFromStreamAsync(
         string pluginFilePath,
         string name,
         string functionName,
@@ -109,7 +109,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPluginUsingRelativeFilePath(
+    public async Task QueryInstacartPluginUsingRelativeFilePathAsync(
         string pluginFilePath,
         string name,
         string functionName,
