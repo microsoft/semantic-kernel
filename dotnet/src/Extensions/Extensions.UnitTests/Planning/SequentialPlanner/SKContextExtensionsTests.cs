@@ -133,11 +133,9 @@ public class SKContextExtensionsTests
 
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
-        var functionsView = new FunctionsView();
         var functionView = new FunctionView("functionName", "skillName", "description");
         var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description");
-        functionsView.AddFunction(functionView);
-        functionsView.AddFunction(nativeFunctionView);
+        var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result
         var skills = new Mock<ISkillCollection>();

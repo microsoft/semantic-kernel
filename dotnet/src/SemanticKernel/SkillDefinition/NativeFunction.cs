@@ -119,7 +119,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         return new NativeFunction(
             delegateFunction: methodDetails.Function,
-            parameters: parameters is not null ? parameters : Array.Empty<ParameterView>(),
+            parameters: parameters.ToList(),
             description: description,
             skillName: skillName!,
             functionName: functionName,
@@ -211,7 +211,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     internal NativeFunction(
         Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
-        IList<ParameterView> parameters,
+        IReadOnlyList<ParameterView> parameters,
         string skillName,
         string functionName,
         string description,
