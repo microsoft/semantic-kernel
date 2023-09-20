@@ -235,7 +235,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         var properties = payload.Properties;
         Assert.NotNull(properties);
-        Assert.Equal(0, properties.Count);
+        Assert.Empty(properties);
     }
 
     [Fact]

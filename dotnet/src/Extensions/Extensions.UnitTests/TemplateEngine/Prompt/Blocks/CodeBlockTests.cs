@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -20,6 +21,7 @@ public class CodeBlockTests
 {
     private readonly Mock<IReadOnlySkillCollection> _skills;
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
+    private readonly Mock<IKernel> _kernel = new();
 
     public CodeBlockTests()
     {
@@ -30,7 +32,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var context = new SKContext(skills: this._skills.Object, loggerFactory: this._logger);
+        var context = new SKContext(this._kernel.Object, skills: this._skills.Object);
         this._skills.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._logger);
 
@@ -42,7 +44,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(skills: this._skills.Object, loggerFactory: this._logger);
+        var context = new SKContext(this._kernel.Object, skills: this._skills.Object);
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings?>(), It.IsAny<CancellationToken>()))
@@ -114,11 +116,11 @@ public class CodeBlockTests
 
         // Assert - Can't pass a function to a function
         Assert.False(codeBlock3.IsValid(out var errorMessage3));
-        Assert.Equal(errorMessage3, "The first arg of a function must be a quoted string, variable or named argument");
+        Assert.Equal("The first arg of a function must be a quoted string, variable or named argument", errorMessage3);
 
         // Assert - Can't pass more than one unnamed param
         Assert.False(codeBlock4.IsValid(out var errorMessage4));
-        Assert.Equal(errorMessage4, "Functions only support named arguments after the first argument. Argument 2 is not named.");
+        Assert.Equal("Functions only support named arguments after the first argument. Argument 2 is not named.", errorMessage4);
 
         // Assert - Can pass one unnamed param and named args
         Assert.True(codeBlock5.IsValid(out var errorMessage5));
@@ -126,11 +128,11 @@ public class CodeBlockTests
 
         // Assert - Can't use > 1 block if not a function call
         Assert.False(codeBlock6.IsValid(out var errorMessage6));
-        Assert.Equal(errorMessage6, "Unexpected second token found: 'value'");
+        Assert.Equal("Unexpected second token found: 'value'", errorMessage6);
 
         // Assert - Can't use a named argument without a function block
         Assert.False(codeBlock7.IsValid(out var errorMessage7));
-        Assert.Equal(errorMessage7, "Unexpected named argument found. Expected function name first.");
+        Assert.Equal("Unexpected named argument found. Expected function name first.", errorMessage7);
     }
 
     [Fact]
@@ -138,7 +140,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "foo" };
-        var context = new SKContext(variables);
+        var context = new SKContext(this._kernel.Object, variables);
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
@@ -153,7 +155,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "bar" };
-        var context = new SKContext(variables);
+        var context = new SKContext(this._kernel.Object, variables);
         var varBlock = new VarBlock("$varName");
 
         // Act
@@ -168,7 +170,7 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock1Async()
     {
         // Arrange
-        var context = new SKContext();
+        var context = new SKContext(this._kernel.Object);
 
         // Act
         var codeBlock = new CodeBlock("'ciao'", NullLoggerFactory.Instance);
@@ -182,7 +184,8 @@ public class CodeBlockTests
     public async Task ItRendersCodeBlockConsistingOfJustAValBlock2Async()
     {
         // Arrange
-        var context = new SKContext();
+        var kernel = new Mock<IKernel>();
+        var context = new SKContext(this._kernel.Object);
         var valBlock = new ValBlock("'arrivederci'");
 
         // Act
@@ -198,9 +201,8 @@ public class CodeBlockTests
     {
         // Arrange
         const string Func = "funcName";
-
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(variables, skills: this._skills.Object);
+        var context = new SKContext(this._kernel.Object, variables, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
 
         var canary0 = string.Empty;
@@ -249,7 +251,7 @@ public class CodeBlockTests
         const string VarValue = "varValue";
 
         var variables = new ContextVariables { [Var] = VarValue };
-        var context = new SKContext(variables, skills: this._skills.Object);
+        var context = new SKContext(this._kernel.Object, variables, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
         var varBlock = new VarBlock($"${Var}");
 
@@ -283,7 +285,7 @@ public class CodeBlockTests
         const string Func = "funcName";
         const string Value = "value";
 
-        var context = new SKContext(skills: this._skills.Object);
+        var context = new SKContext(this._kernel.Object, variables: null, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
         var valBlock = new ValBlock($"'{Value}'");
 
@@ -321,7 +323,7 @@ public class CodeBlockTests
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
         variables.Set("input", Value);
-        var context = new SKContext(variables: variables, skills: this._skills.Object);
+        var context = new SKContext(this._kernel.Object, variables: variables, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");

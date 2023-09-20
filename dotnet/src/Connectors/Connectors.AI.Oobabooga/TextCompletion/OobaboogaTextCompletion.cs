@@ -41,6 +41,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
     private readonly ConcurrentBag<ClientWebSocket> _webSocketPool = new();
     private readonly int _keepAliveWebSocketsDuration;
     private readonly ILogger? _logger;
+    private Task? _cleanupTask = null;
     private long _lastCallTicks = long.MaxValue;
 
     /// <summary>
@@ -390,7 +391,9 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
 
     private void StartCleanupTask(CancellationToken cancellationToken)
     {
-        Task.Factory.StartNew(
+        if (this._cleanupTask == null || this._cleanupTask.IsCompleted)
+        {
+            this._cleanupTask = Task.Factory.StartNew(
             async () =>
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -401,6 +404,7 @@ public sealed class OobaboogaTextCompletion : ITextCompletion
             cancellationToken,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
+        }
     }
 
     /// <summary>
