@@ -39,10 +39,10 @@ public class SequentialPlanParserTests
     }
 
     private SKContext CreateSKContext(
-        IKernel kernel,
+        IKernelContext kernelContext,
         ContextVariables? variables = null)
     {
-        return new SKContext(kernel, variables, kernel.Skills);
+        return new SKContext(kernelContext, variables);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -60,8 +60,15 @@ public class SequentialPlanParserTests
         var kernelMock = this.CreateKernelMock(out var skills, out _);
         kernel = kernelMock.Object;
 
+        var kernelContextMock = new Mock<IKernelContext>();
+
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext()).Returns(this.CreateSKContext(kernel));
+        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>()))
+            .Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+            {
+                kernelContextMock.SetupGet(x => x.Skills).Returns(skills);
+                return this.CreateSKContext(kernelContextMock.Object, contextVariables);
+            });
 
         var functionsView = new List<FunctionView>();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
@@ -70,7 +77,7 @@ public class SequentialPlanParserTests
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
-            var result = this.CreateSKContext(kernel);
+            var result = this.CreateSKContext(kernelContextMock.Object);
             result.Variables.Update(resultString);
             mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(result);
@@ -94,6 +101,8 @@ public class SequentialPlanParserTests
         }
 
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
+
+        kernelContextMock.SetupGet(x => x.Skills).Returns(skills.Object);
     }
 
     [Fact]

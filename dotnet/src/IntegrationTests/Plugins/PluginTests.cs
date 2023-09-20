@@ -39,7 +39,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await skill[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
     }
 
     [Theory]
@@ -68,7 +68,7 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await skill[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
     }
 
     [Theory]
@@ -99,7 +99,7 @@ public class PluginTests
             contextVariables["payload"] = payload;
 
             // Act
-            await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+            await skill[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
         }
     }
 
@@ -129,6 +129,6 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await skill[functionName].InvokeAsync(kernel.CreateNewContext(contextVariables));
     }
 }

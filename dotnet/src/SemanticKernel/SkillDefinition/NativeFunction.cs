@@ -214,12 +214,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         public string Description { get; set; }
     }
 
-    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
-    {
-        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
-        return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
-    }
-
     internal NativeFunction(
         Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
         IList<ParameterView> parameters,

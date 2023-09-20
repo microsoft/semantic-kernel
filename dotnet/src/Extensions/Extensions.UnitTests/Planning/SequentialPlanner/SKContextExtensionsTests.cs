@@ -17,11 +17,20 @@ namespace SemanticKernel.Extensions.UnitTests.Planning.SequentialPlanner;
 
 public class SKContextExtensionsTests
 {
+    private async IAsyncEnumerable<T> GetAsyncEnumerableAsync<T>(IEnumerable<T> results)
+    {
+        foreach (T result in results)
+        {
+            yield return await Task.FromResult(result);
+        }
+    }
+
     [Fact]
     public async Task CanCallGetAvailableFunctionsWithNoFunctionsAsync()
     {
         // Arrange
         var kernel = new Mock<IKernel>();
+
         var variables = new ContextVariables();
         var skills = new SkillCollection();
         var cancellationToken = default(CancellationToken);
@@ -38,13 +47,16 @@ public class SKContextExtensionsTests
                 additionalMetadata: "value"),
             relevance: 0.8,
             embedding: null);
-        var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
+        IAsyncEnumerable<MemoryQueryResult> asyncEnumerable = this.GetAsyncEnumerableAsync(new[] { memoryQueryResult });
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
+        var kernelContext = new Mock<IKernelContext>();
+        kernelContext.SetupGet(x => x.Skills).Returns(skills);
+
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernel.Object, variables, skills);
+        var context = new SKContext(kernelContext.Object, variables);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -85,7 +97,7 @@ public class SKContextExtensionsTests
                     additionalMetadata: "value"),
                 relevance: 0.8,
                 embedding: null);
-        var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
+        var asyncEnumerable = this.GetAsyncEnumerableAsync(new[] { memoryQueryResult });
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
@@ -95,8 +107,11 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
+        var kernelContext = new Mock<IKernelContext>();
+        kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
+
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernel.Object, variables, skills.Object);
+        var context = new SKContext(kernelContext.Object, variables);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -150,7 +165,7 @@ public class SKContextExtensionsTests
                     additionalMetadata: "value"),
                 relevance: 0.8,
                 embedding: null);
-        var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
+        var asyncEnumerable = this.GetAsyncEnumerableAsync(new[] { memoryQueryResult });
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
@@ -160,8 +175,11 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
+        var kernelContext = new Mock<IKernelContext>();
+        kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
+
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernel.Object, variables, skills.Object);
+        var context = new SKContext(kernelContext.Object, variables);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -191,9 +209,13 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
+        var kernelContext = new Mock<KernelContext>();
+
         var variables = new ContextVariables();
         var skills = new SkillCollection();
         var cancellationToken = default(CancellationToken);
+
+        kernelContext.SetupGet(x => x.Skills).Returns(skills);
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();
@@ -208,13 +230,13 @@ public class SKContextExtensionsTests
                     additionalMetadata: "value"),
                 relevance: 0.8,
                 embedding: null);
-        var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
+        var asyncEnumerable = this.GetAsyncEnumerableAsync(new[] { memoryQueryResult });
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernel.Object, variables, skills);
+        var context = new SKContext(kernelContext.Object, variables);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 

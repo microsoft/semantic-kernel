@@ -141,23 +141,18 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
 
     private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? skills = null)
     {
-        var kernel = new Mock<IKernel>();
-
         if (skills is null)
         {
             skills = new Mock<ISkillCollection>();
             skills.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
+        var kernelContext = new Mock<IKernelContext>();
+        kernelContext.SetupGet(k => k.Skills).Returns(skills.Object);
+        var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext(kernel.Object,
-            new ContextVariables(testPlanString),
-            skills.Object
-        );
+        var returnContext = new SKContext(kernelContext.Object, new ContextVariables(testPlanString));
 
-        var context = new SKContext(
-            kernel.Object,
-            skills: skills.Object
-        );
+        var context = new SKContext(kernelContext.Object);
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
@@ -169,8 +164,8 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
-        kernel.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernelContext.Setup(x => x.Skills).Returns(skills.Object);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),

@@ -107,10 +107,8 @@ public static class SKFunctionExtensions
         CompleteRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
-        var context = new SKContext(kernel, variables, skills)
-        {
-            Culture = culture!
-        };
+        var context = kernel.CreateNewContext(variables, skills);
+        context.Culture = culture!;
 
         return function.InvokeAsync(context, settings ?? function.RequestSettings, cancellationToken);
     }

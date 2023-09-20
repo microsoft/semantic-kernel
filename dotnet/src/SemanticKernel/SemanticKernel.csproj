@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.UnitTests" />
+    <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

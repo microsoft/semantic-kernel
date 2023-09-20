@@ -18,7 +18,7 @@ namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
-    private Mock<IKernel> _kernel = new();
+    private Mock<IKernelContext> _kernelContext = new();
 
     [Fact]
     public void CanSerializePlan()
@@ -88,11 +88,7 @@ public sealed class PlanSerializationTests
         // Arrange Mocks
         var skills = new Mock<ISkillCollection>();
 
-        var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
-        );
+        var returnContext = new SKContext(this._kernelContext.Object, new ContextVariables(stepOutput));
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
@@ -124,10 +120,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var skills = new Mock<ISkillCollection>();
 
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -160,10 +156,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var skills = new Mock<ISkillCollection>();
 
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -196,10 +192,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var skills = new Mock<ISkillCollection>();
 
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -231,10 +227,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var skills = new Mock<ISkillCollection>();
 
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -265,11 +261,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var skills = new Mock<ISkillCollection>();
+        var kernelContext = new Mock<IKernelContext>();
+        kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
 
-        var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+        var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -322,10 +317,10 @@ public sealed class PlanSerializationTests
         var kernel = new Mock<IKernel>();
         var skills = new Mock<ISkillCollection>();
 
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -391,10 +386,10 @@ public sealed class PlanSerializationTests
         var kernel = new Mock<IKernel>();
         var skills = new Mock<ISkillCollection>();
 
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -438,11 +433,13 @@ public sealed class PlanSerializationTests
         // Act
         cv.Set("variables", "bar");
         cv.Update(string.Empty);
+
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var nextContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables()
         );
+
         plan = Plan.FromJson(serializedPlan1, nextContext);
         plan = await kernel.Object.StepAsync(cv, plan);
 
@@ -474,10 +471,10 @@ public sealed class PlanSerializationTests
         // Arrange
         var skills = new Mock<ISkillCollection>();
 
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -530,10 +527,10 @@ public sealed class PlanSerializationTests
         var kernel = new Mock<IKernel>();
         var skills = new Mock<ISkillCollection>();
 
+        this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var returnContext = new SKContext(
-            this._kernel.Object,
-            new ContextVariables(stepOutput),
-            skills.Object
+            this._kernelContext.Object,
+            new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();

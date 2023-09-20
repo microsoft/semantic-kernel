@@ -32,7 +32,7 @@ namespace Microsoft.SemanticKernel;
 /// * RPC functions and secure environments, e.g. sandboxing and credentials management
 /// * auto-generate pipelines given a higher level goal
 /// </summary>
-public sealed class Kernel : IKernel, IDisposable
+public sealed class Kernel : IKernel, IKernelContext, IDisposable
 {
     /// <inheritdoc/>
     public ILoggerFactory LoggerFactory { get; }
@@ -236,11 +236,19 @@ repeat:
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext()
+    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlySkillCollection? skills = null)
     {
-        return new SKContext(
-            this,
-            skills: this._skillCollection);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        var kernelContext = new KernelContext(
+            skills ?? this._skillCollection,
+            this._aiServiceProvider,
+            this.PromptTemplateEngine,
+            this.Memory,
+            this.HttpHandlerFactory,
+            this.LoggerFactory);
+
+        return new SKContext(kernelContext, variables);
+#pragma warning restore CA2000 // Dispose objects before losing scope
     }
 
     /// <inheritdoc/>
@@ -388,6 +396,5 @@ repeat:
     {
         return this.Skills.GetFunction(skillName, functionName);
     }
-
     #endregion
 }

@@ -14,21 +14,16 @@ namespace SemanticKernel.UnitTests.SkillDefinition;
 
 public class SKContextTests
 {
-    private readonly Mock<IReadOnlySkillCollection> _skills;
-    private readonly Mock<IKernel> _kernel;
-
-    public SKContextTests()
-    {
-        this._skills = new Mock<IReadOnlySkillCollection>();
-        this._kernel = new Mock<IKernel>();
-    }
+    private readonly Mock<IReadOnlySkillCollection> _skills = new();
+    private readonly Mock<IKernel> _kernel = new();
+    private readonly Mock<IKernelContext> _kernelContext = new();
 
     [Fact]
     public void ItHasHelpersForContextVariables()
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(this._kernel.Object, variables, skills: this._skills.Object);
+        var target = new SKContext(this._kernelContext.Object, variables);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -52,7 +47,7 @@ public class SKContextTests
         // Arrange
         IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
         this._skills.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
-        var target = new SKContext(this._kernel.Object, new ContextVariables(), this._skills.Object);
+        var target = new SKContext(this._kernelContext.Object, new ContextVariables());
         Assert.NotNull(target.Skills);
 
         // Act

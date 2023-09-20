@@ -45,17 +45,17 @@ public sealed class SKContext
     /// <summary>
     /// Read only skills collection
     /// </summary>
-    public IReadOnlySkillCollection Skills { get; }
+    public IReadOnlySkillCollection Skills => this.KernelContext.Skills;
 
     /// <summary>
     /// App logger
     /// </summary>
-    public ILoggerFactory LoggerFactory { get; }
+    public ILoggerFactory LoggerFactory => this.KernelContext.LoggerFactory;
 
     /// <summary>
     /// Kernel context reference
     /// </summary>
-    public IKernel Kernel => this.GetKernelContext();
+    public IKernelContext KernelContext => this.GetKernelContext();
 
     /// <summary>
     /// Spawns the kernel for the context.
@@ -64,57 +64,23 @@ public sealed class SKContext
     /// The kernel context is a lightweight instance of the main kernel with its services.
     /// </remarks>
     /// <returns>Kernel reference</returns>
-    private IKernel GetKernelContext()
-        => this._originalKernel; // TODO: Clone a lightweight kernel instead of returning the same instance
+    private IKernelContext GetKernelContext()
+        => (IKernelContext)this._kernelContext; // TODO: Clone a lightweight kernel instead of returning the same instance
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="kernel">Kernel reference</param>
+    /// <param name="kernelContext">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
-    public SKContext(
-        IKernel kernel,
-        ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null)
+    internal SKContext(
+        IKernelContext kernelContext,
+        ContextVariables? variables = null)
     {
-        Verify.NotNull(kernel, nameof(kernel));
+        Verify.NotNull(kernelContext, nameof(kernelContext));
 
-        this._originalKernel = kernel;
+        this._kernelContext = kernelContext;
         this.Variables = variables ?? new();
-        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.LoggerFactory = kernel.LoggerFactory;
         this._culture = CultureInfo.CurrentCulture;
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="variables">Context variables to include in context.</param>
-    public SKContext(
-        IKernel kernel,
-        ContextVariables? variables = null) : this(kernel, variables, kernel.Skills)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="skills">Skills to include in context.</param>
-    public SKContext(
-        IKernel kernel,
-        IReadOnlySkillCollection? skills = null) : this(kernel, null, skills)
-    {
-    }
-
-    /// <summary>
-    /// Constructor for the context.
-    /// </summary>
-    /// <param name="kernel">Kernel instance parameter</param>
-    public SKContext(IKernel kernel) : this(kernel, null, kernel.Skills)
-    {
     }
 
     /// <summary>
@@ -134,7 +100,7 @@ public sealed class SKContext
     public SKContext Clone()
     {
         return new SKContext(
-            kernel: this._originalKernel,
+            kernelContext: this._kernelContext,
             variables: this.Variables.Clone())
         {
             Culture = this.Culture,
@@ -149,7 +115,7 @@ public sealed class SKContext
     /// <summary>
     /// Kernel instance reference for this context.
     /// </summary>
-    private readonly IKernel _originalKernel;
+    private readonly IKernelContext _kernelContext;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

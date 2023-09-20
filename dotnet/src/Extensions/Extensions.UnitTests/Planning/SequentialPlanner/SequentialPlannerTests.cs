@@ -23,9 +23,6 @@ public sealed class SequentialPlannerTests
     public async Task ItCanCreatePlanAsync(string goal)
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
-
         var input = new List<(string name, string skillName, string description, bool isSemantic)>()
         {
             ("SendEmail", "email", "Send an e-mail", false),
@@ -57,21 +54,21 @@ public sealed class SequentialPlannerTests
         }
 
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
+        var kernelContext = new Mock<IKernelContext>();
+        kernelContext.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
+        var kernel = new Mock<IKernel>();
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedSkills = input.Select(x => x.skillName).ToList();
 
-        var context = new SKContext(
-            kernel.Object,
-            new ContextVariables(),
-            skills.Object
-        );
+        var context = new SKContext(kernelContext.Object, new ContextVariables());
 
         var returnContext = new SKContext(
-            kernel.Object,
-            new ContextVariables(),
-            skills.Object
+            kernelContext.Object,
+            new ContextVariables()
         );
+
         var planString =
             @"
 <plan>
@@ -93,8 +90,8 @@ public sealed class SequentialPlannerTests
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
-        kernel.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernelContext.Setup(x => x.Skills).Returns(skills.Object);
+        kernelContext.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
@@ -147,23 +144,18 @@ public sealed class SequentialPlannerTests
     public async Task InvalidXMLThrowsAsync()
     {
         // Arrange
+        var kernelContext = new Mock<IKernelContext>();
         var kernel = new Mock<IKernel>();
+
         var skills = new Mock<ISkillCollection>();
 
         skills.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
+        kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
 
         var planString = "<plan>notvalid<</plan>";
-        var returnContext = new SKContext(
-            kernel.Object,
-            new ContextVariables(planString),
-            skills.Object
-        );
+        var returnContext = new SKContext(kernelContext.Object, new ContextVariables(planString));
 
-        var context = new SKContext(
-            kernel.Object,
-            new ContextVariables(),
-            skills.Object
-        );
+        var context = new SKContext(kernelContext.Object, new ContextVariables());
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
@@ -175,8 +167,8 @@ public sealed class SequentialPlannerTests
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
-        kernel.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernelContext.Setup(x => x.Skills).Returns(skills.Object);
+        kernelContext.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),

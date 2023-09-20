@@ -227,10 +227,7 @@ public sealed class Plan : IPlan
     /// </remarks>
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
-        var context = new SKContext(
-            kernel,
-            variables,
-            kernel.Skills);
+        var context = kernel.CreateNewContext(variables);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -252,7 +249,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills);
+            var functionContext = context.KernelContext.CreateNewContext(functionVariables, context.Skills);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
