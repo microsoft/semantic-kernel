@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -16,11 +16,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class SKContext
 {
-    /// <summary>
-    /// The culture currently associated with this context.
-    /// </summary>
-    private CultureInfo _culture;
-
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
@@ -58,20 +53,68 @@ public sealed class SKContext
     public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
+    /// Kernel context reference
+    /// </summary>
+    public IKernel Kernel => this.GetKernelContext();
+
+    /// <summary>
+    /// Spawns the kernel for the context.
+    /// </summary>
+    /// <remarks>
+    /// The kernel context is a lightweight instance of the main kernel with its services.
+    /// </remarks>
+    /// <returns>Kernel reference</returns>
+    private IKernel GetKernelContext()
+        => this._originalKernel; // TODO: Clone a lightweight kernel instead of returning the same instance
+
+    /// <summary>
     /// Constructor for the context.
     /// </summary>
+    /// <param name="kernel">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="skills">Skills to include in context.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public SKContext(
+        IKernel kernel,
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null,
-        ILoggerFactory? loggerFactory = null)
+        IReadOnlySkillCollection? skills = null)
     {
+        Verify.NotNull(kernel, nameof(kernel));
+
+        this._originalKernel = kernel;
         this.Variables = variables ?? new();
         this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this.LoggerFactory = kernel.LoggerFactory;
         this._culture = CultureInfo.CurrentCulture;
+    }
+
+    /// <summary>
+    /// Constructor for the context.
+    /// </summary>
+    /// <param name="kernel">Kernel instance parameter</param>
+    /// <param name="variables">Context variables to include in context.</param>
+    public SKContext(
+        IKernel kernel,
+        ContextVariables? variables = null) : this(kernel, variables, kernel.Skills)
+    {
+    }
+
+    /// <summary>
+    /// Constructor for the context.
+    /// </summary>
+    /// <param name="kernel">Kernel instance parameter</param>
+    /// <param name="skills">Skills to include in context.</param>
+    public SKContext(
+        IKernel kernel,
+        IReadOnlySkillCollection? skills = null) : this(kernel, null, skills)
+    {
+    }
+
+    /// <summary>
+    /// Constructor for the context.
+    /// </summary>
+    /// <param name="kernel">Kernel instance parameter</param>
+    public SKContext(IKernel kernel) : this(kernel, null, kernel.Skills)
+    {
     }
 
     /// <summary>
@@ -91,13 +134,22 @@ public sealed class SKContext
     public SKContext Clone()
     {
         return new SKContext(
-            variables: this.Variables.Clone(),
-            skills: this.Skills,
-            loggerFactory: this.LoggerFactory)
+            kernel: this._originalKernel,
+            variables: this.Variables.Clone())
         {
             Culture = this.Culture,
         };
     }
+
+    /// <summary>
+    /// The culture currently associated with this context.
+    /// </summary>
+    private CultureInfo _culture;
+
+    /// <summary>
+    /// Kernel instance reference for this context.
+    /// </summary>
+    private readonly IKernel _originalKernel;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
@@ -108,8 +160,8 @@ public sealed class SKContext
 
             if (this.Skills is IReadOnlySkillCollection skills)
             {
-                var view = skills.GetFunctionsView();
-                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
+                var view = skills.GetFunctionViews();
+                display += $", Skills = {view.Count}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";

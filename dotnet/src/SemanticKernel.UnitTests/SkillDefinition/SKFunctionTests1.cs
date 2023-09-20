@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -33,43 +34,49 @@ public sealed class SKFunctionTests1
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
 
         // Assert
-        Assert.Equal(0, skFunction.RequestSettings.Temperature);
-        Assert.Equal(null, skFunction.RequestSettings.MaxTokens);
+        Assert.Null(skFunction.RequestSettings);
     }
 
     [Fact]
     public void ItAllowsToUpdateRequestSettings()
     {
         // Arrange
-        var templateConfig = new PromptTemplateConfig();
+        var requestSettings = new AIRequestSettings()
+        {
+            ServiceId = "service",
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "MaxTokens", 1024 },
+            }
+        };
+        var templateConfig = new PromptTemplateConfig()
+        {
+            Completion = requestSettings
+        };
         var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
-        var settings = new CompleteRequestSettings
-        {
-            Temperature = 0.9,
-            MaxTokens = 2001,
-        };
 
         // Act
-        skFunction.RequestSettings.Temperature = 1.3;
-        skFunction.RequestSettings.MaxTokens = 130;
+        requestSettings.ServiceId = "service1";
+        requestSettings.ExtensionData["MaxTokens"] = 130;
 
         // Assert
-        Assert.Equal(1.3, skFunction.RequestSettings.Temperature);
-        Assert.Equal(130, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal("service1", skFunction.RequestSettings?.ServiceId);
+        Assert.Equal(130, skFunction.RequestSettings?.ExtensionData?["MaxTokens"]);
 
         // Act
-        skFunction.RequestSettings.Temperature = 0.7;
+        requestSettings.ExtensionData["Temperature"] = 0.7;
 
         // Assert
-        Assert.Equal(0.7, skFunction.RequestSettings.Temperature);
+        Assert.Equal(0.7, skFunction.RequestSettings?.ExtensionData?["Temperature"]);
 
         // Act
-        skFunction.SetAIConfiguration(settings);
+        skFunction.SetAIConfiguration(requestSettings);
 
         // Assert
-        Assert.Equal(settings.Temperature, skFunction.RequestSettings.Temperature);
-        Assert.Equal(settings.MaxTokens, skFunction.RequestSettings.MaxTokens);
+        Assert.Equal("service1", skFunction.RequestSettings?.ServiceId);
+        Assert.Equal(130, skFunction.RequestSettings?.ExtensionData?["MaxTokens"]);
+        Assert.Equal(0.7, skFunction.RequestSettings?.ExtensionData?["Temperature"]);
     }
 
     private static Mock<IPromptTemplate> MockPromptTemplate()
@@ -96,7 +103,7 @@ public sealed class SKFunctionTests1
             .ReturnsAsync(result);
 
         aiService
-            .Setup(x => x.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ITextResult[] { textCompletionResult.Object });
 
         return aiService;
