@@ -10,9 +10,9 @@ namespace SemanticKernel.IntegrationTests;
 
 internal static class TestHelpers
 {
-    internal static void ImportSamplePlugins(IKernel target)
+    internal static void ImportAllSamplePlugins(IKernel kernel)
     {
-        var chatSkill = GetPlugins(target,
+        var chatSkill = ImportSamplePlugins(kernel,
             "ChatSkill",
             "SummarizeSkill",
             "WriterSkill",
@@ -26,7 +26,7 @@ internal static class TestHelpers
             "QASkill");
     }
 
-    internal static IDictionary<string, ISKFunction> GetPlugins(IKernel target, params string[] pluginNames)
+    internal static IDictionary<string, ISKFunction> ImportSamplePlugins(IKernel kernel, params string[] pluginNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
@@ -36,6 +36,6 @@ internal static class TestHelpers
 
         string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
 
-        return target.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginNames);
+        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginNames);
     }
 }

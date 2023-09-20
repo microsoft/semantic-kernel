@@ -40,7 +40,7 @@ public class SequentialPlanParserTests
                 setAsDefault: true)
             .Build();
         kernel.ImportPlugin(new EmailSkillFake(), "email");
-        TestHelpers.GetPlugins(kernel, "SummarizeSkill", "WriterSkill");
+        TestHelpers.ImportSamplePlugins(kernel, "SummarizeSkill", "WriterSkill");
 
         var planString =
             @"<plan>
