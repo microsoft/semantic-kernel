@@ -321,10 +321,7 @@ public sealed class Plan : IPlan
         }
         ).ToList();
 
-        return new(this.Name, this.SkillName, this.Description)
-        {
-            Parameters = parameters
-        };
+        return new(this.Name, this.SkillName, this.Description, parameters);
     }
 
     /// <inheritdoc/>
