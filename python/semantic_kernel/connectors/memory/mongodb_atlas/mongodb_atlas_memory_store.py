@@ -283,7 +283,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         pipeline: list[dict[str, Any]] = []
         vector_search_query: List[Mapping[str, Any]] = {
             "$search": {
-                "index": DEFAULT_SEARCH_INDEX_NAME,
+                "index": self.index_name,
                 "knnBeta": {
                     "vector": embedding.tolist(),
                     "k": limit,
