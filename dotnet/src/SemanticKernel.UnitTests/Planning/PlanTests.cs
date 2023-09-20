@@ -35,7 +35,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanAsync()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);
 
@@ -83,8 +83,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernelContext = new Mock<IKernelContext>();
-        var kernel = new Mock<IKernel>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput));
 
@@ -115,8 +114,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput));
 
@@ -147,8 +145,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput));
 
@@ -179,8 +176,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput));
 
@@ -211,8 +207,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput));
 
@@ -243,8 +238,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput)
         );
@@ -283,8 +277,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput));
 
@@ -336,8 +329,7 @@ public sealed class PlanTests
         var plan = new Plan(goal);
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput));
 
@@ -364,8 +356,7 @@ public sealed class PlanTests
         // Arrange
         var logger = new Mock<ILogger>();
         var skills = new Mock<ISkillCollection>();
-        var kernelContext = new Mock<IKernelContext>();
-        var kernel = new Mock<IKernel>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -390,7 +381,7 @@ public sealed class PlanTests
         var subPlan = new Plan("Write a poem or joke");
 
         // Arrange
-        var (kernel, kernelContext) = SetupKernelMock();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -465,8 +456,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithOneStepAndStateAsync()
     {
         // Arrange
-        var kernelContext = new Mock<IKernelContext>();
-        var kernel = new Mock<IKernel>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -492,8 +482,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithStateAsync()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -526,8 +515,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithCustomContextAsync()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -573,8 +561,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithCustomStateAsync()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -640,8 +627,7 @@ public sealed class PlanTests
     public async Task CanExecutePlanWithJoinedResultAsync()
     {
         // Arrange
-        var kernelContext = new Mock<IKernelContext>();
-        var kernel = new Mock<IKernel>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -755,8 +741,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     public async Task CanExecutePlanWithExpandedAsync()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = this.SetupKernelMock();
         var returnContext = new SKContext(kernelContext.Object);
 
         var functionMock = new Mock<ISKFunction>();
