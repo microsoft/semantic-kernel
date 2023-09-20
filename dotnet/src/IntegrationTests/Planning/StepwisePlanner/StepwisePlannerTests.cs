@@ -9,12 +9,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -100,7 +100,7 @@ public sealed class StepwisePlannerTests : IDisposable
     }
 
     [Fact]
-    public async void ExecutePlanFailsWithTooManyFunctions()
+    public async Task ExecutePlanFailsWithTooManyFunctionsAsync()
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
@@ -119,17 +119,17 @@ public sealed class StepwisePlannerTests : IDisposable
         var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
 
         // Assert
-        var ex = await Assert.ThrowsAsync<SKException>(async () => await plan.InvokeAsync().ConfigureAwait(false)).ConfigureAwait(false);
+        var ex = await Assert.ThrowsAsync<SKException>(async () => await kernel.RunAsync(plan));
         Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
     }
 
     [Fact]
-    public async void ExecutePlanSucceedsWithAlmostTooManyFunctions()
+    public async Task ExecutePlanSucceedsWithAlmostTooManyFunctionsAsync()
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
 
-        _ = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiSkillExecutionParameters(enableDynamicOperationPayload: true)).ConfigureAwait(false);
+        _ = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiPluginExecutionParameters(enableDynamicOperationPayload: true));
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel);
 
