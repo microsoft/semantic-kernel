@@ -154,7 +154,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         await this.RunWebSocketMultiPacketStreamingTestAsync(
             requestMessage: requestMessage,
             expectedResponse: expectedResponse,
-            isPersistent: true).ConfigureAwait(false);
+            isPersistent: true);
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var expectedResponse = new List<string> { this._streamCompletionResponseStub };
         await this.RunWebSocketMultiPacketStreamingTestAsync(
             requestMessage: requestMessage,
-            expectedResponse: expectedResponse).ConfigureAwait(false);
+            expectedResponse: expectedResponse);
     }
 
     [Fact]
@@ -186,7 +186,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             // Simulate different responses for each request
             var responseIndex = int.Parse(Encoding.UTF8.GetString(request.ToArray()), CultureInfo.InvariantCulture);
             byte[] bytes = Encoding.UTF8.GetBytes(expectedResponses[responseIndex]);
-            var toReturn = new List<ArraySegment<byte>> { new ArraySegment<byte>(bytes) };
+            var toReturn = new List<ArraySegment<byte>> { new(bytes) };
             return toReturn;
         });
 
@@ -208,7 +208,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
                 // Receive the response from the server
                 var responseBytes = new byte[1024];
                 var responseResult = await client.ReceiveAsync(new ArraySegment<byte>(responseBytes), CancellationToken.None);
-                await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close connection after message received", CancellationToken.None).ConfigureAwait(false);
+                await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "Close connection after message received", CancellationToken.None);
 
                 var response = Encoding.UTF8.GetString(responseBytes, 0, responseResult.Count);
 
@@ -219,7 +219,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         // Assert
         for (int i = 0; i < expectedResponses.Count; i++)
         {
-            var response = await tasks[i].ConfigureAwait(false);
+            var response = await tasks[i];
             Assert.Equal(expectedResponses[i], response);
         }
     }
@@ -227,25 +227,25 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     [Fact]
     public async Task ShouldHandleMultiPacketStreamingServiceTransientWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync().ConfigureAwait(false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync();
     }
 
     [Fact]
     public async Task ShouldHandleMultiPacketStreamingServicePersistentWebSocketResponseBroadcastBlockAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true).ConfigureAwait(false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(isPersistent: true);
     }
 
     [Fact]
     public async Task ShouldHandleConcurrentMultiPacketStreamingServiceTransientWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10).ConfigureAwait(false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10);
     }
 
     [Fact]
     public async Task ShouldHandleConcurrentMultiPacketStreamingServicePersistentWebSocketResponseAsync()
     {
-        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10, isPersistent: true).ConfigureAwait(false);
+        await this.RunWebSocketMultiPacketStreamingTestAsync(nbConcurrentCalls: 10, isPersistent: true);
     }
 
     /// <summary>
@@ -264,7 +264,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             keepAliveWebSocketsDuration: 100,
             concurrentCallsTicksDelay: 0,
             enforcedConcurrentCallSemaphore: enforcedConcurrentCallSemaphore,
-            maxExpectedNbClients: 20).ConfigureAwait(false);
+            maxExpectedNbClients: 20);
     }
 
     private async Task RunWebSocketMultiPacketStreamingTestAsync(
@@ -339,26 +339,21 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
 
         for (int i = 0; i < nbConcurrentCalls; i++)
         {
-            tasks.Add(Task.Run(() =>
+            tasks.Add(Task.FromResult(sut.CompleteStreamAsync(requestMessage, new TextCompletionRequest()
             {
-                var localResponse = sut.CompleteStreamAsync(requestMessage, new TextCompletionRequest()
-                {
-                    Temperature = 0.01,
-                    MaxNewTokens = 7,
-                    TopP = 0.1,
-                }, cancellationToken: cleanupToken.Token);
-                return localResponse;
-            }));
+                Temperature = 0.01,
+                MaxNewTokens = 7,
+                TopP = 0.1,
+            }, cancellationToken: cleanupToken.Token)));
         }
 
         var callEnumerationTasks = new List<Task<List<string>>>();
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        var results = await Task.WhenAll(tasks);
 
-        foreach (var callTask in tasks)
+        foreach (var completion in results)
         {
             callEnumerationTasks.AddRange(Enumerable.Range(0, nbConcurrentEnumeration).Select(_ => Task.Run(async () =>
             {
-                var completion = await callTask.ConfigureAwait(false);
                 var result = new List<string>();
                 await foreach (var chunk in completion)
                 {
@@ -369,10 +364,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             })));
 
             // Introduce a delay between creating each WebSocket client
-            await Task.Delay(delayTimeSpan).ConfigureAwait(false);
+            await Task.Delay(delayTimeSpan);
         }
 
-        var allResults = await Task.WhenAll(callEnumerationTasks).ConfigureAwait(false);
+        var allResults = await Task.WhenAll(callEnumerationTasks);
 
         var elapsed = sw.ElapsedMilliseconds;
         if (maxExpectedNbClients > 0)

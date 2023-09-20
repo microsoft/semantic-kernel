@@ -126,7 +126,7 @@ public class KernelTests
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
     [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public void ItUsesChatSystemPromptWhenProvided(string providedSystemChatPrompt, string expectedSystemChatPrompt)
+    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
     {
         // Arrange
         var mockTextCompletion = new Mock<ITextCompletion>();
@@ -148,7 +148,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
@@ -182,7 +182,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItUsesDefaultServiceWhenSpecified()
+    public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -202,7 +202,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
@@ -210,7 +210,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItUsesServiceIdWhenProvided()
+    public async Task ItUsesServiceIdWhenProvidedAsync()
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -231,7 +231,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -264,7 +264,7 @@ public class KernelTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task RunAsyncHandlesPreInvocation(int pipelineCount)
+    public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -292,7 +292,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationWasCancelled()
+    public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -314,7 +314,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipeline()
+    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -338,7 +338,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandler()
+    public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -363,7 +363,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandler()
+    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -404,7 +404,7 @@ public class KernelTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task RunAsyncHandlesPostInvocation(int pipelineCount)
+    public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -434,7 +434,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokingHandler()
+    public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
         var sut = Kernel.Builder.Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
@@ -458,7 +458,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokedHandler()
+    public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
         var sut = Kernel.Builder.Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
