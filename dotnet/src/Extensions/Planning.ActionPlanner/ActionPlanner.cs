@@ -74,7 +74,7 @@ public sealed class ActionPlanner : IActionPlanner
             maxTokens: 1024,
             stopSequences: new[] { StopSequence });
 
-        kernel.ImportFunctions(this, pluginName: PluginName);
+        kernel.ImportPlugin(this, pluginName: PluginName);
 
         this._kernel = kernel;
         this._context = kernel.CreateNewContext();

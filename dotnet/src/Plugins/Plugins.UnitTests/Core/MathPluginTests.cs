@@ -25,7 +25,7 @@ public class MathPluginTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportFunctions(new MathPlugin(), "math");
+        kernel.ImportPlugin(new MathPlugin(), "math");
     }
 
     [Theory]

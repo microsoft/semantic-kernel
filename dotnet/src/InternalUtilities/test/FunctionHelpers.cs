@@ -20,7 +20,7 @@ internal static class FunctionHelpers
     {
         var kernel = Kernel.Builder.Build();
 
-        IDictionary<string, ISKFunction> funcs = kernel.ImportFunctions(objectInstance);
+        IDictionary<string, ISKFunction> funcs = kernel.ImportPlugin(objectInstance);
 
         SKContext context = kernel.CreateNewContext();
         foreach ((string Name, string Value) pair in variables)

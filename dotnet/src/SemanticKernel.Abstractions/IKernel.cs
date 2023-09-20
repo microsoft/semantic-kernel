@@ -76,13 +76,13 @@ public interface IKernel
     ISKFunction RegisterCustomFunction(ISKFunction customFunction);
 
     /// <summary>
-    /// Import a set of functions from the given object instance. The functions must have the `SKFunction` attribute.
+    /// Import a set of functions as a plugin from the given object instance. Only the functions that have the `SKFunction` attribute will be included in the plugin.
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>
     /// <param name="objectInstance">Instance of a class containing functions</param>
     /// <param name="pluginName">Name of the plugin for function collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportFunctions(object objectInstance, string? pluginName = null);
+    IDictionary<string, ISKFunction> ImportPlugin(object objectInstance, string? pluginName = null);
 
     /// <summary>
     /// Set the semantic memory to use

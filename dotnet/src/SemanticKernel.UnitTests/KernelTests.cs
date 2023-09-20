@@ -32,7 +32,7 @@ public class KernelTests
 
         var nativePlugin = new MyPlugin();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
-        kernel.ImportFunctions(nativePlugin, "mySk");
+        kernel.ImportPlugin(nativePlugin, "mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Functions.TryGetFunction("jk", "joker", out _));
@@ -54,7 +54,7 @@ public class KernelTests
 
         var nativePlugin = new MyPlugin();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
-        var plugin = kernel.ImportFunctions(nativePlugin, "mySk");
+        var plugin = kernel.ImportPlugin(nativePlugin, "mySk");
 
         // Act
         SKContext result = await kernel.RunAsync(plugin["ReadFunctionCollectionAsync"]);
@@ -74,7 +74,7 @@ public class KernelTests
         // Arrange
         var kernel = Kernel.Builder.Build();
         var nativePlugin = new MyPlugin();
-        var plugin = kernel.ImportFunctions(nativePlugin, "mySk");
+        var plugin = kernel.ImportPlugin(nativePlugin, "mySk");
 
         using CancellationTokenSource cts = new();
         cts.Cancel();
@@ -89,7 +89,7 @@ public class KernelTests
         // Arrange
         var kernel = Kernel.Builder.Build();
         var nativePlugin = new MyPlugin();
-        kernel.ImportFunctions(nativePlugin, "mySk");
+        kernel.ImportPlugin(nativePlugin, "mySk");
 
         using CancellationTokenSource cts = new();
 
@@ -104,7 +104,7 @@ public class KernelTests
     public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IDictionary<string, ISKFunction> plugin = Kernel.Builder.Build().ImportFunctions(new MyPlugin(), "test");
+        IDictionary<string, ISKFunction> plugin = Kernel.Builder.Build().ImportPlugin(new MyPlugin(), "test");
 
         // Assert
         Assert.Equal(3, plugin.Count);
@@ -148,7 +148,7 @@ public class KernelTests
         var kernel = Kernel.Builder.Build();
 
         // Act
-        IDictionary<string, ISKFunction> plugin = kernel.ImportFunctions(new MyPlugin());
+        IDictionary<string, ISKFunction> plugin = kernel.ImportPlugin(new MyPlugin());
 
         // Assert
         Assert.Equal(3, plugin.Count);
@@ -163,9 +163,9 @@ public class KernelTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs
-        kernel.ImportFunctions(new MyPlugin());
-        kernel.ImportFunctions(new MyPlugin());
-        kernel.ImportFunctions(new MyPlugin());
+        kernel.ImportPlugin(new MyPlugin());
+        kernel.ImportPlugin(new MyPlugin());
+        kernel.ImportPlugin(new MyPlugin());
     }
 
     [Fact]

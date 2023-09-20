@@ -49,7 +49,7 @@ public class SKContextTests
     public async Task ItHasHelpersForFunctionCollectionAsync()
     {
         // Arrange
-        IDictionary<string, ISKFunction> plugin = KernelBuilder.Create().ImportFunctions(new Parrot(), "test");
+        IDictionary<string, ISKFunction> plugin = KernelBuilder.Create().ImportPlugin(new Parrot(), "test");
         this._functions.Setup(x => x.GetFunction("func")).Returns(plugin["say"]);
         var target = new SKContext(this._kernel.Object, new ContextVariables(), this._functions.Object);
         Assert.NotNull(target.Functions);

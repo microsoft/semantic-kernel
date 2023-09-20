@@ -107,7 +107,7 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportFunctions(object objectInstance, string? pluginName = null)
+    public IDictionary<string, ISKFunction> ImportPlugin(object objectInstance, string? pluginName = null)
     {
         Verify.NotNull(objectInstance);
 

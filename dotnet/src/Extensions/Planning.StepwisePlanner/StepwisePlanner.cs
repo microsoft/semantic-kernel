@@ -64,7 +64,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
 
         // Import native functions
-        this._nativeFunctions = this._kernel.ImportFunctions(this, RestrictedSkillName);
+        this._nativeFunctions = this._kernel.ImportPlugin(this, RestrictedSkillName);
 
         // Create context and logger
         this._context = this._kernel.CreateNewContext();

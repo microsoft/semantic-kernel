@@ -26,7 +26,7 @@ public class SearchUrlPluginTests
         IKernel kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportFunctions(new SearchUrlPlugin(), "search");
+        kernel.ImportPlugin(new SearchUrlPlugin(), "search");
     }
 
     [Fact]
