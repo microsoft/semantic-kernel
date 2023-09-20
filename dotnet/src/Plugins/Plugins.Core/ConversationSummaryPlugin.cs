@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
@@ -37,7 +36,7 @@ public class ConversationSummaryPlugin
     {
         this._summarizeConversationFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.SummarizeConversationDefinition,
-            skillName: nameof(ConversationSummaryPlugin),
+            pluginName: nameof(ConversationSummaryPlugin),
             description: "Given a section of a conversation transcript, summarize the part of the conversation.",
             maxTokens: MaxTokens,
             temperature: 0.1,
@@ -45,7 +44,7 @@ public class ConversationSummaryPlugin
 
         this._conversationActionItemsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationActionItemsDefinition,
-            skillName: nameof(ConversationSummaryPlugin),
+            pluginName: nameof(ConversationSummaryPlugin),
             description: "Given a section of a conversation transcript, identify action items.",
             maxTokens: MaxTokens,
             temperature: 0.1,
@@ -53,7 +52,7 @@ public class ConversationSummaryPlugin
 
         this._conversationTopicsFunction = kernel.CreateSemanticFunction(
             SemanticFunctionConstants.GetConversationTopicsDefinition,
-            skillName: nameof(ConversationSummaryPlugin),
+            pluginName: nameof(ConversationSummaryPlugin),
             description: "Analyze a conversation transcript and extract key topics worth remembering.",
             maxTokens: MaxTokens,
             temperature: 0.1,

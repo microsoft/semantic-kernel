@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Web;
 

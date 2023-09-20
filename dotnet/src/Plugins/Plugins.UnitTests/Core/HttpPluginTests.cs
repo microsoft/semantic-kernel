@@ -36,10 +36,10 @@ public class HttpPluginTests : IDisposable
     {
         // Arrange
         var kernel = KernelBuilder.Create();
-        var skill = new HttpPlugin();
+        var plugin = new HttpPlugin();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportSkill(skill, "http");
+        kernel.ImportFunctions(plugin, "http");
     }
 
     [Fact]

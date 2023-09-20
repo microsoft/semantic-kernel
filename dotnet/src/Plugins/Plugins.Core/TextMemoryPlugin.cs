@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 

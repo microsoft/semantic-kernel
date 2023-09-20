@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 

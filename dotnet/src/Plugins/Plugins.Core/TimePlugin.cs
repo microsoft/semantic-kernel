@@ -2,7 +2,6 @@
 
 using System;
 using System.ComponentModel;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
