@@ -171,7 +171,7 @@ public static class InlineFunctionsDefinitionExtension
     /// </para>
     /// <para>
     /// This method accepts the path of the parent directory (e.g. "d:\skills") and the name of the skill directory
-    /// (e.g. "OfficeSkill"), which is used also as the "plugin name" in the internal skill collection (note that
+    /// (e.g. "OfficeSkill"), which is used also as the "plugin name" in the internal function collection (note that
     /// skill and function names can contain only alphanumeric chars and underscore).
     /// </para>
     /// <code>

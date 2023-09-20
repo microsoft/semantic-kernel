@@ -415,7 +415,7 @@ public sealed class Plan : IPlan
         {
             if (context.Functions == null)
             {
-                throw new SKException("Skill collection not found in the context");
+                throw new SKException("function collection not found in the context");
             }
 
             if (context.Functions.TryGetFunction(plan.PluginName, plan.Name, out var skillFunction))
@@ -424,7 +424,7 @@ public sealed class Plan : IPlan
             }
             else if (requireFunctions)
             {
-                throw new SKException($"Function '{plan.PluginName}.{plan.Name}' not found in skill collection");
+                throw new SKException($"Function '{plan.PluginName}.{plan.Name}' not found in function collection");
             }
         }
         else

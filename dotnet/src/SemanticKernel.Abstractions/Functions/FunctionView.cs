@@ -9,19 +9,19 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Class used to copy and export data from the skill collection.
-/// The data is mutable, but changes do not affect the skill collection.
+/// Class used to copy and export data from the function collection.
+/// The data is mutable, but changes do not affect the function collection.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class FunctionView
 {
     /// <summary>
-    /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{pluginName.functionName}}
+    /// Name of the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{pluginName.functionName}}
+    /// Name of the skill containing the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
     public string PluginName { get; set; } = string.Empty;
 
@@ -56,7 +56,7 @@ public sealed class FunctionView
     /// Create a function view.
     /// </summary>
     /// <param name="name">Function name</param>
-    /// <param name="pluginName">Skill name, e.g. the function namespace</param>
+    /// <param name="pluginName">Plugin name, e.g. the function namespace</param>
     /// <param name="description">Function description</param>
     /// <param name="parameters">List of function parameters provided by the skill developer</param>
     /// <param name="isSemantic">Whether the function is a semantic one (or native is False)</param>

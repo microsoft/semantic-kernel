@@ -47,7 +47,7 @@ public interface IKernel
     IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <summary>
-    /// Build and register a function in the internal skill collection, in a global generic skill.
+    /// Build and register a function in the internal function collection, in a global generic skill.
     /// </summary>
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
@@ -57,7 +57,7 @@ public interface IKernel
         SemanticFunctionConfig functionConfig);
 
     /// <summary>
-    /// Build and register a function in the internal skill collection.
+    /// Build and register a function in the internal function collection.
     /// </summary>
     /// <param name="pluginName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
@@ -69,7 +69,7 @@ public interface IKernel
         SemanticFunctionConfig functionConfig);
 
     /// <summary>
-    /// Registers a custom function in the internal skill collection.
+    /// Registers a custom function in the internal function collection.
     /// </summary>
     /// <param name="customFunction">The custom function to register.</param>
     /// <returns>A C# function wrapping the function execution logic.</returns>
@@ -80,7 +80,7 @@ public interface IKernel
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>
     /// <param name="skillInstance">Instance of a class containing functions</param>
-    /// <param name="pluginName">Name of the skill for skill collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
+    /// <param name="pluginName">Name of the skill for function collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
     IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? pluginName = null);
 
@@ -196,7 +196,7 @@ public interface IKernel
     /// Access registered functions by skill + name. Not case sensitive.
     /// The function might be native or semantic, it's up to the caller handling it.
     /// </summary>
-    /// <param name="pluginName">Skill name</param>
+    /// <param name="pluginName">Plugin name</param>
     /// <param name="functionName">Function name</param>
     /// <returns>Delegate to execute the function</returns>
     [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]

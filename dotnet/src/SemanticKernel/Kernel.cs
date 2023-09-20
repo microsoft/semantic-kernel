@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Semantic kernel class.
-/// The kernel provides a skill collection to define native and semantic functions, an orchestrator to execute a list of functions.
+/// The kernel provides a function collection to define native and semantic functions, an orchestrator to execute a list of functions.
 /// Semantic functions are automatically rendered and executed using an internal prompt template rendering engine.
 /// Future versions will allow to:
 /// * customize the rendering engine
@@ -62,7 +62,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="functionCollection">Skill collection</param>
+    /// <param name="functionCollection">function collection</param>
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="promptTemplateEngine">Prompt template engine</param>
     /// <param name="memory">Semantic text Memory</param>
@@ -330,7 +330,7 @@ repeat:
             this.LoggerFactory
         );
 
-        // Connect the function to the current kernel skill collection, in case the function
+        // Connect the function to the current kernel function collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultFunctionCollection(this.Functions);
 
@@ -343,10 +343,10 @@ repeat:
     }
 
     /// <summary>
-    /// Import a skill into the kernel skill collection, so that semantic functions and pipelines can consume its functions.
+    /// Import a skill into the kernel function collection, so that semantic functions and pipelines can consume its functions.
     /// </summary>
     /// <param name="skillInstance">Skill class instance</param>
-    /// <param name="pluginName">Skill name, used to group functions under a shared namespace</param>
+    /// <param name="pluginName">Plugin name, used to group functions under a shared namespace</param>
     /// <param name="logger">Application logger</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>

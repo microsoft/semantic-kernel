@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Semantic Kernel default skill collection class.
+/// Semantic Kernel default function collection class.
 /// The class holds a list of all the functions, native and semantic, known to the kernel instance.
 /// The list is used by the planner and when executing pipelines of function compositions.
 /// </summary>
@@ -39,10 +39,10 @@ public class FunctionCollection : IFunctionCollection
     }
 
     /// <summary>
-    /// Adds a function to the skill collection.
+    /// Adds a function to the function collection.
     /// </summary>
     /// <param name="functionInstance">The function instance to add.</param>
-    /// <returns>The updated skill collection.</returns>
+    /// <returns>The updated function collection.</returns>
     public IFunctionCollection AddFunction(ISKFunction functionInstance)
     {
         Verify.NotNull(functionInstance);
