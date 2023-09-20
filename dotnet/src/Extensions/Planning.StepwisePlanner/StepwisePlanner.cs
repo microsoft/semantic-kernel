@@ -575,15 +575,13 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (this.Config.GetAvailableFunctionsAsync is null)
         {
-            FunctionsView functionsView = this._context.Skills!.GetFunctionsView();
+            var functionsView = this._context.Skills!.GetFunctionViews();
 
             var excludedSkills = this.Config.ExcludedSkills ?? new();
             var excludedFunctions = this.Config.ExcludedFunctions ?? new();
 
             var availableFunctions =
-                functionsView.NativeFunctions
-                    .Concat(functionsView.SemanticFunctions)
-                    .SelectMany(x => x.Value)
+                functionsView
                     .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
                     .OrderBy(x => x.SkillName)
                     .ThenBy(x => x.Name);
