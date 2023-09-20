@@ -631,7 +631,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItSupportsUsingNamedInputValueFromContext()
+    public async Task ItSupportsUsingNamedInputValueFromContextAsync()
     {
         static string Test(string input) => "Result: " + input;
 
@@ -647,7 +647,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItSupportsUsingNonNamedInputValueFromContext()
+    public async Task ItSupportsUsingNonNamedInputValueFromContextAsync()
     {
         static string Test(string other) => "Result: " + other;
 
@@ -663,7 +663,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItSupportsUsingNonNamedInputValueFromContextEvenWhenThereAreMultipleParameters()
+    public async Task ItSupportsUsingNonNamedInputValueFromContextEvenWhenThereAreMultipleParametersAsync()
     {
         static string Test(int something, long orother) => "Result: " + (something + orother);
 
@@ -680,7 +680,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItSupportsPreferringNamedValueOverInputFromContext()
+    public async Task ItSupportsPreferringNamedValueOverInputFromContextAsync()
     {
         static string Test(string other) => "Result: " + other;
 
@@ -697,7 +697,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItSupportsOverridingNameWithAttribute()
+    public async Task ItSupportsOverridingNameWithAttributeAsync()
     {
         static string Test([SKName("input"), Description("description")] string other) => "Result: " + other;
 
@@ -714,7 +714,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItSupportNullDefaultValuesOverInput()
+    public async Task ItSupportNullDefaultValuesOverInputAsync()
     {
         static string Test(string? input = null, string? other = null) => "Result: " + (other is null);
 
@@ -730,7 +730,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItSupportsConvertingFromManyTypes()
+    public async Task ItSupportsConvertingFromManyTypesAsync()
     {
         static string Test(int a, long b, decimal c, Guid d, DateTimeOffset e, DayOfWeek? f) =>
             $"{a} {b} {c} {d} {e:R} {f}";
@@ -753,7 +753,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItSupportsConvertingFromTypeConverterAttributedTypes()
+    public async Task ItSupportsConvertingFromTypeConverterAttributedTypesAsync()
     {
         static int Test(MyCustomType mct) => mct.Value * 2;
 
@@ -786,7 +786,7 @@ public sealed class SKFunctionTests2
 #pragma warning restore CA1812
 
     [Fact]
-    public async Task ItSupportsConvertingFromToManyTypes()
+    public async Task ItSupportsConvertingFromToManyTypesAsync()
     {
         // Arrange
         var context = this.MockContext("1");
@@ -821,7 +821,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItUsesContextCultureForParsingFormatting()
+    public async Task ItUsesContextCultureForParsingFormattingAsync()
     {
         // Arrange
         var context = this.MockContext("");
@@ -850,7 +850,7 @@ public sealed class SKFunctionTests2
     }
 
     [Fact]
-    public async Task ItThrowsWhenItFailsToConvertAnArgument()
+    public async Task ItThrowsWhenItFailsToConvertAnArgumentAsync()
     {
         static string Test(Guid g) => g.ToString();
 

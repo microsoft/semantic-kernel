@@ -233,7 +233,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var properties = payload.Properties;
         Assert.NotNull(properties);
-        Assert.Equal(0, properties.Count);
+        Assert.Empty(properties);
     }
 
     [Fact]
@@ -271,7 +271,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     [Theory]
     [InlineData("explodeFormParam")]
     [InlineData("anotherExplodeFormParam")]
-    public async Task ItShouldSupportsAmpersandSeparatedParametersForFormStyleArrayQueryStringParameters(string parameterName)
+    public async Task ItShouldSupportsAmpersandSeparatedParametersForFormStyleArrayQueryStringParametersAsync(string parameterName)
     {
         //Act
         var operations = await this._sut.ParseAsync(this._openApiDocument);
@@ -287,7 +287,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldSupportsCommaSeparatedValuesForFormStyleArrayQueryStringParameters()
+    public async Task ItShouldSupportsCommaSeparatedValuesForFormStyleArrayQueryStringParametersAsync()
     {
         //Act
         var operations = await this._sut.ParseAsync(this._openApiDocument);

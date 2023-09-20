@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 /// <summary>
 /// Serializes REST API operation parameter of the 'Form' style.
 /// </summary>
-internal class FormStyleParameterSerializer
+internal static class FormStyleParameterSerializer
 {
     /// <summary>
     /// Serializes a REST API operation `Form` style parameter.

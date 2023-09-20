@@ -590,7 +590,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     [Theory]
     [InlineData(MediaTypeNames.Text.Plain)]
     [InlineData(MediaTypeNames.Application.Json)]
-    public async Task ItShouldUsePayloadAndContentTypeArgumentsIfDynamicPayloadBuildingIsNotRequired(string contentType)
+    public async Task ItShouldUsePayloadAndContentTypeArgumentsIfDynamicPayloadBuildingIsNotRequiredAsync(string contentType)
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
@@ -727,7 +727,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldAddRequiredQueryStringParametersIfTheirArgumentsProvided()
+    public async Task ItShouldAddRequiredQueryStringParametersIfTheirArgumentsProvidedAsync()
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
@@ -776,7 +776,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldAddNotRequiredQueryStringParametersIfTheirArgumentsProvided()
+    public async Task ItShouldAddNotRequiredQueryStringParametersIfTheirArgumentsProvidedAsync()
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
@@ -825,7 +825,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldSkipNotRequiredQueryStringParametersIfNoArgumentsProvided()
+    public async Task ItShouldSkipNotRequiredQueryStringParametersIfNoArgumentsProvidedAsync()
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
@@ -910,7 +910,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldThrowExceptionIfNoArgumentProvidedForRequiredQueryStringParameter()
+    public async Task ItShouldThrowExceptionIfNoArgumentProvidedForRequiredQueryStringParameterAsync()
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
