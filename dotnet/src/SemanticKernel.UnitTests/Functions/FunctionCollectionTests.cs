@@ -7,7 +7,7 @@ using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
 
-public class SkillCollectionTests
+public class FunctionCollectionTests
 {
     [Fact]
     public void ItAllowsToReplaceFunctions()

@@ -85,12 +85,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange Mocks
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -121,12 +121,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -157,12 +157,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -193,12 +193,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -228,12 +228,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -263,12 +263,12 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -319,12 +319,12 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -388,12 +388,12 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -413,9 +413,9 @@ public sealed class PlanSerializationTests
         });
 
         ISKFunction? outFunc = mockFunction.Object;
-        skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), out outFunc)).Returns(true);
-        skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
-        skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
+        functions.Setup(x => x.TryGetFunction(It.IsAny<string>(), out outFunc)).Returns(true);
+        functions.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
+        functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -440,7 +440,7 @@ public sealed class PlanSerializationTests
         var nextContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(),
-            skills.Object
+            functions.Object
         );
         plan = Plan.FromJson(serializedPlan1, nextContext);
         plan = await kernel.Object.StepAsync(cv, plan);
@@ -471,12 +471,12 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();
@@ -489,9 +489,9 @@ public sealed class PlanSerializationTests
         {
             mockFunction.Setup(x => x.Name).Returns(string.Empty);
             ISKFunction? outFunc = mockFunction.Object;
-            skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), out outFunc)).Returns(true);
-            skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
-            skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
+            functions.Setup(x => x.TryGetFunction(It.IsAny<string>(), out outFunc)).Returns(true);
+            functions.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out outFunc)).Returns(true);
+            functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(mockFunction.Object);
         }
 
         plan.AddSteps(new Plan("Step1", mockFunction.Object), mockFunction.Object);
@@ -527,12 +527,12 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<IFunctionCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
             new ContextVariables(stepOutput),
-            skills.Object
+            functions.Object
         );
 
         var mockFunction = new Mock<ISKFunction>();

@@ -22,7 +22,7 @@ namespace SemanticKernel.UnitTests;
 public class KernelTests
 {
     [Fact]
-    public void ItProvidesAccessToFunctionsViaSkillCollection()
+    public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
         var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
@@ -30,9 +30,9 @@ public class KernelTests
             .WithDefaultAIService<ITextCompletion>(factory.Object)
             .Build();
 
-        var nativeSkill = new MySkill();
+        var nativePlugin = new MyPlugin();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
-        kernel.ImportFunctions(nativeSkill, "mySk");
+        kernel.ImportFunctions(nativePlugin, "mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Functions.TryGetFunction("jk", "joker", out _));
@@ -52,12 +52,12 @@ public class KernelTests
             .WithAIService<ITextCompletion>("x", factory.Object)
             .Build();
 
-        var nativeSkill = new MySkill();
+        var nativePlugin = new MyPlugin();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
-        var skill = kernel.ImportFunctions(nativeSkill, "mySk");
+        var plugin = kernel.ImportFunctions(nativePlugin, "mySk");
 
         // Act
-        SKContext result = await kernel.RunAsync(skill["ReadFunctionCollectionAsync"]);
+        SKContext result = await kernel.RunAsync(plugin["ReadFunctionCollectionAsync"]);
 
         // Assert - 3 functions, var name is not case sensitive
         Assert.Equal("Nice fun", result.Variables["jk.joker"]);
@@ -73,14 +73,14 @@ public class KernelTests
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
-        var nativeSkill = new MySkill();
-        var skill = kernel.ImportFunctions(nativeSkill, "mySk");
+        var nativePlugin = new MyPlugin();
+        var plugin = kernel.ImportFunctions(nativePlugin, "mySk");
 
         using CancellationTokenSource cts = new();
         cts.Cancel();
 
         // Act
-        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, skill["GetAnyValue"]));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, plugin["GetAnyValue"]));
     }
 
     [Fact]
@@ -88,8 +88,8 @@ public class KernelTests
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
-        var nativeSkill = new MySkill();
-        kernel.ImportFunctions(nativeSkill, "mySk");
+        var nativePlugin = new MyPlugin();
+        kernel.ImportFunctions(nativePlugin, "mySk");
 
         using CancellationTokenSource cts = new();
 
@@ -101,16 +101,16 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItImportsSkillsNotCaseSensitive()
+    public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IDictionary<string, ISKFunction> skill = Kernel.Builder.Build().ImportFunctions(new MySkill(), "test");
+        IDictionary<string, ISKFunction> plugin = Kernel.Builder.Build().ImportFunctions(new MyPlugin(), "test");
 
         // Assert
-        Assert.Equal(3, skill.Count);
-        Assert.True(skill.ContainsKey("GetAnyValue"));
-        Assert.True(skill.ContainsKey("getanyvalue"));
-        Assert.True(skill.ContainsKey("GETANYVALUE"));
+        Assert.Equal(3, plugin.Count);
+        Assert.True(plugin.ContainsKey("GetAnyValue"));
+        Assert.True(plugin.ContainsKey("getanyvalue"));
+        Assert.True(plugin.ContainsKey("GETANYVALUE"));
     }
 
     [Theory]
@@ -148,24 +148,24 @@ public class KernelTests
         var kernel = Kernel.Builder.Build();
 
         // Act
-        IDictionary<string, ISKFunction> skill = kernel.ImportFunctions(new MySkill());
+        IDictionary<string, ISKFunction> plugin = kernel.ImportFunctions(new MyPlugin());
 
         // Assert
-        Assert.Equal(3, skill.Count);
+        Assert.Equal(3, plugin.Count);
         Assert.True(kernel.Functions.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
         Assert.NotNull(functionInstance);
     }
 
     [Fact]
-    public void ItAllowsToImportTheSameSkillMultipleTimes()
+    public void ItAllowsToImportTheSamePluginMultipleTimes()
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs
-        kernel.ImportFunctions(new MySkill());
-        kernel.ImportFunctions(new MySkill());
-        kernel.ImportFunctions(new MySkill());
+        kernel.ImportFunctions(new MyPlugin());
+        kernel.ImportFunctions(new MyPlugin());
+        kernel.ImportFunctions(new MyPlugin());
     }
 
     [Fact]
@@ -467,7 +467,7 @@ public class KernelTests
         Assert.Equal(context.Variables.Input, newInput);
     }
 
-    public class MySkill
+    public class MyPlugin
     {
         [SKFunction, Description("Return any value.")]
         public string GetAnyValue()
