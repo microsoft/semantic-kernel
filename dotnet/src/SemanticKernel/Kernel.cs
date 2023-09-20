@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -182,10 +183,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
-        var context = new SKContext(
-            variables,
-            this._skillCollection,
-            this.LoggerFactory);
+        var context = new SKContext(this, variables);
 
         int pipelineStepCount = 0;
         foreach (ISKFunction skFunction in pipeline)
@@ -238,17 +236,11 @@ repeat:
     }
 
     /// <inheritdoc/>
-    public ISKFunction Func(string skillName, string functionName)
-    {
-        return this.Skills.GetFunction(skillName, functionName);
-    }
-
-    /// <inheritdoc/>
     public SKContext CreateNewContext()
     {
         return new SKContext(
-            skills: this._skillCollection,
-            loggerFactory: this.LoggerFactory);
+            this,
+            skills: this._skillCollection);
     }
 
     /// <inheritdoc/>
@@ -383,6 +375,18 @@ repeat:
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
+    }
+
+    #endregion
+
+    #region Obsolete ===============================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction Func(string skillName, string functionName)
+    {
+        return this.Skills.GetFunction(skillName, functionName);
     }
 
     #endregion

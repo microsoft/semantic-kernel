@@ -10,10 +10,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
 using RepoUtils;
 
 // ReSharper disable CommentTypo
@@ -30,7 +30,7 @@ internal static class Example31_CustomPlanner
         SKContext context = CreateContextQueryContext(kernel);
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
-        kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
+        kernel.ImportSkill(new TextMemoryPlugin(kernel.Memory));
 
         // Setup defined memories for recall
         await RememberFactsAsync(kernel);
@@ -87,7 +87,7 @@ internal static class Example31_CustomPlanner
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportSkill(new TextMemorySkill(kernel.Memory));
+        kernel.ImportSkill(new TextMemoryPlugin(kernel.Memory));
 
         List<string> memoriesToSave = new()
         {
@@ -110,14 +110,14 @@ internal static class Example31_CustomPlanner
     }
 
     // ContextQuery is part of the QASkill
-    // DependsOn: TimeSkill named "time"
+    // DependsOn: TimePlugin named "time"
     // DependsOn: BingSkill named "bing"
     private static IDictionary<string, ISKFunction> LoadQASkill(IKernel kernel)
     {
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new TimePlugin(), "time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        var bing = new WebSearchEngineSkill(new BingConnector(TestConfiguration.Bing.ApiKey));
+        var bing = new WebSearchEnginePlugin(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
         var search = kernel.ImportSkill(bing, "bing");
 
@@ -145,7 +145,7 @@ internal static class Example31_CustomPlanner
 public class MarkupSkill
 {
     [SKFunction, Description("Run Markup")]
-    public async Task<string> RunMarkupAsync(string docString, SKContext context)
+    public async Task<string> RunMarkupAsync(string docString, SKContext context, IKernel kernel)
     {
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
@@ -153,7 +153,7 @@ public class MarkupSkill
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(kernel);
         return result.Result;
     }
 }

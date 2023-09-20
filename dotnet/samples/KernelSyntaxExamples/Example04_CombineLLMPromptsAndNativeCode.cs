@@ -3,8 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -37,7 +37,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         }
 
         var bingConnector = new BingConnector(bingApiKey);
-        var bing = new WebSearchEngineSkill(bingConnector);
+        var bing = new WebSearchEnginePlugin(bingConnector);
         var search = kernel.ImportSkill(bing, "bing");
 
         // Load semantic skill defined with prompt templates

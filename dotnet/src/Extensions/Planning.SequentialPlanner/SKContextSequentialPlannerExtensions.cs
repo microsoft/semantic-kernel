@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,12 +63,11 @@ public static class SKContextSequentialPlannerExtensions
         string? semanticQuery = null,
         CancellationToken cancellationToken = default)
     {
-        var functionsView = context.Skills.GetFunctionsView();
+        var functionsView = context.Skills.GetFunctionViews();
 
-        var availableFunctions = functionsView.SemanticFunctions
-            .Concat(functionsView.NativeFunctions)
-            .SelectMany(x => x.Value)
-            .Where(s => !config.ExcludedSkills.Contains(s.SkillName) && !config.ExcludedFunctions.Contains(s.Name))
+        var availableFunctions = functionsView
+            .Where(s => !config.ExcludedSkills.Contains(s.SkillName, StringComparer.OrdinalIgnoreCase)
+                && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
         List<FunctionView>? result = null;

@@ -26,6 +26,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Polly" />
+    <PackageReference Include="SharpToken" />
     <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
   <ItemGroup>
@@ -47,13 +48,13 @@
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Skills\Skills.Core\Skills.Core.csproj" />
-    <ProjectReference Include="..\..\src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj" />
-    <ProjectReference Include="..\..\src\Skills\Skills.Grpc\Skills.Grpc.csproj" />
+    <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
+    <ProjectReference Include="..\..\src\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
+    <ProjectReference Include="..\..\src\Functions\Functions.Grpc\Functions.Grpc.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />
-    <ProjectReference Include="..\..\src\Skills\Skills.Web\Skills.Web.csproj" />
+    <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel\SemanticKernel.csproj" />
-    <ProjectReference Include="..\NCalcSkills\NCalcSkills.csproj" />
+    <ProjectReference Include="..\NCalcPlugins\NCalcPlugins.csproj" />
 
     <!-- Because some of the referenced projects have dependencies that themselves have System.Text.Json set with a minimum of 7.0. -->
     <PackageReference Include="System.Text.Json" />

@@ -32,6 +32,7 @@ public static class Example43_GetModelResult
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
         var textResult = await myFunction.InvokeAsync("Sci-fi",
+            kernel,
             settings: new CompleteRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
         Console.WriteLine(textResult);
         Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAIChatResult()).AsJson());
