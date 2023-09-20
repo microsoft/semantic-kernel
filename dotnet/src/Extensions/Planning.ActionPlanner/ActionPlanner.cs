@@ -314,16 +314,13 @@ Goal: tell me a joke.
     private IOrderedEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
     {
         Verify.NotNull(context.Skills);
-        FunctionsView functionsView = context.Skills.GetFunctionsView();
 
         var excludedSkills = this._config.ExcludedSkills ?? new();
         var excludedFunctions = this._config.ExcludedFunctions ?? new();
 
-        var availableFunctions =
-            functionsView.NativeFunctions
-                .Concat(functionsView.SemanticFunctions)
-                .SelectMany(x => x.Value)
-                .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
+        var availableFunctions = context.Skills.GetFunctionViews()
+                .Where(s => !excludedSkills.Contains(s.SkillName, StringComparer.CurrentCultureIgnoreCase)
+                    && !excludedFunctions.Contains(s.Name, StringComparer.CurrentCultureIgnoreCase))
                 .OrderBy(x => x.SkillName)
                 .ThenBy(x => x.Name);
 
