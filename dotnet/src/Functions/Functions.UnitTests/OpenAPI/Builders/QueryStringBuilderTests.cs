@@ -23,20 +23,20 @@ public class QueryStringBuilderTests
     {
         // Arrange
         var firstParameterMetadata = new RestApiOperationParameter(
-            "p1",
-            "fake_type",
-            true,
-            false,
-            RestApiOperationParameterLocation.Query,
-            RestApiOperationParameterStyle.Form);
+            name: "p1",
+            type: "fake_type",
+            isRequired: true,
+            explode: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form);
 
         var secondParameterMetadata = new RestApiOperationParameter(
-            "p2",
-            "fake_type",
-            true,
-            false,
-            RestApiOperationParameterLocation.Query,
-            RestApiOperationParameterStyle.Form);
+            name: "p2",
+            type: "fake_type",
+            isRequired: true,
+            explode: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form);
 
         var operation = new RestApiOperation(
             "fake_id",
@@ -65,20 +65,20 @@ public class QueryStringBuilderTests
     {
         // Arrange
         var firstParameterMetadata = new RestApiOperationParameter(
-            "p1",
-            "fake_type",
-            false,
-            false,
-            RestApiOperationParameterLocation.Query,
-            RestApiOperationParameterStyle.Form);
+            name: "p1",
+            type: "fake_type",
+            isRequired: false,
+            explode: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form);
 
         var secondParameterMetadata = new RestApiOperationParameter(
-            "p2",
-            "fake_type",
-            false,
-            false,
-            RestApiOperationParameterLocation.Query,
-            RestApiOperationParameterStyle.Form);
+            name: "p2",
+            type: "fake_type",
+            isRequired: false,
+            explode: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form);
 
         var operation = new RestApiOperation(
             "fake_id",
@@ -106,20 +106,20 @@ public class QueryStringBuilderTests
     {
         // Arrange
         var firstParameterMetadata = new RestApiOperationParameter(
-            "p1",
-            "fake_type",
-            true,
-            false,
-            RestApiOperationParameterLocation.Query,
-            RestApiOperationParameterStyle.Form);
+            name: "p1",
+            type: "fake_type",
+            isRequired: true,
+            explode: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form);
 
         var secondParameterMetadata = new RestApiOperationParameter(
-            "p2",
-            "fake_type",
-            false,
-            false,
-            RestApiOperationParameterLocation.Query,
-            RestApiOperationParameterStyle.Form);
+            name: "p2",
+            type: "fake_type",
+            isRequired: false,
+            explode: false,
+            location: RestApiOperationParameterLocation.Query,
+            style: RestApiOperationParameterStyle.Form);
 
         var operation = new RestApiOperation(
             "fake_id",
@@ -150,12 +150,12 @@ public class QueryStringBuilderTests
         var metadata = new List<RestApiOperationParameter>
         {
             new RestApiOperationParameter(
-                "p1",
-                "string",
-                false,
-                false,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.Form)
+                name: "p1",
+                type: "string",
+                isRequired: false,
+                explode: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form)
         };
 
         var arguments = new Dictionary<string, string>
@@ -181,20 +181,20 @@ public class QueryStringBuilderTests
         var metadata = new List<RestApiOperationParameter>
         {
             new RestApiOperationParameter(
-                "p1",
-                "array",
-                false,
-                true,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.Form,
+                name: "p1",
+                type: "array",
+                isRequired: false,
+                explode: true,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "string"),
             new RestApiOperationParameter(
-                "p2",
-                "array",
-                false,
-                true,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.Form,
+                name: "p2",
+                type: "array",
+                isRequired: false,
+                explode: true,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "integer")
         };
 
@@ -222,20 +222,20 @@ public class QueryStringBuilderTests
         var metadata = new List<RestApiOperationParameter>
         {
             new RestApiOperationParameter(
-                "p1",
-                "array",
-                false,
-                false,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.Form,
+                name: "p1",
+                type: "array",
+                isRequired: false,
+                explode: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "string"),
             new RestApiOperationParameter(
-                "p2",
-                "array",
-                false,
-                false,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.Form,
+                name: "p2",
+                type: "array",
+                isRequired: false,
+                explode: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "integer")
         };
 
@@ -263,20 +263,20 @@ public class QueryStringBuilderTests
         var metadata = new List<RestApiOperationParameter>
         {
             new RestApiOperationParameter(
-                "p1",
-                "string",
-                false,
-                false,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.Form,
+                name: "p1",
+                type: "string",
+                isRequired: false,
+                explode: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "string"),
             new RestApiOperationParameter(
-                "p2",
-                "boolean",
-                false,
-                false,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.Form)
+                name: "p2",
+                type: "boolean",
+                isRequired: false,
+                explode: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.Form)
         };
 
         var arguments = new Dictionary<string, string>
@@ -303,13 +303,13 @@ public class QueryStringBuilderTests
         var metadata = new List<RestApiOperationParameter>
         {
             //'Form' style array parameter with comma separated values
-            new RestApiOperationParameter("p1", "array", true, false,RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form, arrayItemType: "string"),
+            new RestApiOperationParameter(name: "p1", type: "array", isRequired: true, explode: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form, arrayItemType: "string"),
 
             //Primitive boolean parameter
-            new RestApiOperationParameter("p2", "boolean", true, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form),
+            new RestApiOperationParameter(name : "p2", type : "boolean", isRequired : true, explode : false, location : RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form),
 
             //'Form' style array parameter with parameter per array item
-            new RestApiOperationParameter("p3", "array", true, true, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form, arrayItemType: "number")
+            new RestApiOperationParameter(name: "p3", type: "array", isRequired: true, explode: true, location: RestApiOperationParameterLocation.Query, style : RestApiOperationParameterStyle.Form, arrayItemType: "number")
         };
 
         var arguments = new Dictionary<string, string>

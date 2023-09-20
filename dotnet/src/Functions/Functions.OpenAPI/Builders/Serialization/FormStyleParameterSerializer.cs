@@ -73,6 +73,8 @@ internal static class FormStyleParameterSerializer
     /// <returns>A string containing the serialized parameters.</returns>
     private static string SerializeArrayItemsAsSeparateParameters(string name, JsonArray array)
     {
+        const string SegmentsSeparator = "&";
+
         var segments = new List<string>();
 
         foreach (var item in array)
@@ -80,7 +82,7 @@ internal static class FormStyleParameterSerializer
             segments.Add($"{name}={HttpUtility.UrlEncode(item?.ToString())}");
         }
 
-        return string.Join("&", segments); ; //id=1&id=2&id=3
+        return string.Join(SegmentsSeparator, segments); //id=1&id=2&id=3
     }
 
     /// <summary>

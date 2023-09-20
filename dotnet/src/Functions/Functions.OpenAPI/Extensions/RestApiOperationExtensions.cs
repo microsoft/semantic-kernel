@@ -167,7 +167,7 @@ internal static class RestApiOperationExtensions
                     parameterName,
                     property.Type,
                     property.IsRequired,
-                    false,
+                    explode: false,
                     RestApiOperationParameterLocation.Body,
                     RestApiOperationParameterStyle.Simple,
                     description: property.Description));
