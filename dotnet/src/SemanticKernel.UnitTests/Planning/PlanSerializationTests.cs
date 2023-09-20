@@ -275,6 +275,7 @@ public sealed class PlanSerializationTests
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "skillName"));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
