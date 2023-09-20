@@ -3,9 +3,10 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
-using Microsoft.SemanticKernel.Skills.Web.Google;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Web.Google;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
 
@@ -46,7 +47,7 @@ public static class Example07_BingAndGoogleSkills
         else
         {
             var bingConnector = new BingConnector(bingApiKey);
-            var bing = new WebSearchEngineSkill(bingConnector);
+            var bing = new WebSearchEnginePlugin(bingConnector);
             var search = kernel.ImportSkill(bing, "bing");
             await Example1Async(kernel, "bing");
             await Example2Async(kernel);
@@ -65,8 +66,8 @@ public static class Example07_BingAndGoogleSkills
             using var googleConnector = new GoogleConnector(
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
-            var google = new WebSearchEngineSkill(googleConnector);
-            var search = kernel.ImportSkill(new WebSearchEngineSkill(googleConnector), "google");
+            var google = new WebSearchEnginePlugin(googleConnector);
+            var search = kernel.ImportSkill(new WebSearchEnginePlugin(googleConnector), "google");
             await Example1Async(kernel, "google");
         }
     }
@@ -77,7 +78,8 @@ public static class Example07_BingAndGoogleSkills
 
         // Run
         var question = "What's the largest building in the world?";
-        var result = await kernel.Skills.GetFunction(searchSkillId, "search").InvokeAsync(question);
+        var function = kernel.Skills.GetFunction(searchSkillId, "search");
+        var result = await kernel.RunAsync(question, function);
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchSkillId}----");
@@ -136,7 +138,7 @@ Answer: ";
         var questions = "Who is the most followed person on TikTok right now? What's the exchange rate EUR:USD?";
         Console.WriteLine(questions);
 
-        var oracle = kernel.CreateSemanticFunction(SemanticFunction, maxTokens: 200, temperature: 0, topP: 1);
+        var oracle = kernel.CreateSemanticFunction(SemanticFunction, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150, Temperature = 0, TopP = 1 });
 
         var answer = await kernel.RunAsync(oracle, new(questions)
         {
