@@ -14,7 +14,7 @@ internal static class FunctionHelpers
     /// <summary>
     /// Invokes a function on a skill instance via the kernel.
     /// </summary>
-    public static Task<SKContext> CallViaKernel(
+    public static Task<SKContext> CallViaKernelAsync(
         object skillInstance,
         string methodName,
         params (string Name, string Value)[] variables)

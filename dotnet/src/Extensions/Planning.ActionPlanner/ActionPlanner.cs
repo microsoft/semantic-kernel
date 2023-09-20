@@ -39,7 +39,7 @@ public sealed class ActionPlanner : IActionPlanner
     /// <summary>
     /// The regular expression for extracting serialized plan.
     /// </summary>
-    private static readonly Regex PlanRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex s_planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
 
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
@@ -252,7 +252,7 @@ Goal: tell me a joke.
     /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
     private ActionPlanResponse? ParsePlannerResult(SKContext plannerResult)
     {
-        Match match = PlanRegex.Match(plannerResult.ToString());
+        Match match = s_planRegex.Match(plannerResult.ToString());
 
         if (match.Success && match.Groups["Close"].Length > 0)
         {
