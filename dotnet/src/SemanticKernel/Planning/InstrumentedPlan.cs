@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -30,7 +31,7 @@ public sealed class InstrumentedPlan : IPlan
     public bool IsSemantic => this._plan.IsSemantic;
 
     /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings => this._plan.RequestSettings;
+    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
@@ -54,16 +55,16 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
-            this._plan.InvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
+            this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings) =>
-        this._plan.SetAIConfiguration(settings);
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._plan.SetAIConfiguration(requestSettings);
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>

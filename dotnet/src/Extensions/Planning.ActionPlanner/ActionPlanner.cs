@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
@@ -71,8 +72,14 @@ public sealed class ActionPlanner : IActionPlanner
         this._plannerFunction = kernel.CreateSemanticFunction(
             pluginName: PluginName,
             promptTemplate: promptTemplate,
-            maxTokens: 1024,
-            stopSequences: new[] { StopSequence });
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "StopSequences", new[] { StopSequence } },
+                    { "MaxTokens", 1024 },
+                }
+            });
 
         kernel.ImportPlugin(this, pluginName: PluginName);
 
