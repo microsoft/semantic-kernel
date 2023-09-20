@@ -4,21 +4,25 @@
 from logging import Logger
 from typing import Dict, Optional
 
-from semantic_kernel.connectors.ai.open_ai.services.base_chat_completions import (
-    BaseChatCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
+    AzureOpenAIConfigBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_config_azure import (
-    BaseAzureConfig,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
+    OpenAIChatCompletionBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_text_completion import (
-    BaseTextCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
 )
 
 
-class AzureChatCompletion(BaseAzureConfig, BaseChatCompletion, BaseTextCompletion):
+class AzureChatCompletion(
+    AzureOpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase
+):
+    """Azure Chat completion class."""
+
     def __init__(
         self,
         deployment_name: str,

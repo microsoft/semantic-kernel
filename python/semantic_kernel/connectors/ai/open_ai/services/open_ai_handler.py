@@ -12,12 +12,12 @@ from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSetti
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_model_types import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
 
 
-class OpenAIServiceCalls(AIServiceClientBase, ABC):
+class OpenAIHandler(AIServiceClientBase, ABC):
     """Internal class for calls to OpenAI API's."""
 
     model_type: OpenAIModelTypes = OpenAIModelTypes.TEXT
@@ -136,7 +136,7 @@ class OpenAIServiceCalls(AIServiceClientBase, ABC):
             raw_embeddings = []
             batch_size = batch_size or len(texts)
             for i in range(0, len(texts), batch_size):
-                batch = texts[i : i + batch_size]
+                batch = texts[i : i + batch_size]  # noqa: E203
                 response: Any = await openai.Embedding.acreate(
                     **model_args,
                     input=batch,
@@ -154,14 +154,3 @@ class OpenAIServiceCalls(AIServiceClientBase, ABC):
     @abstractmethod
     def get_model_args(self) -> Dict[str, Any]:
         """Return the model args for the specific openai api."""
-
-
-def _parse_choices(chunk):
-    message = ""
-    if "role" in chunk.choices[0].delta:
-        message += chunk.choices[0].delta.role + ": "
-    if "content" in chunk.choices[0].delta:
-        message += chunk.choices[0].delta.content
-
-    index = chunk.choices[0].index
-    return message, index

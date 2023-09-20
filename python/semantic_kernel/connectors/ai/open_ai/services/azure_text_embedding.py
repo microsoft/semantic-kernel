@@ -4,18 +4,20 @@
 from logging import Logger
 from typing import Dict, Optional
 
-from semantic_kernel.connectors.ai.open_ai.services.base_config_azure import (
-    BaseAzureConfig,
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
+    AzureOpenAIConfigBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_text_embedding import (
-    BaseTextEmbedding,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
+    OpenAITextEmbeddingBase,
 )
 
 
-class AzureTextEmbedding(BaseAzureConfig, BaseTextEmbedding):
+class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
+    """Azure Text Embedding class."""
+
     def __init__(
         self,
         deployment_name: str,
@@ -45,7 +47,8 @@ class AzureTextEmbedding(BaseAzureConfig, BaseTextEmbedding):
             the Azure portal. You can use either KEY1 or KEY2.
         :param api_version: The API version to use. (Optional)
             The default value is "2022-12-01".
-        :param logger: The logger instance to use. (Optional)
+        :param log: The logger instance to use. (Optional)
+        :param logger: Deprecated, please use log instead. (Optional)
         :param ad_auth: Whether to use Azure Active Directory authentication.
             (Optional) The default value is False.
         """

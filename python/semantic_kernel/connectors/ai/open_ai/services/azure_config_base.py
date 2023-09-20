@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from pydantic import Field, constr
 
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIHandler,
     OpenAIModelTypes,
-    OpenAIServiceCalls,
 )
 from semantic_kernel.sk_pydantic import HttpsUrl
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     pass
 
 
-class BaseAzureConfig(OpenAIServiceCalls):
+class AzureOpenAIConfigBase(OpenAIHandler):
     model_id: constr(strip_whitespace=True, min_length=1) = Field(
         ..., alias="deployment_name"
     )
@@ -34,28 +34,6 @@ class BaseAzureConfig(OpenAIServiceCalls):
         ad_auth: bool = False,
         log: Optional[Logger] = None,
     ) -> None:
-        """
-        Initialize an AzureTextCompletion service.
-
-        Arguments:
-            deployment_name: The name of the Azure deployment. This value
-                will correspond to the custom name you chose for your deployment
-                when you deployed a model. This value can be found under
-                Resource Management > Deployments in the Azure portal or, alternatively,
-                under Management > Deployments in Azure OpenAI Studio.
-            endpoint: The endpoint of the Azure deployment. This value
-                can be found in the Keys & Endpoint section when examining
-                your resource from the Azure portal.
-            api_key: The API key for the Azure deployment. This value can be
-                found in the Keys & Endpoint section when examining your resource in
-                the Azure portal. You can use either KEY1 or KEY2.
-            api_version: The API version to use. (Optional)
-                The default value is "2023-03-15-preview".
-            ad_auth: Whether to use Azure Active Directory authentication. (Optional)
-                The default value is False.
-            log: The logger instance to use. (Optional)
-            logger: deprecated, use 'log' instead.
-        """
         super().__init__(
             model_id=deployment_name,
             endpoint=endpoint,

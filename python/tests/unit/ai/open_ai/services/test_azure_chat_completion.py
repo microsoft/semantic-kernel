@@ -109,7 +109,7 @@ def test_azure_chat_completion_init_with_invalid_endpoint() -> None:
 async def test_azure_chat_completion_call_with_parameters() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_handler.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -158,7 +158,7 @@ async def test_azure_chat_completion_call_with_parameters() -> None:
 async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_handler.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"
@@ -207,7 +207,7 @@ async def test_azure_chat_completion_call_with_parameters_and_Logit_Bias_Defined
 async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> None:
     mock_openai = AsyncMock()
     with patch(
-        "semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions.openai",
+        "semantic_kernel.connectors.ai.open_ai.services.open_ai_handler.openai",
         new=mock_openai,
     ):
         deployment_name = "test_deployment"

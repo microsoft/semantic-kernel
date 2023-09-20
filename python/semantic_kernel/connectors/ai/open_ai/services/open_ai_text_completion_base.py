@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, AsyncGenerator, List, Optional, Union
 
 from semantic_kernel.connectors.ai import TextCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
-    OpenAIServiceCalls,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIHandler,
 )
 
 if TYPE_CHECKING:
@@ -14,13 +14,23 @@ if TYPE_CHECKING:
     )
 
 
-class BaseTextCompletion(TextCompletionClientBase, OpenAIServiceCalls):
+class OpenAITextCompletionBase(TextCompletionClientBase, OpenAIHandler):
     async def complete_async(
         self,
         prompt: str,
         settings: "CompleteRequestSettings",
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
+        """Executes a completion request and returns the result.
+
+        Arguments:
+            prompt {str} -- The prompt to use for the completion request.
+            settings {CompleteRequestSettings} -- The settings to use for the completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+
+        Returns:
+            Union[str, List[str]] -- The completion result(s).
+        """
         response = await self._send_request(
             prompt=prompt, request_settings=settings, stream=False
         )
@@ -35,7 +45,17 @@ class BaseTextCompletion(TextCompletionClientBase, OpenAIServiceCalls):
         prompt: str,
         settings: "CompleteRequestSettings",
         logger: Optional[Logger] = None,
-    ):
+    ) -> AsyncGenerator[Union[str, List[str]], None]:
+        """Executes a completion request and streams the result.
+
+        Arguments:
+            prompt {str} -- The prompt to use for the completion request.
+            settings {CompleteRequestSettings} -- The settings to use for the completion request.
+            logger {Optional[Logger]} -- The logger instance to use. (Optional)
+
+        Returns:
+            Union[str, List[str]] -- The completion result(s).
+        """
         response = await self._send_request(
             prompt=prompt, request_settings=settings, stream=True
         )

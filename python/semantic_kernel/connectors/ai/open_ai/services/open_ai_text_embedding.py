@@ -3,18 +3,20 @@
 from logging import Logger
 from typing import Dict, Optional
 
-from semantic_kernel.connectors.ai.open_ai.services.base_config_open_ai import (
-    BaseOpenAIConfig,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
+    OpenAIConfigBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_text_embedding import (
-    BaseTextEmbedding,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding_base import (
+    OpenAITextEmbeddingBase,
 )
 
 
-class OpenAITextEmbedding(BaseOpenAIConfig, BaseTextEmbedding):
+class OpenAITextEmbedding(OpenAIConfigBase, OpenAITextEmbeddingBase):
+    """OpenAI Text Embedding class."""
+
     def __init__(
         self,
         model_id: str,

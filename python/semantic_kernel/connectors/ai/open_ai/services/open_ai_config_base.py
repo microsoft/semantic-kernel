@@ -3,15 +3,15 @@
 from logging import Logger
 from typing import Any, Dict, Optional
 
-from semantic_kernel.connectors.ai.open_ai.services.base_model_types import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
+    OpenAIHandler,
+)
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
-    OpenAIServiceCalls,
-)
 
 
-class BaseOpenAIConfig(OpenAIServiceCalls):
+class OpenAIConfigBase(OpenAIHandler):
     api_type: str
     org_id: Optional[str] = None
 
@@ -23,19 +23,6 @@ class BaseOpenAIConfig(OpenAIServiceCalls):
         org_id: Optional[str] = None,
         log: Optional[Logger] = None,
     ) -> None:
-        """
-        Initialize an OpenAITextCompletion service.
-
-        Arguments:
-            model_id {str} -- OpenAI model name, see
-                https://platform.openai.com/docs/models
-            api_key {str} -- OpenAI API key, see
-                https://platform.openai.com/account/api-keys
-            org_id {Optional[str]} -- OpenAI organization ID.
-                This is usually optional unless your
-                account belongs to multiple organizations.
-            log {Optional[Logger]} -- The logger instance to use. (Optional)
-        """
         super().__init__(
             model_id=model_id,
             api_key=api_key,

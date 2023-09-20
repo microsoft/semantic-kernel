@@ -13,17 +13,17 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
-from semantic_kernel.connectors.ai.open_ai.services.base_chat_completions import (
-    BaseChatCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion_base import (
+    OpenAIChatCompletionBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_config_open_ai import (
-    BaseOpenAIConfig,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
+    OpenAIConfigBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_text_completion import (
-    BaseTextCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
 )
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
@@ -275,7 +275,11 @@ class OpenAIChatCompletionBase(ChatCompletionClientBase, TextCompletionClientBas
         return self._total_tokens
 
 
-class OpenAIChatCompletion(BaseOpenAIConfig, BaseChatCompletion, BaseTextCompletion):
+class OpenAIChatCompletion(
+    OpenAIConfigBase, OpenAIChatCompletionBase, OpenAITextCompletionBase
+):
+    """OpenAI Chat completion class."""
+
     def __init__(
         self,
         model_id: str,

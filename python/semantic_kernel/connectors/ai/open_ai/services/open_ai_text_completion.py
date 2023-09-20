@@ -3,18 +3,20 @@
 from logging import Logger
 from typing import Dict, Optional
 
-from semantic_kernel.connectors.ai.open_ai.services.base_config_open_ai import (
-    BaseOpenAIConfig,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_config_base import (
+    OpenAIConfigBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_text_completion import (
-    BaseTextCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
 )
 
 
-class OpenAITextCompletion(BaseTextCompletion, BaseOpenAIConfig):
+class OpenAITextCompletion(OpenAITextCompletionBase, OpenAIConfigBase):
+    """OpenAI Text Completion class."""
+
     def __init__(
         self,
         model_id: str,

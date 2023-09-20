@@ -4,18 +4,20 @@
 from logging import Logger
 from typing import Dict, Optional
 
-from semantic_kernel.connectors.ai.open_ai.services.base_config_azure import (
-    BaseAzureConfig,
+from semantic_kernel.connectors.ai.open_ai.services.azure_config_base import (
+    AzureOpenAIConfigBase,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_open_ai_functions import (
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import (
     OpenAIModelTypes,
 )
-from semantic_kernel.connectors.ai.open_ai.services.base_text_completion import (
-    BaseTextCompletion,
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion_base import (
+    OpenAITextCompletionBase,
 )
 
 
-class AzureTextCompletion(BaseAzureConfig, BaseTextCompletion):
+class AzureTextCompletion(AzureOpenAIConfigBase, OpenAITextCompletionBase):
+    """Azure Text Completion class."""
+
     def __init__(
         self,
         deployment_name: str,
