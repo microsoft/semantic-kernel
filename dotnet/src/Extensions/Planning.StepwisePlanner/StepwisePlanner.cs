@@ -238,14 +238,7 @@ public class StepwisePlanner : IStepwisePlanner
                 {
                     var result = await this.InvokeActionAsync(step.Action, step.ActionVariables).ConfigureAwait(false);
 
-                    if (string.IsNullOrEmpty(result))
-                    {
-                        step.Observation = "Got no result from action";
-                    }
-                    else
-                    {
-                        step.Observation = result;
-                    }
+                    step.Observation = string.IsNullOrEmpty(result) ? "Got no result from action" : result!;
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
                 {
@@ -518,7 +511,7 @@ public class StepwisePlanner : IStepwisePlanner
         return result;
     }
 
-    private async Task<string> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables)
+    private async Task<string?> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables)
     {
         var availableFunctions = await this.GetAvailableFunctionsAsync().ConfigureAwait(false);
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
@@ -535,7 +528,7 @@ public class StepwisePlanner : IStepwisePlanner
             var actionContext = this.CreateActionContext(actionVariables);
 
             var functionResult = await function.InvokeAsync(actionContext).ConfigureAwait(false);
-            var result = functionResult.GetValue<string>() ?? throw new InvalidOperationException($"No result from function: {targetFunction.SkillName}.{targetFunction.Name}");
+            var result = functionResult.GetValue<string>();
 
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
 

@@ -93,7 +93,7 @@ Question: {{ $input }}
         try
         {
             var result = await context.Kernel.RunAsync(input).ConfigureAwait(false);
-            answer = result.GetValue<string>() ?? throw new InvalidOperationException("No result from kernel.");
+            answer = result.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)
         {

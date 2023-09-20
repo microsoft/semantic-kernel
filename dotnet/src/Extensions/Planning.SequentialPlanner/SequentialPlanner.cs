@@ -64,16 +64,21 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         FunctionResult planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        string planResultString =
-            planResult.GetValue<string>()?.Trim() ??
-            throw new SKException($"Plan was not generated successfully.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+        string? planResultString = planResult.GetValue<string>()?.Trim();
+
+        if (string.IsNullOrWhiteSpace(planResultString))
+        {
+            throw new SKException(
+                "Unable to create plan. No response from Function Flow function. " +
+                $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+        }
 
         var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
 
         Plan plan;
         try
         {
-            plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+            plan = planResultString!.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
         }
         catch (SKException e)
         {
