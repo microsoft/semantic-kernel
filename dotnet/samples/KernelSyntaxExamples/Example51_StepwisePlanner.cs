@@ -10,10 +10,10 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Structured;
 using Microsoft.SemanticKernel.Planning.Structured.Stepwise;
-using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using NCalcPlugins;
 using RepoUtils;
 
@@ -74,6 +74,7 @@ public static class Example51_StepwisePlanner
         {
             Console.WriteLine("Question: " + question);
             Console.WriteLine("Mode\tModel\tAnswer\tStepsTaken\tIterations\tTimeTaken");
+
             foreach (var er in s_executionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
             {
                 Console.WriteLine($"{er.mode}\t{er.model}\t{er.stepsTaken}\t{er.iterations}\t{er.timeTaken}\t{er.answer}");
@@ -93,7 +94,9 @@ public static class Example51_StepwisePlanner
         public string? timeTaken;
     }
 
+
     private static readonly List<ExecutionResult> s_executionResults = new();
+
 
     private static async Task RunTextCompletionAsync(string question)
     {
@@ -205,7 +208,7 @@ public static class Example51_StepwisePlanner
 
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         currentExecutionResult.timeTaken = sw.Elapsed.ToString();
-        ExecutionResults.Add(currentExecutionResult);
+        s_executionResults.Add(currentExecutionResult);
         Console.WriteLine("*****************************************************");
     }
 
@@ -214,11 +217,11 @@ public static class Example51_StepwisePlanner
     {
         currentExecutionResult.question = question;
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
 
         kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "semanticCalculator");
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportSkill(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
+        kernel.ImportSkill(new TimePlugin(), "time");
 
         // kernel.CreateSemanticFunction(
         //     "Generate an answer for the following question: {{$input}}",

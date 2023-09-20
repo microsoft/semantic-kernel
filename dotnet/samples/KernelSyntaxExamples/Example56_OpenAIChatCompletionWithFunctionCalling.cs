@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -45,7 +46,7 @@ public static class Example56_OpenAIChatCompletionWithFunctionCalling
         // First user message
         chatHistory.AddUserMessage("Hi, I'm looking for book 3 different book suggestions about sci-fi");
 
-        var chatRequestSettings = new ChatRequestSettings
+        var chatRequestSettings = new OpenAIRequestSettings()
         {
             MaxTokens = 1024,
             ResultsPerPrompt = 2,

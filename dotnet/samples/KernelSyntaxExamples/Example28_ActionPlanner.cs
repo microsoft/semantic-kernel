@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Structured.Action;
 using Microsoft.SemanticKernel.Planning.Action;
+using Microsoft.SemanticKernel.Planning.Structured.Action;
 using RepoUtils;
 
 
@@ -42,7 +42,7 @@ public static class Example28_ActionPlanner
 
         // The planner returns a plan, consisting of a single function
         // to execute and achieve the goal requested.
-        // var plan = await planner.CreatePlanAsync(goal);
+        var plan = await planner.CreatePlanAsync(goal);
         // Execute the full plan (which is a single function)
         SKContext result = await plan.InvokeAsync(kernel);
 
@@ -84,7 +84,7 @@ public static class Example28_ActionPlanner
         // The planner returns a plan, consisting of a single function
         // to execute and achieve the goal requested.
         var plan = await planner.CreatePlanAsync(goal);
-        return await plan.InvokeAsync();
+        return await plan.InvokeAsync(kernel);
     }
 
 
@@ -94,6 +94,6 @@ public static class Example28_ActionPlanner
         // Console.WriteLine(context);
         var planner = new StructuredActionPlanner(kernel);
         var plan = await planner.CreatePlanAsync(goal);
-        return await plan.InvokeAsync();
+        return await plan.InvokeAsync(kernel);
     }
 }
