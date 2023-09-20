@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -44,7 +45,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public bool IsSemantic { get; } = false;
 
     /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings { get; } = new();
+    public AIRequestSettings? RequestSettings { get; }
 
     /// <summary>
     /// List of function parameters
@@ -144,19 +145,17 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            return await this._function(null, settings, context, cancellationToken).ConfigureAwait(false);
+            return await this._function(null, requestSettings, context, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            const string Message = "Something went wrong while executing the native function. Function: {0}. Error: {1}";
-            this._logger.LogError(e, Message, this._function.Method.Name, e.Message);
-            context.LastException = e;
-            return context;
+            this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, e.Message);
+            throw;
         }
     }
 
@@ -176,7 +175,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
         this.ThrowNotSemantic();
         return this;
@@ -205,12 +204,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> _function;
+    private Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> _function;
     private readonly ILogger _logger;
 
     private struct MethodDetails
     {
-        public Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> Function { get; set; }
+        public Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> Function { get; set; }
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -223,7 +222,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     internal NativeFunction(
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
+        Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
         IList<ParameterView> parameters,
         string skillName,
         string functionName,
@@ -321,7 +320,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     // Inspect a method and returns the corresponding delegate and related info
-    private static (Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
+    private static (Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
 
@@ -346,7 +345,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         Func<object?, SKContext, Task<SKContext>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> function = (_, _, context, cancellationToken) =>
+        Task<SKContext> function(ITextCompletion? text, AIRequestSettings? requestSettings, SKContext context, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -360,7 +359,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
             // Extract and return the result.
             return returnFunc(result, context);
-        };
+        }
 
         // Add parameters applied to the method that aren't part of the signature.
         stringParameterViews.AddRange(method
@@ -461,7 +460,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             }
 
             bool fallBackToInput = !sawFirstParameter && !nameIsInput;
-            Func<SKContext, CancellationToken, object?> parameterFunc = (SKContext context, CancellationToken _) =>
+            object? parameterFunc(SKContext context, CancellationToken _)
             {
                 // 1. Use the value of the variable if it exists.
                 if (context.Variables.TryGetValue(name, out string? value))
@@ -500,7 +499,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                         throw new ArgumentOutOfRangeException(name, value, e.Message);
                     }
                 }
-            };
+            }
 
             sawFirstParameter = true;
 

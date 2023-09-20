@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -37,7 +38,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public bool IsSemantic => true;
 
     /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public AIRequestSettings? RequestSettings { get; private set; }
 
     /// <summary>
     /// List of function parameters
@@ -69,6 +70,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             functionName: functionName,
             loggerFactory: loggerFactory
         );
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
 
         return func;
     }
@@ -89,12 +91,12 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(this._aiService?.Value, requestSettings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -113,10 +115,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        Verify.NotNull(settings);
-        this.RequestSettings = settings;
+        this.RequestSettings = requestSettings;
         return this;
     }
 
@@ -197,17 +198,16 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     private async Task<SKContext> RunPromptAsync(
         ITextCompletion? client,
-        CompleteRequestSettings? requestSettings,
+        AIRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {
         Verify.NotNull(client);
-        Verify.NotNull(requestSettings);
 
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
@@ -215,18 +215,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
             context.ModelResults = completionResults.Select(c => c.ModelResult).ToArray();
         }
-        catch (HttpOperationException ex)
-        {
-            const string Message = "Something went wrong while rendering the semantic function" +
-                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}. {ResponseContent}";
-            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message, ex.ResponseContent);
-            throw;
-        }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            const string Message = "Something went wrong while rendering the semantic function" +
-                                   " or while executing the text completion. Function: {SkillName}.{FunctionName} - {Message}";
-            this._logger?.LogError(ex, Message, this.SkillName, this.Name, ex.Message);
+            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, ex.Message);
             throw;
         }
 

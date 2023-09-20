@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
@@ -97,10 +98,9 @@ public sealed class OpenAICompletionTests : IDisposable
         var func = target.CreateSemanticFunction(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.");
 
-        var result = await func.InvokeAsync("Jupiter");
+        var result = await func.InvokeAsync("Jupiter", target);
 
         Assert.NotNull(result);
-        Assert.False(result.ErrorOccurred);
         Assert.Contains("Saturn", result.Result, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Uranus", result.Result, StringComparison.InvariantCultureIgnoreCase);
     }
@@ -130,8 +130,6 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
 
         // Assert
-        Assert.Null(actual.LastException);
-        Assert.False(actual.ErrorOccurred);
         Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -160,7 +158,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
-        var context = await target.RunAsync(prompt, skill["Summarize"]);
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, skill["Summarize"]));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -194,7 +192,7 @@ public sealed class OpenAICompletionTests : IDisposable
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
         // Act
-        var context = await target.RunAsync(prompt, skill["Summarize"]);
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, skill["Summarize"]));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -217,13 +215,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
-        // Act
-        var context = await target.RunAsync("Any", skill["Summarize"]);
+        // Act and Assert
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", skill["Summarize"]));
 
-        // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<HttpOperationException>(context.LastException);
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
 
     [Fact]
@@ -244,13 +239,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
 
-        // Act
-        var context = await target.RunAsync("Any", skill["Summarize"]);
+        // Act and Assert
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", skill["Summarize"]));
 
-        // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<HttpOperationException>(context.LastException);
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
 
     [Fact]
@@ -273,7 +265,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
+        await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)), target));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -315,11 +307,9 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
+        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
-        Assert.Null(actual.LastException);
-        Assert.False(actual.ErrorOccurred);
         Assert.Contains("Pike Place", actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -337,8 +327,6 @@ public sealed class OpenAICompletionTests : IDisposable
         SKContext actual = await target.RunAsync(skill["Limerick"]);
 
         // Assert
-        Assert.Null(actual.LastException?.Message);
-        Assert.False(actual.ErrorOccurred);
         Assert.Contains("Bob", actual.Result, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -375,14 +363,11 @@ public sealed class OpenAICompletionTests : IDisposable
                 new PromptTemplate(prompt, azureConfig, target.PromptTemplateEngine)));
 
         // Act
-        SKContext defaultResult = await target.RunAsync(defaultFunc);
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));
+
         SKContext azureResult = await target.RunAsync(azureFunc);
 
         // Assert
-        Assert.NotNull(defaultResult.LastException);
-        Assert.True(defaultResult.ErrorOccurred);
-        Assert.Null(azureResult.LastException);
-        Assert.False(azureResult.ErrorOccurred);
         Assert.Contains("Pike Place", azureResult.Result, StringComparison.OrdinalIgnoreCase);
     }
 

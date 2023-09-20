@@ -13,20 +13,9 @@ namespace Microsoft.SemanticKernel.Planning.Stepwise;
 /// <summary>
 /// Configuration for Stepwise planner instances.
 /// </summary>
-public sealed class StepwisePlannerConfig
+public sealed class StepwisePlannerConfig : PlannerConfigBase
 {
     #region Use these to configure which functions to include/exclude
-
-    /// <summary>
-    /// A list of skills to exclude from the plan creation request.
-    /// </summary>
-    public HashSet<string> ExcludedSkills { get; } = new();
-
-    /// <summary>
-    /// A list of functions to exclude from the plan creation request.
-    /// </summary>
-    public HashSet<string> ExcludedFunctions { get; } = new();
-
     /// <summary>
     /// A list of functions to include in the plan creation request.
     /// </summary>
@@ -51,9 +40,12 @@ public sealed class StepwisePlannerConfig
     #region Execution configuration
 
     /// <summary>
-    /// The maximum number of tokens to allow in a plan.
+    /// The maximum number of tokens to allow in a request and for completion.
     /// </summary>
-    public int MaxTokens { get; set; } = 1024;
+    /// <remarks>
+    /// Default value is 2000.
+    /// </remarks>
+    public int MaxTokens { get; set; } = 2000;
 
     /// <summary>
     /// The maximum number of iterations to allow in a plan.

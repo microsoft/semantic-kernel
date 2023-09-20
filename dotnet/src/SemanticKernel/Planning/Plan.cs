@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -81,7 +82,7 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public AIRequestSettings? RequestSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -91,8 +92,9 @@ public sealed class Plan : IPlan
     /// <param name="goal">The goal of the plan used as description.</param>
     public Plan(string goal)
     {
+        this.Name = GetRandomPlanName();
         this.Description = goal;
-        this.SkillName = this.GetType().FullName;
+        this.SkillName = nameof(Plan);
     }
 
     /// <summary>
@@ -209,7 +211,7 @@ public sealed class Plan : IPlan
     /// </remarks>
     public void AddSteps(params ISKFunction[] steps)
     {
-        this._steps.AddRange(steps.Select(step => new Plan(step)));
+        this._steps.AddRange(steps.Select(step => step is Plan plan ? plan : new Plan(step)));
     }
 
     /// <summary>
@@ -227,9 +229,9 @@ public sealed class Plan : IPlan
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         var context = new SKContext(
+            kernel,
             variables,
-            kernel.Skills,
-            kernel.LoggerFactory);
+            kernel.Skills);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -251,14 +253,11 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(functionVariables, context.Skills, context.LoggerFactory);
-            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
-            var resultValue = result.Result.Trim();
+            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills);
 
-            if (result.ErrorOccurred)
-            {
-                throw new SKException($"Error occurred while running plan step: {result.LastException?.Message}", result.LastException);
-            }
+            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var resultValue = result.Result.Trim();
 
             #region Update State
 
@@ -304,13 +303,38 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return this.Function?.Describe() ?? new();
+        if (this.Function is not null)
+        {
+            return this.Function.Describe() ?? new();
+        }
+
+        // The parameter mapping definitions from Plan -> Function
+        var stepParameters = this.Steps.SelectMany(s => s.Parameters);
+
+        // The parameter descriptions from the Function
+        var stepDescriptions = this.Steps.SelectMany(s => s.Describe().Parameters);
+
+        // The parameters for the Plan
+        var parameters = this.Parameters.Select(p =>
+        {
+            var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
+            var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
+
+            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type);
+        }
+        ).ToList();
+
+        return new(name: this.Name,
+                   skillName: this.SkillName,
+                   description: this.Description,
+                   parameters: parameters,
+                   isSemantic: false);
     }
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         if (this.Function is not null)
@@ -318,13 +342,8 @@ public sealed class Plan : IPlan
             AddVariablesToContext(this.State, context);
             var result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(context, settings, cancellationToken)
+                .InvokeAsync(context, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-
-            if (result.ErrorOccurred)
-            {
-                return result;
-            }
 
             context.Variables.Update(result.Result);
         }
@@ -345,25 +364,19 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
     {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetDefaultSkillCollection(skills);
+        return this.Function is not null ? this.Function.SetDefaultSkillCollection(skills) : this;
     }
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetAIService(serviceFactory);
+        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        return this.Function is null
-            ? throw new NotImplementedException()
-            : this.Function.SetAIConfiguration(settings);
+        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }
 
     #endregion ISKFunction implementation
@@ -576,6 +589,8 @@ public sealed class Plan : IPlan
         this.IsSemantic = function.IsSemantic;
         this.RequestSettings = function.RequestSettings;
     }
+
+    private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 
     private ISKFunction? Function { get; set; } = null;
 

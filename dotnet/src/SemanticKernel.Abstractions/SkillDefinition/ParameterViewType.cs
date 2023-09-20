@@ -15,7 +15,7 @@ public class ParameterViewType : IEquatable<ParameterViewType>
     /// <summary>
     /// The name of the parameter view type
     /// </summary>
-    private readonly string name;
+    private readonly string _name;
 
     /// <summary>
     /// Represents the "string" parameter view type.
@@ -50,19 +50,19 @@ public class ParameterViewType : IEquatable<ParameterViewType>
     {
         Verify.NotNullOrWhiteSpace(name, nameof(name));
 
-        this.name = name;
+        this._name = name;
     }
 
     /// <summary>
     /// Gets the name of the parameter view type.
     /// </summary>
-    public string Name => this.name;
+    public string Name => this._name;
 
     /// <summary>
     /// Returns a string representation of the parameter view type.
     /// </summary>
     /// <returns>A string representing the parameter view type.</returns>
-    public override string ToString() => this.name;
+    public override string ToString() => this._name;
 
     /// <summary>
     /// Determines whether this instance of <see cref="ParameterViewType"/> is equal to another instance.

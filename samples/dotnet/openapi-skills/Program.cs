@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
@@ -100,7 +99,7 @@ internal sealed class Program
 
             // Add GitHub's response, if any, to the chat history.
             int planResultTokenAllowance = (int)(aiOptions.TokenLimit * 0.25); // Allow up to 25% of our token limit to be from GitHub.
-            string planResult = await PlanGitHubSkill(gitHubOptions, planner, chatHistory, input, planResultTokenAllowance, logger);
+            string planResult = await PlanGitHubSkillAsync(gitHubOptions, planner, chatHistory, input, planResultTokenAllowance, logger);
             if (!string.IsNullOrWhiteSpace(planResult))
             {
                 chatHistory.AddUserMessage(planResult);
@@ -111,11 +110,11 @@ internal sealed class Program
 
             // Remove earlier messages until we are back within our token limit.
             // (Note this sample does not implement long-term memory)
-            int tokenCount = GPT3Tokenizer.Encode(JsonSerializer.Serialize(chatHistory)).Count;
+            int tokenCount = CountTokens(JsonSerializer.Serialize(chatHistory));
             while (tokenCount > aiOptions.TokenLimit)
             {
                 chatHistory.Messages.RemoveAt(1);
-                tokenCount = GPT3Tokenizer.Encode(JsonSerializer.Serialize(chatHistory)).Count;
+                tokenCount = CountTokens(JsonSerializer.Serialize(chatHistory));
             }
             Console.WriteLine($"(tokens: {tokenCount})");
 
@@ -131,7 +130,7 @@ internal sealed class Program
     /// <summary>
     /// Run the planner to decide whether to run the GitHub skill function and add the result to the chat history.
     /// </summary>
-    private static async Task<string> PlanGitHubSkill(
+    private static async Task<string> PlanGitHubSkillAsync(
         GitHubSkillOptions gitHubOptions, ActionPlanner planner, OpenAIChatHistory chatHistory, string input, int tokenAllowance, ILogger logger)
     {
         // Ask the planner to create a plan based off the user's input. If the plan elicits no steps, continue normally.
@@ -175,12 +174,12 @@ internal sealed class Program
 
             // tokens
             result = JsonSerializer.Serialize(pullRequests);
-            int tokensUsed = GPT3Tokenizer.Encode(result).Count;
+            int tokensUsed = CountTokens(result);
             while (tokensUsed > tokenAllowance)
             {
                 pullRequests.RemoveAt(pullRequests.Count - 1);
                 result = JsonSerializer.Serialize(pullRequests);
-                tokensUsed = GPT3Tokenizer.Encode(result).Count;
+                tokensUsed = CountTokens(result);
             }
         }
         else
@@ -222,5 +221,13 @@ internal sealed class Program
 
         json = string.Empty;
         return false;
+    }
+
+    /// <summary>
+    /// Custom token counter.
+    /// </summary>
+    private static int CountTokens(string input)
+    {
+        return input.Length / 4;
     }
 }
