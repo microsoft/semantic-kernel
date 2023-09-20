@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.SkillDefinition;
@@ -9,28 +9,24 @@ namespace SemanticKernel.UnitTests.SkillDefinition;
 public class PromptTemplateConfigTests
 {
     [Fact]
-    public void DeserializingDontExpectChatSystemPromptToExists()
+    public void DeserializingDontExpectChatSystemPromptToExist()
     {
         // Arrange
         string configPayload = @"{
-          ""schema"": 1,
-          ""description"": ""Turn a scenario into a creative or humorous excuse to send your boss"",
-          ""type"": ""completion"",
-          ""completion"": {
             ""max_tokens"": 60,
             ""temperature"": 0.5,
             ""top_p"": 0.0,
             ""presence_penalty"": 0.0,
             ""frequency_penalty"": 0.0
-          }
         }";
 
         // Act
-        var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
 
         // Assert
-        Assert.NotNull(templateConfig);
-        Assert.Null(templateConfig.Completion.ChatSystemPrompt);
+        Assert.NotNull(requestSettings);
+        Assert.NotNull(requestSettings.ChatSystemPrompt);
+        Assert.Equal("Assistant is a large language model.", requestSettings.ChatSystemPrompt);
     }
 
     [Fact]
@@ -38,25 +34,20 @@ public class PromptTemplateConfigTests
     {
         // Arrange
         string configPayload = @"{
-          ""schema"": 1,
-          ""description"": ""Turn a scenario into a creative or humorous excuse to send your boss"",
-          ""type"": ""completion"",
-          ""completion"": {
             ""max_tokens"": 60,
             ""temperature"": 0.5,
             ""top_p"": 0.0,
             ""presence_penalty"": 0.0,
             ""frequency_penalty"": 0.0,
             ""chat_system_prompt"": ""I am a prompt""
-          }
         }";
 
         // Act
-        var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
 
         // Assert
-        Assert.NotNull(templateConfig);
-        Assert.NotNull(templateConfig.Completion.ChatSystemPrompt);
-        Assert.Equal("I am a prompt", templateConfig.Completion.ChatSystemPrompt);
+        Assert.NotNull(requestSettings);
+        Assert.NotNull(requestSettings.ChatSystemPrompt);
+        Assert.Equal("I am a prompt", requestSettings.ChatSystemPrompt);
     }
 }

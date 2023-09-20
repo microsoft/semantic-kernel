@@ -23,10 +23,12 @@ public static class ChatCompletionExtensions
     public static async IAsyncEnumerable<string> GenerateMessageStreamAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var chatCompletionResult in chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false))
+        // Using var below results in Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'
+        IAsyncEnumerable<IChatStreamingResult> chatCompletionResults = chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken);
+        await foreach (var chatCompletionResult in chatCompletionResults)
         {
             await foreach (var chatMessageStream in chatCompletionResult.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -49,12 +51,12 @@ public static class ChatCompletionExtensions
     public static async Task<string> GenerateMessageAsync(
         this IChatCompletion chatCompletion,
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        // Using var below results in Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'
+        IReadOnlyList<IChatResult> chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
-
         return firstChatMessage.Content;
     }
 }

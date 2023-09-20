@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
@@ -39,7 +40,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
         kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
 
         // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", maxTokens: 150);
+        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Define a semantic function inline, with skill name
         var sFun2 = kernel.CreateSemanticFunction(
@@ -47,7 +48,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
             skillName: "Writing",
             functionName: "Novel",
             description: "Write a bedtime story",
-            maxTokens: 150);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         var functions = kernel.Skills.GetFunctionViews();
 
