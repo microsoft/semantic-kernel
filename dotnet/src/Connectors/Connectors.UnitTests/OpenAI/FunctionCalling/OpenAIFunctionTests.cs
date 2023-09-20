@@ -15,7 +15,7 @@ public sealed class OpenAIFunctionTests
         {
             FunctionName = "myfunc",
             PluginName = string.Empty,
-            Description = "This is a decription of the function.",
+            Description = "This is a description of the function.",
         };
 
         // Act
@@ -34,7 +34,7 @@ public sealed class OpenAIFunctionTests
         {
             FunctionName = "myfunc",
             PluginName = "myplugin",
-            Description = "This is a decription of the function.",
+            Description = "This is a description of the function.",
         };
 
         // Act

@@ -29,6 +29,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(sut.Description, result.Description);
     }
 
+    [Fact]
     public void ItCanConvertToOpenAIFunctionWithParameter()
     {
         // Arrange
@@ -58,6 +59,7 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
     }
 
+    [Fact]
     public void ItCanConvertToOpenAIFunctionWithParameterNoType()
     {
         // Arrange
