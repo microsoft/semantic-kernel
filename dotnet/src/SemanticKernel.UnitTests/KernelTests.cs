@@ -35,20 +35,13 @@ public class KernelTests
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
         kernel.ImportSkill(nativeSkill, "mySk");
 
-        // Act
-        FunctionsView data = kernel.Skills.GetFunctionsView();
-
-        // Assert - 3 functions, var name is not case sensitive
-        Assert.True(data.IsSemantic("jk", "joker"));
-        Assert.True(data.IsSemantic("JK", "JOKER"));
-        Assert.False(data.IsNative("jk", "joker"));
-        Assert.False(data.IsNative("JK", "JOKER"));
-        Assert.True(data.IsNative("mySk", "sayhello"));
-        Assert.True(data.IsNative("MYSK", "SayHello"));
-        Assert.True(data.IsNative("mySk", "ReadSkillCollectionAsync"));
-        Assert.True(data.IsNative("MYSK", "readskillcollectionasync"));
-        Assert.Single(data.SemanticFunctions["Jk"]);
-        Assert.Equal(3, data.NativeFunctions["mySk"].Count);
+        // Act & Assert - 3 functions, var name is not case sensitive
+        Assert.True(kernel.Skills.TryGetFunction("jk", "joker", out _));
+        Assert.True(kernel.Skills.TryGetFunction("JK", "JOKER", out _));
+        Assert.True(kernel.Skills.TryGetFunction("mySk", "sayhello", out _));
+        Assert.True(kernel.Skills.TryGetFunction("MYSK", "SayHello", out _));
+        Assert.True(kernel.Skills.TryGetFunction("mySk", "ReadSkillCollectionAsync", out _));
+        Assert.True(kernel.Skills.TryGetFunction("MYSK", "readskillcollectionasync", out _));
     }
 
     [Fact]
@@ -99,7 +92,7 @@ public class KernelTests
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
     [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public void ItUsesChatSystemPromptWhenProvided(string providedSystemChatPrompt, string expectedSystemChatPrompt)
+    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
     {
         // Arrange
         var mockTextCompletion = new Mock<ITextCompletion>();
@@ -118,7 +111,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<CompleteRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
@@ -152,7 +145,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItUsesDefaultServiceWhenSpecified()
+    public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -172,7 +165,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
@@ -180,7 +173,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItUsesServiceIdWhenProvided()
+    public async Task ItUsesServiceIdWhenProvidedAsync()
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -201,7 +194,7 @@ public class KernelTests
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
 
         // Act
-        kernel.RunAsync(func);
+        await kernel.RunAsync(func);
 
         // Assert
         mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -234,7 +227,7 @@ public class KernelTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task RunAsyncHandlesPreInvocation(int pipelineCount)
+    public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -262,7 +255,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationWasCancelled()
+    public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -284,7 +277,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipeline()
+    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -308,7 +301,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandler()
+    public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -333,7 +326,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandler()
+    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -374,7 +367,7 @@ public class KernelTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task RunAsyncHandlesPostInvocation(int pipelineCount)
+    public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
     {
         // Arrange
         var sut = Kernel.Builder.Build();
@@ -404,7 +397,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokingHandler()
+    public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
         var sut = Kernel.Builder.Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
@@ -428,7 +421,7 @@ public class KernelTests
     }
 
     [Fact]
-    public async Task RunAsyncChangeVariableInvokedHandler()
+    public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
         var sut = Kernel.Builder.Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
@@ -475,22 +468,9 @@ public class KernelTests
                 Assert.Fail("Skills collection is missing");
             }
 
-            FunctionsView procMem = context.Skills.GetFunctionsView();
-
-            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
+            foreach (var function in context.Skills.GetFunctionViews())
             {
-                foreach (FunctionView f in list.Value)
-                {
-                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
-                }
-            }
-
-            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.NativeFunctions)
-            {
-                foreach (FunctionView f in list.Value)
-                {
-                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
-                }
+                context.Variables[$"{function.SkillName}.{function.Name}"] = function.Description;
             }
 
             return context;

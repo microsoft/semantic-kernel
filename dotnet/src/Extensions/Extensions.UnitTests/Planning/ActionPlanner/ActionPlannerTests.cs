@@ -19,7 +19,7 @@ namespace SemanticKernel.Extensions.UnitTests.Planning.ActionPlanner;
 public sealed class ActionPlannerTests
 {
     [Fact]
-    public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResult()
+    public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResultAsync()
     {
         // Arrange
         var skills = this.CreateMockSkillCollection();
@@ -34,9 +34,9 @@ public sealed class ActionPlannerTests
         // Assert
         Assert.Equal("goal", plan.Description);
 
-        Assert.Equal(plan.Steps.Count, 1);
-        Assert.Equal(plan.Steps[0].SkillName, "GitHubSkill");
-        Assert.Equal(plan.Steps[0].Name, "PullsList");
+        Assert.Single(plan.Steps);
+        Assert.Equal("GitHubSkill", plan.Steps[0].SkillName);
+        Assert.Equal("PullsList", plan.Steps[0].Name);
     }
 
     [Fact]
@@ -146,9 +146,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         if (skills is null)
         {
             skills = new Mock<ISkillCollection>();
-
-            var functionsView = new FunctionsView();
-            skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+            skills.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
 
         var returnContext = new SKContext(kernel.Object,
@@ -202,13 +200,13 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
             ("RepoList", "GitHubSkill", "List repositories", true),
         };
 
-        var functionsView = new FunctionsView();
+        var functionsView = new List<FunctionView>();
         var skills = new Mock<ISkillCollection>();
         foreach (var (name, skillName, description, isSemantic) in functions)
         {
             var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
             var mockFunction = CreateMockFunction(functionView);
-            functionsView.AddFunction(functionView);
+            functionsView.Add(functionView);
 
             mockFunction.Setup(x =>
                     x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
@@ -223,7 +221,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
             skills.Setup(x => x.TryGetFunction(skillName, name, out outFunc)).Returns(true);
         }
 
-        skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
         return skills;
     }
 

@@ -43,7 +43,7 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var result = await FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", amount));
+        var result = await FunctionHelpers.CallViaKernelAsync(target, "Add", ("input", initialValue), ("amount", amount));
 
         // Assert
         Assert.Equal(expectedResult, result.GetValue<int>());
@@ -64,7 +64,7 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var result = await FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", amount));    // Assert
+        var result = await FunctionHelpers.CallViaKernelAsync(target, "Subtract", ("input", initialValue), ("amount", amount));    // Assert
 
         // Assert
         Assert.Equal(expectedResult, result.GetValue<int>());
@@ -88,7 +88,7 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Add", ("input", initialValue), ("amount", "1")));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Add", ("input", initialValue), ("amount", "1")));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "value", initialValue);
@@ -112,7 +112,7 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Add", ("input", "1"), ("amount", amount)));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Add", ("input", "1"), ("amount", amount)));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "amount", amount);
@@ -136,7 +136,7 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Subtract", ("input", initialValue), ("amount", "1")));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Subtract", ("input", initialValue), ("amount", "1")));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "value", initialValue);
@@ -160,7 +160,7 @@ public class MathPluginTests
         var target = new MathPlugin();
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Subtract", ("input", "1"), ("amount", amount)));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Subtract", ("input", "1"), ("amount", amount)));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "amount", amount);

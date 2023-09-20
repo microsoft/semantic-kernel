@@ -23,7 +23,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public async Task ItSupportsFunctionCalls()
+    public async Task ItSupportsFunctionCallsAsync()
     {
         var builder = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
@@ -42,7 +42,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public async Task ItSupportsFunctionCallsWithInput()
+    public async Task ItSupportsFunctionCallsWithInputAsync()
     {
         var builder = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)

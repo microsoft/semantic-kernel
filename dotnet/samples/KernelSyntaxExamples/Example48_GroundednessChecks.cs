@@ -50,11 +50,11 @@ after this event Caroline became his wife.""";
 
     public static async Task RunAsync()
     {
-        await GroundednessCheckingSkill();
-        await PlanningWithGroundedness();
+        await GroundednessCheckingSkillAsync();
+        await PlanningWithGroundednessAsync();
     }
 
-    public static async Task GroundednessCheckingSkill()
+    public static async Task GroundednessCheckingSkillAsync()
     {
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
@@ -109,7 +109,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine(excisionResult.GetValue<string>());
     }
 
-    public static async Task PlanningWithGroundedness()
+    public static async Task PlanningWithGroundednessAsync()
     {
         var targetTopic = "people and places";
         var samples = "John, Jane, mother, brother, Paris, Rome";
@@ -174,18 +174,18 @@ Take this list of entities, and from it make another list of those which are not
 grounded in the original input text. Finally, rewrite your summary to remove the entities
 which are not grounded in the original.
 
- 
+
 
 
 Steps:
   - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
   - SummarizeSkill.Summarize INPUT='' => RESULT__SUMMARY
   - GroundingSkill.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
-  - GroundingSkill.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES 
+  - GroundingSkill.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
   - GroundingSkill.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
 A possible summary is:
 
- 
+
 
 The narrator's father, a respected Genevese politician, befriended Beaufort, a merchant who fell into poverty and hid in Lucerne. After a long search, he found him dying and his daughter Caroline working hard to survive. He took pity on Caroline, buried Beaufort, and married her two years later.
 <ungrounded_entities>
@@ -193,7 +193,7 @@ The narrator's father, a respected Genevese politician, befriended Beaufort, a m
 </ungrounded_entities>
 A possible summary is:
 
- 
+
 
 The father of the story's main character, a respected Genevese politician, befriended Beaufort, a merchant who fell into poverty and hid in Lucerne. After a long search, he found him dying and his daughter Caroline working hard to survive. He took pity on Caroline, buried Beaufort, and married her two years later.
 == DONE ==

@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// </summary>
 public sealed class ModelResult
 {
-    private readonly object result;
+    private readonly object _result;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ModelResult"/> class with the specified result object.
@@ -24,14 +24,14 @@ public sealed class ModelResult
     {
         Verify.NotNull(result);
 
-        this.result = result;
+        this._result = result;
     }
 
     /// <summary>
     /// Gets the raw result object stored in the <see cref="ModelResult"/>instance.
     /// </summary>
     /// <returns>The raw result object.</returns>
-    public object GetRawResult() => this.result;
+    public object GetRawResult() => this._result;
 
     /// <summary>
     /// Gets the result object stored in the <see cref="ModelResult"/> instance, cast to the specified type.
@@ -41,12 +41,12 @@ public sealed class ModelResult
     /// <exception cref="InvalidCastException">Thrown when the result object cannot be cast to the specified type.</exception>
     public T GetResult<T>()
     {
-        if (this.result is T typedResult)
+        if (this._result is T typedResult)
         {
             return typedResult;
         }
 
-        throw new InvalidCastException($"Cannot cast {this.result.GetType()} to {typeof(T)}");
+        throw new InvalidCastException($"Cannot cast {this._result.GetType()} to {typeof(T)}");
     }
 
     /// <summary>
@@ -55,6 +55,6 @@ public sealed class ModelResult
     /// <returns>The result object as a JSON element.</returns>
     public JsonElement GetJsonResult()
     {
-        return Json.Deserialize<JsonElement>(this.result.ToJson());
+        return Json.Deserialize<JsonElement>(this._result.ToJson());
     }
 }

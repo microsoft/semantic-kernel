@@ -48,12 +48,12 @@ public class RetryThreeTimesWithBackoff : DelegatingHandler
         // Handle 429 and 401 errors
         // Typically 401 would not be something we retry but for demonstration
         // purposes we are doing so as it's easy to trigger when using an invalid key.
-        const int tooManyRequests = 429;
-        const int unauthorized = 401;
+        const int TooManyRequests = 429;
+        const int Unauthorized = 401;
 
         return Policy
             .HandleResult<HttpResponseMessage>(response =>
-                (int)response.StatusCode is tooManyRequests or unauthorized)
+                (int)response.StatusCode is TooManyRequests or Unauthorized)
             .WaitAndRetryAsync(new[]
                 {
                     TimeSpan.FromSeconds(2),
