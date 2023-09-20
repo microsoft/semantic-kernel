@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Sequential;
@@ -42,9 +44,15 @@ public sealed class SequentialPlanner : ISequentialPlanner
             skillName: RestrictedSkillName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            maxTokens: this.Config.MaxTokens ?? 1024,
-            temperature: 0.0,
-            stopSequences: new[] { StopSequence });
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.0 },
+                    { "StopSequences", new[] { StopSequence } },
+                    { "MaxTokens", this.Config.MaxTokens ?? 1024 },
+                }
+            });
 
         this._context = kernel.CreateNewContext();
     }
@@ -67,7 +75,16 @@ public sealed class SequentialPlanner : ISequentialPlanner
         string planResultString = planResult.Result.Trim();
 
         var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
-        var plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+
+        Plan plan;
+        try
+        {
+            plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+        }
+        catch (SKException e)
+        {
+            throw new SKException($"Unable to create plan for goal with available functions.\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}", e);
+        }
 
         if (plan.Steps.Count == 0)
         {

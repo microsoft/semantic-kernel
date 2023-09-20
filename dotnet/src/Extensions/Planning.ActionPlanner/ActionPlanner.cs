@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
@@ -38,7 +40,7 @@ public sealed class ActionPlanner : IActionPlanner
     /// <summary>
     /// The regular expression for extracting serialized plan.
     /// </summary>
-    private static readonly Regex PlanRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex s_planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
 
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
@@ -53,10 +55,12 @@ public sealed class ActionPlanner : IActionPlanner
     /// Initialize a new instance of the <see cref="ActionPlanner"/> class.
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
+    /// <param name="config">The planner configuration.</param>
     /// <param name="prompt">Optional prompt override</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public ActionPlanner(
         IKernel kernel,
+        ActionPlannerConfig? config = null,
         string? prompt = null,
         ILoggerFactory? loggerFactory = null)
     {
@@ -69,13 +73,23 @@ public sealed class ActionPlanner : IActionPlanner
         this._plannerFunction = kernel.CreateSemanticFunction(
             skillName: SkillName,
             promptTemplate: promptTemplate,
-            maxTokens: 1024,
-            stopSequences: new[] { StopSequence });
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "StopSequences", new[] { StopSequence } },
+                    { "MaxTokens", 1024 },
+                }
+            });
 
         kernel.ImportSkill(this, skillName: SkillName);
 
         this._kernel = kernel;
         this._context = kernel.CreateNewContext();
+
+        // Set up Config with default values and excluded skills
+        this._config = config ?? new();
+        this._config.ExcludedSkills.Add(SkillName);
     }
 
     /// <inheritdoc />
@@ -141,13 +155,10 @@ public sealed class ActionPlanner : IActionPlanner
         [Description("The current goal processed by the planner")] string goal,
         SKContext context)
     {
-        Verify.NotNull(context.Skills);
-        var functionsAvailable = context.Skills.GetFunctionsView();
-
         // Prepare list using the format used by skprompt.txt
         var list = new StringBuilder();
-        this.PopulateList(list, functionsAvailable.NativeFunctions);
-        this.PopulateList(list, functionsAvailable.SemanticFunctions);
+        var availableFunctions = this.GetAvailableFunctions(context);
+        this.PopulateList(list, availableFunctions);
 
         return list.ToString();
     }
@@ -176,7 +187,7 @@ FileIOSkill.WriteAsync
 Parameter ""path"": Destination file. (default value: sample.txt)
 Parameter ""content"": File content.
 // Get the current time.
-TimeSkill.Time
+TimePlugin.Time
 No parameters.
 // Makes a POST request to a uri.
 HttpSkill.PostAsync
@@ -210,7 +221,7 @@ Goal: create a file called ""something.txt"".
 [EXAMPLE]
 - List of functions:
 // Get the current time.
-TimeSkill.Time
+TimePlugin.Time
 No parameters.
 // Write a file.
 FileIOSkill.WriteAsync
@@ -236,6 +247,11 @@ Goal: tell me a joke.
     #region private ================================================================================
 
     /// <summary>
+    /// The configuration for the ActionPlanner
+    /// </summary>
+    private ActionPlannerConfig _config { get; }
+
+    /// <summary>
     /// Native function that filters out good JSON from planner result in case additional text is present
     /// using a similar regex to the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions
     /// </summary>
@@ -243,7 +259,7 @@ Goal: tell me a joke.
     /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
     private ActionPlanResponse? ParsePlannerResult(SKContext plannerResult)
     {
-        Match match = PlanRegex.Match(plannerResult.ToString());
+        Match match = s_planRegex.Match(plannerResult.ToString());
 
         if (match.Success && match.Groups["Close"].Length > 0)
         {
@@ -269,36 +285,30 @@ Goal: tell me a joke.
         }
     }
 
-    private void PopulateList(StringBuilder list, IDictionary<string, List<FunctionView>> functions)
+    private void PopulateList(StringBuilder list, IEnumerable<FunctionView> functions)
     {
-        foreach (KeyValuePair<string, List<FunctionView>> skill in functions)
+        foreach (FunctionView func in functions)
         {
-            // Skip this planner skills
-            if (string.Equals(skill.Key, SkillName, StringComparison.OrdinalIgnoreCase)) { continue; }
-
-            foreach (FunctionView func in skill.Value)
+            // Function description
+            if (func.Description != null)
             {
-                // Function description
-                if (func.Description != null)
-                {
-                    list.AppendLine($"// {AddPeriod(func.Description)}");
-                }
-                else
-                {
-                    this._logger.LogWarning("{0}.{1} is missing a description", func.SkillName, func.Name);
-                    list.AppendLine($"// Function {func.SkillName}.{func.Name}.");
-                }
+                list.AppendLine($"// {AddPeriod(func.Description)}");
+            }
+            else
+            {
+                this._logger.LogWarning("{0}.{1} is missing a description", func.SkillName, func.Name);
+                list.AppendLine($"// Function {func.SkillName}.{func.Name}.");
+            }
 
-                // Function name
-                list.AppendLine($"{func.SkillName}.{func.Name}");
+            // Function name
+            list.AppendLine($"{func.SkillName}.{func.Name}");
 
-                // Function parameters
-                foreach (var p in func.Parameters)
-                {
-                    var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description!;
-                    var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
-                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
-                }
+            // Function parameters
+            foreach (var p in func.Parameters)
+            {
+                var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description!;
+                var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
+                list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
             }
         }
     }
@@ -306,6 +316,22 @@ Goal: tell me a joke.
     private static string AddPeriod(string x)
     {
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
+    }
+
+    private IOrderedEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
+    {
+        Verify.NotNull(context.Skills);
+
+        var excludedSkills = this._config.ExcludedSkills ?? new();
+        var excludedFunctions = this._config.ExcludedFunctions ?? new();
+
+        var availableFunctions = context.Skills.GetFunctionViews()
+                .Where(s => !excludedSkills.Contains(s.SkillName, StringComparer.CurrentCultureIgnoreCase)
+                    && !excludedFunctions.Contains(s.Name, StringComparer.CurrentCultureIgnoreCase))
+                .OrderBy(x => x.SkillName)
+                .ThenBy(x => x.Name);
+
+        return availableFunctions;
     }
 
     #endregion

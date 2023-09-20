@@ -2,12 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
@@ -51,6 +53,12 @@ public sealed class Kernel : IKernel, IDisposable
 
     /// <inheritdoc/>
     public IDelegatingHandlerFactory HttpHandlerFactory => this._httpHandlerFactory;
+
+    /// <inheritdoc/>
+    public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
+
+    /// <inheritdoc/>
+    public event EventHandler<FunctionInvokedEventArgs>? FunctionInvoked;
 
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
@@ -175,24 +183,49 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
-        var context = new SKContext(
-            variables,
-            this._skillCollection,
-            this.LoggerFactory);
+        var context = new SKContext(this, variables);
 
         int pipelineStepCount = 0;
-
-        foreach (ISKFunction f in pipeline)
+        foreach (ISKFunction skFunction in pipeline)
         {
+repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                context = await f.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var functionDetails = skFunction.Describe();
+
+                var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
+                if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
+                {
+                    this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    break;
+                }
+
+                if (functionInvokingArgs?.IsSkipRequested ?? false)
+                {
+                    this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    continue;
+                }
+
+                context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, context);
+                if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
+                {
+                    this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    break;
+                }
+
+                if (functionInvokedArgs?.IsRepeatRequested ?? false)
+                {
+                    this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
+                    goto repeat;
+                }
             }
             catch (Exception ex)
             {
-                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", f.SkillName, f.Name, pipelineStepCount, ex.Message);
+                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.SkillName, skFunction.Name, pipelineStepCount, ex.Message);
                 throw;
             }
 
@@ -203,17 +236,11 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction Func(string skillName, string functionName)
-    {
-        return this.Skills.GetFunction(skillName, functionName);
-    }
-
-    /// <inheritdoc/>
     public SKContext CreateNewContext()
     {
         return new SKContext(
-            skills: this._skillCollection,
-            loggerFactory: this.LoggerFactory);
+            this,
+            skills: this._skillCollection);
     }
 
     /// <inheritdoc/>
@@ -249,6 +276,44 @@ public sealed class Kernel : IKernel, IDisposable
     private readonly ILogger _logger;
     private readonly IDelegatingHandlerFactory _httpHandlerFactory;
 
+    /// <summary>
+    /// Execute the OnFunctionInvoking event handlers.
+    /// </summary>
+    /// <param name="functionView">Function view details</param>
+    /// <param name="context">SKContext before function invocation</param>
+    /// <returns>FunctionInvokingEventArgs if the event was handled, null otherwise</returns>
+    private FunctionInvokingEventArgs? OnFunctionInvoking(FunctionView functionView, SKContext context)
+    {
+        if (this.FunctionInvoking is not null)
+        {
+            var args = new FunctionInvokingEventArgs(functionView, context);
+            this.FunctionInvoking.Invoke(this, args);
+
+            return args;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Execute the OnFunctionInvoked event handlers.
+    /// </summary>
+    /// <param name="functionView">Function view details</param>
+    /// <param name="context">SKContext after function invocation</param>
+    /// <returns>FunctionInvokedEventArgs if the event was handled, null otherwise</returns>
+    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, SKContext context)
+    {
+        if (this.FunctionInvoked is not null)
+        {
+            var args = new FunctionInvokedEventArgs(functionView, context);
+            this.FunctionInvoked.Invoke(this, args);
+
+            return args;
+        }
+
+        return null;
+    }
+
     private ISKFunction CreateSemanticFunction(
         string skillName,
         string functionName,
@@ -270,10 +335,10 @@ public sealed class Kernel : IKernel, IDisposable
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultSkillCollection(this.Skills);
 
-        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion.ServiceId));
+        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
 
         return func;
     }
@@ -310,6 +375,18 @@ public sealed class Kernel : IKernel, IDisposable
         logger.LogTrace("Methods imported {0}", result.Count);
 
         return result;
+    }
+
+    #endregion
+
+    #region Obsolete ===============================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction Func(string skillName, string functionName)
+    {
+        return this.Skills.GetFunction(skillName, functionName);
     }
 
     #endregion
