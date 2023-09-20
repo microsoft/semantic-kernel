@@ -499,7 +499,7 @@ public sealed class Plan : IPlan
         var input = string.Empty;
         if (!string.IsNullOrEmpty(step.Parameters.Input))
         {
-            input = this.ExpandFromVariables(variables, step.Parameters.Input);
+            input = this.ExpandFromVariables(variables, step.Parameters.Input!);
         }
         else if (!string.IsNullOrEmpty(variables.Input))
         {
