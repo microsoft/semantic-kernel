@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -51,30 +49,16 @@ public static class Example10_DescribeAllSkillsAndFunctions
             description: "Write a bedtime story",
             maxTokens: 150);
 
-        FunctionsView functions = kernel.Skills.GetFunctionsView();
-        ConcurrentDictionary<string, List<FunctionView>> nativeFunctions = functions.NativeFunctions;
-        ConcurrentDictionary<string, List<FunctionView>> semanticFunctions = functions.SemanticFunctions;
+        var functions = kernel.Skills.GetFunctionViews();
 
         Console.WriteLine("*****************************************");
-        Console.WriteLine("****** Native skills and functions ******");
+        Console.WriteLine("****** Registered skills and functions ******");
         Console.WriteLine("*****************************************");
         Console.WriteLine();
 
-        foreach (KeyValuePair<string, List<FunctionView>> skill in nativeFunctions)
+        foreach (FunctionView func in functions)
         {
-            Console.WriteLine("Skill: " + skill.Key);
-            foreach (FunctionView func in skill.Value) { PrintFunction(func); }
-        }
-
-        Console.WriteLine("*****************************************");
-        Console.WriteLine("***** Semantic skills and functions *****");
-        Console.WriteLine("*****************************************");
-        Console.WriteLine();
-
-        foreach (KeyValuePair<string, List<FunctionView>> skill in semanticFunctions)
-        {
-            Console.WriteLine("Skill: " + skill.Key);
-            foreach (FunctionView func in skill.Value) { PrintFunction(func); }
+            PrintFunction(func);
         }
 
         return Task.CompletedTask;

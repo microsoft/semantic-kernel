@@ -10,11 +10,11 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 /// </summary>
 internal class OperationComponentBuilderFactory : IOperationComponentBuilderFactory
 {
-    private readonly Lazy<IQueryStringBuilder> queryStringBuilder = new(() => new QueryStringBuilder());
+    private readonly Lazy<IQueryStringBuilder> _queryStringBuilder = new(() => new QueryStringBuilder());
 
     /// <inheritdoc/>
     public IQueryStringBuilder CreateQueryStringBuilder()
     {
-        return this.queryStringBuilder.Value;
+        return this._queryStringBuilder.Value;
     }
 }
