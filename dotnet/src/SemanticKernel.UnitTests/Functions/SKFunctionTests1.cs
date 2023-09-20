@@ -2,11 +2,11 @@
 
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel;
 using Moq;
 using Xunit;
 

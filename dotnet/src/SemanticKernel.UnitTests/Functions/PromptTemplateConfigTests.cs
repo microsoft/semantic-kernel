@@ -8,11 +8,11 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public class PromptTemplateConfigTests
 {
-  [Fact]
-  public void DeserializingDoNotExpectChatSystemPromptToExist()
-  {
-    // Arrange
-    string configPayload = @"{
+    [Fact]
+    public void DeserializingDoNotExpectChatSystemPromptToExist()
+    {
+        // Arrange
+        string configPayload = @"{
             ""max_tokens"": 60,
             ""temperature"": 0.5,
             ""top_p"": 0.0,
@@ -20,20 +20,20 @@ public class PromptTemplateConfigTests
             ""frequency_penalty"": 0.0
         }";
 
-    // Act
-    var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
+        // Act
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
 
-    // Assert
-    Assert.NotNull(requestSettings);
-    Assert.NotNull(requestSettings.ChatSystemPrompt);
-    Assert.Equal("Assistant is a large language model.", requestSettings.ChatSystemPrompt);
-  }
+        // Assert
+        Assert.NotNull(requestSettings);
+        Assert.NotNull(requestSettings.ChatSystemPrompt);
+        Assert.Equal("Assistant is a large language model.", requestSettings.ChatSystemPrompt);
+    }
 
-  [Fact]
-  public void DeserializingExpectChatSystemPromptToExists()
-  {
-    // Arrange
-    string configPayload = @"{
+    [Fact]
+    public void DeserializingExpectChatSystemPromptToExists()
+    {
+        // Arrange
+        string configPayload = @"{
             ""max_tokens"": 60,
             ""temperature"": 0.5,
             ""top_p"": 0.0,
@@ -42,12 +42,12 @@ public class PromptTemplateConfigTests
             ""chat_system_prompt"": ""I am a prompt""
         }";
 
-    // Act
-    var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
+        // Act
+        var requestSettings = JsonSerializer.Deserialize<OpenAIRequestSettings>(configPayload);
 
-    // Assert
-    Assert.NotNull(requestSettings);
-    Assert.NotNull(requestSettings.ChatSystemPrompt);
-    Assert.Equal("I am a prompt", requestSettings.ChatSystemPrompt);
-  }
+        // Assert
+        Assert.NotNull(requestSettings);
+        Assert.NotNull(requestSettings.ChatSystemPrompt);
+        Assert.Equal("I am a prompt", requestSettings.ChatSystemPrompt);
+    }
 }
