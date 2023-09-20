@@ -63,12 +63,12 @@ public class SequentialPlanParserTests
         // For Create
         kernelMock.Setup(k => k.CreateNewContext()).Returns(this.CreateSKContext(kernel));
 
-        var functionsView = new FunctionsView();
+        var functionsView = new List<FunctionView>();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
         {
             var functionView = new FunctionView(name, skillName, description, new List<ParameterView>() { new(name: "param", description: "description") }, isSemantic, true);
             var mockFunction = CreateMockFunction(functionView);
-            functionsView.AddFunction(functionView);
+            functionsView.Add(functionView);
 
             var result = this.CreateSKContext(kernel);
             result.Variables.Update(resultString);
@@ -93,7 +93,7 @@ public class SequentialPlanParserTests
             }
         }
 
-        skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
     }
 
     [Fact]

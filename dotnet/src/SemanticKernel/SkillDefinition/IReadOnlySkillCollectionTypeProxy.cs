@@ -21,11 +21,9 @@ internal sealed class IReadOnlySkillCollectionTypeProxy
     {
         get
         {
-            var view = this._collection.GetFunctionsView();
-            return view.NativeFunctions
-                .Concat(view.SemanticFunctions)
-                .GroupBy(f => f.Key)
-                .Select(g => new SkillProxy(g.SelectMany(f => f.Value)) { Name = g.Key })
+            return this._collection.GetFunctionViews()
+                .GroupBy(f => f.SkillName)
+                .Select(g => new SkillProxy(g) { Name = g.Key })
                 .ToArray();
         }
     }

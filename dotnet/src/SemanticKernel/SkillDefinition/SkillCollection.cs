@@ -85,21 +85,15 @@ public class SkillCollection : ISkillCollection
     }
 
     /// <inheritdoc/>
-    public FunctionsView GetFunctionsView(bool includeSemantic = true, bool includeNative = true)
+    public IReadOnlyList<FunctionView> GetFunctionViews()
     {
-        var result = new FunctionsView();
+        var result = new List<FunctionView>();
 
-        if (includeSemantic || includeNative)
+        foreach (var skill in this._skillCollection.Values)
         {
-            foreach (var skill in this._skillCollection)
+            foreach (ISKFunction f in skill.Values)
             {
-                foreach (KeyValuePair<string, ISKFunction> f in skill.Value)
-                {
-                    if (f.Value.IsSemantic ? includeSemantic : includeNative)
-                    {
-                        result.AddFunction(f.Value.Describe());
-                    }
-                }
+                result.Add(f.Describe());
             }
         }
 

@@ -68,11 +68,9 @@ public class SKContextExtensionsTests
 
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
-        var functionsView = new FunctionsView();
         var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
         var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
-        functionsView.AddFunction(functionView);
-        functionsView.AddFunction(nativeFunctionView);
+        var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result
         var skills = new Mock<ISkillCollection>();
@@ -95,7 +93,7 @@ public class SKContextExtensionsTests
 
         skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
         skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
-        skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernel.Object, variables, skills.Object);
@@ -135,11 +133,9 @@ public class SKContextExtensionsTests
 
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
-        var functionsView = new FunctionsView();
         var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
         var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
-        functionsView.AddFunction(functionView);
-        functionsView.AddFunction(nativeFunctionView);
+        var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result
         var skills = new Mock<ISkillCollection>();
@@ -162,7 +158,7 @@ public class SKContextExtensionsTests
 
         skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
         skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
-        skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernel.Object, variables, skills.Object);

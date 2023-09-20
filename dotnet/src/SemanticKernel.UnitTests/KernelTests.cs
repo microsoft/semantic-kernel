@@ -35,20 +35,13 @@ public class KernelTests
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
         kernel.ImportSkill(nativeSkill, "mySk");
 
-        // Act
-        FunctionsView data = kernel.Skills.GetFunctionsView();
-
-        // Assert - 3 functions, var name is not case sensitive
-        Assert.True(data.IsSemantic("jk", "joker"));
-        Assert.True(data.IsSemantic("JK", "JOKER"));
-        Assert.False(data.IsNative("jk", "joker"));
-        Assert.False(data.IsNative("JK", "JOKER"));
-        Assert.True(data.IsNative("mySk", "sayhello"));
-        Assert.True(data.IsNative("MYSK", "SayHello"));
-        Assert.True(data.IsNative("mySk", "ReadSkillCollectionAsync"));
-        Assert.True(data.IsNative("MYSK", "readskillcollectionasync"));
-        Assert.Single(data.SemanticFunctions["Jk"]);
-        Assert.Equal(3, data.NativeFunctions["mySk"].Count);
+        // Act & Assert - 3 functions, var name is not case sensitive
+        Assert.True(kernel.Skills.TryGetFunction("jk", "joker", out _));
+        Assert.True(kernel.Skills.TryGetFunction("JK", "JOKER", out _));
+        Assert.True(kernel.Skills.TryGetFunction("mySk", "sayhello", out _));
+        Assert.True(kernel.Skills.TryGetFunction("MYSK", "SayHello", out _));
+        Assert.True(kernel.Skills.TryGetFunction("mySk", "ReadSkillCollectionAsync", out _));
+        Assert.True(kernel.Skills.TryGetFunction("MYSK", "readskillcollectionasync", out _));
     }
 
     [Fact]
@@ -499,22 +492,9 @@ public class KernelTests
                 Assert.Fail("Skills collection is missing");
             }
 
-            FunctionsView procMem = context.Skills.GetFunctionsView();
-
-            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
+            foreach (var function in context.Skills.GetFunctionViews())
             {
-                foreach (FunctionView f in list.Value)
-                {
-                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
-                }
-            }
-
-            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.NativeFunctions)
-            {
-                foreach (FunctionView f in list.Value)
-                {
-                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
-                }
+                context.Variables[$"{function.SkillName}.{function.Name}"] = function.Description;
             }
 
             return context;
