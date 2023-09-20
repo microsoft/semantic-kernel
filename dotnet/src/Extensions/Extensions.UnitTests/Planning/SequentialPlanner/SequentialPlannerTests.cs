@@ -55,19 +55,20 @@ public sealed class SequentialPlannerTests
 
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
         var kernelContext = new Mock<IKernelContext>();
-        kernelContext.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
         kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         var kernel = new Mock<IKernel>();
+        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedSkills = input.Select(x => x.skillName).ToList();
 
-        var context = new SKContext(kernelContext.Object, new ContextVariables());
+        var context = new SKContext(
+            kernelContext.Object,
+            new ContextVariables());
 
         var returnContext = new SKContext(
             kernelContext.Object,
-            new ContextVariables()
-        );
+            new ContextVariables());
 
         var planString =
             @"
@@ -90,8 +91,8 @@ public sealed class SequentialPlannerTests
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
-        kernelContext.Setup(x => x.Skills).Returns(skills.Object);
-        kernelContext.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
+        kernel.Setup(x => x.Skills).Returns(skills.Object);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
@@ -168,7 +169,8 @@ public sealed class SequentialPlannerTests
 
         // Mock Skills
         kernelContext.Setup(x => x.Skills).Returns(skills.Object);
-        kernelContext.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
+        kernel.SetupGet(x => x.Skills).Returns(skills.Object);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),

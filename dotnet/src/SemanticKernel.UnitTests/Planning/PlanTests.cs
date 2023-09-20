@@ -390,8 +390,7 @@ public sealed class PlanTests
         var subPlan = new Plan("Write a poem or joke");
 
         // Arrange
-        var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var (kernel, kernelContext) = SetupKernelMock();
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -783,5 +782,30 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Assert
         Assert.Equal(expected, result.Result);
+    }
+
+    private (Mock<IKernel> kernelMock, Mock<IKernelContext> kernelContextMock) SetupKernelMock(ISkillCollection? skills = null)
+    {
+        skills ??= new Mock<ISkillCollection>().Object;
+
+        var kernel = new Mock<IKernel>();
+        var kernelContext = new Mock<IKernelContext>();
+
+        kernel.SetupGet(x => x.Skills).Returns(skills);
+        kernelContext.SetupGet(x => x.Skills).Returns(skills);
+        kernel.SetupGet(x => x.Skills).Returns(skills);
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        {
+            kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            return new SKContext(kernelContext.Object, contextVariables);
+        });
+
+        kernelContext.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        {
+            kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            return new SKContext(kernelContext.Object, contextVariables);
+        });
+
+        return (kernel, kernelContext);
     }
 }

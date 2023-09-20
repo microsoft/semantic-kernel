@@ -262,7 +262,20 @@ public sealed class PlanSerializationTests
         var kernel = new Mock<IKernel>();
         var skills = new Mock<ISkillCollection>();
         var kernelContext = new Mock<IKernelContext>();
+        kernel.SetupGet(x => x.Skills).Returns(skills.Object);
         kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
+
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        {
+            this._kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            return new SKContext(this._kernelContext.Object, contextVariables);
+        });
+
+        this._kernelContext.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        {
+            this._kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            return new SKContext(this._kernelContext.Object, contextVariables);
+        });
 
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput)
         );
@@ -318,6 +331,20 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
+        kernel.SetupGet(x => x.Skills).Returns(skills.Object);
+
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        {
+            this._kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            return new SKContext(this._kernelContext.Object, contextVariables);
+        });
+
+        this._kernelContext.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        {
+            this._kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            return new SKContext(this._kernelContext.Object, contextVariables);
+        });
+
         var returnContext = new SKContext(
             this._kernelContext.Object,
             new ContextVariables(stepOutput)
@@ -387,10 +414,24 @@ public sealed class PlanSerializationTests
         var skills = new Mock<ISkillCollection>();
 
         this._kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
+        kernel.SetupGet(x => x.Skills).Returns(skills.Object);
+
         var returnContext = new SKContext(
             this._kernelContext.Object,
             new ContextVariables(stepOutput)
         );
+
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        {
+            this._kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            return new SKContext(this._kernelContext.Object, contextVariables);
+        });
+
+        this._kernelContext.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        {
+            this._kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            return new SKContext(this._kernelContext.Object, contextVariables);
+        });
 
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))

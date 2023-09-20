@@ -141,7 +141,6 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.SetupGet(k => k.LoggerFactory).Returns(TestConsoleLogger.LoggerFactory);
 
         var variables = new ContextVariables();
         var cancellationToken = default(CancellationToken);
@@ -176,6 +175,7 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         var kernelContext = new Mock<IKernelContext>();
+        kernelContext.SetupGet(k => k.LoggerFactory).Returns(TestConsoleLogger.LoggerFactory);
         kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -209,7 +209,7 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<KernelContext>();
+        var kernelContext = new Mock<IKernelContext>();
 
         var variables = new ContextVariables();
         var skills = new SkillCollection();
