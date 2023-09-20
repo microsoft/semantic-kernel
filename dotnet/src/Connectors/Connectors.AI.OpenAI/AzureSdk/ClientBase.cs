@@ -360,6 +360,11 @@ public abstract class ClientBase
         OpenAIChatRequestSettings? oaiSettings = requestSettings as OpenAIChatRequestSettings;
         if (oaiSettings is not null)
         {
+            if (oaiSettings.FunctionCall is not null)
+            {
+                options.FunctionCall = oaiSettings.FunctionCall.ToFunctionDefinition();
+            }
+
             if (oaiSettings.Functions is not null)
             {
                 options.Functions = oaiSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
