@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -37,7 +38,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();
@@ -47,7 +48,7 @@ public sealed class OpenAITextCompletion : OpenAIClientBase, ITextCompletion
     /// <inheritdoc/>
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
         this.LogActionDetails();

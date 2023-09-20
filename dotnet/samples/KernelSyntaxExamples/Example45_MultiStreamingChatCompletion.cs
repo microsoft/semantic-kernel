@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
 /**
@@ -47,7 +48,7 @@ public static class Example45_MultiStreamingChatCompletion
 
     private static async Task StreamingChatCompletionAsync(IChatCompletion chatCompletion)
     {
-        var requestSettings = new ChatRequestSettings()
+        var requestSettings = new OpenAIRequestSettings()
         {
             MaxTokens = 200,
             FrequencyPenalty = 0,

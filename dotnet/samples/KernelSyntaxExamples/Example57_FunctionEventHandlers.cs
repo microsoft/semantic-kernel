@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Events;
 using RepoUtils;
 
@@ -58,9 +59,7 @@ public static class Example57_FunctionEventHandlers
             FunctionPrompt,
             skillName: "MySkill",
             functionName: "Excuse",
-            maxTokens: 100,
-            temperature: 0.4,
-            topP: 1);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
@@ -107,9 +106,7 @@ public static class Example57_FunctionEventHandlers
             FunctionPrompt,
             skillName: "MySkill",
             functionName: "Writer",
-            maxTokens: 100,
-            temperature: 0.4,
-            topP: 1);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
@@ -145,9 +142,7 @@ public static class Example57_FunctionEventHandlers
             FunctionPrompt,
             skillName: "MySkill",
             functionName: "Writer",
-            maxTokens: 1000,
-            temperature: 1,
-            topP: 0.5);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
