@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Milvus</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFrameworks>net6.0;net462;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
 
     <!--NU5104: A stable release of a package should not have a prerelease dependency.-->
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
 </Project>

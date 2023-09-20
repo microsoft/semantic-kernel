@@ -13,8 +13,6 @@
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
-    <PackageVersion Include="NRedisStack" Version="0.9.0" />
-    <PackageVersion Include="Pgvector" Version="0.1.3" />
     <PackageVersion Include="Polly" Version="7.2.4" />
     <PackageVersion Include="SharpToken" Version="1.2.12" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
