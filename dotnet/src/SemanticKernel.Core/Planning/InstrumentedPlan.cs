@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -27,9 +28,6 @@ public sealed class InstrumentedPlan : IPlan
 
     /// <inheritdoc/>
     public string Description => this._plan.Description;
-
-    /// <inheritdoc/>
-    public bool IsSemantic => this._plan.IsSemantic;
 
     /// <inheritdoc/>
     public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
@@ -157,6 +155,15 @@ public sealed class InstrumentedPlan : IPlan
 
         return result;
     }
+
+    #endregion
+
+    #region Obsolete =======================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic => this._plan.IsSemantic;
 
     #endregion
 }
