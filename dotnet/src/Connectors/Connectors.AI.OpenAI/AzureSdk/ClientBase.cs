@@ -352,19 +352,14 @@ public abstract class ClientBase
             ChoiceCount = requestSettings.ResultsPerPrompt,
         };
 
-        // TODO: temporary cast until request settings refactor comes in
-        OpenAIChatRequestSettings? oaiSettings = requestSettings as OpenAIChatRequestSettings;
-        if (oaiSettings is not null)
+        if (requestSettings.FunctionCall is not null)
         {
-            if (oaiSettings.FunctionCall is not null)
-            {
-                options.FunctionCall = oaiSettings.FunctionCall.ToFunctionDefinition();
-            }
+            options.FunctionCall = requestSettings.FunctionCall.ToFunctionDefinition();
+        }
 
-            if (oaiSettings.Functions is not null)
-            {
-                options.Functions = oaiSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
-            }
+        if (requestSettings.Functions is not null)
+        {
+            options.Functions = requestSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
         }
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 
@@ -97,6 +98,18 @@ public class OpenAIRequestSettings : AIRequestSettings
     [JsonPropertyName("token_selection_biases")]
     [JsonPropertyOrder(9)]
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
+
+    /// <summary>
+    /// Indicates a specific function that OpenAI should use to respond to the chat request.
+    /// If you want the model to choose from multiple functions, leave this null and
+    /// instead set <see cref="OpenAIRequestSettings.Functions"/>.
+    /// </summary>
+    public OpenAIFunction? FunctionCall { get; set; } = null;
+
+    /// <summary>
+    /// The set of functions to choose from if function calling is enabled by the model.
+    /// </summary>
+    public IList<OpenAIFunction>? Functions { get; set; } = null;
 
     /// <summary>
     /// Default value for chat system property.

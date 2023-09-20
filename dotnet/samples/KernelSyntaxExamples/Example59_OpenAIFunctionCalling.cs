@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -16,7 +18,7 @@ using RepoUtils;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example58_OpenAIFunctionCalling
+public static class Example59_OpenAIFunctionCalling
 {
     public static async Task RunAsync()
     {
@@ -56,8 +58,10 @@ public static class Example58_OpenAIFunctionCalling
         chatHistory.AddUserMessage(ask);
 
         // Retrieve available functions from the kernel and add to request settings
-        OpenAIChatRequestSettings requestSettings = new();
-        requestSettings.Functions = kernel.Skills.GetFunctionsView().ToOpenAIFunctions();
+        OpenAIRequestSettings requestSettings = new()
+        {
+            Functions = kernel.Skills.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList()
+        };
 
         // Send request
         var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
