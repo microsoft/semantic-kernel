@@ -81,7 +81,8 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     [SKName("ExecutePlan")]
     [Description("Execute a plan")]
     public async Task<SKContext> ExecutePlanAsync(
-        [Description("The request to fulfill")] string request,
+        [Description("The request to fulfill")]
+        string request,
         SKContext context,
         CancellationToken token)
     {
@@ -137,7 +138,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     }
 
 
-    private async Task<StepwiseFunctionCallResult?> StepAsync( List<StepwiseFunctionCallResult> stepsTaken, ChatHistory chatHistory, IChatCompletion chatCompletion, FunctionCallRequestSettings requestSettings, CancellationToken token)
+    private async Task<StepwiseFunctionCallResult?> StepAsync(List<StepwiseFunctionCallResult> stepsTaken, ChatHistory chatHistory, IChatCompletion chatCompletion, FunctionCallRequestSettings requestSettings, CancellationToken token)
     {
         var tokenCount = chatHistory.GetTokenCount();
 
@@ -150,7 +151,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     }
 
 
-    private async Task<StepwiseFunctionCallResult> GetNextStepAsync(ChatHistory chatHistory, IChatCompletion chatCompletion,  FunctionCallRequestSettings requestSettings, CancellationToken token)
+    private async Task<StepwiseFunctionCallResult> GetNextStepAsync(ChatHistory chatHistory, IChatCompletion chatCompletion, FunctionCallRequestSettings requestSettings, CancellationToken token)
     {
         var nextStep = await chatCompletion.GenerateResponseAsync<StepwiseFunctionCallResult>(
                 chatHistory,

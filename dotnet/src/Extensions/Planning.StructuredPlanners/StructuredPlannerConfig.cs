@@ -83,7 +83,7 @@ public sealed class StructuredPlannerConfig
     /// <summary>
     /// Optional callback to get the available functions for planning.
     /// </summary>
-    public Func<StructuredPlannerConfig, string?, CancellationToken, Task<FunctionsView>>? GetAvailableFunctionsAsync { get; set; }
+    public Func<StructuredPlannerConfig, string?, CancellationToken, Task<IEnumerable<FunctionView>>>? GetAvailableFunctionsAsync { get; set; }
 
     /// <summary>
     /// Optional callback to get a function by name.

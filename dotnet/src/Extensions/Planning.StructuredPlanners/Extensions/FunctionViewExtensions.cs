@@ -10,13 +10,9 @@ using SkillDefinition;
 internal static class FunctionViewExtensions
 {
 
-    internal static string ToManualString(this FunctionsView functions)
+    internal static string ToManualString(this IEnumerable<FunctionView> functions)
     {
-        List<FunctionView> availableFunctions = functions.SemanticFunctions
-            .Concat(functions.NativeFunctions)
-            .SelectMany(x => x.Value)
-            .ToList();
-        var functionsString = string.Join("\n", availableFunctions.Select(function => function.ToManualString()));
+        var functionsString = string.Join("\n", functions.Select(function => function.ToManualString()));
         return functionsString;
     }
 

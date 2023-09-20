@@ -23,6 +23,9 @@ using SkillDefinition;
 #pragma warning restore IDE0130
 
 
+/// <summary>
+///  Extensions for SKContext to work with structured planners
+/// </summary>
 public static class StructuredPlannerExtensions
 {
     internal const string PlannerMemoryCollectionName = "Planning.SKFunctionsManual";
@@ -47,7 +50,7 @@ public static class StructuredPlannerExtensions
         config ??= new StructuredPlannerConfig();
 
         // Use configured function provider if available, otherwise use the default SKContext function provider.
-        FunctionsView functions = config.GetAvailableFunctionsAsync is null
+        IEnumerable<FunctionView> functions = config.GetAvailableFunctionsAsync is null
             ? await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false)
             : await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
 
@@ -72,7 +75,7 @@ public static class StructuredPlannerExtensions
         config ??= new StructuredPlannerConfig();
 
         // Use configured function provider if available, otherwise use the default SKContext function provider.
-        FunctionsView functions = config.GetAvailableFunctionsAsync is null
+        IEnumerable<FunctionView> functions = config.GetAvailableFunctionsAsync is null
             ? await context.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false)
             : await config.GetAvailableFunctionsAsync(config, semanticQuery, cancellationToken).ConfigureAwait(false);
 
@@ -88,18 +91,15 @@ public static class StructuredPlannerExtensions
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded skills and functions.</returns>
-    public static async Task<FunctionsView> GetAvailableFunctionsAsync(
+    public static async Task<List<FunctionView>> GetAvailableFunctionsAsync(
         this SKContext context,
         StructuredPlannerConfig config,
         string? semanticQuery = null,
         CancellationToken cancellationToken = default)
     {
-        var functionsView = context.Skills.GetFunctionsView();
+        IReadOnlyList<FunctionView>? functionsView = context.Skills.GetFunctionViews();
 
-        List<FunctionView> availableFunctions = functionsView.SemanticFunctions
-            .Concat(functionsView.NativeFunctions)
-            .SelectMany(x => x.Value)
-            .Where(s => !config.ExcludedSkills.Contains(s.SkillName) && !config.ExcludedFunctions.Contains(s.Name))
+        List<FunctionView> availableFunctions = functionsView.Where(s => !config.ExcludedSkills.Contains(s.SkillName) && !config.ExcludedFunctions.Contains(s.Name))
             .ToList();
 
         List<FunctionView>? result = null;
@@ -136,16 +136,9 @@ public static class StructuredPlannerExtensions
             result.AddRange(missingFunctions);
         }
 
-        functionsView = new FunctionsView();
-        IOrderedEnumerable<FunctionView> functions = result
+        return result
             .OrderBy(x => x.SkillName)
-            .ThenBy(x => x.Name);
-
-        foreach (FunctionView functionView in functions)
-        {
-            functionsView.AddFunction(functionView);
-        }
-        return functionsView;
+            .ThenBy(x => x.Name).ToList();
     }
 
 
@@ -156,23 +149,26 @@ public static class StructuredPlannerExtensions
         CancellationToken cancellationToken = default)
     {
         ILogger? logger = null;
-        ConcurrentBag<FunctionView> relevantFunctions = new ConcurrentBag<FunctionView>();
+        ConcurrentBag<FunctionView> relevantFunctions = new();
+
+        availableFunctions = availableFunctions.ToList();
 
         await foreach (var memoryEntry in memories.WithCancellation(cancellationToken))
         {
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
 
-            if (function != null)
+            if (function == null)
             {
-                logger ??= context.LoggerFactory.CreateLogger(typeof(SKContext));
-
-                if (logger.IsEnabled(LogLevel.Debug))
-                {
-                    logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFullyQualifiedName());
-                }
-
-                relevantFunctions.Add(function);
+                continue;
             }
+            logger ??= context.LoggerFactory.CreateLogger(typeof(SKContext));
+
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFullyQualifiedName());
+            }
+
+            relevantFunctions.Add(function);
         }
 
         return relevantFunctions;
