@@ -19,7 +19,7 @@ public class FunctionViewTests
         };
 
         // Act
-        var funcViewA = new FunctionView("funcA", "s1", "", paramsA, true);
+        var funcViewA = new FunctionView("funcA", "s1", "", paramsA);
 
         // Assert
         Assert.NotNull(funcViewA);

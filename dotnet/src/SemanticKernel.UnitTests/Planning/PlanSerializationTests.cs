@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -276,6 +275,7 @@ public sealed class PlanSerializationTests
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "skillName"));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -335,11 +335,11 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
         {
-            Parameters = new List<ParameterView>()
+            Parameters = new ParameterView[]
             {
-                new ParameterView() { Name = "variables" }
+                new("variables")
             }
         });
 
@@ -404,11 +404,11 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
         {
-            Parameters = new List<ParameterView>
+            Parameters = new ParameterView[]
             {
-                new() { Name = "variables" }
+                new("variables")
             }
         });
 

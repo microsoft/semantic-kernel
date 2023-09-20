@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -75,10 +76,6 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public bool IsSemantic { get; private set; }
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -305,7 +302,7 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
-            return this.Function.Describe() ?? new();
+            return this.Function.Describe();
         }
 
         // The parameter mapping definitions from Plan -> Function
@@ -324,11 +321,7 @@ public sealed class Plan : IPlan
         }
         ).ToList();
 
-        return new(name: this.Name,
-                   skillName: this.SkillName,
-                   description: this.Description,
-                   parameters: parameters,
-                   isSemantic: false);
+        return new(this.Name, this.SkillName, this.Description, parameters);
     }
 
     /// <inheritdoc/>
@@ -586,8 +579,11 @@ public sealed class Plan : IPlan
         this.Name = function.Name;
         this.SkillName = function.SkillName;
         this.Description = function.Description;
-        this.IsSemantic = function.IsSemantic;
         this.RequestSettings = function.RequestSettings;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        this.IsSemantic = function.IsSemantic;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
@@ -620,4 +616,14 @@ public sealed class Plan : IPlan
             return display;
         }
     }
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic { get; private set; }
+
+    #endregion
 }
