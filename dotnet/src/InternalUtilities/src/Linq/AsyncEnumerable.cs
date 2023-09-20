@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-#pragma warning disable CA1510 // Use 'ArgumentNullException.ThrowIfNull' (.NET 8)
-
 // Used for compatibility with System.Linq.Async Nuget pkg
 namespace System.Linq;
 
@@ -14,6 +11,7 @@ internal static class AsyncEnumerable
 {
     public static IAsyncEnumerable<T> Empty<T>() => EmptyAsyncEnumerable<T>.Instance;
 
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
     public static IEnumerable<T> ToEnumerable<T>(this IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
     {
         var enumerator = source.GetAsyncEnumerator(cancellationToken);
@@ -29,7 +27,10 @@ internal static class AsyncEnumerable
             enumerator.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
     }
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
+#pragma warning disable IDE1006 // Naming rule violation: Missing suffix: 'Async'
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> source)
     {
         foreach (var item in source)
@@ -37,6 +38,8 @@ internal static class AsyncEnumerable
             yield return item;
         }
     }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+#pragma warning restore IDE1006 // Naming rule violation: Missing suffix: 'Async'
 
     public static async ValueTask<T?> FirstOrDefaultAsync<T>(this IAsyncEnumerable<T> source, CancellationToken cancellationToken = default)
     {

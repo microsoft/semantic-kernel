@@ -490,7 +490,7 @@ public sealed class PlanTests : IDisposable
         //Act
         var t = target.ImportPlan(plan);
 
-        var result = await t.InvokeAsync(input);
+        var result = await t.InvokeAsync(input, target);
 
         // Assert
         Assert.NotNull(result);

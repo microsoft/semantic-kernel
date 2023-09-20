@@ -18,16 +18,16 @@ public static class Example08_RetryHandler
 {
     public static async Task RunAsync()
     {
-        await DefaultNoRetry();
+        await DefaultNoRetryAsync();
 
-        await ReliabilityBasicExtension();
+        await ReliabilityBasicExtensionAsync();
 
-        await ReliabilityPollyExtension();
+        await ReliabilityPollyExtensionAsync();
 
-        await CustomHandler();
+        await CustomHandlerAsync();
     }
 
-    private static async Task DefaultNoRetry()
+    private static async Task DefaultNoRetryAsync()
     {
         InfoLogger.Logger.LogInformation("============================== Kernel default behavior: No Retry ==============================");
         var kernel = InitializeKernelBuilder()
@@ -36,7 +36,7 @@ public static class Example08_RetryHandler
         await ImportAndExecuteSkillAsync(kernel);
     }
 
-    private static async Task ReliabilityBasicExtension()
+    private static async Task ReliabilityBasicExtensionAsync()
     {
         InfoLogger.Logger.LogInformation("============================== Using Reliability.Basic extension ==============================");
         var retryConfig = new BasicRetryConfig
@@ -53,7 +53,7 @@ public static class Example08_RetryHandler
         await ImportAndExecuteSkillAsync(kernel);
     }
 
-    private static async Task ReliabilityPollyExtension()
+    private static async Task ReliabilityPollyExtensionAsync()
     {
         InfoLogger.Logger.LogInformation("============================== Using Reliability.Polly extension ==============================");
         var kernel = InitializeKernelBuilder()
@@ -63,7 +63,7 @@ public static class Example08_RetryHandler
         await ImportAndExecuteSkillAsync(kernel);
     }
 
-    private static async Task CustomHandler()
+    private static async Task CustomHandlerAsync()
     {
         InfoLogger.Logger.LogInformation("============================== Using a Custom Http Handler ==============================");
         var kernel = InitializeKernelBuilder()
@@ -86,12 +86,12 @@ public static class Example08_RetryHandler
         // Handle 429 and 401 errors
         // Typically 401 would not be something we retry but for demonstration
         // purposes we are doing so as it's easy to trigger when using an invalid key.
-        const int tooManyRequests = 429;
-        const int unauthorized = 401;
+        const int TooManyRequests = 429;
+        const int Unauthorized = 401;
 
         return Policy
             .HandleResult<HttpResponseMessage>(response =>
-                (int)response.StatusCode is tooManyRequests or unauthorized)
+                (int)response.StatusCode is TooManyRequests or Unauthorized)
             .WaitAndRetryAsync(new[]
                 {
                     TimeSpan.FromSeconds(2),

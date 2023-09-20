@@ -39,7 +39,7 @@ public sealed class ActionPlanner : IActionPlanner
     /// <summary>
     /// The regular expression for extracting serialized plan.
     /// </summary>
-    private static readonly Regex PlanRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex s_planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
 
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
@@ -252,7 +252,7 @@ Goal: tell me a joke.
     /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
     private ActionPlanResponse? ParsePlannerResult(SKContext plannerResult)
     {
-        Match match = PlanRegex.Match(plannerResult.ToString());
+        Match match = s_planRegex.Match(plannerResult.ToString());
 
         if (match.Success && match.Groups["Close"].Length > 0)
         {
@@ -314,16 +314,13 @@ Goal: tell me a joke.
     private IOrderedEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
     {
         Verify.NotNull(context.Skills);
-        FunctionsView functionsView = context.Skills.GetFunctionsView();
 
         var excludedSkills = this._config.ExcludedSkills ?? new();
         var excludedFunctions = this._config.ExcludedFunctions ?? new();
 
-        var availableFunctions =
-            functionsView.NativeFunctions
-                .Concat(functionsView.SemanticFunctions)
-                .SelectMany(x => x.Value)
-                .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
+        var availableFunctions = context.Skills.GetFunctionViews()
+                .Where(s => !excludedSkills.Contains(s.SkillName, StringComparer.CurrentCultureIgnoreCase)
+                    && !excludedFunctions.Contains(s.Name, StringComparer.CurrentCultureIgnoreCase))
                 .OrderBy(x => x.SkillName)
                 .ThenBy(x => x.Name);
 
