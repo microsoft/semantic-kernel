@@ -42,6 +42,12 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public IReadOnlyFunctionCollection Functions => this._functionCollection;
 
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.Functions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public IReadOnlyFunctionCollection Skills => this._functionCollection;
+#pragma warning restore CS1591
+
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
 
@@ -135,6 +141,15 @@ public sealed class Kernel : IKernel, IDisposable
 
         return functions;
     }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public IDictionary<string, ISKFunction> ImportSkill(object objectInstance, string? pluginName = null)
+    {
+        return this.ImportPlugin(objectInstance, pluginName);
+    }
+#pragma warning restore CS1591
 
     /// <inheritdoc/>
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)

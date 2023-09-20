@@ -147,7 +147,7 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItAllowsToImportFunctionssInTheGlobalNamespace()
+    public void ItAllowsToImportFunctionsInTheGlobalNamespace()
     {
         // Arrange
         var kernel = Kernel.Builder.Build();

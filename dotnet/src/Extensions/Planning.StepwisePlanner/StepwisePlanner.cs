@@ -88,7 +88,7 @@ public class StepwisePlanner : IStepwisePlanner
         planStep.Parameters.Set("question", goal);
 
         planStep.Outputs.Add("stepCount");
-        planStep.Outputs.Add("pluginCount"); // TODO Mark: Should this be functionCount?
+        planStep.Outputs.Add("functionCount");
         planStep.Outputs.Add("stepsTaken");
         planStep.Outputs.Add("iterations");
 
@@ -645,12 +645,12 @@ public class StepwisePlanner : IStepwisePlanner
             actionCounts[step.Action!] = ++currentCount;
         }
 
-        var pluginCallListWithCounts = string.Join(", ", actionCounts.Keys.Select(plugin =>
-            $"{plugin}({actionCounts[plugin]})"));
+        var functionCallListWithCounts = string.Join(", ", actionCounts.Keys.Select(function =>
+            $"{function}({actionCounts[function]})"));
 
-        var pluginCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
+        var functionCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
 
-        context.Variables.Set("pluginCount", $"{pluginCallCountStr} ({pluginCallListWithCounts})"); // TODO Mark: Should this be functionCount?
+        context.Variables.Set("functionCount", $"{functionCallCountStr} ({functionCallListWithCounts})");
     }
 
     private static string ToManualString(FunctionView function)

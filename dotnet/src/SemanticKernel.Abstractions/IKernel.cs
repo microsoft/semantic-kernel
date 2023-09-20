@@ -41,6 +41,12 @@ public interface IKernel
     /// </summary>
     IReadOnlyFunctionCollection Functions { get; }
 
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.Functions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    IReadOnlyFunctionCollection Skills { get; }
+#pragma warning restore CS1591
+
     /// <summary>
     /// Reference to Http handler factory
     /// </summary>
@@ -83,6 +89,12 @@ public interface IKernel
     /// <param name="pluginName">Name of the plugin for function collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
     IDictionary<string, ISKFunction> ImportPlugin(object objectInstance, string? pluginName = null);
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    IDictionary<string, ISKFunction> ImportSkill(object objectInstance, string? pluginName = null);
+#pragma warning restore CS1591
 
     /// <summary>
     /// Set the semantic memory to use

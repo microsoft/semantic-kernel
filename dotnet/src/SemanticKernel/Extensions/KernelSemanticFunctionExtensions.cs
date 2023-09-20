@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -116,6 +117,16 @@ public static class InlineFunctionsDefinitionExtension
 
         return kernel.RunAsync(skfunction);
     }
+
+    [Obsolete("Methods and classes which isnclud Skill in the name have been renamed to use Plugin. Use Kernel.ImportSemanticFunctionsFromDirectory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static IDictionary<string, ISKFunction> ImportSemanticSkillFromDirectory(
+        this IKernel kernel, string parentDirectory, params string[] pluginDirectoryNames)
+    {
+        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginDirectoryNames);
+    }
+#pragma warning restore CS1591
 
     /// <summary>
     /// Loads semantic functions, defined by prompt templates stored in the filesystem.
