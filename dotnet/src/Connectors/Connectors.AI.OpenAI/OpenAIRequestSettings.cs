@@ -78,7 +78,18 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// </summary>
     [JsonPropertyName("chat_system_prompt")]
     [JsonPropertyOrder(8)]
-    public string ChatSystemPrompt { get; set; } = OpenAIRequestSettings.DefaultChatSystemPrompt;
+    public string ChatSystemPrompt
+    {
+        get => this._chatSystemPrompt;
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                value = OpenAIRequestSettings.DefaultChatSystemPrompt;
+            }
+            this._chatSystemPrompt = value;
+        }
+    }
 
     /// <summary>
     /// Modify the likelihood of specified tokens appearing in the completion.
@@ -130,6 +141,8 @@ public class OpenAIRequestSettings : AIRequestSettings
     }
 
     #region private ================================================================================
+
+    private string _chatSystemPrompt = OpenAIRequestSettings.DefaultChatSystemPrompt;
 
     private static readonly JsonSerializerOptions s_options = CreateOptions();
 

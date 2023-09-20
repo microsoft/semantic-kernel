@@ -135,7 +135,7 @@ public class KernelTests
         var templateConfig = new PromptTemplateConfig();
         templateConfig.Completion = new OpenAIRequestSettings()
         {
-            ChatSystemPrompt = expectedSystemChatPrompt
+            ChatSystemPrompt = providedSystemChatPrompt
         };
 
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");

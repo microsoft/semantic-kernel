@@ -34,7 +34,7 @@ public class OpenAIRequestSettingsConverterTests
         Assert.Equal(Array.Empty<string>(), requestSettings.StopSequences);
         Assert.Equal(new Dictionary<int, int>(), requestSettings.TokenSelectionBiases);
         Assert.Null(requestSettings.ServiceId);
-        Assert.Equal(null, requestSettings.MaxTokens);
+        Assert.Null(requestSettings.MaxTokens);
     }
 
     [Fact]
