@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
@@ -35,7 +34,7 @@ public sealed class SequentialPlannerTests
         };
 
         var functionsView = new List<FunctionView>();
-        var skills = new Mock<ISkillCollection>();
+        var functions = new Mock<IFunctionCollection>();
         foreach (var (name, skillName, description, isSemantic) in input)
         {
             var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
@@ -50,13 +49,13 @@ public sealed class SequentialPlannerTests
                     return Task.FromResult(context);
                 });
 
-            skills.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
+            functions.Setup(x => x.GetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name)))
                 .Returns(mockFunction.Object);
             ISKFunction? outFunc = mockFunction.Object;
-            skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
+            functions.Setup(x => x.TryGetFunction(It.Is<string>(s => s == skillName), It.Is<string>(s => s == name), out outFunc)).Returns(true);
         }
 
-        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
+        functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedSkills = input.Select(x => x.skillName).ToList();
@@ -64,13 +63,13 @@ public sealed class SequentialPlannerTests
         var context = new SKContext(
             kernel.Object,
             new ContextVariables(),
-            skills.Object
+            functions.Object
         );
 
         var returnContext = new SKContext(
             kernel.Object,
             new ContextVariables(),
-            skills.Object
+            functions.Object
         );
         var planString =
             @"
@@ -93,7 +92,7 @@ public sealed class SequentialPlannerTests
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
-        kernel.Setup(x => x.Skills).Returns(skills.Object);
+        kernel.Setup(x => x.Functions).Returns(functions.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
@@ -114,7 +113,7 @@ public sealed class SequentialPlannerTests
             plan.Steps,
             step =>
                 expectedFunctions.Contains(step.Name) &&
-                expectedSkills.Contains(step.SkillName));
+                expectedSkills.Contains(step.PluginName));
 
         foreach (var expectedFunction in expectedFunctions)
         {
@@ -127,7 +126,7 @@ public sealed class SequentialPlannerTests
         {
             Assert.Contains(
                 plan.Steps,
-                step => step.SkillName == expectedSkill);
+                step => step.PluginName == expectedSkill);
         }
     }
 
@@ -148,21 +147,21 @@ public sealed class SequentialPlannerTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<ISkillCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
-        skills.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
+        functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
 
         var planString = "<plan>notvalid<</plan>";
         var returnContext = new SKContext(
             kernel.Object,
             new ContextVariables(planString),
-            skills.Object
+            functions.Object
         );
 
         var context = new SKContext(
             kernel.Object,
             new ContextVariables(),
-            skills.Object
+            functions.Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
@@ -175,7 +174,7 @@ public sealed class SequentialPlannerTests
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
-        kernel.Setup(x => x.Skills).Returns(skills.Object);
+        kernel.Setup(x => x.Functions).Returns(functions.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
@@ -196,7 +195,7 @@ public sealed class SequentialPlannerTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.Describe()).Returns(functionView);
         mockFunction.Setup(x => x.Name).Returns(functionView.Name);
-        mockFunction.Setup(x => x.SkillName).Returns(functionView.SkillName);
+        mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
         return mockFunction;
     }
 }

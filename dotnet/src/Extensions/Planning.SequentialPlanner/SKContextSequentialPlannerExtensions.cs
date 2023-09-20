@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of SKContext
@@ -63,10 +62,10 @@ public static class SKContextSequentialPlannerExtensions
         string? semanticQuery = null,
         CancellationToken cancellationToken = default)
     {
-        var functionsView = context.Skills.GetFunctionViews();
+        var functionsView = context.Functions.GetFunctionViews();
 
         var availableFunctions = functionsView
-            .Where(s => !config.ExcludedSkills.Contains(s.SkillName, StringComparer.OrdinalIgnoreCase)
+            .Where(s => !config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
@@ -104,7 +103,7 @@ public static class SKContextSequentialPlannerExtensions
         }
 
         return result
-            .OrderBy(x => x.SkillName)
+            .OrderBy(x => x.PluginName)
             .ThenBy(x => x.Name);
     }
 

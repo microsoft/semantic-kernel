@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
@@ -102,12 +101,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
     private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context)
     {
-        if (context.Skills == null)
+        if (context.Functions == null)
         {
             throw new SKException("Skill collection not found in the context");
         }
 
-        if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
+        if (!this.GetFunction(context.Functions!, fBlock, out ISKFunction? function))
         {
             var errorMsg = $"Function `{fBlock.Content}` not found";
             this.Logger.LogError(errorMsg);
@@ -129,26 +128,26 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
         catch (Exception ex)
         {
-            this.Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", function!.SkillName, function.Name, ex.Message);
+            this.Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", function!.PluginName, function.Name, ex.Message);
             throw;
         }
 
         return contextClone.Result;
     }
 
-    private bool GetFunctionFromSkillCollection(
-        IReadOnlySkillCollection skills,
+    private bool GetFunction(
+        IReadOnlyFunctionCollection functions,
         FunctionIdBlock fBlock,
         out ISKFunction? function)
     {
         if (string.IsNullOrEmpty(fBlock.SkillName))
         {
             // Function in the global skill
-            return skills.TryGetFunction(fBlock.FunctionName, out function);
+            return functions.TryGetFunction(fBlock.FunctionName, out function);
         }
 
         // Function within a specific skill
-        return skills.TryGetFunction(fBlock.SkillName, fBlock.FunctionName, out function);
+        return functions.TryGetFunction(fBlock.SkillName, fBlock.FunctionName, out function);
     }
 
     private bool IsValidFunctionCall(out string errorMsg)

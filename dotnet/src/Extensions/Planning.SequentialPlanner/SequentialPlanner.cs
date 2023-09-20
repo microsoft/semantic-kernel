@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -33,13 +32,13 @@ public sealed class SequentialPlanner : ISequentialPlanner
         Verify.NotNull(kernel);
         this.Config = config ?? new();
 
-        this.Config.ExcludedSkills.Add(RestrictedSkillName);
+        this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,
-            skillName: RestrictedSkillName,
+            pluginName: RestrictedPluginName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
             maxTokens: this.Config.MaxTokens ?? 1024,
@@ -98,5 +97,5 @@ public sealed class SequentialPlanner : ISequentialPlanner
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
-    private const string RestrictedSkillName = "SequentialPlanner_Excluded";
+    private const string RestrictedPluginName = "SequentialPlanner_Excluded";
 }

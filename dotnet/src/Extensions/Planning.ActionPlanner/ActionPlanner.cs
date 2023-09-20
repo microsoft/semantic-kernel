@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -34,7 +33,7 @@ namespace Microsoft.SemanticKernel.Planning;
 public sealed class ActionPlanner : IActionPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";
-    private const string SkillName = "this";
+    private const string PluginName = "this";
 
     /// <summary>
     /// The regular expression for extracting serialized plan.
@@ -70,19 +69,19 @@ public sealed class ActionPlanner : IActionPlanner
         string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
 
         this._plannerFunction = kernel.CreateSemanticFunction(
-            skillName: SkillName,
+            pluginName: PluginName,
             promptTemplate: promptTemplate,
             maxTokens: 1024,
             stopSequences: new[] { StopSequence });
 
-        kernel.ImportSkill(this, skillName: SkillName);
+        kernel.ImportFunctions(this, pluginName: PluginName);
 
         this._kernel = kernel;
         this._context = kernel.CreateNewContext();
 
         // Set up Config with default values and excluded skills
         this._config = config ?? new();
-        this._config.ExcludedSkills.Add(SkillName);
+        this._config.ExcludedPlugins.Add(PluginName);
     }
 
     /// <inheritdoc />
@@ -108,11 +107,11 @@ public sealed class ActionPlanner : IActionPlanner
         if (planData.Plan.Function.Contains("."))
         {
             var parts = planData.Plan.Function.Split('.');
-            plan = new Plan(goal, this._context.Skills!.GetFunction(parts[0], parts[1]));
+            plan = new Plan(goal, this._context.Functions!.GetFunction(parts[0], parts[1]));
         }
         else if (!string.IsNullOrWhiteSpace(planData.Plan.Function))
         {
-            plan = new Plan(goal, this._context.Skills!.GetFunction(planData.Plan.Function));
+            plan = new Plan(goal, this._context.Functions!.GetFunction(planData.Plan.Function));
         }
         else
         {
@@ -289,12 +288,12 @@ Goal: tell me a joke.
             }
             else
             {
-                this._logger.LogWarning("{0}.{1} is missing a description", func.SkillName, func.Name);
-                list.AppendLine($"// Function {func.SkillName}.{func.Name}.");
+                this._logger.LogWarning("{0}.{1} is missing a description", func.PluginName, func.Name);
+                list.AppendLine($"// Function {func.PluginName}.{func.Name}.");
             }
 
             // Function name
-            list.AppendLine($"{func.SkillName}.{func.Name}");
+            list.AppendLine($"{func.PluginName}.{func.Name}");
 
             // Function parameters
             foreach (var p in func.Parameters)
@@ -313,15 +312,15 @@ Goal: tell me a joke.
 
     private IOrderedEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
     {
-        Verify.NotNull(context.Skills);
+        Verify.NotNull(context.Functions);
 
-        var excludedSkills = this._config.ExcludedSkills ?? new();
+        var excludedSkills = this._config.ExcludedPlugins ?? new();
         var excludedFunctions = this._config.ExcludedFunctions ?? new();
 
-        var availableFunctions = context.Skills.GetFunctionViews()
-                .Where(s => !excludedSkills.Contains(s.SkillName, StringComparer.CurrentCultureIgnoreCase)
+        var availableFunctions = context.Functions.GetFunctionViews()
+                .Where(s => !excludedSkills.Contains(s.PluginName, StringComparer.CurrentCultureIgnoreCase)
                     && !excludedFunctions.Contains(s.Name, StringComparer.CurrentCultureIgnoreCase))
-                .OrderBy(x => x.SkillName)
+                .OrderBy(x => x.PluginName)
                 .ThenBy(x => x.Name);
 
         return availableFunctions;

@@ -8,7 +8,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
@@ -73,7 +72,7 @@ public class SKContextExtensionsTests
         var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result
-        var skills = new Mock<ISkillCollection>();
+        var functions = new Mock<IFunctionCollection>();
         var memoryQueryResult =
             new MemoryQueryResult(
                 new MemoryRecordMetadata(
@@ -91,12 +90,12 @@ public class SKContextExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
-        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
+        functions.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
+        functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
+        functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernel.Object, variables, skills.Object);
+        var context = new SKContext(kernel.Object, variables, functions.Object);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -138,7 +137,7 @@ public class SKContextExtensionsTests
         var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result
-        var skills = new Mock<ISkillCollection>();
+        var functions = new Mock<IFunctionCollection>();
         var memoryQueryResult =
             new MemoryQueryResult(
                 new MemoryRecordMetadata(
@@ -156,12 +155,12 @@ public class SKContextExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        skills.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
-        skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
-        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
+        functions.Setup(x => x.TryGetFunction(It.IsAny<string>(), It.IsAny<string>(), out It.Ref<ISKFunction?>.IsAny)).Returns(true);
+        functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
+        functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernel.Object, variables, skills.Object);
+        var context = new SKContext(kernel.Object, variables, functions.Object);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 

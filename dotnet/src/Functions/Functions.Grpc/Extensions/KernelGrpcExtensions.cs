@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
 using Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 
@@ -37,7 +36,7 @@ public static class KernelGrpcExtensions
     {
         const string ProtoFile = "grpc.proto";
 
-        Verify.ValidSkillName(pluginDirectoryName);
+        Verify.ValidPluginName(pluginDirectoryName);
 
         var pluginDir = Path.Combine(parentDirectory, pluginDirectoryName);
         Verify.DirectoryExists(pluginDir);
@@ -96,7 +95,7 @@ public static class KernelGrpcExtensions
         HttpClient? httpClient = null)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
         // Parse
         var parser = new ProtoDocumentParser();
@@ -188,7 +187,7 @@ public static class KernelGrpcExtensions
             nativeFunction: ExecuteAsync,
             parameters: operationParameters.ToList(),
             description: operation.Name,
-            skillName: pluginName,
+            pluginName: pluginName,
             functionName: operation.Name,
             loggerFactory: kernel.LoggerFactory);
 

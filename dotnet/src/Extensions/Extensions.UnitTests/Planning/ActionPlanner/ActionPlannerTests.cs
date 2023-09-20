@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
@@ -35,7 +34,7 @@ public sealed class ActionPlannerTests
         Assert.Equal("goal", plan.Description);
 
         Assert.Single(plan.Steps);
-        Assert.Equal("GitHubSkill", plan.Steps[0].SkillName);
+        Assert.Equal("GitHubSkill", plan.Steps[0].PluginName);
         Assert.Equal("PullsList", plan.Steps[0].Name);
     }
 
@@ -102,13 +101,13 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
     }
 
     [Fact]
-    public void ListOfFunctionsExcludesExcludedSkills()
+    public void ListOfFunctionsExcludesExcludedPlugins()
     {
         // Arrange
         var skills = this.CreateMockSkillCollection();
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
         var config = new ActionPlannerConfig();
-        config.ExcludedSkills.Add("GitHubSkill");
+        config.ExcludedPlugins.Add("GitHubSkill");
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
         var context = kernel.Object.CreateNewContext();
 
@@ -139,24 +138,24 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         Assert.Equal(expected, result);
     }
 
-    private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<ISkillCollection>? skills = null)
+    private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<IFunctionCollection>? functions = null)
     {
         var kernel = new Mock<IKernel>();
 
-        if (skills is null)
+        if (functions is null)
         {
-            skills = new Mock<ISkillCollection>();
-            skills.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
+            functions = new Mock<IFunctionCollection>();
+            functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
 
         var returnContext = new SKContext(kernel.Object,
             new ContextVariables(testPlanString),
-            skills.Object
+            functions.Object
         );
 
         var context = new SKContext(
             kernel.Object,
-            skills: skills.Object
+            functions: functions.Object
         );
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
@@ -169,7 +168,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         ).Returns(() => Task.FromResult(returnContext));
 
         // Mock Skills
-        kernel.Setup(x => x.Skills).Returns(skills.Object);
+        kernel.Setup(x => x.Functions).Returns(functions.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
@@ -187,11 +186,11 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.Describe()).Returns(functionView);
         mockFunction.Setup(x => x.Name).Returns(functionView.Name);
-        mockFunction.Setup(x => x.SkillName).Returns(functionView.SkillName);
+        mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
         return mockFunction;
     }
 
-    private Mock<ISkillCollection> CreateMockSkillCollection()
+    private Mock<IFunctionCollection> CreateMockSkillCollection()
     {
         var functions = new List<(string name, string skillName, string description, bool isSemantic)>()
         {
@@ -201,7 +200,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         };
 
         var functionsView = new List<FunctionView>();
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
         foreach (var (name, skillName, description, isSemantic) in functions)
         {
             var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);

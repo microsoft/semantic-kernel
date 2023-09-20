@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 
 #pragma warning disable IDE0130
@@ -48,7 +47,7 @@ public class StepwisePlanner : IStepwisePlanner
 
         // Set up Config with default values and excluded skills
         this.Config = config ?? new();
-        this.Config.ExcludedSkills.Add(RestrictedSkillName);
+        this.Config.ExcludedPlugins.Add(RestrictedSkillName);
 
         // Set up prompt templates
         this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
@@ -65,7 +64,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
 
         // Import native functions
-        this._nativeFunctions = this._kernel.ImportSkill(this, RestrictedSkillName);
+        this._nativeFunctions = this._kernel.ImportFunctions(this, RestrictedSkillName);
 
         // Create context and logger
         this._context = this._kernel.CreateNewContext();
@@ -542,7 +541,7 @@ public class StepwisePlanner : IStepwisePlanner
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.PluginName, targetFunction.Name, e.Message);
             throw;
         }
     }
@@ -551,10 +550,10 @@ public class StepwisePlanner : IStepwisePlanner
     {
         var getFunction = (string skillName, string functionName) =>
         {
-            return this._kernel.Skills.GetFunction(skillName, functionName);
+            return this._kernel.Functions.GetFunction(skillName, functionName);
         };
-        var getSkillFunction = this.Config.GetSkillFunction ?? getFunction;
-        var function = getSkillFunction(targetFunction.SkillName, targetFunction.Name);
+        var getPluginFunction = this.Config.GetPluginFunction ?? getFunction;
+        var function = getPluginFunction(targetFunction.PluginName, targetFunction.Name);
         return function;
     }
 
@@ -570,15 +569,15 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (this.Config.GetAvailableFunctionsAsync is null)
         {
-            var functionsView = this._context.Skills!.GetFunctionViews();
+            var functionsView = this._context.Functions!.GetFunctionViews();
 
-            var excludedSkills = this.Config.ExcludedSkills ?? new();
+            var excludedSkills = this.Config.ExcludedPlugins ?? new();
             var excludedFunctions = this.Config.ExcludedFunctions ?? new();
 
             var availableFunctions =
                 functionsView
-                    .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
-                    .OrderBy(x => x.SkillName)
+                    .Where(s => !excludedSkills.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
+                    .OrderBy(x => x.PluginName)
                     .ThenBy(x => x.Name);
 
             return Task.FromResult(availableFunctions);
@@ -669,7 +668,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private static string ToFullyQualifiedName(FunctionView function)
     {
-        return $"{function.SkillName}.{function.Name}";
+        return $"{function.PluginName}.{function.Name}";
     }
 
     #region private

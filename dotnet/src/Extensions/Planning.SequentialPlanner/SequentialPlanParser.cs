@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -47,12 +46,12 @@ internal static class SequentialPlanParser
         {
             if (string.IsNullOrEmpty(skillName))
             {
-                if (context.Skills!.TryGetFunction(functionName, out var skillFunction))
+                if (context.Functions!.TryGetFunction(functionName, out var skillFunction))
                 {
                     return skillFunction;
                 }
             }
-            else if (context.Skills!.TryGetFunction(skillName, functionName, out var skillFunction))
+            else if (context.Functions!.TryGetFunction(skillName, functionName, out var skillFunction))
             {
                 return skillFunction;
             }
