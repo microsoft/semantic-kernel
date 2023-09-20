@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 
@@ -11,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// See <see href="https://github.com/oobabooga/text-generation-webui/blob/main/docs/Generation-parameters.md"/> and subsequent links for additional information.
 /// </summary>
 [Serializable]
-public sealed class TextCompletionRequest
+public sealed class TextCompletionRequest : AIRequestSettings
 {
     /// <summary>
     /// The prompt text to complete.
@@ -173,5 +174,5 @@ public sealed class TextCompletionRequest
     /// In addition to the defaults. Written between "" and separated by commas. For instance: "\nYour Assistant:", "\nThe assistant:"
     /// </summary>
     [JsonPropertyName("stopping_strings")]
-    public List<string> StoppingStrings { get; set; } = new List<string>();
+    public IList<string> StoppingStrings { get; set; } = new List<string>();
 }
