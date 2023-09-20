@@ -61,7 +61,7 @@ public class QueryStringBuilderTests
     }
 
     [Fact]
-    public void ShouldSkipNotRequiredQueryStringParametersIfTheirValuesMissing()
+    public void ShouldSkipNotRequiredQueryStringParametersIfTheirArgumentsMissing()
     {
         // Arrange
         var firstParameterMetadata = new RestApiOperationParameter(

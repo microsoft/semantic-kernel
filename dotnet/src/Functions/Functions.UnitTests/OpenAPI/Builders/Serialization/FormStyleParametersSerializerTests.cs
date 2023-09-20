@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Builders.Serialization;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Model;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Skills.UnitTests.OpenAPI.Builders.Serialization;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders.Serialization;
 
 public class FormStyleParametersSerializerTests
 {
@@ -79,17 +79,55 @@ public class FormStyleParametersSerializerTests
     [InlineData("/", "%2f")]
     [InlineData("?", "%3f")]
     [InlineData("#", "%23")]
-    public void ItShouldEncodeSpecialSymbolsInParameterValues(string specialSymbol, string encodedEquivalent)
+    public void ItShouldEncodeSpecialSymbolsInPrimitiveParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
         var parameter = new RestApiOperationParameter("id", "string", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form);
 
         // Act
-        var queryString = FormStyleParameterSerializer.Serialize(parameter, $"fake_query_param_value{specialSymbol}");
+        var result = FormStyleParameterSerializer.Serialize(parameter, $"fake_query_param_value{specialSymbol}");
 
         // Assert
-        Assert.NotNull(queryString);
+        Assert.NotNull(result);
 
-        Assert.EndsWith(encodedEquivalent, queryString, StringComparison.Ordinal);
+        Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(":", "%3a")]
+    [InlineData("/", "%2f")]
+    [InlineData("?", "%3f")]
+    [InlineData("#", "%23")]
+    public void ItShouldEncodeSpecialSymbolsInAmpersandSeparatedParameterValues(string specialSymbol, string encodedEquivalent)
+    {
+        // Arrange
+        var parameter = new RestApiOperationParameter("id", "array", false, true, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form);
+
+        // Act
+        var result = FormStyleParameterSerializer.Serialize(parameter, $"[\"{specialSymbol}\"]");
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(":", "%3a")]
+    [InlineData("/", "%2f")]
+    [InlineData("?", "%3f")]
+    [InlineData("#", "%23")]
+    public void ItShouldEncodeSpecialSymbolsInCommaSeparatedParameterValues(string specialSymbol, string encodedEquivalent)
+    {
+        // Arrange
+        var parameter = new RestApiOperationParameter("id", "array", false, false, RestApiOperationParameterLocation.Query, RestApiOperationParameterStyle.Form);
+
+        // Act
+        var result = FormStyleParameterSerializer.Serialize(parameter, $"[\"{specialSymbol}\"]");
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
 }
