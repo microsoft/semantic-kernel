@@ -45,14 +45,14 @@ public class StepwisePlanner : IStepwisePlanner
         Verify.NotNull(kernel);
         this._kernel = kernel;
 
-        // Set up Config with default values and excluded skills
+        // Set up Config with default values and excluded plugins
         this.Config = config ?? new();
-        this.Config.ExcludedPlugins.Add(RestrictedSkillName);
+        this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
         // Set up prompt templates
-        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
-        this._manualTemplate = EmbeddedResource.Read("Skills.RenderFunctionManual.skprompt.txt");
-        this._questionTemplate = EmbeddedResource.Read("Skills.RenderQuestion.skprompt.txt");
+        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Plugin.StepwiseStep.skprompt.txt");
+        this._manualTemplate = EmbeddedResource.Read("Plugin.RenderFunctionManual.skprompt.txt");
+        this._questionTemplate = EmbeddedResource.Read("Plugin.RenderQuestion.skprompt.txt");
 
         // Load or use default PromptConfig
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
@@ -64,7 +64,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
 
         // Import native functions
-        this._nativeFunctions = this._kernel.ImportPlugin(this, RestrictedSkillName);
+        this._nativeFunctions = this._kernel.ImportPlugin(this, RestrictedPluginName);
 
         // Create context and logger
         this._context = this._kernel.CreateNewContext();
@@ -83,7 +83,7 @@ public class StepwisePlanner : IStepwisePlanner
         planStep.Parameters.Set("question", goal);
 
         planStep.Outputs.Add("stepCount");
-        planStep.Outputs.Add("skillCount");
+        planStep.Outputs.Add("pluginCount"); // TODO Mark: Should this be functionCount?
         planStep.Outputs.Add("stepsTaken");
         planStep.Outputs.Add("iterations");
 
@@ -548,9 +548,9 @@ public class StepwisePlanner : IStepwisePlanner
 
     private ISKFunction GetFunction(FunctionView targetFunction)
     {
-        var getFunction = (string skillName, string functionName) =>
+        var getFunction = (string pluginName, string functionName) =>
         {
-            return this._kernel.Functions.GetFunction(skillName, functionName);
+            return this._kernel.Functions.GetFunction(pluginName, functionName);
         };
         var getPluginFunction = this.Config.GetPluginFunction ?? getFunction;
         var function = getPluginFunction(targetFunction.PluginName, targetFunction.Name);
@@ -571,12 +571,12 @@ public class StepwisePlanner : IStepwisePlanner
         {
             var functionsView = this._context.Functions!.GetFunctionViews();
 
-            var excludedSkills = this.Config.ExcludedPlugins ?? new();
+            var excludedPlugins = this.Config.ExcludedPlugins ?? new();
             var excludedFunctions = this.Config.ExcludedFunctions ?? new();
 
             var availableFunctions =
                 functionsView
-                    .Where(s => !excludedSkills.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
+                    .Where(s => !excludedPlugins.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
                     .OrderBy(x => x.PluginName)
                     .ThenBy(x => x.Name);
 
@@ -604,7 +604,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private static PromptTemplateConfig LoadPromptConfigFromResource()
     {
-        string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
+        string promptConfigString = EmbeddedResource.Read("Plugin.StepwiseStep.config.json");
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
     }
 
@@ -640,12 +640,12 @@ public class StepwisePlanner : IStepwisePlanner
             actionCounts[step.Action!] = ++currentCount;
         }
 
-        var skillCallListWithCounts = string.Join(", ", actionCounts.Keys.Select(skill =>
-            $"{skill}({actionCounts[skill]})"));
+        var pluginCallListWithCounts = string.Join(", ", actionCounts.Keys.Select(plugin =>
+            $"{plugin}({actionCounts[plugin]})"));
 
-        var skillCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
+        var pluginCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
 
-        context.Variables.Set("skillCount", $"{skillCallCountStr} ({skillCallListWithCounts})");
+        context.Variables.Set("pluginCount", $"{pluginCallCountStr} ({pluginCallListWithCounts})"); // TODO Mark: Should this be functionCount?
     }
 
     private static string ToManualString(FunctionView function)
@@ -716,7 +716,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
-    private const string RestrictedSkillName = "StepwisePlanner_Excluded";
+    private const string RestrictedPluginName = "StepwisePlanner_Excluded";
 
     /// <summary>
     /// The Action tag

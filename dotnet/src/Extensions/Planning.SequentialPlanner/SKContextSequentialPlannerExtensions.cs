@@ -29,7 +29,7 @@ public static class SKContextSequentialPlannerExtensions
     /// </summary>
     /// <param name="context">The SKContext to get the functions manual for.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
-    /// <param name="config">The planner skill config.</param>
+    /// <param name="config">The planner plugin config.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
     public static async Task<string> GetFunctionsManualAsync(
@@ -49,13 +49,13 @@ public static class SKContextSequentialPlannerExtensions
     }
 
     /// <summary>
-    /// Returns a list of functions that are available to the user based on the semantic query and the excluded skills and functions.
+    /// Returns a list of functions that are available to the user based on the semantic query and the excluded plugins and functions.
     /// </summary>
     /// <param name="context">The SKContext</param>
     /// <param name="config">The planner config.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A list of functions that are available to the user based on the semantic query and the excluded skills and functions.</returns>
+    /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
     public static async Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(
         this SKContext context,
         SequentialPlannerConfig config,

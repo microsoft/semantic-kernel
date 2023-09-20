@@ -22,7 +22,7 @@ public class SKContextExtensionsTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var variables = new ContextVariables();
-        var skills = new FunctionCollection();
+        var functions = new FunctionCollection();
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -43,7 +43,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernel.Object, variables, skills);
+        var context = new SKContext(kernel.Object, variables, functions);
         var config = new SequentialPlannerConfig() { Memory = memory.Object };
         var semanticQuery = "test";
 
@@ -67,8 +67,8 @@ public class SKContextExtensionsTests
 
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
-        var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
-        var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
+        var functionView = new FunctionView("functionName", "pluginName", "description", new List<ParameterView>(), true, false);
+        var nativeFunctionView = new FunctionView("nativeFunctionName", "pluginName", "description", new List<ParameterView>(), false, false);
         var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result
@@ -132,8 +132,8 @@ public class SKContextExtensionsTests
 
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
-        var functionView = new FunctionView("functionName", "skillName", "description", new List<ParameterView>(), true, false);
-        var nativeFunctionView = new FunctionView("nativeFunctionName", "skillName", "description", new List<ParameterView>(), false, false);
+        var functionView = new FunctionView("functionName", "pluginName", "description", new List<ParameterView>(), true, false);
+        var nativeFunctionView = new FunctionView("nativeFunctionName", "pluginName", "description", new List<ParameterView>(), false, false);
         var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result
@@ -191,7 +191,7 @@ public class SKContextExtensionsTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var variables = new ContextVariables();
-        var skills = new FunctionCollection();
+        var functions = new FunctionCollection();
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -213,7 +213,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernel.Object, variables, skills);
+        var context = new SKContext(kernel.Object, variables, functions);
         var config = new SequentialPlannerConfig { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 

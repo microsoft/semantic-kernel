@@ -48,7 +48,7 @@ public sealed class ActionPlanner : IActionPlanner
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
 
-    // TODO: allow to inject skill store
+    // TODO: allow to inject plugin store
     /// <summary>
     /// Initialize a new instance of the <see cref="ActionPlanner"/> class.
     /// </summary>
@@ -79,7 +79,7 @@ public sealed class ActionPlanner : IActionPlanner
         this._kernel = kernel;
         this._context = kernel.CreateNewContext();
 
-        // Set up Config with default values and excluded skills
+        // Set up Config with default values and excluded plugins
         this._config = config ?? new();
         this._config.ExcludedPlugins.Add(PluginName);
     }
@@ -134,7 +134,7 @@ public sealed class ActionPlanner : IActionPlanner
         return plan;
     }
 
-    // TODO: use goal to find relevant functions in a skill store
+    // TODO: use goal to find relevant functions in a plugin store
     /// <summary>
     /// Native function returning a list of all the functions in the current context,
     /// excluding functions in the planner itself.
@@ -172,23 +172,23 @@ public sealed class ActionPlanner : IActionPlanner
 [EXAMPLE]
 - List of functions:
 // Read a file.
-FileIOSkill.ReadAsync
+FileIOPlugin.ReadAsync
 Parameter ""path"": Source file.
 // Write a file.
-FileIOSkill.WriteAsync
+FileIOPlugin.WriteAsync
 Parameter ""path"": Destination file. (default value: sample.txt)
 Parameter ""content"": File content.
 // Get the current time.
 TimePlugin.Time
 No parameters.
 // Makes a POST request to a uri.
-HttpSkill.PostAsync
+HttpPlugin.PostAsync
 Parameter ""body"": The body of the request.
 - End list of functions.
 Goal: create a file called ""something.txt"".
 {""plan"":{
 ""rationale"": ""the list contains a function that allows to create files"",
-""function"": ""FileIOSkill.WriteAsync"",
+""function"": ""FileIOPlugin.WriteAsync"",
 ""parameters"": {
 ""path"": ""something.txt"",
 ""content"": null
@@ -216,14 +216,14 @@ Goal: create a file called ""something.txt"".
 TimePlugin.Time
 No parameters.
 // Write a file.
-FileIOSkill.WriteAsync
+FileIOPlugin.WriteAsync
 Parameter ""path"": Destination file. (default value: sample.txt)
 Parameter ""content"": File content.
 // Makes a POST request to a uri.
-HttpSkill.PostAsync
+HttpPlugin.PostAsync
 Parameter ""body"": The body of the request.
 // Read a file.
-FileIOSkill.ReadAsync
+FileIOPlugin.ReadAsync
 Parameter ""path"": Source file.
 - End list of functions.
 Goal: tell me a joke.
@@ -314,11 +314,11 @@ Goal: tell me a joke.
     {
         Verify.NotNull(context.Functions);
 
-        var excludedSkills = this._config.ExcludedPlugins ?? new();
+        var excludedPlugins = this._config.ExcludedPlugins ?? new();
         var excludedFunctions = this._config.ExcludedFunctions ?? new();
 
         var availableFunctions = context.Functions.GetFunctionViews()
-                .Where(s => !excludedSkills.Contains(s.PluginName, StringComparer.CurrentCultureIgnoreCase)
+                .Where(s => !excludedPlugins.Contains(s.PluginName, StringComparer.CurrentCultureIgnoreCase)
                     && !excludedFunctions.Contains(s.Name, StringComparer.CurrentCultureIgnoreCase))
                 .OrderBy(x => x.PluginName)
                 .ThenBy(x => x.Name);

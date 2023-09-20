@@ -103,7 +103,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     {
         if (context.Functions == null)
         {
-            throw new SKException("Skill collection not found in the context");
+            throw new SKException("Function collection not found in the context");
         }
 
         if (!this.GetFunction(context.Functions!, fBlock, out ISKFunction? function))
@@ -140,14 +140,14 @@ internal sealed class CodeBlock : Block, ICodeRendering
         FunctionIdBlock fBlock,
         out ISKFunction? function)
     {
-        if (string.IsNullOrEmpty(fBlock.SkillName))
+        if (string.IsNullOrEmpty(fBlock.PluginName))
         {
-            // Function in the global skill
+            // Function in the global plugin
             return functions.TryGetFunction(fBlock.FunctionName, out function);
         }
 
-        // Function within a specific skill
-        return functions.TryGetFunction(fBlock.SkillName, fBlock.FunctionName, out function);
+        // Function within a specific plugin
+        return functions.TryGetFunction(fBlock.PluginName, fBlock.FunctionName, out function);
     }
 
     private bool IsValidFunctionCall(out string errorMsg)

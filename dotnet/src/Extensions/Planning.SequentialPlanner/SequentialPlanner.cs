@@ -65,12 +65,12 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
         string planResultString = planResult.Result.Trim();
 
-        var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+        var getPluginFunction = this.Config.GetPluginFunction ?? SequentialPlanParser.GetPluginFunction(this._context);
 
         Plan plan;
         try
         {
-            plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+            plan = planResultString.ToPlanFromXml(goal, getPluginFunction, this.Config.AllowMissingFunctions);
         }
         catch (SKException e)
         {

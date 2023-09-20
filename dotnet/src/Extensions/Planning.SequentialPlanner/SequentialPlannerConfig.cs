@@ -65,5 +65,5 @@ public sealed class SequentialPlannerConfig : PlannerConfigBase
     /// <summary>
     /// Optional callback to get a function by name.
     /// </summary>
-    public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+    public Func<string, string, ISKFunction?>? GetPluginFunction { get; set; }
 }

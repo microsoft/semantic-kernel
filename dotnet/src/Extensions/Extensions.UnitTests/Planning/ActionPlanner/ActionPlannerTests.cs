@@ -21,9 +21,9 @@ public sealed class ActionPlannerTests
     public async Task ExtractsAndDeserializesWellFormedJsonFromPlannerResultAsync()
     {
         // Arrange
-        var skills = this.CreateMockSkillCollection();
+        var plugins = this.CreateMockFunctionCollection();
 
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, plugins);
 
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
 
@@ -34,7 +34,7 @@ public sealed class ActionPlannerTests
         Assert.Equal("goal", plan.Description);
 
         Assert.Single(plan.Steps);
-        Assert.Equal("GitHubSkill", plan.Steps[0].PluginName);
+        Assert.Equal("GitHubPlugin", plan.Steps[0].PluginName);
         Assert.Equal("PullsList", plan.Steps[0].Name);
     }
 
@@ -63,7 +63,7 @@ public sealed class ActionPlannerTests
 {
     ""plan"": { {
         ""rationale"": ""the list contains a function that allows to list pull requests"",
-        ""function"": ""GitHubSkill.PullsList"",
+        ""function"": ""GitHubPlugin.PullsList"",
         ""parameters"": {
             ""owner"": ""microsoft"",
             ""repo"": ""semantic-kernel"",
@@ -72,7 +72,7 @@ public sealed class ActionPlannerTests
     }
 }
 
-This plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.
+This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.
 ";
 
         var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(invalidJsonString);
@@ -87,8 +87,8 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
     public void ListOfFunctionsIncludesNativeAndSemanticFunctions()
     {
         // Arrange
-        var skills = this.CreateMockSkillCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
+        var plugins = this.CreateMockFunctionCollection();
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, plugins);
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object);
         var context = kernel.Object.CreateNewContext();
 
@@ -96,7 +96,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         var result = planner.ListOfFunctions("goal", context);
 
         // Assert
-        var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubSkill.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubSkill.RepoList{Environment.NewLine}";
+        var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubPlugin.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
 
@@ -104,10 +104,10 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
     public void ListOfFunctionsExcludesExcludedPlugins()
     {
         // Arrange
-        var skills = this.CreateMockSkillCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
+        var plugins = this.CreateMockFunctionCollection();
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, plugins);
         var config = new ActionPlannerConfig();
-        config.ExcludedPlugins.Add("GitHubSkill");
+        config.ExcludedPlugins.Add("GitHubPlugin");
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
         var context = kernel.Object.CreateNewContext();
 
@@ -123,8 +123,8 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
     public void ListOfFunctionsExcludesExcludedFunctions()
     {
         // Arrange
-        var skills = this.CreateMockSkillCollection();
-        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, skills);
+        var plugins = this.CreateMockFunctionCollection();
+        var kernel = this.CreateMockKernelAndFunctionFlowWithTestString(ValidPlanString, plugins);
         var config = new ActionPlannerConfig();
         config.ExcludedFunctions.Add("PullsList");
         var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config: config);
@@ -134,7 +134,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         var result = planner.ListOfFunctions("goal", context);
 
         // Assert
-        var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubSkill.RepoList{Environment.NewLine}";
+        var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
         Assert.Equal(expected, result);
     }
 
@@ -167,7 +167,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
-        // Mock Skills
+        // Mock Functions
         kernel.Setup(x => x.Functions).Returns(functions.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
 
@@ -190,20 +190,20 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         return mockFunction;
     }
 
-    private Mock<IFunctionCollection> CreateMockSkillCollection()
+    private Mock<IFunctionCollection> CreateMockFunctionCollection()
     {
-        var functions = new List<(string name, string skillName, string description, bool isSemantic)>()
+        var functions = new List<(string name, string pluginName, string description, bool isSemantic)>()
         {
             ("SendEmail", "email", "Send an e-mail", false),
-            ("PullsList", "GitHubSkill", "List pull requests", true),
-            ("RepoList", "GitHubSkill", "List repositories", true),
+            ("PullsList", "GitHubPlugin", "List pull requests", true),
+            ("RepoList", "GitHubPlugin", "List repositories", true),
         };
 
         var functionsView = new List<FunctionView>();
-        var skills = new Mock<IFunctionCollection>();
-        foreach (var (name, skillName, description, isSemantic) in functions)
+        var plugins = new Mock<IFunctionCollection>();
+        foreach (var (name, pluginName, description, isSemantic) in functions)
         {
-            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
+            var functionView = new FunctionView(name, pluginName, description, new List<ParameterView>(), isSemantic, true);
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
@@ -214,21 +214,21 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(context);
                 });
-            skills.Setup(x => x.GetFunction(skillName, name))
+            plugins.Setup(x => x.GetFunction(pluginName, name))
                 .Returns(mockFunction.Object);
             ISKFunction? outFunc = mockFunction.Object;
-            skills.Setup(x => x.TryGetFunction(skillName, name, out outFunc)).Returns(true);
+            plugins.Setup(x => x.TryGetFunction(pluginName, name, out outFunc)).Returns(true);
         }
 
-        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-        return skills;
+        plugins.Setup(x => x.GetFunctionViews()).Returns(functionsView);
+        return plugins;
     }
 
     private const string ValidPlanString = @"Here is a possible plan to accomplish the user intent:
 {
     ""plan"":{
         ""rationale"": ""the list contains a function that allows to list pull requests"",
-        ""function"": ""GitHubSkill.PullsList"",
+        ""function"": ""GitHubPlugin.PullsList"",
         ""parameters"": {
             ""owner"": ""microsoft"",
             ""repo"": ""semantic-kernel"",
@@ -237,5 +237,5 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
     }
 }
 
-This plan uses the `GitHubSkill.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
+This plan uses the `GitHubPlugin.PullsList` function to list the open pull requests for the `semantic-kernel` repository owned by `microsoft`. The `state` parameter is set to `""open""` to filter the results to only show open pull requests.";
 }
