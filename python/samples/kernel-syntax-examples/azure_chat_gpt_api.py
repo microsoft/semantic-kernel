@@ -10,7 +10,6 @@ from semantic_kernel.utils.settings import azure_openai_settings_from_dot_env_as
 
 load_dotenv()
 
-
 system_message = """
 You are a chat bot. Your name is Mosscap and
 you have one goal: figure out what people need.
@@ -21,6 +20,7 @@ flowery prose.
 """
 
 kernel = sk.Kernel()
+
 kernel.add_chat_service(
     "chat-gpt",
     sk_oai.AzureChatCompletion(
