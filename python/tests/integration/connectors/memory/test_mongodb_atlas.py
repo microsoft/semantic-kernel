@@ -288,11 +288,13 @@ async def test_collection_knn_matches_post_filter(
         mems,
         query_limit=4,
         expected_limit=2,
-        post_filter={
-            "$match": {
-                MONGODB_FIELD_DESC: {
-                    "$in": [mems["2"]._description, mems["3"]._description]
+        post_filter=[
+            {
+                "$match": {
+                    MONGODB_FIELD_DESC: {
+                        "$in": [mems["2"]._description, mems["3"]._description]
+                    }
                 }
             }
-        },
+        ],
     )

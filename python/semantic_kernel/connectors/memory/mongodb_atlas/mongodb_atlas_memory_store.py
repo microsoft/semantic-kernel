@@ -261,7 +261,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         with_embeddings: bool,
         min_relevance_score: float | None = None,
         pre_filter: dict[str, Any] | None = None,
-        post_filter: dict[str, Any] | None = None,
+        post_filter: list[dict[str, Any]] | None = None,
     ) -> List[Tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding of type float. Does not guarantee that the collection exists.
 
@@ -273,7 +273,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             with_embeddings {bool} -- If true, the embeddings will be returned in the memory records.
             pre_filter {dict[str, Any] | None} -- Mongo Query to filter search information during vector search
                 in pipeline, defaults to None
-            post_filter {dict[str, Any] | None} -- Additional aggregation pipeline stages to conduct after
+            post_filter {list[dict[str, Any]] | None} -- Additional aggregation pipeline stages to conduct after
                 initial vector search, defaults to None
 
         Returns:
@@ -303,7 +303,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             pipeline.append({"$match": {"$gte": ["$score", min_relevance_score]}})
 
         if post_filter:
-            pipeline.append(post_filter)
+            pipeline.extend(post_filter)
 
         cursor: MotorCommandCursor = self.database[collection_name].aggregate(pipeline)
 
