@@ -5,9 +5,10 @@ from typing import List, Optional, Tuple, Union
 
 import google.generativeai as palm
 from google.generativeai.types import ChatResponse, ExampleOptions, MessagePromptOptions
-from pydantic import Field, constr
+from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
 )
@@ -20,9 +21,9 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 
 
-class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
-    model_id: constr(strip_whitespace=True, min_length=1)
-    api_key: constr(strip_whitespace=True, min_length=1)
+class GooglePalmChatCompletion(
+    ChatCompletionClientBase, TextCompletionClientBase, AIServiceClientBase
+):
     message_history: Optional[ChatResponse] = Field(None, init=False)
 
     def __init__(self, model_id: str, api_key: str, log: Optional[Logger] = None):

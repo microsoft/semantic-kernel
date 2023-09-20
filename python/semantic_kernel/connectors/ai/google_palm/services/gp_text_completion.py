@@ -4,9 +4,9 @@ from logging import Logger
 from typing import List, Optional, Union
 
 import google.generativeai as palm
-from pydantic import constr
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
+from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
 )
@@ -15,10 +15,7 @@ from semantic_kernel.connectors.ai.text_completion_client_base import (
 )
 
 
-class GooglePalmTextCompletion(TextCompletionClientBase):
-    model_id: constr(strip_whitespace=True, min_length=1)
-    api_key: constr(strip_whitespace=True, min_length=1)
-
+class GooglePalmTextCompletion(TextCompletionClientBase, AIServiceClientBase):
     def __init__(self, model_id: str, api_key: str, log: Optional[Logger] = None):
         """
         Initializes a new instance of the GooglePalmTextCompletion class.
