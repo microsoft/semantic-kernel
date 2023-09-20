@@ -42,7 +42,7 @@ public class SequentialPlanParserTests
         IKernel kernel,
         ContextVariables? variables = null)
     {
-        return new SKContext(variables, kernel.Skills, kernel.LoggerFactory);
+        return new SKContext(kernel, variables, kernel.Skills);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -63,12 +63,12 @@ public class SequentialPlanParserTests
         // For Create
         kernelMock.Setup(k => k.CreateNewContext()).Returns(this.CreateSKContext(kernel));
 
-        var functionsView = new FunctionsView();
+        var functionsView = new List<FunctionView>();
         foreach (var (name, skillName, description, isSemantic, resultString) in functions)
         {
             var functionView = new FunctionView(name, skillName, description, new List<ParameterView>() { new(name: "param", description: "description") }, isSemantic, true);
             var mockFunction = CreateMockFunction(functionView);
-            functionsView.AddFunction(functionView);
+            functionsView.Add(functionView);
 
             var result = this.CreateSKContext(kernel);
             result.Variables.Update(resultString);
@@ -93,7 +93,7 @@ public class SequentialPlanParserTests
             }
         }
 
-        skills.Setup(x => x.GetFunctionsView(It.IsAny<bool>(), It.IsAny<bool>())).Returns(functionsView);
+        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
@@ -216,7 +216,7 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
@@ -241,7 +241,7 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("_GLOBAL_FUNCTIONS_", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
@@ -326,7 +326,7 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
@@ -349,7 +349,7 @@ public class SequentialPlanParserTests
 
         // Assert
         Assert.NotNull(plan);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("CodeSearch", plan.Steps[0].SkillName);
         Assert.Equal("codesearchresults_post", plan.Steps[0].Name);
     }
@@ -379,7 +379,7 @@ public class SequentialPlanParserTests
         Assert.Equal(2, plan.Steps.Count);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
-        Assert.Equal(0, plan.Steps[1].Steps.Count);
+        Assert.Empty(plan.Steps[1].Steps);
         Assert.Equal("MockSkill", plan.Steps[1].SkillName);
         Assert.Equal("Echo", plan.Steps[1].Name);
     }

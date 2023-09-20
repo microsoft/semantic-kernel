@@ -63,7 +63,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         this._logger.LogDebug("Sending request: {Uri}", uri);
 
-        using HttpResponseMessage response = await this.SendGetRequest(uri, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await this.SendGetRequestAsync(uri, cancellationToken).ConfigureAwait(false);
 
         this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
@@ -85,7 +85,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="uri">The URI to send the request to.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
-    private async Task<HttpResponseMessage> SendGetRequest(Uri uri, CancellationToken cancellationToken = default)
+    private async Task<HttpResponseMessage> SendGetRequestAsync(Uri uri, CancellationToken cancellationToken = default)
     {
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
