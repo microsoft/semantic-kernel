@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.SkillDefinition;
+namespace SemanticKernel.UnitTests.Functions;
 
 public class ParameterViewTypeTests
 {

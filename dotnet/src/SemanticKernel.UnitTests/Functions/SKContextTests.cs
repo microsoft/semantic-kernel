@@ -6,11 +6,10 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.SkillDefinition;
+namespace SemanticKernel.UnitTests.Functions;
 
 public class SKContextTests
 {

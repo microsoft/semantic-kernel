@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+namespace Microsoft.SemanticKernel.Functions;
 
 [DebuggerDisplay("Count = 0")]
 internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection

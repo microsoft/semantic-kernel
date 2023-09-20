@@ -21,7 +21,7 @@ public static class KernelPlanExtensions
     /// <param name="kernel">Kernel instance to use</param>
     /// <param name="plan">Plan to import</param>
     /// <returns>Function definition for the plan</returns>
-    public static SkillDefinition.ISKFunction ImportPlan(this IKernel kernel, Plan plan)
+    public static ISKFunction ImportPlan(this IKernel kernel, Plan plan)
     {
         return kernel.RegisterCustomFunction(plan);
     }
@@ -32,7 +32,7 @@ public static class KernelPlanExtensions
     /// <param name="kernel">Kernel instance to use</param>
     /// <param name="json">Json representation of the plan</param>
     /// <returns>Function definition for the plan</returns>
-    public static SkillDefinition.ISKFunction ImportPlanFromJson(this IKernel kernel, string json)
+    public static ISKFunction ImportPlanFromJson(this IKernel kernel, string json)
     {
         return kernel.RegisterCustomFunction(Plan.FromJson(json, kernel.CreateNewContext()));
     }

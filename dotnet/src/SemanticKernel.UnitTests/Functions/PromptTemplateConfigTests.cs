@@ -4,15 +4,15 @@ using System.Text.Json;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.SkillDefinition;
+namespace SemanticKernel.UnitTests.Functions;
 
 public class PromptTemplateConfigTests
 {
-    [Fact]
-    public void DeserializingDontExpectChatSystemPromptToExists()
-    {
-        // Arrange
-        string configPayload = @"{
+  [Fact]
+  public void DeserializingDontExpectChatSystemPromptToExists()
+  {
+    // Arrange
+    string configPayload = @"{
           ""schema"": 1,
           ""description"": ""Turn a scenario into a creative or humorous excuse to send your boss"",
           ""type"": ""completion"",
@@ -25,19 +25,19 @@ public class PromptTemplateConfigTests
           }
         }";
 
-        // Act
-        var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+    // Act
+    var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
 
-        // Assert
-        Assert.NotNull(templateConfig);
-        Assert.Null(templateConfig.Completion.ChatSystemPrompt);
-    }
+    // Assert
+    Assert.NotNull(templateConfig);
+    Assert.Null(templateConfig.Completion.ChatSystemPrompt);
+  }
 
-    [Fact]
-    public void DeserializingExpectChatSystemPromptToExists()
-    {
-        // Arrange
-        string configPayload = @"{
+  [Fact]
+  public void DeserializingExpectChatSystemPromptToExists()
+  {
+    // Arrange
+    string configPayload = @"{
           ""schema"": 1,
           ""description"": ""Turn a scenario into a creative or humorous excuse to send your boss"",
           ""type"": ""completion"",
@@ -51,12 +51,12 @@ public class PromptTemplateConfigTests
           }
         }";
 
-        // Act
-        var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+    // Act
+    var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
 
-        // Assert
-        Assert.NotNull(templateConfig);
-        Assert.NotNull(templateConfig.Completion.ChatSystemPrompt);
-        Assert.Equal("I am a prompt", templateConfig.Completion.ChatSystemPrompt);
-    }
+    // Assert
+    Assert.NotNull(templateConfig);
+    Assert.NotNull(templateConfig.Completion.ChatSystemPrompt);
+    Assert.Equal("I am a prompt", templateConfig.Completion.ChatSystemPrompt);
+  }
 }
