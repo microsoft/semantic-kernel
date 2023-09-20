@@ -113,22 +113,22 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportPlugin(object objectInstance, string? pluginName = null)
+    public IDictionary<string, ISKFunction> ImportPlugin(object pluginInstance, string? pluginName = null)
     {
-        Verify.NotNull(objectInstance);
+        Verify.NotNull(pluginInstance);
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
             pluginName = FunctionCollection.GlobalFunctions;
-            this._logger.LogTrace("Importing functions from {0} in the global namespace", objectInstance.GetType().FullName);
+            this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", pluginInstance.GetType().FullName);
         }
         else
         {
-            this._logger.LogTrace("Importing functions to {0}", pluginName);
+            this._logger.LogTrace("Importing functions from {0} to the {1} namespace", pluginInstance.GetType().FullName, pluginName);
         }
 
         Dictionary<string, ISKFunction> functions = ImportFunctions(
-            objectInstance,
+            pluginInstance,
             pluginName!,
             this._logger,
             this.LoggerFactory
@@ -145,9 +145,9 @@ public sealed class Kernel : IKernel, IDisposable
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
-    public IDictionary<string, ISKFunction> ImportSkill(object objectInstance, string? pluginName = null)
+    public IDictionary<string, ISKFunction> ImportSkill(object pluginInstance, string? pluginName = null)
     {
-        return this.ImportPlugin(objectInstance, pluginName);
+        return this.ImportPlugin(pluginInstance, pluginName);
     }
 #pragma warning restore CS1591
 
@@ -360,14 +360,14 @@ repeat:
     /// <summary>
     /// Import a native functions into the kernel function collection, so that semantic functions and pipelines can consume its functions.
     /// </summary>
-    /// <param name="objectInstance">Class instance from which to import available native functions</param>
+    /// <param name="pluginInstance">Class instance from which to import available native functions</param>
     /// <param name="pluginName">Plugin name, used to group functions under a shared namespace</param>
     /// <param name="logger">Application logger</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportFunctions(object objectInstance, string pluginName, ILogger logger, ILoggerFactory loggerFactory)
+    private static Dictionary<string, ISKFunction> ImportFunctions(object pluginInstance, string pluginName, ILogger logger, ILoggerFactory loggerFactory)
     {
-        MethodInfo[] methods = objectInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+        MethodInfo[] methods = pluginInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         logger.LogTrace("Importing plugin name: {0}. Potential methods found: {1}", pluginName, methods.Length);
 
         // Filter out non-SKFunctions and fail if two functions have the same name
@@ -376,7 +376,7 @@ repeat:
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, objectInstance, pluginName, loggerFactory);
+                ISKFunction function = SKFunction.FromNativeMethod(method, pluginInstance, pluginName, loggerFactory);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new SKException("Function overloads are not supported, please differentiate function names");
