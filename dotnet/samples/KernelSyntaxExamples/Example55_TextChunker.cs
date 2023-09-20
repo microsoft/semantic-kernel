@@ -3,13 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.Tokenizers;
 using Microsoft.SemanticKernel.Text;
+using SharpToken;
 
 // ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
 {
-    private const string text = @"The city of Venice, located in the northeastern part of Italy,
+    private const string Text = @"The city of Venice, located in the northeastern part of Italy,
 is renowned for its unique geographical features. Built on more than 100 small islands in a lagoon in the
 Adriatic Sea, it has no roads, just canals including the Grand Canal thoroughfare lined with Renaissance and
 Gothic palaces. The central square, Piazza San Marco, contains St. Mark's Basilica, which is tiled with Byzantine
@@ -31,6 +31,7 @@ known as coral polyps.";
     {
         RunExample();
         RunExampleWithCustomTokenCounter();
+        RunExampleWithHeader();
 
         return Task.CompletedTask;
     }
@@ -39,7 +40,7 @@ known as coral polyps.";
     {
         Console.WriteLine("=== Text chunking ===");
 
-        var lines = TextChunker.SplitPlainTextLines(text, 40);
+        var lines = TextChunker.SplitPlainTextLines(Text, 40);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120);
 
         WriteParagraphsToConsole(paragraphs);
@@ -49,8 +50,18 @@ known as coral polyps.";
     {
         Console.WriteLine("=== Text chunking with a custom token counter ===");
 
-        var lines = TextChunker.SplitPlainTextLines(text, 40, TokenCounter);
-        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: TokenCounter);
+        var lines = TextChunker.SplitPlainTextLines(Text, 40, CustomTokenCounter);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: CustomTokenCounter);
+
+        WriteParagraphsToConsole(paragraphs);
+    }
+
+    private static void RunExampleWithHeader()
+    {
+        Console.WriteLine("=== Text chunking with chunk header ===");
+
+        var lines = TextChunker.SplitPlainTextLines(Text, 40);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 150, chunkHeader: "DOCUMENT NAME: test.txt\n\n");
 
         WriteParagraphsToConsole(paragraphs);
     }
@@ -68,9 +79,19 @@ known as coral polyps.";
         }
     }
 
-    private static int TokenCounter(string input)
+    /// <summary>
+    /// Custom token counter implementation using SharpToken.
+    /// Note: SharpToken is used for demonstration purposes only, it's possible to use any available or custom tokenization logic.
+    /// </summary>
+    private static int CustomTokenCounter(string input)
     {
-        var tokens = GPT3Tokenizer.Encode(input);
+        // Initialize encoding by encoding name
+        var encoding = GptEncoding.GetEncoding("cl100k_base");
+
+        // Initialize encoding by model name
+        // var encoding = GptEncoding.GetEncodingForModel("gpt-4");
+
+        var tokens = encoding.Encode(input);
 
         return tokens.Count;
     }
