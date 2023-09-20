@@ -85,7 +85,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange Mocks
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -121,7 +121,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -157,7 +157,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -193,7 +193,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -228,7 +228,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -263,7 +263,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -319,7 +319,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -388,7 +388,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -471,7 +471,7 @@ public sealed class PlanSerializationTests
         var plan = new Plan(goal);
 
         // Arrange
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,
@@ -527,7 +527,7 @@ public sealed class PlanSerializationTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(
             this._kernel.Object,

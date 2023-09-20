@@ -62,12 +62,12 @@ public interface ISKFunction
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Set the default skill collection to use when the function is invoked
+    /// Set the default function collection to use when the function is invoked
     /// without a context or with a context that doesn't have a collection.
     /// </summary>
-    /// <param name="skills">Kernel's skill collection</param>
+    /// <param name="functions">Kernel's function collection</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills);
+    ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions);
 
     /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.

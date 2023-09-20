@@ -43,9 +43,9 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Read only skills collection
+    /// Read only functions collection
     /// </summary>
-    public IReadOnlySkillCollection Skills { get; }
+    public IReadOnlyFunctionCollection Functions { get; }
 
     /// <summary>
     /// App logger
@@ -76,13 +76,13 @@ public sealed class SKContext
     public SKContext(
         IKernel kernel,
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null)
+        IReadOnlyFunctionCollection? skills = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
 
         this._originalKernel = kernel;
         this.Variables = variables ?? new();
-        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
+        this.Functions = skills ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = kernel.LoggerFactory;
         this._culture = CultureInfo.CurrentCulture;
     }
@@ -94,7 +94,7 @@ public sealed class SKContext
     /// <param name="variables">Context variables to include in context.</param>
     public SKContext(
         IKernel kernel,
-        ContextVariables? variables = null) : this(kernel, variables, kernel.Skills)
+        ContextVariables? variables = null) : this(kernel, variables, kernel.Functions)
     {
     }
 
@@ -105,7 +105,7 @@ public sealed class SKContext
     /// <param name="skills">Skills to include in context.</param>
     public SKContext(
         IKernel kernel,
-        IReadOnlySkillCollection? skills = null) : this(kernel, null, skills)
+        IReadOnlyFunctionCollection? skills = null) : this(kernel, null, skills)
     {
     }
 
@@ -113,7 +113,7 @@ public sealed class SKContext
     /// Constructor for the context.
     /// </summary>
     /// <param name="kernel">Kernel instance parameter</param>
-    public SKContext(IKernel kernel) : this(kernel, null, kernel.Skills)
+    public SKContext(IKernel kernel) : this(kernel, null, kernel.Functions)
     {
     }
 
@@ -158,9 +158,9 @@ public sealed class SKContext
         {
             string display = this.Variables.DebuggerDisplay;
 
-            if (this.Skills is IReadOnlySkillCollection skills)
+            if (this.Functions is IReadOnlyFunctionCollection functions)
             {
-                var view = skills.GetFunctionViews();
+                var view = functions.GetFunctionViews();
                 display += $", Skills = {view.Count}";
             }
 

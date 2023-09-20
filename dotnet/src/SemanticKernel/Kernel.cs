@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel;
@@ -41,7 +40,7 @@ public sealed class Kernel : IKernel, IDisposable
     public ISemanticTextMemory Memory => this._memory;
 
     /// <inheritdoc/>
-    public IReadOnlySkillCollection Skills => this._skillCollection;
+    public IReadOnlyFunctionCollection Functions => this._functionCollection;
 
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
@@ -63,14 +62,14 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Kernel constructor. See KernelBuilder for an easier and less error prone approach to create kernel instances.
     /// </summary>
-    /// <param name="skillCollection">Skill collection</param>
+    /// <param name="functionCollection">Skill collection</param>
     /// <param name="aiServiceProvider">AI Service Provider</param>
     /// <param name="promptTemplateEngine">Prompt template engine</param>
     /// <param name="memory">Semantic text Memory</param>
     /// <param name="httpHandlerFactory"></param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public Kernel(
-        ISkillCollection skillCollection,
+        IFunctionCollection functionCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
@@ -83,7 +82,7 @@ public sealed class Kernel : IKernel, IDisposable
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
         this._promptTemplateEngine = promptTemplateEngine;
-        this._skillCollection = skillCollection;
+        this._functionCollection = functionCollection;
 
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
     }
@@ -91,7 +90,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
     {
-        return this.RegisterSemanticFunction(SkillCollection.GlobalSkill, functionName, functionConfig);
+        return this.RegisterSemanticFunction(FunctionCollection.GlobalSkill, functionName, functionConfig);
     }
 
     /// <inheritdoc/>
@@ -102,7 +101,7 @@ public sealed class Kernel : IKernel, IDisposable
         Verify.ValidFunctionName(functionName);
 
         ISKFunction function = this.CreateSemanticFunction(pluginName, functionName, functionConfig);
-        this._skillCollection.AddFunction(function);
+        this._functionCollection.AddFunction(function);
 
         return function;
     }
@@ -114,7 +113,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = SkillCollection.GlobalSkill;
+            pluginName = FunctionCollection.GlobalSkill;
             this._logger.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
         }
         else
@@ -130,8 +129,8 @@ public sealed class Kernel : IKernel, IDisposable
         );
         foreach (KeyValuePair<string, ISKFunction> f in skill)
         {
-            f.Value.SetDefaultSkillCollection(this.Skills);
-            this._skillCollection.AddFunction(f.Value);
+            f.Value.SetDefaultFunctionCollection(this.Functions);
+            this._functionCollection.AddFunction(f.Value);
         }
 
         return skill;
@@ -142,8 +141,8 @@ public sealed class Kernel : IKernel, IDisposable
     {
         Verify.NotNull(customFunction);
 
-        customFunction.SetDefaultSkillCollection(this.Skills);
-        this._skillCollection.AddFunction(customFunction);
+        customFunction.SetDefaultFunctionCollection(this.Functions);
+        this._functionCollection.AddFunction(customFunction);
 
         return customFunction;
     }
@@ -240,7 +239,7 @@ repeat:
     {
         return new SKContext(
             this,
-            skills: this._skillCollection);
+            skills: this._functionCollection);
     }
 
     /// <inheritdoc/>
@@ -264,12 +263,12 @@ repeat:
         if (this._memory is IDisposable mem) { mem.Dispose(); }
 
         // ReSharper disable once SuspiciousTypeConversion.Global
-        if (this._skillCollection is IDisposable reg) { reg.Dispose(); }
+        if (this._functionCollection is IDisposable reg) { reg.Dispose(); }
     }
 
     #region private ================================================================================
 
-    private readonly ISkillCollection _skillCollection;
+    private readonly IFunctionCollection _functionCollection;
     private ISemanticTextMemory _memory;
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
@@ -333,7 +332,7 @@ repeat:
 
         // Connect the function to the current kernel skill collection, in case the function
         // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultSkillCollection(this.Skills);
+        func.SetDefaultFunctionCollection(this.Functions);
 
         func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
 
@@ -354,7 +353,7 @@ repeat:
     private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string pluginName, ILogger logger, ILoggerFactory loggerFactory)
     {
         MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-        logger.LogTrace("Importing skill name: {0}. Potential methods found: {1}", pluginName, methods.Length);
+        logger.LogTrace("Importing plugin name: {0}. Potential methods found: {1}", pluginName, methods.Length);
 
         // Filter out non-SKFunctions and fail if two functions have the same name
         Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
@@ -386,7 +385,7 @@ repeat:
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ISKFunction Func(string pluginName, string functionName)
     {
-        return this.Skills.GetFunction(pluginName, functionName);
+        return this.Functions.GetFunction(pluginName, functionName);
     }
 
     #endregion

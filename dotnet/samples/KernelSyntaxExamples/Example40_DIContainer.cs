@@ -80,7 +80,7 @@ public static class Example40_DIContainer
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
         collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
-        collection.AddTransient<ISkillCollection, SkillCollection>();
+        collection.AddTransient<ISkillCollection, FunctionCollection>();
         collection.AddTransient<IPromptTemplateEngine, PromptTemplateEngine>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime

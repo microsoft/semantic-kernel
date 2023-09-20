@@ -8,9 +8,9 @@ using Microsoft.SemanticKernel.Diagnostics;
 namespace Microsoft.SemanticKernel.Functions;
 
 [DebuggerDisplay("Count = 0")]
-internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
+internal sealed class NullReadOnlyFunctionCollection : IReadOnlyFunctionCollection
 {
-    public static readonly NullReadOnlySkillCollection Instance = new();
+    public static readonly NullReadOnlyFunctionCollection Instance = new();
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName)
@@ -44,7 +44,7 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
         return new List<FunctionView>();
     }
 
-    private NullReadOnlySkillCollection()
+    private NullReadOnlyFunctionCollection()
     {
     }
 

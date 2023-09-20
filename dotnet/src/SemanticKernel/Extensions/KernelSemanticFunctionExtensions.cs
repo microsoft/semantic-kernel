@@ -29,7 +29,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="pluginName">Optional skill name, for namespacing and avoid collisions</param>
+    /// <param name="pluginName">Optional plugin name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="maxTokens">Max number of tokens to generate</param>
     /// <param name="temperature">Temperature parameter passed to LLM</param>
@@ -88,7 +88,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="config">Optional function settings</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="pluginName">An optional skill name, e.g. to namespace functions with the same name. When empty,
+    /// <param name="pluginName">An optional plugin name, e.g. to namespace functions with the same name. When empty,
     /// the function is added to the global namespace, overwriting functions with the same name</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
@@ -119,7 +119,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
-    /// <param name="pluginName">Optional skill name, for namespacing and avoid collisions</param>
+    /// <param name="pluginName">Optional plugin name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="maxTokens">Max number of tokens to generate</param>
     /// <param name="temperature">Temperature parameter passed to LLM</param>
@@ -171,7 +171,7 @@ public static class InlineFunctionsDefinitionExtension
     /// </para>
     /// <para>
     /// This method accepts the path of the parent directory (e.g. "d:\skills") and the name of the skill directory
-    /// (e.g. "OfficeSkill"), which is used also as the "skill name" in the internal skill collection (note that
+    /// (e.g. "OfficeSkill"), which is used also as the "plugin name" in the internal skill collection (note that
     /// skill and function names can contain only alphanumeric chars and underscore).
     /// </para>
     /// <code>

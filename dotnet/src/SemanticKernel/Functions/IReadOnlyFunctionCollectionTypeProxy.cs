@@ -10,14 +10,14 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Debugger type proxy for <see cref="SkillCollection"/>.
+/// Debugger type proxy for <see cref="IReadOnlyFunctionCollection"/>.
 /// </summary>
 // ReSharper disable once InconsistentNaming
-internal sealed class IReadOnlySkillCollectionTypeProxy
+internal sealed class IReadOnlyFunctionCollectionTypeProxy
 {
-    private readonly IReadOnlySkillCollection _collection;
+    private readonly IReadOnlyFunctionCollection _collection;
 
-    public IReadOnlySkillCollectionTypeProxy(IReadOnlySkillCollection collection) => this._collection = collection;
+    public IReadOnlyFunctionCollectionTypeProxy(IReadOnlyFunctionCollection collection) => this._collection = collection;
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     public SkillProxy[] Items

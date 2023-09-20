@@ -10,10 +10,10 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Read-only skill collection interface.
+/// Read-only function collection interface.
 /// </summary>
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix")]
-public interface IReadOnlySkillCollection
+public interface IReadOnlyFunctionCollection
 {
     /// <summary>
     /// Gets the function stored in the collection.

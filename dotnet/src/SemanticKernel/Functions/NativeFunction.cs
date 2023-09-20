@@ -59,7 +59,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// </summary>
     /// <param name="method">Signature of the method to invoke</param>
     /// <param name="target">Object containing the method to invoke</param>
-    /// <param name="pluginName">SK skill name</param>
+    /// <param name="pluginName">SK plugin name</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
@@ -75,7 +75,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = SkillCollection.GlobalSkill;
+            pluginName = FunctionCollection.GlobalSkill;
         }
 
         ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
@@ -95,7 +95,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// Create a native function instance, wrapping a delegate function
     /// </summary>
     /// <param name="nativeFunction">Function to invoke</param>
-    /// <param name="pluginName">SK skill name</param>
+    /// <param name="pluginName">SK plugin name</param>
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
@@ -119,7 +119,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = SkillCollection.GlobalSkill;
+            pluginName = FunctionCollection.GlobalSkill;
         }
 
         return new NativeFunction(
@@ -162,7 +162,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
         // No-op for native functions; do not throw, as both Plan and PromptFunctions use this,
         // and we don't have a way to distinguish between a native function and a Plan.

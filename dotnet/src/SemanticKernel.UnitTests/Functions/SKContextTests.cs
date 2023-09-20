@@ -13,12 +13,12 @@ namespace SemanticKernel.UnitTests.Functions;
 
 public class SKContextTests
 {
-    private readonly Mock<IReadOnlySkillCollection> _skills;
+    private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly Mock<IKernel> _kernel;
 
     public SKContextTests()
     {
-        this._skills = new Mock<IReadOnlySkillCollection>();
+        this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();
     }
 
@@ -27,7 +27,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(this._kernel.Object, variables, skills: this._skills.Object);
+        var target = new SKContext(this._kernel.Object, variables, skills: this._functions.Object);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -50,12 +50,12 @@ public class SKContextTests
     {
         // Arrange
         IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
-        this._skills.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
-        var target = new SKContext(this._kernel.Object, new ContextVariables(), this._skills.Object);
-        Assert.NotNull(target.Skills);
+        this._functions.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
+        var target = new SKContext(this._kernel.Object, new ContextVariables(), this._functions.Object);
+        Assert.NotNull(target.Functions);
 
         // Act
-        var say = target.Skills.GetFunction("func");
+        var say = target.Functions.GetFunction("func");
         SKContext result = await say.InvokeAsync("ciao", this._kernel.Object);
 
         // Assert

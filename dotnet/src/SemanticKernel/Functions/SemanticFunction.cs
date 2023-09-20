@@ -101,9 +101,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
-        this._skillCollection = skills;
+        this._functionCollection = functions;
         return this;
     }
 
@@ -173,7 +173,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private IReadOnlySkillCollection? _skillCollection;
+    private IReadOnlyFunctionCollection? _functionCollection;
     private Lazy<ITextCompletion>? _aiService = null;
     public IPromptTemplate _promptTemplate { get; }
 

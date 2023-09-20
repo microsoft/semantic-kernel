@@ -23,7 +23,7 @@ public class SKContextExtensionsTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var variables = new ContextVariables();
-        var skills = new SkillCollection();
+        var skills = new FunctionCollection();
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result
@@ -192,7 +192,7 @@ public class SKContextExtensionsTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var variables = new ContextVariables();
-        var skills = new SkillCollection();
+        var skills = new FunctionCollection();
         var cancellationToken = default(CancellationToken);
 
         // Arrange Mock Memory and Result

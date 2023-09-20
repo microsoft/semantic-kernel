@@ -24,7 +24,7 @@ public static class SKFunction
     /// </summary>
     /// <param name="method">Signature of the method to invoke</param>
     /// <param name="target">Object containing the method to invoke</param>
-    /// <param name="pluginName">SK skill name</param>
+    /// <param name="pluginName">SK plugin name</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
     public static ISKFunction FromNativeMethod(
@@ -38,7 +38,7 @@ public static class SKFunction
     /// Create a native function instance, wrapping a delegate function
     /// </summary>
     /// <param name="nativeFunction">Function to invoke</param>
-    /// <param name="pluginName">SK skill name</param>
+    /// <param name="pluginName">SK plugin name</param>
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>

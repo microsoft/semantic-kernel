@@ -27,7 +27,7 @@ public class SkillCollectionTests
         functionTwo.SetupGet(x => x.IsSemantic).Returns(false);
         functionTwo.SetupGet(x => x.RequestSettings).Returns(new CompleteRequestSettings());
 
-        var target = new SkillCollection();
+        var target = new FunctionCollection();
 
         // Act
         target.AddFunction(functionOne.Object);

@@ -35,12 +35,12 @@ public class KernelTests
         kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
-        Assert.True(kernel.Skills.TryGetFunction("jk", "joker", out _));
-        Assert.True(kernel.Skills.TryGetFunction("JK", "JOKER", out _));
-        Assert.True(kernel.Skills.TryGetFunction("mySk", "sayhello", out _));
-        Assert.True(kernel.Skills.TryGetFunction("MYSK", "SayHello", out _));
-        Assert.True(kernel.Skills.TryGetFunction("mySk", "ReadSkillCollectionAsync", out _));
-        Assert.True(kernel.Skills.TryGetFunction("MYSK", "readskillcollectionasync", out _));
+        Assert.True(kernel.Functions.TryGetFunction("jk", "joker", out _));
+        Assert.True(kernel.Functions.TryGetFunction("JK", "JOKER", out _));
+        Assert.True(kernel.Functions.TryGetFunction("mySk", "sayhello", out _));
+        Assert.True(kernel.Functions.TryGetFunction("MYSK", "SayHello", out _));
+        Assert.True(kernel.Functions.TryGetFunction("mySk", "ReadFunctionCollectionAsync", out _));
+        Assert.True(kernel.Functions.TryGetFunction("MYSK", "ReadFunctionCollectionAsync", out _));
     }
 
     [Fact]
@@ -57,15 +57,15 @@ public class KernelTests
         var skill = kernel.ImportSkill(nativeSkill, "mySk");
 
         // Act
-        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
+        SKContext result = await kernel.RunAsync(skill["ReadFunctionCollectionAsync"]);
 
         // Assert - 3 functions, var name is not case sensitive
         Assert.Equal("Nice fun", result.Variables["jk.joker"]);
         Assert.Equal("Nice fun", result.Variables["JK.JOKER"]);
         Assert.Equal("Just say hello", result.Variables["mySk.sayhello"]);
         Assert.Equal("Just say hello", result.Variables["mySk.SayHello"]);
-        Assert.Equal("Export info.", result.Variables["mySk.ReadSkillCollectionAsync"]);
-        Assert.Equal("Export info.", result.Variables["mysk.readskillcollectionasync"]);
+        Assert.Equal("Export info.", result.Variables["mySk.ReadFunctionCollectionAsync"]);
+        Assert.Equal("Export info.", result.Variables["mysk.ReadFunctionCollectionAsync"]);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class KernelTests
         using CancellationTokenSource cts = new();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, kernel.Skills.GetFunction("mySk", "GetAnyValue"));
+        SKContext result = await kernel.RunAsync(cts.Token, kernel.Functions.GetFunction("mySk", "GetAnyValue"));
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.Result));
@@ -152,7 +152,7 @@ public class KernelTests
 
         // Assert
         Assert.Equal(3, skill.Count);
-        Assert.True(kernel.Skills.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
+        Assert.True(kernel.Functions.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
         Assert.NotNull(functionInstance);
     }
 
@@ -481,17 +481,17 @@ public class KernelTests
             Console.WriteLine("Hello folks!");
         }
 
-        [SKFunction, Description("Export info."), SKName("ReadSkillCollectionAsync")]
-        public async Task<SKContext> ReadSkillCollectionAsync(SKContext context)
+        [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
+        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context)
         {
             await Task.Delay(0);
 
-            if (context.Skills == null)
+            if (context.Functions == null)
             {
-                Assert.Fail("Skills collection is missing");
+                Assert.Fail("Functions collection is missing");
             }
 
-            foreach (var function in context.Skills.GetFunctionViews())
+            foreach (var function in context.Functions.GetFunctionViews())
             {
                 context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }

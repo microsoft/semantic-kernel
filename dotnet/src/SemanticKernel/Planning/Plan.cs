@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -230,7 +229,7 @@ public sealed class Plan : IPlan
         var context = new SKContext(
             kernel,
             variables,
-            kernel.Skills);
+            kernel.Functions);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -252,7 +251,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills);
+            var functionContext = new SKContext(context.Kernel, functionVariables, context.Functions);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -361,9 +360,9 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
-        return this.Function is not null ? this.Function.SetDefaultSkillCollection(skills) : this;
+        return this.Function is not null ? this.Function.SetDefaultFunctionCollection(functions) : this;
     }
 
     /// <inheritdoc/>
@@ -414,12 +413,12 @@ public sealed class Plan : IPlan
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.Skills == null)
+            if (context.Functions == null)
             {
                 throw new SKException("Skill collection not found in the context");
             }
 
-            if (context.Skills.TryGetFunction(plan.PluginName, plan.Name, out var skillFunction))
+            if (context.Functions.TryGetFunction(plan.PluginName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }

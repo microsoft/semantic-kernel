@@ -355,7 +355,7 @@ public sealed class PlanTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var logger = new Mock<ILogger>();
-        var skills = new Mock<ISkillCollection>();
+        var functions = new Mock<IFunctionCollection>();
 
         var returnContext = new SKContext(kernel.Object);
 

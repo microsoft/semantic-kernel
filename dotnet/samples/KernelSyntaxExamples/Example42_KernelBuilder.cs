@@ -78,7 +78,7 @@ public static class Example42_KernelBuilder
             apiKey: azureOpenAIKey,
             loggerFactory: loggerFactory);
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
-        var skills = new SkillCollection();
+        var skills = new FunctionCollection();
         var templateEngine = new PromptTemplateEngine(loggerFactory);
 
         var httpHandlerFactory = BasicHttpRetryHandlerFactory.Instance;

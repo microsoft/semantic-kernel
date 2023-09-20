@@ -20,19 +20,19 @@ namespace Microsoft.SemanticKernel;
 /// The list is used by the planner and when executing pipelines of function compositions.
 /// </summary>
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix")]
-[DebuggerTypeProxy(typeof(IReadOnlySkillCollectionTypeProxy))]
+[DebuggerTypeProxy(typeof(IReadOnlyFunctionCollectionTypeProxy))]
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public class SkillCollection : ISkillCollection
+public class FunctionCollection : IFunctionCollection
 {
     internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SkillCollection"/> class.
+    /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
     /// </summary>
     /// <param name="loggerFactory">The logger factory.</param>
-    public SkillCollection(ILoggerFactory? loggerFactory = null)
+    public FunctionCollection(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SkillCollection)) : NullLogger.Instance;
+        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(FunctionCollection)) : NullLogger.Instance;
 
         // Important: names are case insensitive
         this._skillCollection = new(StringComparer.OrdinalIgnoreCase);
@@ -43,7 +43,7 @@ public class SkillCollection : ISkillCollection
     /// </summary>
     /// <param name="functionInstance">The function instance to add.</param>
     /// <returns>The updated skill collection.</returns>
-    public ISkillCollection AddFunction(ISKFunction functionInstance)
+    public IFunctionCollection AddFunction(ISKFunction functionInstance)
     {
         Verify.NotNull(functionInstance);
 

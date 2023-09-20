@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -71,8 +70,8 @@ public sealed class InstrumentedPlan : IPlan
         this._plan.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
-        this._plan.SetDefaultSkillCollection(skills);
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
+        this._plan.SetDefaultFunctionCollection(functions);
 
     #region private ================================================================================
 

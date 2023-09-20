@@ -37,9 +37,9 @@ public interface IKernel
     IPromptTemplateEngine PromptTemplateEngine { get; }
 
     /// <summary>
-    /// Reference to the read-only skill collection containing all the imported functions
+    /// Reference to the read-only function collection containing all the imported functions
     /// </summary>
-    IReadOnlySkillCollection Skills { get; }
+    IReadOnlyFunctionCollection Functions { get; }
 
     /// <summary>
     /// Reference to Http handler factory

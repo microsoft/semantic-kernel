@@ -88,8 +88,8 @@ public sealed class InstrumentedSKFunction : ISKFunction
         this._function.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
-        this._function.SetDefaultSkillCollection(skills);
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
+        this._function.SetDefaultFunctionCollection(functions);
 
     #region private ================================================================================
 
