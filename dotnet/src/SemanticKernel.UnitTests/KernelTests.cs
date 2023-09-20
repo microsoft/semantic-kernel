@@ -32,7 +32,7 @@ public class KernelTests
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
-        kernel.ImportSkill(nativeSkill, "mySk");
+        kernel.ImportFunctions(nativeSkill, "mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Functions.TryGetFunction("jk", "joker", out _));
@@ -54,7 +54,7 @@ public class KernelTests
 
         var nativeSkill = new MySkill();
         kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
-        var skill = kernel.ImportSkill(nativeSkill, "mySk");
+        var skill = kernel.ImportFunctions(nativeSkill, "mySk");
 
         // Act
         SKContext result = await kernel.RunAsync(skill["ReadFunctionCollectionAsync"]);
@@ -74,7 +74,7 @@ public class KernelTests
         // Arrange
         var kernel = Kernel.Builder.Build();
         var nativeSkill = new MySkill();
-        var skill = kernel.ImportSkill(nativeSkill, "mySk");
+        var skill = kernel.ImportFunctions(nativeSkill, "mySk");
 
         using CancellationTokenSource cts = new();
         cts.Cancel();
@@ -89,7 +89,7 @@ public class KernelTests
         // Arrange
         var kernel = Kernel.Builder.Build();
         var nativeSkill = new MySkill();
-        kernel.ImportSkill(nativeSkill, "mySk");
+        kernel.ImportFunctions(nativeSkill, "mySk");
 
         using CancellationTokenSource cts = new();
 
@@ -104,7 +104,7 @@ public class KernelTests
     public void ItImportsSkillsNotCaseSensitive()
     {
         // Act
-        IDictionary<string, ISKFunction> skill = Kernel.Builder.Build().ImportSkill(new MySkill(), "test");
+        IDictionary<string, ISKFunction> skill = Kernel.Builder.Build().ImportFunctions(new MySkill(), "test");
 
         // Assert
         Assert.Equal(3, skill.Count);
@@ -142,13 +142,13 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItAllowsToImportSkillsInTheGlobalNamespace()
+    public void ItAllowsToImportFunctionssInTheGlobalNamespace()
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
 
         // Act
-        IDictionary<string, ISKFunction> skill = kernel.ImportSkill(new MySkill());
+        IDictionary<string, ISKFunction> skill = kernel.ImportFunctions(new MySkill());
 
         // Assert
         Assert.Equal(3, skill.Count);
@@ -163,9 +163,9 @@ public class KernelTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs
-        kernel.ImportSkill(new MySkill());
-        kernel.ImportSkill(new MySkill());
-        kernel.ImportSkill(new MySkill());
+        kernel.ImportFunctions(new MySkill());
+        kernel.ImportFunctions(new MySkill());
+        kernel.ImportFunctions(new MySkill());
     }
 
     [Fact]

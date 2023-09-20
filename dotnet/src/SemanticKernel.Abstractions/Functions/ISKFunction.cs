@@ -22,7 +22,7 @@ public interface ISKFunction
     string Name { get; }
 
     /// <summary>
-    /// Name of the skill containing the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
+    /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
     string PluginName { get; }
 

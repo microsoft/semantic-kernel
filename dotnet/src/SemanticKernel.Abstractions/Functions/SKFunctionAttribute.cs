@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 /// <remarks>
 /// <para>
-/// When the kernel imports a skill, it searches all public methods tagged with this attribute.
+/// When the kernel imports native functions, it searches all public methods tagged with this attribute.
 /// If a method is not tagged with this attribute, it may still be imported directly via a <see cref="Delegate"/>
 /// or <see cref="MethodInfo"/> referencing the method directly.
 /// </para>

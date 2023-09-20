@@ -20,23 +20,23 @@ internal sealed class IReadOnlyFunctionCollectionTypeProxy
     public IReadOnlyFunctionCollectionTypeProxy(IReadOnlyFunctionCollection collection) => this._collection = collection;
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-    public SkillProxy[] Items
+    public FunctionsProxy[] Items
     {
         get
         {
             return this._collection.GetFunctionViews()
                 .GroupBy(f => f.PluginName)
-                .Select(g => new SkillProxy(g) { Name = g.Key })
+                .Select(g => new FunctionsProxy(g) { Name = g.Key })
                 .ToArray();
         }
     }
 
     [DebuggerDisplay("{Name}")]
-    public sealed class SkillProxy : List<FunctionView>
+    public sealed class FunctionsProxy : List<FunctionView>
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public string? Name;
 
-        public SkillProxy(IEnumerable<FunctionView> functions) : base(functions) { }
+        public FunctionsProxy(IEnumerable<FunctionView> functions) : base(functions) { }
     }
 }

@@ -72,17 +72,17 @@ public sealed class SKContext
     /// </summary>
     /// <param name="kernel">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
+    /// <param name="functions">Functions to include in context.</param>
     public SKContext(
         IKernel kernel,
         ContextVariables? variables = null,
-        IReadOnlyFunctionCollection? skills = null)
+        IReadOnlyFunctionCollection? functions = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
 
         this._originalKernel = kernel;
         this.Variables = variables ?? new();
-        this.Functions = skills ?? NullReadOnlyFunctionCollection.Instance;
+        this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = kernel.LoggerFactory;
         this._culture = CultureInfo.CurrentCulture;
     }
@@ -102,10 +102,10 @@ public sealed class SKContext
     /// Constructor for the context.
     /// </summary>
     /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="skills">Skills to include in context.</param>
+    /// <param name="functions">Functions to include in context.</param>
     public SKContext(
         IKernel kernel,
-        IReadOnlyFunctionCollection? skills = null) : this(kernel, null, skills)
+        IReadOnlyFunctionCollection? functions = null) : this(kernel, null, functions)
     {
     }
 
@@ -127,7 +127,7 @@ public sealed class SKContext
     }
 
     /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
     /// <returns>A new context copied from the current one</returns>
@@ -161,7 +161,7 @@ public sealed class SKContext
             if (this.Functions is IReadOnlyFunctionCollection functions)
             {
                 var view = functions.GetFunctionViews();
-                display += $", Skills = {view.Count}";
+                display += $", Functions = {view.Count}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";

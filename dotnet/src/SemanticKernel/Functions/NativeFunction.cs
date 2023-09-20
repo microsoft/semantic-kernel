@@ -75,7 +75,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalSkill;
+            pluginName = FunctionCollection.GlobalFunctions;
         }
 
         ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
@@ -119,7 +119,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalSkill;
+            pluginName = FunctionCollection.GlobalFunctions;
         }
 
         return new NativeFunction(

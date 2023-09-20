@@ -26,7 +26,7 @@ public interface IReadOnlyFunctionCollection
     /// <summary>
     /// Gets the function stored in the collection.
     /// </summary>
-    /// <param name="pluginName">The name of the skill with which the function is associated.</param>
+    /// <param name="pluginName">The name of the plugin with which the function is associated.</param>
     /// <param name="functionName">The name of the function to retrieve.</param>
     /// <returns>The function retrieved from the collection.</returns>
     /// <exception cref="SKException">The specified function could not be found in the collection.</exception>
@@ -43,7 +43,7 @@ public interface IReadOnlyFunctionCollection
     /// <summary>
     /// Check if a function is available in the current context, and return it.
     /// </summary>
-    /// <param name="pluginName">The name of the skill with which the function is associated.</param>
+    /// <param name="pluginName">The name of the plugin with which the function is associated.</param>
     /// <param name="functionName">The name of the function to retrieve.</param>
     /// <param name="availableFunction">When this method returns, the function that was retrieved if one with the specified name was found; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the function was found; otherwise, <see langword="false"/>.</returns>

@@ -90,7 +90,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
     {
-        return this.RegisterSemanticFunction(FunctionCollection.GlobalSkill, functionName, functionConfig);
+        return this.RegisterSemanticFunction(FunctionCollection.GlobalFunctions, functionName, functionConfig);
     }
 
     /// <inheritdoc/>
@@ -107,33 +107,33 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? pluginName = null)
+    public IDictionary<string, ISKFunction> ImportFunctions(object objectInstance, string? pluginName = null)
     {
-        Verify.NotNull(skillInstance);
+        Verify.NotNull(objectInstance);
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalSkill;
-            this._logger.LogTrace("Importing skill {0} in the global namespace", skillInstance.GetType().FullName);
+            pluginName = FunctionCollection.GlobalFunctions;
+            this._logger.LogTrace("Importing functions from {0} in the global namespace", objectInstance.GetType().FullName);
         }
         else
         {
-            this._logger.LogTrace("Importing skill {0}", pluginName);
+            this._logger.LogTrace("Importing functions to {0}", pluginName);
         }
 
-        Dictionary<string, ISKFunction> skill = ImportSkill(
-            skillInstance,
+        Dictionary<string, ISKFunction> functions = ImportFunctions(
+            objectInstance,
             pluginName!,
             this._logger,
             this.LoggerFactory
         );
-        foreach (KeyValuePair<string, ISKFunction> f in skill)
+        foreach (KeyValuePair<string, ISKFunction> f in functions)
         {
             f.Value.SetDefaultFunctionCollection(this.Functions);
             this._functionCollection.AddFunction(f.Value);
         }
 
-        return skill;
+        return functions;
     }
 
     /// <inheritdoc/>
@@ -239,7 +239,7 @@ repeat:
     {
         return new SKContext(
             this,
-            skills: this._functionCollection);
+            functions: this._functionCollection);
     }
 
     /// <inheritdoc/>
@@ -343,16 +343,16 @@ repeat:
     }
 
     /// <summary>
-    /// Import a skill into the kernel function collection, so that semantic functions and pipelines can consume its functions.
+    /// Import a native functions into the kernel function collection, so that semantic functions and pipelines can consume its functions.
     /// </summary>
-    /// <param name="skillInstance">Skill class instance</param>
+    /// <param name="objectInstance">Class instance from which to import available native functions</param>
     /// <param name="pluginName">Plugin name, used to group functions under a shared namespace</param>
     /// <param name="logger">Application logger</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportSkill(object skillInstance, string pluginName, ILogger logger, ILoggerFactory loggerFactory)
+    private static Dictionary<string, ISKFunction> ImportFunctions(object objectInstance, string pluginName, ILogger logger, ILoggerFactory loggerFactory)
     {
-        MethodInfo[] methods = skillInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+        MethodInfo[] methods = objectInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
         logger.LogTrace("Importing plugin name: {0}. Potential methods found: {1}", pluginName, methods.Length);
 
         // Filter out non-SKFunctions and fail if two functions have the same name
@@ -361,7 +361,7 @@ repeat:
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, skillInstance, pluginName, loggerFactory);
+                ISKFunction function = SKFunction.FromNativeMethod(method, objectInstance, pluginName, loggerFactory);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new SKException("Function overloads are not supported, please differentiate function names");
@@ -381,7 +381,7 @@ repeat:
     #region Obsolete ===============================================================================
 
     /// <inheritdoc/>
-    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Skills collection instead. This will be removed in a future release.")]
+    [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Functions collection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ISKFunction Func(string pluginName, string functionName)
     {

@@ -42,7 +42,7 @@ public sealed class SKFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = Kernel.Builder.Build().ImportSkill(skillInstance).Select(s => s.Value).ToArray();
+        ISKFunction[] functions = Kernel.Builder.Build().ImportFunctions(skillInstance).Select(s => s.Value).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);

@@ -48,9 +48,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public IList<ParameterView> Parameters { get; }
 
     /// <summary>
-    /// Create a native function instance, given a semantic function configuration.
+    /// Create a semantic function instance, given a semantic function configuration.
     /// </summary>
-    /// <param name="pluginName">Name of the skill to which the function to create belongs.</param>
+    /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="functionConfig">Semantic function configuration.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>

@@ -455,7 +455,7 @@ public sealed class SKFunctionTests2
             var newContext = new SKContext(
                 context.Kernel,
                 new ContextVariables(input),
-                skills: new Mock<IReadOnlyFunctionCollection>().Object);
+                functions: new Mock<IReadOnlyFunctionCollection>().Object);
 
             newContext.Variables.Update("new data");
             newContext.Variables["canary2"] = "222";
@@ -500,7 +500,7 @@ public sealed class SKFunctionTests2
             var newCx = new SKContext(
                 context.Kernel,
                 new ContextVariables(input + "abc"),
-                skills: new Mock<IReadOnlyFunctionCollection>().Object);
+                functions: new Mock<IReadOnlyFunctionCollection>().Object);
 
             return new ValueTask<SKContext>(newCx);
         }
@@ -910,6 +910,6 @@ public sealed class SKFunctionTests2
         return new SKContext(
             this._kernel.Object,
             new ContextVariables(input),
-            skills: this._functions.Object);
+            functions: this._functions.Object);
     }
 }

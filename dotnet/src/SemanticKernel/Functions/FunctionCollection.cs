@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class FunctionCollection : IFunctionCollection
 {
-    internal const string GlobalSkill = "_GLOBAL_FUNCTIONS_";
+    internal const string GlobalFunctions = "_GLOBAL_FUNCTIONS_";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
@@ -35,7 +35,7 @@ public class FunctionCollection : IFunctionCollection
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(FunctionCollection)) : NullLogger.Instance;
 
         // Important: names are case insensitive
-        this._skillCollection = new(StringComparer.OrdinalIgnoreCase);
+        this._functionCollection = new(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -47,15 +47,15 @@ public class FunctionCollection : IFunctionCollection
     {
         Verify.NotNull(functionInstance);
 
-        ConcurrentDictionary<string, ISKFunction> skill = this._skillCollection.GetOrAdd(functionInstance.PluginName, static _ => new(StringComparer.OrdinalIgnoreCase));
-        skill[functionInstance.Name] = functionInstance;
+        ConcurrentDictionary<string, ISKFunction> functions = this._functionCollection.GetOrAdd(functionInstance.PluginName, static _ => new(StringComparer.OrdinalIgnoreCase));
+        functions[functionInstance.Name] = functionInstance;
 
         return this;
     }
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName) =>
-        this.GetFunction(GlobalSkill, functionName);
+        this.GetFunction(GlobalFunctions, functionName);
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string pluginName, string functionName)
@@ -70,7 +70,7 @@ public class FunctionCollection : IFunctionCollection
 
     /// <inheritdoc/>
     public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction) =>
-        this.TryGetFunction(GlobalSkill, functionName, out availableFunction);
+        this.TryGetFunction(GlobalFunctions, functionName, out availableFunction);
 
     /// <inheritdoc/>
     public bool TryGetFunction(string pluginName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
@@ -78,9 +78,9 @@ public class FunctionCollection : IFunctionCollection
         Verify.NotNull(pluginName);
         Verify.NotNull(functionName);
 
-        if (this._skillCollection.TryGetValue(pluginName, out ConcurrentDictionary<string, ISKFunction>? skill))
+        if (this._functionCollection.TryGetValue(pluginName, out ConcurrentDictionary<string, ISKFunction>? functions))
         {
-            return skill.TryGetValue(functionName, out availableFunction);
+            return functions.TryGetValue(functionName, out availableFunction);
         }
 
         availableFunction = null;
@@ -92,9 +92,9 @@ public class FunctionCollection : IFunctionCollection
     {
         var result = new List<FunctionView>();
 
-        foreach (var skill in this._skillCollection.Values)
+        foreach (var functions in this._functionCollection.Values)
         {
-            foreach (ISKFunction f in skill.Values)
+            foreach (ISKFunction f in functions.Values)
             {
                 result.Add(f.Describe());
             }
@@ -104,20 +104,20 @@ public class FunctionCollection : IFunctionCollection
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    internal string DebuggerDisplay => $"Count = {this._skillCollection.Count}";
+    internal string DebuggerDisplay => $"Count = {this._functionCollection.Count}";
 
     #region private ================================================================================
 
     [DoesNotReturn]
     private void ThrowFunctionNotAvailable(string pluginName, string functionName)
     {
-        this._logger.LogError("Function not available: skill:{0} function:{1}", pluginName, functionName);
+        this._logger.LogError("Function not available: plugin:{0} function:{1}", pluginName, functionName);
         throw new SKException($"Function not available {pluginName}.{functionName}");
     }
 
     private readonly ILogger _logger;
 
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ISKFunction>> _skillCollection;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ISKFunction>> _functionCollection;
 
     #endregion
 }

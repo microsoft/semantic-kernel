@@ -167,18 +167,18 @@ public static class InlineFunctionsDefinitionExtension
     /// </summary>
     /// <remarks>
     /// <para>
-    /// A skill directory contains a set of subdirectories, one for each semantic function.
+    /// A plugin directory contains a set of subdirectories, one for each semantic function.
     /// </para>
     /// <para>
-    /// This method accepts the path of the parent directory (e.g. "d:\skills") and the name of the skill directory
-    /// (e.g. "OfficeSkill"), which is used also as the "plugin name" in the internal function collection (note that
-    /// skill and function names can contain only alphanumeric chars and underscore).
+    /// This method accepts the path of the parent directory (e.g. "d:\plugins") and the name of the plugin directory
+    /// (e.g. "OfficePlugin"), which is used also as the "plugin name" in the internal function collection (note that
+    /// pligin and function names can contain only alphanumeric chars and underscore).
     /// </para>
     /// <code>
     /// Example:
-    /// D:\skills\                            # parentDirectory = "D:\skills"
+    /// D:\plugins\                            # parentDirectory = "D:\plugins"
     ///
-    ///     |__ OfficeSkill\                  # skillDirectoryName = "SummarizeEmailThread"
+    ///     |__ OfficePlugin\                  # pluginDirectoryName = "SummarizeEmailThread"
     ///
     ///         |__ ScheduleMeeting           # semantic function
     ///             |__ skprompt.txt          # prompt template
@@ -192,7 +192,7 @@ public static class InlineFunctionsDefinitionExtension
     ///             |__ skprompt.txt          # prompt template
     ///             |__ config.json           # settings (optional file)
     ///
-    ///     |__ XboxSkill\                    # another skill, etc.
+    ///     |__ XboxPlugin\                    # another plugin, etc.
     ///
     ///         |__ MessageFriend
     ///             |__ skprompt.txt
@@ -202,29 +202,29 @@ public static class InlineFunctionsDefinitionExtension
     ///             |__ config.json
     /// </code>
     /// <para>
-    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/skills for examples in the Semantic Kernel repository.
+    /// See https://github.com/microsoft/semantic-kernel/tree/main/samples/plugins for examples in the Semantic Kernel repository.
     /// </para>
     /// </remarks>
     /// <param name="kernel">Semantic Kernel instance</param>
-    /// <param name="parentDirectory">Directory containing the skill directory, e.g. "d:\myAppSkills"</param>
-    /// <param name="skillDirectoryNames">Name of the directories containing the selected skills, e.g. "StrategySkill"</param>
+    /// <param name="parentDirectory">Directory containing the plugin directory, e.g. "d:\myAppPlugins"</param>
+    /// <param name="pluginDirectoryNames">Name of the directories containing the selected plugins, e.g. "StrategyPlugin"</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    public static IDictionary<string, ISKFunction> ImportSemanticSkillFromDirectory(
-        this IKernel kernel, string parentDirectory, params string[] skillDirectoryNames)
+    public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
+        this IKernel kernel, string parentDirectory, params string[] pluginDirectoryNames)
     {
         const string ConfigFile = "config.json";
         const string PromptFile = "skprompt.txt";
 
-        var skill = new Dictionary<string, ISKFunction>();
+        var functions = new Dictionary<string, ISKFunction>();
 
         ILogger? logger = null;
-        foreach (string skillDirectoryName in skillDirectoryNames)
+        foreach (string pluginDirectoryName in pluginDirectoryNames)
         {
-            Verify.ValidPluginName(skillDirectoryName);
-            var skillDir = Path.Combine(parentDirectory, skillDirectoryName);
-            Verify.DirectoryExists(skillDir);
+            Verify.ValidPluginName(pluginDirectoryName);
+            var pluginDirectory = Path.Combine(parentDirectory, pluginDirectoryName);
+            Verify.DirectoryExists(pluginDirectory);
 
-            string[] directories = Directory.GetDirectories(skillDir);
+            string[] directories = Directory.GetDirectories(pluginDirectory);
             foreach (string dir in directories)
             {
                 var functionName = Path.GetFileName(dir);
@@ -254,14 +254,14 @@ public static class InlineFunctionsDefinitionExtension
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    logger.LogTrace("Registering function {0}.{1} loaded from {2}", skillDirectoryName, functionName, dir);
+                    logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginDirectoryName, functionName, dir);
                 }
 
-                skill[functionName] = kernel.RegisterSemanticFunction(skillDirectoryName, functionName, functionConfig);
+                functions[functionName] = kernel.RegisterSemanticFunction(pluginDirectoryName, functionName, functionConfig);
             }
         }
 
-        return skill;
+        return functions;
     }
 
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");

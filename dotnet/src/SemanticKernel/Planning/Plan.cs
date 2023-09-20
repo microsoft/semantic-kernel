@@ -67,7 +67,7 @@ public sealed class Plan : IPlan
     public string Name { get; set; } = string.Empty;
 
     /// <inheritdoc/>
-    [JsonPropertyName("skill_name")]
+    [JsonPropertyName("plugin_name")]
     public string PluginName { get; set; } = string.Empty;
 
     /// <inheritdoc/>
@@ -128,7 +128,7 @@ public sealed class Plan : IPlan
     /// Initializes a new instance of the <see cref="Plan"/> class with a function and steps.
     /// </summary>
     /// <param name="name">The name of the plan.</param>
-    /// <param name="pluginName">The name of the skill.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="description">The description of the plan.</param>
     /// <param name="nextStepIndex">The index of the next step.</param>
     /// <param name="state">The state of the plan.</param>
@@ -221,7 +221,7 @@ public sealed class Plan : IPlan
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
     /// This method executes the next step in the plan using the specified kernel instance and context variables.
-    /// The context variables contain the necessary information for executing the plan, such as the skills, and logger.
+    /// The context variables contain the necessary information for executing the plan, such as the functions and logger.
     /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
@@ -415,12 +415,12 @@ public sealed class Plan : IPlan
         {
             if (context.Functions == null)
             {
-                throw new SKException("function collection not found in the context");
+                throw new SKException("Function collection not found in the context");
             }
 
-            if (context.Functions.TryGetFunction(plan.PluginName, plan.Name, out var skillFunction))
+            if (context.Functions.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
             {
-                plan.SetFunction(skillFunction);
+                plan.SetFunction(planFunction);
             }
             else if (requireFunctions)
             {

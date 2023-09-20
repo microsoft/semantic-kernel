@@ -27,7 +27,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(this._kernel.Object, variables, skills: this._functions.Object);
+        var target = new SKContext(this._kernel.Object, variables, functions: this._functions.Object);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -49,7 +49,7 @@ public class SKContextTests
     public async Task ItHasHelpersForSkillCollectionAsync()
     {
         // Arrange
-        IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportSkill(new Parrot(), "test");
+        IDictionary<string, ISKFunction> skill = KernelBuilder.Create().ImportFunctions(new Parrot(), "test");
         this._functions.Setup(x => x.GetFunction("func")).Returns(skill["say"]);
         var target = new SKContext(this._kernel.Object, new ContextVariables(), this._functions.Object);
         Assert.NotNull(target.Functions);

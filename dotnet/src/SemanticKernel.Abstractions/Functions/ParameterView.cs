@@ -53,7 +53,7 @@ public sealed class ParameterView
     }
 
     /// <summary>
-    /// Create a function parameter view, using information provided by the skill developer.
+    /// Create a function parameter view, using information provided by the function developer.
     /// </summary>
     /// <param name="name">Parameter name. The name must be alphanumeric (underscore is the only special char allowed).</param>
     /// <param name="description">Parameter description</param>

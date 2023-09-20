@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SemanticKernel.UnitTests;
 
@@ -15,13 +14,13 @@ internal static class FunctionHelpers
     /// Invokes a function on a skill instance via the kernel.
     /// </summary>
     public static Task<SKContext> CallViaKernelAsync(
-        object skillInstance,
+        object objectInstance,
         string methodName,
         params (string Name, string Value)[] variables)
     {
         var kernel = Kernel.Builder.Build();
 
-        IDictionary<string, ISKFunction> funcs = kernel.ImportSkill(skillInstance);
+        IDictionary<string, ISKFunction> funcs = kernel.ImportFunctions(objectInstance);
 
         SKContext context = kernel.CreateNewContext();
         foreach ((string Name, string Value) pair in variables)
