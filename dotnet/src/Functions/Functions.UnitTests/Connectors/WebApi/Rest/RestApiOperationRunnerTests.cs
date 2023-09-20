@@ -590,7 +590,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     [Theory]
     [InlineData(MediaTypeNames.Text.Plain)]
     [InlineData(MediaTypeNames.Application.Json)]
-    public async Task ItShouldUsePayloadAndContentTypeArgumentsIfDynamicPayloadBuildingIsNotRequired(string contentType)
+    public async Task ItShouldUsePayloadAndContentTypeArgumentsIfDynamicPayloadBuildingIsNotRequiredAsync(string contentType)
     {
         // Arrange
         this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);

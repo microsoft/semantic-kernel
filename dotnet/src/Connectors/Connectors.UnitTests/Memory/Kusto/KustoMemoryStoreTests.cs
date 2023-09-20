@@ -218,12 +218,12 @@ public class KustoMemoryStoreTests
     public async Task ItReturnsNullWhenMemoryRecordDoesNotExistAsync()
     {
         // Arrange
-        const string memoryRecordKey = "fake-record-key";
+        const string MemoryRecordKey = "fake-record-key";
 
         using var store = new KustoMemoryStore(this._cslAdminProviderMock.Object, this._cslQueryProviderMock.Object, DatabaseName);
 
         // Act
-        var actualMemoryRecord = await store.GetAsync(CollectionName, memoryRecordKey, withEmbedding: true);
+        var actualMemoryRecord = await store.GetAsync(CollectionName, MemoryRecordKey, withEmbedding: true);
 
         // Assert
         Assert.Null(actualMemoryRecord);
@@ -298,17 +298,17 @@ public class KustoMemoryStoreTests
     public async Task ItCanRemoveAsync()
     {
         // Arrange
-        const string memoryRecordKey = "fake-record-key";
+        const string MemoryRecordKey = "fake-record-key";
         using var store = new KustoMemoryStore(this._cslAdminProviderMock.Object, this._cslQueryProviderMock.Object, DatabaseName);
 
         // Act
-        await store.RemoveAsync(CollectionName, memoryRecordKey);
+        await store.RemoveAsync(CollectionName, MemoryRecordKey);
 
         // Assert
         this._cslAdminProviderMock
             .Verify(client => client.ExecuteControlCommandAsync(
                 DatabaseName,
-                It.Is<string>(s => s.Replace("  ", " ").StartsWith($".delete table {CollectionName}") && s.Contains(memoryRecordKey)), // Replace double spaces with single space to account for the fact that the query is formatted with double spaces and to be future proof
+                It.Is<string>(s => s.Replace("  ", " ").StartsWith($".delete table {CollectionName}") && s.Contains(MemoryRecordKey)), // Replace double spaces with single space to account for the fact that the query is formatted with double spaces and to be future proof
                 It.IsAny<ClientRequestProperties>()
             ), Times.Once());
     }

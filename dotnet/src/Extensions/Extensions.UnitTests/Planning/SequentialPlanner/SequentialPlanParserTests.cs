@@ -192,7 +192,7 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
@@ -216,7 +216,7 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
@@ -241,7 +241,7 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("_GLOBAL_FUNCTIONS_", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
@@ -326,7 +326,7 @@ public class SequentialPlanParserTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
@@ -349,7 +349,7 @@ public class SequentialPlanParserTests
 
         // Assert
         Assert.NotNull(plan);
-        Assert.Equal(1, plan.Steps.Count);
+        Assert.Single(plan.Steps);
         Assert.Equal("CodeSearch", plan.Steps[0].SkillName);
         Assert.Equal("codesearchresults_post", plan.Steps[0].Name);
     }
@@ -379,7 +379,7 @@ public class SequentialPlanParserTests
         Assert.Equal(2, plan.Steps.Count);
         Assert.Equal("MockSkill", plan.Steps[0].SkillName);
         Assert.Equal("Echo", plan.Steps[0].Name);
-        Assert.Equal(0, plan.Steps[1].Steps.Count);
+        Assert.Empty(plan.Steps[1].Steps);
         Assert.Equal("MockSkill", plan.Steps[1].SkillName);
         Assert.Equal("Echo", plan.Steps[1].Name);
     }

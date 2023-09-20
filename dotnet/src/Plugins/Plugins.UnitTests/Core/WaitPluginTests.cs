@@ -47,7 +47,7 @@ public class WaitPluginTests
         var target = new WaitPlugin(waitProviderMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "Seconds", ("input", textSeconds));
+        var context = await FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds));
 
         // Assert
         waitProviderMock.Verify(w => w.DelayAsync(It.IsIn(expectedMilliseconds)), Times.Once);
@@ -72,7 +72,7 @@ public class WaitPluginTests
         var target = new WaitPlugin(waitProviderMock.Object);
 
         // Act
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(target, "Seconds", ("input", textSeconds)));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(target, "Seconds", ("input", textSeconds)));
 
         // Assert
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "seconds", textSeconds);

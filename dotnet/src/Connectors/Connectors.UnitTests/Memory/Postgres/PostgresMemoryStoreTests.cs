@@ -72,16 +72,16 @@ public class PostgresMemoryStoreTests
     public async Task ItReturnsFalseWhenCollectionDoesNotExistAsync()
     {
         // Arrange
-        const string collectionName = "non-existent-collection";
+        const string CollectionName = "non-existent-collection";
 
         this._postgresDbClientMock
-            .Setup(client => client.DoesTableExistsAsync(collectionName, CancellationToken.None))
+            .Setup(client => client.DoesTableExistsAsync(CollectionName, CancellationToken.None))
             .ReturnsAsync(false);
 
         var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
         // Act
-        var doesCollectionExist = await store.DoesCollectionExistAsync(collectionName);
+        var doesCollectionExist = await store.DoesCollectionExistAsync(CollectionName);
 
         // Assert
         Assert.False(doesCollectionExist);
@@ -158,16 +158,16 @@ public class PostgresMemoryStoreTests
     public async Task ItReturnsNullWhenMemoryRecordDoesNotExistAsync()
     {
         // Arrange
-        const string memoryRecordKey = "fake-record-key";
+        const string MemoryRecordKey = "fake-record-key";
 
         this._postgresDbClientMock
-            .Setup(client => client.ReadAsync(CollectionName, memoryRecordKey, true, CancellationToken.None))
+            .Setup(client => client.ReadAsync(CollectionName, MemoryRecordKey, true, CancellationToken.None))
             .ReturnsAsync((PostgresMemoryEntry?)null);
 
         var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
         // Act
-        var actualMemoryRecord = await store.GetAsync(CollectionName, memoryRecordKey, withEmbedding: true);
+        var actualMemoryRecord = await store.GetAsync(CollectionName, MemoryRecordKey, withEmbedding: true);
 
         // Assert
         Assert.Null(actualMemoryRecord);
@@ -242,14 +242,14 @@ public class PostgresMemoryStoreTests
     public async Task ItCanRemoveAsync()
     {
         // Arrange
-        const string memoryRecordKey = "fake-record-key";
+        const string MemoryRecordKey = "fake-record-key";
         var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 
         // Act
-        await store.RemoveAsync(CollectionName, memoryRecordKey);
+        await store.RemoveAsync(CollectionName, MemoryRecordKey);
 
         // Assert
-        this._postgresDbClientMock.Verify(client => client.DeleteAsync(CollectionName, memoryRecordKey, CancellationToken.None), Times.Once());
+        this._postgresDbClientMock.Verify(client => client.DeleteAsync(CollectionName, MemoryRecordKey, CancellationToken.None), Times.Once());
     }
 
     [Fact]

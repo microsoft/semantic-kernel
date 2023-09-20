@@ -32,7 +32,7 @@ public sealed class AzureChatCompletionWithDataTests : IDisposable
     public async Task SpecifiedConfigurationShouldBeUsedAsync()
     {
         // Arrange
-        const string expectedUri = "https://fake-completion-endpoint/openai/deployments/fake-completion-model-id/extensions/chat/completions?api-version=fake-api-version";
+        const string ExpectedUri = "https://fake-completion-endpoint/openai/deployments/fake-completion-model-id/extensions/chat/completions?api-version=fake-api-version";
         var chatCompletion = new AzureChatCompletionWithData(this._config, this._httpClient);
 
         // Act
@@ -43,7 +43,7 @@ public sealed class AzureChatCompletionWithDataTests : IDisposable
         var actualRequestHeaderValues = this._messageHandlerStub.RequestHeaders!.GetValues("Api-Key");
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
 
-        Assert.Equal(expectedUri, actualUri);
+        Assert.Equal(ExpectedUri, actualUri);
 
         Assert.Contains("fake-completion-api-key", actualRequestHeaderValues);
         Assert.Contains("https://fake-data-source-endpoint", actualRequestContent, StringComparison.OrdinalIgnoreCase);

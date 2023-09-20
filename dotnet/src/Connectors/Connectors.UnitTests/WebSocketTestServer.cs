@@ -27,6 +27,8 @@ internal class WebSocketTestServer : IDisposable
 
     private readonly ConcurrentDictionary<Guid, ConnectedClient> _clients = new();
 
+    private Task? _handleRequestTask = null;
+
     public TimeSpan RequestProcessingDelay { get; set; } = TimeSpan.Zero;
     public TimeSpan SegmentMessageDelay { get; set; } = TimeSpan.Zero;
 
@@ -55,7 +57,10 @@ internal class WebSocketTestServer : IDisposable
         this._httpListener.Start();
         this._serverIsRunning = true;
 
-        Task.Run((Func<Task>)this.HandleRequestsAsync, this._mainCancellationTokenSource.Token);
+        if (this._handleRequestTask is null || this._handleRequestTask.IsCompleted)
+        {
+            this._handleRequestTask = Task.Run((Func<Task>)this.HandleRequestsAsync, this._mainCancellationTokenSource.Token);
+        }
     }
 
     private async Task HandleRequestsAsync()
@@ -216,6 +221,7 @@ internal class WebSocketTestServer : IDisposable
         }
     }
 
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
     public void Dispose()
     {
         this.DisposeAsync().AsTask().GetAwaiter().GetResult();

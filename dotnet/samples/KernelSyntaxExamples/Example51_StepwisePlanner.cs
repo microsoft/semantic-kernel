@@ -47,8 +47,8 @@ public static class Example51_StepwisePlanner
         {
             for (int i = 0; i < 1; i++)
             {
-                await RunTextCompletion(question);
-                await RunChatCompletion(question);
+                await RunTextCompletionAsync(question);
+                await RunChatCompletionAsync(question);
             }
         }
 
@@ -62,11 +62,11 @@ public static class Example51_StepwisePlanner
         Console.WriteLine("Execution Results Summary:");
         Console.WriteLine("**************************");
 
-        foreach (var question in ExecutionResults.Select(s => s.question).Distinct())
+        foreach (var question in s_executionResults.Select(s => s.question).Distinct())
         {
             Console.WriteLine("Question: " + question);
             Console.WriteLine("Mode\tModel\tAnswer\tStepsTaken\tIterations\tTimeTaken");
-            foreach (var er in ExecutionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
+            foreach (var er in s_executionResults.OrderByDescending(s => s.model).Where(s => s.question == question))
             {
                 Console.WriteLine($"{er.mode}\t{er.model}\t{er.stepsTaken}\t{er.iterations}\t{er.timeTaken}\t{er.answer}");
             }
@@ -84,27 +84,27 @@ public static class Example51_StepwisePlanner
         public string? timeTaken;
     }
 
-    private static List<ExecutionResult> ExecutionResults = new();
+    private static readonly List<ExecutionResult> s_executionResults = new();
 
-    private static async Task RunTextCompletion(string question)
+    private static async Task RunTextCompletionAsync(string question)
     {
         Console.WriteLine("RunTextCompletion");
         ExecutionResult currentExecutionResult = default;
         currentExecutionResult.mode = "RunTextCompletion";
         var kernel = GetKernel(ref currentExecutionResult);
-        await RunWithQuestion(kernel, currentExecutionResult, question, TextMaxTokens);
+        await RunWithQuestionAsync(kernel, currentExecutionResult, question, TextMaxTokens);
     }
 
-    private static async Task RunChatCompletion(string question, string? model = null)
+    private static async Task RunChatCompletionAsync(string question, string? model = null)
     {
         Console.WriteLine("RunChatCompletion");
         ExecutionResult currentExecutionResult = default;
         currentExecutionResult.mode = "RunChatCompletion";
         var kernel = GetKernel(ref currentExecutionResult, true, model);
-        await RunWithQuestion(kernel, currentExecutionResult, question, ChatMaxTokens);
+        await RunWithQuestionAsync(kernel, currentExecutionResult, question, ChatMaxTokens);
     }
 
-    private static async Task RunWithQuestion(IKernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
+    private static async Task RunWithQuestionAsync(IKernel kernel, ExecutionResult currentExecutionResult, string question, int? MaxTokens = null)
     {
         currentExecutionResult.question = question;
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
@@ -193,7 +193,7 @@ public static class Example51_StepwisePlanner
 
         Console.WriteLine("Time Taken: " + sw.Elapsed);
         currentExecutionResult.timeTaken = sw.Elapsed.ToString();
-        ExecutionResults.Add(currentExecutionResult);
+        s_executionResults.Add(currentExecutionResult);
         Console.WriteLine("*****************************************************");
     }
 

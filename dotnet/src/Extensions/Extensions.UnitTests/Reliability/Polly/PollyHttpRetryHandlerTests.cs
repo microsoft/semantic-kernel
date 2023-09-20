@@ -33,7 +33,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
     [InlineData(HttpStatusCode.ServiceUnavailable)]
     [InlineData(HttpStatusCode.GatewayTimeout)]
     [InlineData(HttpStatusCode.TooManyRequests)]
-    public async Task CustomPolicyNoOpShouldNotAvoidSendRequests(HttpStatusCode statusCode)
+    public async Task CustomPolicyNoOpShouldNotAvoidSendRequestsAsync(HttpStatusCode statusCode)
     {
         // Arrange
         var asyncPolicy = Policy.NoOpAsync<HttpResponseMessage>();
@@ -60,7 +60,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
     [InlineData(HttpStatusCode.ServiceUnavailable)]
     [InlineData(HttpStatusCode.GatewayTimeout)]
     [InlineData(HttpStatusCode.TooManyRequests)]
-    public async Task CustomPolicyStatusDontMatchNeverTriggers(HttpStatusCode statusCode)
+    public async Task CustomPolicyStatusDontMatchNeverTriggersAsync(HttpStatusCode statusCode)
     {
         // Arrange
         var asyncPolicy = Policy
@@ -92,7 +92,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
     [InlineData(HttpStatusCode.ServiceUnavailable, HttpStatusCode.TooManyRequests)]
     [InlineData(HttpStatusCode.GatewayTimeout, HttpStatusCode.TooManyRequests)]
     [InlineData(HttpStatusCode.TooManyRequests, HttpStatusCode.TooManyRequests)]
-    public async Task CustomPolicyRetryStatusShouldTriggerRetrials(HttpStatusCode statusCode, HttpStatusCode retryStatusCode)
+    public async Task CustomPolicyRetryStatusShouldTriggerRetrialsAsync(HttpStatusCode statusCode, HttpStatusCode retryStatusCode)
     {
         // Arrange
         var retryCount = 3;
@@ -127,7 +127,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
     [Theory]
     [InlineData(typeof(ApplicationException), typeof(HttpRequestException))]
     [InlineData(typeof(HttpRequestException), typeof(HttpRequestException))]
-    public async Task CustomPolicyRetryExceptionsShouldTriggerRetrials(Type exceptionType, Type retryExceptionType)
+    public async Task CustomPolicyRetryExceptionsShouldTriggerRetrialsAsync(Type exceptionType, Type retryExceptionType)
     {
         // Arrange
         var retryCount = 1;

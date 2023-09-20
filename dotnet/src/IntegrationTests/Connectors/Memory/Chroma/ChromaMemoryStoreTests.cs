@@ -56,7 +56,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItCanHandleDuplicateNameDuringCollectionCreationAsync()
     {
         // Arrange
-        const int expectedCollectionCount = 1;
         var collectionName = this.GetRandomCollectionName();
 
         // Act
@@ -67,7 +66,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         var collections = await this._chromaMemoryStore.GetCollectionsAsync().ToListAsync();
         var filteredCollections = collections.Where(collection => collection.Equals(collectionName, StringComparison.Ordinal)).ToList();
 
-        Assert.Equal(expectedCollectionCount, filteredCollections.Count);
+        Assert.Single(filteredCollections);
     }
 
     [Theory(Skip = SkipReason)]
@@ -127,7 +126,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItReturnsNullOnNonExistentRecordRetrieval()
+    public async Task ItReturnsNullOnNonExistentRecordRetrievalAsync()
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();
@@ -315,7 +314,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItReturnsNoMatchesFromEmptyCollection()
+    public async Task ItReturnsNoMatchesFromEmptyCollectionAsync()
     {
         // Arrange
         var collectionName = this.GetRandomCollectionName();

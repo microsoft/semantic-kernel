@@ -29,16 +29,16 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     private readonly Stream _openApiDocument;
 
     /// <summary>
-    /// Kernel instance.
+    /// IKernel instance.
     /// </summary>
-    private IKernel kernel;
+    private IKernel _kernel;
 
     /// <summary>
     /// Creates an instance of a <see cref="KernelAIPluginExtensionsTests"/> class.
     /// </summary>
     public KernelAIPluginExtensionsTests()
     {
-        this.kernel = KernelBuilder.Create();
+        this._kernel = KernelBuilder.Create();
 
         this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
 
@@ -49,7 +49,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
     {
         //Act
-        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", this._openApiDocument);
+        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", this._openApiDocument);
 
         //Assert
         var setSecretFunction = plugin["SetSecret"];
@@ -94,12 +94,12 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this.kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(setSecretFunction);
@@ -132,12 +132,12 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
+        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(DocumentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this.kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(setSecretFunction);
@@ -177,12 +177,12 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var variables = this.GetFakeContextVariables();
 
         // Act
-        var plugin = await this.kernel.ImportAIPluginAsync("fakePlugin", new Uri(documentUri), executionParameters);
+        var plugin = await this._kernel.ImportAIPluginAsync("fakePlugin", new Uri(documentUri), executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
 
-        var result = await this.kernel.RunAsync(setSecretFunction, variables);
+        var result = await this._kernel.RunAsync(setSecretFunction, variables);
 
         // Assert
         Assert.NotNull(setSecretFunction);

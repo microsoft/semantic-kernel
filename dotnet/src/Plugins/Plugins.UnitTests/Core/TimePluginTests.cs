@@ -55,11 +55,11 @@ public class TimePluginTests
     }
 
     [Fact]
-    public async Task LastMatchingDayBadInput()
+    public async Task LastMatchingDayBadInputAsync()
     {
         var skill = new TimePlugin();
 
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernel(skill, "DateMatchingLastDayName", ("input", "not a day name")));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FunctionHelpers.CallViaKernelAsync(skill, "DateMatchingLastDayName", ("input", "not a day name")));
 
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "input", "not a day name");
     }

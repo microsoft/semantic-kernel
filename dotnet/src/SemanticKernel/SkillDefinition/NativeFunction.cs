@@ -344,7 +344,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         Func<object?, SKContext, Task<SKContext>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        Func<ITextCompletion?, CompleteRequestSettings?, SKContext, CancellationToken, Task<SKContext>> function = (_, _, context, cancellationToken) =>
+        Task<SKContext> function(ITextCompletion? text, CompleteRequestSettings? settings, SKContext context, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -358,7 +358,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
             // Extract and return the result.
             return returnFunc(result, context);
-        };
+        }
 
         // Add parameters applied to the method that aren't part of the signature.
         stringParameterViews.AddRange(method
@@ -459,7 +459,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             }
 
             bool fallBackToInput = !sawFirstParameter && !nameIsInput;
-            Func<SKContext, CancellationToken, object?> parameterFunc = (SKContext context, CancellationToken _) =>
+            object? parameterFunc(SKContext context, CancellationToken _)
             {
                 // 1. Use the value of the variable if it exists.
                 if (context.Variables.TryGetValue(name, out string? value))
@@ -498,7 +498,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                         throw new ArgumentOutOfRangeException(name, value, e.Message);
                     }
                 }
-            };
+            }
 
             sawFirstParameter = true;
 
