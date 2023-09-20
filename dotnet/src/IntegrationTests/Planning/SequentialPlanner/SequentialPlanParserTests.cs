@@ -39,8 +39,8 @@ public class SequentialPlanParserTests
                 serviceId: azureOpenAIConfiguration.ServiceId,
                 setAsDefault: true)
             .Build();
-        kernel.ImportSkill(new EmailSkillFake(), "email");
-        TestHelpers.GetSkills(kernel, "SummarizeSkill", "WriterSkill");
+        kernel.ImportPlugin(new EmailSkillFake(), "email");
+        TestHelpers.GetPlugins(kernel, "SummarizeSkill", "WriterSkill");
 
         var planString =
             @"<plan>
@@ -52,7 +52,7 @@ public class SequentialPlanParserTests
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetSkillFunction(kernel.CreateNewContext()));
+        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetPluginFunction(kernel.CreateNewContext()));
 
         // Assert
         Assert.NotNull(plan);
@@ -62,26 +62,26 @@ public class SequentialPlanParserTests
         Assert.Collection<Plan>(plan.Steps,
             step =>
             {
-                Assert.Equal("SummarizeSkill", step.SkillName);
+                Assert.Equal("SummarizeSkill", step.PluginName);
                 Assert.Equal("Summarize", step.Name);
             },
             step =>
             {
-                Assert.Equal("WriterSkill", step.SkillName);
+                Assert.Equal("WriterSkill", step.PluginName);
                 Assert.Equal("Translate", step.Name);
                 Assert.Equal("French", step.Parameters["language"]);
                 Assert.True(step.Outputs.Contains("TRANSLATED_SUMMARY"));
             },
             step =>
             {
-                Assert.Equal("email", step.SkillName);
+                Assert.Equal("email", step.PluginName);
                 Assert.Equal("GetEmailAddress", step.Name);
                 Assert.Equal("John Doe", step.Parameters["input"]);
                 Assert.True(step.Outputs.Contains("EMAIL_ADDRESS"));
             },
             step =>
             {
-                Assert.Equal("email", step.SkillName);
+                Assert.Equal("email", step.PluginName);
                 Assert.Equal("SendEmail", step.Name);
                 Assert.Equal("$TRANSLATED_SUMMARY", step.Parameters["input"]);
                 Assert.Equal("$EMAIL_ADDRESS", step.Parameters["email_address"]);
