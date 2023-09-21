@@ -54,6 +54,14 @@ public class OpenAIFunction
     public string PluginName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Fully qualified name of the function. This is the concatenation of the plugin name and the function name,
+    /// separated by the value of <see cref="NameSeparator"/>.
+    /// If there is no plugin name, this is the same as the function name.
+    /// </summary>
+    public string FullyQualifiedName =>
+        this.PluginName.IsNullOrEmpty() ? this.FunctionName : string.Join(NameSeparator, this.PluginName, this.FunctionName);
+
+    /// <summary>
     /// Description of the function
     /// </summary>
     public string Description { get; set; } = string.Empty;
@@ -89,7 +97,7 @@ public class OpenAIFunction
         }
         return new FunctionDefinition
         {
-            Name = (this.PluginName.IsNullOrEmpty() ? this.FunctionName : string.Join(OpenAIFunction.NameSeparator, this.PluginName, this.FunctionName)),
+            Name = this.FullyQualifiedName,
             Description = this.Description,
             Parameters = BinaryData.FromObjectAsJson(
             new

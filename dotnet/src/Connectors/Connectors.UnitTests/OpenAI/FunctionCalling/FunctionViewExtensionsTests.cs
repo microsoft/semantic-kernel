@@ -25,6 +25,26 @@ public sealed class FunctionViewExtensionsTests
         Assert.Equal(sut.Name, result.FunctionName);
         Assert.Equal(sut.PluginName, result.PluginName);
         Assert.Equal(sut.Description, result.Description);
+        Assert.Equal($"{sut.PluginName}-{sut.Name}", result.FullyQualifiedName);
+    }
+
+    [Fact]
+    public void ItCanConvertToOpenAIFunctionNoPluginName()
+    {
+        // Arrange
+        var sut = new FunctionView(
+            Name: "foo",
+            PluginName: string.Empty,
+            Description: "baz");
+
+        // Act
+        var result = sut.ToOpenAIFunction();
+
+        // Assert
+        Assert.Equal(sut.Name, result.FunctionName);
+        Assert.Equal(sut.PluginName, result.PluginName);
+        Assert.Equal(sut.Description, result.Description);
+        Assert.Equal(sut.Name, result.FullyQualifiedName);
     }
 
     [Fact]

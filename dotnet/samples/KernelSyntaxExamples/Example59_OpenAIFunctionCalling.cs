@@ -34,7 +34,7 @@ public static class Example59_OpenAIFunctionCalling
         };
 
         // Set FunctionCall to the name of a specific function to force the model to use that function.
-        requestSettings.FunctionCall = "Date";
+        requestSettings.FunctionCall = "TimePlugin-Date";
         await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
 
         // Set FunctionCall to auto to let the model choose the best function to use.
@@ -52,12 +52,7 @@ public static class Example59_OpenAIFunctionCalling
             .Build();
 
         // Load functions to kernel
-        string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
-        kernel.ImportSemanticPluginFromDirectory(folder, "WriterPlugin");
-        kernel.ImportSemanticPluginFromDirectory(folder, "FunPlugin");
         kernel.ImportPlugin(new TimePlugin(), "TimePlugin");
-
         await kernel.ImportAIPluginAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiPluginExecutionParameters());
 
         return kernel;

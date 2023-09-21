@@ -363,7 +363,7 @@ public abstract class ClientBase
                     && !requestSettings.FunctionCall.IsNullOrEmpty())
             {
                 var filteredFunctions = requestSettings.Functions
-                    .Where(f => f.FunctionName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
+                    .Where(f => f.FullyQualifiedName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
                 OpenAIFunction? function = filteredFunctions.FirstOrDefault();
