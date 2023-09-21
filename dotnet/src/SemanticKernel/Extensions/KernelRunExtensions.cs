@@ -6,10 +6,12 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SkillDefinition;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
-/// Extention methods to run a pipeline composed of synchronous and asynchronous functions.
+/// Extension methods to run a pipeline composed of synchronous and asynchronous functions.
 /// </summary>
 public static class KernelRunExtensions
 {
@@ -22,7 +24,7 @@ public static class KernelRunExtensions
     public static Task<SKContext> RunAsync(
         this IKernel kernel,
         params ISKFunction[] pipeline)
-        => RunAsync(kernel, new ContextVariables(), pipeline);
+        => kernel.RunAsync(new ContextVariables(), pipeline);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -35,7 +37,7 @@ public static class KernelRunExtensions
         this IKernel kernel,
         string input,
         params ISKFunction[] pipeline)
-        => RunAsync(kernel, new ContextVariables(input), pipeline);
+        => kernel.RunAsync(new ContextVariables(input), pipeline);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -48,7 +50,7 @@ public static class KernelRunExtensions
         this IKernel kernel,
         ContextVariables variables,
         params ISKFunction[] pipeline)
-        => RunAsync(kernel, variables, CancellationToken.None, pipeline);
+        => kernel.RunAsync(variables, CancellationToken.None, pipeline);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -61,7 +63,7 @@ public static class KernelRunExtensions
         this IKernel kernel,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline)
-        => RunAsync(kernel, new ContextVariables(), cancellationToken, pipeline);
+        => kernel.RunAsync(new ContextVariables(), cancellationToken, pipeline);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -76,7 +78,7 @@ public static class KernelRunExtensions
         string input,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline)
-        => RunAsync(kernel, new ContextVariables(input), cancellationToken, pipeline);
+        => kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
