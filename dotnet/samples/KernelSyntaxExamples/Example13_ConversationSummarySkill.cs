@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -134,7 +133,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -150,7 +149,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -166,7 +165,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummaryPlugin(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -211,8 +210,8 @@ A possible summary is:
 - They use a Lorem Ipsum generator, but it repeats itself after a while.
 - They sing the national anthems of Canada and the United States, and then talk about their favorite Seattle Kraken hockey players.
 - They finally reach their desired length of text and say goodbye to each other.
-======== SampleSkills - Conversation Summary Skill - Action Items ========
-Generated Action Items:
+======== SampleSkills - Conversation Summary Skill - Action Functions ========
+Generated Action Functions:
 
 {
     "actionItems": [

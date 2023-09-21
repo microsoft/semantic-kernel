@@ -21,8 +21,8 @@
     <InternalsVisibleTo Include="SemanticKernel.Extensions.StepwisePlanner.UnitTests" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Skills/**/*" />
-    <EmbeddedResource Include="Skills/**/*">
+    <None Remove="Plugin/**/*" />
+    <EmbeddedResource Include="Plugin/**/*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

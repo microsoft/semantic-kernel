@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -57,7 +56,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 setAsDefault: true)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "ChatSkill");
 
         // Act
         KernelResult actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -77,7 +76,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "ChatSkill");
 
         // Act
         KernelResult actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -124,7 +123,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "ChatSkill");
 
         // Act
         KernelResult actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -155,7 +154,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, skill["Summarize"]));
@@ -189,7 +188,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, skill["Summarize"]));
@@ -213,7 +212,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
 
         // Act and Assert
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", skill["Summarize"]));
@@ -237,7 +236,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
 
         // Act and Assert
         var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", skill["Summarize"]));
@@ -261,7 +260,7 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
 
         // Act
         // Assert
@@ -287,7 +286,7 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this._serviceConfiguration[service](target);
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "ChatSkill");
 
         // Act
         KernelResult actual = await target.RunAsync(prompt, skill["Chat"]);
@@ -321,7 +320,7 @@ public sealed class OpenAICompletionTests : IDisposable
         this.ConfigureAzureOpenAI(builder);
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "FunSkill");
+        IDictionary<string, ISKFunction> skill = TestHelpers.ImportSamplePlugins(target, "FunSkill");
 
         // Act
         KernelResult actual = await target.RunAsync(skill["Limerick"]);

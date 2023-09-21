@@ -20,7 +20,7 @@ public static class Example02_Pipeline
         IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
 
         // Load native skill
-        var text = kernel.ImportSkill(new TextPlugin());
+        var text = kernel.ImportPlugin(new TextPlugin());
 
         KernelResult result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
             text["TrimStart"],

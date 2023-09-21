@@ -16,7 +16,6 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
@@ -27,7 +26,7 @@ namespace SemanticKernel.UnitTests;
 public class KernelTests
 {
     [Fact]
-    public void ItProvidesAccessToFunctionsViaSkillCollection()
+    public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
         var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
@@ -35,17 +34,17 @@ public class KernelTests
             .WithDefaultAIService<ITextCompletion>(factory.Object)
             .Build();
 
-        var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
-        kernel.ImportSkill(nativeSkill, "mySk");
+        var nativePlugin = new MyPlugin();
+        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
+        kernel.ImportPlugin(nativePlugin, "mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
-        Assert.True(kernel.Skills.TryGetFunction("jk", "joker", out _));
-        Assert.True(kernel.Skills.TryGetFunction("JK", "JOKER", out _));
-        Assert.True(kernel.Skills.TryGetFunction("mySk", "sayhello", out _));
-        Assert.True(kernel.Skills.TryGetFunction("MYSK", "SayHello", out _));
-        Assert.True(kernel.Skills.TryGetFunction("mySk", "ReadSkillCollectionAsync", out _));
-        Assert.True(kernel.Skills.TryGetFunction("MYSK", "readskillcollectionasync", out _));
+        Assert.True(kernel.Functions.TryGetFunction("jk", "joker", out _));
+        Assert.True(kernel.Functions.TryGetFunction("JK", "JOKER", out _));
+        Assert.True(kernel.Functions.TryGetFunction("mySk", "sayhello", out _));
+        Assert.True(kernel.Functions.TryGetFunction("MYSK", "SayHello", out _));
+        Assert.True(kernel.Functions.TryGetFunction("mySk", "ReadFunctionCollectionAsync", out _));
+        Assert.True(kernel.Functions.TryGetFunction("MYSK", "ReadFunctionCollectionAsync", out _));
     }
 
     [Fact]
@@ -53,14 +52,14 @@ public class KernelTests
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
-        var nativeSkill = new MySkill();
-        var skill = kernel.ImportSkill(nativeSkill, "mySk");
+        var nativePlugin = new MyPlugin();
+        var plugin = kernel.ImportPlugin(nativePlugin, "mySk");
 
         using CancellationTokenSource cts = new();
         cts.Cancel();
 
         // Act
-        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, skill["GetAnyValue"]));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, plugin["GetAnyValue"]));
     }
 
     [Fact]
@@ -68,29 +67,29 @@ public class KernelTests
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
-        var nativeSkill = new MySkill();
-        kernel.ImportSkill(nativeSkill, "mySk");
+        var nativePlugin = new MyPlugin();
+        kernel.ImportPlugin(nativePlugin, "mySk");
 
         using CancellationTokenSource cts = new();
 
         // Act
-        KernelResult result = await kernel.RunAsync(cts.Token, kernel.Skills.GetFunction("mySk", "GetAnyValue"));
+        KernelResult result = await kernel.RunAsync(cts.Token, kernel.Functions.GetFunction("mySk", "GetAnyValue"));
 
         // Assert
         Assert.False(string.IsNullOrEmpty(result.GetValue<string>()));
     }
 
     [Fact]
-    public void ItImportsSkillsNotCaseSensitive()
+    public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IDictionary<string, ISKFunction> skill = Kernel.Builder.Build().ImportSkill(new MySkill(), "test");
+        IDictionary<string, ISKFunction> plugin = Kernel.Builder.Build().ImportPlugin(new MyPlugin(), "test");
 
         // Assert
-        Assert.Equal(3, skill.Count);
-        Assert.True(skill.ContainsKey("GetAnyValue"));
-        Assert.True(skill.ContainsKey("getanyvalue"));
-        Assert.True(skill.ContainsKey("GETANYVALUE"));
+        Assert.Equal(3, plugin.Count);
+        Assert.True(plugin.ContainsKey("GetAnyValue"));
+        Assert.True(plugin.ContainsKey("getanyvalue"));
+        Assert.True(plugin.ContainsKey("GETANYVALUE"));
     }
 
     [Theory]
@@ -115,7 +114,7 @@ public class KernelTests
             ChatSystemPrompt = providedSystemChatPrompt
         };
 
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -125,30 +124,30 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItAllowsToImportSkillsInTheGlobalNamespace()
+    public void ItAllowsToImportFunctionsInTheGlobalNamespace()
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
 
         // Act
-        IDictionary<string, ISKFunction> skill = kernel.ImportSkill(new MySkill());
+        IDictionary<string, ISKFunction> plugin = kernel.ImportPlugin(new MyPlugin());
 
         // Assert
-        Assert.Equal(3, skill.Count);
-        Assert.True(kernel.Skills.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
+        Assert.Equal(3, plugin.Count);
+        Assert.True(kernel.Functions.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
         Assert.NotNull(functionInstance);
     }
 
     [Fact]
-    public void ItAllowsToImportTheSameSkillMultipleTimes()
+    public void ItAllowsToImportTheSamePluginMultipleTimes()
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs
-        kernel.ImportSkill(new MySkill());
-        kernel.ImportSkill(new MySkill());
-        kernel.ImportSkill(new MySkill());
+        kernel.ImportPlugin(new MyPlugin());
+        kernel.ImportPlugin(new MyPlugin());
+        kernel.ImportPlugin(new MyPlugin());
     }
 
     [Fact]
@@ -169,7 +168,7 @@ public class KernelTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -198,7 +197,7 @@ public class KernelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.Completion = new AIRequestSettings() { ServiceId = "service1" };
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -222,7 +221,7 @@ public class KernelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.Completion = new AIRequestSettings() { ServiceId = "service3" };
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
@@ -466,10 +465,10 @@ public class KernelTests
 
         var kernel = Kernel.Builder.Build();
 
-        var function1 = SKFunction.FromNativeMethod(Method(Function1), skillName: PluginName);
-        var function2 = SKFunction.FromNativeMethod(Method(Function2), skillName: PluginName);
+        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
+        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
 
-        var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", skillName: PluginName);
+        var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", pluginName: PluginName);
         var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
 
         function3.SetAIService(() => mockTextCompletion.Object);
@@ -490,7 +489,7 @@ public class KernelTests
         Assert.Equal("Result3", functionResult3.GetValue<string>());
     }
 
-    public class MySkill
+    public class MyPlugin
     {
         [SKFunction, Description("Return any value.")]
         public string GetAnyValue()
@@ -504,19 +503,19 @@ public class KernelTests
             Console.WriteLine("Hello folks!");
         }
 
-        [SKFunction, Description("Export info."), SKName("ReadSkillCollectionAsync")]
-        public async Task<SKContext> ReadSkillCollectionAsync(SKContext context)
+        [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
+        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context)
         {
             await Task.Delay(0);
 
-            if (context.Skills == null)
+            if (context.Functions == null)
             {
-                Assert.Fail("Skills collection is missing");
+                Assert.Fail("Functions collection is missing");
             }
 
-            foreach (var function in context.Skills.GetFunctionViews())
+            foreach (var function in context.Functions.GetFunctionViews())
             {
-                context.Variables[$"{function.SkillName}.{function.Name}"] = function.Description;
+                context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }
 
             return context;

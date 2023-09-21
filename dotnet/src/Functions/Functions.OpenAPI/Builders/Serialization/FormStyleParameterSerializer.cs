@@ -57,7 +57,7 @@ internal static class FormStyleParameterSerializer
             throw new SKException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array");
         }
 
-        if (parameter.Explode)
+        if (parameter.Expand)
         {
             return SerializeArrayItemsAsSeparateParameters(parameter.Name, array);              //id=1&id=2&id=3
         }
