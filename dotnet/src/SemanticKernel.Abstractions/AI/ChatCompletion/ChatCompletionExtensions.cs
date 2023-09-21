@@ -32,7 +32,10 @@ public static class ChatCompletionExtensions
         {
             await foreach (var chatMessageStream in chatCompletionResult.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
             {
-                yield return chatMessageStream.Content;
+                if (chatMessageStream.Content is not null)
+                {
+                    yield return chatMessageStream.Content;
+                }
             }
 
             yield break;

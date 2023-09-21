@@ -52,7 +52,10 @@ public static class TextCompletionExtensions
         {
             await foreach (var word in completionResult.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
             {
-                yield return word;
+                if (word is not null)
+                {
+                    yield return word;
+                }
             }
 
             yield break;
