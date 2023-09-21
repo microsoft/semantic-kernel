@@ -56,7 +56,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._questionTemplate = EmbeddedResource.Read("Plugin.RenderQuestion.skprompt.txt");
 
         // Load or use default PromptConfig
-        this._promptConfig = this._config.PromptUserConfig ?? LoadPromptConfigFromResource();
+        this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
         if (this._promptConfig.Completion is null)
