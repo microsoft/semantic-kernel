@@ -23,7 +23,7 @@ public interface IFlowCatalog
     /// Get <see cref="Flow"/> by name
     /// </summary>
     /// <param name="flowName">the flow name</param>
-    /// <returns>flow given teh name</returns>
+    /// <returns>flow given the name</returns>
     Task<Flow?> GetFlowAsync(string flowName);
 
     /// <summary>
