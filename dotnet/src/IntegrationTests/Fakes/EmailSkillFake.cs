@@ -11,7 +11,7 @@ internal sealed class EmailSkillFake
 {
     [SKFunction, Description("Given an email address and message body, send an email")]
     public Task<string> SendEmailAsync(
-        [Description("The body of the email message to send.")] string input,
+        [Description("The body of the email message to send.")] string input = "",
         [Description("The email address to send email to.")] string? email_address = "default@email.com")
     {
         email_address ??= string.Empty;
@@ -20,8 +20,8 @@ internal sealed class EmailSkillFake
 
     [SKFunction, Description("Lookup an email address for a person given a name")]
     public Task<string> GetEmailAddressAsync(
-        [Description("The name of the person to email.")] string input,
-        ILogger logger)
+        ILogger logger,
+        [Description("The name of the person to email.")] string? input = null)
     {
         if (string.IsNullOrEmpty(input))
         {

@@ -203,7 +203,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var plugins = new Mock<IFunctionCollection>();
         foreach (var (name, pluginName, description, isSemantic) in functions)
         {
-            var functionView = new FunctionView(name, pluginName, description, new List<ParameterView>(), isSemantic, true);
+            var functionView = new FunctionView(name, pluginName, description);
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 

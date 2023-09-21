@@ -46,7 +46,7 @@ public static class SKFunctionExtensions
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var context = new SKContext(kernel, variables, functions)
+        var context = new SKContext(kernel, variables, functions ?? kernel.Functions)
         {
             Culture = culture!
         };

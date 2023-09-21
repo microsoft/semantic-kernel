@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -74,10 +75,6 @@ public sealed class Plan : IPlan
     /// <inheritdoc/>
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public bool IsSemantic { get; private set; }
 
     /// <inheritdoc/>
     [JsonIgnore]
@@ -163,17 +160,17 @@ public sealed class Plan : IPlan
     /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
-    /// <param name="context">The context to use for function registrations.</param>
+    /// <param name="functions">The collection of available functions..</param>
     /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, SKContext? context = null, bool requireFunctions = true)
+    public static Plan FromJson(string json, IReadOnlyFunctionCollection? functions = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
-        if (context != null)
+        if (functions != null)
         {
-            plan = SetAvailableFunctions(plan, context, requireFunctions);
+            plan = SetAvailableFunctions(plan, functions, requireFunctions);
         }
 
         return plan;
@@ -304,7 +301,7 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
-            return this.Function.Describe() ?? new();
+            return this.Function.Describe();
         }
 
         // The parameter mapping definitions from Plan -> Function
@@ -323,11 +320,7 @@ public sealed class Plan : IPlan
         }
         ).ToList();
 
-        return new(name: this.Name,
-                   pluginName: this.PluginName,
-                   description: this.Description,
-                   parameters: parameters,
-                   isSemantic: false);
+        return new(this.Name, this.PluginName, this.Description, parameters);
     }
 
     /// <inheritdoc/>
@@ -407,19 +400,16 @@ public sealed class Plan : IPlan
     /// Set functions for a plan and its steps.
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
-    /// <param name="context">Context to use.</param>
+    /// <param name="functions">The collection of available functions.</param>
     /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, SKContext context, bool requireFunctions = true)
+    private static Plan SetAvailableFunctions(Plan plan, IReadOnlyFunctionCollection functions, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.Functions == null)
-            {
-                throw new SKException("Function collection not found in the context");
-            }
+            Verify.NotNull(functions);
 
-            if (context.Functions.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
+            if (functions.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
             {
                 plan.SetFunction(planFunction);
             }
@@ -432,7 +422,7 @@ public sealed class Plan : IPlan
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, context, requireFunctions);
+                SetAvailableFunctions(step, functions, requireFunctions);
             }
         }
 
@@ -498,7 +488,7 @@ public sealed class Plan : IPlan
         var input = string.Empty;
         if (!string.IsNullOrEmpty(step.Parameters.Input))
         {
-            input = this.ExpandFromVariables(variables, step.Parameters.Input);
+            input = this.ExpandFromVariables(variables, step.Parameters.Input!);
         }
         else if (!string.IsNullOrEmpty(variables.Input))
         {
@@ -585,8 +575,11 @@ public sealed class Plan : IPlan
         this.Name = function.Name;
         this.PluginName = function.PluginName;
         this.Description = function.Description;
-        this.IsSemantic = function.IsSemantic;
         this.RequestSettings = function.RequestSettings;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        this.IsSemantic = function.IsSemantic;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
@@ -619,4 +612,14 @@ public sealed class Plan : IPlan
             return display;
         }
     }
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic { get; private set; }
+
+    #endregion
 }

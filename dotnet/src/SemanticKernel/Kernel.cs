@@ -42,7 +42,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public IReadOnlyFunctionCollection Functions => this._functionCollection;
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.Functions instead. This will be removed in a future release.")]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public IReadOnlyFunctionCollection Skills => this._functionCollection;
@@ -142,7 +142,7 @@ public sealed class Kernel : IKernel, IDisposable
         return functions;
     }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public IDictionary<string, ISKFunction> ImportSkill(object pluginInstance, string? pluginName = null)
@@ -202,7 +202,7 @@ public sealed class Kernel : IKernel, IDisposable
         int pipelineStepCount = 0;
         foreach (ISKFunction skFunction in pipeline)
         {
-repeat:
+        repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try

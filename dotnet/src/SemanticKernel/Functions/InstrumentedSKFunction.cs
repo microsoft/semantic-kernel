@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
@@ -29,9 +30,6 @@ public sealed class InstrumentedSKFunction : ISKFunction
 
     /// <inheritdoc/>
     public string Description => this._function.Description;
-
-    /// <inheritdoc/>
-    public bool IsSemantic => this._function.IsSemantic;
 
     /// <inheritdoc/>
     public AIRequestSettings? RequestSettings => this._function.RequestSettings;
@@ -175,6 +173,15 @@ public sealed class InstrumentedSKFunction : ISKFunction
 
         return result;
     }
+
+    #endregion
+
+    #region Obsolete =======================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic => this._function.IsSemantic;
 
     #endregion
 }

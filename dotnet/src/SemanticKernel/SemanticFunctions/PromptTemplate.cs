@@ -46,24 +46,16 @@ public sealed class PromptTemplate : IPromptTemplate
         this._template = template;
         this._templateEngine = promptTemplateEngine;
         this._promptConfig = promptTemplateConfig;
+
+        this._params = new(() => this.InitParameters());
     }
 
     /// <summary>
-    /// Get the list of parameters used by the function, using JSON settings and template variables.
-    /// TODO: consider caching results - though cache invalidation will add extra complexity
+    /// The list of parameters used by the function, using JSON settings and template variables.
     /// </summary>
     /// <returns>List of parameters</returns>
-    public IList<ParameterView> GetParameters()
-    {
-        // Parameters from config.json
-        Dictionary<string, ParameterView> result = new(StringComparer.OrdinalIgnoreCase);
-        foreach (var p in this._promptConfig.Input.Parameters)
-        {
-            result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
-        }
-
-        return result.Values.ToList();
-    }
+    public IReadOnlyList<ParameterView> Parameters
+        => this._params.Value;
 
     /// <summary>
     /// Render the template using the information in the context
@@ -74,5 +66,19 @@ public sealed class PromptTemplate : IPromptTemplate
     public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken)
     {
         return await this._templateEngine.RenderAsync(this._template, executionContext, cancellationToken).ConfigureAwait(false);
+    }
+
+    private Lazy<IReadOnlyList<ParameterView>> _params;
+
+    private List<ParameterView> InitParameters()
+    {
+        // Parameters from config.json
+        Dictionary<string, ParameterView> result = new(this._promptConfig.Input.Parameters.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var p in this._promptConfig.Input.Parameters)
+        {
+            result[p.Name] = new ParameterView(p.Name, p.Description, p.DefaultValue);
+        }
+
+        return result.Values.ToList();
     }
 }

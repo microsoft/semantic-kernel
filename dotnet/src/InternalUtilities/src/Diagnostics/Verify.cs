@@ -83,7 +83,7 @@ internal static class Verify
     /// Make sure every function parameter name is unique
     /// </summary>
     /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IList<ParameterView> parameters)
+    internal static void ParametersUniqueness(IReadOnlyList<ParameterView> parameters)
     {
         int count = parameters.Count;
         if (count > 0)

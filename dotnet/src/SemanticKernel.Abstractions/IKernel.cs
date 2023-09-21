@@ -41,7 +41,7 @@ public interface IKernel
     /// </summary>
     IReadOnlyFunctionCollection Functions { get; }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.Functions instead. This will be removed in a future release.")]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     IReadOnlyFunctionCollection Skills { get; }
@@ -90,7 +90,7 @@ public interface IKernel
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
     IDictionary<string, ISKFunction> ImportPlugin(object pluginInstance, string? pluginName = null);
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed to use Plugin. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     IDictionary<string, ISKFunction> ImportSkill(object pluginInstance, string? pluginName = null);

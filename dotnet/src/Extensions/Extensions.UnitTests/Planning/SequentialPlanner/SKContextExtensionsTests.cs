@@ -67,8 +67,8 @@ public class SKContextExtensionsTests
 
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
-        var functionView = new FunctionView("functionName", "pluginName", "description", new List<ParameterView>(), true, false);
-        var nativeFunctionView = new FunctionView("nativeFunctionName", "pluginName", "description", new List<ParameterView>(), false, false);
+        var functionView = new FunctionView("functionName", "pluginName", "description");
+        var nativeFunctionView = new FunctionView("nativeFunctionName", "pluginName", "description");
         var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result
@@ -132,8 +132,8 @@ public class SKContextExtensionsTests
 
         // Arrange FunctionView
         var functionMock = new Mock<ISKFunction>();
-        var functionView = new FunctionView("functionName", "pluginName", "description", new List<ParameterView>(), true, false);
-        var nativeFunctionView = new FunctionView("nativeFunctionName", "pluginName", "description", new List<ParameterView>(), false, false);
+        var functionView = new FunctionView("functionName", "pluginName", "description");
+        var nativeFunctionView = new FunctionView("nativeFunctionName", "pluginName", "description");
         var functionsView = new List<FunctionView>() { functionView, nativeFunctionView };
 
         // Arrange Mock Memory and Result

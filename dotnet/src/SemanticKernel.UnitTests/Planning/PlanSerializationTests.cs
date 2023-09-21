@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -275,6 +274,7 @@ public sealed class PlanSerializationTests
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "skillName"));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -334,11 +334,11 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
         {
-            Parameters = new List<ParameterView>()
+            Parameters = new ParameterView[]
             {
-                new ParameterView() { Name = "variables" }
+                new("variables")
             }
         });
 
@@ -403,11 +403,11 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView()
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
         {
-            Parameters = new List<ParameterView>
+            Parameters = new ParameterView[]
             {
-                new() { Name = "variables" }
+                new("variables")
             }
         });
 
@@ -441,7 +441,7 @@ public sealed class PlanSerializationTests
             new ContextVariables(),
             functions.Object
         );
-        plan = Plan.FromJson(serializedPlan1, nextContext);
+        plan = Plan.FromJson(serializedPlan1, functions.Object);
         plan = await kernel.Object.StepAsync(cv, plan);
 
         // Assert
@@ -497,7 +497,7 @@ public sealed class PlanSerializationTests
 
         // Act
         var serializedPlan = plan.ToJson();
-        var deserializedPlan = Plan.FromJson(serializedPlan, returnContext, requireFunctions);
+        var deserializedPlan = Plan.FromJson(serializedPlan, functions.Object, requireFunctions);
 
         // Assert
         Assert.NotNull(deserializedPlan);
@@ -547,12 +547,12 @@ public sealed class PlanSerializationTests
         if (requireFunctions)
         {
             // Act + Assert
-            Assert.Throws<SKException>(() => Plan.FromJson(serializedPlan, returnContext));
+            Assert.Throws<SKException>(() => Plan.FromJson(serializedPlan, functions.Object));
         }
         else
         {
             // Act
-            var deserializedPlan = Plan.FromJson(serializedPlan, returnContext, requireFunctions);
+            var deserializedPlan = Plan.FromJson(serializedPlan, functions.Object, requireFunctions);
 
             // Assert
             Assert.NotNull(deserializedPlan);

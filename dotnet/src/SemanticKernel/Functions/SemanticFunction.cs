@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -38,15 +39,12 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string Description { get; }
 
     /// <inheritdoc/>
-    public bool IsSemantic => true;
-
-    /// <inheritdoc/>
     public AIRequestSettings? RequestSettings { get; private set; }
 
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IList<ParameterView> Parameters { get; }
+    public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
 
     /// <summary>
     /// Create a semantic function instance, given a semantic function configuration.
@@ -81,14 +79,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView
-        {
-            IsSemantic = this.IsSemantic,
-            Name = this.Name,
-            PluginName = this.PluginName,
-            Description = this.Description,
-            Parameters = this.Parameters,
-        };
+        return new FunctionView(this.Name, this.PluginName, this.Description) { Parameters = this.Parameters };
     }
 
     /// <inheritdoc/>
@@ -161,12 +152,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
         this._promptTemplate = template;
-        this.Parameters = template.GetParameters();
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
         this.PluginName = pluginName;
         this.Description = description;
+
+        this._view = new(() => new(functionName, pluginName, description, this.Parameters));
     }
 
     #region private
@@ -176,6 +168,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private readonly ILogger _logger;
     private IReadOnlyFunctionCollection? _functionCollection;
     private Lazy<ITextCompletion>? _aiService = null;
+    private Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
@@ -226,6 +219,15 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         return context;
     }
+
+    #endregion
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic => true;
 
     #endregion
 }

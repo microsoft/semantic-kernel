@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel.Diagnostics;
 
 #pragma warning disable CA1720 // Identifier contains type name
 
@@ -13,13 +12,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents the type for the parameter view.
 /// </summary>
-public class ParameterViewType : IEquatable<ParameterViewType>
+public readonly record struct ParameterViewType(string Name)
 {
-    /// <summary>
-    /// The name of the parameter view type
-    /// </summary>
-    private readonly string _name;
-
     /// <summary>
     /// Represents the "string" parameter view type.
     /// </summary>
@@ -46,51 +40,15 @@ public class ParameterViewType : IEquatable<ParameterViewType>
     public static readonly ParameterViewType Boolean = new("boolean");
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ParameterViewType"/> class.
-    /// </summary>
-    /// <param name="name">The name of the parameter view type.</param>
-    public ParameterViewType(string name)
-    {
-        Verify.NotNullOrWhiteSpace(name, nameof(name));
-
-        this._name = name;
-    }
-
-    /// <summary>
     /// Gets the name of the parameter view type.
     /// </summary>
-    public string Name => this._name;
+    public string Name { get; init; } = !string.IsNullOrEmpty(Name) ? Name : throw new ArgumentNullException(nameof(Name));
 
     /// <summary>
     /// Returns a string representation of the parameter view type.
     /// </summary>
     /// <returns>A string representing the parameter view type.</returns>
-    public override string ToString() => this._name;
-
-    /// <summary>
-    /// Determines whether this instance of <see cref="ParameterViewType"/> is equal to another instance.
-    /// </summary>
-    /// <param name="other">The <see cref="ParameterViewType"/> to compare with this instance.</param>
-    /// <returns><c>true</c> if the instances are equal; otherwise, <c>false</c>.</returns>
-    public bool Equals(ParameterViewType other)
-    {
-        if (other is null)
-        {
-            return false;
-        }
-
-        return string.Equals(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Determines whether this instance of <see cref="ParameterViewType"/> is equal to another object.
-    /// </summary>
-    /// <param name="obj">The object to compare with this instance.</param>
-    /// <returns><c>true</c> if the instances are equal; otherwise, <c>false</c>.</returns>
-    public override bool Equals(object obj)
-    {
-        return obj is ParameterViewType other && this.Equals(other);
-    }
+    public override string ToString() => this.Name;
 
     /// <summary>
     /// Returns the hash code for this instance.

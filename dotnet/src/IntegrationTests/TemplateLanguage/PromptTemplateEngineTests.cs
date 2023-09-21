@@ -188,7 +188,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         }
 
         [SKFunction, Description("This is a test"), SKName("asis")]
-        public string MyFunction2(string input)
+        public string? MyFunction2(string? input = null)
         {
             return input;
         }

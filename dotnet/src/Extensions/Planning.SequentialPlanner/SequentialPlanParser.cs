@@ -40,18 +40,18 @@ internal static class SequentialPlanParser
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
 
-    internal static Func<string, string, ISKFunction?> GetPluginFunction(SKContext context)
+    internal static Func<string, string, ISKFunction?> GetPluginFunction(IReadOnlyFunctionCollection functions)
     {
         return (pluginName, functionName) =>
         {
             if (string.IsNullOrEmpty(pluginName))
             {
-                if (context.Functions!.TryGetFunction(functionName, out var pluginFunction))
+                if (functions.TryGetFunction(functionName, out var pluginFunction))
                 {
                     return pluginFunction;
                 }
             }
-            else if (context.Functions!.TryGetFunction(pluginName, functionName, out var pluginFunction))
+            else if (functions.TryGetFunction(pluginName, functionName, out var pluginFunction))
             {
                 return pluginFunction;
             }
