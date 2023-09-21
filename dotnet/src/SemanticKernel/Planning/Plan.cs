@@ -249,7 +249,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = context.KernelContext.CreateNewContext(functionVariables, context.Skills);
+            var functionContext = context.Kernel.CreateNewContext(functionVariables, context.Skills);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 

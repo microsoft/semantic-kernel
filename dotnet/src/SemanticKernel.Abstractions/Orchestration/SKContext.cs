@@ -45,17 +45,17 @@ public sealed class SKContext
     /// <summary>
     /// Read only skills collection
     /// </summary>
-    public IReadOnlySkillCollection Skills => this.KernelContext.Skills;
+    public IReadOnlySkillCollection Skills => this.Kernel.Skills;
 
     /// <summary>
     /// App logger
     /// </summary>
-    public ILoggerFactory LoggerFactory => this.KernelContext.LoggerFactory;
+    public ILoggerFactory LoggerFactory => this.Kernel.LoggerFactory;
 
     /// <summary>
     /// Kernel context reference
     /// </summary>
-    public IKernelContext KernelContext => this.GetKernelContext();
+    public IKernelContext Kernel => this.GetKernelContext();
 
     /// <summary>
     /// Spawns the kernel for the context.

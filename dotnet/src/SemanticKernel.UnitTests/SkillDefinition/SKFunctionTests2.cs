@@ -454,7 +454,7 @@ public sealed class SKFunctionTests2
 
             // This value should overwrite "x y z". Contexts are merged.
             var newContext = new SKContext(
-                context.KernelContext,
+                context.Kernel,
                 new ContextVariables(input));
 
             newContext.Variables.Update("new data");
@@ -498,7 +498,7 @@ public sealed class SKFunctionTests2
         {
             // This value should overwrite "x y z". Contexts are merged.
             var newCx = new SKContext(
-                context.KernelContext,
+                context.Kernel,
                 new ContextVariables(input + "abc"));
 
             return new ValueTask<SKContext>(newCx);
