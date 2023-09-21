@@ -1,8 +1,8 @@
 ---
 status: proposed
-date: 2023-09-18
+date: 2023-09-21
 deciders: gitri-ms, shawncal
-consulted: lemillermicrosoft, awharrison-28, dmytrostruk
+consulted: lemillermicrosoft, awharrison-28, dmytrostruk, nacharya1
 informed: eavanvalkenburg, kevdome3000
 ---
 # OpenAI Function Calling Support
@@ -63,3 +63,6 @@ Orchestrating external function calls fits within SK's concept of planning.  Wit
 * Good, because producing a plan result makes it easy for the app developer to execute the chosen function
 * Bad, because functions would need to be registered with the kernel in order to be executed
 * Bad, because would create confusion about when to use which planner
+
+## Additional notes
+There has been much discussion and debate over the pros and cons of automatically invoking a function returned by the OpenAI model, if it is registered with the kernel. As there are still many open questions around this behavior and its implications, we have decided to not include this capability in the initial implementation.  We will continue to explore this option and may include it in a future update.
