@@ -12,7 +12,6 @@ using Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
-using SkillDefinition;
 
 
 /// <summary>
@@ -66,9 +65,9 @@ public class StructuredActionPlanner : IStructuredPlanner
         }
         _context.Variables.Update(goal);
 
-        SkillCollection skillCollection = await _context.GetSkillCollection(Config, goal).ConfigureAwait(false);
+        FunctionCollection skillCollection = await _context.GetSkillCollection(Config, goal).ConfigureAwait(false);
 
-        _plannerFunction.SetDefaultSkillCollection(skillCollection);
+        _plannerFunction.SetDefaultFunctionCollection(skillCollection);
 
         SKContext? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
         ActionFunctionCall? response = result.ToFunctionCallResult<ActionFunctionCall>();
@@ -78,7 +77,7 @@ public class StructuredActionPlanner : IStructuredPlanner
             throw new SKException("The planner failed to generate a response");
         }
 
-        if (!_context.Skills.TryGetFunction(response, out ISKFunction? function))
+        if (!_context.Functions.TryGetFunction(response, out ISKFunction? function))
         {
             throw new SKException($"The function {response.Function} is not available");
         }

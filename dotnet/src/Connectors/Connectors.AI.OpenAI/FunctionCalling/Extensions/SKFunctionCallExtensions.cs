@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Orchestration;
 using SemanticFunctions;
 using SemanticKernel.AI.TextCompletion;
-using SkillDefinition;
 
 
 /// <summary>
@@ -78,7 +77,7 @@ public static class SKFunctionCallExtensions
         SKFunctionCallConfig functionConfig = new(template, config, targetFunction, callableFunctions, callFunctionsAutomatically);
         var functionCall = SKFunctionCall.FromConfig(skillName ?? "sk_function_call", functionName, functionConfig, loggerFactory);
         functionCall.SetAIService(() => kernel.GetService<ITextCompletion>());
-        functionCall.SetDefaultSkillCollection(kernel.Skills);
+        functionCall.SetDefaultFunctionCollection(kernel.Functions);
         return functionCall;
     }
 

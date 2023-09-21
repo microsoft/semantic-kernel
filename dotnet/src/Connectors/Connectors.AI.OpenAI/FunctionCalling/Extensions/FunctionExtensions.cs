@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Orchestration;
-using SkillDefinition;
 
 
 /// <summary>
@@ -108,9 +107,9 @@ public static class FunctionExtensions
             { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         // Console.WriteLine($"Parameters: {JsonSerializer.Deserialize()}");
-        var functionName = string.IsNullOrEmpty(functionView.SkillName)
+        var functionName = string.IsNullOrEmpty(functionView.PluginName)
             ? functionView.Name
-            : $"{functionView.SkillName}.{functionView.Name}";
+            : $"{functionView.PluginName}.{functionView.Name}";
         // Create FunctionDefinition
         return new FunctionDefinition()
         {
@@ -149,7 +148,7 @@ public static class FunctionExtensions
     /// <param name="skillCollection"></param>
     /// <param name="excludedSkills"></param>
     /// <returns></returns>
-    public static IEnumerable<FunctionDefinition> GetFunctionDefinitions(this IReadOnlySkillCollection skillCollection, IEnumerable<string>? excludedSkills = null, IEnumerable<string>? excludedFunctions = null)
+    public static IEnumerable<FunctionDefinition> GetFunctionDefinitions(this IReadOnlyFunctionCollection skillCollection, IEnumerable<string>? excludedSkills = null, IEnumerable<string>? excludedFunctions = null)
     {
         IReadOnlyList<FunctionView> functionsView = skillCollection.GetFunctionViews();
 
@@ -157,8 +156,8 @@ public static class FunctionExtensions
         excludedFunctions ??= Array.Empty<string>();
 
         List<FunctionView> availableFunctions = functionsView
-            .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
-            .OrderBy(x => x.SkillName)
+            .Where(s => !excludedSkills.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
+            .OrderBy(x => x.PluginName)
             .ThenBy(x => x.Name)
             .ToList();
 
@@ -173,7 +172,7 @@ public static class FunctionExtensions
     /// <param name="functionCall"></param>
     /// <param name="functionInstance"></param>
     /// <returns></returns>
-    public static bool TryGetFunction(this IReadOnlySkillCollection skillCollection, FunctionCallResult functionCall, out ISKFunction? functionInstance)
+    public static bool TryGetFunction(this IReadOnlyFunctionCollection skillCollection, FunctionCallResult functionCall, out ISKFunction? functionInstance)
     {
 
         // handles edge case where function name is prefixed with "functions." 

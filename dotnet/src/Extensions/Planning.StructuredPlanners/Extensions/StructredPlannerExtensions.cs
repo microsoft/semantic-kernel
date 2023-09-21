@@ -18,7 +18,6 @@ using Planning;
 using Planning.Structured;
 using Planning.Structured.Extensions;
 using Planning.Structured.Sequential;
-using SkillDefinition;
 
 #pragma warning restore IDE0130
 
@@ -97,9 +96,9 @@ public static class StructuredPlannerExtensions
         string? semanticQuery = null,
         CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<FunctionView>? functionsView = context.Skills.GetFunctionViews();
+        IReadOnlyList<FunctionView> functionsView = context.Functions.GetFunctionViews();
 
-        List<FunctionView> availableFunctions = functionsView.Where(s => !config.ExcludedSkills.Contains(s.SkillName) && !config.ExcludedFunctions.Contains(s.Name))
+        List<FunctionView> availableFunctions = functionsView.Where(s => !config.ExcludedSkills.Contains(s.PluginName) && !config.ExcludedFunctions.Contains(s.Name))
             .ToList();
 
         List<FunctionView>? result = null;
@@ -137,7 +136,7 @@ public static class StructuredPlannerExtensions
         }
 
         return result
-            .OrderBy(x => x.SkillName)
+            .OrderBy(x => x.PluginName)
             .ThenBy(x => x.Name).ToList();
     }
 
@@ -251,7 +250,7 @@ public static class StructuredPlannerExtensions
     }
 
 
-    public static Plan ToPlan(this IEnumerable<SequentialFunctionCallResult> functionCalls, string goal, IReadOnlySkillCollection skillCollection)
+    public static Plan ToPlan(this IEnumerable<SequentialFunctionCallResult> functionCalls, string goal, IReadOnlyFunctionCollection skillCollection)
     {
         // Initialize Plan with goal
         var plan = new Plan(goal);

@@ -13,7 +13,6 @@ using Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Orchestration;
-using SkillDefinition;
 
 
 /// <summary>
@@ -69,8 +68,8 @@ public class StructuredSequentialPlanner : IStructuredPlanner
 
         _context.Variables.Update(goal);
 
-        SkillCollection skillCollection = await _context.GetSkillCollection(Config, goal).ConfigureAwait(false);
-        _plannerFunction.SetDefaultSkillCollection(skillCollection);
+        FunctionCollection skillCollection = await _context.GetSkillCollection(Config, goal).ConfigureAwait(false);
+        _plannerFunction.SetDefaultFunctionCollection(skillCollection);
 
         SKContext? result = await _plannerFunction.InvokeAsync(_context, cancellationToken: cancellationToken).ConfigureAwait(false);
         List<SequentialFunctionCallResult>? functionCalls = result.ToFunctionCallResult<List<SequentialFunctionCallResult>>();

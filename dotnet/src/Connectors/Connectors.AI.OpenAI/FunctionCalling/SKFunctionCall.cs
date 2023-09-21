@@ -16,7 +16,6 @@ using SemanticFunctions;
 using SemanticKernel.AI;
 using SemanticKernel.AI.ChatCompletion;
 using SemanticKernel.AI.TextCompletion;
-using SkillDefinition;
 
 #pragma warning disable format
 /// <summary>
@@ -32,6 +31,9 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
     /// <inheritdoc />
     public string Name { get; }
+
+    /// <inheritdoc />
+    public string PluginName { get; }
 
     /// <inheritdoc />
     public string SkillName { get; }
@@ -92,22 +94,22 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     /// <inheritdoc />
     public FunctionView Describe()
     {
-        return new FunctionView(Name, SkillName, Description, CallableFunctions.Select(f => new ParameterView(f.Name, f.Description)).ToList());
+        return new FunctionView(Name, PluginName, Description, CallableFunctions.Select(f => new ParameterView(f.Name, f.Description)).ToList());
     }
 
 
     /// <inheritdoc />
-    public async Task<SKContext> InvokeAsync(SKContext context, AIRequestSettings? settings = null, CancellationToken cancellationToken = default)
+    public async Task<SKContext> InvokeAsync(SKContext context, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         if (_skillCollection is null)
         {
-            SetDefaultSkillCollection(context.Skills);
+            SetDefaultFunctionCollection(context.Functions);
         }
 
-        var requestSettings = GetRequestSettings(settings ?? RequestSettings);
+        var settings = GetRequestSettings(requestSettings ?? RequestSettings);
 
         // trim any skills from the 
-        IReadOnlyList<IChatResult> results = await RunPromptAsync(_aiService?.Value, requestSettings, context, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<IChatResult> results = await RunPromptAsync(_aiService?.Value, settings, context, cancellationToken).ConfigureAwait(false);
         context.ModelResults = results.Select(c => c.ModelResult).ToArray();
 
         if (CallFunctionsAutomatically)
@@ -122,9 +124,9 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
 
     /// <inheritdoc />
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
-        _skillCollection = skills;
+        _skillCollection = functions;
         CallableFunctions.Clear();
 
         if (_targetFunctionDefinition != FunctionDefinition.Auto)
@@ -132,11 +134,15 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
             CallableFunctions.Add(_targetFunctionDefinition);
         }
 
-        List<FunctionDefinition> functionDefinitions = skills.GetFunctionDefinitions(new[] { SkillName }).Take(MaxCallableFunctions - 1).ToList();
+        List<FunctionDefinition> functionDefinitions = functions.GetFunctionDefinitions(new[] { PluginName }).Take(MaxCallableFunctions - 1).ToList();
         CallableFunctions.AddRange(functionDefinitions);
 
         return this;
     }
+
+
+    /// <inheritdoc />
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => SetDefaultFunctionCollection(skills);
 
 
     /// <inheritdoc />
@@ -157,10 +163,10 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
 
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        Verify.NotNull(settings);
-        RequestSettings = settings;
+        Verify.NotNull(requestSettings);
+        RequestSettings = requestSettings;
         return this;
     }
 
@@ -188,7 +194,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
-        Verify.ValidSkillName(skillName);
+        Verify.ValidPluginName(skillName);
         Verify.ValidFunctionName(functionName);
 
         _logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SKFunctionCall)) : NullLogger.Instance;
@@ -196,6 +202,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         _promptTemplate = template;
 
         Name = functionName;
+        PluginName = skillName;
         SkillName = skillName;
         Description = description;
         _targetFunctionDefinition = targetFunctionDefinition ?? FunctionExtensions.Default;
@@ -212,7 +219,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     #region private
 
     private readonly ILogger _logger;
-    private IReadOnlySkillCollection? _skillCollection;
+    private IReadOnlyFunctionCollection? _skillCollection;
     private Lazy<IChatCompletion>? _aiService;
     private readonly FunctionDefinition _targetFunctionDefinition;
     private ISKFunction? _functionToCall;
@@ -222,7 +229,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     private FunctionCallRequestSettings GetRequestSettings(AIRequestSettings settings)
     {
 
-        OpenAIRequestSettings openAIRequestSettings = OpenAIRequestSettings.FromRequestSettings(settings);
+        var openAIRequestSettings = OpenAIRequestSettings.FromRequestSettings(settings);
         // Remove duplicates, if any, due to the inaccessibility of ReadOnlySkillCollection
         // Can't changes what skills are available to the context because you can't remove skills from the context
         List<FunctionDefinition> distinctCallableFunctions = CallableFunctions
@@ -324,8 +331,9 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
         {
             throw new SKException($"The function {functionCallResult.Function} is not available");
         }
+
         // Update the result with the completion
-        foreach (var item in functionCallResult.FunctionParameters())
+        foreach (KeyValuePair<string, string> item in functionCallResult.FunctionParameters())
         {
             context.Variables[item.Key] = item.Value;
         }

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Azure.AI.OpenAI;
 using Connectors.AI.OpenAI.FunctionCalling.Extensions;
 using Orchestration;
-using SkillDefinition;
 
 
 /// <summary>
@@ -21,9 +20,9 @@ public static class SKContextExtensions
     /// <param name="context"></param>
     /// <param name="allowedSkills"></param>
     /// <returns></returns>
-    public static SkillCollection GetSkillCollection(this SKContext context, IEnumerable<FunctionDefinition> allowedSkills)
+    public static FunctionCollection GetSkillCollection(this SKContext context, IEnumerable<FunctionDefinition> allowedSkills)
     {
-        var skillCollection = new SkillCollection(context.LoggerFactory);
+        var skillCollection = new FunctionCollection(context.LoggerFactory);
         IEnumerable<string> allowedSkillNames = allowedSkills.Select(skill => skill.Name);
 
         foreach (var name in allowedSkillNames)
@@ -40,14 +39,14 @@ public static class SKContextExtensions
 
             if (!string.IsNullOrEmpty(skillName))
             {
-                if (context.Skills.TryGetFunction(skillName, functionName, out var function))
+                if (context.Functions.TryGetFunction(skillName, functionName, out var function))
                 {
                     skillCollection.AddFunction(function);
                 }
             }
             else
             {
-                if (context.Skills.TryGetFunction(name, out var function))
+                if (context.Functions.TryGetFunction(name, out var function))
                 {
                     skillCollection.AddFunction(function);
                 }
@@ -65,13 +64,13 @@ public static class SKContextExtensions
     /// <param name="structuredPlannerConfig"></param>
     /// <param name="semanticQuery"></param>
     /// <returns></returns>
-    public static async Task<SkillCollection> GetSkillCollection(this SKContext context, StructuredPlannerConfig structuredPlannerConfig, string? semanticQuery = null)
+    public static async Task<FunctionCollection> GetSkillCollection(this SKContext context, StructuredPlannerConfig structuredPlannerConfig, string? semanticQuery = null)
     {
         IEnumerable<FunctionDefinition> functionDefinitions = new List<FunctionDefinition>();
 
         if (string.IsNullOrEmpty(semanticQuery))
         {
-            functionDefinitions = context.Skills.GetFunctionDefinitions(excludedSkills: structuredPlannerConfig.ExcludedSkills, excludedFunctions: structuredPlannerConfig.ExcludedFunctions);
+            functionDefinitions = context.Functions.GetFunctionDefinitions(excludedSkills: structuredPlannerConfig.ExcludedSkills, excludedFunctions: structuredPlannerConfig.ExcludedFunctions);
         }
         else
         {

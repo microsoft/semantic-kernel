@@ -4,7 +4,6 @@ namespace Microsoft.SemanticKernel.Planning.Structured.Extensions;
 
 using System.Collections.Generic;
 using System.Linq;
-using SkillDefinition;
 
 
 internal static class FunctionViewExtensions
@@ -42,7 +41,7 @@ internal static class FunctionViewExtensions
     /// </summary>
     /// <param name="function">The function to create a fully qualified name for.</param>
     /// <returns>A fully qualified name for a function.</returns>
-    internal static string ToFullyQualifiedName(this FunctionView function) => $"{function.SkillName}.{function.Name}";
+    internal static string ToFullyQualifiedName(this FunctionView function) => $"{function.PluginName}.{function.Name}";
 
 
     /// <summary>

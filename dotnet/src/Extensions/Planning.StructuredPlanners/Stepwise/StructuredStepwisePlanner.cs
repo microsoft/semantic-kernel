@@ -17,12 +17,11 @@ using Diagnostics;
 using Extensions;
 using Microsoft.Extensions.Logging;
 using Orchestration;
-using SkillDefinition;
 using TemplateEngine.Prompt;
 
 
 /// <summary>
-///  Stepwise planner that uses the OpenAI chat completion function calling API to achieve a goal in a step by step manner. 
+///  Stepwise planner that uses the OpenAI chat completion function calling API to achieve a goal in a step by step manner.
 /// </summary>
 public class StructuredStepwisePlanner : IStructuredPlanner
 {
@@ -46,7 +45,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
 
         _promptTemplate = prompt ?? EmbeddedResource.Read("Prompts.Stepwise.skprompt.txt");
 
-        _executeFunction = _kernel.ImportSkill(this, RestrictedSkillName);
+        _executeFunction = _kernel.ImportPlugin(this, RestrictedSkillName);
 
         _context = _kernel.CreateNewContext();
         _logger = _kernel.LoggerFactory.CreateLogger(nameof(StructuredStepwisePlanner));
@@ -126,7 +125,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
             }
 
             nextStep = await GetStepResultAsync(nextStep).ConfigureAwait(false);
-            lastStep = AddNextStep(stepsTaken, nextStep, lastStep, _chatHistory, _chatHistory.Count);
+            lastStep = AddNextStep(stepsTaken, nextStep, lastStep, _chatHistory);
 
             await Task.Delay(Config.MinIterationTimeMs, token).ConfigureAwait(false);
 
@@ -183,7 +182,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
     }
 
 
-    private StepwiseFunctionCallResult AddNextStep(List<StepwiseFunctionCallResult> stepsTaken, StepwiseFunctionCallResult step, StepwiseFunctionCallResult lastStep, ChatHistory chatHistory, int startingMessageCount)
+    private StepwiseFunctionCallResult AddNextStep(List<StepwiseFunctionCallResult> stepsTaken, StepwiseFunctionCallResult step, StepwiseFunctionCallResult lastStep, ChatHistory chatHistory)
     {
         var assistantMessage = step.GetAssistantMessage();
         var userMessage = "Observation: " + step.FunctionResult;
@@ -194,7 +193,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
         {
             stepsTaken.Add(step);
             chatHistory.AddAssistantMessage(assistantMessage);
-            chatHistory.AddUserMessage(userMessage!);
+            chatHistory.AddUserMessage(userMessage);
 
             return step;
         }
@@ -213,7 +212,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
         }
 
         chatHistory.AddAssistantMessage(assistantMessage);
-        chatHistory.AddUserMessage(userMessage!);
+        chatHistory.AddUserMessage(userMessage);
 
         return step;
     }
@@ -230,7 +229,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
         nextStep.FunctionCall = null;
         nextStep.Function = functionCall.Function;
         nextStep.Parameters = functionCall.Parameters;
-        _context.Skills.TryGetFunction(functionCall, out var targetFunction);
+        _context.Functions.TryGetFunction(functionCall, out var targetFunction);
 
         if (targetFunction == null)
         {
@@ -248,7 +247,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            _logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            _logger.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.PluginName, targetFunction.Name, e.Message);
             throw;
         }
     }
@@ -354,7 +353,7 @@ public class StructuredStepwisePlanner : IStructuredPlanner
 
     private FunctionCallRequestSettings GetRequestSettings(SKContext context)
     {
-        List<FunctionDefinition> callableFunctions = context.Skills.GetFunctionDefinitions(Config.ExcludedSkills, Config.ExcludedFunctions).ToList();
+        List<FunctionDefinition> callableFunctions = context.Functions.GetFunctionDefinitions(Config.ExcludedSkills, Config.ExcludedFunctions).ToList();
         callableFunctions.Add(StepwisePlan);
         return new FunctionCallRequestSettings
         {

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Memory;
 using SemanticFunctions;
-using SkillDefinition;
 
 
 /// <summary>
