@@ -81,11 +81,11 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         Assert.NotNull(record);
 
         Assert.True(record.Metadata.IsReference);
-        Assert.Equal(record.Metadata.Id, "Some id");
-        Assert.Equal(record.Metadata.Description, "Some description");
-        Assert.Equal(record.Metadata.Text, "Some text");
-        Assert.Equal(record.Metadata.ExternalSourceName, "Some external resource name");
-        Assert.Equal(record.Metadata.AdditionalMetadata, "Some additional metadata");
+        Assert.Equal("Some id", record.Metadata.Id);
+        Assert.Equal("Some description", record.Metadata.Description);
+        Assert.Equal("Some text", record.Metadata.Text);
+        Assert.Equal("Some external resource name", record.Metadata.ExternalSourceName);
+        Assert.Equal("Some additional metadata", record.Metadata.AdditionalMetadata);
         Assert.Equal("Some key", record.Key);
         Assert.Equal(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero), record.Timestamp);
 
@@ -119,10 +119,10 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             r =>
             {
                 Assert.True(r.Metadata.IsReference);
-                Assert.Equal(r.Metadata.Id, "Some id");
-                Assert.Equal(r.Metadata.Description, "Some description");
-                Assert.Equal(r.Metadata.Text, "Some text");
-                Assert.Equal(r.Metadata.ExternalSourceName, "Some external resource name");
+                Assert.Equal("Some id", r.Metadata.Id);
+                Assert.Equal("Some description", r.Metadata.Description);
+                Assert.Equal("Some text", r.Metadata.Text);
+                Assert.Equal("Some external resource name", r.Metadata.ExternalSourceName);
                 Assert.Equal(r.Metadata.AdditionalMetadata, "Some additional metadata");
                 Assert.Equal("Some key", r.Key);
                 Assert.Equal(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero), r.Timestamp);
@@ -192,10 +192,10 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             r =>
             {
                 Assert.True(r.Metadata.IsReference);
-                Assert.Equal(r.Metadata.Id, "Some id");
-                Assert.Equal(r.Metadata.Description, "Some description");
-                Assert.Equal(r.Metadata.Text, "Some text");
-                Assert.Equal(r.Metadata.ExternalSourceName, "Some external resource name");
+                Assert.Equal("Some id", r.Metadata.Id);
+                Assert.Equal("Some description", r.Metadata.Description);
+                Assert.Equal("Some text", r.Metadata.Text);
+                Assert.Equal("Some external resource name", r.Metadata.ExternalSourceName);
                 Assert.Equal(r.Metadata.AdditionalMetadata, "Some additional metadata");
                 Assert.Equal("Some key", r.Key);
                 Assert.Equal(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero), r.Timestamp);
@@ -247,13 +247,13 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
         await this.InsertSampleDataAsync();
 
         (MemoryRecord Record, double SimilarityScore)? result =
-            await this.Store.GetNearestMatchAsync(CollectionName, new[] { 20f, 21f, 22f, 23f, 24f }, withEmbedding: withEmbeddings).ConfigureAwait(false);
+            await this.Store.GetNearestMatchAsync(CollectionName, new[] { 20f, 21f, 22f, 23f, 24f }, withEmbedding: withEmbeddings);
 
         Assert.NotNull(result);
         Assert.True(result.Value.SimilarityScore > 0);
         MemoryRecord record = result.Value.Record;
 
-        Assert.Equal(record.Metadata.Id, "Some other id");
+        Assert.Equal("Some other id", record.Metadata.Id);
         Assert.Equal(
             withEmbeddings ? new[] { 20f, 21f, 22f, 23f, 24f } : Array.Empty<float>(),
             record.Embedding.ToArray());
