@@ -225,7 +225,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         var skills = new Mock<ISkillCollection>();
         foreach (var (name, skillName, description, isSemantic) in functions)
         {
-            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
+            var functionView = new FunctionView(name, skillName, description);
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 

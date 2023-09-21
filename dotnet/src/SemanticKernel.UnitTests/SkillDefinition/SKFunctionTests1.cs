@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel.AI;
@@ -20,7 +21,7 @@ public sealed class SKFunctionTests1
     {
         this._promptTemplate = new Mock<IPromptTemplate>();
         this._promptTemplate.Setup(x => x.RenderAsync(It.IsAny<SKContext>(), It.IsAny<CancellationToken>())).ReturnsAsync("foo");
-        this._promptTemplate.Setup(x => x.GetParameters()).Returns(new List<ParameterView>());
+        this._promptTemplate.Setup(x => x.Parameters).Returns(Array.Empty<ParameterView>());
     }
 
     [Fact]
@@ -87,8 +88,8 @@ public sealed class SKFunctionTests1
             .ReturnsAsync("some prompt");
 
         promptTemplate
-            .Setup(x => x.GetParameters())
-            .Returns(new List<ParameterView>());
+            .Setup(x => x.Parameters)
+            .Returns(Array.Empty<ParameterView>());
 
         return promptTemplate;
     }
@@ -104,7 +105,7 @@ public sealed class SKFunctionTests1
 
         aiService
             .Setup(x => x.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ITextResult> { textCompletionResult.Object });
+            .ReturnsAsync(new ITextResult[] { textCompletionResult.Object });
 
         return aiService;
     }
