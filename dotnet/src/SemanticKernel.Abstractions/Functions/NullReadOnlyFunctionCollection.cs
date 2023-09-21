@@ -5,12 +5,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 [DebuggerDisplay("Count = 0")]
-internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
+internal sealed class NullReadOnlyFunctionCollection : IReadOnlyFunctionCollection
 {
-    public static readonly NullReadOnlySkillCollection Instance = new();
+    public static readonly NullReadOnlyFunctionCollection Instance = new();
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName)
@@ -19,9 +22,9 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
     }
 
     /// <inheritdoc/>
-    public ISKFunction GetFunction(string skillName, string functionName)
+    public ISKFunction GetFunction(string pluginName, string functionName)
     {
-        return ThrowFunctionNotAvailable(skillName, functionName);
+        return ThrowFunctionNotAvailable(pluginName, functionName);
     }
 
     /// <inheritdoc/>
@@ -32,7 +35,7 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
     }
 
     /// <inheritdoc/>
-    public bool TryGetFunction(string skillName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
+    public bool TryGetFunction(string pluginName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
     {
         availableFunction = null;
         return false;
@@ -44,14 +47,14 @@ internal sealed class NullReadOnlySkillCollection : IReadOnlySkillCollection
         return new List<FunctionView>();
     }
 
-    private NullReadOnlySkillCollection()
+    private NullReadOnlyFunctionCollection()
     {
     }
 
     [DoesNotReturn]
-    private static ISKFunction ThrowFunctionNotAvailable(string skillName, string functionName)
+    private static ISKFunction ThrowFunctionNotAvailable(string pluginName, string functionName)
     {
-        throw new SKException($"Function not available: {skillName}.{functionName}");
+        throw new SKException($"Function not available: {pluginName}.{functionName}");
     }
 
     [DoesNotReturn]

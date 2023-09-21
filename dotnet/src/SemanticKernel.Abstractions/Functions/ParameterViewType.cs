@@ -4,7 +4,10 @@ using System;
 
 #pragma warning disable CA1720 // Identifier contains type name
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Represents the type for the parameter view.

@@ -9,10 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.SkillDefinition;
+namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class SKFunctionTests3
 {
@@ -20,13 +19,13 @@ public sealed class SKFunctionTests3
     public void ItDoesntThrowForValidFunctionsViaDelegate()
     {
         // Arrange
-        var skillInstance = new LocalExampleSkill();
-        MethodInfo[] methods = skillInstance.GetType()
+        var pluginInstance = new LocalExamplePlugin();
+        MethodInfo[] methods = pluginInstance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = (from method in methods select SKFunction.FromNativeMethod(method, skillInstance, "skill")).ToArray();
+        ISKFunction[] functions = (from method in methods select SKFunction.FromNativeMethod(method, pluginInstance, "plugin")).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -34,16 +33,16 @@ public sealed class SKFunctionTests3
     }
 
     [Fact]
-    public void ItDoesntThrowForValidFunctionsViaSkill()
+    public void ItDoesNotThrowForValidFunctionsViaPlugin()
     {
         // Arrange
-        var skillInstance = new LocalExampleSkill();
-        MethodInfo[] methods = skillInstance.GetType()
+        var pluginInstance = new LocalExamplePlugin();
+        MethodInfo[] methods = pluginInstance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = Kernel.Builder.Build().ImportSkill(skillInstance).Select(s => s.Value).ToArray();
+        ISKFunction[] functions = Kernel.Builder.Build().ImportPlugin(pluginInstance).Select(s => s.Value).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -54,7 +53,7 @@ public sealed class SKFunctionTests3
     public void ItThrowsForInvalidFunctions()
     {
         // Arrange
-        var instance = new InvalidSkill();
+        var instance = new InvalidPlugin();
         MethodInfo[] methods = instance.GetType()
             .GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod)
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode")
@@ -66,7 +65,7 @@ public sealed class SKFunctionTests3
         {
             try
             {
-                SKFunction.FromNativeMethod(method, instance, "skill");
+                SKFunction.FromNativeMethod(method, instance, "plugin");
             }
             catch (SKException)
             {
@@ -100,7 +99,7 @@ public sealed class SKFunctionTests3
             nativeFunction: ExecuteAsync,
             parameters: null,
             description: "description",
-            skillName: "skillName",
+            pluginName: "pluginName",
             functionName: "functionName");
 
         SKContext result = await function.InvokeAsync(context);
@@ -135,7 +134,7 @@ public sealed class SKFunctionTests3
         ISKFunction function = SKFunction.FromNativeFunction(
             nativeFunction: ExecuteAsync,
             description: "description",
-            skillName: "skillName",
+            pluginName: "pluginName",
             functionName: "functionName");
 
         SKContext result = await function.InvokeAsync(context);
@@ -144,7 +143,7 @@ public sealed class SKFunctionTests3
         Assert.Equal("YES", result.Variables["canary"]);
     }
 
-    private sealed class InvalidSkill
+    private sealed class InvalidPlugin
     {
         [SKFunction]
         public void Invalid1([SKName("input"), Description("The x parameter")] string x, [SKName("input"), Description("The y parameter")] string y)
@@ -169,7 +168,7 @@ public sealed class SKFunctionTests3
         public struct CustomUnknownType { }
     }
 
-    private sealed class LocalExampleSkill
+    private sealed class LocalExamplePlugin
     {
         [SKFunction]
         public void Type01()

@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel;
@@ -49,7 +48,7 @@ public sealed class KernelBuilder
     public IKernel Build()
     {
         var instance = new Kernel(
-            new SkillCollection(this._loggerFactory),
+            new FunctionCollection(this._loggerFactory),
             this._aiServices.Build(),
             this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),

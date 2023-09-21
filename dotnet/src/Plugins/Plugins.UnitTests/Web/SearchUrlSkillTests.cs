@@ -26,17 +26,17 @@ public class SearchUrlPluginTests
         IKernel kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportSkill(new SearchUrlPlugin(), "search");
+        kernel.ImportPlugin(new SearchUrlPlugin(), "search");
     }
 
     [Fact]
     public void AmazonSearchUrlSucceeds()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.AmazonSearchUrl(AnyInput);
+        string actual = plugin.AmazonSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.amazon.com/s?k={this._encodedInput}", actual);
@@ -46,10 +46,10 @@ public class SearchUrlPluginTests
     public void BingSearchUrlSucceeds()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.BingSearchUrl(AnyInput);
+        string actual = plugin.BingSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.bing.com/search?q={this._encodedInput}", actual);
@@ -59,10 +59,10 @@ public class SearchUrlPluginTests
     public void BingImagesSearchUrlSucceeds()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.BingImagesSearchUrl(AnyInput);
+        string actual = plugin.BingImagesSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.bing.com/images/search?q={this._encodedInput}", actual);
@@ -72,10 +72,10 @@ public class SearchUrlPluginTests
     public void BingMapsSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.BingMapsSearchUrl(AnyInput);
+        string actual = plugin.BingMapsSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.bing.com/maps?q={this._encodedInput}", actual);
@@ -85,10 +85,10 @@ public class SearchUrlPluginTests
     public void BingShoppingSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.BingShoppingSearchUrl(AnyInput);
+        string actual = plugin.BingShoppingSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.bing.com/shop?q={this._encodedInput}", actual);
@@ -98,10 +98,10 @@ public class SearchUrlPluginTests
     public void BingNewsSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.BingNewsSearchUrl(AnyInput);
+        string actual = plugin.BingNewsSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.bing.com/news/search?q={this._encodedInput}", actual);
@@ -111,10 +111,10 @@ public class SearchUrlPluginTests
     public void BingTravelSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.BingTravelSearchUrl(AnyInput);
+        string actual = plugin.BingTravelSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.bing.com/travel/search?q={this._encodedInput}", actual);
@@ -124,10 +124,10 @@ public class SearchUrlPluginTests
     public void FacebookSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.FacebookSearchUrl(AnyInput);
+        string actual = plugin.FacebookSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.facebook.com/search/top/?q={this._encodedInput}", actual);
@@ -137,10 +137,10 @@ public class SearchUrlPluginTests
     public void GitHubSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.GitHubSearchUrl(AnyInput);
+        string actual = plugin.GitHubSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://github.com/search?q={this._encodedInput}", actual);
@@ -150,10 +150,10 @@ public class SearchUrlPluginTests
     public void LinkedInSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.LinkedInSearchUrl(AnyInput);
+        string actual = plugin.LinkedInSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://www.linkedin.com/search/results/index/?keywords={this._encodedInput}", actual);
@@ -163,10 +163,10 @@ public class SearchUrlPluginTests
     public void TwitterSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.TwitterSearchUrl(AnyInput);
+        string actual = plugin.TwitterSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://twitter.com/search?q={this._encodedInput}", actual);
@@ -176,10 +176,10 @@ public class SearchUrlPluginTests
     public void WikipediaSearchUrl()
     {
         // Arrange
-        var skill = new SearchUrlPlugin();
+        var plugin = new SearchUrlPlugin();
 
         // Act
-        string actual = skill.WikipediaSearchUrl(AnyInput);
+        string actual = plugin.WikipediaSearchUrl(AnyInput);
 
         // Assert
         Assert.Equal($"https://wikipedia.org/w/index.php?search={this._encodedInput}", actual);

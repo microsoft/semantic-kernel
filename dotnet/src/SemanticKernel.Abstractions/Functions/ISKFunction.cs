@@ -8,7 +8,10 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Semantic Kernel callable function interface
@@ -16,13 +19,18 @@ namespace Microsoft.SemanticKernel.SkillDefinition;
 public interface ISKFunction
 {
     /// <summary>
-    /// Name of the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
+    /// Name of the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
     string Name { get; }
 
     /// <summary>
-    /// Name of the skill containing the function. The name is used by the skill collection and in prompt templates e.g. {{skillName.functionName}}
+    /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{pluginName.functionName}}
     /// </summary>
+    string PluginName { get; }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SkillName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
     string SkillName { get; }
 
     /// <summary>
@@ -54,12 +62,17 @@ public interface ISKFunction
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Set the default skill collection to use when the function is invoked
+    /// Set the default function collection to use when the function is invoked
     /// without a context or with a context that doesn't have a collection.
     /// </summary>
-    /// <param name="skills">Kernel's skill collection</param>
+    /// <param name="functions">Kernel's function collection</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills);
+    ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions);
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills);
 
     /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.

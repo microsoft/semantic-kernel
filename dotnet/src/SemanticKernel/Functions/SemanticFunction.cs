@@ -16,7 +16,10 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 #pragma warning disable format
 
@@ -30,7 +33,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string Name { get; }
 
     /// <inheritdoc/>
-    public string SkillName { get; }
+    public string PluginName { get; }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public string SkillName => this.PluginName;
+#pragma warning restore CS1591
 
     /// <inheritdoc/>
     public string Description { get; }
@@ -44,16 +53,16 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
 
     /// <summary>
-    /// Create a native function instance, given a semantic function configuration.
+    /// Create a semantic function instance, given a semantic function configuration.
     /// </summary>
-    /// <param name="skillName">Name of the skill to which the function to create belongs.</param>
+    /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
     /// <param name="functionConfig">Semantic function configuration.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
-        string skillName,
+        string pluginName,
         string functionName,
         SemanticFunctionConfig functionConfig,
         ILoggerFactory? loggerFactory = null,
@@ -64,7 +73,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         var func = new SemanticFunction(
             template: functionConfig.PromptTemplate,
             description: functionConfig.PromptTemplateConfig.Description,
-            skillName: skillName,
+            pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
         );
@@ -76,7 +85,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView(this.Name, this.SkillName, this.Description) { Parameters = this.Parameters };
+        return new FunctionView(this.Name, this.PluginName, this.Description) { Parameters = this.Parameters };
     }
 
     /// <inheritdoc/>
@@ -91,11 +100,17 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
-        this._skillCollection = skills;
+        this._functionCollection = functions;
         return this;
     }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
+        this.SetDefaultFunctionCollection(skills);
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
@@ -137,13 +152,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     internal SemanticFunction(
         IPromptTemplate template,
-        string skillName,
+        string pluginName,
         string functionName,
         string description,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
-        Verify.ValidSkillName(skillName);
+        Verify.ValidPluginName(pluginName);
         Verify.ValidFunctionName(functionName);
 
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
@@ -152,10 +167,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
-        this.SkillName = skillName;
+        this.PluginName = pluginName;
         this.Description = description;
 
-        this._view = new(() => new(functionName, skillName, description, this.Parameters));
+        this._view = new(() => new(functionName, pluginName, description, this.Parameters));
     }
 
     #region private
@@ -163,7 +178,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private IReadOnlySkillCollection? _skillCollection;
+    private IReadOnlyFunctionCollection? _functionCollection;
     private Lazy<ITextCompletion>? _aiService = null;
     private Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
@@ -210,7 +225,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
-            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.SkillName, this.Name, ex.Message);
+            this._logger?.LogError(ex, "Semantic function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, ex.Message);
             throw;
         }
 
