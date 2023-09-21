@@ -110,9 +110,9 @@ public static class Example51_StepwisePlanner
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
 
-        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportPlugin(webSearchEngineSkill, "WebSearch");
+        kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
+        kernel.ImportPlugin(new TimePlugin(), "time");
 
         // StepwisePlanner is instructed to depend on available functions.
         // We expose this function to increase the flexibility in it's ability to answer
@@ -122,7 +122,7 @@ public static class Example51_StepwisePlanner
         kernel.CreateSemanticFunction(
             "Generate an answer for the following question: {{$input}}",
             functionName: "GetAnswerForQuestion",
-            skillName: "AnswerBot",
+            pluginName: "AnswerBot",
             description: "Given a question, get an answer and return it as the result of the function");
 
         Console.WriteLine("*****************************************************");
