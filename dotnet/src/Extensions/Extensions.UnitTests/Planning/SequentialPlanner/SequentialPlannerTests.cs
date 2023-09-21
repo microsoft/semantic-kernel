@@ -27,7 +27,7 @@ public sealed class SequentialPlannerTests
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
         kernel.Setup(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<ISKFunction, ContextVariables, CancellationToken>((function, vars, cancellationToken) =>
-                function.InvokeAsync(vars, cancellationToken: cancellationToken));
+                function.InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken));
 
         var input = new List<(string name, string skillName, string description, bool isSemantic)>()
         {
@@ -182,7 +182,7 @@ public sealed class SequentialPlannerTests
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
         kernel.Setup(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<ISKFunction, ContextVariables, CancellationToken>((function, vars, cancellationToken) =>
-                function.InvokeAsync(vars, cancellationToken: cancellationToken));
+                function.InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken));
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
