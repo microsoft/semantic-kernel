@@ -561,14 +561,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
 
         // SKContext, either synchronous (SKContext) or asynchronous (Task<SKContext> / ValueTask<SKContext>).
-        // SKContext is also function result value, so we need to set it as FunctionResult.Context and FunctionResult.Value
 
         if (returnType == typeof(SKContext))
         {
             return static (functionName, pluginName, result, _) =>
             {
                 var context = (SKContext)ThrowIfNullResult(result);
-                return Task.FromResult(new FunctionResult(functionName, pluginName, context, context));
+                return Task.FromResult(new FunctionResult(functionName, pluginName, context, context.Result));
             };
         }
 
@@ -577,7 +576,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return static async (functionName, pluginName, result, _) =>
             {
                 var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return new FunctionResult(functionName, pluginName, context, context);
+                return new FunctionResult(functionName, pluginName, context, context.Result);
             };
         }
 

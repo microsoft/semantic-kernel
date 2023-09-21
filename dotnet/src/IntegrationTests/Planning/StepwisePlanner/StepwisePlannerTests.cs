@@ -86,10 +86,11 @@ public sealed class StepwisePlannerTests : IDisposable
 
         // Act
         var plan = planner.CreatePlan(prompt);
-        var result = await plan.InvokeAsync(kernel);
+        var result = (await plan.InvokeAsync(kernel)).GetValue<string>();
 
         // Assert - should contain the expected answer
-        Assert.Contains(partialExpectedAnswer, result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+        Assert.NotNull(result);
+        Assert.Contains(partialExpectedAnswer, result, StringComparison.InvariantCultureIgnoreCase);
     }
 
     [Fact]
@@ -128,7 +129,8 @@ public sealed class StepwisePlannerTests : IDisposable
 
         // Act
         var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
-        var result = (await kernel.RunAsync(plan)).GetValue<string>();
+        var kernelResult = await kernel.RunAsync(plan);
+        var result = kernelResult.GetValue<string>();
 
         // Assert - should contain results, for now just verify it didn't fail
         Assert.NotNull(result);

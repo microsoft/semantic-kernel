@@ -261,16 +261,13 @@ public sealed class SKFunctionTests2
         Assert.NotNull(function);
 
         var result = await function.InvokeAsync(context);
-        var resultContext = result.GetValue<SKContext>();
 
         // Assert
         Assert.Equal(1, invocationCount);
         Assert.Equal(s_expected, s_actual);
         Assert.Equal(s_expected, context.Variables["canary"]);
         Assert.Equal("foo", context.Result);
-
-        Assert.NotNull(resultContext);
-        Assert.Equal("foo", resultContext.Result);
+        Assert.Equal("foo", result.GetValue<string>());
     }
 
     [Fact]
@@ -507,7 +504,6 @@ public sealed class SKFunctionTests2
         FunctionResult result = await function.InvokeAsync(oldContext);
 
         var newContext = result.Context;
-        var resultContext = result.GetValue<SKContext>();
 
         // Assert
         Assert.Equal(s_expected, s_actual);
@@ -527,8 +523,7 @@ public sealed class SKFunctionTests2
         Assert.Equal("x y z", oldContext.Result);
         Assert.Equal("new data", newContext.Result);
 
-        Assert.NotNull(resultContext);
-        Assert.Equal("new data", resultContext.Result);
+        Assert.Equal("new data", result.GetValue<string>());
     }
 
     [Fact]
