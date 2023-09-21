@@ -28,7 +28,7 @@ internal sealed class KernelContext : IKernelContext, IDisposable
         ILoggerFactory loggerFactory)
     {
         this._kernel = new Kernel(
-            this.GetEditableSkillCollection(skillCollection),
+            new SkillCollection(skillCollection),
             aiServiceProvider,
             promptTemplateEngine,
             memory,
@@ -44,17 +44,6 @@ internal sealed class KernelContext : IKernelContext, IDisposable
     public void Dispose()
     {
         this._kernel.Dispose();
-    }
-
-    private SkillCollection GetEditableSkillCollection(IReadOnlySkillCollection readOnlyCollection)
-    {
-        var editableSkillCollection = new SkillCollection();
-        foreach (var functionView in readOnlyCollection.GetFunctionViews())
-        {
-            editableSkillCollection.AddFunction(readOnlyCollection.GetFunction(functionView.SkillName, functionView.Name));
-        }
-
-        return editableSkillCollection;
     }
 
     public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlySkillCollection? skills = null)

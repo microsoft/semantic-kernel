@@ -27,12 +27,17 @@ public class SkillCollection : ISkillCollection
     /// Initializes a new instance of the <see cref="SkillCollection"/> class.
     /// </summary>
     /// <param name="loggerFactory">The logger factory.</param>
-    public SkillCollection(ILoggerFactory? loggerFactory = null)
+    public SkillCollection(IReadOnlySkillCollection? readOnlySkillCollection = null, ILoggerFactory? loggerFactory = null)
     {
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SkillCollection)) : NullLogger.Instance;
 
         // Important: names are case insensitive
         this._skillCollection = new(StringComparer.OrdinalIgnoreCase);
+
+        if (readOnlySkillCollection is not null)
+        {
+            this.Populate(readOnlySkillCollection);
+        }
     }
 
     /// <summary>
@@ -98,6 +103,19 @@ public class SkillCollection : ISkillCollection
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Populates the current skill collection from another.
+    /// </summary>
+    /// <param name="readOnlyCollection">The target read only skill colletion</param>
+    /// <returns>A new editable skill collection copy</returns>
+    private void Populate(IReadOnlySkillCollection readOnlyCollection)
+    {
+        foreach (var functionView in readOnlyCollection.GetFunctionViews())
+        {
+            this.AddFunction(readOnlyCollection.GetFunction(functionView.SkillName, functionView.Name));
+        }
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
