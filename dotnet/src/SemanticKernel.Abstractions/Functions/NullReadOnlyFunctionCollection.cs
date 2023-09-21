@@ -5,7 +5,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Functions;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 [DebuggerDisplay("Count = 0")]
 internal sealed class NullReadOnlyFunctionCollection : IReadOnlyFunctionCollection
