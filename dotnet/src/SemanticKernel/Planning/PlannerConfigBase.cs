@@ -11,9 +11,9 @@ namespace Microsoft.SemanticKernel.Planning;
 public abstract class PlannerConfigBase
 {
     /// <summary>
-    /// A list of skills to exclude from the plan creation request.
+    /// A list of plugins to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedSkills { get; } = new();
+    public HashSet<string> ExcludedPlugins { get; } = new();
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.

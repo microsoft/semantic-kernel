@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Stepwise;
 
@@ -33,19 +32,29 @@ public sealed class StepwisePlannerConfig : PlannerConfigBase
     /// <summary>
     /// Optional callback to get a function by name.
     /// </summary>
-    public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+    public Func<string, string, ISKFunction?>? GetPluginFunction { get; set; }
 
     #endregion Use these to completely override the functions available for planning
 
     #region Execution configuration
 
     /// <summary>
-    /// The maximum number of tokens to allow in a request and for completion.
+    /// The maximum total number of tokens to allow in a completion request,
+    /// which includes the tokens from the prompt and completion
     /// </summary>
     /// <remarks>
-    /// Default value is 2000.
+    /// Default value is 4000.
     /// </remarks>
-    public int MaxTokens { get; set; } = 2000;
+    public int MaxTokens { get; set; } = 4000;
+
+    /// <summary>
+    /// The ratio of tokens to allocate to the completion request. (prompt / (prompt + completion))
+    /// </summary>
+    public double MaxTokensRatio { get; set; } = 0.1;
+
+    internal int MaxCompletionTokens { get { return (int)(this.MaxTokens * this.MaxTokensRatio); } }
+
+    internal int MaxPromptTokens { get { return (int)(this.MaxTokens * (1 - this.MaxTokensRatio)); } }
 
     /// <summary>
     /// The maximum number of iterations to allow in a plan.
