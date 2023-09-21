@@ -3,10 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.Plugins.Core;
@@ -49,8 +52,8 @@ public sealed class StepwisePlannerTests : IDisposable
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
+        kernel.ImportSkill(webSearchEnginePlugin, "WebSearch");
         kernel.ImportSkill(new TimePlugin(), "time");
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
@@ -71,21 +74,21 @@ public sealed class StepwisePlannerTests : IDisposable
     [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(false, "What is the weather in Seattle?", "Seattle", 1)]
     [InlineData(true, "What is the weather in Seattle?", "Seattle", 1)]
-    public async void CanExecuteStepwisePlan(bool useChatModel, string prompt, string partialExpectedAnswer, int expectedMinSteps = 1)
+    public async Task CanExecuteStepwisePlanAsync(bool useChatModel, string prompt, string partialExpectedAnswer, int expectedMinSteps = 1)
     {
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
+        kernel.ImportSkill(webSearchEnginePlugin, "WebSearch");
         kernel.ImportSkill(new TimePlugin(), "time");
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
         var plan = planner.CreatePlan(prompt);
-        var result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(kernel);
 
         // Assert - should contain the expected answer
         Assert.Contains(partialExpectedAnswer, result.Result, StringComparison.InvariantCultureIgnoreCase);
@@ -94,6 +97,49 @@ public sealed class StepwisePlannerTests : IDisposable
         var stepsTaken = JsonSerializer.Deserialize<List<SystemStep>>(stepsTakenString!);
         Assert.NotNull(stepsTaken);
         Assert.True(stepsTaken.Count >= expectedMinSteps && stepsTaken.Count <= 10, $"Actual: {stepsTaken.Count}. Expected at least {expectedMinSteps} steps and at most 10 steps to be taken.");
+    }
+
+    [Fact]
+    public async Task ExecutePlanFailsWithTooManyFunctionsAsync()
+    {
+        // Arrange
+        IKernel kernel = this.InitializeKernel();
+        var bingConnector = new BingConnector(this._bingApiKey);
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
+        kernel.ImportSkill(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportSkill(new TextPlugin(), "text");
+        kernel.ImportSkill(new ConversationSummaryPlugin(kernel), "ConversationSummary");
+        kernel.ImportSkill(new MathPlugin(), "Math");
+        kernel.ImportSkill(new FileIOPlugin(), "FileIO");
+        kernel.ImportSkill(new HttpPlugin(), "Http");
+
+        var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new() { MaxTokens = 1000 });
+
+        // Act
+        var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<SKException>(async () => await kernel.RunAsync(plan));
+        Assert.Equal("ChatHistory is too long to get a completion. Try reducing the available functions.", ex.Message);
+    }
+
+    [Fact]
+    public async Task ExecutePlanSucceedsWithAlmostTooManyFunctionsAsync()
+    {
+        // Arrange
+        IKernel kernel = this.InitializeKernel();
+
+        _ = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiPluginExecutionParameters(enableDynamicOperationPayload: true));
+
+        var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel);
+
+        // Act
+        var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
+        var result = await kernel.RunAsync(plan);
+
+        // Assert - should contain results, for now just verify it didn't fail
+        Assert.NotNull(result.Result);
+        Assert.DoesNotContain("Result not found, review 'stepsTaken' to see what happened", result.Result, StringComparison.OrdinalIgnoreCase);
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)

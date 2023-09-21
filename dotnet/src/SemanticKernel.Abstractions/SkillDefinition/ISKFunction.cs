@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -29,16 +31,9 @@ public interface ISKFunction
     string Description { get; }
 
     /// <summary>
-    /// Whether the function is defined using a prompt template.
-    /// IMPORTANT: native functions might use semantic functions internally,
-    /// so when this property is False, executing the function might still involve AI calls.
-    /// </summary>
-    bool IsSemantic { get; }
-
-    /// <summary>
     /// AI service settings
     /// </summary>
-    CompleteRequestSettings RequestSettings { get; }
+    AIRequestSettings? RequestSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
@@ -50,12 +45,12 @@ public interface ISKFunction
     /// Invoke the <see cref="ISKFunction"/>.
     /// </summary>
     /// <param name="context">SK context</param>
-    /// <param name="settings">LLM completion settings (for semantic functions only)</param>
+    /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -77,7 +72,20 @@ public interface ISKFunction
     /// <summary>
     /// Set the AI completion settings used with LLM requests
     /// </summary>
-    /// <param name="settings">LLM completion settings</param>
+    /// <param name="requestSettings">LLM completion settings</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIConfiguration(CompleteRequestSettings settings);
+    ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
+
+    #region Obsolete
+
+    /// <summary>
+    /// Whether the function is defined using a prompt template.
+    /// IMPORTANT: native functions might use semantic functions internally,
+    /// so when this property is False, executing the function might still involve AI calls.
+    /// </summary>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    bool IsSemantic { get; }
+
+    #endregion
 }

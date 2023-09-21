@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using NCalc;
@@ -26,7 +28,6 @@ namespace NCalcPlugins;
 public class LanguageCalculatorPlugin
 {
     private readonly ISKFunction _mathTranslator;
-
     private const string MathTranslatorPrompt =
         @"Translate a math problem into a expression that can be executed using .net NCalc library. Use the output of running this code to answer the question.
 Available functions: Abs, Acos, Asin, Atan, Ceiling, Cos, Exp, Floor, IEEERemainder, Log, Log10, Max, Min, Pow, Round, Sign, Sin, Sqrt, Tan, and Truncate. in and if are also supported.
@@ -72,9 +73,15 @@ Question: {{ $input }}
             skillName: nameof(LanguageCalculatorPlugin),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            maxTokens: 256,
-            temperature: 0.0,
-            topP: 1);
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "MaxTokens", 256 },
+                    { "Temperature", 0.0 },
+                    { "TopP", 1 },
+                }
+            });
     }
 
     /// <summary>
@@ -93,7 +100,7 @@ Question: {{ $input }}
 
         try
         {
-            answer = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
+            answer = await context.Kernel.RunAsync(input, this._mathTranslator).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

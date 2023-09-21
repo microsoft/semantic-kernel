@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using SemanticKernel.IntegrationTests.Fakes;
@@ -23,7 +25,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
     }
 
     [Fact]
-    public async Task ItSupportsFunctionCalls()
+    public async Task ItSupportsFunctionCallsAsync()
     {
         var builder = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
@@ -35,14 +37,14 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress}}";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
+        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Equal("Hey johndoe1234@example.com", actual.Result);
     }
 
     [Fact]
-    public async Task ItSupportsFunctionCallsWithInput()
+    public async Task ItSupportsFunctionCallsWithInputAsync()
     {
         var builder = Kernel.Builder
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
@@ -54,7 +56,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress \"a person\"}}";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
+        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Equal("Hey a person@example.com", actual.Result);
@@ -70,12 +72,12 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
 
     private sealed class RedirectTextCompletion : ITextCompletion
     {
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
         }
 
-        IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, CompleteRequestSettings requestSettings, CancellationToken cancellationToken)
+        IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {
             throw new NotImplementedException(); // TODO
         }

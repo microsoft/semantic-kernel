@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel", "src\SemanticKernel\SemanticKernel.csproj", "{A284C7EB-2248-4A75-B112-F5DCDE65410D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.Core", "src\SemanticKernel\SemanticKernel.Core.csproj", "{A284C7EB-2248-4A75-B112-F5DCDE65410D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}"
 EndProject
@@ -40,9 +40,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.UnitTests", "src\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functions", "functions", "{9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.UnitTests", "src\Skills\Skills.UnitTests\Skills.UnitTests.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.UnitTests", "src\Functions\Functions.UnitTests\Functions.UnitTests.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{F4243136-252A-4459-A7C4-EE8C056D6B0B}"
 	ProjectSection(SolutionItems) = preProject
@@ -51,7 +51,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{F4243136
 		nuget\NUGET.md = nuget\NUGET.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.OpenAPI", "src\Skills\Skills.OpenAPI\Skills.OpenAPI.csproj", "{F2A1F81E-700E-4C0E-B021-B9EF29AA20BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.OpenAPI", "src\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj", "{F2A1F81E-700E-4C0E-B021-B9EF29AA20BD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "connectors", "connectors", "{0247C2C9-86C3-45BA-8873-28B0948EDC0C}"
 EndProject
@@ -85,7 +85,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.AzureCogn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Pinecone", "src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj", "{4D226C2F-AE9F-4EFB-AF2D-45C8FE5CB34E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skills.Grpc", "src\Skills\Skills.Grpc\Skills.Grpc.csproj", "{E52F805C-794A-4CA9-B684-DFF358B18820}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Grpc", "src\Functions\Functions.Grpc\Functions.Grpc.csproj", "{E52F805C-794A-4CA9-B684-DFF358B18820}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.HuggingFace", "src\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj", "{136823BE-8665-4D57-87E0-EF41535539E2}"
 EndProject
