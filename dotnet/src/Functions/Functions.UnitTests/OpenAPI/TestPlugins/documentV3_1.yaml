@@ -24,6 +24,28 @@ paths:
             type: string
             default: '7.0'
           x-ms-visibility: internal
+        - name: nonExplodeFormParam
+          in: query
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: explodeFormParam
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: anotherExplodeFormParam
+          in: query
+          schema:
+            type: array
+            items:
+              type: integer
       responses:
         '200':
           description: default
