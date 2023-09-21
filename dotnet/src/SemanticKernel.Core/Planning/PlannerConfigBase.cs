@@ -33,7 +33,7 @@ public abstract class PlannerConfigBase
     /// When using <see cref="Memory"/> to get relevant functions,
     /// this list of functions will be included regardless of relevancy.
     /// </summary>
-    public HashSet<string> IncludedFunctions { get; } = new();
+    public HashSet<(string, string)> IncludedFunctions { get; } = new();
 
     /// <summary>
     /// Semantic memory to use for function lookup (optional).
