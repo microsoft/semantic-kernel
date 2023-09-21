@@ -348,8 +348,6 @@ public sealed class Plan : IPlan
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-
-            context.Variables.Update(result.Context.Result);
         }
         else
         {
