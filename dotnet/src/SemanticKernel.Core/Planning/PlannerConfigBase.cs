@@ -74,5 +74,5 @@ public abstract class PlannerConfigBase
     /// Callback to get a function by name (optional).
     /// Use if you want to override the default function lookup behavior.
     /// </summary>
-    public Func<string, string, ISKFunction?>? GetPluginFunction { get; set; }
+    public Func<string, string, ISKFunction?>? GetFunctionCallback { get; set; }
 }
