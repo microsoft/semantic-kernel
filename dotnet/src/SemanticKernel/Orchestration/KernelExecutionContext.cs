@@ -53,8 +53,4 @@ internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposa
     {
         this._kernel.Dispose();
     }
-
-    /// <inheritdoc/>
-    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlyFunctionCollection? functions = null)
-        => this._kernel.CreateNewContext(variables, functions);
 }

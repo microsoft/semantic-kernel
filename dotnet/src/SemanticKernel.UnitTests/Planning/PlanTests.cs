@@ -493,6 +493,13 @@ public sealed class PlanTests
         // Arrange
         var (kernel, kernelContext) = this.SetupKernelMock();
 
+        kernelContext.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction[]>(), It.IsAny<CancellationToken>()))
+        .Returns<ContextVariables, ISKFunction[], CancellationToken>(async (variables, functions, ct) =>
+        {
+            var c = new SKContext(kernelContext.Object, variables);
+            return await functions[0].InvokeAsync(c, cancellationToken: ct);
+        });
+
         var returnContext = new SKContext(kernelContext.Object);
 
         var mockFunction = new Mock<ISKFunction>();
@@ -583,6 +590,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(returnContext));
+
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
 
         var planStep = new Plan(mockFunction.Object);
@@ -639,6 +647,13 @@ public sealed class PlanTests
     {
         // Arrange
         var (kernel, kernelContext) = this.SetupKernelMock();
+
+        kernelContext.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction[]>(), It.IsAny<CancellationToken>()))
+        .Returns<ContextVariables, ISKFunction[], CancellationToken>(async (variables, functions, ct) =>
+        {
+            var c = new SKContext(kernelContext.Object, variables);
+            return await functions[0].InvokeAsync(c, cancellationToken: ct);
+        });
 
         var returnContext = new SKContext(kernelContext.Object);
 
@@ -756,6 +771,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     {
         // Arrange
         var (kernel, kernelContext) = this.SetupKernelMock();
+
         var returnContext = new SKContext(kernelContext.Object);
 
         var functionMock = new Mock<ISKFunction>();
@@ -800,10 +816,11 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
             return new SKContext(kernelContext.Object, contextVariables);
         });
 
-        kernelContext.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
+        kernelContext.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction[]>(), It.IsAny<CancellationToken>()))
+        .Returns<ContextVariables, ISKFunction[], CancellationToken>(async (variables, functions, ct) =>
         {
-            kernelContext.SetupGet(x => x.Functions).Returns(skills ?? kernel.Object.Functions);
-            return new SKContext(kernelContext.Object, contextVariables);
+            var c = new SKContext(kernelContext.Object, variables);
+            return await functions[0].InvokeAsync(c, cancellationToken: ct);
         });
 
         return (kernel, kernelContext);

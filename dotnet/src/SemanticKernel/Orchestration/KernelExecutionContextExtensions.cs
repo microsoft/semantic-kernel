@@ -34,4 +34,17 @@ public static class KernelExecutionContextExtensions
     {
         return kernelContext.RunAsync(new ContextVariables(input), new[] { pipeline }, default);
     }
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="kernelContext">Kernel context</param>
+    /// <param name="variables">Context variables</param>
+    /// <param name="pipeline">Target functions to run in sequence</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result of the function composition</returns>
+    public static Task<SKContext> RunAsync(this IKernelExecutionContext kernelContext, ContextVariables variables, ISKFunction pipeline, CancellationToken cancellationToken = default)
+    {
+        return kernelContext.RunAsync(variables, new[] { pipeline }, cancellationToken);
+    }
 }
