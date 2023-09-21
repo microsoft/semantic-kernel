@@ -19,7 +19,6 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 
 #pragma warning disable IDE0130
@@ -47,14 +46,14 @@ public class StepwisePlanner : IStepwisePlanner
         Verify.NotNull(kernel);
         this._kernel = kernel;
 
-        // Set up Config with default values and excluded skills
+        // Set up Config with default values and excluded plugins
         this.Config = config ?? new();
-        this.Config.ExcludedSkills.Add(RestrictedSkillName);
+        this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
         // Set up prompt templates
-        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Skills.StepwiseStep.skprompt.txt");
-        this._manualTemplate = EmbeddedResource.Read("Skills.RenderFunctionManual.skprompt.txt");
-        this._questionTemplate = EmbeddedResource.Read("Skills.RenderQuestion.skprompt.txt");
+        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Plugin.StepwiseStep.skprompt.txt");
+        this._manualTemplate = EmbeddedResource.Read("Plugin.RenderFunctionManual.skprompt.txt");
+        this._questionTemplate = EmbeddedResource.Read("Plugin.RenderQuestion.skprompt.txt");
 
         // Load or use default PromptConfig
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
@@ -64,13 +63,13 @@ public class StepwisePlanner : IStepwisePlanner
         {
             this._promptConfig.Completion = new AIRequestSettings();
         }
-        this._promptConfig.Completion.ExtensionData["max_tokens"] = this.Config.MaxTokens;
+        this._promptConfig.Completion.ExtensionData["max_tokens"] = this.Config.MaxCompletionTokens;
 
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
 
         // Import native functions
-        this._nativeFunctions = this._kernel.ImportSkill(this, RestrictedSkillName);
+        this._nativeFunctions = this._kernel.ImportPlugin(this, RestrictedPluginName);
 
         // Create context and logger
         this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
@@ -88,7 +87,7 @@ public class StepwisePlanner : IStepwisePlanner
         planStep.Parameters.Set("question", goal);
 
         planStep.Outputs.Add("stepCount");
-        planStep.Outputs.Add("skillCount");
+        planStep.Outputs.Add("functionCount");
         planStep.Outputs.Add("stepsTaken");
         planStep.Outputs.Add("iterations");
 
@@ -321,7 +320,7 @@ public class StepwisePlanner : IStepwisePlanner
         }
 
         AddExecutionStatsToContext(stepsTaken, context, this.Config.MaxIterations);
-        context.Variables.Update("Result not found, review 'stepsTaken' to see what happened.");
+        context.Variables.Update(NoFinalAnswerFoundMessage);
 
         return context;
     }
@@ -384,14 +383,21 @@ public class StepwisePlanner : IStepwisePlanner
     {
         var skipStart = startingMessageCount;
         var skipCount = 0;
+        var lastObservationIndex = chatHistory.FindLastIndex(m => m.Content.StartsWith(Observation, StringComparison.OrdinalIgnoreCase));
+        var messagesToKeep = lastObservationIndex >= 0 ? chatHistory.Count - lastObservationIndex : 0;
 
         string? originalThought = null;
 
         var tokenCount = chatHistory.GetTokenCount();
-        while (tokenCount >= this.Config.MaxTokens && chatHistory.Count > skipStart)
+        while (tokenCount >= this.Config.MaxPromptTokens && chatHistory.Count > (skipStart + skipCount + messagesToKeep))
         {
             originalThought = $"{Thought} {stepsTaken.FirstOrDefault()?.Thought}";
-            tokenCount = chatHistory.GetTokenCount($"{originalThought}\n{TrimMessage}", skipStart, ++skipCount);
+            tokenCount = chatHistory.GetTokenCount($"{originalThought}\n{string.Format(CultureInfo.InvariantCulture, TrimMessageFormat, skipCount)}", skipStart, ++skipCount);
+        }
+
+        if (tokenCount >= this.Config.MaxPromptTokens)
+        {
+            throw new SKException("ChatHistory is too long to get a completion. Try reducing the available functions.");
         }
 
         var reducedChatHistory = new ChatHistory();
@@ -399,7 +405,7 @@ public class StepwisePlanner : IStepwisePlanner
 
         if (skipCount > 0 && originalThought is not null)
         {
-            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, TrimMessage);
+            reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, string.Format(CultureInfo.InvariantCulture, TrimMessageFormat, skipCount));
             reducedChatHistory.InsertMessage(skipStart, AuthorRole.Assistant, originalThought);
         }
 
@@ -541,19 +547,19 @@ public class StepwisePlanner : IStepwisePlanner
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.SkillName, targetFunction.Name, e.Message);
+            this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.PluginName, targetFunction.Name, e.Message);
             throw;
         }
     }
 
     private ISKFunction GetFunction(FunctionView targetFunction)
     {
-        var getFunction = (string skillName, string functionName) =>
+        var getFunction = (string pluginName, string functionName) =>
         {
-            return this._kernel.Skills.GetFunction(skillName, functionName);
+            return this._kernel.Functions.GetFunction(pluginName, functionName);
         };
-        var getSkillFunction = this.Config.GetSkillFunction ?? getFunction;
-        var function = getSkillFunction(targetFunction.SkillName, targetFunction.Name);
+        var getPluginFunction = this.Config.GetPluginFunction ?? getFunction;
+        var function = getPluginFunction(targetFunction.PluginName, targetFunction.Name);
         return function;
     }
 
@@ -569,15 +575,15 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (this.Config.GetAvailableFunctionsAsync is null)
         {
-            var functionsView = this._kernel.Skills!.GetFunctionViews();
+            var functionsView = this._kernel.Functions!.GetFunctionViews();
 
-            var excludedSkills = this.Config.ExcludedSkills ?? new();
+            var excludedPlugins = this.Config.ExcludedPlugins ?? new();
             var excludedFunctions = this.Config.ExcludedFunctions ?? new();
 
             var availableFunctions =
                 functionsView
-                    .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
-                    .OrderBy(x => x.SkillName)
+                    .Where(s => !excludedPlugins.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
+                    .OrderBy(x => x.PluginName)
                     .ThenBy(x => x.Name);
 
             return Task.FromResult(availableFunctions);
@@ -604,7 +610,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private static PromptTemplateConfig LoadPromptConfigFromResource()
     {
-        string promptConfigString = EmbeddedResource.Read("Skills.StepwiseStep.config.json");
+        string promptConfigString = EmbeddedResource.Read("Plugin.StepwiseStep.config.json");
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
     }
 
@@ -640,12 +646,12 @@ public class StepwisePlanner : IStepwisePlanner
             actionCounts[step.Action!] = ++currentCount;
         }
 
-        var skillCallListWithCounts = string.Join(", ", actionCounts.Keys.Select(skill =>
-            $"{skill}({actionCounts[skill]})"));
+        var functionCallListWithCounts = string.Join(", ", actionCounts.Keys.Select(function =>
+            $"{function}({actionCounts[function]})"));
 
-        var skillCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
+        var functionCallCountStr = actionCounts.Values.Sum().ToString(CultureInfo.InvariantCulture);
 
-        context.Variables.Set("skillCount", $"{skillCallCountStr} ({skillCallListWithCounts})");
+        context.Variables.Set("functionCount", $"{functionCallCountStr} ({functionCallListWithCounts})");
     }
 
     private static string ToManualString(FunctionView function)
@@ -668,7 +674,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private static string ToFullyQualifiedName(FunctionView function)
     {
-        return $"{function.SkillName}.{function.Name}";
+        return $"{function.PluginName}.{function.Name}";
     }
 
     #region private
@@ -715,7 +721,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
-    private const string RestrictedSkillName = "StepwisePlanner_Excluded";
+    private const string RestrictedPluginName = "StepwisePlanner_Excluded";
 
     /// <summary>
     /// The Action tag
@@ -735,7 +741,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The chat message to include when trimming thought process history
     /// </summary>
-    private const string TrimMessage = "... I've removed some of my previous work to make room for the new stuff ...";
+    private const string TrimMessageFormat = "... I've removed the first {0} steps of my previous work to make room for the new stuff ...";
 
     /// <summary>
     /// The regex for parsing the thought response
@@ -746,6 +752,11 @@ public class StepwisePlanner : IStepwisePlanner
     /// The regex for parsing the final answer response
     /// </summary>
     private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL[_\s\-]?ANSWER\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+    /// <summary>
+    /// The message to include when no final answer is found
+    /// </summary>
+    private const string NoFinalAnswerFoundMessage = "Result not found, review 'stepsTaken' to see what happened.";
 
     #endregion private
 }

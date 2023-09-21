@@ -17,7 +17,7 @@ public static class Example11_WebSearchQueries
 
         // Load native skills
         var skill = new SearchUrlPlugin();
-        var bing = kernel.ImportSkill(skill, "search");
+        var bing = kernel.ImportPlugin(skill, "search");
 
         // Run
         var ask = "What's the tallest building in Europe?";
