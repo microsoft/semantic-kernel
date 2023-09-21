@@ -166,7 +166,7 @@ internal static class Example12_SequentialPlanner
             Console.WriteLine($"Restored plan (relevance={memory.Relevance}):");
 
             // Deseriliaze the plan from the description
-            restoredPlan = Plan.FromJson(memory.Metadata.Description, kernel.CreateNewContext());
+            restoredPlan = Plan.FromJson(memory.Metadata.Description, kernel.Skills);
 
             Console.WriteLine(restoredPlan.ToPlanWithGoalString());
             Console.WriteLine();
@@ -183,7 +183,7 @@ internal static class Example12_SequentialPlanner
             "agents of the Galactic Federation, and uncover the truth about his past. But the more he learns, the more he realizes that " +
             "he's not just an ordinary boy.";
 
-            var result = await kernel.RunAsync(newInput, restoredPlan);
+            var result = await kernel.RunAsync(restoredPlan, new(newInput));
 
             Console.WriteLine("Result:");
             Console.WriteLine(result.Result);
@@ -243,8 +243,8 @@ internal static class Example12_SequentialPlanner
             "QASkill");
 
         kernel.ImportSkill(new EmailSkill(), "email");
-        kernel.ImportSkill(new StaticTextSkill(), "statictext");
-        kernel.ImportSkill(new Microsoft.SemanticKernel.Skills.Core.TextSkill(), "coretext");
+        kernel.ImportSkill(new StaticTextPlugin(), "statictext");
+        kernel.ImportSkill(new Microsoft.SemanticKernel.Plugins.Core.TextPlugin(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 

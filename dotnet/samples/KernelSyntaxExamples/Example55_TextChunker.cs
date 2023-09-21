@@ -9,7 +9,7 @@ using SharpToken;
 // ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
 {
-    private const string text = @"The city of Venice, located in the northeastern part of Italy,
+    private const string Text = @"The city of Venice, located in the northeastern part of Italy,
 is renowned for its unique geographical features. Built on more than 100 small islands in a lagoon in the
 Adriatic Sea, it has no roads, just canals including the Grand Canal thoroughfare lined with Renaissance and
 Gothic palaces. The central square, Piazza San Marco, contains St. Mark's Basilica, which is tiled with Byzantine
@@ -31,6 +31,7 @@ known as coral polyps.";
     {
         RunExample();
         RunExampleWithCustomTokenCounter();
+        RunExampleWithHeader();
 
         return Task.CompletedTask;
     }
@@ -39,7 +40,7 @@ known as coral polyps.";
     {
         Console.WriteLine("=== Text chunking ===");
 
-        var lines = TextChunker.SplitPlainTextLines(text, 40);
+        var lines = TextChunker.SplitPlainTextLines(Text, 40);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120);
 
         WriteParagraphsToConsole(paragraphs);
@@ -49,8 +50,18 @@ known as coral polyps.";
     {
         Console.WriteLine("=== Text chunking with a custom token counter ===");
 
-        var lines = TextChunker.SplitPlainTextLines(text, 40, CustomTokenCounter);
+        var lines = TextChunker.SplitPlainTextLines(Text, 40, CustomTokenCounter);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: CustomTokenCounter);
+
+        WriteParagraphsToConsole(paragraphs);
+    }
+
+    private static void RunExampleWithHeader()
+    {
+        Console.WriteLine("=== Text chunking with chunk header ===");
+
+        var lines = TextChunker.SplitPlainTextLines(Text, 40);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 150, chunkHeader: "DOCUMENT NAME: test.txt\n\n");
 
         WriteParagraphsToConsole(paragraphs);
     }

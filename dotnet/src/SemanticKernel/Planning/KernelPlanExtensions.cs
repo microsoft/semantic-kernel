@@ -34,7 +34,7 @@ public static class KernelPlanExtensions
     /// <returns>Function definition for the plan</returns>
     public static SkillDefinition.ISKFunction ImportPlanFromJson(this IKernel kernel, string json)
     {
-        return kernel.RegisterCustomFunction(Plan.FromJson(json, kernel.CreateNewContext()));
+        return kernel.RegisterCustomFunction(Plan.FromJson(json, kernel.Skills));
     }
 
     /// <summary>
