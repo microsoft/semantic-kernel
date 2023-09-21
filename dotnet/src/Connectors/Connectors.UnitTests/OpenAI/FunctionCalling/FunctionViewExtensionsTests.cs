@@ -13,12 +13,10 @@ public sealed class FunctionViewExtensionsTests
     public void ItCanConvertToOpenAIFunctionNoParameters()
     {
         // Arrange
-        var sut = new FunctionView
-        {
-            Name = "foo",
-            SkillName = "bar",
-            Description = "baz",
-        };
+        var sut = new FunctionView(
+            Name: "foo",
+            SkillName: "bar",
+            Description: "baz");
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -33,21 +31,18 @@ public sealed class FunctionViewExtensionsTests
     public void ItCanConvertToOpenAIFunctionWithParameter()
     {
         // Arrange
-        var param1 = new ParameterView
-        {
-            Name = "param1",
-            Description = "This is param1",
-            IsRequired = false,
-            Type = new ParameterViewType("int"),
-            DefaultValue = "1"
-        };
-        var sut = new FunctionView
-        {
-            Name = "foo",
-            SkillName = "bar",
-            Description = "baz",
-            Parameters = new List<ParameterView> { param1 }
-        };
+        var param1 = new ParameterView(
+            Name: "param1",
+            Description: "This is param1",
+            DefaultValue: "1",
+            Type: new ParameterViewType("int"),
+            IsRequired: false);
+
+        var sut = new FunctionView(
+            Name: "foo",
+            SkillName: "bar",
+            Description: "baz",
+            Parameters: new List<ParameterView> { param1 });
 
         // Act
         var result = sut.ToOpenAIFunction();
@@ -64,20 +59,17 @@ public sealed class FunctionViewExtensionsTests
     public void ItCanConvertToOpenAIFunctionWithParameterNoType()
     {
         // Arrange
-        var param1 = new ParameterView
-        {
-            Name = "param1",
-            Description = "This is param1",
-            IsRequired = false,
-            Type = null
-        };
-        var sut = new FunctionView
-        {
-            Name = "foo",
-            SkillName = "bar",
-            Description = "baz",
-            Parameters = new List<ParameterView> { param1 }
-        };
+        var param1 = new ParameterView(
+            Name: "param1",
+            Description: "This is param1",
+            Type: null,
+            IsRequired: false);
+
+        var sut = new FunctionView(
+            Name: "foo",
+            SkillName: "bar",
+            Description: "baz",
+            Parameters: new List<ParameterView> { param1 });
 
         // Act
         var result = sut.ToOpenAIFunction();

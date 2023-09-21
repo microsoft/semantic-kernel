@@ -1,83 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
-using Microsoft.SemanticKernel.Diagnostics;
-
 namespace Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
-/// Class used to copy and export data about parameters
-/// for planner and related scenarios.
+/// Class used to copy and export data about parameters for planner and related scenarios.
 /// </summary>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class ParameterView
-{
-    private string _name = string.Empty;
-
-    /// <summary>
-    /// Parameter name. Alphanumeric chars + "_" only.
-    /// </summary>
-    public string Name
-    {
-        get => this._name;
-        set
-        {
-            Verify.ValidFunctionParamName(value);
-            this._name = value;
-        }
-    }
-
-    /// <summary>
-    /// Parameter description.
-    /// </summary>
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// Default value when the value is not provided.
-    /// </summary>
-    public string? DefaultValue { get; set; }
-
-    /// <summary>
-    /// Parameter type.
-    /// </summary>
-    public ParameterViewType? Type { get; set; }
-
-    /// <summary>
-    /// Whether the parameter is required.
-    /// </summary>
-    public bool? IsRequired { get; set; }
-
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    public ParameterView()
-    {
-    }
-
-    /// <summary>
-    /// Create a function parameter view, using information provided by the skill developer.
-    /// </summary>
-    /// <param name="name">Parameter name. The name must be alphanumeric (underscore is the only special char allowed).</param>
-    /// <param name="description">Parameter description</param>
-    /// <param name="defaultValue">Default parameter value, if not provided</param>
-    /// <param name="type">Parameter type.</param>
-    /// <param name="isRequired">Whether the parameter is required.</param>
-    public ParameterView(
-        string name,
-        string? description = null,
-        string? defaultValue = null,
-        ParameterViewType? type = null,
-        bool? isRequired = null)
-    {
-        this.Name = name;
-        this.Description = description;
-        this.DefaultValue = defaultValue;
-        this.Type = type;
-        this.IsRequired = isRequired;
-    }
-
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => string.IsNullOrEmpty(this.Description)
-        ? this.Name
-        : $"{this.Name} ({this.Description})";
-}
+/// <param name="Name">Parameter name. The name must be alphanumeric (underscore is the only special char allowed).</param>
+/// <param name="Description">Parameter description</param>
+/// <param name="DefaultValue">Default parameter value, if not provided</param>
+/// <param name="Type">Parameter type.</param>
+/// <param name="IsRequired">Whether the parameter is required.</param>
+public sealed record ParameterView(
+    string Name,
+    string? Description = null,
+    string? DefaultValue = null,
+    ParameterViewType? Type = null,
+    bool? IsRequired = null);
