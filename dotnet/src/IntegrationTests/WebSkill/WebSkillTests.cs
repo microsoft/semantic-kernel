@@ -107,7 +107,7 @@ public sealed class WebSkillTests : IDisposable
         IKernel kernel = Kernel.Builder.WithLoggerFactory(this._logger).Build();
         using XunitLogger<WebFileDownloadPlugin> skillLogger = new(this._output);
         var skill = new WebFileDownloadPlugin(skillLogger);
-        var download = kernel.ImportSkill(skill, "WebFileDownload");
+        var download = kernel.ImportPlugin(skill, "WebFileDownload");
         string fileWhereToSaveWebPage = Path.GetTempFileName();
         var contextVariables = new ContextVariables("https://www.microsoft.com");
         contextVariables.Set(WebFileDownloadPlugin.FilePathParamName, fileWhereToSaveWebPage);

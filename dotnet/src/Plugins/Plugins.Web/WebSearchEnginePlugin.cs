@@ -8,14 +8,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
-using static Microsoft.SemanticKernel.Skills.Web.Bing.BingConnector;
 
 namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
-/// Web search engine skill (e.g. Bing).
+/// Web search engine plugin (e.g. Bing).
 /// </summary>
 public sealed class WebSearchEnginePlugin
 {

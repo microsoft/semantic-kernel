@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.SemanticKernel;
@@ -34,7 +33,7 @@ public static class SKFunctionExtensions
     /// <param name="function">Function to execute</param>
     /// <param name="kernel">Kernel</param>
     /// <param name="variables">Input variables for the function</param>
-    /// <param name="skills">Skills that the function can access</param>
+    /// <param name="functions">Collection of functions that this function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -42,12 +41,12 @@ public static class SKFunctionExtensions
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
         IKernel kernel,
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null,
+        IReadOnlyFunctionCollection? functions = null,
         CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var context = new SKContext(kernel, variables, skills ?? kernel.Skills)
+        var context = new SKContext(kernel, variables, functions ?? kernel.Functions)
         {
             Culture = culture!
         };
@@ -61,7 +60,7 @@ public static class SKFunctionExtensions
     /// <param name="function">Function to execute</param>
     /// <param name="input">Input string for the function</param>
     /// <param name="kernel">Kernel</param>
-    /// <param name="skills">Skills that the function can access</param>
+    /// <param name="functions">Collection of functions that this function can access</param>
     /// <param name="culture">Culture to use for the function execution</param>
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -69,11 +68,11 @@ public static class SKFunctionExtensions
     public static Task<SKContext> InvokeAsync(this ISKFunction function,
         string input,
         IKernel kernel,
-        IReadOnlySkillCollection? skills = null,
+        IReadOnlyFunctionCollection? functions = null,
         CultureInfo? culture = null,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
-        => function.InvokeAsync(kernel, new ContextVariables(input), skills, culture, requestSettings, cancellationToken);
+        => function.InvokeAsync(kernel, new ContextVariables(input), functions, culture, requestSettings, cancellationToken);
 
     /// <summary>
     /// Returns decorated instance of <see cref="ISKFunction"/> with enabled instrumentation.

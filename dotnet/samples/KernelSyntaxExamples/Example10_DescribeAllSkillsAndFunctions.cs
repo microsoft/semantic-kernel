@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 using Skills;
 
@@ -29,15 +28,15 @@ public static class Example10_DescribeAllSkillsAndFunctions
 
         // Import a native skill
         var skill1 = new StaticTextPlugin();
-        kernel.ImportSkill(skill1, "StaticTextskill");
+        kernel.ImportPlugin(skill1, "StaticTextskill");
 
         // Import another native skill
         var skill2 = new TextPlugin();
-        kernel.ImportSkill(skill2, "AnotherTextskill");
+        kernel.ImportPlugin(skill2, "AnotherTextskill");
 
         // Import a semantic skill
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
 
         // Define a semantic function inline, without naming
         var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
@@ -45,12 +44,12 @@ public static class Example10_DescribeAllSkillsAndFunctions
         // Define a semantic function inline, with skill name
         var sFun2 = kernel.CreateSemanticFunction(
             "write a novel about {{$input}} in {{$language}} language",
-            skillName: "Writing",
+            pluginName: "Writing",
             functionName: "Novel",
             description: "Write a bedtime story",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
-        var functions = kernel.Skills.GetFunctionViews();
+        var functions = kernel.Functions.GetFunctionViews();
 
         Console.WriteLine("*****************************************");
         Console.WriteLine("****** Registered skills and functions ******");

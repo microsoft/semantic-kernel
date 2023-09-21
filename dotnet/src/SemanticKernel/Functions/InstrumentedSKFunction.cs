@@ -12,7 +12,10 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Standard Semantic Kernel callable function with instrumentation.
@@ -23,7 +26,13 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public string Name => this._function.Name;
 
     /// <inheritdoc/>
-    public string SkillName => this._function.SkillName;
+    public string PluginName => this._function.PluginName;
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public string SkillName => this._function.PluginName;
+#pragma warning restore CS1591
 
     /// <inheritdoc/>
     public string Description => this._function.Description;
@@ -44,20 +53,20 @@ public sealed class InstrumentedSKFunction : ISKFunction
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedSKFunction)) : NullLogger.Instance;
 
         this._executionTimeHistogram = s_meter.CreateHistogram<double>(
-            name: $"SK.{this.SkillName}.{this.Name}.ExecutionTime",
+            name: $"SK.{this.PluginName}.{this.Name}.ExecutionTime",
             unit: "ms",
             description: "Duration of function execution");
 
         this._executionTotalCounter = s_meter.CreateCounter<int>(
-            name: $"SK.{this.SkillName}.{this.Name}.ExecutionTotal",
+            name: $"SK.{this.PluginName}.{this.Name}.ExecutionTotal",
             description: "Total number of function executions");
 
         this._executionSuccessCounter = s_meter.CreateCounter<int>(
-            name: $"SK.{this.SkillName}.{this.Name}.ExecutionSuccess",
+            name: $"SK.{this.PluginName}.{this.Name}.ExecutionSuccess",
             description: "Number of successful function executions");
 
         this._executionFailureCounter = s_meter.CreateCounter<int>(
-            name: $"SK.{this.SkillName}.{this.Name}.ExecutionFailure",
+            name: $"SK.{this.PluginName}.{this.Name}.ExecutionFailure",
             description: "Number of failed function executions");
     }
 
@@ -84,8 +93,14 @@ public sealed class InstrumentedSKFunction : ISKFunction
         this._function.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
-        this._function.SetDefaultSkillCollection(skills);
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
+        this._function.SetDefaultFunctionCollection(functions);
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
+        this._function.SetDefaultFunctionCollection(skills);
 
     #region private ================================================================================
 
@@ -128,9 +143,9 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <param name="func">Delegate to instrument.</param>
     private async Task<SKContext> InvokeWithInstrumentationAsync(Func<Task<SKContext>> func)
     {
-        using var activity = s_activitySource.StartActivity($"{this.SkillName}.{this.Name}");
+        using var activity = s_activitySource.StartActivity($"{this.PluginName}.{this.Name}");
 
-        this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution started.", this.SkillName, this.Name);
+        this._logger.LogInformation("{PluginName}.{FunctionName}: Function execution started.", this.PluginName, this.Name);
 
         var stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -143,11 +158,11 @@ public sealed class InstrumentedSKFunction : ISKFunction
         }
         catch (Exception ex)
         {
-            this._logger.LogWarning("{SkillName}.{FunctionName}: Function execution status: {Status}",
-                this.SkillName, this.Name, "Failed");
+            this._logger.LogWarning("{PluginName}.{FunctionName}: Function execution status: {Status}",
+                this.PluginName, this.Name, "Failed");
 
-            this._logger.LogError(ex, "{SkillName}.{FunctionName}: Function execution exception details: {Message}",
-                this.SkillName, this.Name, ex.Message);
+            this._logger.LogError(ex, "{PluginName}.{FunctionName}: Function execution exception details: {Message}",
+                this.PluginName, this.Name, ex.Message);
 
             this._executionFailureCounter.Add(1);
 
@@ -160,11 +175,11 @@ public sealed class InstrumentedSKFunction : ISKFunction
             this._executionTimeHistogram.Record(stopwatch.ElapsedMilliseconds);
         }
 
-        this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution status: {Status}",
-                this.SkillName, this.Name, "Success");
+        this._logger.LogInformation("{PluginName}.{FunctionName}: Function execution status: {Status}",
+                this.PluginName, this.Name, "Success");
 
-        this._logger.LogInformation("{SkillName}.{FunctionName}: Function execution finished in {ExecutionTime}ms",
-            this.SkillName, this.Name, stopwatch.ElapsedMilliseconds);
+        this._logger.LogInformation("{PluginName}.{FunctionName}: Function execution finished in {ExecutionTime}ms",
+            this.PluginName, this.Name, stopwatch.ElapsedMilliseconds);
 
         this._executionSuccessCounter.Add(1);
 

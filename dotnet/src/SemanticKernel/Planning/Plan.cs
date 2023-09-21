@@ -14,7 +14,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -70,8 +69,14 @@ public sealed class Plan : IPlan
     public string Name { get; set; } = string.Empty;
 
     /// <inheritdoc/>
-    [JsonPropertyName("skill_name")]
-    public string SkillName { get; set; } = string.Empty;
+    [JsonPropertyName("plugin_name")]
+    public string PluginName { get; set; } = string.Empty;
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public string SkillName => this.PluginName;
+#pragma warning restore CS1591
 
     /// <inheritdoc/>
     [JsonPropertyName("description")]
@@ -91,7 +96,7 @@ public sealed class Plan : IPlan
     {
         this.Name = GetRandomPlanName();
         this.Description = goal;
-        this.SkillName = nameof(Plan);
+        this.PluginName = nameof(Plan);
     }
 
     /// <summary>
@@ -127,7 +132,7 @@ public sealed class Plan : IPlan
     /// Initializes a new instance of the <see cref="Plan"/> class with a function and steps.
     /// </summary>
     /// <param name="name">The name of the plan.</param>
-    /// <param name="skillName">The name of the skill.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
     /// <param name="description">The description of the plan.</param>
     /// <param name="nextStepIndex">The index of the next step.</param>
     /// <param name="state">The state of the plan.</param>
@@ -137,7 +142,7 @@ public sealed class Plan : IPlan
     [JsonConstructor]
     public Plan(
         string name,
-        string skillName,
+        string pluginName,
         string description,
         int nextStepIndex,
         ContextVariables state,
@@ -146,7 +151,7 @@ public sealed class Plan : IPlan
         IReadOnlyList<Plan> steps)
     {
         this.Name = name;
-        this.SkillName = skillName;
+        this.PluginName = pluginName;
         this.Description = description;
         this.NextStepIndex = nextStepIndex;
         this.State = state;
@@ -161,17 +166,17 @@ public sealed class Plan : IPlan
     /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
-    /// <param name="skills">The collection of available skills/functions..</param>
+    /// <param name="functions">The collection of available functions..</param>
     /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, IReadOnlySkillCollection? skills = null, bool requireFunctions = true)
+    public static Plan FromJson(string json, IReadOnlyFunctionCollection? functions = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
-        if (skills != null)
+        if (functions != null)
         {
-            plan = SetAvailableFunctions(plan, skills, requireFunctions);
+            plan = SetAvailableFunctions(plan, functions, requireFunctions);
         }
 
         return plan;
@@ -220,7 +225,7 @@ public sealed class Plan : IPlan
     /// <returns>A task representing the asynchronous execution of the plan's next step.</returns>
     /// <remarks>
     /// This method executes the next step in the plan using the specified kernel instance and context variables.
-    /// The context variables contain the necessary information for executing the plan, such as the skills, and logger.
+    /// The context variables contain the necessary information for executing the plan, such as the functions and logger.
     /// The method returns a task representing the asynchronous execution of the plan's next step.
     /// </remarks>
     public Task<Plan> RunNextStepAsync(IKernel kernel, ContextVariables variables, CancellationToken cancellationToken = default)
@@ -228,7 +233,7 @@ public sealed class Plan : IPlan
         var context = new SKContext(
             kernel,
             variables,
-            kernel.Skills);
+            kernel.Functions);
 
         return this.InvokeNextStepAsync(context, cancellationToken);
     }
@@ -250,7 +255,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills);
+            var functionContext = new SKContext(context.Kernel, functionVariables, context.Functions);
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -321,7 +326,7 @@ public sealed class Plan : IPlan
         }
         ).ToList();
 
-        return new(this.Name, this.SkillName, this.Description, parameters);
+        return new(this.Name, this.PluginName, this.Description, parameters);
     }
 
     /// <inheritdoc/>
@@ -355,10 +360,16 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills)
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
-        return this.Function is not null ? this.Function.SetDefaultSkillCollection(skills) : this;
+        return this.Function is not null ? this.Function.SetDefaultFunctionCollection(functions) : this;
     }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
+        this.SetDefaultFunctionCollection(skills);
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
@@ -401,29 +412,29 @@ public sealed class Plan : IPlan
     /// Set functions for a plan and its steps.
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
-    /// <param name="skillCollection">The collection of available skills/functions.</param>
+    /// <param name="functions">The collection of available functions.</param>
     /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, IReadOnlySkillCollection skillCollection, bool requireFunctions = true)
+    private static Plan SetAvailableFunctions(Plan plan, IReadOnlyFunctionCollection functions, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
-            Verify.NotNull(skillCollection);
+            Verify.NotNull(functions);
 
-            if (skillCollection.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
+            if (functions.TryGetFunction(plan.PluginName, plan.Name, out var planFunction))
             {
-                plan.SetFunction(skillFunction);
+                plan.SetFunction(planFunction);
             }
             else if (requireFunctions)
             {
-                throw new SKException($"Function '{plan.SkillName}.{plan.Name}' not found in skill collection");
+                throw new SKException($"Function '{plan.PluginName}.{plan.Name}' not found in function collection");
             }
         }
         else
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, skillCollection, requireFunctions);
+                SetAvailableFunctions(step, functions, requireFunctions);
             }
         }
 
@@ -574,7 +585,7 @@ public sealed class Plan : IPlan
     {
         this.Function = function;
         this.Name = function.Name;
-        this.SkillName = function.SkillName;
+        this.PluginName = function.PluginName;
         this.Description = function.Description;
         this.RequestSettings = function.RequestSettings;
 

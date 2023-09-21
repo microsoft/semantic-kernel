@@ -8,14 +8,17 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Specifies that a method is a native function available to Semantic Kernel.
 /// </summary>
 /// <remarks>
 /// <para>
-/// When the kernel imports a skill, it searches all public methods tagged with this attribute.
+/// When the kernel imports native functions, it searches all public methods tagged with this attribute.
 /// If a method is not tagged with this attribute, it may still be imported directly via a <see cref="Delegate"/>
 /// or <see cref="MethodInfo"/> referencing the method directly.
 /// </para>

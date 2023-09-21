@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Document.FileSystem;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Document;
 
@@ -35,7 +34,7 @@ namespace Microsoft.SemanticKernel.Plugins.Document;
 //**********************************************************************************************************************
 
 /// <summary>
-/// Skill for interacting with documents (e.g. Microsoft Word)
+/// Plugin for interacting with documents (e.g. Microsoft Word)
 /// </summary>
 public sealed class DocumentPlugin
 {

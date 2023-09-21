@@ -6,7 +6,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -24,10 +23,10 @@ public static class Example09_FunctionTypes
         var fakeContext = new SKContext(kernel);
 
         // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        var test = kernel.ImportSkill(new LocalExampleSkill(), "test");
+        var test = kernel.ImportPlugin(new LocalExampleSkill(), "test");
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
 
         // The kernel takes care of wiring the input appropriately
         await kernel.RunAsync(
@@ -53,43 +52,43 @@ public static class Example09_FunctionTypes
 
         // Using Kernel.RunAsync
         await kernel.RunAsync(test["type01"]);
-        await kernel.RunAsync(kernel.Skills.GetFunction("test", "type01"));
+        await kernel.RunAsync(kernel.Functions.GetFunction("test", "type01"));
 
         await kernel.RunAsync(test["type02"]);
-        await kernel.RunAsync(kernel.Skills.GetFunction("test", "type02"));
+        await kernel.RunAsync(kernel.Functions.GetFunction("test", "type02"));
 
         await kernel.RunAsync(test["type03"]);
-        await kernel.RunAsync(kernel.Skills.GetFunction("test", "type03"));
+        await kernel.RunAsync(kernel.Functions.GetFunction("test", "type03"));
 
         await kernel.RunAsync(test["type04"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Skills.GetFunction("test", "type04"));
+        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type04"));
 
         await kernel.RunAsync(test["type05"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Skills.GetFunction("test", "type05"));
+        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type05"));
 
         await kernel.RunAsync(test["type06"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Skills.GetFunction("test", "type06"));
+        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type06"));
 
         await kernel.RunAsync(test["type07"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Skills.GetFunction("test", "type07"));
+        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type07"));
 
         await kernel.RunAsync("", test["type08"]);
-        await kernel.RunAsync("", kernel.Skills.GetFunction("test", "type08"));
+        await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type08"));
 
         await kernel.RunAsync("", test["type09"]);
-        await kernel.RunAsync("", kernel.Skills.GetFunction("test", "type09"));
+        await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type09"));
 
         await kernel.RunAsync("", test["type10"]);
-        await kernel.RunAsync("", kernel.Skills.GetFunction("test", "type10"));
+        await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type10"));
 
         await kernel.RunAsync("", test["type11"]);
-        await kernel.RunAsync("", kernel.Skills.GetFunction("test", "type11"));
+        await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type11"));
 
         await kernel.RunAsync(fakeContext.Variables, test["type12"]);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Skills.GetFunction("test", "type12"));
+        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type12"));
 
         await kernel.RunAsync(test["type18"]);
-        await kernel.RunAsync(kernel.Skills.GetFunction("test", "type18"));
+        await kernel.RunAsync(kernel.Functions.GetFunction("test", "type18"));
     }
 }
 
@@ -132,7 +131,7 @@ public class LocalExampleSkill
     [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
-        var summarizer = context.Skills.GetFunction("SummarizeSkill", "Summarize");
+        var summarizer = context.Functions.GetFunction("SummarizeSkill", "Summarize");
         var summary = await context.Kernel.RunAsync("blah blah blah", summarizer);
 
         Console.WriteLine($"Running function type 6 [{summary}]");

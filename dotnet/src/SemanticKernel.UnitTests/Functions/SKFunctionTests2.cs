@@ -8,16 +8,15 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.SkillDefinition;
+namespace SemanticKernel.UnitTests.Functions;
 
 public sealed class SKFunctionTests2
 {
     private readonly Mock<ILoggerFactory> _logger;
-    private readonly Mock<IReadOnlySkillCollection> _skills;
+    private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly Mock<IKernel> _kernel;
 
     private static string s_expected = string.Empty;
@@ -26,7 +25,7 @@ public sealed class SKFunctionTests2
     public SKFunctionTests2()
     {
         this._logger = new Mock<ILoggerFactory>();
-        this._skills = new Mock<IReadOnlySkillCollection>();
+        this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();
 
         s_expected = Guid.NewGuid().ToString("D");
@@ -456,7 +455,7 @@ public sealed class SKFunctionTests2
             var newContext = new SKContext(
                 context.Kernel,
                 new ContextVariables(input),
-                skills: new Mock<IReadOnlySkillCollection>().Object);
+                functions: new Mock<IReadOnlyFunctionCollection>().Object);
 
             newContext.Variables.Update("new data");
             newContext.Variables["canary2"] = "222";
@@ -501,7 +500,7 @@ public sealed class SKFunctionTests2
             var newCx = new SKContext(
                 context.Kernel,
                 new ContextVariables(input + "abc"),
-                skills: new Mock<IReadOnlySkillCollection>().Object);
+                functions: new Mock<IReadOnlyFunctionCollection>().Object);
 
             return new ValueTask<SKContext>(newCx);
         }
@@ -911,6 +910,6 @@ public sealed class SKFunctionTests2
         return new SKContext(
             this._kernel.Object,
             new ContextVariables(input),
-            skills: this._skills.Object);
+            functions: this._functions.Object);
     }
 }

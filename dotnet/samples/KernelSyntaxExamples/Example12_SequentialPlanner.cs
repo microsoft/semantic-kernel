@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Sequential;
+using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 using Skills;
 
@@ -31,7 +32,7 @@ internal static class Example12_SequentialPlanner
 
         // Load additional skills to enable planner but not enough for the given goal.
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
 
         try
         {
@@ -77,9 +78,9 @@ internal static class Example12_SequentialPlanner
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder,
-            "SummarizeSkill",
-            "WriterSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder,
+           "SummarizeSkill",
+           "WriterSkill");
 
         var planner = new SequentialPlanner(kernel);
 
@@ -105,13 +106,13 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Email Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner, 512);
-        kernel.ImportSkill(new EmailSkill(), "email");
+        kernel.ImportPlugin(new EmailSkill(), "email");
 
         // Load additional skills to enable planner to do non-trivial asks.
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder,
-            "SummarizeSkill",
-            "WriterSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder,
+           "SummarizeSkill",
+           "WriterSkill");
 
         var plan = await planner.CreatePlanAsync("Summarize an input, translate to french, and e-mail to John Doe");
 
@@ -166,7 +167,7 @@ internal static class Example12_SequentialPlanner
             Console.WriteLine($"Restored plan (relevance={memory.Relevance}):");
 
             // Deseriliaze the plan from the description
-            restoredPlan = Plan.FromJson(memory.Metadata.Description, kernel.Skills);
+            restoredPlan = Plan.FromJson(memory.Metadata.Description, kernel.Functions);
 
             Console.WriteLine(restoredPlan.ToPlanWithGoalString());
             Console.WriteLine();
@@ -197,8 +198,8 @@ internal static class Example12_SequentialPlanner
 
         // Load additional skills to enable planner to do non-trivial asks.
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "MiscSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "MiscSkill");
 
         var originalPlan = await planner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
 
@@ -229,22 +230,22 @@ internal static class Example12_SequentialPlanner
         var kernel = InitializeKernelWithMemory();
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder,
-            "SummarizeSkill",
-            "WriterSkill",
-            "CalendarSkill",
-            "ChatSkill",
-            "ChildrensBookSkill",
-            "ClassificationSkill",
-            "CodingSkill",
-            "FunSkill",
-            "IntentDetectionSkill",
-            "MiscSkill",
-            "QASkill");
+        kernel.ImportSemanticPluginFromDirectory(folder,
+           "SummarizeSkill",
+           "WriterSkill",
+           "CalendarSkill",
+           "ChatSkill",
+           "ChildrensBookSkill",
+           "ClassificationSkill",
+           "CodingSkill",
+           "FunSkill",
+           "IntentDetectionSkill",
+           "MiscSkill",
+           "QASkill");
 
-        kernel.ImportSkill(new EmailSkill(), "email");
-        kernel.ImportSkill(new StaticTextPlugin(), "statictext");
-        kernel.ImportSkill(new Microsoft.SemanticKernel.Plugins.Core.TextPlugin(), "coretext");
+        kernel.ImportPlugin(new EmailSkill(), "email");
+        kernel.ImportPlugin(new StaticTextPlugin(), "statictext");
+        kernel.ImportPlugin(new TextPlugin(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 

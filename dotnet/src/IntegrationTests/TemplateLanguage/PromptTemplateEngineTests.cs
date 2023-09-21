@@ -7,7 +7,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Xunit;
 using Xunit.Abstractions;
@@ -71,7 +70,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Arrange
         const string Template = "== {{my.check123 $call}} ==";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportPlugin(new MySkill(), "my");
         var context = kernel.CreateNewContext();
         context.Variables["call"] = "123";
 
@@ -88,7 +87,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Arrange
         const string Template = "== {{my.check123 '234'}} ==";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportPlugin(new MySkill(), "my");
         var context = kernel.CreateNewContext();
 
         // Act
@@ -105,7 +104,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         const char Esc = '\\';
         string template = "== {{my.check123 'a" + Esc + "'b'}} ==";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportPlugin(new MySkill(), "my");
         var context = kernel.CreateNewContext();
 
         // Act
@@ -122,7 +121,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         const char Esc = '\\';
         string template = "== {{my.check123 \"a" + Esc + "\"b\"}} ==";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportPlugin(new MySkill(), "my");
         var context = kernel.CreateNewContext();
 
         // Act
@@ -138,7 +137,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Arrange
         string template = "Output: {{my.sayAge name=\"Mario\" birthdate=$birthdate exclamation='Wow, that\\'s surprising'}}";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportPlugin(new MySkill(), "my");
         var context = kernel.CreateNewContext();
         context.Variables["birthdate"] = "1981-08-20T00:00:00";
 
@@ -155,7 +154,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill());
+        kernel.ImportPlugin(new MySkill());
 
         // Act
         this._logger.WriteLine("template: " + template);

@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
@@ -37,12 +36,12 @@ internal static class Verify
         }
     }
 
-    internal static void ValidSkillName([NotNull] string? skillName)
+    internal static void ValidPluginName([NotNull] string? pluginName)
     {
-        NotNullOrWhiteSpace(skillName);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(skillName))
+        NotNullOrWhiteSpace(pluginName);
+        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
         {
-            ThrowInvalidName("skill name", skillName);
+            ThrowInvalidName("plugin name", pluginName);
         }
     }
 

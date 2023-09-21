@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -66,5 +65,5 @@ public sealed class SequentialPlannerConfig : PlannerConfigBase
     /// <summary>
     /// Optional callback to get a function by name.
     /// </summary>
-    public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+    public Func<string, string, ISKFunction?>? GetPluginFunction { get; set; }
 }

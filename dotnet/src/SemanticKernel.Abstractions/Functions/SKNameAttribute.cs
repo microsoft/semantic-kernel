@@ -2,7 +2,10 @@
 
 using System;
 
-namespace Microsoft.SemanticKernel.SkillDefinition;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using the main namespace
+namespace Microsoft.SemanticKernel;
+#pragma warning restore IDE0130
 
 /// <summary>Overrides the default name used by a Semantic Kernel native function name or parameter.</summary>
 /// <remarks>

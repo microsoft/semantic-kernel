@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
@@ -44,29 +43,29 @@ public sealed class ParseResultTests
         "another search", "count", "1")]
     [InlineData("[ACTION] {\"action\": \"time.Year\", \"action_variables\": {\"input\": \"\"}}", null, "time.Year", "input", "")]
     [InlineData(@"[ACTION]{
-  ""action"": ""RepositorySkill.PushChangesToBranch"",
+  ""action"": ""RepositoryPlugin.PushChangesToBranch"",
   ""action_variables"": {
     ""branchName"": ""myBranchName"",
     ""comment"": ""{MyComment""
   }
 }
-", null, "RepositorySkill.PushChangesToBranch", "branchName", "myBranchName", "comment", "{MyComment")]
+", null, "RepositoryPlugin.PushChangesToBranch", "branchName", "myBranchName", "comment", "{MyComment")]
     [InlineData(@"[ACTION]{
-  ""action"": ""RepositorySkill.PushChangesToBranch"",
+  ""action"": ""RepositoryPlugin.PushChangesToBranch"",
   ""action_variables"": {
     ""branchName"": ""myBranchName"",
     ""comment"": ""}MyComment""
   }
 }
-", null, "RepositorySkill.PushChangesToBranch", "branchName", "myBranchName", "comment", "}MyComment")]
+", null, "RepositoryPlugin.PushChangesToBranch", "branchName", "myBranchName", "comment", "}MyComment")]
     [InlineData(@"[ACTION]{
-  ""action"": ""RepositorySkill.PushChangesToBranch"",
+  ""action"": ""RepositoryPlugin.PushChangesToBranch"",
   ""action_variables"": {
     ""branchName"": ""myBranchName"",
     ""comment"": ""{MyComment}""
   }
 }
-", null, "RepositorySkill.PushChangesToBranch", "branchName", "myBranchName", "comment", "{MyComment}")]
+", null, "RepositoryPlugin.PushChangesToBranch", "branchName", "myBranchName", "comment", "{MyComment}")]
     public void ParseActionReturnsAction(string input, string expectedThought, string expectedAction, params string[] expectedVariables)
     {
         Dictionary<string, string>? expectedDictionary = null;
@@ -97,7 +96,7 @@ public sealed class ParseResultTests
         var mockFunction = new Mock<ISKFunction>();
         mockFunction.Setup(x => x.Describe()).Returns(functionView);
         mockFunction.Setup(x => x.Name).Returns(functionView.Name);
-        mockFunction.Setup(x => x.SkillName).Returns(functionView.SkillName);
+        mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
         return mockFunction;
     }
 }

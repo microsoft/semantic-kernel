@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Web;
 

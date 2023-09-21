@@ -2,7 +2,7 @@
 
 using System.ComponentModel;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel;
 
 namespace Skills;
 

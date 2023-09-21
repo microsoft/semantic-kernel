@@ -3,7 +3,7 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.IntegrationTests.Fakes;
 

@@ -32,7 +32,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress}}";
 
@@ -51,7 +51,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress \"a person\"}}";
 

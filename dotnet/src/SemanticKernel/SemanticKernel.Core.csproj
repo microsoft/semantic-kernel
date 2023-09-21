@@ -15,7 +15,7 @@
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel Core</Title>
     <Description>
-      Semantic Kernel core orchestration, runtime and skills.
+      Semantic Kernel core orchestration, runtime and functions.
       This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.
       Install this package manually only if you are selecting individual Semantic Kernel components.
     </Description>

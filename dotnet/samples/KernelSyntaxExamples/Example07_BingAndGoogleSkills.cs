@@ -48,7 +48,7 @@ public static class Example07_BingAndGoogleSkills
         {
             var bingConnector = new BingConnector(bingApiKey);
             var bing = new WebSearchEnginePlugin(bingConnector);
-            var search = kernel.ImportSkill(bing, "bing");
+            var search = kernel.ImportPlugin(bing, "bing");
             await Example1Async(kernel, "bing");
             await Example2Async(kernel);
         }
@@ -67,7 +67,7 @@ public static class Example07_BingAndGoogleSkills
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
             var google = new WebSearchEnginePlugin(googleConnector);
-            var search = kernel.ImportSkill(new WebSearchEnginePlugin(googleConnector), "google");
+            var search = kernel.ImportPlugin(new WebSearchEnginePlugin(googleConnector), "google");
             await Example1Async(kernel, "google");
         }
     }
@@ -78,7 +78,7 @@ public static class Example07_BingAndGoogleSkills
 
         // Run
         var question = "What's the largest building in the world?";
-        var function = kernel.Skills.GetFunction(searchSkillId, "search");
+        var function = kernel.Functions.GetFunction(searchSkillId, "search");
         var result = await kernel.RunAsync(question, function);
 
         Console.WriteLine(question);

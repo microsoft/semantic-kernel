@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Sequential;
 
@@ -33,7 +32,7 @@ internal static class FunctionViewExtensions
     /// <returns>A fully qualified name for a function.</returns>
     internal static string ToFullyQualifiedName(this FunctionView function)
     {
-        return $"{function.SkillName}.{function.Name}";
+        return $"{function.PluginName}.{function.Name}";
     }
 
     /// <summary>

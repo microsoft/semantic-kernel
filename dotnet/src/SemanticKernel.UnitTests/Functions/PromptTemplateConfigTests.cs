@@ -4,12 +4,12 @@ using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.SkillDefinition;
+namespace SemanticKernel.UnitTests.Functions;
 
 public class PromptTemplateConfigTests
 {
     [Fact]
-    public void DeserializingDontExpectChatSystemPromptToExist()
+    public void DeserializingDoNotExpectChatSystemPromptToExist()
     {
         // Arrange
         string configPayload = @"{

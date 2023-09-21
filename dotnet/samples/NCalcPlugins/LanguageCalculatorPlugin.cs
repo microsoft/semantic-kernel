@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using NCalc;
 
 namespace NCalcPlugins;
@@ -70,7 +69,7 @@ Question: {{ $input }}
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
             MathTranslatorPrompt,
-            skillName: nameof(LanguageCalculatorPlugin),
+            pluginName: nameof(LanguageCalculatorPlugin),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
             requestSettings: new AIRequestSettings()

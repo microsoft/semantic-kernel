@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
@@ -44,7 +43,7 @@ public static class KernelAIPluginExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -83,7 +82,7 @@ public static class KernelAIPluginExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -123,7 +122,7 @@ public static class KernelAIPluginExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -392,7 +391,7 @@ public static class KernelAIPluginExtensions
             nativeFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
-            skillName: pluginName,
+            pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: kernel.LoggerFactory);
 

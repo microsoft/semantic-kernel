@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace NCalcPlugins;
 
@@ -24,7 +23,7 @@ public class SimpleCalculatorPlugin
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
             "Task: Give the final solution for the problem. Be as concise as possible.\nProblem:4+4\nSolution:8\nProblem:{{$input}}\nSolution:\n",
-            skillName: nameof(SimpleCalculatorPlugin),
+            pluginName: nameof(SimpleCalculatorPlugin),
             functionName: "Calculator",
             description: "Evaluate a mathematical expression. Input is a valid mathematical expression that could be executed by a simple calculator i.e. add, subtract, multiply and divide. Cannot use variables.",
             requestSettings: new AIRequestSettings()

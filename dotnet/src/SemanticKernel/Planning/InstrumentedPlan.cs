@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -24,7 +23,13 @@ public sealed class InstrumentedPlan : IPlan
     public string Name => this._plan.Name;
 
     /// <inheritdoc/>
-    public string SkillName => this._plan.SkillName;
+    public string PluginName => this._plan.PluginName;
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public string SkillName => this._plan.PluginName;
+#pragma warning restore CS1591
 
     /// <inheritdoc/>
     public string Description => this._plan.Description;
@@ -70,8 +75,14 @@ public sealed class InstrumentedPlan : IPlan
         this._plan.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
-        this._plan.SetDefaultSkillCollection(skills);
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
+        this._plan.SetDefaultFunctionCollection(functions);
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
+    this._plan.SetDefaultFunctionCollection(skills);
 
     #region private ================================================================================
 

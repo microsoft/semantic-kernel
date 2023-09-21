@@ -85,8 +85,8 @@ public class FunctionIdBlockTests
     {
         // Arrange
         var target1 = new FunctionIdBlock("functionName");
-        var target2 = new FunctionIdBlock("skillName.functionName");
-        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+        var target2 = new FunctionIdBlock("pluginName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.pluginName.functionName"));
 
         // Act + Assert
         Assert.True(target1.IsValid(out _));

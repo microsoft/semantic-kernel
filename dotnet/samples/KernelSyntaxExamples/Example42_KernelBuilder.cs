@@ -22,7 +22,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
+
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Polly;
 using Polly.Retry;
@@ -78,7 +78,7 @@ public static class Example42_KernelBuilder
             apiKey: azureOpenAIKey,
             loggerFactory: loggerFactory);
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
-        var skills = new SkillCollection();
+        var skills = new FunctionCollection();
         var templateEngine = new PromptTemplateEngine(loggerFactory);
 
         var httpHandlerFactory = BasicHttpRetryHandlerFactory.Instance;
