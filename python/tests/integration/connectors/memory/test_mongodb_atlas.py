@@ -10,11 +10,6 @@ from pymongo import errors
 from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_memory_store import (
     MongoDBAtlasMemoryStore,
 )
-from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
-    MONGODB_FIELD_DESC,
-    generate_search_index_model,
-    wait_for_search_index_ready,
-)
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 mongodb_atlas_installed: bool
@@ -30,6 +25,7 @@ pytestmark = pytest.mark.skipif(
     reason="MongoDB Atlas Vector Search not installed; pip install motor",
 )
 DUPLICATE_INDEX_ERR_CODE = 68
+READ_ONLY_COLLECTION = "nearestSearch"
 
 
 def is_equal_memory_record(
@@ -52,7 +48,7 @@ def memory_record_gen():
             id=str(_id),
             text=f"{_id} text",
             is_reference=False,
-            embedding=np.array([1 / (_id + 1)] * 4),
+            embedding=np.array([1 / (_id + 1)] * 3),
             description=f"{_id} description",
             external_source_name=f"{_id} external source",
             additional_metadata=f"{_id} additional metadata",
@@ -69,7 +65,7 @@ def test_collection():
 
 @pytest_asyncio.fixture
 async def vector_search_store():
-    async with MongoDBAtlasMemoryStore() as memory:
+    async with MongoDBAtlasMemoryStore(database_name="pyMSKTest") as memory:
         # Delete all collections before and after
         for cname in await memory.get_collections_async():
             await memory.delete_collection_async(cname)
@@ -100,8 +96,21 @@ async def vector_search_store():
         try:
             yield memory
         finally:
+            pass
             for cname in await memory.get_collections_async():
                 await memory.delete_collection_async(cname)
+
+
+@pytest_asyncio.fixture
+async def read_only_vector_search():
+    """Fixture for read only vector store; the URI for test needs atlas configured"""
+    async with MongoDBAtlasMemoryStore(database_name="readOnly") as memory:
+        if not await memory.does_collection_exist_async("nearestSearch"):
+            pytest.skip(
+                reason="db: readOnly collection: nearestSearch not found, "
+                + "please ensure your Atlas Test Cluster has this collection configured"
+            )
+        yield memory
 
 
 @pytest.mark.asyncio
@@ -199,17 +208,10 @@ async def test_collection_batch_get(
 
 
 @pytest.mark.asyncio
-async def test_collection_knn_match(
-    vector_search_store, test_collection, memory_record_gen
-):
+async def test_collection_knn_match(read_only_vector_search, memory_record_gen):
     mem = memory_record_gen(3)
-    await vector_search_store.upsert_async(test_collection, mem)
-    await vector_search_store.database[test_collection].create_search_index(
-        generate_search_index_model(dimensions=4)
-    )
-    await wait_for_search_index_ready(vector_search_store.database, test_collection)
-    result, score = await vector_search_store.get_nearest_match_async(
-        collection_name=test_collection,
+    result, score = await read_only_vector_search.get_nearest_match_async(
+        collection_name=READ_ONLY_COLLECTION,
         embedding=mem._embedding,
         with_embedding=True,
     )
@@ -218,27 +220,17 @@ async def test_collection_knn_match(
 
 
 async def knn_matcher(
-    vector_search_store,
+    read_only_vector_search,
     test_collection,
     mems,
     query_limit,
     expected_limit,
-    pre_filter=None,
-    post_filter=None,
 ):
-    await vector_search_store.upsert_batch_async(test_collection, list(mems.values()))
-    await vector_search_store.database[test_collection].create_search_index(
-        generate_search_index_model(dimensions=4)
-    )
-    await wait_for_search_index_ready(vector_search_store.database, test_collection)
-    assert await vector_search_store.does_collection_exist_async(test_collection)
-    results_and_scores = await vector_search_store.get_nearest_matches_async(
+    results_and_scores = await read_only_vector_search.get_nearest_matches_async(
         collection_name=test_collection,
         embedding=mems["2"]._embedding,
         limit=query_limit,
         with_embeddings=True,
-        pre_filter=pre_filter,
-        post_filter=post_filter,
     )
     assert len(results_and_scores) == expected_limit
     scores = [score for _, score in results_and_scores]
@@ -248,53 +240,12 @@ async def knn_matcher(
 
 
 @pytest.mark.asyncio
-async def test_collection_knn_matches(
-    vector_search_store, test_collection, memory_record_gen
-):
+async def test_collection_knn_matches(read_only_vector_search, memory_record_gen):
     mems = {str(i): memory_record_gen(i) for i in range(1, 4)}
     await knn_matcher(
-        vector_search_store, test_collection, mems, query_limit=2, expected_limit=2
-    )
-
-
-@pytest.mark.asyncio
-async def test_collection_knn_matches_pre_filter(
-    vector_search_store, test_collection, memory_record_gen
-):
-    mems = {str(i): memory_record_gen(i) for i in range(1, 4)}
-    await knn_matcher(
-        vector_search_store,
-        test_collection,
+        read_only_vector_search,
+        READ_ONLY_COLLECTION,
         mems,
-        query_limit=4,
+        query_limit=2,
         expected_limit=2,
-        pre_filter={
-            "phrase": {
-                "query": [mems["2"]._description, mems["3"]._description],
-                "path": MONGODB_FIELD_DESC,
-            }
-        },
-    )
-
-
-@pytest.mark.asyncio
-async def test_collection_knn_matches_post_filter(
-    vector_search_store, test_collection, memory_record_gen
-):
-    mems = {str(i): memory_record_gen(i) for i in range(1, 4)}
-    await knn_matcher(
-        vector_search_store,
-        test_collection,
-        mems,
-        query_limit=4,
-        expected_limit=2,
-        post_filter=[
-            {
-                "$match": {
-                    MONGODB_FIELD_DESC: {
-                        "$in": [mems["2"]._description, mems["3"]._description]
-                    }
-                }
-            }
-        ],
     )
