@@ -480,7 +480,7 @@ public sealed class PlanSerializationTests
             new ContextVariables()
         );
 
-        plan = Plan.FromJson(serializedPlan1, nextContext);
+        plan = Plan.FromJson(serializedPlan1, skills.Object);
         plan = await kernel.Object.StepAsync(cv, plan);
 
         // Assert

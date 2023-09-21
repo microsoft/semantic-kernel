@@ -62,7 +62,6 @@ public sealed class SequentialPlannerTests
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
         var kernelContext = new Mock<IKernelContext>();
         kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
-        var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
