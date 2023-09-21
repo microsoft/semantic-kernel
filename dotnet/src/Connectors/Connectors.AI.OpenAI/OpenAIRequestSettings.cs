@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-// Copyright (c) Microsoft. All rights reserved.
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -16,6 +14,18 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 /// </summary>
 public class OpenAIRequestSettings : AIRequestSettings
 {
+    /// <summary>
+    /// Value for <see cref="FunctionCall"/> to indicate that the model
+    /// can optionally generate a function call from <see cref="Functions"/>.
+    /// </summary>
+    public const string FunctionCallAuto = "auto";
+
+    /// <summary>
+    /// Value for <see cref="FunctionCall"/> to indicate that no
+    /// function call should be generated.
+    /// </summary>
+    public const string FunctionCallNone = "none";
+
     /// <summary>
     /// Temperature controls the randomness of the completion.
     /// The higher the temperature, the more random the completion.
@@ -100,11 +110,11 @@ public class OpenAIRequestSettings : AIRequestSettings
     public IDictionary<int, int> TokenSelectionBiases { get; set; } = new Dictionary<int, int>();
 
     /// <summary>
-    /// Indicates a specific function that OpenAI should use to respond to the chat request.
-    /// If you want the model to choose from multiple functions, leave this null and
-    /// instead set <see cref="OpenAIRequestSettings.Functions"/>.
+    /// Possible values are <see cref="FunctionCallNone"/>, <see cref="FunctionCallAuto"/>,
+    /// or the name of a specific function that OpenAI should use to respond to the chat
+    /// request. If the latter, this function must exist in <see cref="OpenAIRequestSettings.Functions"/>.
     /// </summary>
-    public OpenAIFunction? FunctionCall { get; set; } = null;
+    public string? FunctionCall { get; set; } = null;
 
     /// <summary>
     /// The set of functions to choose from if function calling is enabled by the model.

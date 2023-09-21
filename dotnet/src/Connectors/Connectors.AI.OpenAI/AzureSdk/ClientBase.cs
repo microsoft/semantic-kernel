@@ -352,9 +352,24 @@ public abstract class ClientBase
             ChoiceCount = requestSettings.ResultsPerPrompt,
         };
 
-        if (requestSettings.FunctionCall is not null)
+        if (requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallNone)
         {
-            options.FunctionCall = requestSettings.FunctionCall.ToFunctionDefinition();
+            options.FunctionCall = FunctionDefinition.None;
+        }
+        else if (requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto)
+        {
+            options.FunctionCall = FunctionDefinition.Auto;
+        }
+        else if (!requestSettings.FunctionCall.IsNullOrEmpty())
+        {
+            OpenAIFunction? function = requestSettings.Functions.Where(
+                f => f.FunctionName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+
+            if (function is not null)
+            {
+                options.FunctionCall = function.ToFunctionDefinition();
+            }
         }
 
         if (requestSettings.Functions is not null)
