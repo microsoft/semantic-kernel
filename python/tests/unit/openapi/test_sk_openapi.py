@@ -92,7 +92,7 @@ def test_prepare_request_with_path_params():
         method="PUT",
         url="http://example.com/todos/1",
         params={"completed": False},
-        headers={"Authorization": "Bearer abc123", "Content-Type": "application/json"},
+        headers={"Authorization": "Bearer abc123", "Content-Type": "application/json", "User-Agent": "Semantic-Kernel"},
         request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
@@ -127,7 +127,7 @@ def test_prepare_request_with_default_query_param():
         method="PUT",
         url="http://example.com/todos/1",
         params={},
-        headers={"Authorization": "Bearer abc123", "Content-Type": "application/json"},
+        headers={"Authorization": "Bearer abc123", "Content-Type": "application/json", "User-Agent": "Semantic-Kernel"},
         request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(
@@ -148,7 +148,27 @@ def test_prepare_request_with_default_header():
         method="PUT",
         url="http://example.com/todos/1",
         params={"completed": False},
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "User-Agent": "Semantic-Kernel"},
+        request_body={"title": "Buy milk", "completed": False},
+    )
+    actual_request = put_operation.prepare_request(
+        path_params=path_params,
+        query_params=query_params,
+        headers=headers,
+        request_body=request_body,
+    )
+    assert str(actual_request) == str(expected_request)
+
+def test_prepare_request_with_existing_user_agent():
+    path_params = {"id": 1}
+    query_params = {"completed": False}
+    headers = {"User-Agent": "API/1.0 PythonBindings"}
+    request_body = {"title": "Buy milk", "completed": False}
+    expected_request = PreparedRestApiRequest(
+        method="PUT",
+        url="http://example.com/todos/1",
+        params={"completed": False},
+        headers={"User-Agent": "Semantic-Kernel API/1.0 PythonBindings", "Content-Type": "application/json"},
         request_body={"title": "Buy milk", "completed": False},
     )
     actual_request = put_operation.prepare_request(

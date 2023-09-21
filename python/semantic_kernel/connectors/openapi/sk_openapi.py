@@ -24,7 +24,7 @@ class PreparedRestApiRequest:
         self.method = method
         self.url = url
         self.params = params
-        self.headers["User-Agent"] += HTTP_USER_AGENT
+        self.headers = headers
         self.request_body = request_body
 
     def __repr__(self):
@@ -93,7 +93,7 @@ class RestApiOperation:
 
         url = urljoin(self.server_url, path)
 
-        processed_query_params, processed_headers = {}, {}
+        processed_query_params, processed_headers = {}, headers
         for param in self.params:
             param_name = param["name"]
             param_schema = param["schema"]
@@ -104,11 +104,6 @@ class RestApiOperation:
                     processed_query_params[param_name] = query_params[param_name]
                 elif param["schema"] and "default" in param["schema"] is not None:
                     processed_query_params[param_name] = param_default
-            elif param["in"] == "header":
-                if headers and param_name in headers:
-                    processed_headers[param_name] = headers[param_name]
-                elif param_default is not None:
-                    processed_headers[param_name] = param_default
             elif param["in"] == "path":
                 if not path_params or param_name not in path_params:
                     raise ValueError(
@@ -126,6 +121,7 @@ class RestApiOperation:
             content = self.request_body["content"]
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
+            processed_headers["User-Agent"] = " ".join((HTTP_USER_AGENT, processed_headers.get("User-Agent", ""))).rstrip()
             processed_payload = request_body
 
         req = PreparedRestApiRequest(

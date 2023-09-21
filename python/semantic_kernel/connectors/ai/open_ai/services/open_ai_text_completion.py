@@ -5,7 +5,7 @@ from typing import Any, List, Optional, Union
 
 import openai
 
-from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, IS_TELEMETRY_ENABLED
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -54,7 +54,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._endpoint = endpoint
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
-        openai.app_info["name"] = HTTP_USER_AGENT if IS_TELEMETRY_ENABLED else None
+        openai.app_info = APP_INFO
 
     async def complete_async(
         self,

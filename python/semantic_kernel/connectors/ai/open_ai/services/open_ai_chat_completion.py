@@ -5,7 +5,7 @@ from typing import Any, List, Optional, Tuple, Union
 
 import openai
 
-from semantic_kernel.connectors.telemetry import HTTP_USER_AGENT, IS_TELEMETRY_ENABLED
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -59,7 +59,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._endpoint = endpoint
         self._log = log if log is not None else NullLogger()
         self._messages = []
-        openai.app_info["name"] = HTTP_USER_AGENT if IS_TELEMETRY_ENABLED else None
+        openai.app_info = APP_INFO
 
     async def complete_chat_async(
         self,
