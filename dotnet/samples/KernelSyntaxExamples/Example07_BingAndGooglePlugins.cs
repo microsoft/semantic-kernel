@@ -17,7 +17,7 @@ using RepoUtils;
 /// </summary>
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
-public static class Example07_BingAndGoogleSkills
+public static class Example07_BingAndGooglePlugins
 {
     public static async Task RunAsync()
     {
@@ -37,9 +37,8 @@ public static class Example07_BingAndGoogleSkills
                 apiKey: openAIApiKey)
             .Build();
 
-        // Load Bing skill
+        // Load Bing plugin
         string bingApiKey = TestConfiguration.Bing.ApiKey;
-
         if (bingApiKey == null)
         {
             Console.WriteLine("Bing credentials not found. Skipping example.");
@@ -53,7 +52,7 @@ public static class Example07_BingAndGoogleSkills
             await Example2Async(kernel);
         }
 
-        // Load Google skill
+        // Load Google plugin
         string googleApiKey = TestConfiguration.Google.ApiKey;
         string googleSearchEngineId = TestConfiguration.Google.SearchEngineId;
 
@@ -72,17 +71,17 @@ public static class Example07_BingAndGoogleSkills
         }
     }
 
-    private static async Task Example1Async(IKernel kernel, string searchSkillId)
+    private static async Task Example1Async(IKernel kernel, string searchPluginName)
     {
-        Console.WriteLine("======== Bing and Google Search Skill ========");
+        Console.WriteLine("======== Bing and Google Search Plugins ========");
 
         // Run
         var question = "What's the largest building in the world?";
-        var function = kernel.Functions.GetFunction(searchSkillId, "search");
+        var function = kernel.Functions.GetFunction(searchPluginName, "search");
         var result = await kernel.RunAsync(question, function);
 
         Console.WriteLine(question);
-        Console.WriteLine($"----{searchSkillId}----");
+        Console.WriteLine($"----{searchPluginName}----");
         Console.WriteLine(result);
 
         /* OUTPUT:
@@ -100,7 +99,7 @@ public static class Example07_BingAndGoogleSkills
 
     private static async Task Example2Async(IKernel kernel)
     {
-        Console.WriteLine("======== Use Search Skill to answer user questions ========");
+        Console.WriteLine("======== Use Search Plugin to answer user questions ========");
 
         const string SemanticFunction = @"Answer questions only when you know the facts or the information is provided.
 When you don't have sufficient information you reply with a list of commands to find the information needed.

@@ -174,9 +174,9 @@ public static class Example51_StepwisePlanner
                 currentExecutionResult.stepsTaken = stepCount;
             }
 
-            if (result.Variables.TryGetValue("skillCount", out string? skillCount))
+            if (result.Variables.TryGetValue("functionCount", out string? functionCount))
             {
-                Console.WriteLine("Skills Used: " + skillCount);
+                Console.WriteLine("Functions Used: " + functionCount);
             }
 
             if (result.Variables.TryGetValue("iterations", out string? iterations))

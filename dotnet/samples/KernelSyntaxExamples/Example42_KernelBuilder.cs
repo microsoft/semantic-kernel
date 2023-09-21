@@ -78,7 +78,7 @@ public static class Example42_KernelBuilder
             apiKey: azureOpenAIKey,
             loggerFactory: loggerFactory);
         using var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
-        var skills = new FunctionCollection();
+        var plugins = new FunctionCollection();
         var templateEngine = new PromptTemplateEngine(loggerFactory);
 
         var httpHandlerFactory = BasicHttpRetryHandlerFactory.Instance;
@@ -97,7 +97,7 @@ public static class Example42_KernelBuilder
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(skills, aiServiceProvider, templateEngine, memory, httpHandlerFactory, loggerFactory);
+        using var kernel3 = new Kernel(plugins, aiServiceProvider, templateEngine, memory, httpHandlerFactory, loggerFactory);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies
