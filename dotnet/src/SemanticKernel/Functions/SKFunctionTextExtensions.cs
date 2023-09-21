@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -23,7 +23,7 @@ public static class SKFunctionTextExtensions
     /// <param name="partitionedInput">Input to aggregate.</param>
     /// <param name="context">Semantic Kernel context.</param>
     /// <param name="resultsSeparator">Separator to use between results.</param>
-    /// <param name="settings">LLM completion settings.</param>
+    /// <param name="settings">Optional request settings.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Aggregated results.</returns>
     public static async Task<SKContext> AggregatePartitionedResultsAsync(
@@ -31,7 +31,7 @@ public static class SKFunctionTextExtensions
         List<string> partitionedInput,
         SKContext context,
         string resultsSeparator = "\n",
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? settings = null,
         CancellationToken cancellationToken = default)
     {
         var results = new List<string>();
