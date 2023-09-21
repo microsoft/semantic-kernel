@@ -9,6 +9,9 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 
+/// <summary>
+/// Serializes REST API operation parameter of the 'SpaceDelimited' style.
+/// </summary>
 internal static class SpaceDelimitedStyleParameterSerializer
 {
     /// <summary>
@@ -57,7 +60,7 @@ internal static class SpaceDelimitedStyleParameterSerializer
             return SerializeArrayItemsAsSeparateParameters(parameter.Name, array);              //id=1&id=2&id=3
         }
 
-        return SerializeArrayItemsAsParameterWithSpaceSeparatedValues(parameter.Name, array);   //id=1 2 3
+        return SerializeArrayItemsAsParameterWithSpaceSeparatedValues(parameter.Name, array);   //id=1%202%203
     }
 
     /// <summary>
