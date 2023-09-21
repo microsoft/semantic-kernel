@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
@@ -53,43 +54,42 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
 
-        requestSettings ??= new();
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        ValidateMaxTokens(requestSettings.MaxTokens);
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        return await this.ExecuteCompletionRequestAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        return await this.ExecuteCompletionRequestAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
         ChatHistory chat,
-        ChatRequestSettings? requestSettings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chat);
 
-        requestSettings ??= new();
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        ValidateMaxTokens(requestSettings.MaxTokens);
+        ValidateMaxTokens(chatRequestSettings.MaxTokens);
 
-        return this.ExecuteCompletionStreamingRequestAsync(chat, requestSettings, cancellationToken);
+        return this.ExecuteCompletionStreamingRequestAsync(chat, chatRequestSettings, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
     {
-        requestSettings ??= new();
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        var chat = this.PrepareChatHistory(text, requestSettings);
-        var chatRequestSettings = this.PrepareChatRequestSettings(requestSettings);
+        var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
         return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
@@ -99,15 +99,15 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
-        CompleteRequestSettings requestSettings,
+        AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        requestSettings ??= new();
+        OpenAIRequestSettings chatRequestSettings = OpenAIRequestSettings.FromRequestSettings(requestSettings);
 
-        var chat = this.PrepareChatHistory(text, requestSettings);
-        var chatRequestSettings = this.PrepareChatRequestSettings(requestSettings);
+        var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
-        await foreach (var result in this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken))
+        IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
+        await foreach (var result in results)
         {
             yield return (ITextStreamingResult)result;
         }
@@ -144,15 +144,13 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private async Task<IReadOnlyList<IChatResult>> ExecuteCompletionRequestAsync(
         ChatHistory chat,
-        ChatRequestSettings requestSettings,
+        OpenAIRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: false);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        this.EnsureSuccessStatusCode(response);
-
-        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         var chatWithDataResponse = this.DeserializeResponse<ChatWithDataResponse>(body);
 
@@ -161,13 +159,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private async IAsyncEnumerable<IChatStreamingResult> ExecuteCompletionStreamingRequestAsync(
         ChatHistory chat,
-        ChatRequestSettings requestSettings,
+        OpenAIRequestSettings requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var request = this.GetRequest(chat, requestSettings, isStreamEnabled: true);
         using var response = await this.SendRequestAsync(request, cancellationToken).ConfigureAwait(false);
-
-        this.EnsureSuccessStatusCode(response);
 
         await foreach (var result in this.GetStreamingResultsAsync(response))
         {
@@ -182,16 +178,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
         request.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
         request.Headers.Add("Api-Key", this._config.CompletionApiKey);
 
-        return await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-    }
-
-    private void EnsureSuccessStatusCode(HttpResponseMessage response)
-    {
         try
         {
-            response.EnsureSuccessStatusCode();
+            return await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException ex)
+        catch (HttpOperationException ex)
         {
             this._logger.LogError(
                 "Error occurred on chat completion with data request execution: {ExceptionMessage}", ex.Message);
@@ -204,7 +195,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         const string ServerEventPayloadPrefix = "data:";
 
-        using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        using var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
         using var reader = new StreamReader(stream);
 
         while (!reader.EndOfStream)
@@ -236,11 +227,11 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
         if (response is null)
         {
-            const string errorMessage = "Error occurred on chat completion with data response deserialization";
+            const string ErrorMessage = "Error occurred on chat completion with data response deserialization";
 
-            this._logger.LogError(errorMessage);
+            this._logger.LogError(ErrorMessage);
 
-            throw new SKException(errorMessage);
+            throw new SKException(ErrorMessage);
         }
 
         return response;
@@ -248,7 +239,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
 
     private HttpRequestMessage GetRequest(
         ChatHistory chat,
-        ChatRequestSettings requestSettings,
+        OpenAIRequestSettings requestSettings,
         bool isStreamEnabled)
     {
         var payload = new ChatWithDataRequest
@@ -272,8 +263,7 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
     {
         return new List<ChatWithDataSource>
         {
-            new ChatWithDataSource
-            {
+            new() {
                 Parameters = new ChatWithDataSourceParameters
                 {
                     Endpoint = this._config.DataSourceEndpoint,
@@ -295,26 +285,13 @@ public sealed class AzureChatCompletionWithData : IChatCompletion, ITextCompleti
             .ToList();
     }
 
-    private ChatHistory PrepareChatHistory(string text, CompleteRequestSettings requestSettings)
+    private ChatHistory PrepareChatHistory(string text, OpenAIRequestSettings requestSettings)
     {
         var chat = this.CreateNewChat(requestSettings.ChatSystemPrompt);
 
         chat.AddUserMessage(text);
 
         return chat;
-    }
-
-    private ChatRequestSettings PrepareChatRequestSettings(CompleteRequestSettings requestSettings)
-    {
-        return new ChatRequestSettings
-        {
-            MaxTokens = requestSettings.MaxTokens,
-            Temperature = requestSettings.Temperature,
-            TopP = requestSettings.TopP,
-            PresencePenalty = requestSettings.PresencePenalty,
-            FrequencyPenalty = requestSettings.FrequencyPenalty,
-            StopSequences = requestSettings.StopSequences,
-        };
     }
 
     private string GetRequestUri()

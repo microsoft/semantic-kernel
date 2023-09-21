@@ -44,8 +44,8 @@ public sealed class PlanTests : IDisposable
 
         // Assert
         Assert.Equal(prompt, plan.Description);
-        Assert.Equal(string.Empty, plan.Name);
-        Assert.Equal(typeof(Plan).FullName, plan.SkillName);
+        Assert.NotEmpty(plan.Name);
+        Assert.Equal(nameof(Plan), plan.PluginName);
         Assert.Empty(plan.Steps);
     }
 
@@ -55,7 +55,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
         var plan = new Plan(emailSkill["SendEmail"]);
@@ -77,7 +77,7 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel(false, true);
 
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
         var expectedBody = $"Sent email to: {expectedEmail}. Body: {inputToEmail}".Trim();
 
         var plan = new Plan(emailSkill["SendEmail"]);
@@ -98,8 +98,8 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
+        var writerSkill = TestHelpers.ImportSamplePlugins(target, "WriterSkill");
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
         var plan = new Plan(goal);
@@ -126,7 +126,7 @@ public sealed class PlanTests : IDisposable
         var plan = new Plan(goal);
         var subPlan = new Plan("Write a poem or joke");
 
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         // Arrange
         var returnContext = target.CreateNewContext();
@@ -152,7 +152,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
@@ -185,7 +185,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
@@ -218,7 +218,7 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         // Create the input mapping from parent (plan) plan state to child plan (sendEmailPlan) state.
         var cv = new ContextVariables();
@@ -249,9 +249,9 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel();
 
-        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var summarizeSkill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
+        var writerSkill = TestHelpers.ImportSamplePlugins(target, "WriterSkill");
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
@@ -322,9 +322,9 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var summarizeSkill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
+        var writerSkill = TestHelpers.ImportSamplePlugins(target, "WriterSkill");
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
@@ -381,9 +381,9 @@ public sealed class PlanTests : IDisposable
     {
         // Arrange
         IKernel target = this.InitializeKernel();
-        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var summarizeSkill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
+        var writerSkill = TestHelpers.ImportSamplePlugins(target, "WriterSkill");
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
@@ -427,7 +427,7 @@ public sealed class PlanTests : IDisposable
 
         // Act
         var serializedPlan = plan.ToJson();
-        var deserializedPlan = Plan.FromJson(serializedPlan, target.CreateNewContext());
+        var deserializedPlan = Plan.FromJson(serializedPlan, target.Functions);
         var result = await target.RunAsync(inputToSummarize, deserializedPlan);
 
         // Assert
@@ -442,9 +442,9 @@ public sealed class PlanTests : IDisposable
         // Arrange
         IKernel target = this.InitializeKernel();
 
-        var summarizeSkill = TestHelpers.GetSkills(target, "SummarizeSkill");
-        var writerSkill = TestHelpers.GetSkills(target, "WriterSkill");
-        var emailSkill = target.ImportSkill(new EmailSkillFake());
+        var summarizeSkill = TestHelpers.ImportSamplePlugins(target, "SummarizeSkill");
+        var writerSkill = TestHelpers.ImportSamplePlugins(target, "WriterSkill");
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
 
         var expectedBody = $"Sent email to: {expectedEmail}. Body:".Trim();
 
@@ -466,6 +466,37 @@ public sealed class PlanTests : IDisposable
         Assert.Contains(expectedBody, result.Result, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData("computers")]
+    public async Task CanImportAndRunPlanAsync(string input)
+    {
+        // Arrange
+        IKernel target = this.InitializeKernel();
+        var emailSkill = target.ImportPlugin(new EmailSkillFake());
+
+        var plan = new Plan("Write a poem about a topic and send in an email.");
+
+        var writePoem = new Plan(emailSkill["WritePoem"]);
+        // fileStep.Parameters["input"] = "$INPUT";
+        writePoem.Outputs.Add("POEM");
+
+        var sendEmail = new Plan(emailSkill["SendEmail"]);
+        sendEmail.Parameters["input"] = "$POEM";
+        sendEmail.Outputs.Add("EMAIL_RESULT");
+
+        plan.AddSteps(writePoem, sendEmail);
+        plan.Outputs.Add("EMAIL_RESULT");
+
+        //Act
+        var t = target.ImportPlan(plan);
+
+        var result = await t.InvokeAsync(input, target);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal($"Sent email to: default@email.com. Body: Roses are red, violets are blue, {input} is hard, so is this test.", result.Result);
+    }
+
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
     {
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
@@ -479,16 +510,16 @@ public sealed class PlanTests : IDisposable
         if (useChatModel)
         {
             builder.WithAzureChatCompletionService(
-                        deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
         }
         else
         {
             builder.WithAzureTextCompletionService(
-                        deploymentName: azureOpenAIConfiguration.DeploymentName,
-                        endpoint: azureOpenAIConfiguration.Endpoint,
-                        apiKey: azureOpenAIConfiguration.ApiKey);
+                deploymentName: azureOpenAIConfiguration.DeploymentName,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey);
         }
 
         if (useEmbeddings)
@@ -504,9 +535,9 @@ public sealed class PlanTests : IDisposable
         var kernel = builder.Build();
 
         // Import all sample skills available for demonstration purposes.
-        TestHelpers.ImportSampleSkills(kernel);
+        TestHelpers.ImportAllSamplePlugins(kernel);
 
-        _ = kernel.ImportSkill(new EmailSkillFake());
+        _ = kernel.ImportPlugin(new EmailSkillFake());
         return kernel;
     }
 

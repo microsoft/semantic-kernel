@@ -22,7 +22,7 @@ jobs:
     outputs:
       pythonChanges: ${{ steps.filter.outputs.python}}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -49,7 +49,7 @@ jobs:
         python-version: ["3.11"]
         os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -92,7 +92,10 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
           AZURE_COSMODB_MONGO_CONNECTION_STRING: ${{ secrets.AZURE_COSMODB_MONGO_CONNECTION_STRING }}
         run: |
-          docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          if ${{ matrix.os == 'ubuntu-latest' }}; then
+            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          fi
+
           cd python
           poetry run pytest ./tests/integration -v
 
@@ -107,7 +110,7 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -152,7 +155,10 @@ jobs:
           AZURE_COGNITIVE_SEARCH_ENDPOINT: ${{secrets.AZURE_COGNITIVE_SEARCH_ENDPOINT}}
           AZURE_COSMODB_MONGO_CONNECTION_STRING: ${{ secrets.AZURE_COSMODB_MONGO_CONNECTION_STRING }}
         run: |
-          docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          if ${{ matrix.os == 'ubuntu-latest' }}; then
+            docker run -d --name redis-stack-server -p 6379:6379 redis/redis-stack-server:latest
+          fi
+
           cd python
           poetry run pytest ./tests/integration -v
 

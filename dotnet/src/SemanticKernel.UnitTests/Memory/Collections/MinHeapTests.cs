@@ -87,7 +87,7 @@ public class MinHeapTests
         var items = new List<int> { 3, 1, 2 };
         var minHeap = new MinHeap<int>(MinValue);
 
-        var action = () => { minHeap.Add(items, StartIndex); };
+        void action() { minHeap.Add(items, StartIndex); }
 
         // Act
         var exception = Assert.Throws<ArgumentOutOfRangeException>("startAt", () => action());

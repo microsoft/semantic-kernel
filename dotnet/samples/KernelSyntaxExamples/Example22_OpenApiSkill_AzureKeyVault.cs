@@ -4,11 +4,10 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Reliability;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Skills;
 using RepoUtils;
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
@@ -32,23 +31,25 @@ public static class Example22_OpenApiSkill_AzureKeyVault
 
     public static async Task GetSecretFromAzureKeyVaultWithRetryAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
     {
-        var retryConfig = new HttpRetryConfig() { MaxRetryCount = 3, UseExponentialBackoff = true };
-
         var kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .Configure(c => c.SetDefaultHttpRetryConfig(retryConfig))
+            .WithRetryBasic(new()
+            {
+                MaxRetryCount = 3,
+                UseExponentialBackoff = true
+            })
             .Build();
 
-        var type = typeof(SkillResourceNames);
-        var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";
+        var type = typeof(PluginResourceNames);
+        var resourceName = $"{PluginResourceNames.AzureKeyVault}.openapi.json";
 
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import AI Plugin
         var skill = await kernel.ImportAIPluginAsync(
-            SkillResourceNames.AzureKeyVault,
+            PluginResourceNames.AzureKeyVault,
             stream!,
-            new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            new OpenApiPluginExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -66,16 +67,16 @@ public static class Example22_OpenApiSkill_AzureKeyVault
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        var type = typeof(SkillResourceNames);
-        var resourceName = $"{SkillResourceNames.AzureKeyVault}.openapi.json";
+        var type = typeof(PluginResourceNames);
+        var resourceName = $"{PluginResourceNames.AzureKeyVault}.openapi.json";
 
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import AI Plugin
         var skill = await kernel.ImportAIPluginAsync(
-            SkillResourceNames.AzureKeyVault,
+            PluginResourceNames.AzureKeyVault,
             stream!,
-            new OpenApiSkillExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            new OpenApiPluginExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

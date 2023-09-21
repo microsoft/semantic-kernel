@@ -61,14 +61,14 @@ public static class Example52_ApimAuth
 
         var kernel = Kernel.Builder
             .WithLoggerFactory(loggerFactory)
-            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (loggerFactory, config) =>
+            .WithAIService<IChatCompletion>(TestConfiguration.AzureOpenAI.ChatDeploymentName, (loggerFactory) =>
                 new AzureChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, loggerFactory))
             .Build();
 
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
 
-        var funSkill = kernel.ImportSemanticSkillFromDirectory(
+        var funSkill = kernel.ImportSemanticPluginFromDirectory(
             folder,
             "FunSkill");
 

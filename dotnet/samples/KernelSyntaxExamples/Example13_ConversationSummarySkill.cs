@@ -5,13 +5,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
+using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 
-internal static class Example13_ConversationSummarySkill
+internal static class Example13_ConversationSummaryPlugin
 {
     private const string ChatTranscript =
         @"
@@ -123,18 +122,18 @@ Jane: Goodbye!
 
     public static async Task RunAsync()
     {
-        await ConversationSummarySkillAsync();
+        await ConversationSummaryPluginAsync();
         await GetConversationActionItemsAsync();
         await GetConversationTopicsAsync();
     }
 
-    private static async Task ConversationSummarySkillAsync()
+    private static async Task ConversationSummaryPluginAsync()
     {
         Console.WriteLine("======== SampleSkills - Conversation Summary Skill - Summarize ========");
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummarySkill(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
@@ -150,7 +149,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummarySkill(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
@@ -166,7 +165,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummarySkill =
-            kernel.ImportSkill(new ConversationSummarySkill(kernel));
+             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
@@ -211,8 +210,8 @@ A possible summary is:
 - They use a Lorem Ipsum generator, but it repeats itself after a while.
 - They sing the national anthems of Canada and the United States, and then talk about their favorite Seattle Kraken hockey players.
 - They finally reach their desired length of text and say goodbye to each other.
-======== SampleSkills - Conversation Summary Skill - Action Items ========
-Generated Action Items:
+======== SampleSkills - Conversation Summary Skill - Action Functions ========
+Generated Action Functions:
 
 {
     "actionItems": [

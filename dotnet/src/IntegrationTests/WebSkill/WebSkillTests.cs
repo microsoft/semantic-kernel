@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -49,8 +49,8 @@ public sealed class WebSkillTests : IDisposable
         BingConnector connector = new(this._bingApiKey, connectorLogger);
         Assert.NotEmpty(this._bingApiKey);
 
-        WebSearchEngineSkill skill = new(connector);
-        var search = kernel.ImportSkill(skill, "WebSearchEngine");
+        WebSearchEnginePlugin skill = new(connector);
+        var search = kernel.ImportPlugin(skill, "WebSearchEngine");
 
         // Act
         SKContext result = await kernel.RunAsync(
@@ -67,12 +67,12 @@ public sealed class WebSkillTests : IDisposable
     {
         // Arrange
         IKernel kernel = Kernel.Builder.WithLoggerFactory(this._logger).Build();
-        using XunitLogger<WebFileDownloadSkill> skillLogger = new(this._output);
-        var skill = new WebFileDownloadSkill(skillLogger);
-        var download = kernel.ImportSkill(skill, "WebFileDownload");
+        using XunitLogger<WebFileDownloadPlugin> skillLogger = new(this._output);
+        var skill = new WebFileDownloadPlugin(skillLogger);
+        var download = kernel.ImportPlugin(skill, "WebFileDownload");
         string fileWhereToSaveWebPage = Path.GetTempFileName();
         var contextVariables = new ContextVariables("https://www.microsoft.com");
-        contextVariables.Set(WebFileDownloadSkill.FilePathParamName, fileWhereToSaveWebPage);
+        contextVariables.Set(WebFileDownloadPlugin.FilePathParamName, fileWhereToSaveWebPage);
 
         // Act
         await kernel.RunAsync(contextVariables, download["DownloadToFile"]);

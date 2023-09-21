@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Connectors.Memory.Redis;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Memory.Collections;
 using Moq;
 using StackExchange.Redis;
 using Xunit;
@@ -750,7 +749,7 @@ public class RedisMemoryStoreTests
             // Act
             await store.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);
         });
-        Assert.Equal(ex.Message, "Invalid or missing vector score value.");
+        Assert.Equal("Invalid or missing vector score value.", ex.Message);
     }
 
     #region private
@@ -901,7 +900,7 @@ public class RedisMemoryStoreTests
 
     private void MockSearch(string collection, ReadOnlyMemory<float> compareEmbedding, int topN, double threshold, bool returnStringVectorScore = false)
     {
-        TopNCollection<MemoryRecord> embeddings = new(topN);
+        List<(MemoryRecord Record, double Score)> embeddings = new();
 
         List<MemoryRecord> records = this._collections.TryGetValue(collection, out var value) ? value : new();
 
@@ -916,7 +915,7 @@ public class RedisMemoryStoreTests
             }
         }
 
-        embeddings.SortByScore();
+        embeddings = embeddings.OrderByDescending(l => l.Score).Take(topN).ToList();
 
         string redisKey = $"{collection}";
 
@@ -925,22 +924,22 @@ public class RedisMemoryStoreTests
 
         foreach (var item in embeddings)
         {
-            long timestamp = item.Value.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
-            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Value.Embedding.Span).ToArray();
-            redisResults.Add(RedisResult.Create($"{collection}:{item.Value.Metadata.Id}", ResultType.BulkString));
+            long timestamp = item.Record.Timestamp?.ToUnixTimeMilliseconds() ?? -1;
+            byte[] embedding = MemoryMarshal.Cast<float, byte>(item.Record.Embedding.Span).ToArray();
+            redisResults.Add(RedisResult.Create($"{collection}:{item.Record.Metadata.Id}", ResultType.BulkString));
             redisResults.Add(RedisResult.Create(
                 new RedisResult[]
                 {
                     RedisResult.Create("key", ResultType.BulkString),
-                    RedisResult.Create(item.Value.Metadata.Id, ResultType.BulkString),
+                    RedisResult.Create(item.Record.Metadata.Id, ResultType.BulkString),
                     RedisResult.Create("metadata", ResultType.BulkString),
-                    RedisResult.Create(item.Value.GetSerializedMetadata(), ResultType.BulkString),
+                    RedisResult.Create(item.Record.GetSerializedMetadata(), ResultType.BulkString),
                     RedisResult.Create("embedding", ResultType.BulkString),
                     RedisResult.Create(embedding, ResultType.BulkString),
                     RedisResult.Create("timestamp", ResultType.BulkString),
                     RedisResult.Create(timestamp, ResultType.BulkString),
                     RedisResult.Create("vector_score", ResultType.BulkString),
-                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score.Value}" : 1-item.Score.Value, ResultType.BulkString),
+                    RedisResult.Create(returnStringVectorScore ? $"score:{1-item.Score}" : 1-item.Score, ResultType.BulkString),
                 })
             );
         }

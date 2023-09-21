@@ -39,8 +39,8 @@ public sealed class SequentialPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        _ = kernel.ImportSkill(new EmailSkillFake());
-        TestHelpers.GetSkills(kernel, "FunSkill");
+        kernel.ImportPlugin(new EmailSkillFake());
+        TestHelpers.ImportSamplePlugins(kernel, "FunSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
 
@@ -52,7 +52,7 @@ public sealed class SequentialPlannerTests : IDisposable
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
+                step.PluginName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
@@ -61,7 +61,7 @@ public sealed class SequentialPlannerTests : IDisposable
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        TestHelpers.GetSkills(kernel, "WriterSkill");
+        TestHelpers.ImportSamplePlugins(kernel, "WriterSkill");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
 
@@ -73,7 +73,7 @@ public sealed class SequentialPlannerTests : IDisposable
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
+                step.PluginName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
                 step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -84,10 +84,10 @@ public sealed class SequentialPlannerTests : IDisposable
         // Arrange
         bool useEmbeddings = true;
         IKernel kernel = this.InitializeKernel(useEmbeddings);
-        _ = kernel.ImportSkill(new EmailSkillFake());
+        _ = kernel.ImportPlugin(new EmailSkillFake());
 
         // Import all sample skills available for demonstration purposes.
-        TestHelpers.ImportSampleSkills(kernel);
+        TestHelpers.ImportAllSamplePlugins(kernel);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel,
             new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
@@ -100,7 +100,7 @@ public sealed class SequentialPlannerTests : IDisposable
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
+                step.PluginName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)

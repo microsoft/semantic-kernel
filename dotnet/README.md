@@ -134,7 +134,7 @@ Packages included in **Microsoft.SemanticKernel**:
    engineering, semantic memory and semantic functions definition and orchestration.
 1. **Microsoft.SemanticKernel.Connectors.AI.OpenAI**: connectors to OpenAI and Azure
    OpenAI, allowing to run semantic functions, chats, image generation with GPT3,
-   GPT3.5, GPT4, DALL-E2. Includes also GPT tokenizers.
+   GPT3.5, GPT4, DALL-E2.
 
 Other SK packages available at nuget.org:
 
@@ -149,3 +149,4 @@ Other SK packages available at nuget.org:
 5. **Microsoft.SemanticKernel.Skills.OpenAPI**: OpenAPI skill.
 6. **Microsoft.SemanticKernel.Skills.Web**: Web Skill: search the web, download
    files, etc.
+7. **Microsoft.SemanticKernel.Reliability.Polly**: Extension for http resiliency.

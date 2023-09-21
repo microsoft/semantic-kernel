@@ -5,15 +5,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace SemanticKernel.IntegrationTests;
 
 internal static class TestHelpers
 {
-    internal static void ImportSampleSkills(IKernel target)
+    internal static void ImportAllSamplePlugins(IKernel kernel)
     {
-        var chatSkill = GetSkills(target,
+        var chatSkill = ImportSamplePlugins(kernel,
             "ChatSkill",
             "SummarizeSkill",
             "WriterSkill",
@@ -27,7 +26,7 @@ internal static class TestHelpers
             "QASkill");
     }
 
-    internal static IDictionary<string, ISKFunction> GetSkills(IKernel target, params string[] skillNames)
+    internal static IDictionary<string, ISKFunction> ImportSamplePlugins(IKernel kernel, params string[] pluginNames)
     {
         string? currentAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrWhiteSpace(currentAssemblyDirectory))
@@ -35,8 +34,8 @@ internal static class TestHelpers
             throw new InvalidOperationException("Unable to determine current assembly directory.");
         }
 
-        string skillParentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
+        string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
 
-        return target.ImportSemanticSkillFromDirectory(skillParentDirectory, skillNames);
+        return kernel.ImportSemanticPluginFromDirectory(parentDirectory, pluginNames);
     }
 }
