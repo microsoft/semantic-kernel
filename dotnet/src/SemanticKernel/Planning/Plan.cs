@@ -161,17 +161,17 @@ public sealed class Plan : IPlan
     /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
-    /// <param name="context">The context to use for function registrations.</param>
+    /// <param name="skills">The collection of available skills/functions..</param>
     /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, SKContext? context = null, bool requireFunctions = true)
+    public static Plan FromJson(string json, IReadOnlySkillCollection? skills = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
-        if (context != null)
+        if (skills != null)
         {
-            plan = SetAvailableFunctions(plan, context, requireFunctions);
+            plan = SetAvailableFunctions(plan, skills, requireFunctions);
         }
 
         return plan;
@@ -401,19 +401,16 @@ public sealed class Plan : IPlan
     /// Set functions for a plan and its steps.
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
-    /// <param name="context">Context to use.</param>
+    /// <param name="skillCollection">The collection of available skills/functions.</param>
     /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, SKContext context, bool requireFunctions = true)
+    private static Plan SetAvailableFunctions(Plan plan, IReadOnlySkillCollection skillCollection, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.Skills == null)
-            {
-                throw new SKException("Skill collection not found in the context");
-            }
+            Verify.NotNull(skillCollection);
 
-            if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
+            if (skillCollection.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }
@@ -426,7 +423,7 @@ public sealed class Plan : IPlan
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, context, requireFunctions);
+                SetAvailableFunctions(step, skillCollection, requireFunctions);
             }
         }
 
