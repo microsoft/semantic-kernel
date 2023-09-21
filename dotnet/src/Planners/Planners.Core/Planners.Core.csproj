@@ -64,4 +64,5 @@
     <InternalsVisibleTo Include="IntegrationTests" />
     <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
   </ItemGroup>
+
 </Project>

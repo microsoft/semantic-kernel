@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Extensions.Logging;
 
-namespace SemanticKernel.Extensions.UnitTests.XunitHelpers;
+namespace Microsoft.SemanticKernel.Planners.UnitTests.XunitHelpers;
 
 /// <summary>
 /// Basic logger printing to console
@@ -17,7 +16,7 @@ internal static class TestConsoleLogger
 
     private static ILoggerFactory LogBuilder()
     {
-        return Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
+        return Extensions.Logging.LoggerFactory.Create(builder =>
         {
             builder.SetMinimumLevel(LogLevel.Trace);
             // builder.AddFilter("Microsoft", LogLevel.Trace);

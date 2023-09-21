@@ -3,8 +3,8 @@
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planners.Sequential;
+using Microsoft.SemanticKernel.Planners.UnitTests.XunitHelpers;
 using Moq;
-using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Planners.UnitTests.Sequential;
