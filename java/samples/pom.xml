@@ -4,7 +4,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>samples</artifactId>
-    <version>0.2.9-alpha-SNAPSHOT</version>
+    <version>0.2.9-alpha</version>
     <packaging>pom</packaging>
     <name>Semantic Kernel Samples Parent</name>
     <description>Parent pom for sample code for using the Semantic Kernel project</description>
