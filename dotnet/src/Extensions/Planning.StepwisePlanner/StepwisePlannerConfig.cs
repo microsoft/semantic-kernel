@@ -67,11 +67,6 @@ public sealed class StepwisePlannerConfig : PlannerConfigBase
     public int MinIterationTimeMs { get; set; } = 0;
 
     /// <summary>
-    /// Delegate to get the prompt template string.
-    /// </summary>
-    public Func<string>? GetPromptTemplate { get; set; } = null;
-
-    /// <summary>
     /// The configuration to use for the prompt template.
     /// </summary>
     public PromptTemplateConfig? PromptUserConfig { get; set; } = null;

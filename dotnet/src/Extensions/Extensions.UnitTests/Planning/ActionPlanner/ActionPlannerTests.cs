@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -50,6 +51,25 @@ public sealed class ActionPlannerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => planner.CreatePlanAsync("goal"));
+    }
+
+    [Fact]
+    public void UsesPromptDelegateWhenProvided()
+    {
+        // Arrange
+        var kernel = new Mock<IKernel>();
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
+        var getPromptTemplateMock = new Mock<Func<string>>();
+        var config = new ActionPlannerConfig()
+        {
+            GetPromptTemplate = getPromptTemplateMock.Object
+        };
+
+        // Act
+        var planner = new Microsoft.SemanticKernel.Planning.ActionPlanner(kernel.Object, config);
+
+        // Assert
+        getPromptTemplateMock.Verify(x => x(), Times.Once());
     }
 
     [Fact]
@@ -170,6 +190,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         // Mock Functions
         kernel.Setup(x => x.Functions).Returns(functions.Object);
         kernel.Setup(x => x.CreateNewContext()).Returns(context);
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
