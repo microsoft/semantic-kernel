@@ -69,7 +69,8 @@ public static class Example33_StreamingChat
 
         await foreach (string message in chatGPT.GenerateMessageStreamAsync(chatHistory))
         {
-            Console.Write(message ?? "#NULL#");
+            fullMessage += message;
+            Console.Write(message);
         }
 
         Console.WriteLine("\n------------------------");
