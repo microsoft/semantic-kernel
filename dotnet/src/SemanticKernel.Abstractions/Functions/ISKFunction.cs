@@ -28,6 +28,11 @@ public interface ISKFunction
     /// </summary>
     string PluginName { get; }
 
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SkillName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    string SkillName { get; }
+
     /// <summary>
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
     /// </summary>
@@ -63,6 +68,11 @@ public interface ISKFunction
     /// <param name="functions">Kernel's function collection</param>
     /// <returns>Self instance</returns>
     ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions);
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills);
 
     /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.
