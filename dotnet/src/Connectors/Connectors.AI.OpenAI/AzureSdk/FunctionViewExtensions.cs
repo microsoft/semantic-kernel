@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
@@ -33,7 +32,7 @@ public static class FunctionViewExtensions
         return new OpenAIFunction
         {
             FunctionName = functionView.Name,
-            PluginName = functionView.SkillName,
+            PluginName = functionView.PluginName,
             Description = functionView.Description,
             Parameters = openAIParams,
         };

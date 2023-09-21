@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
 
 /**
@@ -31,7 +30,7 @@ public static class Example59_OpenAIFunctionCalling
         {
             // Include all functions registered with the kernel.
             // Alternatively, you can provide your own list of OpenAIFunctions to include.
-            Functions = kernel.Skills.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
+            Functions = kernel.Functions.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
         };
 
         // Set FunctionCall to the name of a specific function to force the model to use that function.
@@ -54,10 +53,10 @@ public static class Example59_OpenAIFunctionCalling
 
         // Load functions to kernel
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
-        kernel.ImportSkill(new TimePlugin(), "TimeSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportSemanticPluginFromDirectory(folder, "WriterPlugin");
+        kernel.ImportSemanticPluginFromDirectory(folder, "FunPlugin");
+        kernel.ImportPlugin(new TimePlugin(), "TimePlugin");
 
         await kernel.ImportAIPluginAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiPluginExecutionParameters());
 
@@ -94,7 +93,7 @@ public static class Example59_OpenAIFunctionCalling
 
             // If the function returned by OpenAI is an SKFunction registered with the kernel,
             // you can invoke it using the following code.
-            if (kernel.Skills.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+            if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
             {
                 var result = await kernel.RunAsync(func, context).ConfigureAwait(false);
                 Console.WriteLine(result.Result);

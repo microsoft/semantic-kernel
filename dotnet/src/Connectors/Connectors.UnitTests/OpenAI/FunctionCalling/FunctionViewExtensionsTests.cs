@@ -2,8 +2,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
@@ -15,7 +15,7 @@ public sealed class FunctionViewExtensionsTests
         // Arrange
         var sut = new FunctionView(
             Name: "foo",
-            SkillName: "bar",
+            PluginName: "bar",
             Description: "baz");
 
         // Act
@@ -23,7 +23,7 @@ public sealed class FunctionViewExtensionsTests
 
         // Assert
         Assert.Equal(sut.Name, result.FunctionName);
-        Assert.Equal(sut.SkillName, result.PluginName);
+        Assert.Equal(sut.PluginName, result.PluginName);
         Assert.Equal(sut.Description, result.Description);
     }
 
@@ -40,7 +40,7 @@ public sealed class FunctionViewExtensionsTests
 
         var sut = new FunctionView(
             Name: "foo",
-            SkillName: "bar",
+            PluginName: "bar",
             Description: "baz",
             Parameters: new List<ParameterView> { param1 });
 
@@ -67,7 +67,7 @@ public sealed class FunctionViewExtensionsTests
 
         var sut = new FunctionView(
             Name: "foo",
-            SkillName: "bar",
+            PluginName: "bar",
             Description: "baz",
             Parameters: new List<ParameterView> { param1 });
 
