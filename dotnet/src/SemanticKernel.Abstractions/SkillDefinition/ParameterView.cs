@@ -45,7 +45,7 @@ public sealed class ParameterView
     /// <summary>
     /// Whether the parameter is required.
     /// </summary>
-    public bool IsRequired { get; set; } = false;
+    public bool? IsRequired { get; set; }
 
     /// <summary>
     /// Constructor
@@ -67,7 +67,7 @@ public sealed class ParameterView
         string? description = null,
         string? defaultValue = null,
         ParameterViewType? type = null,
-        bool isRequired = false)
+        bool? isRequired = null)
     {
         this.Name = name;
         this.Description = description;

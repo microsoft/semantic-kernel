@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.OpenAI.FunctionCalling;
-public sealed class OpenAIFunctionResultTests
+public sealed class OpenAIFunctionResponseTests
 {
     [Fact]
     public void ItCanConvertFromFunctionCallWithPluginName()
@@ -15,7 +15,7 @@ public sealed class OpenAIFunctionResultTests
         var sut = new FunctionCall("foo-bar", "{}");
 
         // Act
-        var result = OpenAIFunctionResult.FromFunctionCall(sut);
+        var result = OpenAIFunctionResponse.FromFunctionCall(sut);
 
         // Assert
         Assert.Equal("foo", result.PluginName);
@@ -29,7 +29,7 @@ public sealed class OpenAIFunctionResultTests
         var sut = new FunctionCall("foo", "{}");
 
         // Act
-        var result = OpenAIFunctionResult.FromFunctionCall(sut);
+        var result = OpenAIFunctionResponse.FromFunctionCall(sut);
 
         // Assert
         Assert.Equal(string.Empty, result.PluginName);
@@ -43,7 +43,7 @@ public sealed class OpenAIFunctionResultTests
         var sut = new FunctionCall("foo", "{}");
 
         // Act
-        var result = OpenAIFunctionResult.FromFunctionCall(sut);
+        var result = OpenAIFunctionResponse.FromFunctionCall(sut);
 
         // Assert
         Assert.Equal(new Dictionary<string, object>(), result.Parameters);
@@ -56,7 +56,7 @@ public sealed class OpenAIFunctionResultTests
         var sut = new FunctionCall("foo", "{ \"param1\": \"bar\", \"param2\": 5 }");
 
         // Act
-        var result = OpenAIFunctionResult.FromFunctionCall(sut);
+        var result = OpenAIFunctionResponse.FromFunctionCall(sut);
 
         // Assert
         Assert.True(result.Parameters.TryGetValue("param1", out object? value1));

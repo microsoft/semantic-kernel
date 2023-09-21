@@ -13,15 +13,15 @@ public static class ChatResultExtensions
     /// Retrieve the resulting function from the chat result.
     /// </summary>
     /// <param name="chatResult"></param>
-    /// <returns>The <see cref="OpenAIFunctionResult"/>, or null if no function was returned by the model.</returns>
-    public static OpenAIFunctionResult? GetFunctionResult(this IChatResult chatResult)
+    /// <returns>The <see cref="OpenAIFunctionResponse"/>, or null if no function was returned by the model.</returns>
+    public static OpenAIFunctionResponse? GetFunctionResponse(this IChatResult chatResult)
     {
-        OpenAIFunctionResult? functionResult = null;
+        OpenAIFunctionResponse? functionResponse = null;
         var functionCall = chatResult.ModelResult.GetResult<ChatModelResult>().Choice.Message.FunctionCall;
         if (functionCall is not null)
         {
-            functionResult = OpenAIFunctionResult.FromFunctionCall(functionCall);
+            functionResponse = OpenAIFunctionResponse.FromFunctionCall(functionCall);
         }
-        return functionResult;
+        return functionResponse;
     }
 }

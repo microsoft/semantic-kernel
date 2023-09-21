@@ -23,9 +23,10 @@ public static class FunctionViewExtensions
             openAIParams.Add(new OpenAIFunctionParameter
             {
                 Name = param.Name,
-                Description = param.Description ?? string.Empty,
+                Description = (param.Description ?? string.Empty)
+                    + (string.IsNullOrEmpty(param.DefaultValue) ? string.Empty : $" (default value: {param.DefaultValue})"),
                 Type = param.Type?.Name ?? "string",
-                IsRequired = param.IsRequired,
+                IsRequired = param.IsRequired ?? false
             });
         }
 

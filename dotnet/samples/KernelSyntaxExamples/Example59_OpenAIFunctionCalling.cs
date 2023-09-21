@@ -74,17 +74,17 @@ public static class Example59_OpenAIFunctionCalling
         }
 
         // Check for function response
-        OpenAIFunctionResult? functionResult = chatResult.GetFunctionResult();
-        if (functionResult is not null)
+        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
+        if (functionResponse is not null)
         {
-            Console.WriteLine("Function name: " + functionResult.FunctionName);
-            Console.WriteLine("Plugin name: " + functionResult.PluginName);
+            Console.WriteLine("Function name: " + functionResponse.FunctionName);
+            Console.WriteLine("Plugin name: " + functionResponse.PluginName);
             Console.WriteLine("Arguments: ");
 
             var context = kernel.CreateNewContext();
-            if (context.Skills!.TryGetFunction(functionResult.PluginName, functionResult.FunctionName, out ISKFunction? func))
+            if (context.Skills!.TryGetFunction(functionResponse.PluginName, functionResponse.FunctionName, out ISKFunction? func))
             {
-                foreach (var parameter in functionResult.Parameters)
+                foreach (var parameter in functionResponse.Parameters)
                 {
                     Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
 
@@ -98,7 +98,7 @@ public static class Example59_OpenAIFunctionCalling
             }
             else
             {
-                Console.WriteLine($"Error: Function {functionResult.PluginName}.{functionResult.FunctionName} not found.");
+                Console.WriteLine($"Error: Function {functionResponse.PluginName}.{functionResponse.FunctionName} not found.");
             }
         }
     }

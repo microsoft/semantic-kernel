@@ -38,7 +38,8 @@ public sealed class FunctionViewExtensionsTests
             Name = "param1",
             Description = "This is param1",
             IsRequired = false,
-            Type = new ParameterViewType("int")
+            Type = new ParameterViewType("int"),
+            DefaultValue = "1"
         };
         var sut = new FunctionView
         {
@@ -55,7 +56,7 @@ public sealed class FunctionViewExtensionsTests
         // Assert
         Assert.Equal("int", outputParam.Type);
         Assert.Equal(param1.Name, outputParam.Name);
-        Assert.Equal(param1.Description, outputParam.Description);
+        Assert.Equal("This is param1 (default value: 1)", outputParam.Description);
         Assert.Equal(param1.IsRequired, outputParam.IsRequired);
     }
 
