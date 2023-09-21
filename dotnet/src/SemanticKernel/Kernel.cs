@@ -155,84 +155,55 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ISKFunction skFunction,
+    public async Task<SKContext> RunAsync(ISKFunction skFunction,
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default)
-        => this.RunAsync(variables ?? new(), cancellationToken, skFunction);
-
-    /// <inheritdoc/>
-    public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), pipeline);
-
-    /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), pipeline);
-
-    /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
-        => this.RunAsync(variables, CancellationToken.None, pipeline);
-
-    /// <inheritdoc/>
-    public Task<SKContext> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
-
-    /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
-
-    /// <inheritdoc/>
-    public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = new SKContext(this, variables);
 
-        int pipelineStepCount = 0;
-        foreach (ISKFunction skFunction in pipeline)
+        var functionDetails = skFunction.Describe();
+
+        bool repeatRequested;
+        SKContext result;
+
+        try
         {
-repeat:
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
+            do
             {
-                var functionDetails = skFunction.Describe();
+                cancellationToken.ThrowIfCancellationRequested();
 
+                repeatRequested = false;
+
+                // Pre-function event
                 var functionInvokingArgs = this.OnFunctionInvoking(functionDetails, context);
-                if (functionInvokingArgs?.CancelToken.IsCancellationRequested ?? false)
+                functionInvokingArgs?.CancelToken.ThrowIfCancellationRequested();
+
+                if (functionInvokingArgs?.IsSkipRequested == true)
                 {
-                    this._logger.LogInformation("Execution was cancelled on function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
-                    break;
+                    this._logger.LogInformation("Execution was skipped on function invoking event: {SkillName}.{FunctionName}.", skFunction.SkillName, skFunction.Name);
+                    return context;
                 }
 
-                if (functionInvokingArgs?.IsSkipRequested ?? false)
+                // Invoke the Function
+                result = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                // Post-function event
+                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, result);
+                functionInvokedArgs?.CancelToken.ThrowIfCancellationRequested();
+
+                if (functionInvokedArgs?.IsRepeatRequested == true)
                 {
-                    this._logger.LogInformation("Execution was skipped on function invoking event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
-                    continue;
+                    this._logger.LogInformation("Execution repeat request on function invoked event: {SkillName}.{FunctionName}.", skFunction.SkillName, skFunction.Name);
                 }
-
-                context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, context);
-                if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
-                {
-                    this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
-                    break;
-                }
-
-                if (functionInvokedArgs?.IsRepeatRequested ?? false)
-                {
-                    this._logger.LogInformation("Execution repeat request on function invoked event of pipeline step {StepCount}: {SkillName}.{FunctionName}.", pipelineStepCount, skFunction.SkillName, skFunction.Name);
-                    goto repeat;
-                }
-            }
-            catch (Exception ex)
-            {
-                this._logger.LogError("Plugin {Plugin} function {Function} call fail during pipeline step {Step} with error {Error}:", skFunction.SkillName, skFunction.Name, pipelineStepCount, ex.Message);
-                throw;
-            }
-
-            pipelineStepCount++;
+            } while (repeatRequested);
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError("Plugin {Plugin} function {Function} call fail with error {Error}:", skFunction.SkillName, skFunction.Name, ex.Message);
+            throw;
         }
 
-        return context;
+        return result;
     }
 
     /// <inheritdoc/>

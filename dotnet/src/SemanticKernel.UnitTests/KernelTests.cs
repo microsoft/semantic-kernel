@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
@@ -257,31 +259,36 @@ public class KernelTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
+    public async Task RunAsyncHandlesPreInvocationAsync(int planStepCount)
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests", functionName: "unittest");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            invoked++;
+            if (e.FunctionView.Name == "unittest")
+            {
+                invoked++;
+            }
         };
-        List<ISKFunction> functions = new();
-        for (int i = 0; i < pipelineCount; i++)
+
+        Plan plan = new("testing");
+        for (int i = 0; i < planStepCount; i++)
         {
-            functions.Add(semanticFunction);
+            plan.AddSteps(semanticFunction);
         }
 
         // Act
-        var result = await sut.RunAsync(functions.ToArray());
+        var result = await sut.RunAsync(plan);
 
         // Assert
-        Assert.Equal(pipelineCount, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        Assert.Equal(planStepCount, invoked);
+
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(planStepCount));
     }
 
     [Fact]
@@ -299,11 +306,10 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(input, semanticFunction);
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await sut.RunAsync(input, semanticFunction));
 
         // Assert
         Assert.True(invoked);
-        Assert.Equal(input, result.Result);
     }
 
     [Fact]
@@ -323,7 +329,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(semanticFunction, semanticFunction);
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await sut.RunAsync(semanticFunction, semanticFunction));
 
         // Assert
         Assert.Equal(1, invoked);
@@ -349,7 +355,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(semanticFunction);
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await sut.RunAsync(semanticFunction));
 
         // Assert
         Assert.Equal(0, invoked);
@@ -364,44 +370,71 @@ public class KernelTests
         var semanticFunction1 = sut.CreateSemanticFunction("Write one phrase about UnitTests", functionName: "SkipMe");
         var semanticFunction2 = sut.CreateSemanticFunction("Write two phrases about UnitTests", functionName: "DontSkipMe");
         semanticFunction2.SetAIService(() => mockTextCompletion.Object);
-        var invoked = 0;
-        var invoking = 0;
+        var planInvoked = 0;
+        var functionInvoked = 0;
+        var planInvoking = 0;
+        var functionInvoking = 0;
         string invokedFunction = string.Empty;
 
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            invoking++;
             if (e.FunctionView.Name == "SkipMe")
             {
+                functionInvoking++;
                 e.Skip();
+            }
+            else if (e.FunctionView.Name == "DontSkipMe")
+            {
+                functionInvoking++;
+            }
+            else
+            {
+                planInvoking++;
             }
         };
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invokedFunction = e.FunctionView.Name;
-            invoked++;
+            if (e.FunctionView.Name == "SkipMe" ||
+                e.FunctionView.Name == "DontSkipMe")
+            {
+                invokedFunction = e.FunctionView.Name;
+                functionInvoked++;
+            }
+            else
+            {
+                planInvoked++;
+            }
         };
 
-        // Act
-        var result = await sut.RunAsync(
+        Plan plan = new("testing",
             semanticFunction1,
             semanticFunction2);
 
+        // Act
+        var result = await sut.RunAsync(plan);
+
         // Assert
-        Assert.Equal(2, invoking);
-        Assert.Equal(1, invoked);
+
+        // FunctionInvoking event should be invoked once for the (containing) Plan, and once for each function in the Plan.
+        Assert.Equal(1, planInvoking);
+        Assert.Equal(2, functionInvoking);
+
+        // FunctionInvoked event should be invoked once for each function in the Plan that was NOT skipped, then once for the (containing) Plan.
+        Assert.Equal(1, functionInvoked);
+        Assert.Equal(1, planInvoked);
+
         Assert.Equal("DontSkipMe", invokedFunction);
     }
 
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
+    public async Task RunAsyncHandlesPostInvocationAsync(int planStepCount)
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests", functionName: "unittest");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
@@ -409,21 +442,24 @@ public class KernelTests
 
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
-            invoked++;
+            if (e.FunctionView.Name == "unittest")
+            {
+                invoked++;
+            }
         };
 
-        List<ISKFunction> functions = new();
-        for (int i = 0; i < pipelineCount; i++)
+        Plan plan = new("goal");
+        for (int i = 0; i < planStepCount; i++)
         {
-            functions.Add(semanticFunction);
+            plan.AddSteps(semanticFunction);
         }
 
         // Act
-        var result = await sut.RunAsync(functions.ToArray());
+        var result = await sut.RunAsync(plan);
 
         // Assert
-        Assert.Equal(pipelineCount, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        Assert.Equal(planStepCount, invoked);
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(planStepCount));
     }
 
     [Fact]

@@ -244,15 +244,15 @@ public sealed class Plan : IPlan
     {
         if (this.HasNextStep)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var step = this.Steps[this.NextStepIndex];
 
             // Merge the state with the current context variables for step execution
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var functionContext = new SKContext(context.Kernel, functionVariables, context.Skills);
-
-            var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var result = await context.Kernel.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
             var resultValue = result.Result.Trim();
 
