@@ -220,7 +220,7 @@ public class KernelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.Completion = new AIRequestSettings() { ServiceId = "service1" };
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         await kernel.RunAsync(func);
@@ -244,7 +244,7 @@ public class KernelTests
 
         var templateConfig = new PromptTemplateConfig();
         templateConfig.Completion = new AIRequestSettings() { ServiceId = "service3" };
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));

@@ -274,7 +274,7 @@ public sealed class PlanSerializationTests
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "skillName"));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -334,7 +334,7 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testPlugin")
         {
             Parameters = new ParameterView[]
             {
@@ -403,7 +403,7 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
             .Returns(() => Task.FromResult(returnContext));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testPlugin")
         {
             Parameters = new ParameterView[]
             {

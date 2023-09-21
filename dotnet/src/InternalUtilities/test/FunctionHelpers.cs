@@ -11,7 +11,7 @@ namespace SemanticKernel.UnitTests;
 internal static class FunctionHelpers
 {
     /// <summary>
-    /// Invokes a function on a skill instance via the kernel.
+    /// Invokes a function on a plugin instance via the kernel.
     /// </summary>
     public static Task<SKContext> CallViaKernelAsync(
         object pluginInstance,
