@@ -55,6 +55,6 @@ internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposa
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlyFunctionCollection? skills = null)
-        => this._kernel.CreateNewContext(variables, skills);
+    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlyFunctionCollection? functions = null)
+        => this._kernel.CreateNewContext(variables, functions);
 }
