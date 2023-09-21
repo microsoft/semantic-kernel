@@ -5,81 +5,81 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using RepoUtils;
 using Plugins;
+using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example10_DescribeAllPluginsAndFunctions
 {
-  /// <summary>
-  /// Print a list of all the functions imported into the kernel, including function descriptions,
-  /// list of parameters, parameters descriptions, etc.
-  /// See the end of the file for a sample of what the output looks like.
-  /// </summary>
-  public static Task RunAsync()
-  {
-    Console.WriteLine("======== Describe all plugins and functions ========");
-
-    var kernel = Kernel.Builder
-        .WithOpenAIChatCompletionService(
-            modelId: TestConfiguration.OpenAI.ChatModelId,
-            apiKey: TestConfiguration.OpenAI.ApiKey)
-        .Build();
-
-    // Import a native plugin
-    var plugin1 = new StaticTextPlugin();
-    kernel.ImportPlugin(plugin1, "StaticTextPlugin");
-
-    // Import another native plugin
-    var plugin2 = new TextPlugin();
-    kernel.ImportPlugin(plugin2, "AnotherTextPlugin");
-
-    // Import a semantic plugin
-    string folder = RepoFiles.SamplePluginsPath();
-    kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
-
-    // Define a semantic function inline, without naming
-    var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
-
-    // Define a semantic function inline, with plugin name
-    var sFun2 = kernel.CreateSemanticFunction(
-        "write a novel about {{$input}} in {{$language}} language",
-        pluginName: "Writing",
-        functionName: "Novel",
-        description: "Write a bedtime story",
-        requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
-
-    var functions = kernel.Functions.GetFunctionViews();
-
-    Console.WriteLine("*****************************************");
-    Console.WriteLine("****** Registered plugins and functions ******");
-    Console.WriteLine("*****************************************");
-    Console.WriteLine();
-
-    foreach (FunctionView func in functions)
+    /// <summary>
+    /// Print a list of all the functions imported into the kernel, including function descriptions,
+    /// list of parameters, parameters descriptions, etc.
+    /// See the end of the file for a sample of what the output looks like.
+    /// </summary>
+    public static Task RunAsync()
     {
-      PrintFunction(func);
+        Console.WriteLine("======== Describe all plugins and functions ========");
+
+        var kernel = Kernel.Builder
+            .WithOpenAIChatCompletionService(
+                modelId: TestConfiguration.OpenAI.ChatModelId,
+                apiKey: TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        // Import a native plugin
+        var plugin1 = new StaticTextPlugin();
+        kernel.ImportPlugin(plugin1, "StaticTextPlugin");
+
+        // Import another native plugin
+        var plugin2 = new TextPlugin();
+        kernel.ImportPlugin(plugin2, "AnotherTextPlugin");
+
+        // Import a semantic plugin
+        string folder = RepoFiles.SamplePluginsPath();
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
+
+        // Define a semantic function inline, without naming
+        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+
+        // Define a semantic function inline, with plugin name
+        var sFun2 = kernel.CreateSemanticFunction(
+            "write a novel about {{$input}} in {{$language}} language",
+            pluginName: "Writing",
+            functionName: "Novel",
+            description: "Write a bedtime story",
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+
+        var functions = kernel.Functions.GetFunctionViews();
+
+        Console.WriteLine("*****************************************");
+        Console.WriteLine("****** Registered plugins and functions ******");
+        Console.WriteLine("*****************************************");
+        Console.WriteLine();
+
+        foreach (FunctionView func in functions)
+        {
+            PrintFunction(func);
+        }
+
+        return Task.CompletedTask;
     }
 
-    return Task.CompletedTask;
-  }
-
-  private static void PrintFunction(FunctionView func)
-  {
-    Console.WriteLine($"   {func.Name}: {func.Description}");
-
-    if (func.Parameters.Count > 0)
+    private static void PrintFunction(FunctionView func)
     {
-      Console.WriteLine("      Params:");
-      foreach (var p in func.Parameters)
-      {
-        Console.WriteLine($"      - {p.Name}: {p.Description}");
-        Console.WriteLine($"        default: '{p.DefaultValue}'");
-      }
-    }
+        Console.WriteLine($"   {func.Name}: {func.Description}");
 
-    Console.WriteLine();
-  }
+        if (func.Parameters.Count > 0)
+        {
+            Console.WriteLine("      Params:");
+            foreach (var p in func.Parameters)
+            {
+                Console.WriteLine($"      - {p.Name}: {p.Description}");
+                Console.WriteLine($"        default: '{p.DefaultValue}'");
+            }
+        }
+
+        Console.WriteLine();
+    }
 }
 
 #pragma warning disable CS1587 // XML comment is not placed on a valid language element
