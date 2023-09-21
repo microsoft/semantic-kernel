@@ -182,15 +182,10 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
-        // Mock Functions
-<<<<<<< HEAD
         kernelContext.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
-=======
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns(context);
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
         kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
->>>>>>> fd391faf089e908cf59f15c1e8fdf732fbcbcd85
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),

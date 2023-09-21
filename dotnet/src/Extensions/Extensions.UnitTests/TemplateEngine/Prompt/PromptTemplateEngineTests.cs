@@ -37,7 +37,7 @@ public sealed class PromptTemplateEngineTests
         this._kernel = new Mock<IKernel>();
         this._kernelContext = new Mock<IKernelExecutionContext>();
 
-        this._kernelContext.SetupGet(x => x.Skills).Returns(this._functions.Object);
+        this._kernelContext.SetupGet(x => x.Functions).Returns(this._functions.Object);
     }
 
     [Fact]

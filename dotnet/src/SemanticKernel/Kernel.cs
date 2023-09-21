@@ -254,11 +254,11 @@ repeat:
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlySkillCollection? skills = null)
+    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlyFunctionCollection? functions = null)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var kernelContext = new KernelExecutionContext(
-            skills ?? this._functionCollection,
+            functions ?? new FunctionCollection(this._functionCollection),
             this._aiServiceProvider,
             this.PromptTemplateEngine,
             this.Memory,

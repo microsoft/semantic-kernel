@@ -180,11 +180,11 @@ public interface IKernel
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
-    /// <param name="skills">Provide specific scoped skills. Defaults to all existing in the kernel</param>
+    /// <param name="functions">Provide specific scoped skills. Defaults to all existing in the kernel</param>
     /// <returns>SK context</returns>
     SKContext CreateNewContext(
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null);
+        IReadOnlyFunctionCollection? functions = null);
 
     /// <summary>
     /// Get one of the configured services. Currently limited to AI services.

@@ -62,10 +62,10 @@ public class SequentialPlanParserTests
         var kernelContextMock = new Mock<IKernelExecutionContext>();
 
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>()))
-            .Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>()))
+            .Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
             {
-                kernelContextMock.SetupGet(x => x.Skills).Returns(skills ?? kernelMock.Object.Skills);
+                kernelContextMock.SetupGet(x => x.Functions).Returns(skills ?? kernelMock.Object.Functions);
                 return this.CreateSKContext(kernelContextMock.Object, contextVariables);
             });
 
@@ -103,7 +103,6 @@ public class SequentialPlanParserTests
         }
 
         functionCollection.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-        skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         kernelContextMock.SetupGet(x => x.Functions).Returns(functionCollection.Object);
     }

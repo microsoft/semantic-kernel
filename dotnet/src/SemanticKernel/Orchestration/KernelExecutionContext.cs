@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Orchestration;
@@ -24,10 +23,10 @@ internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposa
     public ILoggerFactory LoggerFactory => this._kernel.LoggerFactory;
 
     /// <inheritdoc/>
-    public IReadOnlySkillCollection Skills => this._kernel.Skills;
+    public IReadOnlyFunctionCollection Functions => this._kernel.Functions;
 
     internal KernelExecutionContext(
-        IReadOnlySkillCollection skillCollection,
+        IReadOnlyFunctionCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
@@ -35,7 +34,7 @@ internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposa
         ILoggerFactory loggerFactory)
     {
         this._kernel = new Kernel(
-            new SkillCollection(skillCollection),
+            new FunctionCollection(skillCollection),
             aiServiceProvider,
             promptTemplateEngine,
             memory,
@@ -56,6 +55,6 @@ internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposa
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlySkillCollection? skills = null)
+    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlyFunctionCollection? skills = null)
         => this._kernel.CreateNewContext(variables, skills);
 }

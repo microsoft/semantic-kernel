@@ -98,7 +98,7 @@ public sealed class SequentialPlannerTests
 
         // Mock Plugins
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),
@@ -155,7 +155,7 @@ public sealed class SequentialPlannerTests
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 
-        var skills = new Mock<ISkillCollection>();
+        var skills = new Mock<IFunctionCollection>();
 
         functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         kernelContext.SetupGet(x => x.Functions).Returns(functions.Object);
@@ -179,8 +179,8 @@ public sealed class SequentialPlannerTests
         kernel.Setup(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<ISKFunction, ContextVariables, CancellationToken>((function, vars, cancellationToken) =>
                 function.InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken));
-        kernelContext.Setup(x => x.Skills).Returns(skills.Object);
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns(context);
+        kernelContext.Setup(x => x.Functions).Returns(skills.Object);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns(context);
 
         kernel.Setup(x => x.RegisterSemanticFunction(
             It.IsAny<string>(),

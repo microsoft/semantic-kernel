@@ -3,7 +3,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -20,7 +19,7 @@ public interface IKernelExecutionContext
     /// <summary>
     /// Read only skills collection
     /// </summary>
-    IReadOnlySkillCollection Skills { get; }
+    IReadOnlyFunctionCollection Functions { get; }
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -38,9 +37,9 @@ public interface IKernelExecutionContext
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
-    /// <param name="skills">Provide specific scoped skills. Defaults to all existing in the kernel</param>
+    /// <param name="functions">Provide specific scoped skills. Defaults to all existing in the kernel</param>
     /// <returns>SK context</returns>
     SKContext CreateNewContext(
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null);
+        IReadOnlyFunctionCollection? functions = null);
 }

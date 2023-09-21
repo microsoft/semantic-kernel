@@ -52,7 +52,7 @@ public class SKContextExtensionsTests
             .Returns(asyncEnumerable);
 
         var kernelContext = new Mock<IKernelExecutionContext>();
-        kernelContext.SetupGet(x => x.Skills).Returns(skills);
+        kernelContext.SetupGet(x => x.Functions).Returns(functions);
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernelContext.Object, variables);
@@ -107,7 +107,7 @@ public class SKContextExtensionsTests
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
         var kernelContext = new Mock<IKernelExecutionContext>();
-        kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
+        kernelContext.SetupGet(x => x.Functions).Returns(functions.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernelContext.Object, variables);
@@ -214,7 +214,7 @@ public class SKContextExtensionsTests
         var functions = new FunctionCollection();
         var cancellationToken = default(CancellationToken);
 
-        kernelContext.SetupGet(x => x.Skills).Returns(skills);
+        kernelContext.SetupGet(x => x.Functions).Returns(functions);
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();

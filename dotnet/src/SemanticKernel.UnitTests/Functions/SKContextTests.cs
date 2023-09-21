@@ -14,7 +14,6 @@ namespace SemanticKernel.UnitTests.Functions;
 public class SKContextTests
 {
     private readonly Mock<IReadOnlyFunctionCollection> _functions = new();
-    private readonly Mock<IKernel> _kernel;
 
     [Fact]
     public void ItHasHelpersForContextVariables()
@@ -58,25 +57,25 @@ public class SKContextTests
         Assert.Equal("ciao", result.Result);
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IKernelExecutionContext> kernelContextMock) SetupKernelMock(ISkillCollection? skills = null)
+    private (Mock<IKernel> kernelMock, Mock<IKernelExecutionContext> kernelContextMock) SetupKernelMock(IReadOnlyFunctionCollection? skills = null)
     {
-        skills ??= new Mock<ISkillCollection>().Object;
+        skills ??= new Mock<IFunctionCollection>().Object;
 
         var kernel = new Mock<IKernel>();
         var kernelContext = new Mock<IKernelExecutionContext>();
 
-        kernel.SetupGet(x => x.Skills).Returns(skills);
-        kernelContext.SetupGet(x => x.Skills).Returns(skills);
-        kernel.SetupGet(x => x.Skills).Returns(skills);
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        kernel.SetupGet(x => x.Functions).Returns(skills);
+        kernelContext.SetupGet(x => x.Functions).Returns(skills);
+        kernel.SetupGet(x => x.Functions).Returns(skills);
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
         {
-            kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            kernelContext.SetupGet(x => x.Functions).Returns(skills ?? kernel.Object.Functions);
             return new SKContext(kernelContext.Object, contextVariables);
         });
 
-        kernelContext.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>())).Returns<ContextVariables, IReadOnlySkillCollection>((contextVariables, skills) =>
+        kernelContext.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
         {
-            kernelContext.SetupGet(x => x.Skills).Returns(skills ?? kernel.Object.Skills);
+            kernelContext.SetupGet(x => x.Functions).Returns(skills ?? kernel.Object.Functions);
             return new SKContext(kernelContext.Object, contextVariables);
         });
 
