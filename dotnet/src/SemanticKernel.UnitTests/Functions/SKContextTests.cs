@@ -61,6 +61,7 @@ public class SKContextTests
 
         // Assert
         Assert.Equal("ciao", result.Context.Result);
+        Assert.Equal("ciao", result.GetValue<string>());
     }
 
     private sealed class Parrot

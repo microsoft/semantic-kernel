@@ -359,6 +359,8 @@ public sealed class Plan : IPlan
                 AddVariablesToContext(this.State, context);
                 await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
                 this.UpdateContextWithOutputs(context);
+
+                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
             }
         }
 

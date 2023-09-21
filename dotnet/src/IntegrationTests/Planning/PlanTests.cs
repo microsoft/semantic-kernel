@@ -119,7 +119,7 @@ public sealed class PlanTests : IDisposable
     }
 
     [Fact]
-    public async Task CanExecutePanWithTreeStepsAsync()
+    public async Task CanExecutePlanWithTreeStepsAsync()
     {
         // Arrange
         IKernel target = this.InitializeKernel();
