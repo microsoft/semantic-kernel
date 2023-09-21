@@ -121,7 +121,7 @@ internal static class Example31_CustomPlanner
 #pragma warning restore CA2000 // Dispose objects before losing scope
         var search = kernel.ImportPlugin(bing, "bing");
 
-        return kernel.ImportSemanticFunctionsFromDirectory(folder, "QASkill");
+        return kernel.ImportSemanticPluginFromDirectory(folder, "QASkill");
     }
 
     private static IKernel InitializeKernel()

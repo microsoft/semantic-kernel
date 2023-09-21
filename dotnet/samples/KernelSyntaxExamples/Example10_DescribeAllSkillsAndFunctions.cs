@@ -36,7 +36,7 @@ public static class Example10_DescribeAllSkillsAndFunctions
 
         // Import a semantic skill
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
 
         // Define a semantic function inline, without naming
         var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });

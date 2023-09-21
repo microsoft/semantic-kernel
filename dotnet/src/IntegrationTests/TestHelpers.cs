@@ -36,6 +36,6 @@ internal static class TestHelpers
 
         string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
 
-        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginNames);
+        return kernel.ImportSemanticPluginFromDirectory(parentDirectory, pluginNames);
     }
 }

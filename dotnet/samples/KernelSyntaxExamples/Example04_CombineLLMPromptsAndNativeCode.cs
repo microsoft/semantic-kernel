@@ -43,7 +43,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
 
-        var sumSkill = kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizeSkill");
+        var sumSkill = kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
 
         // Run
         var ask = "What's the tallest building in South America";

@@ -112,7 +112,7 @@ public static class Example08_RetryHandler
 
         kernel.ImportPlugin(new TimePlugin(), "time");
 
-        var qaSkill = kernel.ImportSemanticFunctionsFromDirectory(
+        var qaSkill = kernel.ImportSemanticPluginFromDirectory(
             folder,
             "QASkill");
 

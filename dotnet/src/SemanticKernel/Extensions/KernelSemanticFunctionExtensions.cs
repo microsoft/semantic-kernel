@@ -124,12 +124,12 @@ public static class InlineFunctionsDefinitionExtension
     public static IDictionary<string, ISKFunction> ImportSemanticSkillFromDirectory(
         this IKernel kernel, string parentDirectory, params string[] pluginDirectoryNames)
     {
-        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginDirectoryNames);
+        return kernel.ImportSemanticPluginFromDirectory(parentDirectory, pluginDirectoryNames);
     }
 #pragma warning restore CS1591
 
     /// <summary>
-    /// Loads semantic functions, defined by prompt templates stored in the filesystem.
+    /// Imports semantic functions, defined by prompt templates stored in the filesystem.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -175,7 +175,7 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="parentDirectory">Directory containing the plugin directory, e.g. "d:\myAppPlugins"</param>
     /// <param name="pluginDirectoryNames">Name of the directories containing the selected plugins, e.g. "StrategyPlugin"</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
+    public static IDictionary<string, ISKFunction> ImportSemanticPluginFromDirectory(
         this IKernel kernel, string parentDirectory, params string[] pluginDirectoryNames)
     {
         const string ConfigFile = "config.json";

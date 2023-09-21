@@ -68,7 +68,7 @@ public static class Example52_ApimAuth
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
 
-        var funSkill = kernel.ImportSemanticFunctionsFromDirectory(
+        var funSkill = kernel.ImportSemanticPluginFromDirectory(
             folder,
             "FunSkill");
 

@@ -23,9 +23,9 @@ public static class Example28_ActionPlanner
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizeSkill");
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "WriterSkill");
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "FunSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "FunSkill");
 
         // Create an optional config for the ActionPlanner. Use this to exclude skills and functions if needed
         var config = new ActionPlannerConfig();

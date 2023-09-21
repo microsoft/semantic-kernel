@@ -32,7 +32,7 @@ internal static class Example12_SequentialPlanner
 
         // Load additional skills to enable planner but not enough for the given goal.
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
 
         try
         {
@@ -78,7 +78,7 @@ internal static class Example12_SequentialPlanner
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder,
+        kernel.ImportSemanticPluginFromDirectory(folder,
            "SummarizeSkill",
            "WriterSkill");
 
@@ -110,7 +110,7 @@ internal static class Example12_SequentialPlanner
 
         // Load additional skills to enable planner to do non-trivial asks.
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder,
+        kernel.ImportSemanticPluginFromDirectory(folder,
            "SummarizeSkill",
            "WriterSkill");
 
@@ -198,8 +198,8 @@ internal static class Example12_SequentialPlanner
 
         // Load additional skills to enable planner to do non-trivial asks.
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "WriterSkill");
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "MiscSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "WriterSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "MiscSkill");
 
         var originalPlan = await planner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
 
@@ -230,7 +230,7 @@ internal static class Example12_SequentialPlanner
         var kernel = InitializeKernelWithMemory();
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder,
+        kernel.ImportSemanticPluginFromDirectory(folder,
            "SummarizeSkill",
            "WriterSkill",
            "CalendarSkill",

@@ -26,7 +26,7 @@ public static class Example09_FunctionTypes
         var test = kernel.ImportPlugin(new LocalExampleSkill(), "test");
 
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizeSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
 
         // The kernel takes care of wiring the input appropriately
         await kernel.RunAsync(
