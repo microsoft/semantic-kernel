@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Web;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 

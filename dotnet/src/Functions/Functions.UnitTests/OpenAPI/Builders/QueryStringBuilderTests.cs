@@ -303,20 +303,20 @@ public class QueryStringBuilderTests
         var metadata = new List<RestApiOperationParameter>
         {
             new RestApiOperationParameter(
-                "p1",
-                "array",
-                false,
-                true,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.SpaceDelimited,
+                name: "p1",
+                type: "array",
+                isRequired: false,
+                expand: true,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.SpaceDelimited,
                 arrayItemType: "string"),
             new RestApiOperationParameter(
-                "p2",
-                "array",
-                false,
-                true,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.SpaceDelimited,
+                name: "p2",
+                type: "array",
+                isRequired: false,
+                expand: true,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.SpaceDelimited,
                 arrayItemType: "integer")
         };
 
@@ -344,20 +344,20 @@ public class QueryStringBuilderTests
         var metadata = new List<RestApiOperationParameter>
         {
             new RestApiOperationParameter(
-                "p1",
-                "array",
-                false,
-                false,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.SpaceDelimited,
+                name: "p1",
+                type: "array",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.SpaceDelimited,
                 arrayItemType: "string"),
             new RestApiOperationParameter(
-                "p2",
-                "array",
-                false,
-                false,
-                RestApiOperationParameterLocation.Query,
-                RestApiOperationParameterStyle.SpaceDelimited,
+                name: "p2",
+                type: "array",
+                isRequired: false,
+                expand: false,
+                location: RestApiOperationParameterLocation.Query,
+                style: RestApiOperationParameterStyle.SpaceDelimited,
                 arrayItemType: "integer")
         };
 
@@ -386,7 +386,6 @@ public class QueryStringBuilderTests
         {
             //'Form' style array parameter with comma separated values
             new RestApiOperationParameter(name: "p1", type: "array", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form, arrayItemType: "string"),
-
 
             //'Form' style primitive boolean parameter
             new RestApiOperationParameter(name: "p2", type: "boolean", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Query, style: RestApiOperationParameterStyle.Form),
