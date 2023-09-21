@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -449,6 +451,45 @@ public class KernelTests
         Assert.Equal(newInput, originalInput);
     }
 
+    [Fact]
+    public async Task ItReturnsFunctionResultsCorrectlyAsync()
+    {
+        // Arrange
+        [SKName("Function1")]
+        static string Function1() => "Result1";
+
+        [SKName("Function2")]
+        static string Function2() => "Result2";
+
+        const string PluginName = "MyPlugin";
+        const string Prompt = "Write a simple phrase about UnitTests";
+
+        var kernel = Kernel.Builder.Build();
+
+        var function1 = SKFunction.FromNativeMethod(Method(Function1), skillName: PluginName);
+        var function2 = SKFunction.FromNativeMethod(Method(Function2), skillName: PluginName);
+
+        var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", skillName: PluginName);
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
+
+        function3.SetAIService(() => mockTextCompletion.Object);
+
+        // Act
+        var kernelResult = await kernel.RunAsync(function1, function2, function3);
+
+        // Assert
+        Assert.NotNull(kernelResult);
+        Assert.Equal("Result3", kernelResult.GetValue<string>());
+
+        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1" && l.PluginName == PluginName);
+        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == PluginName);
+        var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3" && l.PluginName == PluginName);
+
+        Assert.Equal("Result1", functionResult1.GetValue<string>());
+        Assert.Equal("Result2", functionResult2.GetValue<string>());
+        Assert.Equal("Result3", functionResult3.GetValue<string>());
+    }
+
     public class MySkill
     {
         [SKFunction, Description("Return any value.")]
@@ -482,14 +523,19 @@ public class KernelTests
         }
     }
 
-    private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks()
+    private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
     {
         var mockTextResult = new Mock<ITextResult>();
-        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("LLM Result about UnitTests");
+        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
 
         var mockTextCompletion = new Mock<ITextCompletion>();
         mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
 
         return (mockTextResult, mockTextCompletion);
+    }
+
+    private static MethodInfo Method(Delegate method)
+    {
+        return method.Method;
     }
 }
