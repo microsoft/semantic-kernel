@@ -343,10 +343,10 @@ repeat:
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultSkillCollection(this.Skills);
 
-        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion.ServiceId));
+        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
 
         return func;
     }
