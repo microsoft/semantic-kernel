@@ -88,7 +88,7 @@ her a beggar. My father came to her aid and two years later they married.
         context.Variables.Set("topic", "people and places");
         context.Variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
 
-        var extractionResult = (await entityExtraction.InvokeAsync(context)).GetValue<string>();
+        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).GetValue<string>();
 
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
@@ -96,7 +96,7 @@ her a beggar. My father came to her aid and two years later they married.
         context.Variables.Update(extractionResult);
         context.Variables.Set("reference_context", s_groundingText);
 
-        var groundingResult = (await reference_check.InvokeAsync(context)).GetValue<string>();
+        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).GetValue<string>();
 
         Console.WriteLine("======== Reference Check ========");
         Console.WriteLine(groundingResult);

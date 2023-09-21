@@ -21,7 +21,7 @@ public sealed class KernelResult
     internal object? Value { get; private set; } = null;
 
     /// <summary>
-    /// Returns function result value.
+    /// Returns kernel result value.
     /// </summary>
     /// <typeparam name="T">Target type for result value casting.</typeparam>
     /// <exception cref="InvalidCastException">Thrown when it's not possible to cast result value to <typeparamref name="T"/>.</exception>
