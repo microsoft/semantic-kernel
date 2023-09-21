@@ -92,14 +92,7 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
     /// <inheritdoc />
     public FunctionView Describe()
     {
-        return new FunctionView
-        {
-            IsSemantic = IsSemantic,
-            Name = Name,
-            SkillName = SkillName,
-            Description = Description,
-            Parameters = CallableFunctions.Select(f => new ParameterView(f.Name, f.Description)).ToList()
-        };
+        return new FunctionView(Name, SkillName, Description, CallableFunctions.Select(f => new ParameterView(f.Name, f.Description)).ToList());
     }
 
 
@@ -332,7 +325,10 @@ public sealed class SKFunctionCall : ISKFunction, IDisposable
             throw new SKException($"The function {functionCallResult.Function} is not available");
         }
         // Update the result with the completion
-        context.Variables.Update(functionCallResult.FunctionParameters());
+        foreach (var item in functionCallResult.FunctionParameters())
+        {
+            context.Variables[item.Key] = item.Value;
+        }
 
         if (_functionToCall != null)
         {

@@ -46,10 +46,6 @@ public abstract class ClientBase
     /// </summary>
     protected private abstract OpenAIClient Client { get; }
 
-    protected private List<FunctionDefinition> GlobalFunctions { get; } = new();
-
-    protected private Dictionary<string, Func<string, CancellationToken, Task<string>>> Calls { get; set; } = new();
-
     /// <summary>
     /// Logger instance
     /// </summary>
