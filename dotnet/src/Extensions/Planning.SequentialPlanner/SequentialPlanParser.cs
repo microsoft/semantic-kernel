@@ -6,9 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Diagnostics;
-using Orchestration;
-using SkillDefinition;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 
 
 /// <summary>
@@ -28,7 +27,7 @@ internal static class SequentialPlanParser
     internal const string SolutionTag = "plan";
 
     /// <summary>
-    /// The tag name used in the plan xml for a step that calls a skill function.
+    /// The tag name used in the plan xml for a step that calls a plugin function.
     /// </summary>
     internal const string FunctionTag = "function.";
 
@@ -42,20 +41,20 @@ internal static class SequentialPlanParser
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
 
-    internal static Func<string, string, ISKFunction?> GetSkillFunction(IReadOnlySkillCollection skills)
+    internal static Func<string, string, ISKFunction?> GetPluginFunction(IReadOnlyFunctionCollection functions)
     {
-        return (skillName, functionName) =>
+        return (pluginName, functionName) =>
         {
-            if (string.IsNullOrEmpty(skillName))
+            if (string.IsNullOrEmpty(pluginName))
             {
-                if (skills.TryGetFunction(functionName, out var skillFunction))
+                if (functions.TryGetFunction(functionName, out var pluginFunction))
                 {
-                    return skillFunction;
+                    return pluginFunction;
                 }
             }
-            else if (skills.TryGetFunction(skillName, functionName, out var skillFunction))
+            else if (functions.TryGetFunction(pluginName, functionName, out var pluginFunction))
             {
-                return skillFunction;
+                return pluginFunction;
             }
 
             return null;
@@ -68,11 +67,11 @@ internal static class SequentialPlanParser
     /// </summary>
     /// <param name="xmlString">The plan xml string.</param>
     /// <param name="goal">The goal for the plan.</param>
-    /// <param name="getSkillFunction">The callback to get a skill function.</param>
+    /// <param name="getPluginFunction">The callback to get a plugin function.</param>
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="SKException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getSkillFunction, bool allowMissingFunctions = false)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getPluginFunction, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
 
@@ -139,22 +138,23 @@ internal static class SequentialPlanParser
 
                 if (childNode.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    var skillFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
-                    GetSkillFunctionNames(skillFunctionName, out var skillName, out var functionName);
+                    var pluginFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
+                    GetPluginFunctionNames(pluginFunctionName, out var pluginName, out var functionName);
 
                     if (!string.IsNullOrEmpty(functionName))
                     {
-                        var skillFunction = getSkillFunction(skillName, functionName);
+                        var pluginFunction = getPluginFunction(pluginName, functionName);
 
-                        if (skillFunction is not null)
+                        if (pluginFunction is not null)
                         {
-                            var planStep = new Plan(skillFunction);
+                            var planStep = new Plan(pluginFunction);
 
                             var functionVariables = new ContextVariables();
                             List<string> functionOutputs = new List<string>();
                             List<string> functionResults = new List<string>();
 
-                            var view = skillFunction.Describe();
+
+                            var view = pluginFunction.Describe();
 
                             foreach (var p in view.Parameters)
                             {
@@ -196,11 +196,11 @@ internal static class SequentialPlanParser
                         {
                             if (allowMissingFunctions)
                             {
-                                plan.AddSteps(new Plan(skillFunctionName));
+                                plan.AddSteps(new Plan(pluginFunctionName));
                             }
                             else
                             {
-                                throw new SKException($"Failed to find function '{skillFunctionName}' in skill '{skillName}'.");
+                                throw new SKException($"Failed to find function '{pluginFunctionName}' in plugin '{pluginName}'.");
                             }
                         }
                     }
@@ -214,12 +214,11 @@ internal static class SequentialPlanParser
         return plan;
     }
 
-
-    private static void GetSkillFunctionNames(string skillFunctionName, out string skillName, out string functionName)
+    private static void GetPluginFunctionNames(string pluginFunctionName, out string pluginName, out string functionName)
     {
-        var skillFunctionNameParts = skillFunctionName.Split('.');
-        skillName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[0] : string.Empty;
-        functionName = skillFunctionNameParts?.Length > 1 ? skillFunctionNameParts[1] : skillFunctionName;
+        var pluginFunctionNameParts = pluginFunctionName.Split('.');
+        pluginName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[0] : string.Empty;
+        functionName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[1] : pluginFunctionName;
     }
 
 

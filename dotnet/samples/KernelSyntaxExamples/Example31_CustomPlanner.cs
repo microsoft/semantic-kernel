@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.SkillDefinition;
+
 using RepoUtils;
 
 // ReSharper disable CommentTypo
@@ -30,13 +30,13 @@ internal static class Example31_CustomPlanner
         SKContext context = CreateContextQueryContext(kernel);
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
-        kernel.ImportSkill(new TextMemoryPlugin(kernel.Memory));
+        kernel.ImportPlugin(new TextMemoryPlugin(kernel.Memory));
 
         // Setup defined memories for recall
         await RememberFactsAsync(kernel);
 
         // MarkupSkill named "markup"
-        var markup = kernel.ImportSkill(new MarkupSkill(), "markup");
+        var markup = kernel.ImportPlugin(new MarkupSkill(), "markup");
 
         // contextQuery "Who is my president? Who was president 3 years ago? What should I eat for dinner" | markup
         // Create a plan to execute the ContextQuery and then run the markup skill on the output
@@ -87,7 +87,7 @@ internal static class Example31_CustomPlanner
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportSkill(new TextMemoryPlugin(kernel.Memory));
+        kernel.ImportPlugin(new TextMemoryPlugin(kernel.Memory));
 
         List<string> memoriesToSave = new()
         {
@@ -115,13 +115,13 @@ internal static class Example31_CustomPlanner
     private static IDictionary<string, ISKFunction> LoadQASkill(IKernel kernel)
     {
         string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportPlugin(new TimePlugin(), "time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var bing = new WebSearchEnginePlugin(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        var search = kernel.ImportSkill(bing, "bing");
+        var search = kernel.ImportPlugin(bing, "bing");
 
-        return kernel.ImportSemanticSkillFromDirectory(folder, "QASkill");
+        return kernel.ImportSemanticPluginFromDirectory(folder, "QASkill");
     }
 
     private static IKernel InitializeKernel()
@@ -200,8 +200,8 @@ public static class XmlMarkupPlanParser
             else
             {
                 if (string.IsNullOrEmpty(skillName)
-                        ? !context.Skills!.TryGetFunction(functionName, out var _)
-                        : !context.Skills!.TryGetFunction(skillName, functionName, out var _))
+                        ? !context.Functions!.TryGetFunction(functionName, out var _)
+                        : !context.Functions!.TryGetFunction(skillName, functionName, out var _))
                 {
                     var planStep = new Plan(node.InnerText);
                     planStep.Parameters.Update(node.InnerText);
@@ -212,8 +212,8 @@ public static class XmlMarkupPlanParser
                 else
                 {
                     var command = string.IsNullOrEmpty(skillName)
-                        ? context.Skills.GetFunction(functionName)
-                        : context.Skills.GetFunction(skillName, functionName);
+                        ? context.Functions.GetFunction(functionName)
+                        : context.Functions.GetFunction(skillName, functionName);
                     var planStep = new Plan(command);
                     planStep.Parameters.Update(node.InnerText);
                     planStep.Outputs.Add($"markup.{functionName}.result");

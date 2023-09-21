@@ -77,8 +77,11 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
         {
             if (!_isFunctionCall)
             {
+              if (!string.IsNullOrWhiteSpace(message.Content))
+              {
                 yield return new SKChatMessage(message);
-
+              }
+              
                 continue;
             }
 
@@ -99,6 +102,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
                               $"Cleaned Version: {content}");
 
             yield return new SKChatMessage(AuthorRole.FunctionCall.Label, content, functionName);
+           
         }
     }
 
@@ -112,7 +116,10 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     {
         await foreach (var result in GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
         {
-            yield return result.Content;
+            if (!string.IsNullOrWhiteSpace(result.Content))
+            {
+                yield return result.Content;
+            }
         }
     }
 }
