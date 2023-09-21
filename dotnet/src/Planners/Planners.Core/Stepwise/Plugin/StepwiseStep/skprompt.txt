@@ -1,0 +1,43 @@
+[INSTRUCTION]
+Answer the following questions as accurately as possible using the provided functions.
+
+{{$functionDescriptions}}
+[USAGE INSTRUCTIONS]
+To use the functions, specify a JSON blob representing an action. The JSON blob should contain an "action" key with the name of the function to use, and an "action_variables" key with a JSON object of string values to use when calling the function.
+Do not call functions directly; they must be invoked through an action.
+The keys in "action_variables" value should match the defined [PARAMETERS] of the named "action" in [AVAILABLE FUNCTIONS].
+The values in "action_variables" must be of type string and represent the actual values to be passed to the function. Do not attempt to pass a variable name or other reference to a function.
+If a function has no parameters, the "action_variables" key may be omitted.
+Ensure that the $JSON_BLOB contains only a SINGLE action; do NOT return multiple actions.
+IMPORTANT: Use only the available functions listed in the [AVAILABLE FUNCTIONS] section. Do not attempt to use any other functions that are not specified.
+
+Here is an example of a valid $JSON_BLOB:
+{
+  "action": "FUNCTION.NAME",
+  "action_variables": {"PARAMETER_NAME": "some value", "PARAMETER_NAME_2": "42"}
+}
+
+Here is an example of a valid $JSON_BLOB with no parameters:
+{
+  "action": "FUNCTION.NAME"
+}
+
+[END USAGE INSTRUCTIONS]
+[END INSTRUCTION]
+
+[VALID STEP LIST]
+[QUESTION] - The input question I must answer
+[THOUGHT] - A thought I have about the question and how to answer it.
+[ACTION] - A single $JSON_BLOB representing a single action to be performed
+[OBSERVATION] - The result of the action will be provided here
+[FINAL ANSWER] - Once I have gathered all the necessary observations through producing thoughts and actions, I can provide the final answer in a clear and human-readable format.
+[END VALID STEP LIST]
+
+Every Question should be followed by a Thought.
+Every Thought should be followed by an Action or Final Answer.
+Every Action should be followed by an Observation.
+Every Observation should be followed by a Thought or Final Answer.
+Produce Thoughts and Actions as necessary until you have a Final Answer.
+
+
+{{$suffix}}
