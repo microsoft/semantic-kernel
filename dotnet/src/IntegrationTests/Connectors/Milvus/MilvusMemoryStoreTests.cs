@@ -123,7 +123,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
                 Assert.Equal("Some description", r.Metadata.Description);
                 Assert.Equal("Some text", r.Metadata.Text);
                 Assert.Equal("Some external resource name", r.Metadata.ExternalSourceName);
-                Assert.Equal(r.Metadata.AdditionalMetadata, "Some additional metadata");
+                Assert.Equal("Some additional metadata", r.Metadata.AdditionalMetadata);
                 Assert.Equal("Some key", r.Key);
                 Assert.Equal(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero), r.Timestamp);
 
@@ -134,7 +134,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             r =>
             {
                 Assert.False(r.Metadata.IsReference);
-                Assert.Equal(r.Metadata.Id, "Some other id");
+                Assert.Equal("Some other id", r.Metadata.Id);
                 Assert.Empty(r.Metadata.Description);
                 Assert.Empty(r.Metadata.Text);
                 Assert.Empty(r.Metadata.ExternalSourceName);
@@ -196,7 +196,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
                 Assert.Equal("Some description", r.Metadata.Description);
                 Assert.Equal("Some text", r.Metadata.Text);
                 Assert.Equal("Some external resource name", r.Metadata.ExternalSourceName);
-                Assert.Equal(r.Metadata.AdditionalMetadata, "Some additional metadata");
+                Assert.Equal("Some additional metadata", r.Metadata.AdditionalMetadata);
                 Assert.Equal("Some key", r.Key);
                 Assert.Equal(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero), r.Timestamp);
 
@@ -207,7 +207,7 @@ public class MilvusMemoryStoreTests : IAsyncLifetime
             r =>
             {
                 Assert.False(r.Metadata.IsReference);
-                Assert.Equal(r.Metadata.Id, "Some other id");
+                Assert.Equal("Some other id", r.Metadata.Id);
                 Assert.Empty(r.Metadata.Description);
                 Assert.Empty(r.Metadata.Text);
                 Assert.Empty(r.Metadata.ExternalSourceName);
