@@ -54,7 +54,10 @@ internal sealed class ChatWithDataStreamingResult : IChatStreamingResult, ITextS
     {
         await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken))
         {
-            yield return result.Content;
+            if (!string.IsNullOrWhiteSpace(result.Content))
+            {
+                yield return result.Content;
+            }
         }
     }
 
