@@ -198,6 +198,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.8-alpha</tag>
+        <tag>java-0.2.9-alpha</tag>
     </scm>
 </project>
