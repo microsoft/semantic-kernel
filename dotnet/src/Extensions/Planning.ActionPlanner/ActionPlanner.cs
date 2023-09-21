@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -10,11 +11,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -33,12 +33,12 @@ namespace Microsoft.SemanticKernel.Planning;
 public sealed class ActionPlanner : IActionPlanner
 {
     private const string StopSequence = "#END-OF-PLAN";
-    private const string SkillName = "this";
+    private const string PluginName = "this";
 
     /// <summary>
     /// The regular expression for extracting serialized plan.
     /// </summary>
-    private static readonly Regex PlanRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex s_planRegex = new("^[^{}]*(((?'Open'{)[^{}]*)+((?'Close-Open'})[^{}]*)+)*(?(Open)(?!))", RegexOptions.Singleline | RegexOptions.Compiled);
 
     // Planner semantic function
     private readonly ISKFunction _plannerFunction;
@@ -48,34 +48,42 @@ public sealed class ActionPlanner : IActionPlanner
     private readonly IKernel _kernel;
     private readonly ILogger _logger;
 
-    // TODO: allow to inject skill store
+    // TODO: allow to inject plugin store
     /// <summary>
     /// Initialize a new instance of the <see cref="ActionPlanner"/> class.
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
-    /// <param name="prompt">Optional prompt override</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="config">The planner configuration.</param>
     public ActionPlanner(
         IKernel kernel,
-        string? prompt = null,
-        ILoggerFactory? loggerFactory = null)
+        ActionPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
+        this._kernel = kernel;
 
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ActionPlanner)) : NullLogger.Instance;
+        // Set up Config with default values and excluded skills
+        this.Config = config ?? new();
+        this.Config.ExcludedPlugins.Add(PluginName);
 
-        string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
+        string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("skprompt.txt");
 
         this._plannerFunction = kernel.CreateSemanticFunction(
-            skillName: SkillName,
+            pluginName: PluginName,
             promptTemplate: promptTemplate,
-            maxTokens: 1024,
-            stopSequences: new[] { StopSequence });
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "StopSequences", new[] { StopSequence } },
+                    { "MaxTokens", 1024 },
+                }
+            });
 
-        kernel.ImportSkill(this, skillName: SkillName);
+        kernel.ImportPlugin(this, pluginName: PluginName);
 
-        this._kernel = kernel;
+        // Create context and logger
         this._context = kernel.CreateNewContext();
+        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
     /// <inheritdoc />
@@ -101,11 +109,11 @@ public sealed class ActionPlanner : IActionPlanner
         if (planData.Plan.Function.Contains("."))
         {
             var parts = planData.Plan.Function.Split('.');
-            plan = new Plan(goal, this._context.Skills!.GetFunction(parts[0], parts[1]));
+            plan = new Plan(goal, this._context.Functions!.GetFunction(parts[0], parts[1]));
         }
         else if (!string.IsNullOrWhiteSpace(planData.Plan.Function))
         {
-            plan = new Plan(goal, this._context.Skills!.GetFunction(planData.Plan.Function));
+            plan = new Plan(goal, this._context.Functions!.GetFunction(planData.Plan.Function));
         }
         else
         {
@@ -128,7 +136,7 @@ public sealed class ActionPlanner : IActionPlanner
         return plan;
     }
 
-    // TODO: use goal to find relevant functions in a skill store
+    // TODO: use goal to find relevant functions in a plugin store
     /// <summary>
     /// Native function returning a list of all the functions in the current context,
     /// excluding functions in the planner itself.
@@ -141,13 +149,10 @@ public sealed class ActionPlanner : IActionPlanner
         [Description("The current goal processed by the planner")] string goal,
         SKContext context)
     {
-        Verify.NotNull(context.Skills);
-        var functionsAvailable = context.Skills.GetFunctionsView();
-
         // Prepare list using the format used by skprompt.txt
         var list = new StringBuilder();
-        this.PopulateList(list, functionsAvailable.NativeFunctions);
-        this.PopulateList(list, functionsAvailable.SemanticFunctions);
+        var availableFunctions = this.GetAvailableFunctions(context);
+        this.PopulateList(list, availableFunctions);
 
         return list.ToString();
     }
@@ -169,23 +174,23 @@ public sealed class ActionPlanner : IActionPlanner
 [EXAMPLE]
 - List of functions:
 // Read a file.
-FileIOSkill.ReadAsync
+FileIOPlugin.ReadAsync
 Parameter ""path"": Source file.
 // Write a file.
-FileIOSkill.WriteAsync
+FileIOPlugin.WriteAsync
 Parameter ""path"": Destination file. (default value: sample.txt)
 Parameter ""content"": File content.
 // Get the current time.
-TimeSkill.Time
+TimePlugin.Time
 No parameters.
 // Makes a POST request to a uri.
-HttpSkill.PostAsync
+HttpPlugin.PostAsync
 Parameter ""body"": The body of the request.
 - End list of functions.
 Goal: create a file called ""something.txt"".
 {""plan"":{
 ""rationale"": ""the list contains a function that allows to create files"",
-""function"": ""FileIOSkill.WriteAsync"",
+""function"": ""FileIOPlugin.WriteAsync"",
 ""parameters"": {
 ""path"": ""something.txt"",
 ""content"": null
@@ -210,17 +215,17 @@ Goal: create a file called ""something.txt"".
 [EXAMPLE]
 - List of functions:
 // Get the current time.
-TimeSkill.Time
+TimePlugin.Time
 No parameters.
 // Write a file.
-FileIOSkill.WriteAsync
+FileIOPlugin.WriteAsync
 Parameter ""path"": Destination file. (default value: sample.txt)
 Parameter ""content"": File content.
 // Makes a POST request to a uri.
-HttpSkill.PostAsync
+HttpPlugin.PostAsync
 Parameter ""body"": The body of the request.
 // Read a file.
-FileIOSkill.ReadAsync
+FileIOPlugin.ReadAsync
 Parameter ""path"": Source file.
 - End list of functions.
 Goal: tell me a joke.
@@ -236,6 +241,11 @@ Goal: tell me a joke.
     #region private ================================================================================
 
     /// <summary>
+    /// The configuration for the ActionPlanner
+    /// </summary>
+    private ActionPlannerConfig Config { get; }
+
+    /// <summary>
     /// Native function that filters out good JSON from planner result in case additional text is present
     /// using a similar regex to the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions
     /// </summary>
@@ -243,7 +253,7 @@ Goal: tell me a joke.
     /// <returns>Instance of <see cref="ActionPlanResponse"/> object deserialized from extracted JSON.</returns>
     private ActionPlanResponse? ParsePlannerResult(SKContext plannerResult)
     {
-        Match match = PlanRegex.Match(plannerResult.ToString());
+        Match match = s_planRegex.Match(plannerResult.ToString());
 
         if (match.Success && match.Groups["Close"].Length > 0)
         {
@@ -269,36 +279,30 @@ Goal: tell me a joke.
         }
     }
 
-    private void PopulateList(StringBuilder list, IDictionary<string, List<FunctionView>> functions)
+    private void PopulateList(StringBuilder list, IEnumerable<FunctionView> functions)
     {
-        foreach (KeyValuePair<string, List<FunctionView>> skill in functions)
+        foreach (FunctionView func in functions)
         {
-            // Skip this planner skills
-            if (string.Equals(skill.Key, SkillName, StringComparison.OrdinalIgnoreCase)) { continue; }
-
-            foreach (FunctionView func in skill.Value)
+            // Function description
+            if (func.Description != null)
             {
-                // Function description
-                if (func.Description != null)
-                {
-                    list.AppendLine($"// {AddPeriod(func.Description)}");
-                }
-                else
-                {
-                    this._logger.LogWarning("{0}.{1} is missing a description", func.SkillName, func.Name);
-                    list.AppendLine($"// Function {func.SkillName}.{func.Name}.");
-                }
+                list.AppendLine($"// {AddPeriod(func.Description)}");
+            }
+            else
+            {
+                this._logger.LogWarning("{0}.{1} is missing a description", func.PluginName, func.Name);
+                list.AppendLine($"// Function {func.PluginName}.{func.Name}.");
+            }
 
-                // Function name
-                list.AppendLine($"{func.SkillName}.{func.Name}");
+            // Function name
+            list.AppendLine($"{func.PluginName}.{func.Name}");
 
-                // Function parameters
-                foreach (var p in func.Parameters)
-                {
-                    var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description!;
-                    var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
-                    list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
-                }
+            // Function parameters
+            foreach (var p in func.Parameters)
+            {
+                var description = string.IsNullOrEmpty(p.Description) ? p.Name : p.Description!;
+                var defaultValueString = string.IsNullOrEmpty(p.DefaultValue) ? string.Empty : $" (default value: {p.DefaultValue})";
+                list.AppendLine($"Parameter \"{p.Name}\": {AddPeriod(description)} {defaultValueString}");
             }
         }
     }
@@ -306,6 +310,22 @@ Goal: tell me a joke.
     private static string AddPeriod(string x)
     {
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
+    }
+
+    private IOrderedEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
+    {
+        Verify.NotNull(context.Functions);
+
+        var excludedPlugins = this.Config.ExcludedPlugins ?? new();
+        var excludedFunctions = this.Config.ExcludedFunctions ?? new();
+
+        var availableFunctions = context.Functions.GetFunctionViews()
+                .Where(s => !excludedPlugins.Contains(s.PluginName, StringComparer.CurrentCultureIgnoreCase)
+                    && !excludedFunctions.Contains(s.Name, StringComparer.CurrentCultureIgnoreCase))
+                .OrderBy(x => x.PluginName)
+                .ThenBy(x => x.Name);
+
+        return availableFunctions;
     }
 
     #endregion

@@ -27,7 +27,6 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
     private readonly Mock<IChromaClient> _chromaClientMock;
-    private readonly JsonSerializerOptions _serializerOptions;
 
     public ChromaMemoryStoreTests()
     {
@@ -38,35 +37,30 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         this._chromaClientMock
             .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
             .ReturnsAsync(new ChromaCollectionModel { Id = CollectionId, Name = CollectionName });
-
-        this._serializerOptions = new JsonSerializerOptions
-        {
-            Converters = { new ChromaBooleanConverter() }
-        };
     }
 
     [Fact]
     public async Task ItUsesProvidedEndpointFromConstructorAsync()
     {
         // Arrange
-        const string endpoint = "https://fake-random-test-host/fake-path/";
-        var store = new ChromaMemoryStore(this._httpClient, endpoint);
+        const string Endpoint = "https://fake-random-test-host/fake-path/";
+        var store = new ChromaMemoryStore(this._httpClient, Endpoint);
 
         // Act
         await store.GetAsync("fake-collection", "fake-key");
 
         // Assert
-        Assert.StartsWith(endpoint, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith(Endpoint, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
     public async Task ItUsesBaseAddressFromHttpClientAsync()
     {
         // Arrange
-        const string baseAddress = "https://fake-random-test-host/fake-path/";
+        const string BaseAddress = "https://fake-random-test-host/fake-path/";
 
         using var httpClient = this.GetHttpClientStub();
-        httpClient.BaseAddress = new Uri(baseAddress);
+        httpClient.BaseAddress = new Uri(BaseAddress);
 
         var store = new ChromaMemoryStore(httpClient);
 
@@ -74,7 +68,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
         await store.GetAsync("fake-collection", "fake-key");
 
         // Assert
-        Assert.StartsWith(baseAddress, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith(BaseAddress, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -107,22 +101,22 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItThrowsExceptionOnNonExistentCollectionDeletionAsync()
     {
         // Arrange
-        const string collectionName = "non-existent-collection";
-        const string collectionDoesNotExistErrorMessage = $"Collection {collectionName} does not exist";
-        const string expectedExceptionMessage = $"Cannot delete non-existent collection {collectionName}";
+        const string CollectionName = "non-existent-collection";
+        const string CollectionDoesNotExistErrorMessage = $"Collection {CollectionName} does not exist";
+        const string ExpectedExceptionMessage = $"Cannot delete non-existent collection {CollectionName}";
 
         this._chromaClientMock
-            .Setup(client => client.DeleteCollectionAsync(collectionName, CancellationToken.None))
-            .Throws(new HttpOperationException { ResponseContent = collectionDoesNotExistErrorMessage });
+            .Setup(client => client.DeleteCollectionAsync(CollectionName, CancellationToken.None))
+            .Throws(new HttpOperationException { ResponseContent = CollectionDoesNotExistErrorMessage });
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
         // Act
-        var exception = await Record.ExceptionAsync(() => store.DeleteCollectionAsync(collectionName));
+        var exception = await Record.ExceptionAsync(() => store.DeleteCollectionAsync(CollectionName));
 
         // Assert
         Assert.IsType<SKException>(exception);
-        Assert.Equal(expectedExceptionMessage, exception.Message);
+        Assert.Equal(ExpectedExceptionMessage, exception.Message);
     }
 
     [Fact]
@@ -142,17 +136,17 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItReturnsFalseWhenCollectionDoesNotExistAsync()
     {
         // Arrange
-        const string collectionName = "non-existent-collection";
-        const string collectionDoesNotExistErrorMessage = $"Collection {collectionName} does not exist";
+        const string CollectionName = "non-existent-collection";
+        const string CollectionDoesNotExistErrorMessage = $"Collection {CollectionName} does not exist";
 
         this._chromaClientMock
-            .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
-            .Throws(new HttpOperationException { ResponseContent = collectionDoesNotExistErrorMessage });
+            .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
+            .Throws(new HttpOperationException { ResponseContent = CollectionDoesNotExistErrorMessage });
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
         // Act
-        var doesCollectionExist = await store.DoesCollectionExistAsync(collectionName);
+        var doesCollectionExist = await store.DoesCollectionExistAsync(CollectionName);
 
         // Assert
         Assert.False(doesCollectionExist);
@@ -183,16 +177,16 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItReturnsNullWhenMemoryRecordDoesNotExistAsync()
     {
         // Arrange
-        const string memoryRecordKey = "fake-record-key";
+        const string MemoryRecordKey = "fake-record-key";
 
         this._chromaClientMock
-            .Setup(client => client.GetEmbeddingsAsync(CollectionId, new[] { memoryRecordKey }, It.IsAny<string[]>(), CancellationToken.None))
+            .Setup(client => client.GetEmbeddingsAsync(CollectionId, new[] { MemoryRecordKey }, It.IsAny<string[]>(), CancellationToken.None))
             .ReturnsAsync(new ChromaEmbeddingsModel());
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
         // Act
-        var actualMemoryRecord = await store.GetAsync(CollectionName, memoryRecordKey, withEmbedding: true);
+        var actualMemoryRecord = await store.GetAsync(CollectionName, MemoryRecordKey, withEmbedding: true);
 
         // Assert
         Assert.Null(actualMemoryRecord);
@@ -202,22 +196,22 @@ public sealed class ChromaMemoryStoreTests : IDisposable
     public async Task ItThrowsExceptionOnGettingMemoryRecordFromNonExistingCollectionAsync()
     {
         // Arrange
-        const string collectionName = "non-existent-collection";
-        const string memoryRecordKey = "fake-record-key";
-        const string collectionDoesNotExistErrorMessage = $"Collection {collectionName} does not exist";
+        const string CollectionName = "non-existent-collection";
+        const string MemoryRecordKey = "fake-record-key";
+        const string CollectionDoesNotExistErrorMessage = $"Collection {CollectionName} does not exist";
 
         this._chromaClientMock
-            .Setup(client => client.GetCollectionAsync(collectionName, CancellationToken.None))
-            .Throws(new SKException(collectionDoesNotExistErrorMessage));
+            .Setup(client => client.GetCollectionAsync(CollectionName, CancellationToken.None))
+            .Throws(new SKException(CollectionDoesNotExistErrorMessage));
 
         var store = new ChromaMemoryStore(this._chromaClientMock.Object);
 
         // Act
-        var exception = await Record.ExceptionAsync(() => store.GetAsync(collectionName, memoryRecordKey, withEmbedding: true));
+        var exception = await Record.ExceptionAsync(() => store.GetAsync(CollectionName, MemoryRecordKey, withEmbedding: true));
 
         // Assert
         Assert.IsType<SKException>(exception);
-        Assert.Equal(collectionDoesNotExistErrorMessage, exception.Message);
+        Assert.Equal(CollectionDoesNotExistErrorMessage, exception.Message);
     }
 
     [Fact]
@@ -316,7 +310,7 @@ public sealed class ChromaMemoryStoreTests : IDisposable
 
     private Dictionary<string, object> GetEmbeddingMetadataFromMemoryRecord(MemoryRecord memoryRecord)
     {
-        var serialized = JsonSerializer.Serialize(memoryRecord.Metadata, this._serializerOptions);
+        var serialized = JsonSerializer.Serialize(memoryRecord.Metadata);
         return JsonSerializer.Deserialize<Dictionary<string, object>>(serialized)!;
     }
 

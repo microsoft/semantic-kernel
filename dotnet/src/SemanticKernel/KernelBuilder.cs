@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel;
@@ -29,8 +28,8 @@ public sealed class KernelBuilder
     private IPromptTemplateEngine? _promptTemplateEngine;
     private readonly AIServiceCollection _aiServices = new();
 
-    private static bool _promptTemplateEngineInitialized = false;
-    private static Type? _promptTemplateEngineType = null;
+    private static bool s_promptTemplateEngineInitialized = false;
+    private static Type? s_promptTemplateEngineType = null;
 
     /// <summary>
     /// Create a new kernel instance
@@ -49,7 +48,7 @@ public sealed class KernelBuilder
     public IKernel Build()
     {
         var instance = new Kernel(
-            new SkillCollection(this._loggerFactory),
+            new FunctionCollection(this._loggerFactory),
             this._aiServices.Build(),
             this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),
@@ -249,15 +248,15 @@ public sealed class KernelBuilder
     /// <returns>Instance of <see cref="IPromptTemplateEngine"/>.</returns>
     private IPromptTemplateEngine CreateDefaultPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
-        if (!_promptTemplateEngineInitialized)
+        if (!s_promptTemplateEngineInitialized)
         {
-            _promptTemplateEngineType = this.GetPromptTemplateEngineType();
-            _promptTemplateEngineInitialized = true;
+            s_promptTemplateEngineType = this.GetPromptTemplateEngineType();
+            s_promptTemplateEngineInitialized = true;
         }
 
-        if (_promptTemplateEngineType is not null)
+        if (s_promptTemplateEngineType is not null)
         {
-            var constructor = _promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
+            var constructor = s_promptTemplateEngineType.GetConstructor(new Type[] { typeof(ILoggerFactory) });
             if (constructor is not null)
             {
 #pragma warning disable CS8601 // Null logger factory is OK

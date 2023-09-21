@@ -6,17 +6,16 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.7" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.10.1" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.4" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.3" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
-    <PackageVersion Include="NRedisStack" Version="0.8.1" />
-    <PackageVersion Include="Pgvector" Version="0.1.3" />
     <PackageVersion Include="Polly" Version="7.2.4" />
-    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
+    <PackageVersion Include="SharpToken" Version="1.2.12" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
     <!-- Microsoft.Extensions.Logging -->
@@ -34,12 +33,12 @@
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="7.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="7.0.0" />
-    <PackageVersion Include="xunit" Version="2.4.2" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
+    <PackageVersion Include="xunit" Version="2.5.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.10" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.11" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.8.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.8.1" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />
@@ -49,10 +48,14 @@
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="[1.6.3, )" />
     <PackageVersion Include="Newtonsoft.Json" Version="[13.0.3, )" />
     <PackageVersion Include="Google.Apis.CustomSearchAPI.v1" Version="[1.60.0.3001, )" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.56.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.57.0" />
     <PackageVersion Include="protobuf-net" Version="3.2.26" />
     <PackageVersion Include="protobuf-net.Reflection" Version="3.2.12" />
     <PackageVersion Include="CoreCLR-NCalc" Version="2.2.113" />
+    <!-- Memory stores -->
+    <PackageVersion Include="Pgvector" Version="0.1.3"/>
+    <PackageVersion Include="NRedisStack" Version="0.8.1"/>
+    <PackageVersion Include="Milvus.Client" Version="2.2.2-preview.6"/>
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <!-- Analyzers -->
@@ -71,7 +74,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageVersion Include="xunit.analyzers" Version="1.2.0" />
+    <PackageVersion Include="xunit.analyzers" Version="1.3.0" />
     <PackageReference Include="xunit.analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

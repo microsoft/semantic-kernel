@@ -4,8 +4,8 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Plugins;
@@ -14,7 +14,7 @@ public class PluginTests
     [Theory]
     [InlineData("https://www.klarna.com/.well-known/ai-plugin.json", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
-    public async Task QueryKlarnaPlugin(
+    public async Task QueryKlarnaPluginAsync(
         string pluginEndpoint,
         string name,
         string functionName,
@@ -30,7 +30,7 @@ public class PluginTests
         var skill = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiSkillExecutionParameters(httpClient));
+            new OpenApiPluginExecutionParameters(httpClient));
 
         var contextVariables = new ContextVariables();
         contextVariables["q"] = query;
@@ -39,10 +39,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        var result = await skill[functionName].InvokeAsync(new SKContext(contextVariables));
-
-        // Assert
-        Assert.False(result.ErrorOccurred);
+        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
     [Theory]
@@ -51,7 +48,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPlugin(
+    public async Task QueryInstacartPluginAsync(
         string pluginEndpoint,
         string name,
         string functionName,
@@ -65,16 +62,13 @@ public class PluginTests
         var skill = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiSkillExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
 
         // Act
-        var result = await skill[functionName].InvokeAsync(new SKContext(contextVariables));
-
-        // Assert
-        Assert.False(result.ErrorOccurred);
+        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
     [Theory]
@@ -83,7 +77,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPluginFromStream(
+    public async Task QueryInstacartPluginFromStreamAsync(
         string pluginFilePath,
         string name,
         string functionName,
@@ -99,16 +93,13 @@ public class PluginTests
             var skill = await kernel.ImportAIPluginAsync(
                 name,
                 stream,
-                new OpenApiSkillExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+                new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
             var contextVariables = new ContextVariables();
             contextVariables["payload"] = payload;
 
             // Act
-            var result = await skill[functionName].InvokeAsync(new SKContext(contextVariables));
-
-            // Assert
-            Assert.False(result.ErrorOccurred);
+            await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
         }
     }
 
@@ -118,7 +109,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPluginUsingRelativeFilePath(
+    public async Task QueryInstacartPluginUsingRelativeFilePathAsync(
         string pluginFilePath,
         string name,
         string functionName,
@@ -132,15 +123,12 @@ public class PluginTests
         var skill = await kernel.ImportAIPluginAsync(
             name,
             pluginFilePath,
-            new OpenApiSkillExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
 
         // Act
-        var result = await skill[functionName].InvokeAsync(new SKContext(contextVariables));
-
-        // Assert
-        Assert.False(result.ErrorOccurred);
+        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 }
