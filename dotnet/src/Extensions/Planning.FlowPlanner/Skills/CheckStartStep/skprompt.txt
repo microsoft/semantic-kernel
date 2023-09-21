@@ -23,7 +23,7 @@ Example:
 [Goal]
 {{$goal}}
 [QUESTION]
-{{$transitionMessage}}
+{{$message}}
 [RESPONSE]
 yes
 [THOUGHT]

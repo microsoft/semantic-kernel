@@ -147,6 +147,7 @@ internal class FlowExecutor : IFlowExecutor
             {
                 rootContext.Variables.Set(kv.Key, kv.Value);
             }
+
             this.ValidateStep(step, rootContext);
 
             // init step execution state
@@ -163,7 +164,7 @@ internal class FlowExecutor : IFlowExecutor
             if (!completed)
             {
                 // On the first iteration of a ZeroOrMore step, we need to check whether the user wants to start the step
-                if (step.CompletionType == CompletionType.ZeroOrMore && stepState.Status == ExecutionState.Status.NotStarted)
+                if (step.CompletionType is CompletionType.Optional or CompletionType.ZeroOrMore && stepState.Status == ExecutionState.Status.NotStarted)
                 {
                     RepeatOrStartStepResult? startStep = await this.CheckStartStepAsync(rootContext, step, sessionId, stepId, input).ConfigureAwait(false);
                     if (startStep == null)
@@ -205,14 +206,7 @@ internal class FlowExecutor : IFlowExecutor
                     stepState.ExecutionCount, step.Goal, input);
 
                 IKernel stepKernel = this._kernelBuilder.Build();
-                var stepSkills = step.GetSKills(stepKernel, this._globalSkillCollection);
-                foreach (var skill in stepSkills)
-                {
-                    stepKernel.ImportSkill(skill);
-                }
-
                 var stepContext = stepKernel.CreateNewContext();
-
                 foreach (var key in step.Requires)
                 {
                     stepContext.Variables.Set(key, rootContext.Variables[key]);
@@ -226,11 +220,33 @@ internal class FlowExecutor : IFlowExecutor
                     }
                 }
 
-                var stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
-
-                if (!string.IsNullOrEmpty(stepResult.Result) && stepResult.Variables.ContainsKey(Constants.ChatSkillVariables.PromptInputName))
+                SKContext? stepResult;
+                if (step is Flow flowStep)
                 {
-                    outputs.Add(stepResult.Result);
+                    stepResult = await this.ExecuteAsync(flowStep, $"{sessionId}_{stepId}", input, stepContext.Variables).ConfigureAwait(false);
+                }
+                else
+                {
+                    var stepSkills = step.GetSKills(stepKernel, this._globalSkillCollection);
+                    foreach (var skill in stepSkills)
+                    {
+                        stepKernel.ImportSkill(skill);
+                    }
+
+                    stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
+                }
+
+                if (!string.IsNullOrEmpty(stepResult.Result) && stepResult.IsPromptInput())
+                {
+                    try
+                    {
+                        var stepOutputs = JsonSerializer.Deserialize<string[]>(stepResult.Result);
+                        outputs.AddRange(stepOutputs!);
+                    }
+                    catch (JsonException)
+                    {
+                        outputs.Add(stepResult.Result);
+                    }
                 }
                 else if (stepResult.Variables.TryGetValue(Constants.ChatSkillVariables.ExitLoopName, out var exitResponse))
                 {
@@ -276,13 +292,16 @@ internal class FlowExecutor : IFlowExecutor
                             stepResult.Variables[variable]);
                     }
                 }
+
+                // propagate variables to root context, needed if Flow itself is a step
+                this.PropagateVariable(rootContext, stepResult, Constants.ChatSkillVariables.PromptInputName);
             }
 
             if (completed)
             {
                 this._logger?.LogInformation("Completed step {StepIndex} for iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
 
-                if ((step.CompletionType == CompletionType.AtLeastOnce || step.CompletionType == CompletionType.ZeroOrMore) && stepState.Status != ExecutionState.Status.Completed)
+                if (step.CompletionType is CompletionType.AtLeastOnce or CompletionType.ZeroOrMore && stepState.Status != ExecutionState.Status.Completed)
                 {
                     var nextStepId = $"{stepKey}_{stepState.ExecutionCount + 1}";
                     RepeatOrStartStepResult? repeatStep = await this.CheckRepeatStepAsync(rootContext, step, sessionId, nextStepId, input).ConfigureAwait(false);
@@ -335,7 +354,20 @@ internal class FlowExecutor : IFlowExecutor
         }
 
         rootContext.Variables.Update(JsonSerializer.Serialize(outputs));
+
         return rootContext;
+    }
+
+    private void PropagateVariable(SKContext rootContext, SKContext stepResult, string variableName)
+    {
+        if (stepResult.Variables.ContainsKey(variableName))
+        {
+            rootContext.Variables[variableName] = stepResult.Variables[variableName];
+        }
+        else
+        {
+            rootContext.Variables[variableName] = string.Empty;
+        }
     }
 
     private async Task CompleteStep(SKContext context, string sessionId, ExecutionState state, FlowStep step, ExecutionState.StepExecutionState stepState)
@@ -366,27 +398,22 @@ internal class FlowExecutor : IFlowExecutor
 
     private void ValidateStep(FlowStep step, SKContext context)
     {
-        if (step is Flow)
-        {
-            throw new SKException("Recursive flow is not supported yet.");
-        }
-
         if (step.Requires.Any(p => !context.Variables.ContainsKey(p)))
         {
-            throw new SKException($"Step {step.Goal} requires variables that are not provided. ");
+            throw new SKException($"Step {step.Goal} requires variables {string.Join(",", step.Requires.Where(p => !context.Variables.ContainsKey(p)))} that are not provided. ");
         }
 
         if (step.CompletionType != CompletionType.AtLeastOnce
             && step.CompletionType != CompletionType.ZeroOrMore
-            && step.Passthrough.Count != 0)
+            && step.Passthrough.Any())
         {
-            throw new ArgumentException("Passthrough arguments can only be set for the AtLeastOnce completion type.");
+            throw new ArgumentException("Passthrough arguments can only be set for the AtLeastOnce/ZeroOrMore completion types.");
         }
 
         // There is a logical default value for TransitionMessage which is why it's not required. However, the StartingMessage is something the user needs to provide
-        if (step.CompletionType == CompletionType.ZeroOrMore && step.StartingMessage == null)
+        if (step.CompletionType is CompletionType.ZeroOrMore or CompletionType.Optional && step.StartingMessage == null)
         {
-            throw new ArgumentException("StartingMessage needs to be set for a step with the ZeroOrMore completion type.");
+            throw new ArgumentException("StartingMessage needs to be set for a step with the ZeroOrMore/Optional completion type.");
         }
     }
 
@@ -422,18 +449,9 @@ internal class FlowExecutor : IFlowExecutor
         context.Variables.Set("agentScratchPad", scratchPad);
         this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
-        string llmResponseText;
-        try
-        {
-            var llmResponse = await function.InvokeAsync(context).ConfigureAwait(false);
-            llmResponseText = llmResponse.Result.Trim();
-        }
-        catch (Exception ex)
-        {
-            string message = $"Error occurred while executing action step: {ex.Message}";
-            throw new SKException(message, ex);
-        }
+        var llmResponse = await function.InvokeAsync(context).ConfigureAwait(false);
 
+        string llmResponseText = llmResponse.Result.Trim();
         this._logger?.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
 
         Match finalAnswerMatch = s_finalAnswerRegex.Match(llmResponseText);
@@ -631,7 +649,7 @@ internal class FlowExecutor : IFlowExecutor
             }
             else if (!string.IsNullOrEmpty(actionStep.FinalAnswer))
             {
-                if (step.Provides.Count == 1)
+                if (step.Provides.Count() == 1)
                 {
                     context.Variables.Set(step.Provides.Single(), actionStep.FinalAnswer);
                     return context;

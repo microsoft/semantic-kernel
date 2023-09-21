@@ -14,10 +14,10 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Planning.Flow;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
 
 /**
  * This example shows how to use FlowPlanner to execute a given flow with interaction with client.
@@ -63,11 +63,11 @@ steps:
     public static async Task RunInteractiveAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
         Dictionary<object, string?> skills = new()
         {
             { webSearchEngineSkill, "WebSearch" },
-            { new TimeSkill(), "time" }
+            { new TimePlugin(), "time" }
         };
 
         FlowPlanner planner = new(GetKernelBuilder(), new FlowStatusProvider(new VolatileMemoryStore()), skills);
@@ -108,11 +108,11 @@ steps:
     private static async Task RunExampleAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
         Dictionary<object, string?> skills = new()
         {
             { webSearchEngineSkill, "WebSearch" },
-            { new TimeSkill(), "time" }
+            { new TimePlugin(), "time" }
         };
 
         FlowPlanner planner = new(GetKernelBuilder(), new FlowStatusProvider(new VolatileMemoryStore()), skills);
@@ -166,7 +166,7 @@ steps:
             });
     }
 
-    public sealed class CollectEmailSkill : ChatSkill
+    public sealed class CollectEmailSkill
     {
         private const string Goal = "Prompt user to provide a valid email address";
 
@@ -206,7 +206,7 @@ If I cannot answer, say that I don't know.
             var chat = this._chat.CreateNewChat(SystemPrompt);
             chat.AddUserMessage(Goal);
 
-            ChatHistory? chatHistory = this.GetChatHistory(context);
+            ChatHistory? chatHistory = context.GetChatHistory();
             if (chatHistory?.Any() ?? false)
             {
                 chat.Messages.AddRange(chatHistory);
@@ -220,7 +220,7 @@ If I cannot answer, say that I don't know.
             }
 
             context.Variables["email_address"] = string.Empty;
-            this.PromptInput(context);
+            context.PromptInput();
 
             return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
         }

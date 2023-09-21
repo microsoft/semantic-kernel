@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Flow;
 using Microsoft.SemanticKernel.SkillDefinition;
 
-public sealed class CollectEmailSkill : ChatSkill
+public sealed class CollectEmailSkill
 {
     private const string Goal = "Collect email from user";
 
@@ -53,7 +53,7 @@ If I cannot answer, say that I don't know.
         var chat = this._chat.CreateNewChat(SystemPrompt);
         chat.AddUserMessage(Goal);
 
-        ChatHistory? chatHistory = this.GetChatHistory(context);
+        ChatHistory? chatHistory = context.GetChatHistory();
         if (chatHistory?.Any() ?? false)
         {
             chat.Messages.AddRange(chatHistory);
@@ -68,7 +68,7 @@ If I cannot answer, say that I don't know.
 
         // invalid email, prompt user to provide a valid email
         context.Variables["email_address"] = string.Empty;
-        this.PromptInput(context);
+        context.PromptInput();
         return await this._chat.GenerateMessageAsync(chat, this._chatRequestSettings).ConfigureAwait(false);
     }
 

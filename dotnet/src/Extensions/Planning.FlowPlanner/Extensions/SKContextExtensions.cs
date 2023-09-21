@@ -9,23 +9,17 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
-/// Chat skill which encapsulates the interface to get latest chat input and history from context maintained by orchestrator.
-/// It is recommended to use this class as base class for chat skills and functions.
+/// Extension methods for <see cref="SKContext"/>
 /// </summary>
-/// <remarks>
-/// # Create skills
-/// There are two ways to instantiate a chat skill:
-/// 1. Reflection by planner. To support that the skill should either have a parameter-less constructor or a constructor with single <see cref="SKContext"/> parameter.
-/// 2. Register in global skill collection and pass to the Planner.
-/// </remarks>
-public abstract class ChatSkill
+// ReSharper disable once InconsistentNaming
+public static class SKContextExtensions
 {
     /// <summary>
     /// Get <see cref="ChatHistory"/> from context.
     /// </summary>
     /// <param name="context">context</param>
     /// <returns>The chat history</returns>
-    protected ChatHistory? GetChatHistory(SKContext context)
+    public static ChatHistory? GetChatHistory(this SKContext context)
     {
         if (context.Variables.TryGetValue(Constants.ActionVariableNames.ChatHistory, out string? chatHistoryText) && !string.IsNullOrEmpty(chatHistoryText))
         {
@@ -40,7 +34,7 @@ public abstract class ChatSkill
     /// </summary>
     /// <param name="context">context</param>
     /// <returns>The latest chat input.</returns>
-    protected string GetChatInput(SKContext context)
+    public static string GetChatInput(this SKContext context)
     {
         if (context.Variables.TryGetValue(Constants.ActionVariableNames.ChatInput, out string? chatInput))
         {
@@ -54,7 +48,7 @@ public abstract class ChatSkill
     /// Signal the orchestrator to prompt user for input with current function response.
     /// </summary>
     /// <param name="context">context</param>
-    protected void PromptInput(SKContext context)
+    public static void PromptInput(this SKContext context)
     {
         // Cant prompt the user for input and exit the execution at the same time
         if (!context.Variables.ContainsKey(Constants.ChatSkillVariables.ExitLoopName))
@@ -68,12 +62,22 @@ public abstract class ChatSkill
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="response">context</param>
-    protected void ExitLoop(SKContext context, string? response = null)
+    public static void ExitLoop(this SKContext context, string? response = null)
     {
         // Cant prompt the user for input and exit the execution at the same time
         if (!context.Variables.ContainsKey(Constants.ChatSkillVariables.PromptInputName))
         {
             context.Variables.Set(Constants.ChatSkillVariables.ExitLoopName, response ?? string.Empty);
         }
+    }
+
+    /// <summary>
+    /// Check if should prompt user for input based on current context.
+    /// </summary>
+    /// <param name="context">context</param>
+    internal static bool IsPromptInput(this SKContext context)
+    {
+        return context.Variables.TryGetValue(Constants.ChatSkillVariables.PromptInputName, out string? promptInput)
+               && promptInput == Constants.ChatSkillVariables.PromptInputValue;
     }
 }

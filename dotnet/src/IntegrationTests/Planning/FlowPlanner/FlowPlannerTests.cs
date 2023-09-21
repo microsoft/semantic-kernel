@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Flow;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -45,14 +45,14 @@ public sealed class FlowPlannerTests : IDisposable
         // Arrange
         KernelBuilder builder = this.InitializeKernelBuilder();
         var bingConnector = new BingConnector(this._bingApiKey);
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
         var sessionId = Guid.NewGuid().ToString();
         string email = "abc@xyz.com";
 
         Dictionary<object, string?> skills = new()
         {
             { webSearchEngineSkill, "WebSearch" },
-            { new TimeSkill(), "time" }
+            { new TimePlugin(), "time" }
         };
 
         Flow flow = FlowSerializer.DeserializeFromYaml(@"

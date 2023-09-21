@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
+
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Planning.Flow;
@@ -35,13 +37,6 @@ public sealed class Flow : FlowStep
     }
 
     /// <summary>
-    /// Only for deserialization.
-    /// </summary>
-    public Flow() : this(string.Empty, string.Empty)
-    {
-    }
-
-    /// <summary>
     /// Steps of the flow
     /// </summary>
     public List<FlowStep> Steps
@@ -51,7 +46,7 @@ public sealed class Flow : FlowStep
     }
 
     /// <summary>
-    /// Friendly name of the flow
+    /// Friendly name and identifier of the flow
     /// </summary>
     public string Name { get; set; }
 
@@ -71,5 +66,25 @@ public sealed class Flow : FlowStep
     public void AddSteps(params FlowStep[] steps)
     {
         this._steps.AddRange(steps);
+    }
+
+    /// <inheritdoc/>
+    public override IEnumerable<string> Requires
+    {
+        get
+        {
+            var requires = new List<string>();
+            foreach (var step in this._steps)
+            {
+                requires.AddRange(step.Requires);
+            }
+
+            foreach (var step in this._steps)
+            {
+                requires.RemoveAll(r => step.Provides.Contains(r));
+            }
+
+            return requires;
+        }
     }
 }

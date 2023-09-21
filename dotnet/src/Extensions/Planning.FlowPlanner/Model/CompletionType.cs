@@ -16,6 +16,11 @@ public enum CompletionType
     Once,
 
     /// <summary>
+    /// Optional
+    /// </summary>
+    Optional,
+
+    /// <summary>
     /// At least once
     /// </summary>
     AtLeastOnce,
