@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -18,9 +17,9 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     public bool IsRepeatRequested => this._repeatRequested;
 
     /// <summary>
-    /// Collection of AI model results after one function execution. AI response can have multiple results.
+    /// Metadata for storing additional information about function execution result.
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; private set; } = Array.Empty<ModelResult>();
+    public Dictionary<string, object> Metadata { get; private set; } = new Dictionary<string, object>();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionInvokedEventArgs"/> class.
@@ -29,7 +28,7 @@ public class FunctionInvokedEventArgs : SKCancelEventArgs
     /// <param name="result">Function result</param>
     public FunctionInvokedEventArgs(FunctionView functionView, FunctionResult result) : base(functionView, result.Context)
     {
-        this.ModelResults = result.ModelResults;
+        this.Metadata = result.Metadata;
     }
 
     /// <summary>

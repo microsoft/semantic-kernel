@@ -96,7 +96,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
         plan.AddSteps(new Plan(mockFunction.Object));
 
@@ -132,7 +132,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
         plan.AddSteps(mockFunction.Object);
 
@@ -168,7 +168,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -204,7 +204,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
         plan.AddSteps(new Plan(mockFunction.Object), mockFunction.Object);
 
@@ -239,7 +239,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
         plan.AddSteps(new Plan(mockFunction.Object), new Plan(mockFunction.Object));
 
@@ -274,8 +274,8 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
-        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "skillName"));
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
@@ -334,8 +334,8 @@ public sealed class PlanSerializationTests
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName")
         {
             Parameters = new ParameterView[]
             {
@@ -403,8 +403,8 @@ public sealed class PlanSerializationTests
                 c.Variables.TryGetValue("variables", out string? v);
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
             })
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
-        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("testFunction", "testSkill")
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
+        mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName")
         {
             Parameters = new ParameterView[]
             {
@@ -483,7 +483,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
         if (requireFunctions)
         {
@@ -539,7 +539,7 @@ public sealed class PlanSerializationTests
         mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
             .Callback<SKContext, dynamic, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
-            .Returns(() => Task.FromResult(new FunctionResult(returnContext)));
+            .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
         plan.AddSteps(new Plan("Step1", mockFunction.Object), mockFunction.Object);
 

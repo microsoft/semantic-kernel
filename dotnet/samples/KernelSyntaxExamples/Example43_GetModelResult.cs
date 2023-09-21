@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
@@ -37,13 +39,15 @@ public static class Example43_GetModelResult
             requestSettings: new OpenAIRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
 
         Console.WriteLine(functionResult.GetValue<string>());
-        Console.WriteLine(functionResult.ModelResults.Select(result => result.GetOpenAIChatResult()).AsJson());
+        Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
         var kernelResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
+        var modelResults = kernelResult.FunctionResults.SelectMany(l => l.GetModelResults() ?? Enumerable.Empty<ModelResult>());
+
         Console.WriteLine(kernelResult.GetValue<string>());
-        Console.WriteLine(kernelResult.FunctionResults.SelectMany(l => l.ModelResults).LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
+        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly

@@ -333,7 +333,7 @@ public sealed class Plan : IPlan
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var result = new FunctionResult(context);
+        var result = new FunctionResult(this.Name, this.SkillName, context);
 
         if (this.Function is not null)
         {

@@ -201,6 +201,8 @@ public class CodeBlockTests
     {
         // Arrange
         const string Func = "funcName";
+        const string Plugin = "pluginName";
+
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
         var context = new SKContext(this._kernel.Object, variables, skills: this._skills.Object);
         var funcId = new FunctionIdBlock(Func);
@@ -221,7 +223,7 @@ public class CodeBlockTests
                 context.Variables["var1"] = "overridden";
                 context.Variables["var2"] = "overridden";
             })
-            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(inputcontext));
+            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -247,6 +249,7 @@ public class CodeBlockTests
     {
         // Arrange
         const string Func = "funcName";
+        const string Plugin = "pluginName";
         const string Var = "varName";
         const string VarValue = "varValue";
 
@@ -263,7 +266,7 @@ public class CodeBlockTests
             {
                 canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(inputcontext));
+            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -283,6 +286,7 @@ public class CodeBlockTests
     {
         // Arrange
         const string Func = "funcName";
+        const string Plugin = "pluginName";
         const string Value = "value";
 
         var context = new SKContext(this._kernel.Object, variables: null, skills: this._skills.Object);
@@ -297,7 +301,7 @@ public class CodeBlockTests
             {
                 canary = context!.Variables["input"];
             })
-            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(inputcontext));
+            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
@@ -317,9 +321,11 @@ public class CodeBlockTests
     {
         // Arrange
         const string Func = "funcName";
+        const string Plugin = "pluginName";
         const string Value = "value";
         const string FooValue = "bar";
         const string BobValue = "bob's value";
+
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
         variables.Set("input", Value);
@@ -338,7 +344,7 @@ public class CodeBlockTests
                 foo = context!.Variables["foo"];
                 baz = context!.Variables["baz"];
             })
-            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(inputcontext));
+            .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
         ISKFunction? outFunc = function.Object;
         this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);

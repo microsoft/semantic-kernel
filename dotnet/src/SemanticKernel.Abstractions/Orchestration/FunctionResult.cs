@@ -11,9 +11,19 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class FunctionResult
 {
     /// <summary>
-    /// Collection of AI model results after one function execution. AI response can have multiple results.
+    /// Name of executed function.
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; internal set; } = Array.Empty<ModelResult>();
+    public string FunctionName { get; internal set; }
+
+    /// <summary>
+    /// Name of the plugin containing the function.
+    /// </summary>
+    public string PluginName { get; internal set; }
+
+    /// <summary>
+    /// Metadata for storing additional information about function execution result.
+    /// </summary>
+    public Dictionary<string, object> Metadata { get; internal set; } = new Dictionary<string, object>();
 
     /// <summary>
     /// Function result object.
@@ -28,21 +38,27 @@ public sealed class FunctionResult
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
+    /// <param name="functionName">Name of executed function.</param>
+    /// <param name="pluginName">Name of the plugin containing the function.</param>
     /// <param name="context">Instance of <see cref="SKContext"/> to pass in function pipeline.</param>
-    public FunctionResult(SKContext context)
+    public FunctionResult(string functionName, string pluginName, SKContext context)
     {
+        this.FunctionName = functionName;
+        this.PluginName = pluginName;
         this.Context = context;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
+    /// <param name="functionName">Name of executed function.</param>
+    /// <param name="pluginName">Name of the plugin containing the function.</param>
     /// <param name="context">Instance of <see cref="SKContext"/> to pass in function pipeline.</param>
     /// <param name="value">Function result object.</param>
-    public FunctionResult(SKContext context, object? value)
+    public FunctionResult(string functionName, string pluginName, SKContext context, object? value)
+        : this(functionName, pluginName, context)
     {
         this.Value = value;
-        this.Context = context;
     }
 
     /// <summary>
