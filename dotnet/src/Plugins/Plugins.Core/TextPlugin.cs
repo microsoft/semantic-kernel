@@ -2,7 +2,6 @@
 
 using System.ComponentModel;
 using System.Globalization;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
@@ -10,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// TextPlugin provides a set of functions to manipulate strings.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("text", new TextPlugin());
+/// Usage: kernel.ImportPlugin("text", new TextPlugin());
 ///
 /// Examples:
 /// SKContext.Variables["input"] = "  hello world  "

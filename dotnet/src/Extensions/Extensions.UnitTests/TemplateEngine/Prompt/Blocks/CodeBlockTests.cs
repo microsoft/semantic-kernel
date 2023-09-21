@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Moq;
 using Xunit;
@@ -19,14 +18,14 @@ namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
 
 public class CodeBlockTests
 {
-    private readonly Mock<IReadOnlySkillCollection> _skills;
+    private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
     private readonly Mock<IKernelExecutionContext> _kernelContext = new();
 
     public CodeBlockTests()
     {
-        this._skills = new Mock<IReadOnlySkillCollection>();
-        this._kernelContext.SetupGet(x => x.Skills).Returns(this._skills.Object);
+        this._functions = new Mock<IReadOnlyFunctionCollection>();
+        this._kernelContext.SetupGet(x => x.Functions).Returns(this._functions.Object);
     }
 
     [Fact]
@@ -35,7 +34,7 @@ public class CodeBlockTests
         // Arrange
         var kernelContext = new Mock<IKernelExecutionContext>();
         var context = new SKContext(this._kernelContext.Object);
-        this._skills.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
+        this._functions.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
@@ -52,8 +51,8 @@ public class CodeBlockTests
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
             .Throws(new RuntimeWrappedException("error"));
         ISKFunction? outFunc = function.Object;
-        this._skills.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
-        this._skills.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
+        this._functions.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
+        this._functions.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
@@ -226,8 +225,8 @@ public class CodeBlockTests
             .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
-        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+        this._functions.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._functions.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLoggerFactory.Instance);
@@ -268,8 +267,8 @@ public class CodeBlockTests
             .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
-        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+        this._functions.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._functions.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
@@ -302,8 +301,8 @@ public class CodeBlockTests
             .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
-        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+        this._functions.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._functions.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLoggerFactory.Instance);
@@ -343,8 +342,8 @@ public class CodeBlockTests
             .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => inputcontext);
 
         ISKFunction? outFunc = function.Object;
-        this._skills.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._skills.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+        this._functions.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
+        this._functions.Setup(x => x.GetFunction(Func)).Returns(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);

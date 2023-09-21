@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -43,9 +42,9 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Read only skills collection
+    /// Read only functions collection
     /// </summary>
-    public IReadOnlySkillCollection Skills => this.Kernel.Skills;
+    public IReadOnlyFunctionCollection Functions => this.Kernel.Functions;
 
     /// <summary>
     /// App logger
@@ -93,7 +92,7 @@ public sealed class SKContext
     }
 
     /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
     /// <returns>A new context copied from the current one</returns>
@@ -124,10 +123,10 @@ public sealed class SKContext
         {
             string display = this.Variables.DebuggerDisplay;
 
-            if (this.Skills is IReadOnlySkillCollection skills)
+            if (this.Functions is IReadOnlyFunctionCollection functions)
             {
-                var view = skills.GetFunctionViews();
-                display += $", Skills = {view.Count}";
+                var view = functions.GetFunctionViews();
+                display += $", Functions = {view.Count}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";

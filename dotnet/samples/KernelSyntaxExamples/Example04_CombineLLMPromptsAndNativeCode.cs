@@ -38,12 +38,12 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         var bingConnector = new BingConnector(bingApiKey);
         var bing = new WebSearchEnginePlugin(bingConnector);
-        var search = kernel.ImportSkill(bing, "bing");
+        var search = kernel.ImportPlugin(bing, "bing");
 
         // Load semantic skill defined with prompt templates
         string folder = RepoFiles.SampleSkillsPath();
 
-        var sumSkill = kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        var sumSkill = kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
 
         // Run
         var ask = "What's the tallest building in South America";

@@ -66,7 +66,7 @@ after this event Caroline became his wife.""";
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
-        var functions = kernel.ImportSemanticSkillFromDirectory(folder,
+        var functions = kernel.ImportSemanticPluginFromDirectory(folder,
             "SummarizeSkill",
             "GroundingSkill");
 
@@ -131,11 +131,11 @@ which are not grounded in the original.
             .Build();
 
         string folder = RepoFiles.SampleSkillsPath();
-        var functions = kernel.ImportSemanticSkillFromDirectory(folder,
+        var functions = kernel.ImportSemanticPluginFromDirectory(folder,
             "SummarizeSkill",
             "GroundingSkill");
 
-        kernel.ImportSkill(new TextPlugin());
+        kernel.ImportPlugin(new TextPlugin());
 
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);

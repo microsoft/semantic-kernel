@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
