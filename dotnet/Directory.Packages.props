@@ -35,12 +35,12 @@
     <PackageVersion Include="Moq" Version="[4.18.4]" />
     <PackageVersion Include="System.Threading.Channels" Version="7.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="7.0.0" />
-    <PackageVersion Include="xunit" Version="2.4.2" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
+    <PackageVersion Include="xunit" Version="2.5.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <!-- Skills -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.10" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.11" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="0.8.1" />
     <PackageVersion Include="DuckDB.NET.Data" Version="0.8.1" />
     <PackageVersion Include="Microsoft.Graph" Version="[4.51.0, 5)" />

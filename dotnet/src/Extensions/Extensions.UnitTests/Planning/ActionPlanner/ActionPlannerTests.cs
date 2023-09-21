@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Action;
@@ -164,7 +164,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
             It.IsAny<SKContext>(),
             null,
             default
-        )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
+        )).Callback<SKContext, object, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult(returnContext, testPlanString)));
 
@@ -204,13 +204,13 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
         var skills = new Mock<ISkillCollection>();
         foreach (var (name, skillName, description, isSemantic) in functions)
         {
-            var functionView = new FunctionView(name, skillName, description, new List<ParameterView>(), isSemantic, true);
+            var functionView = new FunctionView(name, skillName, description);
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+                .Returns<SKContext, AIRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(new FunctionResult(context));

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -77,11 +79,7 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
-    public bool IsSemantic { get; private set; }
-
-    /// <inheritdoc/>
-    [JsonIgnore]
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public AIRequestSettings? RequestSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -163,17 +161,17 @@ public sealed class Plan : IPlan
     /// TODO: the context should never be null, it's required internally
     /// </summary>
     /// <param name="json">JSON string representation of a Plan</param>
-    /// <param name="context">The context to use for function registrations.</param>
+    /// <param name="skills">The collection of available skills/functions..</param>
     /// <param name="requireFunctions">Whether to require functions to be registered. Only used when context is not null.</param>
     /// <returns>An instance of a Plan object.</returns>
     /// <remarks>If Context is not supplied, plan will not be able to execute.</remarks>
-    public static Plan FromJson(string json, SKContext? context = null, bool requireFunctions = true)
+    public static Plan FromJson(string json, IReadOnlySkillCollection? skills = null, bool requireFunctions = true)
     {
         var plan = JsonSerializer.Deserialize<Plan>(json, new JsonSerializerOptions { IncludeFields = true }) ?? new Plan(string.Empty);
 
-        if (context != null)
+        if (skills != null)
         {
-            plan = SetAvailableFunctions(plan, context, requireFunctions);
+            plan = SetAvailableFunctions(plan, skills, requireFunctions);
         }
 
         return plan;
@@ -307,7 +305,7 @@ public sealed class Plan : IPlan
     {
         if (this.Function is not null)
         {
-            return this.Function.Describe() ?? new();
+            return this.Function.Describe();
         }
 
         // The parameter mapping definitions from Plan -> Function
@@ -326,17 +324,13 @@ public sealed class Plan : IPlan
         }
         ).ToList();
 
-        return new(name: this.Name,
-                   skillName: this.SkillName,
-                   description: this.Description,
-                   parameters: parameters,
-                   isSemantic: false);
+        return new(this.Name, this.SkillName, this.Description, parameters);
     }
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         var result = new FunctionResult(context);
@@ -347,7 +341,7 @@ public sealed class Plan : IPlan
 
             result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(context, settings, cancellationToken)
+                .InvokeAsync(context, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
 
             context.Variables.Update(result.Context.Result);
@@ -379,9 +373,9 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        return this.Function is not null ? this.Function.SetAIConfiguration(settings) : this;
+        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
     }
 
     #endregion ISKFunction implementation
@@ -413,19 +407,16 @@ public sealed class Plan : IPlan
     /// Set functions for a plan and its steps.
     /// </summary>
     /// <param name="plan">Plan to set functions for.</param>
-    /// <param name="context">Context to use.</param>
+    /// <param name="skillCollection">The collection of available skills/functions.</param>
     /// <param name="requireFunctions">Whether to throw an exception if a function is not found.</param>
     /// <returns>The plan with functions set.</returns>
-    private static Plan SetAvailableFunctions(Plan plan, SKContext context, bool requireFunctions = true)
+    private static Plan SetAvailableFunctions(Plan plan, IReadOnlySkillCollection skillCollection, bool requireFunctions = true)
     {
         if (plan.Steps.Count == 0)
         {
-            if (context.Skills == null)
-            {
-                throw new SKException("Skill collection not found in the context");
-            }
+            Verify.NotNull(skillCollection);
 
-            if (context.Skills.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
+            if (skillCollection.TryGetFunction(plan.SkillName, plan.Name, out var skillFunction))
             {
                 plan.SetFunction(skillFunction);
             }
@@ -438,7 +429,7 @@ public sealed class Plan : IPlan
         {
             foreach (var step in plan.Steps)
             {
-                SetAvailableFunctions(step, context, requireFunctions);
+                SetAvailableFunctions(step, skillCollection, requireFunctions);
             }
         }
 
@@ -504,7 +495,7 @@ public sealed class Plan : IPlan
         var input = string.Empty;
         if (!string.IsNullOrEmpty(step.Parameters.Input))
         {
-            input = this.ExpandFromVariables(variables, step.Parameters.Input);
+            input = this.ExpandFromVariables(variables, step.Parameters.Input!);
         }
         else if (!string.IsNullOrEmpty(variables.Input))
         {
@@ -591,8 +582,11 @@ public sealed class Plan : IPlan
         this.Name = function.Name;
         this.SkillName = function.SkillName;
         this.Description = function.Description;
-        this.IsSemantic = function.IsSemantic;
         this.RequestSettings = function.RequestSettings;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        this.IsSemantic = function.IsSemantic;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
@@ -625,4 +619,14 @@ public sealed class Plan : IPlan
             return display;
         }
     }
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [JsonIgnore]
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic { get; private set; }
+
+    #endregion
 }

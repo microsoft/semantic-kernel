@@ -429,7 +429,7 @@ public sealed class PlanTests : IDisposable
 
         // Act
         var serializedPlan = plan.ToJson();
-        var deserializedPlan = Plan.FromJson(serializedPlan, target.CreateNewContext());
+        var deserializedPlan = Plan.FromJson(serializedPlan, target.Skills);
         var result = (await target.RunAsync(inputToSummarize, deserializedPlan)).GetValue<string>();
 
         // Assert

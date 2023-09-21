@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SkillDefinition;
 using NCalc;
@@ -71,9 +73,15 @@ Question: {{ $input }}
             skillName: nameof(LanguageCalculatorPlugin),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            maxTokens: 256,
-            temperature: 0.0,
-            topP: 1);
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "MaxTokens", 256 },
+                    { "Temperature", 0.0 },
+                    { "TopP", 1 },
+                }
+            });
     }
 
     /// <summary>
@@ -92,7 +100,7 @@ Question: {{ $input }}
 
         try
         {
-            var result = await context.Kernel.RunAsync(input).ConfigureAwait(false);
+            var result = await context.Kernel.RunAsync(input, this._mathTranslator).ConfigureAwait(false);
             answer = result.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

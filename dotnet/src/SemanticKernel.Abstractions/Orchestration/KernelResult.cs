@@ -45,7 +45,7 @@ public sealed class KernelResult
     /// </summary>
     /// <param name="value">Kernel result object.</param>
     /// <param name="functionResults">Results from all functions in pipeline.</param>
-    internal static KernelResult FromFunctionResults(object? value, IReadOnlyCollection<FunctionResult> functionResults)
+    public static KernelResult FromFunctionResults(object? value, IReadOnlyCollection<FunctionResult> functionResults)
     {
         return new KernelResult
         {

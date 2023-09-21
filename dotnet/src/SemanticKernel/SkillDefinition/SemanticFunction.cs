@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -34,15 +36,12 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string Description { get; }
 
     /// <inheritdoc/>
-    public bool IsSemantic => true;
-
-    /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings { get; private set; } = new();
+    public AIRequestSettings? RequestSettings { get; private set; }
 
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IList<ParameterView> Parameters { get; }
+    public IReadOnlyList<ParameterView> Parameters => this._promptTemplate.Parameters;
 
     /// <summary>
     /// Create a native function instance, given a semantic function configuration.
@@ -69,6 +68,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             functionName: functionName,
             loggerFactory: loggerFactory
         );
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
 
         return func;
     }
@@ -76,25 +76,18 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public FunctionView Describe()
     {
-        return new FunctionView
-        {
-            IsSemantic = this.IsSemantic,
-            Name = this.Name,
-            SkillName = this.SkillName,
-            Description = this.Description,
-            Parameters = this.Parameters,
-        };
+        return new FunctionView(this.Name, this.SkillName, this.Description) { Parameters = this.Parameters };
     }
 
     /// <inheritdoc/>
     public async Task<FunctionResult> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(this._aiService?.Value, settings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(this._aiService?.Value, requestSettings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -113,10 +106,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings)
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        Verify.NotNull(settings);
-        this.RequestSettings = settings;
+        this.RequestSettings = requestSettings;
         return this;
     }
 
@@ -157,12 +149,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(SemanticFunction)) : NullLogger.Instance;
 
         this._promptTemplate = template;
-        this.Parameters = template.GetParameters();
         Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
         this.SkillName = skillName;
         this.Description = description;
+
+        this._view = new(() => new(functionName, skillName, description, this.Parameters));
     }
 
     #region private
@@ -172,6 +165,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private readonly ILogger _logger;
     private IReadOnlySkillCollection? _skillCollection;
     private Lazy<ITextCompletion>? _aiService = null;
+    private Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
@@ -197,19 +191,18 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     private async Task<FunctionResult> RunPromptAsync(
         ITextCompletion? client,
-        CompleteRequestSettings? requestSettings,
+        AIRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {
         Verify.NotNull(client);
-        Verify.NotNull(requestSettings);
 
         FunctionResult result;
 
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            var completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
@@ -227,6 +220,15 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
         return result;
     }
+
+    #endregion
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic => true;
 
     #endregion
 }
