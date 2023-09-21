@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FA37
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelSyntaxExamples", "samples\KernelSyntaxExamples\KernelSyntaxExamples.csproj", "{47C6F821-5103-431F-B3B8-A2868A68BB78}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphSkillsExample", "..\samples\dotnet\graph-api-skills\MsGraphSkillsExample.csproj", "{3EB61E99-C39B-4620-9482-F8DA18E48525}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MsGraphSkillsExample", "..\samples\dotnet\MsGraphPluginsExample\MsGraphPluginsExample.csproj", "{3EB61E99-C39B-4620-9482-F8DA18E48525}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KernelHttpServer", "..\samples\dotnet\KernelHttpServer\KernelHttpServer.csproj", "{34A7F1EF-D243-4160-A413-D713FEABCD94}"
 EndProject
@@ -93,7 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InternalUtilities", "Intern
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Weaviate", "src\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj", "{6AAB0620-33A1-4A98-A63B-6560B9BA47A4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenApiSkillsExample", "..\samples\dotnet\openapi-skills\OpenApiSkillsExample.csproj", "{4D91A3E0-C404-495B-AD4A-411C4E83CF54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenApiSkillsExample", "..\samples\dotnet\OpenApiPluginsExample\OpenApiPluginsExample.csproj", "{4D91A3E0-C404-495B-AD4A-411C4E83CF54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.DuckDB", "src\Connectors\Connectors.Memory.DuckDB\Connectors.Memory.DuckDB.csproj", "{50FAE231-6F24-4779-9D02-12ABBC9A49E2}"
 EndProject
