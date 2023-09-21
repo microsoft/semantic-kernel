@@ -124,7 +124,7 @@ public class SkillCollection : ISkillCollection
     /// <summary>
     /// Populates the current skill collection from another.
     /// </summary>
-    /// <param name="readOnlyCollection">The target read only skill colletion</param>
+    /// <param name="readOnlyCollection">The target read only skill collection</param>
     /// <returns>A new editable skill collection copy</returns>
     private void Populate(IReadOnlySkillCollection readOnlyCollection)
     {
