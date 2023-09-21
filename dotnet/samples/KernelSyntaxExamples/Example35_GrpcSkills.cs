@@ -3,8 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Functions.Grpc.Extensions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Skills.Grpc.Extensions;
 using RepoUtils;
 
 /**
@@ -21,7 +21,7 @@ public static class Example35_GrpcSkills
         // Import a gRPC skill using one of the following Kernel extension methods
         // kernel.RegisterGrpcSkill
         // kernel.ImportGrpcSkillFromDirectory
-        var skill = kernel.ImportGrpcSkillFromFile("<skill-name>", "<path-to-.proto-file>");
+        var skill = kernel.ImportGrpcPluginFromFile("<skill-name>", "<path-to-.proto-file>");
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ComponentModel;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel;
 
 namespace Skills;
 
-public sealed class StaticTextSkill
+public sealed class StaticTextPlugin
 {
     [SKFunction, Description("Change all string chars to uppercase")]
     public static string Uppercase([Description("Text to uppercase")] string input) =>

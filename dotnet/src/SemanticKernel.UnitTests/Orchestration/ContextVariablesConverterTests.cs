@@ -26,7 +26,8 @@ public class ContextVariablesConverterTests
 
         // Assert
         Assert.Equal("b", result!["a"]);
-        Assert.Equal(string.Empty, result!["INPUT"]);
+        Assert.Throws<KeyNotFoundException>(() => result!["INPUT"]);
+        Assert.Equal(string.Empty, result!.Input);
     }
 
     [Fact]
@@ -60,10 +61,6 @@ public class ContextVariablesConverterTests
     // input value
     // params key/value
     [Theory]
-    [InlineData(null, new[] { "a", "b" }, new[]
-    {
-        /*lang=json,strict*/ @"{""Key"":""INPUT"",""Value"":""""}", /*lang=json,strict*/ @"{""Key"":""a"",""Value"":""b""}"
-    })]
     [InlineData("", new[] { "a", "b" }, new[]
     {
         /*lang=json,strict*/ @"{""Key"":""INPUT"",""Value"":""""}", /*lang=json,strict*/ @"{""Key"":""a"",""Value"":""b""}"
@@ -157,7 +154,8 @@ public class ContextVariablesConverterTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(string.Empty, result!["INPUT"]);
+        Assert.Throws<KeyNotFoundException>(() => result!["INPUT"]);
+        Assert.Equal(string.Empty, result!.Input);
     }
 
     [Fact]

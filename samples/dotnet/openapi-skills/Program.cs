@@ -99,7 +99,7 @@ internal sealed class Program
 
             // Add GitHub's response, if any, to the chat history.
             int planResultTokenAllowance = (int)(aiOptions.TokenLimit * 0.25); // Allow up to 25% of our token limit to be from GitHub.
-            string planResult = await PlanGitHubSkill(gitHubOptions, planner, chatHistory, input, planResultTokenAllowance, logger);
+            string planResult = await PlanGitHubSkillAsync(gitHubOptions, planner, chatHistory, input, planResultTokenAllowance, logger);
             if (!string.IsNullOrWhiteSpace(planResult))
             {
                 chatHistory.AddUserMessage(planResult);
@@ -130,7 +130,7 @@ internal sealed class Program
     /// <summary>
     /// Run the planner to decide whether to run the GitHub skill function and add the result to the chat history.
     /// </summary>
-    private static async Task<string> PlanGitHubSkill(
+    private static async Task<string> PlanGitHubSkillAsync(
         GitHubSkillOptions gitHubOptions, ActionPlanner planner, OpenAIChatHistory chatHistory, string input, int tokenAllowance, ILogger logger)
     {
         // Ask the planner to create a plan based off the user's input. If the plan elicits no steps, continue normally.

@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -22,16 +23,19 @@ public sealed class InstrumentedPlan : IPlan
     public string Name => this._plan.Name;
 
     /// <inheritdoc/>
-    public string SkillName => this._plan.SkillName;
+    public string PluginName => this._plan.PluginName;
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public string SkillName => this._plan.PluginName;
+#pragma warning restore CS1591
 
     /// <inheritdoc/>
     public string Description => this._plan.Description;
 
     /// <inheritdoc/>
-    public bool IsSemantic => this._plan.IsSemantic;
-
-    /// <inheritdoc/>
-    public CompleteRequestSettings RequestSettings => this._plan.RequestSettings;
+    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
@@ -55,24 +59,30 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
         SKContext context,
-        CompleteRequestSettings? settings = null,
+        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
         return await this.InvokeWithInstrumentationAsync(() =>
-            this._plan.InvokeAsync(context, settings, cancellationToken)).ConfigureAwait(false);
+            this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(CompleteRequestSettings settings) =>
-        this._plan.SetAIConfiguration(settings);
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._plan.SetAIConfiguration(requestSettings);
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
         this._plan.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetDefaultSkillCollection(IReadOnlySkillCollection skills) =>
-        this._plan.SetDefaultSkillCollection(skills);
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
+        this._plan.SetDefaultFunctionCollection(functions);
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
+    this._plan.SetDefaultFunctionCollection(skills);
 
     #region private ================================================================================
 
@@ -156,6 +166,15 @@ public sealed class InstrumentedPlan : IPlan
 
         return result;
     }
+
+    #endregion
+
+    #region Obsolete =======================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic => this._plan.IsSemantic;
 
     #endregion
 }

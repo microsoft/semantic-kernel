@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Planning;
@@ -10,12 +11,17 @@ namespace Microsoft.SemanticKernel.Planning;
 public abstract class PlannerConfigBase
 {
     /// <summary>
-    /// A list of skills to exclude from the plan creation request.
+    /// A list of plugins to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedSkills { get; } = new();
+    public HashSet<string> ExcludedPlugins { get; } = new();
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.
     /// </summary>
     public HashSet<string> ExcludedFunctions { get; } = new();
+
+    /// <summary>
+    /// Delegate to get the prompt template string.
+    /// </summary>
+    public Func<string>? GetPromptTemplate { get; set; } = null;
 }

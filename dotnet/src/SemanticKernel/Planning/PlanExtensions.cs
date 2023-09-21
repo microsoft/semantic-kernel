@@ -21,10 +21,10 @@ public static class PlanExtensions
         {
             if (step.Steps.Count == 0)
             {
-                string skillName = step.SkillName;
+                string pluginName = step.PluginName;
                 string stepName = step.Name;
 
-                return $"{indent}{indent}- {string.Join(".", skillName, stepName)}";
+                return $"{indent}{indent}- {string.Join(".", pluginName, stepName)}";
             }
 
             return step.ToSafePlanString(indent + indent);
@@ -44,7 +44,7 @@ public static class PlanExtensions
         {
             if (step.Steps.Count == 0)
             {
-                string skillName = step.SkillName;
+                string pluginName = step.PluginName;
                 string stepName = step.Name;
 
                 string parameters = string.Join(" ", step.Parameters.Select(param => $"{param.Key}='{param.Value}'"));
@@ -59,7 +59,7 @@ public static class PlanExtensions
                     outputs = $" => {outputs}";
                 }
 
-                return $"{indent}{indent}- {string.Join(".", skillName, stepName)}{parameters}{outputs}";
+                return $"{indent}{indent}- {string.Join(".", pluginName, stepName)}{parameters}{outputs}";
             }
 
             return step.ToPlanString(indent + indent);
