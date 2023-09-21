@@ -100,7 +100,7 @@ Question: {{ $input }}
 
         try
         {
-            answer = await context.Kernel.RunAsync(input).ConfigureAwait(false);
+            answer = await context.Kernel.RunAsync(input, this._mathTranslator).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
