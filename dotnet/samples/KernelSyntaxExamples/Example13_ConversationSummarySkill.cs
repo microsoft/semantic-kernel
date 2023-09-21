@@ -210,8 +210,8 @@ A possible summary is:
 - They use a Lorem Ipsum generator, but it repeats itself after a while.
 - They sing the national anthems of Canada and the United States, and then talk about their favorite Seattle Kraken hockey players.
 - They finally reach their desired length of text and say goodbye to each other.
-======== SampleSkills - Conversation Summary Skill - Action Items ========
-Generated Action Items:
+======== SampleSkills - Conversation Summary Skill - Action Functions ========
+Generated Action Functions:
 
 {
     "actionItems": [

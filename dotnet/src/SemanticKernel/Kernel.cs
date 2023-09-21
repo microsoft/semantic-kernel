@@ -96,7 +96,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
     {
-        return this.RegisterSemanticFunction(FunctionCollection.GlobalFunctions, functionName, functionConfig);
+        return this.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsCollectionName, functionName, functionConfig);
     }
 
     /// <inheritdoc/>
@@ -119,7 +119,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctions;
+            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
             this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", pluginInstance.GetType().FullName);
         }
         else

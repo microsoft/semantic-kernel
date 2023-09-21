@@ -20,7 +20,7 @@ internal sealed class IReadOnlyFunctionCollectionTypeProxy
     public IReadOnlyFunctionCollectionTypeProxy(IReadOnlyFunctionCollection collection) => this._collection = collection;
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-    public FunctionsProxy[] Items
+    public FunctionsProxy[] Functions
     {
         get
         {

@@ -24,7 +24,7 @@ namespace Microsoft.SemanticKernel;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class FunctionCollection : IFunctionCollection
 {
-    internal const string GlobalFunctions = "_GLOBAL_FUNCTIONS_";
+    internal const string GlobalFunctionsCollectionName = "_GLOBAL_FUNCTIONS_";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
@@ -32,7 +32,7 @@ public class FunctionCollection : IFunctionCollection
     /// <param name="loggerFactory">The logger factory.</param>
     public FunctionCollection(ILoggerFactory? loggerFactory = null)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(FunctionCollection)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(FunctionCollection)) ?? NullLogger.Instance;
 
         // Important: names are case insensitive
         this._functionCollection = new(StringComparer.OrdinalIgnoreCase);
@@ -55,7 +55,7 @@ public class FunctionCollection : IFunctionCollection
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName) =>
-        this.GetFunction(GlobalFunctions, functionName);
+        this.GetFunction(GlobalFunctionsCollectionName, functionName);
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string pluginName, string functionName)
@@ -70,7 +70,7 @@ public class FunctionCollection : IFunctionCollection
 
     /// <inheritdoc/>
     public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction) =>
-        this.TryGetFunction(GlobalFunctions, functionName, out availableFunction);
+        this.TryGetFunction(GlobalFunctionsCollectionName, functionName, out availableFunction);
 
     /// <inheritdoc/>
     public bool TryGetFunction(string pluginName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)
@@ -111,7 +111,7 @@ public class FunctionCollection : IFunctionCollection
     [DoesNotReturn]
     private void ThrowFunctionNotAvailable(string pluginName, string functionName)
     {
-        this._logger.LogError("Function not available: plugin:{0} function:{1}", pluginName, functionName);
+        this._logger.LogError("Function not available: plugin:{PluginName} function:{FunctionName}", pluginName, functionName);
         throw new SKException($"Function not available {pluginName}.{functionName}");
     }
 
