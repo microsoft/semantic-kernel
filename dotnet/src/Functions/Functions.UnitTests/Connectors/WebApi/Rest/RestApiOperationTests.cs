@@ -94,7 +94,7 @@ public class RestApiOperationTests
             name: "fake-path-parameter",
             type: "fake_type",
             isRequired: true,
-            explode: false,
+            expand: false,
             location: RestApiOperationParameterLocation.Path,
             defaultValue: "fake-default-path");
 
@@ -124,7 +124,7 @@ public class RestApiOperationTests
             name: "p1",
             type: "fake_type",
             isRequired: false,
-            explode: false,
+            expand: false,
             location: RestApiOperationParameterLocation.Query,
             defaultValue: "dv1");
 
@@ -132,7 +132,7 @@ public class RestApiOperationTests
             name: "p2",
             type: "fake_type",
             isRequired: false,
-            explode: false,
+            expand: false,
             location: RestApiOperationParameterLocation.Query);
 
         var sut = new RestApiOperation(
@@ -247,8 +247,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name: "fake_header_one", type: "string", isRequired: true, explode: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new(name: "fake_header_two", type : "string", isRequired : false, explode : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
+            new(name: "fake_header_one", type: "string", isRequired: true, expand: false, location: RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple)
         };
 
         var sut = new RestApiOperation("fake_id", new Uri("http://fake_url"), "fake_path", HttpMethod.Get, "fake_description", metadata, rawHeaders);
@@ -272,8 +272,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new RestApiOperationParameter(name: "fake_header_one", type : "string", isRequired : true, explode : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
-            new RestApiOperationParameter(name : "fake_header_two", type : "string", isRequired : false, explode : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple)
+            new RestApiOperationParameter(name: "fake_header_one", type : "string", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Header, style: RestApiOperationParameterStyle.Simple),
+            new RestApiOperationParameter(name : "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple)
         };
 
         var arguments = new Dictionary<string, string>
@@ -305,8 +305,8 @@ public class RestApiOperationTests
 
         var metadata = new List<RestApiOperationParameter>
         {
-            new(name : "fake_header_one", type : "string", isRequired : true, explode : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple),
-            new(name: "fake_header_two", type : "string", isRequired : false, explode : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value")
+            new(name : "fake_header_one", type : "string", isRequired : true, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple),
+            new(name: "fake_header_two", type : "string", isRequired : false, expand : false, location : RestApiOperationParameterLocation.Header, style : RestApiOperationParameterStyle.Simple, defaultValue: "fake_header_two_default_value")
         };
 
         var arguments = new Dictionary<string, string>

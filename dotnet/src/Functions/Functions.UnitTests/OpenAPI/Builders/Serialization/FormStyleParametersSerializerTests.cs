@@ -17,7 +17,7 @@ public class FormStyleParametersSerializerTests
                 name: "id",
                 type: "array",
                 isRequired: true,
-                explode: true, //Specify generating a separate parameter for each array item.
+                expand: true, //Specify generating a separate parameter for each array item.
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "integer");
@@ -39,7 +39,7 @@ public class FormStyleParametersSerializerTests
                 name: "id",
                 type: "array",
                 isRequired: true,
-                explode: false, //Specify generating a parameter with comma-separated values for each array item.
+                expand: false, //Specify generating a parameter with comma-separated values for each array item.
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.Form,
                 arrayItemType: "integer");
@@ -61,7 +61,7 @@ public class FormStyleParametersSerializerTests
                 name: "id",
                 type: "integer",
                 isRequired: true,
-                explode: false,
+                expand: false,
                 location: RestApiOperationParameterLocation.Query,
                 style: RestApiOperationParameterStyle.Form);
 

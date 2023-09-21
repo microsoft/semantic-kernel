@@ -10,12 +10,12 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 
 /// <summary>
-/// Serializes REST API operation parameter of the 'Form' style.
+/// Serializes REST API operation parameter of the 'SpaceDelimited' style.
 /// </summary>
-internal static class FormStyleParameterSerializer
+internal static class SpaceDelimitedStyleParameterSerializer
 {
     /// <summary>
-    /// Serializes a REST API operation `Form` style parameter.
+    /// Serializes a REST API operation `SpaceDelimited` style parameter.
     /// </summary>
     /// <param name="parameter">The REST API operation parameter to serialize.</param>
     /// <param name="argument">The parameter argument.</param>
@@ -29,19 +29,17 @@ internal static class FormStyleParameterSerializer
             throw new ArgumentNullException(nameof(parameter));
         }
 
-        if (parameter.Style != RestApiOperationParameterStyle.Form)
+        if (parameter.Style != RestApiOperationParameterStyle.SpaceDelimited)
         {
-            throw new SKException($"Unexpected Rest Api operation parameter style - `{parameter.Style}`");
+            throw new SKException($"Unexpected Rest Api operation parameter style `{parameter.Style}`. Parameter name `{parameter.Name}`.");
         }
 
-        // Handling parameters of array type.
-        if (parameter.Type == ArrayType)
+        if (parameter.Type != ArrayType)
         {
-            return SerializeArrayParameter(parameter, argument);
+            throw new SKException($"Serialization of Rest API operation parameters of type `{parameter.Type}` is not supported for the `{RestApiOperationParameterStyle.SpaceDelimited}` style parameters. Parameter name `{parameter.Name}`.");
         }
 
-        // Handling parameters of primitive - integer, string, etc type.
-        return $"{parameter.Name}={HttpUtility.UrlEncode(argument)}";
+        return SerializeArrayParameter(parameter, argument);
     }
 
     /// <summary>
@@ -54,7 +52,7 @@ internal static class FormStyleParameterSerializer
     {
         if (JsonNode.Parse(argument) is not JsonArray array)
         {
-            throw new SKException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array");
+            throw new SKException($"Can't deserialize parameter name `{parameter.Name}` argument `{argument}` to JSON array.");
         }
 
         if (parameter.Expand)
@@ -62,7 +60,7 @@ internal static class FormStyleParameterSerializer
             return SerializeArrayItemsAsSeparateParameters(parameter.Name, array);              //id=1&id=2&id=3
         }
 
-        return SerializeArrayItemsAsParameterWithCommaSeparatedValues(parameter.Name, array);   //id=1,2,3
+        return SerializeArrayItemsAsParameterWithSpaceSeparatedValues(parameter.Name, array);   //id=1%202%203
     }
 
     /// <summary>
@@ -86,14 +84,14 @@ internal static class FormStyleParameterSerializer
     }
 
     /// <summary>
-    /// Serializes the items of an array as a single parameter with comma-separated values.
+    /// Serializes the items of an array as a single parameter with space-separated values.
     /// </summary>
     /// <param name="name">The name of the parameter.</param>
     /// <param name="array">The array containing the items to be serialized.</param>
-    /// <returns>A string containing the serialized parameter in the format "name=item1,item2,...".</returns>
-    private static string SerializeArrayItemsAsParameterWithCommaSeparatedValues(string name, JsonArray array)
+    /// <returns>A string containing the serialized parameter in the format "name=item1 item2 ...".</returns>
+    private static string SerializeArrayItemsAsParameterWithSpaceSeparatedValues(string name, JsonArray array)
     {
-        const string ValuesSeparator = ",";
+        const string ValuesSeparator = "%20";
 
         var values = new List<string>();
 
@@ -102,6 +100,6 @@ internal static class FormStyleParameterSerializer
             values.Add(HttpUtility.UrlEncode(item?.ToString()));
         }
 
-        return $"{name}={string.Join(ValuesSeparator, values)}"; //id=1,2,3
+        return $"{name}={string.Join(ValuesSeparator, values)}"; //id=1%202%203
     }
 }

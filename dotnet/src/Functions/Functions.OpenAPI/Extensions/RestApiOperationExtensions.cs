@@ -55,7 +55,7 @@ internal static class RestApiOperationExtensions
                 name: RestApiOperation.ServerUrlArgumentName,
                 type: "string",
                 isRequired: false,
-                explode: false,
+                expand: false,
                 RestApiOperationParameterLocation.Path,
                 RestApiOperationParameterStyle.Simple,
                 defaultValue: serverUrlString)
@@ -121,7 +121,7 @@ internal static class RestApiOperationExtensions
             RestApiOperation.ContentTypeArgumentName,
             "string",
             isRequired: false,
-            explode: false,
+            expand: false,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
             description: "Content type of REST API request body.");
@@ -138,7 +138,7 @@ internal static class RestApiOperationExtensions
             RestApiOperation.PayloadArgumentName,
             operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object",
             isRequired: true,
-            explode: false,
+            expand: false,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
             description: operation.Payload?.Description ?? "REST API request body.");
@@ -167,7 +167,7 @@ internal static class RestApiOperationExtensions
                     parameterName,
                     property.Type,
                     property.IsRequired,
-                    explode: false,
+                    expand: false,
                     RestApiOperationParameterLocation.Body,
                     RestApiOperationParameterStyle.Simple,
                     description: property.Description));

@@ -308,7 +308,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         var explodeFormParam = operation.Parameters.Single(p => p.Name == parameterName);
 
-        Assert.True(explodeFormParam.Explode);
+        Assert.True(explodeFormParam.Expand);
     }
 
     [Fact]
@@ -324,7 +324,7 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         var explodeFormParam = operation.Parameters.Single(p => p.Name == "nonExplodeFormParam");
 
-        Assert.False(explodeFormParam.Explode);
+        Assert.False(explodeFormParam.Expand);
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)
