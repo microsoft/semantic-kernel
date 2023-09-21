@@ -352,29 +352,27 @@ public abstract class ClientBase
             ChoiceCount = requestSettings.ResultsPerPrompt,
         };
 
-        if (requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallNone)
-        {
-            options.FunctionCall = FunctionDefinition.None;
-        }
-        else if (requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto)
-        {
-            options.FunctionCall = FunctionDefinition.Auto;
-        }
-        else if (!requestSettings.FunctionCall.IsNullOrEmpty())
-        {
-            OpenAIFunction? function = requestSettings.Functions.Where(
-                f => f.FunctionName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefault();
-
-            if (function is not null)
-            {
-                options.FunctionCall = function.ToFunctionDefinition();
-            }
-        }
-
         if (requestSettings.Functions is not null)
         {
-            options.Functions = requestSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
+            if (requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto)
+            {
+                options.FunctionCall = FunctionDefinition.Auto;
+                options.Functions = requestSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
+            }
+            else if (requestSettings.FunctionCall != OpenAIRequestSettings.FunctionCallNone
+                    && !requestSettings.FunctionCall.IsNullOrEmpty())
+            {
+                var filteredFunctions = requestSettings.Functions
+                    .Where(f => f.FunctionName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                OpenAIFunction? function = filteredFunctions.FirstOrDefault();
+                if (function is not null)
+                {
+                    options.FunctionCall = function.ToFunctionDefinition();
+                    options.Functions = filteredFunctions.Select(f => f.ToFunctionDefinition()).ToList();
+                }
+            }
         }
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)

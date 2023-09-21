@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.SkillDefinition;
 using RepoUtils;
@@ -26,9 +27,20 @@ public static class Example59_OpenAIFunctionCalling
         var chatCompletion = kernel.GetService<IChatCompletion>();
         var chatHistory = chatCompletion.CreateNewChat();
 
-        await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel);
+        OpenAIRequestSettings requestSettings = new()
+        {
+            // Include all functions registered with the kernel.
+            // Alternatively, you can provide your own list of OpenAIFunctions to include.
+            Functions = kernel.Skills.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList(),
+        };
 
-        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel);
+        // Set FunctionCall to the name of a specific function to force the model to use that function.
+        requestSettings.FunctionCall = "Date";
+        await CompleteChatWithFunctionsAsync("What day is today?", chatHistory, chatCompletion, kernel, requestSettings);
+
+        // Set FunctionCall to auto to let the model choose the best function to use.
+        requestSettings.FunctionCall = OpenAIRequestSettings.FunctionCallAuto;
+        await CompleteChatWithFunctionsAsync("What computer tablets are available for under $200?", chatHistory, chatCompletion, kernel, requestSettings);
     }
 
     private static async Task<IKernel> InitializeKernelAsync()
@@ -52,16 +64,10 @@ public static class Example59_OpenAIFunctionCalling
         return kernel;
     }
 
-    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel)
+    private static async Task CompleteChatWithFunctionsAsync(string ask, ChatHistory chatHistory, IChatCompletion chatCompletion, IKernel kernel, OpenAIRequestSettings requestSettings)
     {
         Console.WriteLine($"User message: {ask}");
         chatHistory.AddUserMessage(ask);
-
-        // Retrieve available functions from the kernel and add to request settings
-        OpenAIRequestSettings requestSettings = new()
-        {
-            Functions = kernel.Skills.GetFunctionViews().Select(f => f.ToOpenAIFunction()).ToList()
-        };
 
         // Send request
         var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory, requestSettings))[0];
@@ -77,23 +83,20 @@ public static class Example59_OpenAIFunctionCalling
         OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
         if (functionResponse is not null)
         {
+            // Print function response details
             Console.WriteLine("Function name: " + functionResponse.FunctionName);
             Console.WriteLine("Plugin name: " + functionResponse.PluginName);
             Console.WriteLine("Arguments: ");
-
-            var context = kernel.CreateNewContext();
-            if (context.Skills!.TryGetFunction(functionResponse.PluginName, functionResponse.FunctionName, out ISKFunction? func))
+            foreach (var parameter in functionResponse.Parameters)
             {
-                foreach (var parameter in functionResponse.Parameters)
-                {
-                    Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
+                Console.WriteLine($"- {parameter.Key}: {parameter.Value}");
+            }
 
-                    // Add parameter to context
-                    context.Variables.Set(parameter.Key, parameter.Value.ToString());
-                }
-
-                // Invoke the function
-                var result = await func.InvokeAsync(context);
+            // If the function returned by OpenAI is an SKFunction registered with the kernel,
+            // you can invoke it using the following code.
+            if (kernel.Skills.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
+            {
+                var result = await kernel.RunAsync(func, context).ConfigureAwait(false);
                 Console.WriteLine(result.Result);
             }
             else
