@@ -42,15 +42,12 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public string Description { get; }
 
     /// <inheritdoc/>
-    public bool IsSemantic { get; } = false;
-
-    /// <inheritdoc/>
     public AIRequestSettings? RequestSettings { get; }
 
     /// <summary>
     /// List of function parameters
     /// </summary>
-    public IList<ParameterView> Parameters { get; }
+    public IReadOnlyList<ParameterView> Parameters { get; }
 
     /// <summary>
     /// Create a native function instance, wrapping a native object method
@@ -122,7 +119,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         return new NativeFunction(
             delegateFunction: methodDetails.Function,
-            parameters: parameters is not null ? parameters.ToList() : (IList<ParameterView>)Array.Empty<ParameterView>(),
+            parameters: parameters.ToList(),
             description: description,
             skillName: skillName!,
             functionName: functionName,
@@ -131,16 +128,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     public FunctionView Describe()
-    {
-        return new FunctionView
-        {
-            IsSemantic = this.IsSemantic,
-            Name = this.Name,
-            SkillName = this.SkillName,
-            Description = this.Description,
-            Parameters = this.Parameters,
-        };
-    }
+        => this._view.Value;
 
     /// <inheritdoc/>
     public async Task<SKContext> InvokeAsync(
@@ -223,7 +211,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     internal NativeFunction(
         Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
-        IList<ParameterView> parameters,
+        IReadOnlyList<ParameterView> parameters,
         string skillName,
         string functionName,
         string description,
@@ -232,16 +220,18 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         Verify.NotNull(delegateFunction);
         Verify.ValidSkillName(skillName);
         Verify.ValidFunctionName(functionName);
-        Verify.ParametersUniqueness(parameters);
 
         this._logger = logger;
 
         this._function = delegateFunction;
-        this.Parameters = parameters;
+        this.Parameters = parameters.ToArray();
+        Verify.ParametersUniqueness(this.Parameters);
 
         this.Name = functionName;
         this.SkillName = skillName;
         this.Description = description;
+
+        this._view = new(() => new (functionName, skillName, description) { Parameters = this.Parameters });
     }
 
     /// <summary>
@@ -481,9 +471,10 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                 }
 
                 // 4. Otherwise, fail.
-                throw new SKException($"Missing value for parameter '{name}'");
+                throw new SKException($"Missing value for parameter '{name}'",
+                    new ArgumentException("Missing value function parameter", name));
 
-                object? Process(string value)
+                object ? Process(string value)
                 {
                     if (type == typeof(string))
                     {
@@ -840,6 +831,17 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     /// <summary>Formatter functions for converting parameter types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string>?> s_formatters = new();
+
+    private readonly Lazy<FunctionView> _view;
+
+    #endregion
+
+    #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public bool IsSemantic => false;
 
     #endregion
 }
