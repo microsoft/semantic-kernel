@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -43,8 +43,8 @@ public sealed class SequentialPlannerTests
             functionsView.Add(functionView);
 
             mockFunction.Setup(x =>
-                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()))
-                .Returns<SKContext, CompleteRequestSettings, CancellationToken>((context, settings, cancellationToken) =>
+                    x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+                .Returns<SKContext, object, CancellationToken>((context, settings, cancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
                     return Task.FromResult(context);
@@ -88,7 +88,7 @@ public sealed class SequentialPlannerTests
             It.IsAny<SKContext>(),
             null,
             default
-        )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
+        )).Callback<SKContext, object, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
@@ -170,7 +170,7 @@ public sealed class SequentialPlannerTests
             It.IsAny<SKContext>(),
             null,
             default
-        )).Callback<SKContext, CompleteRequestSettings, CancellationToken>(
+        )).Callback<SKContext, object, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(returnContext));
 
