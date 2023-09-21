@@ -11,15 +11,22 @@ using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Orchestration;
-internal sealed class KernelContext : IKernelContext, IDisposable
+
+/// <summary>
+/// Kernel execution context implementation
+/// This will live during the execution of functions.
+/// </summary>
+internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposable
 {
     private Kernel _kernel;
 
+    /// <inheritdoc/>
     public ILoggerFactory LoggerFactory => this._kernel.LoggerFactory;
 
+    /// <inheritdoc/>
     public IReadOnlySkillCollection Skills => this._kernel.Skills;
 
-    internal KernelContext(
+    internal KernelExecutionContext(
         IReadOnlySkillCollection skillCollection,
         IAIServiceProvider aiServiceProvider,
         IPromptTemplateEngine promptTemplateEngine,
@@ -36,16 +43,19 @@ internal sealed class KernelContext : IKernelContext, IDisposable
             loggerFactory);
     }
 
-    public Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
+    /// <inheritdoc/>
+    public Task<SKContext> RunAsync(ContextVariables variables, ISKFunction[] pipeline, CancellationToken cancellationToken = default)
     {
         return this._kernel.RunAsync(variables, cancellationToken, pipeline);
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         this._kernel.Dispose();
     }
 
+    /// <inheritdoc/>
     public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlySkillCollection? skills = null)
         => this._kernel.CreateNewContext(variables, skills);
 }

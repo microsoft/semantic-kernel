@@ -21,7 +21,7 @@ public class CodeBlockTests
 {
     private readonly Mock<IReadOnlySkillCollection> _skills;
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
-    private readonly Mock<IKernelContext> _kernelContext = new();
+    private readonly Mock<IKernelExecutionContext> _kernelContext = new();
 
     public CodeBlockTests()
     {
@@ -33,7 +33,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
         var context = new SKContext(this._kernelContext.Object);
         this._skills.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._logger);

@@ -146,7 +146,7 @@ This plan uses the `GitHubSkill.PullsList` function to list the open pull reques
             skills = new Mock<ISkillCollection>();
             skills.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
         kernelContext.SetupGet(k => k.Skills).Returns(skills.Object);
         var kernel = new Mock<IKernel>();
 

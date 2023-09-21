@@ -52,7 +52,7 @@ public class SKContextExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
         kernelContext.SetupGet(x => x.Skills).Returns(skills);
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -107,7 +107,7 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
         kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
 
         // Arrange GetAvailableFunctionsAsync parameters
@@ -174,7 +174,7 @@ public class SKContextExtensionsTests
         skills.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
         kernelContext.SetupGet(k => k.LoggerFactory).Returns(TestConsoleLogger.LoggerFactory);
         kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
 
@@ -209,7 +209,7 @@ public class SKContextExtensionsTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
 
         var variables = new ContextVariables();
         var skills = new SkillCollection();

@@ -26,6 +26,7 @@ public class SkillCollection : ISkillCollection
     /// <summary>
     /// Initializes a new instance of the <see cref="SkillCollection"/> class.
     /// </summary>
+    /// <param name="readOnlySkillCollection">Optional skill collection to copy from</param>
     /// <param name="loggerFactory">The logger factory.</param>
     public SkillCollection(IReadOnlySkillCollection? readOnlySkillCollection = null, ILoggerFactory? loggerFactory = null)
     {
@@ -38,6 +39,21 @@ public class SkillCollection : ISkillCollection
         {
             this.Populate(readOnlySkillCollection);
         }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SkillCollection"/> class.
+    /// </summary>
+    /// <param name="loggerFactory">The logger factory.</param>
+    public SkillCollection(ILoggerFactory? loggerFactory = null) : this(null, loggerFactory)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SkillCollection"/> class.
+    /// </summary>
+    public SkillCollection() : this(null, null)
+    {
     }
 
     /// <summary>

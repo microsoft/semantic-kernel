@@ -27,7 +27,7 @@ public sealed class PromptTemplateEngineTests
     private readonly Mock<IReadOnlySkillCollection> _skills;
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IKernel> _kernel;
-    private readonly Mock<IKernelContext> _kernelContext;
+    private readonly Mock<IKernelExecutionContext> _kernelContext;
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
@@ -36,7 +36,7 @@ public sealed class PromptTemplateEngineTests
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._skills = new Mock<IReadOnlySkillCollection>();
         this._kernel = new Mock<IKernel>();
-        this._kernelContext = new Mock<IKernelContext>();
+        this._kernelContext = new Mock<IKernelExecutionContext>();
 
         this._kernelContext.SetupGet(x => x.Skills).Returns(this._skills.Object);
     }

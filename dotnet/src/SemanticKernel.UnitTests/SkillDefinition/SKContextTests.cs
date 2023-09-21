@@ -21,7 +21,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(new Mock<IKernelContext>().Object, variables);
+        var target = new SKContext(new Mock<IKernelExecutionContext>().Object, variables);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -58,12 +58,12 @@ public class SKContextTests
         Assert.Equal("ciao", result.Result);
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IKernelContext> kernelContextMock) SetupKernelMock(ISkillCollection? skills = null)
+    private (Mock<IKernel> kernelMock, Mock<IKernelExecutionContext> kernelContextMock) SetupKernelMock(ISkillCollection? skills = null)
     {
         skills ??= new Mock<ISkillCollection>().Object;
 
         var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
 
         kernel.SetupGet(x => x.Skills).Returns(skills);
         kernelContext.SetupGet(x => x.Skills).Returns(skills);

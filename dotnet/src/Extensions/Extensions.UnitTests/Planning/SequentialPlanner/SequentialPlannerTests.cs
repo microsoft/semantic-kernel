@@ -60,7 +60,7 @@ public sealed class SequentialPlannerTests
         }
 
         skills.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
         kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
@@ -150,7 +150,7 @@ public sealed class SequentialPlannerTests
     public async Task InvalidXMLThrowsAsync()
     {
         // Arrange
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
         var kernel = new Mock<IKernel>();
 
         var skills = new Mock<ISkillCollection>();

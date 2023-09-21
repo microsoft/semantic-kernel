@@ -32,7 +32,7 @@ namespace Microsoft.SemanticKernel;
 /// * RPC functions and secure environments, e.g. sandboxing and credentials management
 /// * auto-generate pipelines given a higher level goal
 /// </summary>
-public sealed class Kernel : IKernel, IKernelContext, IDisposable
+public sealed class Kernel : IKernel, IKernelExecutionContext, IDisposable
 {
     /// <inheritdoc/>
     public ILoggerFactory LoggerFactory { get; }
@@ -181,6 +181,10 @@ public sealed class Kernel : IKernel, IKernelContext, IDisposable
         => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <inheritdoc/>
+    public Task<SKContext> RunAsync(ContextVariables variables, ISKFunction[] pipeline, CancellationToken cancellationToken = default)
+        => this.RunAsync(variables, cancellationToken, pipeline);
+
+    /// <inheritdoc/>
     public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = new SKContext(this, variables);
@@ -239,7 +243,7 @@ repeat:
     public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlySkillCollection? skills = null)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        var kernelContext = new KernelContext(
+        var kernelContext = new KernelExecutionContext(
             skills ?? this._skillCollection,
             this._aiServiceProvider,
             this.PromptTemplateEngine,

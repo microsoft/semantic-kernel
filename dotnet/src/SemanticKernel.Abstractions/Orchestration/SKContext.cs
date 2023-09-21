@@ -55,7 +55,7 @@ public sealed class SKContext
     /// <summary>
     /// Kernel context reference
     /// </summary>
-    public IKernelContext Kernel => this.GetKernelContext();
+    public IKernelExecutionContext Kernel => this.GetKernelContext();
 
     /// <summary>
     /// Spawns the kernel for the context.
@@ -64,8 +64,8 @@ public sealed class SKContext
     /// The kernel context is a lightweight instance of the main kernel with its services.
     /// </remarks>
     /// <returns>Kernel reference</returns>
-    private IKernelContext GetKernelContext()
-        => (IKernelContext)this._kernelContext; // TODO: Clone a lightweight kernel instead of returning the same instance
+    private IKernelExecutionContext GetKernelContext()
+        => (IKernelExecutionContext)this._kernelContext; // TODO: Clone a lightweight kernel instead of returning the same instance
 
     /// <summary>
     /// Constructor for the context.
@@ -73,7 +73,7 @@ public sealed class SKContext
     /// <param name="kernelContext">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
     internal SKContext(
-        IKernelContext kernelContext,
+        IKernelExecutionContext kernelContext,
         ContextVariables? variables = null)
     {
         Verify.NotNull(kernelContext, nameof(kernelContext));
@@ -115,7 +115,7 @@ public sealed class SKContext
     /// <summary>
     /// Kernel instance reference for this context.
     /// </summary>
-    private readonly IKernelContext _kernelContext;
+    private readonly IKernelExecutionContext _kernelContext;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

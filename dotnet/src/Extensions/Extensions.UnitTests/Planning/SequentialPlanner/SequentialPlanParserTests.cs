@@ -39,7 +39,7 @@ public class SequentialPlanParserTests
     }
 
     private SKContext CreateSKContext(
-        IKernelContext kernelContext,
+        IKernelExecutionContext kernelContext,
         ContextVariables? variables = null)
     {
         return new SKContext(kernelContext, variables);
@@ -60,7 +60,7 @@ public class SequentialPlanParserTests
         var kernelMock = this.CreateKernelMock(out var skills, out _);
         kernel = kernelMock.Object;
 
-        var kernelContextMock = new Mock<IKernelContext>();
+        var kernelContextMock = new Mock<IKernelExecutionContext>();
 
         // For Create
         kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlySkillCollection>()))

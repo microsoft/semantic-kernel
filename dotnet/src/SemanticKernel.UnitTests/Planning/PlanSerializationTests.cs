@@ -16,7 +16,7 @@ namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
-    private Mock<IKernelContext> _kernelContext = new();
+    private Mock<IKernelExecutionContext> _kernelContext = new();
 
     [Fact]
     public void CanSerializePlan()
@@ -259,7 +259,7 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var skills = new Mock<ISkillCollection>();
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
         kernel.SetupGet(x => x.Skills).Returns(skills.Object);
         kernelContext.SetupGet(x => x.Skills).Returns(skills.Object);
 

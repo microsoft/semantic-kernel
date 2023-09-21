@@ -52,7 +52,7 @@ public sealed class PlanTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);
-        var kernel = new Mock<IKernelContext>();
+        var kernel = new Mock<IKernelExecutionContext>();
 
         var context = new SKContext(kernel.Object, new ContextVariables("Some input"));
 
@@ -785,12 +785,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(expected, result.Result);
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IKernelContext> kernelContextMock) SetupKernelMock(ISkillCollection? skills = null)
+    private (Mock<IKernel> kernelMock, Mock<IKernelExecutionContext> kernelContextMock) SetupKernelMock(ISkillCollection? skills = null)
     {
         skills ??= new Mock<ISkillCollection>().Object;
 
         var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelContext>();
+        var kernelContext = new Mock<IKernelExecutionContext>();
 
         kernel.SetupGet(x => x.Skills).Returns(skills);
         kernelContext.SetupGet(x => x.Skills).Returns(skills);
