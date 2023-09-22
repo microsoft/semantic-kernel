@@ -13,7 +13,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Planners</Title>
-    <Description>Semantic Kernel Planners</Description>
+    <Description>Semantic Kernel Core Planners which include the Action, Sequential, and Stepwise planners.</Description>
   </PropertyGroup>
 
   <ItemGroup>
