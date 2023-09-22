@@ -61,7 +61,7 @@ public sealed class ActionPlanner : IActionPlanner
         Verify.NotNull(kernel);
         this._kernel = kernel;
 
-        // Set up Config with default values and excluded skills
+        // Set up Config with default values and excluded plugins
         this.Config = config ?? new();
         this.Config.ExcludedPlugins.Add(PluginName);
 
