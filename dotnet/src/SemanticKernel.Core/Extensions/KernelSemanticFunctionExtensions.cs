@@ -118,7 +118,7 @@ public static class KernelSemanticFunctionExtensions
         return kernel.RunAsync(skfunction);
     }
 
-    [Obsolete("Methods and classes which isnclud Skill in the name have been renamed to use Plugin. Use Kernel.ImportSemanticFunctionsFromDirectory instead. This will be removed in a future release.")]
+    [Obsolete("Methods and classes which isnclud Skill in the name have been renamed to use Plugin. Use Kernel.ImportSemanticPluginFromDirectory instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public static IDictionary<string, ISKFunction> ImportSemanticSkillFromDirectory(
