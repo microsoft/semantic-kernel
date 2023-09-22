@@ -30,8 +30,8 @@ public static class Example14_SemanticMemory
 
         /* This example leverages Azure Cognitive Search to provide SK with Semantic Memory.
          *
-         * Azure Cognitive Search automatically indexes your data semantically, so you don't
-         * need to worry about embedding generation.
+         * You can build your own semantic memory combining an Embedding Generator
+         * with a Memory storage that supports search by similarity (ie semantic search).
          */
 
         var kernelWithACS = Kernel.Builder
@@ -46,10 +46,7 @@ public static class Example14_SemanticMemory
         Console.WriteLine("======== Semantic Memory (volatile, in RAM) ========");
         Console.WriteLine("====================================================");
 
-        /* You can build your own semantic memory combining an Embedding Generator
-         * with a Memory storage that supports search by similarity (ie semantic search).
-         *
-         * In this example we use a volatile memory, a local simulation of a vector DB.
+        /* In this example we use a volatile memory, a local simulation of a vector DB.
          *
          * You can replace VolatileMemoryStore with Qdrant (see QdrantMemoryStore connector)
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
@@ -125,11 +122,6 @@ public static class Example14_SemanticMemory
     private static async Task StoreMemoryAsync(IKernel kernel)
     {
         /* Store some data in the semantic memory.
-         *
-         * When using Azure Cognitive Search the data is automatically indexed on write.
-         *
-         * When using the combination of VolatileStore and Embedding generation, SK takes
-         * care of creating and storing the index
          */
 
         Console.WriteLine("\nAdding some GitHub file URLs and their descriptions to the semantic memory.");
