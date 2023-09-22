@@ -33,10 +33,10 @@ public abstract class PlannerConfigBase
     /// When using <see cref="Memory"/> to get relevant functions,
     /// this list of functions will be included regardless of relevancy.
     /// </summary>
-    public HashSet<(string, string)> IncludedFunctions { get; } = new();
+    public HashSet<(string PluginName, string FunctionName)> IncludedFunctions { get; } = new();
 
     /// <summary>
-    /// Semantic memory to use for function lookup (optional).
+    /// Optional semantic memory to use for optimizing function lookup during plan creation.
     /// This property will be ignored if <see cref="GetAvailableFunctionsAsync"/> is set.
     /// </summary>
     public ISemanticTextMemory Memory { get; set; } = NullMemory.Instance;
