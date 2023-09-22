@@ -52,7 +52,7 @@ public class SequentialPlanParserTests
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
+        var plan = planString.ToPlanFromXml(goal, kernel.Functions.GetFunctionCallback());
 
         // Assert
         Assert.NotNull(plan);

@@ -15,6 +15,44 @@ namespace Microsoft.SemanticKernel.Planning;
 public abstract class PlannerConfigBase
 {
     /// <summary>
+    /// Semantic memory configuration.
+    /// </summary>
+    public class SemanticMemoryConfig
+    {
+        /// <summary>
+        /// A list of functions to be included regardless of relevancy.
+        /// </summary>
+        public HashSet<(string PluginName, string FunctionName)> IncludedFunctions { get; } = new();
+
+        /// <summary>
+        /// Semantic memory to use for filtering function lookup during plan creation.
+        /// </summary>
+        public ISemanticTextMemory Memory { get; set; } = NullMemory.Instance;
+
+        /// <summary>
+        /// The maximum number of relevant functions to search for.
+        /// </summary>
+        /// <remarks>
+        /// Limits the number of relevant functions as result of semantic
+        /// search included in the plan creation request.
+        /// <see cref="IncludedFunctions"/> will be included
+        /// in the plan regardless of this limit.
+        /// </remarks>
+        public int MaxRelevantFunctions { get; set; } = 100;
+
+        /// <summary>
+        /// The minimum relevancy score for a function to be considered.
+        /// </summary>
+        /// <remarks>
+        /// Depending on the embeddings engine used, the user ask, the step goal
+        /// and the functions available, this value may need to be adjusted.
+        /// For default, this is set to null which will return the top
+        /// <see cref="MaxRelevantFunctions"/> sorted by relevancy.
+        /// </remarks>
+        public double? RelevancyThreshold { get; set; }
+    }
+
+    /// <summary>
     /// Delegate to get the prompt template string.
     /// </summary>
     public Func<string>? GetPromptTemplate { get; set; } = null;
@@ -30,37 +68,12 @@ public abstract class PlannerConfigBase
     public HashSet<string> ExcludedFunctions { get; } = new();
 
     /// <summary>
-    /// When using <see cref="Memory"/> to get relevant functions,
-    /// this list of functions will be included regardless of relevancy.
-    /// </summary>
-    public HashSet<(string, string)> IncludedFunctions { get; } = new();
-
-    /// <summary>
-    /// Semantic memory to use for function lookup (optional).
-    /// This property will be ignored if <see cref="GetAvailableFunctionsAsync"/> is set.
-    /// </summary>
-    public ISemanticTextMemory Memory { get; set; } = NullMemory.Instance;
-
-    /// <summary>
-    /// The maximum number of relevant functions to include in the plan.
+    /// Semantic Memory configuration, used to enable function filtering during plan creation.
     /// </summary>
     /// <remarks>
-    /// Limits the number of relevant functions as result of semantic
-    /// search included in the plan creation request.
-    /// <see cref="IncludedFunctions"/> will be included
-    /// in the plan regardless of this limit.
+    /// This configuration will be ignored if <see cref="GetAvailableFunctionsAsync"/> is set.
     /// </remarks>
-    public int MaxRelevantFunctions { get; set; } = 100;
-
-    /// <summary>
-    /// The minimum relevancy score for a function to be considered
-    /// </summary>
-    /// <remarks>
-    /// Depending on the embeddings engine used, the user ask, the step goal
-    /// and the functions available, this value may need to be adjusted.
-    /// For default, this is set to null to exhibit previous behavior.
-    /// </remarks>
-    public double? RelevancyThreshold { get; set; }
+    public SemanticMemoryConfig SemanticMemory { get; set; } = new();
 
     /// <summary>
     /// Callback to get the available functions for planning (optional).

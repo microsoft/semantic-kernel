@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -106,21 +105,20 @@ public sealed class ActionPlanner : IActionPlanner
         }
 
         // Build and return plan
-        Plan plan;
-        if (planData.Plan.Function.Contains("."))
+        Plan? plan = null;
+
+        FunctionUtils.GetFunctionCallbackNames(planData.Plan.Function, out var pluginName, out var functionName);
+        if (!string.IsNullOrEmpty(functionName))
         {
-            var parts = planData.Plan.Function.Split('.');
-            plan = new Plan(goal, this._context.Functions!.GetFunction(parts[0], parts[1]));
+            var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();
+            var pluginFunction = getFunctionCallback(pluginName, functionName);
+            if (pluginFunction != null)
+            {
+                plan = new Plan(goal, pluginFunction);
+            }
         }
-        else if (!string.IsNullOrWhiteSpace(planData.Plan.Function))
-        {
-            plan = new Plan(goal, this._context.Functions!.GetFunction(planData.Plan.Function));
-        }
-        else
-        {
-            // No function was found - return a plan with no steps.
-            plan = new Plan(goal);
-        }
+
+        plan ??= new(goal);
 
         // Populate plan parameters using the function and the parameters suggested by the planner
         if (plan.Steps.Count > 0)
@@ -144,15 +142,17 @@ public sealed class ActionPlanner : IActionPlanner
     /// </summary>
     /// <param name="goal">Currently unused. Will be used to handle long lists of functions.</param>
     /// <param name="context">Function execution context</param>
+    /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>List of functions, formatted accordingly to the prompt</returns>
     [SKFunction, Description("List all functions available in the kernel")]
-    public string ListOfFunctions(
+    public async Task<string> ListOfFunctionsAsync(
         [Description("The current goal processed by the planner")] string goal,
-        SKContext context)
+        SKContext context,
+        CancellationToken cancellationToken = default)
     {
         // Prepare list using the format used by skprompt.txt
         var list = new StringBuilder();
-        var availableFunctions = this.GetAvailableFunctions(context);
+        var availableFunctions = await context.Functions.GetFunctionsAsync(this.Config, goal, this._logger, cancellationToken).ConfigureAwait(false);
         this.PopulateList(list, availableFunctions);
 
         return list.ToString();
@@ -311,22 +311,6 @@ Goal: tell me a joke.
     private static string AddPeriod(string x)
     {
         return x.EndsWith(".", StringComparison.Ordinal) ? x : $"{x}.";
-    }
-
-    private IOrderedEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
-    {
-        Verify.NotNull(context.Functions);
-
-        var excludedPlugins = this.Config.ExcludedPlugins ?? new();
-        var excludedFunctions = this.Config.ExcludedFunctions ?? new();
-
-        var availableFunctions = context.Functions.GetFunctionViews()
-                .Where(s => !excludedPlugins.Contains(s.PluginName, StringComparer.CurrentCultureIgnoreCase)
-                    && !excludedFunctions.Contains(s.Name, StringComparer.CurrentCultureIgnoreCase))
-                .OrderBy(x => x.PluginName)
-                .ThenBy(x => x.Name);
-
-        return availableFunctions;
     }
 
     #endregion
