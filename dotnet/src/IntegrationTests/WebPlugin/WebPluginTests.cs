@@ -53,13 +53,13 @@ public sealed class WebPluginTests : IDisposable
         var search = kernel.ImportPlugin(plugin, "WebSearchEngine");
 
         // Act
-        SKContext result = await kernel.RunAsync(
+        KernelResult result = await kernel.RunAsync(
             prompt,
             search["Search"]
         );
 
         // Assert
-        Assert.Contains(expectedAnswerContains, result.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedAnswerContains, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

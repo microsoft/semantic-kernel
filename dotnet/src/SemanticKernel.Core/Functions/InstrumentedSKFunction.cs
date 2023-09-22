@@ -75,7 +75,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
         this._function.Describe();
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -141,7 +141,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async Task<SKContext> InvokeWithInstrumentationAsync(Func<Task<SKContext>> func)
+    private async Task<FunctionResult> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
     {
         using var activity = s_activitySource.StartActivity($"{this.PluginName}.{this.Name}");
 
@@ -150,7 +150,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        SKContext result;
+        FunctionResult result;
 
         try
         {
