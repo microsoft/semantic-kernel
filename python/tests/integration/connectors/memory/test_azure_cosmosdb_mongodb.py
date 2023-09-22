@@ -3,11 +3,11 @@ import os
 
 import numpy as np
 import pytest
-
-import semantic_kernel as sk
 from python.semantic_kernel.connectors.memory.azurecosmosmongodb.azurecosmosmongodb_memory_store import (
     AzureCosmosMongoDBMemoryStore,
 )
+
+import semantic_kernel as sk
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
