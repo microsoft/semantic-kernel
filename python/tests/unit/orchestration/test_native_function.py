@@ -3,12 +3,15 @@
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition.sk_function_decorator import sk_function
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
+
 
 def test_init_native_function_with_input_description():
     def mock_function(input: str, context: "SKContext") -> None:
         pass
+
     mock_function.__sk_function__ = True
     mock_function.__sk_function_name__ = "mock_function"
     mock_function.__sk_function_description__ = "Mock description"
@@ -38,6 +41,7 @@ def test_init_native_function_with_input_description():
 def test_init_native_function_without_input_description():
     def mock_function(context: "SKContext") -> None:
         pass
+
     mock_function.__sk_function__ = True
     mock_function.__sk_function_name__ = "mock_function_no_input_desc"
     mock_function.__sk_function_description__ = "Mock description no input desc"

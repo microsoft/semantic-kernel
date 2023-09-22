@@ -735,9 +735,7 @@ class Kernel:
 
         skill_name = os.path.basename(skill_directory)
 
-        spec = importlib.util.spec_from_file_location(
-            MODULE_NAME, native_py_file_path
-        )
+        spec = importlib.util.spec_from_file_location(MODULE_NAME, native_py_file_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
