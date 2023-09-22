@@ -14,7 +14,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Weaviate Connector</Title>
-    <Description>Weaviate connector for Semantic Kernel skills and semantic memory</Description>
+    <Description>Weaviate connector for Semantic Kernel plugins and semantic memory</Description>
   </PropertyGroup>
 
   <ItemGroup>
