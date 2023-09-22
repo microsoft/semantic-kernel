@@ -1,25 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using NCalc;
 
 namespace NCalcPlugins;
 
 /// <summary>
-/// Skill that enables the comprehension of mathematical problems presented in English / natural-language text, followed by the execution of the necessary calculations to solve those problems.
+/// Plugin that enables the comprehension of mathematical problems presented in English / natural-language text, followed by the execution of the necessary calculations to solve those problems.
 /// </summary>
 /// <example>
 /// usage :
 /// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 /// var question = "what is the square root of 625";
-/// var calculatorSkill = kernel.ImportSkill(new LanguageCalculatorPlugin(kernel));
-/// var summary = await kernel.RunAsync(questions, calculatorSkill["Calculate"]);
+/// var calculatorPlugin = kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel));
+/// var summary = await kernel.RunAsync(questions, calculatorPlugin["Calculate"]);
 /// Console.WriteLine("Result :");
 /// Console.WriteLine(summary.Result);
 /// </example>
@@ -68,19 +69,25 @@ Question: {{ $input }}
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
             MathTranslatorPrompt,
-            skillName: nameof(LanguageCalculatorPlugin),
+            pluginName: nameof(LanguageCalculatorPlugin),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            maxTokens: 256,
-            temperature: 0.0,
-            topP: 1);
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "MaxTokens", 256 },
+                    { "Temperature", 0.0 },
+                    { "TopP", 1 },
+                }
+            });
     }
 
     /// <summary>
     /// Calculates the result of a non-trivial math expression.
     /// </summary>
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
-    /// <param name="context">The context for the skill execution.</param>
+    /// <param name="context">The context for the plugin execution.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
@@ -92,7 +99,7 @@ Question: {{ $input }}
 
         try
         {
-            answer = await context.Kernel.RunAsync(input).ConfigureAwait(false);
+            answer = await context.Kernel.RunAsync(input, this._mathTranslator).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

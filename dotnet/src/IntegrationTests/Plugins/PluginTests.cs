@@ -14,7 +14,7 @@ public class PluginTests
     [Theory]
     [InlineData("https://www.klarna.com/.well-known/ai-plugin.json", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
-    public async Task QueryKlarnaPlugin(
+    public async Task QueryKlarnaPluginAsync(
         string pluginEndpoint,
         string name,
         string functionName,
@@ -27,7 +27,7 @@ public class PluginTests
         var kernel = new KernelBuilder().Build();
         using HttpClient httpClient = new();
 
-        var skill = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiPluginExecutionParameters(httpClient));
@@ -39,7 +39,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
     [Theory]
@@ -48,7 +48,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPlugin(
+    public async Task QueryInstacartPluginAsync(
         string pluginEndpoint,
         string name,
         string functionName,
@@ -59,7 +59,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var skill = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -68,7 +68,7 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
     [Theory]
@@ -77,7 +77,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPluginFromStream(
+    public async Task QueryInstacartPluginFromStreamAsync(
         string pluginFilePath,
         string name,
         string functionName,
@@ -90,7 +90,7 @@ public class PluginTests
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
-            var skill = await kernel.ImportAIPluginAsync(
+            var plugin = await kernel.ImportAIPluginAsync(
                 name,
                 stream,
                 new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -99,7 +99,7 @@ public class PluginTests
             contextVariables["payload"] = payload;
 
             // Act
-            await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+            await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
         }
     }
 
@@ -109,7 +109,7 @@ public class PluginTests
         "create",
         "{\"title\":\"Shopping List\", \"ingredients\": [\"Flour\"], \"question\": \"what ingredients do I need to make chocolate cookies?\", \"partnerName\": \"OpenAI\" }"
         )]
-    public async Task QueryInstacartPluginUsingRelativeFilePath(
+    public async Task QueryInstacartPluginUsingRelativeFilePathAsync(
         string pluginFilePath,
         string name,
         string functionName,
@@ -120,7 +120,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var skill = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportAIPluginAsync(
             name,
             pluginFilePath,
             new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -129,6 +129,6 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 }

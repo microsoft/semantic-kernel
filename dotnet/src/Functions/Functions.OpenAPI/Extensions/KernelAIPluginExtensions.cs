@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
@@ -44,20 +43,20 @@ public static class KernelAIPluginExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromFilePath(
+        var pluginContents = await LoadDocumentFromFilePathAsync(
             kernel,
             filePath,
             executionParameters,
             httpClient,
             cancellationToken).ConfigureAwait(false);
 
-        return await CompleteImport(
+        return await CompleteImportAsync(
             kernel,
             pluginContents,
             pluginName,
@@ -83,20 +82,20 @@ public static class KernelAIPluginExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromUri(
+        var pluginContents = await LoadDocumentFromUriAsync(
             kernel,
             uri,
             executionParameters,
             httpClient,
             cancellationToken).ConfigureAwait(false);
 
-        return await CompleteImport(
+        return await CompleteImportAsync(
             kernel,
             pluginContents,
             pluginName,
@@ -123,15 +122,15 @@ public static class KernelAIPluginExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
 #pragma warning restore CA2000
 
-        var pluginContents = await LoadDocumentFromStream(kernel, stream).ConfigureAwait(false);
+        var pluginContents = await LoadDocumentFromStreamAsync(kernel, stream).ConfigureAwait(false);
 
-        return await CompleteImport(
+        return await CompleteImportAsync(
             kernel,
             pluginContents,
             pluginName,
@@ -142,7 +141,7 @@ public static class KernelAIPluginExtensions
 
     #region private
 
-    private static async Task<IDictionary<string, ISKFunction>> CompleteImport(
+    private static async Task<IDictionary<string, ISKFunction>> CompleteImportAsync(
         IKernel kernel,
         string pluginContents,
         string pluginName,
@@ -162,7 +161,7 @@ public static class KernelAIPluginExtensions
                 .ConfigureAwait(false);
         }
 
-        return await LoadPlugin(
+        return await LoadPluginAsync(
             kernel,
             pluginName,
             executionParameters,
@@ -172,7 +171,7 @@ public static class KernelAIPluginExtensions
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<IDictionary<string, ISKFunction>> LoadPlugin(
+    private static async Task<IDictionary<string, ISKFunction>> LoadPluginAsync(
         IKernel kernel,
         string pluginName,
         OpenApiPluginExecutionParameters? executionParameters,
@@ -218,7 +217,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
-    private static async Task<string> LoadDocumentFromUri(
+    private static async Task<string> LoadDocumentFromUriAsync(
         IKernel kernel,
         Uri uri,
         OpenApiPluginExecutionParameters? executionParameters,
@@ -237,7 +236,7 @@ public static class KernelAIPluginExtensions
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
     }
 
-    private static async Task<string> LoadDocumentFromFilePath(
+    private static async Task<string> LoadDocumentFromFilePathAsync(
         IKernel kernel,
         string filePath,
         OpenApiPluginExecutionParameters? executionParameters,
@@ -259,7 +258,7 @@ public static class KernelAIPluginExtensions
         }
     }
 
-    private static async Task<string> LoadDocumentFromStream(
+    private static async Task<string> LoadDocumentFromStreamAsync(
         IKernel kernel,
         Stream stream)
     {
@@ -380,9 +379,8 @@ public static class KernelAIPluginExtensions
         }
 
         var parameters = restOperationParameters
-            .Select(p => new ParameterView
+            .Select(p => new ParameterView(p.AlternativeName ?? p.Name)
             {
-                Name = p.AlternativeName ?? p.Name,
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
@@ -393,7 +391,7 @@ public static class KernelAIPluginExtensions
             nativeFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
-            skillName: pluginName,
+            pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: kernel.LoggerFactory);
 

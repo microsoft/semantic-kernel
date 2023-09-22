@@ -15,9 +15,9 @@ public static class Example11_WebSearchQueries
 
         IKernel kernel = Kernel.Builder.WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        // Load native skills
-        var skill = new SearchUrlPlugin();
-        var bing = kernel.ImportSkill(skill, "search");
+        // Load native plugins
+        var plugin = new SearchUrlPlugin();
+        var bing = kernel.ImportPlugin(plugin, "search");
 
         // Run
         var ask = "What's the tallest building in Europe?";

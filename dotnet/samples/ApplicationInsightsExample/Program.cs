@@ -33,7 +33,7 @@ public sealed class Program
     /// <see cref="LogLevel.Information"/> is set by default. <para />
     /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
     /// </remarks>
-    private static LogLevel LogLevel = LogLevel.Information;
+    private static LogLevel s_logLevel = LogLevel.Information;
 
     /// <summary>
     /// The main entry point for the application.
@@ -96,8 +96,8 @@ public sealed class Program
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == LogLevel);
-            loggingBuilder.SetMinimumLevel(LogLevel);
+            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == s_logLevel);
+            loggingBuilder.SetMinimumLevel(s_logLevel);
         });
 
         services.AddApplicationInsightsTelemetryWorkerService(options =>
@@ -108,9 +108,9 @@ public sealed class Program
 
     private static IKernel GetKernel(ILoggerFactory loggerFactory)
     {
-        var folder = RepoFiles.SampleSkillsPath();
+        var folder = RepoFiles.SamplePluginsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
@@ -120,11 +120,11 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill", "WriterSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
 
-        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
+        kernel.ImportPlugin(new TimePlugin(), "time");
 
         return kernel;
     }
@@ -207,22 +207,22 @@ public sealed class Program
         var operations = new ConcurrentDictionary<string, IOperationHolder<DependencyTelemetry>>();
 
         // For more detailed tracing we need to attach Activity entity to Application Insights operation manually.
-        Action<Activity> activityStarted = activity =>
+        void activityStarted(Activity activity)
         {
             var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity);
             operation.Telemetry.Type = activity.Kind.ToString();
 
             operations.TryAdd(activity.TraceId.ToString(), operation);
-        };
+        }
 
         // We also need to manually stop Application Insights operation when Activity entity is stopped.
-        Action<Activity> activityStopped = activity =>
+        void activityStopped(Activity activity)
         {
             if (operations.TryRemove(activity.TraceId.ToString(), out var operation))
             {
                 telemetryClient.StopOperation(operation);
             }
-        };
+        }
 
         // Subscribe to all traces in Semantic Kernel
         activityListener.ShouldListenTo =

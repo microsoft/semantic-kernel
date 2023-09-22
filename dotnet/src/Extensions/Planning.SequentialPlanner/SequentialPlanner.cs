@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -18,35 +19,42 @@ namespace Microsoft.SemanticKernel.Planning;
 public sealed class SequentialPlanner : ISequentialPlanner
 {
     private const string StopSequence = "<!-- END -->";
+    private const string AvailableFunctionsKey = "available_functions";
 
     /// <summary>
     /// Initialize a new instance of the <see cref="SequentialPlanner"/> class.
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
-    /// <param name="prompt">Optional prompt override</param>
     public SequentialPlanner(
         IKernel kernel,
-        SequentialPlannerConfig? config = null,
-        string? prompt = null)
+        SequentialPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
+
+        // Set up config with default value and excluded skills
         this.Config = config ?? new();
+        this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
-        this.Config.ExcludedSkills.Add(RestrictedSkillName);
-
-        string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
+        // Set up prompt template
+        string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("skprompt.txt");
 
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,
-            skillName: RestrictedSkillName,
+            pluginName: RestrictedPluginName,
             description: "Given a request or command or goal generate a step by step plan to " +
                          "fulfill the request using functions. This ability is also known as decision making and function flow",
-            maxTokens: this.Config.MaxTokens ?? 1024,
-            temperature: 0.0,
-            stopSequences: new[] { StopSequence });
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "Temperature", 0.0 },
+                    { "StopSequences", new[] { StopSequence } },
+                    { "MaxTokens", this.Config.MaxTokens ?? 1024 },
+                }
+            });
 
-        this._context = kernel.CreateNewContext();
+        this._kernel = kernel;
     }
 
     /// <inheritdoc />
@@ -57,21 +65,23 @@ public sealed class SequentialPlanner : ISequentialPlanner
             throw new SKException("The goal specified is empty");
         }
 
-        string relevantFunctionsManual = await this._context.GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
-        this._context.Variables.Set("available_functions", relevantFunctionsManual);
+        string relevantFunctionsManual = await this._kernel.CreateNewContext().GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
 
-        this._context.Variables.Update(goal);
+        ContextVariables vars = new(goal)
+        {
+            [AvailableFunctionsKey] = relevantFunctionsManual
+        };
 
-        var planResult = await this._functionFlowFunction.InvokeAsync(this._context, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
 
         string planResultString = planResult.Result.Trim();
 
-        var getSkillFunction = this.Config.GetSkillFunction ?? SequentialPlanParser.GetSkillFunction(this._context);
+        var getPluginFunction = this.Config.GetPluginFunction ?? SequentialPlanParser.GetPluginFunction(this._kernel.Functions);
 
         Plan plan;
         try
         {
-            plan = planResultString.ToPlanFromXml(goal, getSkillFunction, this.Config.AllowMissingFunctions);
+            plan = planResultString.ToPlanFromXml(goal, getPluginFunction, this.Config.AllowMissingFunctions);
         }
         catch (SKException e)
         {
@@ -88,7 +98,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
 
     private SequentialPlannerConfig Config { get; }
 
-    private readonly SKContext _context;
+    private readonly IKernel _kernel;
 
     /// <summary>
     /// the function flow semantic function, which takes a goal and creates an xml plan that can be executed
@@ -98,5 +108,5 @@ public sealed class SequentialPlanner : ISequentialPlanner
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
     /// </summary>
-    private const string RestrictedSkillName = "SequentialPlanner_Excluded";
+    private const string RestrictedPluginName = "SequentialPlanner_Excluded";
 }

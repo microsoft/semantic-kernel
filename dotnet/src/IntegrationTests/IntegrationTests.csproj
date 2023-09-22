@@ -37,9 +37,10 @@
     <ProjectReference Include="..\Connectors\Connectors.AI.Oobabooga\Connectors.AI.Oobabooga.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AI.HuggingFace\Connectors.AI.HuggingFace.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
-    <ProjectReference Include="..\Connectors\Connectors.Memory.Chroma\Connectors.Memory.Chroma.csproj" />
     <ProjectReference Include="..\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
     <ProjectReference Include="..\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
     <ProjectReference Include="..\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
@@ -49,7 +50,7 @@
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
-    <ProjectReference Include="..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

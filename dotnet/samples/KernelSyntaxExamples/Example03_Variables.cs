@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Plugins;
 using RepoUtils;
-using Skills;
 
 // ReSharper disable once InconsistentNaming
 public static class Example03_Variables
@@ -19,7 +19,7 @@ public static class Example03_Variables
         Console.WriteLine("======== Variables ========");
 
         IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
-        var text = kernel.ImportSkill(new StaticTextPlugin(), "text");
+        var text = kernel.ImportPlugin(new StaticTextPlugin(), "text");
 
         var variables = new ContextVariables("Today is: ");
         variables.Set("day", DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture));

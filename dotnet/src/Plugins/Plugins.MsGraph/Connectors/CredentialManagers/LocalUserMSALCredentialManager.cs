@@ -62,7 +62,7 @@ public sealed class LocalUserMSALCredentialManager
             .WithLinuxKeyring(
                 schemaName: CacheSchemaName,
                 collection: MsalCacheHelper.LinuxKeyRingDefaultCollection,
-                secretLabel: "MSAL token cache for Semantic Kernel skills.",
+                secretLabel: "MSAL token cache for Semantic Kernel plugins.",
                 attribute1: new KeyValuePair<string, string>("Version", "1"),
                 attribute2: new KeyValuePair<string, string>("Product", "SemanticKernel"))
             .Build();

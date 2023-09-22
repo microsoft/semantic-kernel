@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel", "src\SemanticKernel\SemanticKernel.csproj", "{A284C7EB-2248-4A75-B112-F5DCDE65410D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.Core", "src\SemanticKernel.Core\SemanticKernel.Core.csproj", "{A284C7EB-2248-4A75-B112-F5DCDE65410D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}"
 EndProject
@@ -40,7 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SemanticKernel.UnitTests", "src\SemanticKernel.UnitTests\SemanticKernel.UnitTests.csproj", "{37E39C68-5A40-4E63-9D3C-0C66AD98DFCB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functions", "function", "{9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "functions", "functions", "{9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.UnitTests", "src\Functions\Functions.UnitTests\Functions.UnitTests.csproj", "{107156B4-5A8B-45C7-97A2-4544D7FA19DE}"
 EndProject
@@ -163,6 +163,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.UnitTests", "src\Plugins\Plugins.UnitTests\Plugins.UnitTests.csproj", "{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connectors.Memory.Milvus", "src\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj", "{8B754E80-7A97-4585-8D7E-1D588FA5F727}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -411,6 +413,12 @@ Global
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B754E80-7A97-4585-8D7E-1D588FA5F727}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B754E80-7A97-4585-8D7E-1D588FA5F727}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B754E80-7A97-4585-8D7E-1D588FA5F727}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B754E80-7A97-4585-8D7E-1D588FA5F727}.Publish|Any CPU.Build.0 = Debug|Any CPU
+		{8B754E80-7A97-4585-8D7E-1D588FA5F727}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B754E80-7A97-4585-8D7E-1D588FA5F727}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -470,6 +478,8 @@ Global
 		{6F651E87-F16E-407B-AF7F-B3475F850E9A} = {078F96B4-09E1-4E0E-B214-F71A4F4BF633}
 		{D6D598DF-C17C-46F4-B2B9-CDE82E2DE132} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{5CB78CE4-895B-4A14-98AA-716A37DEEBB1} = {D6D598DF-C17C-46F4-B2B9-CDE82E2DE132}
+		{3CDE10B2-AE8F-4FC4-8D55-92D4AD32E144} = {958AD708-F048-4FAF-94ED-D2F2B92748B9}
+		{8B754E80-7A97-4585-8D7E-1D588FA5F727} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
