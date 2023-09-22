@@ -52,7 +52,7 @@ def memory_record_gen():
             description=f"{_id} description",
             external_source_name=f"{_id} external source",
             additional_metadata=f"{_id} additional metadata",
-            timestamp=f"{_id} timestamp",
+            timestamp=None,
         )
 
     return memory_record
