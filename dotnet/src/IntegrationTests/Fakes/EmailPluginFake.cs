@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.IntegrationTests.Fakes;
 
-internal sealed class EmailSkillFake
+internal sealed class EmailPluginFake
 {
     [SKFunction, Description("Given an email address and message body, send an email")]
     public Task<string> SendEmailAsync(

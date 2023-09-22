@@ -26,18 +26,18 @@ public sealed class SequentialPlanner : ISequentialPlanner
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
-    /// <param name="prompt">Optional prompt override</param>
     public SequentialPlanner(
         IKernel kernel,
-        SequentialPlannerConfig? config = null,
-        string? prompt = null)
+        SequentialPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
-        this.Config = config ?? new();
 
+        // Set up config with default value and excluded skills
+        this.Config = config ?? new();
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
-        string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
+        // Set up prompt template
+        string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("skprompt.txt");
 
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,

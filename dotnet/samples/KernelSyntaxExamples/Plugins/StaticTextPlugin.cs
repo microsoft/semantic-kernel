@@ -3,7 +3,7 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 
-namespace Skills;
+namespace Plugins;
 
 public sealed class StaticTextPlugin
 {
