@@ -24,7 +24,7 @@ class AzureCosmosMongoDBMemoryStore(MemoryStoreBase):
     A class representing a memory store for Azure Cosmos DB MongoDB API.
 
     Args:
-        vector_size (int): The size of the vector. 
+        vector_size (int): The size of the vector.
         connection_string (str, optional): The connection string for the MongoDB client.
         database_name (str, optional): The name of the MongoDB database.
         embedding_key (str, optional): The key used for embedding. Defaults to SEARCH_FIELD_EMBEDDING.

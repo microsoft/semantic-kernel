@@ -17,7 +17,7 @@ docker run -p 27017:27017 -d --name=cosmosdb-emulator mcr.microsoft.com/cosmosdb
 ```python
     import semantic_kernel as sk
     import semantic_kernel.connectors.ai.open_ai as sk_oai
-    from semantic_kernel.connectors.memory.azure_cosmosdb_mongodb import AzureCosmosDbMongoDBMemoryStore
+    from semantic_kernel.connectors.memory.azurecosmosmongodb import AzureCosmosDbMongoDBMemoryStore
 
     kernel = sk.Kernel()
 
