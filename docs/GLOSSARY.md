@@ -3,19 +3,19 @@
 To wrap your mind around the concepts we present throughout the kernel, here is a glossary of
 commonly used terms
 
-**Semantic Kernel (SK)** - The orchestrator that fulfills a user's ASK with SK's available [SKILLS](SKILLS.md).
+**Semantic Kernel (SK)** - The orchestrator that fulfills a user's ASK with SK's available [PLUGINS](PLUGINS.md).
 
 **Ask** - What a user requests to the Semantic Kernel to help achieve the user's goal.
 
 - "We make ASKs to the SK"
 
-**Skill** - A domain-specific collection made available to the SK as a group of finely-tuned functions.
+**Plugins** - A domain-specific collection made available to the SK as a group of finely-tuned functions.
 
-- "We have a SKILL for using Office better"
+- "We have a PLUGIN for using Office better"
 
-**Function** - A computational machine comprised of Semantic AI and/or native code that's available in a [SKILL](SKILLS.md).
+**Function** - A computational machine comprised of Semantic AI and/or native code that's available in a [PLUGIN](PLUGINS.md).
 
-- "The Office SKILL has many FUNCTIONS"
+- "The Office PLUGIN has many FUNCTIONS"
 
 **Native Function** - expressed with traditional computing language (C#, Python, Typescript)
 and easily integrates with SK
