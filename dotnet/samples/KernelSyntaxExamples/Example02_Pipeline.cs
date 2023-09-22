@@ -22,11 +22,11 @@ public static class Example02_Pipeline
         // Load native plugin
         var textFunctions = kernel.ImportFunctions(new TextPlugin());
 
-        SKContext result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
+        KernelResult result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
             textFunctions["TrimStart"],
             textFunctions["TrimEnd"],
             textFunctions["Uppercase"]);
 
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extensions methods to define semantic functions.
 /// </summary>
-public static class InlineFunctionsDefinitionExtension
+public static class KernelSemanticFunctionExtensions
 {
     /// <summary>
     /// Define a string-to-string semantic function, with no direct support for input context.
@@ -99,8 +99,8 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="pluginName">Optional plugin name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="requestSettings">Optional LLM request settings</param>
-    /// <returns>A function ready to use</returns>
-    public static Task<SKContext> InvokeSemanticFunctionAsync(
+    /// <returns>Kernel execution result</returns>
+    public static Task<KernelResult> InvokeSemanticFunctionAsync(
         this IKernel kernel,
         string promptTemplate,
         string? functionName = null,

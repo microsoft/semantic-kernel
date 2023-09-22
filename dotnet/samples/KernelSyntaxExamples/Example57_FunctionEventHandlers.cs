@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -74,7 +75,8 @@ public static class Example57_FunctionEventHandlers
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -233,11 +235,11 @@ public static class Example57_FunctionEventHandlers
             Console.WriteLine($"Only not skipped functions will trigger invoked event - Function name: {e.FunctionView.Name}");
         };
 
-        var context = await kernel.RunAsync(
+        var result = await kernel.RunAsync(
             skipMeFunction,
             dontSkipMeFunction);
 
-        Console.WriteLine($"Final result: {context.Result}");
+        Console.WriteLine($"Final result: {result.GetValue<string>()}");
     }
 
     private static async Task RepeatFunctionsAsync()

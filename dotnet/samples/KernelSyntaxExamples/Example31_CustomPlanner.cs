@@ -48,7 +48,7 @@ internal static class Example31_CustomPlanner
         var result = await plan.InvokeAsync(context);
 
         Console.WriteLine("Result:");
-        Console.WriteLine(result.Result);
+        Console.WriteLine(result.GetValue<string>());
         Console.WriteLine();
     }
     /* Example Output
@@ -154,7 +154,7 @@ public class MarkupPlugin
         Console.WriteLine();
 
         var result = await plan.InvokeAsync(kernel);
-        return result.Result;
+        return result.GetValue<string>()!;
     }
 }
 
