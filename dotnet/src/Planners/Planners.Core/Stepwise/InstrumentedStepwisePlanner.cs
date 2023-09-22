@@ -7,7 +7,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Planning;
 
-namespace Microsoft.SemanticKernel.Planners.Stepwise;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Instrumented planner that creates a Stepwise plan using Mrkl systems.

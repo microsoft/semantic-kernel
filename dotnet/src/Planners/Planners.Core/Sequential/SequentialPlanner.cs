@@ -8,7 +8,10 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 
-namespace Microsoft.SemanticKernel.Planners.Sequential;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// A planner that uses semantic function to create a sequential plan.

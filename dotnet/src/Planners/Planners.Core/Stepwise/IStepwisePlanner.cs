@@ -3,7 +3,10 @@
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Planning;
 
-namespace Microsoft.SemanticKernel.Planners.Stepwise;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Interface for planner that creates a Stepwise plan using Mrkl systems.

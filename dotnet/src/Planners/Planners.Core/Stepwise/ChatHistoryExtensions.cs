@@ -4,7 +4,10 @@ using System.Linq;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using static Microsoft.SemanticKernel.Text.TextChunker;
 
-namespace Microsoft.SemanticKernel.Planners.Stepwise;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Extension methods for <see cref="ChatHistory"/> class.

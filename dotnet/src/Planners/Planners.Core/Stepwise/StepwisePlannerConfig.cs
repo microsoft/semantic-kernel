@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
-namespace Microsoft.SemanticKernel.Planners.Stepwise;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Configuration for Stepwise planner instances.

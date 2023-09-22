@@ -9,7 +9,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Planning;
 
-namespace Microsoft.SemanticKernel.Planners.Action;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Instrumented planner that uses set of semantic functions to select one function out of many and create a plan.

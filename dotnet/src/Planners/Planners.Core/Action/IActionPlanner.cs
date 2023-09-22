@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Planning;
 
-namespace Microsoft.SemanticKernel.Planners.Action;
+#pragma warning disable IDE0130
+// ReSharper disable once CheckNamespace - Using NS of Plan
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
 
 /// <summary>
 /// Interface for planner that uses a set of semantic functions to select one function out of many and create a plan.
