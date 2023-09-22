@@ -4,12 +4,13 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Action;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Action;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planners.Action.UnitTests;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class ActionPlannerTests
 {

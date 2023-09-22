@@ -4,12 +4,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Sequential;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Sequential;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planners.Sequential.UnitTests;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class SequentialPlannerTests
 {

@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.SemanticKernel.Planners.UnitTests.Stepwise;
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+namespace Microsoft.SemanticKernel.Planners.Stepwise.UnitTests;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 public sealed class ParseResultTests
 {
