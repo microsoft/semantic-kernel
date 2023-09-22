@@ -104,7 +104,7 @@ public class SKContextExtensionsTests
         Assert.Equal(functionView, result[0]);
 
         // Arrange update IncludedFunctions
-        config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
+        config.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
 
         // Act
         result = (await context.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
@@ -169,7 +169,7 @@ public class SKContextExtensionsTests
         Assert.Equal(functionView, result[0]);
 
         // Arrange update IncludedFunctions
-        config.IncludedFunctions.UnionWith(new List<string> { "nativeFunctionName" });
+        config.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
 
         // Act
         result = (await context.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();

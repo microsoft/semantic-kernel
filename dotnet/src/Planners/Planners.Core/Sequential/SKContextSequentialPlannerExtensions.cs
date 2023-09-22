@@ -97,8 +97,8 @@ public static class SKContextSequentialPlannerExtensions
 
             // Add any missing functions that were included but not found in the search results.
             var missingFunctions = config.IncludedFunctions
-                .Except(result.Select(x => x.Name))
-                .Join(availableFunctions, f => f, af => af.Name, (_, af) => af);
+                .Except(result.Select(x => (x.PluginName, x.Name)))
+                .Join(availableFunctions, f => f, af => (af.PluginName, af.Name), (_, af) => af);
 
             result.AddRange(missingFunctions);
         }
