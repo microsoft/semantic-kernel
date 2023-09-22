@@ -129,15 +129,15 @@ Jane: Goodbye!
 
     private static async Task ConversationSummaryPluginAsync()
     {
-        Console.WriteLine("======== SampleSkills - Conversation Summary Skill - Summarize ========");
+        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Summarize ========");
         IKernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummarySkill =
+        IDictionary<string, ISKFunction> conversationSummaryPlugin =
              kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
-            conversationSummarySkill["SummarizeConversation"]);
+            conversationSummaryPlugin["SummarizeConversation"]);
 
         Console.WriteLine("Generated Summary:");
         Console.WriteLine(summary.Result);
@@ -145,15 +145,15 @@ Jane: Goodbye!
 
     private static async Task GetConversationActionItemsAsync()
     {
-        Console.WriteLine("======== SampleSkills - Conversation Summary Skill - Action Items ========");
+        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
         IKernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummarySkill =
+        IDictionary<string, ISKFunction> conversationSummaryPlugin =
              kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
-            conversationSummarySkill["GetConversationActionItems"]);
+            conversationSummaryPlugin["GetConversationActionItems"]);
 
         Console.WriteLine("Generated Action Items:");
         Console.WriteLine(summary.Result);
@@ -161,15 +161,15 @@ Jane: Goodbye!
 
     private static async Task GetConversationTopicsAsync()
     {
-        Console.WriteLine("======== SampleSkills - Conversation Summary Skill - Topics ========");
+        Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
         IKernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummarySkill =
+        IDictionary<string, ISKFunction> conversationSummaryPlugin =
              kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
 
         SKContext summary = await kernel.RunAsync(
             ChatTranscript,
-            conversationSummarySkill["GetConversationTopics"]);
+            conversationSummaryPlugin["GetConversationTopics"]);
 
         Console.WriteLine("Generated Topics:");
         Console.WriteLine(summary.Result);
@@ -192,7 +192,7 @@ Jane: Goodbye!
 // ReSharper disable CommentTypo
 /* Example Output:
 
-======== SampleSkills - Conversation Summary Skill - Summarize ========
+======== SamplePlugins - Conversation Summary Plugin - Summarize ========
 Generated Summary:
 
 A possible summary is:
@@ -210,8 +210,8 @@ A possible summary is:
 - They use a Lorem Ipsum generator, but it repeats itself after a while.
 - They sing the national anthems of Canada and the United States, and then talk about their favorite Seattle Kraken hockey players.
 - They finally reach their desired length of text and say goodbye to each other.
-======== SampleSkills - Conversation Summary Skill - Action Functions ========
-Generated Action Functions:
+======== SamplePlugins - Conversation Summary Plugin - Action Items ========
+Generated Action Items:
 
 {
     "actionItems": [
@@ -235,7 +235,7 @@ Generated Action Functions:
 {
     "action_items": []
 }
-======== SampleSkills - Conversation Summary Skill - Topics ========
+======== SamplePlugins - Conversation Summary Plugin - Topics ========
 Generated Topics:
 
 {

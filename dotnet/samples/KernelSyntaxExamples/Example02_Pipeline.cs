@@ -19,7 +19,7 @@ public static class Example02_Pipeline
 
         IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
 
-        // Load native skill
+        // Load native plugin
         var text = kernel.ImportPlugin(new TextPlugin());
 
         SKContext result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",

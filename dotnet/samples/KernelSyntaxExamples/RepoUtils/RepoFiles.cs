@@ -8,13 +8,13 @@ namespace RepoUtils;
 public static class RepoFiles
 {
     /// <summary>
-    /// Scan the local folders from the repo, looking for "samples/skills" folder.
+    /// Scan the local folders from the repo, looking for "samples/plugins" folder.
     /// </summary>
-    /// <returns>The full path to samples/skills</returns>
-    public static string SampleSkillsPath()
+    /// <returns>The full path to samples/plugins</returns>
+    public static string SamplePluginsPath()
     {
         const string Parent = "samples";
-        const string Folder = "skills";
+        const string Folder = "plugins";
 
         bool SearchPath(string pathToFind, out string result, int maxAttempts = 10)
         {
@@ -33,7 +33,7 @@ public static class RepoFiles
         if (!SearchPath(Parent + Path.DirectorySeparatorChar + Folder, out string path)
             && !SearchPath(Folder, out path))
         {
-            throw new YourAppException("Skills directory not found. The app needs the skills from the repo to work.");
+            throw new YourAppException("Plugins directory not found. The app needs the plugins from the repo to work.");
         }
 
         return path;

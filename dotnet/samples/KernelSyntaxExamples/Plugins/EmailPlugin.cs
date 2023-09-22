@@ -4,9 +4,9 @@ using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-namespace Skills;
+namespace Plugins;
 
-internal sealed class EmailSkill
+internal sealed class EmailPlugin
 {
     [SKFunction, Description("Given an e-mail and message body, send an email")]
     public string SendEmail(
