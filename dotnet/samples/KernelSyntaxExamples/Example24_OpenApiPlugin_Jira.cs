@@ -14,11 +14,11 @@ using RepoUtils;
 
 /// <summary>
 /// This sample shows how to connect the Semantic Kernel to Jira as an Open Api plugin based on the Open Api schema.
-/// This format of registering the skill and its operations, and subsequently executing those operations can be applied
+/// This format of registering the plugin and its operations, and subsequently executing those operations can be applied
 /// to an Open Api plugin that follows the Open Api Schema.
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public static class Example24_OpenApiSkill_Jira
+public static class Example24_OpenApiPlugin_Jira
 {
     public static async Task RunAsync()
     {

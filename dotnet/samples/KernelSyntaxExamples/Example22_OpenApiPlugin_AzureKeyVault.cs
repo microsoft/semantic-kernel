@@ -12,7 +12,7 @@ using RepoUtils;
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
 // ReSharper disable once InconsistentNaming
-public static class Example22_OpenApiSkill_AzureKeyVault
+public static class Example22_OpenApiPlugin_AzureKeyVault
 {
     public static async Task RunAsync()
     {
@@ -46,7 +46,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import AI Plugin
-        var skill = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportAIPluginAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
             new OpenApiPluginExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
@@ -58,9 +58,9 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         contextVariables.Set("api-version", "7.0");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["GetSecret"]);
+        var result = await kernel.RunAsync(contextVariables, plugin["GetSecret"]);
 
-        Console.WriteLine("GetSecret skill response: {0}", result);
+        Console.WriteLine("GetSecret plugin response: {0}", result);
     }
 
     public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
@@ -73,7 +73,7 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         var stream = type.Assembly.GetManifestResourceStream(type, resourceName);
 
         // Import AI Plugin
-        var skill = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportAIPluginAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
             new OpenApiPluginExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
@@ -86,8 +86,8 @@ public static class Example22_OpenApiSkill_AzureKeyVault
         contextVariables.Set("payload", JsonSerializer.Serialize(new { value = "<secret>", attributes = new { enabled = true } }));
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, skill["SetSecret"]);
+        var result = await kernel.RunAsync(contextVariables, plugin["SetSecret"]);
 
-        Console.WriteLine("SetSecret skill response: {0}", result);
+        Console.WriteLine("SetSecret plugin response: {0}", result);
     }
 }
