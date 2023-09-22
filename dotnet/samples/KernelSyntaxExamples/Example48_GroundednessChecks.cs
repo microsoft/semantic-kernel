@@ -65,10 +65,10 @@ after this event Caroline became his wife.""";
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        string folder = RepoFiles.SampleSkillsPath();
-        var functions = kernel.ImportSemanticSkillFromDirectory(folder,
-            "SummarizeSkill",
-            "GroundingSkill");
+        string folder = RepoFiles.SamplePluginsPath();
+        var functions = kernel.ImportSemanticPluginFromDirectory(folder,
+            "SummarizePlugin",
+            "GroundingPlugin");
 
         var create_summary = functions["Summarize"];
         var entityExtraction = functions["ExtractEntities"];
@@ -130,12 +130,12 @@ which are not grounded in the original.
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        string folder = RepoFiles.SampleSkillsPath();
-        var functions = kernel.ImportSemanticSkillFromDirectory(folder,
-            "SummarizeSkill",
-            "GroundingSkill");
+        string folder = RepoFiles.SamplePluginsPath();
+        var functions = kernel.ImportSemanticPluginFromDirectory(folder,
+            "SummarizePlugin",
+            "GroundingPlugin");
 
-        kernel.ImportSkill(new TextPlugin());
+        kernel.ImportPlugin(new TextPlugin());
 
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
@@ -179,7 +179,7 @@ which are not grounded in the original.
 
 Steps:
   - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
-  - SummarizeSkill.Summarize INPUT='' => RESULT__SUMMARY
+  - SummarizePlugin.Summarize INPUT='' => RESULT__SUMMARY
   - GroundingSkill.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
   - GroundingSkill.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
   - GroundingSkill.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY

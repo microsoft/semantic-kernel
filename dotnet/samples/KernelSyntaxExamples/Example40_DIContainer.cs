@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.SkillDefinition;
+
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using RepoUtils;
@@ -48,7 +48,7 @@ public static class Example40_DIContainer
             .Build();
         });
 
-        //Registering class that uses Kernel to execute a skill
+        //Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
 
         //Creating a service provider for resolving registered services
@@ -80,7 +80,7 @@ public static class Example40_DIContainer
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
         collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
-        collection.AddTransient<ISkillCollection, SkillCollection>();
+        collection.AddTransient<IFunctionCollection, FunctionCollection>();
         collection.AddTransient<IPromptTemplateEngine, PromptTemplateEngine>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
@@ -88,7 +88,7 @@ public static class Example40_DIContainer
         //Registering Kernel
         collection.AddTransient<IKernel, Kernel>();
 
-        //Registering class that uses Kernel to execute a skill
+        //Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
 
         //Creating a service provider for resolving registered services
@@ -120,9 +120,9 @@ public static class Example40_DIContainer
 
         public async Task SummarizeAsync(string ask)
         {
-            string folder = RepoFiles.SampleSkillsPath();
+            string folder = RepoFiles.SamplePluginsPath();
 
-            var sumSkill = this._kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+            var sumSkill = this._kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
 
             var result = await this._kernel.RunAsync(ask, sumSkill["Summarize"]);
 

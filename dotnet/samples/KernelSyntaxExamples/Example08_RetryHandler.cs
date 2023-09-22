@@ -33,7 +33,7 @@ public static class Example08_RetryHandler
         var kernel = InitializeKernelBuilder()
             .Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
+        await ImportAndExecutePluginAsync(kernel);
     }
 
     private static async Task ReliabilityBasicExtensionAsync()
@@ -50,7 +50,7 @@ public static class Example08_RetryHandler
             .WithRetryBasic(retryConfig)
             .Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
+        await ImportAndExecutePluginAsync(kernel);
     }
 
     private static async Task ReliabilityPollyExtensionAsync()
@@ -60,7 +60,7 @@ public static class Example08_RetryHandler
             .WithRetryPolly(GetPollyPolicy(InfoLogger.LoggerFactory))
             .Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
+        await ImportAndExecutePluginAsync(kernel);
     }
 
     private static async Task CustomHandlerAsync()
@@ -70,7 +70,7 @@ public static class Example08_RetryHandler
                         .WithHttpHandlerFactory(new MyCustomHandlerFactory())
                         .Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
+        await ImportAndExecutePluginAsync(kernel);
     }
 
     private static KernelBuilder InitializeKernelBuilder()
@@ -105,22 +105,22 @@ public static class Example08_RetryHandler
                         outcome.Result.StatusCode));
     }
 
-    private static async Task ImportAndExecuteSkillAsync(IKernel kernel)
+    private static async Task ImportAndExecutePluginAsync(IKernel kernel)
     {
-        // Load semantic skill defined with prompt templates
-        string folder = RepoFiles.SampleSkillsPath();
+        // Load semantic plugin defined with prompt templates
+        string folder = RepoFiles.SamplePluginsPath();
 
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportPlugin(new TimePlugin(), "time");
 
-        var qaSkill = kernel.ImportSemanticSkillFromDirectory(
+        var qaPlugin = kernel.ImportSemanticPluginFromDirectory(
             folder,
-            "QASkill");
+            "QAPlugin");
 
         var question = "How popular is Polly library?";
 
         InfoLogger.Logger.LogInformation("Question: {0}", question);
         // To see the retry policy in play, you can set the OpenAI.ApiKey to an invalid value
-        var answer = await kernel.RunAsync(question, qaSkill["Question"]);
+        var answer = await kernel.RunAsync(question, qaPlugin["Question"]);
         InfoLogger.Logger.LogInformation("Answer: {0}", answer);
     }
 

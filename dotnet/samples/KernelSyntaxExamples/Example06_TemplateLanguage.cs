@@ -35,9 +35,9 @@ public static class Example06_TemplateLanguage
                 apiKey: openAIApiKey)
             .Build();
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
+        // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportPlugin(new TimePlugin(), "time");
 
         // Semantic Function invoking time.Date and time.Time native functions
         const string FunctionDefinition = @"

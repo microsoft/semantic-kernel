@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Planning.Stepwise;
 
@@ -33,7 +32,7 @@ public sealed class StepwisePlannerConfig : PlannerConfigBase
     /// <summary>
     /// Optional callback to get a function by name.
     /// </summary>
-    public Func<string, string, ISKFunction?>? GetSkillFunction { get; set; }
+    public Func<string, string, ISKFunction?>? GetPluginFunction { get; set; }
 
     #endregion Use these to completely override the functions available for planning
 
@@ -66,11 +65,6 @@ public sealed class StepwisePlannerConfig : PlannerConfigBase
     /// The minimum time to wait between iterations in milliseconds.
     /// </summary>
     public int MinIterationTimeMs { get; set; } = 0;
-
-    /// <summary>
-    /// Delegate to get the prompt template string.
-    /// </summary>
-    public Func<string>? GetPromptTemplate { get; set; } = null;
 
     /// <summary>
     /// The configuration to use for the prompt template.

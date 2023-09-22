@@ -15,14 +15,14 @@
   <ItemGroup>
     <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
-    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Extensions.StepwisePlanner.UnitTests" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Skills/**/*" />
-    <EmbeddedResource Include="Skills/**/*">
+    <None Remove="Plugin/**/*" />
+    <EmbeddedResource Include="Plugin/**/*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
