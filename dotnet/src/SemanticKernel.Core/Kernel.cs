@@ -258,12 +258,9 @@ repeat:
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var kernelContext = new KernelExecutionContext(
-            functions ?? new FunctionCollection(this._functionCollection),
-            this._aiServiceProvider,
-            this.PromptTemplateEngine,
-            this.Memory,
-            this.HttpHandlerFactory,
-            this.LoggerFactory);
+            this,
+            functions ?? this._functionCollection,
+            this._aiServiceProvider);
 
         return new SKContext(kernelContext, variables);
 #pragma warning restore CA2000 // Dispose objects before losing scope

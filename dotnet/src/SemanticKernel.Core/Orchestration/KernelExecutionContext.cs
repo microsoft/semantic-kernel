@@ -4,10 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Http;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -25,21 +22,17 @@ internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposa
     /// <inheritdoc/>
     public IReadOnlyFunctionCollection Functions => this._kernel.Functions;
 
-    internal KernelExecutionContext(
-        IReadOnlyFunctionCollection skillCollection,
-        IAIServiceProvider aiServiceProvider,
-        IPromptTemplateEngine promptTemplateEngine,
-        ISemanticTextMemory memory,
-        IDelegatingHandlerFactory httpHandlerFactory,
-        ILoggerFactory loggerFactory)
+    internal KernelExecutionContext(Kernel kernel,
+        IReadOnlyFunctionCollection functionCollection,
+        IAIServiceProvider aiServiceProvider)
     {
         this._kernel = new Kernel(
-            new FunctionCollection(skillCollection),
+            new FunctionCollection(functionCollection),
             aiServiceProvider,
-            promptTemplateEngine,
-            memory,
-            httpHandlerFactory,
-            loggerFactory);
+            kernel.PromptTemplateEngine,
+            kernel.Memory,
+            kernel.HttpHandlerFactory,
+            kernel.LoggerFactory);
     }
 
     /// <inheritdoc/>
