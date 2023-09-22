@@ -3,7 +3,7 @@
     "GraphSkillsTestApp": {
       "commandName": "Project",
       "environmentVariables": {
-        "GraphSkillsTestApp_ClientId": "1234"
+        "GraphSkillsTestApp_ClientId": "12345"
       }
     }
   }
