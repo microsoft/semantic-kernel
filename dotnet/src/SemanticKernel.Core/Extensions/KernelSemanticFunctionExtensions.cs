@@ -174,7 +174,7 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="parentDirectory">Directory containing the plugin directory, e.g. "d:\myAppPlugins"</param>
     /// <param name="pluginDirectoryNames">Name of the directories containing the selected plugins, e.g. "StrategyPlugin"</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
+    /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
     public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
         this IKernel kernel, string parentDirectory, params string[] pluginDirectoryNames)
     {
