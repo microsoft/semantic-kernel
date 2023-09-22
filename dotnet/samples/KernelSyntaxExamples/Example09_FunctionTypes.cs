@@ -22,11 +22,11 @@ public static class Example09_FunctionTypes
 
         var fakeContext = kernel.CreateNewContext();
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
-        var test = kernel.ImportPlugin(new LocalExampleSkill(), "test");
+        // Load native plugin into the kernel function collection, sharing its functions with prompt templates
+        var test = kernel.ImportPlugin(new LocalExamplePlugin(), "test");
 
-        string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
+        string folder = RepoFiles.SamplePluginsPath();
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
 
         // The kernel takes care of wiring the input appropriately
         await kernel.RunAsync(
@@ -92,7 +92,7 @@ public static class Example09_FunctionTypes
     }
 }
 
-public class LocalExampleSkill
+public class LocalExamplePlugin
 {
     [SKFunction]
     public void Type01()
@@ -131,7 +131,7 @@ public class LocalExampleSkill
     [SKFunction]
     public async Task<string> Type06Async(SKContext context)
     {
-        var summarizer = context.Functions.GetFunction("SummarizeSkill", "Summarize");
+        var summarizer = context.Functions.GetFunction("SummarizePlugin", "Summarize");
         var summary = await context.Kernel.RunAsync("blah blah blah", summarizer);
 
         Console.WriteLine($"Running function type 6 [{summary}]");

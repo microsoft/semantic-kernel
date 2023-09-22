@@ -27,9 +27,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, openAIApiKey)
             .Build();
 
-        // Load native skill
         string bingApiKey = TestConfiguration.Bing.ApiKey;
-
         if (bingApiKey == null)
         {
             Console.WriteLine("Bing credentials not found. Skipping example.");
@@ -40,10 +38,10 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         var bing = new WebSearchEnginePlugin(bingConnector);
         var search = kernel.ImportPlugin(bing, "bing");
 
-        // Load semantic skill defined with prompt templates
-        string folder = RepoFiles.SampleSkillsPath();
+        // Load semantic plugins defined with prompt templates
+        string folder = RepoFiles.SamplePluginsPath();
 
-        var sumSkill = kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
+        var summarizePlugin = kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
 
         // Run
         var ask = "What's the tallest building in South America";
@@ -56,13 +54,13 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         var result2 = await kernel.RunAsync(
             ask,
             search["Search"],
-            sumSkill["Summarize"]
+            summarizePlugin["Summarize"]
         );
 
         var result3 = await kernel.RunAsync(
             ask,
             search["Search"],
-            sumSkill["Notegen"]
+            summarizePlugin["Notegen"]
         );
 
         Console.WriteLine(ask + "\n");
