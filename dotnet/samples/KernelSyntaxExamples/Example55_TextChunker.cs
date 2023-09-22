@@ -60,7 +60,7 @@ known as coral polyps.";
         Console.WriteLine($"=== Text chunking with a custom({counterType}) token counter ===");
         var sw = new Stopwatch();
         sw.Start();
-        var tokenCounter = TokenCounterFactory(counterType);
+        var tokenCounter = s_tokenCounterFactory(counterType);
 
         var lines = TextChunker.SplitPlainTextLines(Text, 40, tokenCounter);
         var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: tokenCounter);
@@ -157,8 +157,10 @@ known as coral polyps.";
     /// </summary>
     private static TokenCounter DeepDevTokenCounter => (string input) =>
     {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         // Initialize encoding by encoding name
         var tokenizer = TokenizerBuilder.CreateByEncoderNameAsync("cl100k_base").GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         // Initialize encoding by model name
         // var tokenizer = TokenizerBuilder.CreateByModelNameAsync("gpt-4").GetAwaiter().GetResult();
@@ -167,7 +169,7 @@ known as coral polyps.";
         return tokens.Count;
     };
 
-    private static Func<TokenCounterType, TokenCounter> TokenCounterFactory = (TokenCounterType counterType) =>
+    private static readonly Func<TokenCounterType, TokenCounter> s_tokenCounterFactory = (TokenCounterType counterType) =>
     {
         switch (counterType)
         {
