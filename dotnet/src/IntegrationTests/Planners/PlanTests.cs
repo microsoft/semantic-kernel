@@ -15,7 +15,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planning;
+namespace SemanticKernel.IntegrationTests.Planners;
 
 public sealed class PlanTests : IDisposable
 {

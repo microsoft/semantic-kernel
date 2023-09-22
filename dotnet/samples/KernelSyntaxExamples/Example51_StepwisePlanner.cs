@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Stepwise;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -129,7 +129,7 @@ public static class Example51_StepwisePlanner
         Stopwatch sw = new();
         Console.WriteLine("Question: " + question);
 
-        var plannerConfig = new Microsoft.SemanticKernel.Planners.Stepwise.StepwisePlannerConfig();
+        var plannerConfig = new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig();
         plannerConfig.ExcludedFunctions.Add("TranslateMathProblem");
         plannerConfig.ExcludedFunctions.Add("DaysAgo");
         plannerConfig.ExcludedFunctions.Add("DateMatchingLastDayName");
@@ -210,7 +210,7 @@ public static class Example51_StepwisePlanner
                 alsoAsTextCompletion: true,
                 setAsDefault: true);
 
-            maxTokens = ChatMaxTokens ?? (new Microsoft.SemanticKernel.Planners.Stepwise.StepwisePlannerConfig()).MaxTokens;
+            maxTokens = ChatMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
             result.model = model ?? ChatModelOverride ?? TestConfiguration.AzureOpenAI.ChatDeploymentName;
         }
         else
@@ -220,7 +220,7 @@ public static class Example51_StepwisePlanner
                 TestConfiguration.AzureOpenAI.Endpoint,
                 TestConfiguration.AzureOpenAI.ApiKey);
 
-            maxTokens = TextMaxTokens ?? (new Microsoft.SemanticKernel.Planners.Stepwise.StepwisePlannerConfig()).MaxTokens;
+            maxTokens = TextMaxTokens ?? (new Microsoft.SemanticKernel.Planners.StepwisePlannerConfig()).MaxTokens;
             result.model = model ?? TextModelOverride ?? TestConfiguration.AzureOpenAI.DeploymentName;
         }
 

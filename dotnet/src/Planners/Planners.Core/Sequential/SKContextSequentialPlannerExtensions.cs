@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planners.Sequential;
 
 #pragma warning disable IDE0130

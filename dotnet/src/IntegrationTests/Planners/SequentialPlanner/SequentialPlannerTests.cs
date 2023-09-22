@@ -7,13 +7,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planners.Sequential;
+using Microsoft.SemanticKernel.Planners;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planning.SequentialPlanner;
+namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
 
 public sealed class SequentialPlannerTests : IDisposable
 {
@@ -42,7 +42,7 @@ public sealed class SequentialPlannerTests : IDisposable
         kernel.ImportPlugin(new EmailPluginFake());
         TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Sequential.SequentialPlanner(kernel);
+        var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -63,7 +63,7 @@ public sealed class SequentialPlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel();
         TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Sequential.SequentialPlanner(kernel);
+        var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel);
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
@@ -89,7 +89,7 @@ public sealed class SequentialPlannerTests : IDisposable
         // Import all sample plugins available for demonstration purposes.
         TestHelpers.ImportAllSamplePlugins(kernel);
 
-        var planner = new Microsoft.SemanticKernel.Planners.Sequential.SequentialPlanner(kernel,
+        var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel,
             new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
 
         // Act

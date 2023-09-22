@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planners.Stepwise;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -19,7 +19,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planning.StepwisePlanner;
+namespace SemanticKernel.IntegrationTests.Planners.StepwisePlanner;
 
 public sealed class StepwisePlannerTests : IDisposable
 {
@@ -56,7 +56,7 @@ public sealed class StepwisePlannerTests : IDisposable
         kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
         kernel.ImportPlugin(new TimePlugin(), "time");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Stepwise.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
+        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
         var plan = planner.CreatePlan(prompt);
@@ -84,7 +84,7 @@ public sealed class StepwisePlannerTests : IDisposable
         kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
         kernel.ImportPlugin(new TimePlugin(), "time");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Stepwise.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
+        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
         // Act
         var plan = planner.CreatePlan(prompt);
@@ -113,7 +113,7 @@ public sealed class StepwisePlannerTests : IDisposable
         kernel.ImportPlugin(new FileIOPlugin(), "FileIO");
         kernel.ImportPlugin(new HttpPlugin(), "Http");
 
-        var planner = new Microsoft.SemanticKernel.Planners.Stepwise.StepwisePlanner(kernel, new() { MaxTokens = 1000 });
+        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel, new() { MaxTokens = 1000 });
 
         // Act
         var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");
@@ -131,7 +131,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         _ = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiPluginExecutionParameters(enableDynamicOperationPayload: true));
 
-        var planner = new Microsoft.SemanticKernel.Planners.Stepwise.StepwisePlanner(kernel);
+        var planner = new Microsoft.SemanticKernel.Planners.StepwisePlanner(kernel);
 
         // Act
         var plan = planner.CreatePlan("I need to buy a new brush for my cat. Can you show me options?");

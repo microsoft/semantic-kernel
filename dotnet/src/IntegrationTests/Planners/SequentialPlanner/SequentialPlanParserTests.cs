@@ -9,7 +9,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Planning.SequentialPlanner;
+namespace SemanticKernel.IntegrationTests.Planners.SequentialPlanner;
 
 public class SequentialPlanParserTests
 {
