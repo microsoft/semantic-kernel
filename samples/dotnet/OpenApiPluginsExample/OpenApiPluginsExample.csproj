@@ -12,11 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="GitHubSkill\openapi.json" />
+    <None Remove="GitHubPlugin\openapi.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="GitHubSkill\openapi.json">
+    <Content Include="GitHubPlugin\openapi.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

@@ -1,6 +1,6 @@
-﻿# Graph API Skill Example
+﻿# Graph API Plugin Example
 
-This example program demonstrates how to use the Microsoft Graph API skills with the Semantic Kernel.
+This example program demonstrates how to use the Microsoft Graph API plugins with the Semantic Kernel.
 
 ## Setup
 

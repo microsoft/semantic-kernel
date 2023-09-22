@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace MsGraphSkillsExample;
+namespace MsGraphPluginsExample;
 
 [SuppressMessage("Performance", "CA1812:Internal class that is apparently never instantiated",
     Justification = "Configuration classes are instantiated through IConfiguration.")]

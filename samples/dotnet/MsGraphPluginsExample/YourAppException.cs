@@ -2,7 +2,7 @@
 
 using System;
 
-namespace MsGraphSkillsExample;
+namespace MsGraphPluginsExample;
 
 public class YourAppException : Exception
 {

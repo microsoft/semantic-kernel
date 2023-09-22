@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace MsGraphSkillsExample;
+namespace MsGraphPluginsExample;
 
 [SuppressMessage("Performance", "CA1812:class never instantiated", Justification = "Instantiated through IConfiguration")]
 internal sealed class AzureOpenAIConfiguration

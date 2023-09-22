@@ -2,14 +2,14 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace OpenApiSkillsExample;
+namespace OpenApiPluginsExample;
 
 /// <summary>
-/// Configuration options for GitHub skill.
+/// Configuration options for GitHub plugin.
 /// </summary>
-public sealed class GitHubSkillOptions
+public sealed class GitHubPluginOptions
 {
-    public const string PropertyName = "GitHubSkill";
+    public const string PropertyName = "GitHubPlugin";
 
     /// <summary>
     /// GitHub API key.

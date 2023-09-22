@@ -20,7 +20,7 @@ using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
 using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
-namespace MsGraphSkillsExample;
+namespace MsGraphPluginsExample;
 
 /// <summary>
 /// The static plan below is meant to emulate a plan generated from the following request:
@@ -143,7 +143,7 @@ public sealed class Program
         var todo = sk.ImportSkill(todoSkill, "todo");
         var outlook = sk.ImportSkill(outlookSkill, "outlook");
 
-        string skillParentDirectory = RepoFiles.SampleSkillsPath();
+        string skillParentDirectory = RepoFiles.SamplePluginsPath();
 
         IDictionary<string, ISKFunction> summarizeSkills =
             sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizeSkill");

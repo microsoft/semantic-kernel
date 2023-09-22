@@ -3,7 +3,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace GitHubSkill.Model;
+namespace GitHubPlugin.Model;
 
 /// <summary>
 /// Represents a GitHub Pull Request.
