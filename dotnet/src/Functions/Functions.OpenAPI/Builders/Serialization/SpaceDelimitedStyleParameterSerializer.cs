@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Nodes;
-using System.Web;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
@@ -57,49 +55,9 @@ internal static class SpaceDelimitedStyleParameterSerializer
 
         if (parameter.Expand)
         {
-            return SerializeArrayItemsAsSeparateParameters(parameter.Name, array);              //id=1&id=2&id=3
+            return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, delimiter: "&"); //id=1&id=2&id=3
         }
 
-        return SerializeArrayItemsAsParameterWithSpaceSeparatedValues(parameter.Name, array);   //id=1%202%203
-    }
-
-    /// <summary>
-    /// Serializes the items of an array as separate parameters with the same name.
-    /// </summary>
-    /// <param name="name">The name of the parameter.</param>
-    /// <param name="array">The array containing the items to be serialized.</param>
-    /// <returns>A string containing the serialized parameters.</returns>
-    private static string SerializeArrayItemsAsSeparateParameters(string name, JsonArray array)
-    {
-        const string SegmentsSeparator = "&";
-
-        var segments = new List<string>();
-
-        foreach (var item in array)
-        {
-            segments.Add($"{name}={HttpUtility.UrlEncode(item?.ToString())}");
-        }
-
-        return string.Join(SegmentsSeparator, segments); //id=1&id=2&id=3
-    }
-
-    /// <summary>
-    /// Serializes the items of an array as a single parameter with space-separated values.
-    /// </summary>
-    /// <param name="name">The name of the parameter.</param>
-    /// <param name="array">The array containing the items to be serialized.</param>
-    /// <returns>A string containing the serialized parameter in the format "name=item1 item2 ...".</returns>
-    private static string SerializeArrayItemsAsParameterWithSpaceSeparatedValues(string name, JsonArray array)
-    {
-        const string ValuesSeparator = "%20";
-
-        var values = new List<string>();
-
-        foreach (var item in array)
-        {
-            values.Add(HttpUtility.UrlEncode(item?.ToString()));
-        }
-
-        return $"{name}={string.Join(ValuesSeparator, values)}"; //id=1%202%203
+        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "%20")}"; //id=1%202%203
     }
 }
