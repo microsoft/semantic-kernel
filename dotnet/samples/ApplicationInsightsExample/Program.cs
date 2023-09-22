@@ -70,7 +70,7 @@ public sealed class Program
             var result = await kernel.RunAsync(plan);
 
             Console.WriteLine("Result:");
-            Console.WriteLine(result.Result);
+            Console.WriteLine(result.GetValue<string>());
         }
         finally
         {

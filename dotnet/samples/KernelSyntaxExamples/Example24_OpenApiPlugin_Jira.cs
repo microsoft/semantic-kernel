@@ -60,7 +60,7 @@ public static class Example24_OpenApiPlugin_Jira
             var result = await kernel.RunAsync(contextVariables, jiraSkills["GetIssue"]);
 
             Console.WriteLine("\n\n\n");
-            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
+            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
             Console.WriteLine("GetIssue jiraSkills response: \n{0}", formattedContent);
         }
 
@@ -74,7 +74,7 @@ public static class Example24_OpenApiPlugin_Jira
             var result = await kernel.RunAsync(contextVariables, jiraSkills["AddComment"]);
 
             Console.WriteLine("\n\n\n");
-            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
+            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
             Console.WriteLine("AddComment jiraSkills response: \n{0}", formattedContent);
         }
     }

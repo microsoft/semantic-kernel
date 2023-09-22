@@ -49,7 +49,7 @@ public static class Example58_ConfigureRequestSettings
                 MaxTokens = 60,
                 Temperature = 0.7
             });
-        Console.WriteLine(result.Result);
+        Console.WriteLine(result.GetValue<string>());
 
         // Option 2:
         // Load prompt template configuration including the request settings from a JSON payload
@@ -71,7 +71,7 @@ public static class Example58_ConfigureRequestSettings
         var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
 
         result = await kernel.RunAsync(func);
-        Console.WriteLine(result.Result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT (using gpt4):
 Hello! As an AI language model, I can help you with a variety of

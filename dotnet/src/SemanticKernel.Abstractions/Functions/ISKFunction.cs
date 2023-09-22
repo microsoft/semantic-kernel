@@ -56,7 +56,7 @@ public interface ISKFunction
     /// <param name="requestSettings">LLM completion settings (for semantic functions only)</param>
     /// <returns>The updated context, potentially a new one if context switching is implemented.</returns>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task<SKContext> InvokeAsync(
+    Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);

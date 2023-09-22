@@ -109,7 +109,7 @@ public interface IKernel
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         ISKFunction skFunction,
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default);
@@ -119,7 +119,7 @@ public interface IKernel
     /// </summary>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         params ISKFunction[] pipeline);
 
     /// <summary>
@@ -128,7 +128,7 @@ public interface IKernel
     /// <param name="input">Input to process</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         string input,
         params ISKFunction[] pipeline);
 
@@ -138,7 +138,7 @@ public interface IKernel
     /// <param name="variables">Input to process</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         ContextVariables variables,
         params ISKFunction[] pipeline);
 
@@ -148,7 +148,7 @@ public interface IKernel
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
 
@@ -159,7 +159,7 @@ public interface IKernel
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         string input,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
@@ -171,7 +171,7 @@ public interface IKernel
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         ContextVariables variables,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);

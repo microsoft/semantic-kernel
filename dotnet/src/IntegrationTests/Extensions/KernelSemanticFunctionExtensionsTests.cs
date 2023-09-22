@@ -37,10 +37,10 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress}}";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
-        Assert.Equal("Hey johndoe1234@example.com", actual.Result);
+        Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
     }
 
     [Fact]
@@ -56,10 +56,10 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress \"a person\"}}";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
-        Assert.Equal("Hey a person@example.com", actual.Result);
+        Assert.Equal("Hey a person@example.com", actual.GetValue<string>());
     }
 
     private readonly RedirectOutput _logger;

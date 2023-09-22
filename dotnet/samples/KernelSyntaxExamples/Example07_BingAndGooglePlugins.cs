@@ -144,13 +144,15 @@ Answer: ";
             ["externalInformation"] = string.Empty
         });
 
+        var result = answer.GetValue<string>()!;
+
         // If the answer contains commands, execute them using the prompt renderer.
-        if (answer.Result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
+        if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
         {
             var promptRenderer = new PromptTemplateEngine();
 
             Console.WriteLine("---- Fetching information from Bing...");
-            var information = await promptRenderer.RenderAsync(answer.Result, kernel.CreateNewContext());
+            var information = await promptRenderer.RenderAsync(result, kernel.CreateNewContext());
 
             Console.WriteLine("Information found:");
             Console.WriteLine(information);
@@ -168,7 +170,7 @@ Answer: ";
         }
 
         Console.WriteLine("---- ANSWER:");
-        Console.WriteLine(answer);
+        Console.WriteLine(answer.GetValue<string>());
 
         /* OUTPUT:
 

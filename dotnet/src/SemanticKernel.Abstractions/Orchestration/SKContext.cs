@@ -25,7 +25,8 @@ public sealed class SKContext
     /// When a prompt is processed, aka the current data after any model results processing occurred.
     /// (One prompt can have multiple results).
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
+    [Obsolete($"ModelResults are now part of {nameof(FunctionResult.Metadata)} property. Use 'ModelResults' key or available extension methods to get model results.")]
+    public IReadOnlyCollection<ModelResult> ModelResults => Array.Empty<ModelResult>();
 
     /// <summary>
     /// The culture currently associated with this context.

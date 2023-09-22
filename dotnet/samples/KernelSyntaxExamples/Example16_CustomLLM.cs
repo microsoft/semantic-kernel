@@ -117,7 +117,7 @@ public static class Example16_CustomLLM
 
         // Details of the my custom model response
         Console.WriteLine(JsonSerializer.Serialize(
-            result.ModelResults,
+            result.GetModelResults(),
             new JsonSerializerOptions() { WriteIndented = true }
         ));
     }

@@ -47,7 +47,7 @@ public static class Example23_OpenApiPlugin_GitHub
         var result = await kernel.RunAsync(contextVariables, plugin["PullsList"]);
 
         Console.WriteLine("Successful GitHub List Pull Requests plugin response.");
-        var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.Result);
+        var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.GetValue<string>()!);
         var pullRequests = JArray.Parse((string)resultJson!["content"]);
 
         if (pullRequests != null && pullRequests.First != null)

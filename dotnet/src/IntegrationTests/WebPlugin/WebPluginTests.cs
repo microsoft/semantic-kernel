@@ -61,13 +61,13 @@ public sealed class WebPluginTests : IDisposable
         var search = kernel.ImportSkill(skill, "WebSearchEngine");
 
         // Act
-        SKContext result = await kernel.RunAsync(
-            contextVariables,
+        KernelResult result = await kernel.RunAsync(
+            prompt,
             search["Search"]
         );
 
         // Assert
-        Assert.Contains(expectedAnswerContains, result.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedAnswerContains, result.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory(Skip = "Bing search results not consistent enough for testing.")]

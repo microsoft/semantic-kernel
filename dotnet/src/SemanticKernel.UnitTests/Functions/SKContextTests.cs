@@ -56,10 +56,12 @@ public class SKContextTests
 
         // Act
         var say = target.Functions.GetFunction("func");
-        SKContext result = await say.InvokeAsync("ciao", this._kernel.Object);
+
+        FunctionResult result = await say.InvokeAsync("ciao", this._kernel.Object);
 
         // Assert
-        Assert.Equal("ciao", result.Result);
+        Assert.Equal("ciao", result.Context.Result);
+        Assert.Equal("ciao", result.GetValue<string>());
     }
 
     private sealed class Parrot
