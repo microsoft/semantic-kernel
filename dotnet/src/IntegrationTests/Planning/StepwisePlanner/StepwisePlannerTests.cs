@@ -44,7 +44,7 @@ public sealed class StepwisePlannerTests : IDisposable
     [Theory]
     [InlineData(false, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
     [InlineData(true, "Who is the current president of the United States? What is his current age divided by 2", "ExecutePlan", "StepwisePlanner")]
-    public void CanCreateStepwisePlan(bool useChatModel, string prompt, string expectedFunction, string expectedSkill)
+    public void CanCreateStepwisePlan(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
@@ -64,7 +64,7 @@ public sealed class StepwisePlannerTests : IDisposable
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.PluginName.Contains(expectedSkill, StringComparison.OrdinalIgnoreCase));
+                step.PluginName.Contains(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]

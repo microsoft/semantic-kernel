@@ -44,7 +44,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         var context = kernel.CreateNewContext();
         context.Variables[variableName] = variableValue;
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
+        // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
         kernel.ImportPlugin(new TextPlugin(), "text");
 
