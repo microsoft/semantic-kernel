@@ -23,71 +23,71 @@ public static class Example09_FunctionTypes
         var fakeContext = new SKContext(kernel);
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
-        var test = kernel.ImportFunctions(new LocalExamplePlugin(), "test");
+        var testFunctions = kernel.ImportFunctions(new LocalExamplePlugin(), "test");
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
         // The kernel takes care of wiring the input appropriately
         await kernel.RunAsync(
-            test["type01"],
-            test["type02"],
-            test["type03"],
-            test["type04"],
-            test["type05"],
-            test["type06"],
-            test["type07"],
-            test["type08"],
-            test["type09"],
-            test["type10"],
-            test["type11"],
-            test["type12"],
-            test["type13"],
-            test["type14"],
-            test["type15"],
-            test["type16"],
-            test["type17"],
-            test["type18"]
+            testFunctions["type01"],
+            testFunctions["type02"],
+            testFunctions["type03"],
+            testFunctions["type04"],
+            testFunctions["type05"],
+            testFunctions["type06"],
+            testFunctions["type07"],
+            testFunctions["type08"],
+            testFunctions["type09"],
+            testFunctions["type10"],
+            testFunctions["type11"],
+            testFunctions["type12"],
+            testFunctions["type13"],
+            testFunctions["type14"],
+            testFunctions["type15"],
+            testFunctions["type16"],
+            testFunctions["type17"],
+            testFunctions["type18"]
         );
 
         // Using Kernel.RunAsync
-        await kernel.RunAsync(test["type01"]);
+        await kernel.RunAsync(testFunctions["type01"]);
         await kernel.RunAsync(kernel.Functions.GetFunction("test", "type01"));
 
-        await kernel.RunAsync(test["type02"]);
+        await kernel.RunAsync(testFunctions["type02"]);
         await kernel.RunAsync(kernel.Functions.GetFunction("test", "type02"));
 
-        await kernel.RunAsync(test["type03"]);
+        await kernel.RunAsync(testFunctions["type03"]);
         await kernel.RunAsync(kernel.Functions.GetFunction("test", "type03"));
 
-        await kernel.RunAsync(test["type04"], fakeContext.Variables);
+        await kernel.RunAsync(testFunctions["type04"], fakeContext.Variables);
         await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type04"));
 
-        await kernel.RunAsync(test["type05"], fakeContext.Variables);
+        await kernel.RunAsync(testFunctions["type05"], fakeContext.Variables);
         await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type05"));
 
-        await kernel.RunAsync(test["type06"], fakeContext.Variables);
+        await kernel.RunAsync(testFunctions["type06"], fakeContext.Variables);
         await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type06"));
 
-        await kernel.RunAsync(test["type07"], fakeContext.Variables);
+        await kernel.RunAsync(testFunctions["type07"], fakeContext.Variables);
         await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type07"));
 
-        await kernel.RunAsync("", test["type08"]);
+        await kernel.RunAsync("", testFunctions["type08"]);
         await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type08"));
 
-        await kernel.RunAsync("", test["type09"]);
+        await kernel.RunAsync("", testFunctions["type09"]);
         await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type09"));
 
-        await kernel.RunAsync("", test["type10"]);
+        await kernel.RunAsync("", testFunctions["type10"]);
         await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type10"));
 
-        await kernel.RunAsync("", test["type11"]);
+        await kernel.RunAsync("", testFunctions["type11"]);
         await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type11"));
 
-        await kernel.RunAsync(fakeContext.Variables, test["type12"]);
+        await kernel.RunAsync(fakeContext.Variables, testFunctions["type12"]);
         await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type12"));
 
-        await kernel.RunAsync(test["type18"]);
+        await kernel.RunAsync(testFunctions["type18"]);
         await kernel.RunAsync(kernel.Functions.GetFunction("test", "type18"));
     }
 }

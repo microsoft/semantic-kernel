@@ -119,7 +119,7 @@ internal static class Example31_CustomPlanner
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var bing = new WebSearchEnginePlugin(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        var search = kernel.ImportFunctions(bing, "bing");
+        kernel.ImportFunctions(bing, "bing");
 
         return kernel.ImportSemanticFunctionsFromDirectory(folder, "QAPlugin");
     }

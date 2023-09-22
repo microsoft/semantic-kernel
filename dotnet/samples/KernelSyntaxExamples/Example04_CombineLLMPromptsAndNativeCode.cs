@@ -36,31 +36,31 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         var bingConnector = new BingConnector(bingApiKey);
         var bing = new WebSearchEnginePlugin(bingConnector);
-        var search = kernel.ImportFunctions(bing, "bing");
+        var searchFunctions = kernel.ImportFunctions(bing, "bing");
 
         // Load semantic plugins defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var summarizePlugin = kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
+        var summarizeFunctions = kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
         // Run
         var ask = "What's the tallest building in South America";
 
         var result1 = await kernel.RunAsync(
             ask,
-            search["Search"]
+            searchFunctions["Search"]
         );
 
         var result2 = await kernel.RunAsync(
             ask,
-            search["Search"],
-            summarizePlugin["Summarize"]
+            searchFunctions["Search"],
+            summarizeFunctions["Summarize"]
         );
 
         var result3 = await kernel.RunAsync(
             ask,
-            search["Search"],
-            summarizePlugin["Notegen"]
+            searchFunctions["Search"],
+            summarizeFunctions["Notegen"]
         );
 
         Console.WriteLine(ask + "\n");

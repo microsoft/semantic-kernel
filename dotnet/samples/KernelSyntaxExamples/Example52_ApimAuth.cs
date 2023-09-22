@@ -68,14 +68,14 @@ public static class Example52_ApimAuth
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        var fun = kernel.ImportSemanticFunctionsFromDirectory(
+        var funFunctions = kernel.ImportSemanticFunctionsFromDirectory(
             folder,
             "FunPlugin");
 
         // Run
         var result = await kernel.RunAsync(
             "I have no homework",
-            fun["Excuses"]
+            funFunctions["Excuses"]
         );
         Console.WriteLine(result);
 

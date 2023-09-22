@@ -22,10 +22,10 @@ public static class Example28_ActionPlanner
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "WriterPlugin");
-        kernel.ImportSemanticFunctionsFromDirectory(folder, "FunPlugin");
+        string samplesDirectory = RepoFiles.SamplePluginsPath();
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "SummarizePlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "WriterPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "FunPlugin");
 
         // Create an optional config for the ActionPlanner. Use this to exclude plugins and functions if needed
         var config = new ActionPlannerConfig();

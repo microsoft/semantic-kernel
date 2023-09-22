@@ -122,9 +122,9 @@ public static class Example40_DIContainer
         {
             string folder = RepoFiles.SamplePluginsPath();
 
-            var summarize = this._kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
+            var summarizeFunctions = this._kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
-            var result = await this._kernel.RunAsync(ask, summarize["Summarize"]);
+            var result = await this._kernel.RunAsync(ask, summarizeFunctions["Summarize"]);
 
             this._logger.LogWarning("Result - {0}", result);
         }
