@@ -26,7 +26,7 @@ The GitHub Repo Q&A Bot sample allows you to pull in data from a public GitHub
 repo into a local memory store in order to ask questions about the project and
 to get answers about it. The sample highlights how [memory](https://aka.ms/sk/memories)
 and [embeddings](https://aka.ms/sk/embeddings) work along with the
-[TextChunker](../../../dotnet/src/SemanticKernel/Text/TextChunker.cs)
+[TextChunker](../../../dotnet/src/SemanticKernel.Core/Text/TextChunker.cs)
 when the size of the data is larger than the allowed token limited.
 Each SK function will call Open AI to perform the tasks you ask about.
 

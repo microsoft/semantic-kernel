@@ -102,11 +102,11 @@ public sealed class SKFunctionTests3
             pluginName: "pluginName",
             functionName: "functionName");
 
-        SKContext result = await function.InvokeAsync(context);
+        FunctionResult result = await function.InvokeAsync(context);
 
         // Assert
         Assert.Equal("YES", context.Variables["canary"]);
-        Assert.Equal("YES", result.Variables["canary"]);
+        Assert.Equal("YES", result.Context.Variables["canary"]);
     }
 
     [Fact]
@@ -137,10 +137,10 @@ public sealed class SKFunctionTests3
             pluginName: "pluginName",
             functionName: "functionName");
 
-        SKContext result = await function.InvokeAsync(context);
+        FunctionResult result = await function.InvokeAsync(context);
 
         // Assert
-        Assert.Equal("YES", result.Variables["canary"]);
+        Assert.Equal("YES", result.Context.Variables["canary"]);
     }
 
     private sealed class InvalidPlugin

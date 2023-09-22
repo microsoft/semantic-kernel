@@ -47,7 +47,7 @@
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Web\Plugins.Web.csproj" />
-    <ProjectReference Include="..\SemanticKernel\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Planners\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
 

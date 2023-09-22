@@ -242,14 +242,7 @@ public class StepwisePlanner : IStepwisePlanner
                 {
                     var result = await this.InvokeActionAsync(step.Action, step.ActionVariables, cancellationToken).ConfigureAwait(false);
 
-                    if (string.IsNullOrEmpty(result))
-                    {
-                        step.Observation = "Got no result from action";
-                    }
-                    else
-                    {
-                        step.Observation = result;
-                    }
+                    step.Observation = string.IsNullOrEmpty(result) ? "Got no result from action" : result!;
                 }
                 catch (Exception ex) when (!ex.IsCriticalException())
                 {
@@ -525,7 +518,7 @@ public class StepwisePlanner : IStepwisePlanner
         return result;
     }
 
-    private async Task<string> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables, CancellationToken cancellationToken)
+    private async Task<string?> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables, CancellationToken cancellationToken)
     {
         var availableFunctions = await this.GetAvailableFunctionsAsync(cancellationToken).ConfigureAwait(false);
         var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
@@ -540,11 +533,12 @@ public class StepwisePlanner : IStepwisePlanner
             ISKFunction function = this.GetFunction(targetFunction);
 
             var vars = this.CreateActionContextVariables(actionVariables);
-            var result = await this._kernel.RunAsync(function, vars, cancellationToken).ConfigureAwait(false);
+            var kernelResult = await this._kernel.RunAsync(function, vars, cancellationToken).ConfigureAwait(false);
+            var result = kernelResult.GetValue<string>();
 
-            this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
+            this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
 
-            return result.Result;
+            return result;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
