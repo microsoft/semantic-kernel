@@ -83,12 +83,12 @@ public sealed class SequentialPlanner : ISequentialPlanner
                 $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
 
-        var getPluginFunction = this.Config.GetPluginFunction ?? SequentialPlanParser.GetPluginFunction(this._kernel.Functions);
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? SequentialPlanParser.GetFunctionCallback(this._kernel.Functions);
 
         Plan plan;
         try
         {
-            plan = planResultString!.ToPlanFromXml(goal, getPluginFunction, this.Config.AllowMissingFunctions);
+            plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
         }
         catch (SKException e)
         {

@@ -40,7 +40,7 @@ internal static class SequentialPlanParser
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
 
-    internal static Func<string, string, ISKFunction?> GetPluginFunction(IReadOnlyFunctionCollection functions)
+    internal static Func<string, string, ISKFunction?> GetFunctionCallback(IReadOnlyFunctionCollection functions)
     {
         return (pluginName, functionName) =>
         {
@@ -65,11 +65,11 @@ internal static class SequentialPlanParser
     /// </summary>
     /// <param name="xmlString">The plan xml string.</param>
     /// <param name="goal">The goal for the plan.</param>
-    /// <param name="getPluginFunction">The callback to get a plugin function.</param>
+    /// <param name="getFunctionCallback">The callback to get a plugin function.</param>
     /// <param name="allowMissingFunctions">Whether to allow missing functions in the plan on creation.</param>
     /// <returns>The plan.</returns>
     /// <exception cref="SKException">Thrown when the plan xml is invalid.</exception>
-    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getPluginFunction, bool allowMissingFunctions = false)
+    internal static Plan ToPlanFromXml(this string xmlString, string goal, Func<string, string, ISKFunction?> getFunctionCallback, bool allowMissingFunctions = false)
     {
         XmlDocument xmlDoc = new();
         try
@@ -135,11 +135,11 @@ internal static class SequentialPlanParser
                 if (childNode.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
                 {
                     var pluginFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
-                    GetPluginFunctionNames(pluginFunctionName, out var pluginName, out var functionName);
+                    GetFunctionCallbackNames(pluginFunctionName, out var pluginName, out var functionName);
 
                     if (!string.IsNullOrEmpty(functionName))
                     {
-                        var pluginFunction = getPluginFunction(pluginName, functionName);
+                        var pluginFunction = getFunctionCallback(pluginName, functionName);
 
                         if (pluginFunction is not null)
                         {
@@ -207,7 +207,7 @@ internal static class SequentialPlanParser
         return plan;
     }
 
-    private static void GetPluginFunctionNames(string pluginFunctionName, out string pluginName, out string functionName)
+    private static void GetFunctionCallbackNames(string pluginFunctionName, out string pluginName, out string functionName)
     {
         var pluginFunctionNameParts = pluginFunctionName.Split('.');
         pluginName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[0] : string.Empty;

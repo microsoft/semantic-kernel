@@ -122,7 +122,7 @@ public class SequentialPlanParserTests
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);
@@ -169,7 +169,7 @@ public class SequentialPlanParserTests
         var planString = "<someTag>";
 
         // Act
-        Assert.Throws<SKException>(() => planString.ToPlanFromXml(GoalText, SequentialPlanParser.GetPluginFunction(kernel.Functions)));
+        Assert.Throws<SKException>(() => planString.ToPlanFromXml(GoalText, SequentialPlanParser.GetFunctionCallback(kernel.Functions)));
     }
 
     // Test that contains a #text node in the plan
@@ -189,7 +189,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);
@@ -213,7 +213,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);
@@ -238,7 +238,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);
@@ -273,7 +273,7 @@ public class SequentialPlanParserTests
         if (allowMissingFunctions)
         {
             // it should not throw
-            var plan = planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetPluginFunction(kernel.Functions), allowMissingFunctions);
+            var plan = planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetFunctionCallback(kernel.Functions), allowMissingFunctions);
 
             // Assert
             Assert.NotNull(plan);
@@ -289,7 +289,7 @@ public class SequentialPlanParserTests
         }
         else
         {
-            Assert.Throws<SKException>(() => planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetPluginFunction(kernel.Functions), allowMissingFunctions));
+            Assert.Throws<SKException>(() => planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetFunctionCallback(kernel.Functions), allowMissingFunctions));
         }
     }
 
@@ -323,7 +323,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);
@@ -347,7 +347,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planText.ToPlanFromXml(string.Empty, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);
@@ -373,7 +373,7 @@ public class SequentialPlanParserTests
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
         // Act
-        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planText.ToPlanFromXml(goalText, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);
