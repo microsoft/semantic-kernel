@@ -27,7 +27,7 @@ public class PluginTests
         var kernel = new KernelBuilder().Build();
         using HttpClient httpClient = new();
 
-        var skill = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiPluginExecutionParameters(httpClient));
@@ -39,7 +39,7 @@ public class PluginTests
         contextVariables["countryCode"] = countryCode;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
     [Theory]
@@ -59,7 +59,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var skill = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -68,7 +68,7 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 
     [Theory]
@@ -90,7 +90,7 @@ public class PluginTests
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
-            var skill = await kernel.ImportAIPluginAsync(
+            var plugin = await kernel.ImportAIPluginAsync(
                 name,
                 stream,
                 new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -99,7 +99,7 @@ public class PluginTests
             contextVariables["payload"] = payload;
 
             // Act
-            await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+            await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
         }
     }
 
@@ -120,7 +120,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var skill = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportAIPluginAsync(
             name,
             pluginFilePath,
             new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -129,6 +129,6 @@ public class PluginTests
         contextVariables["payload"] = payload;
 
         // Act
-        await skill[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
+        await plugin[functionName].InvokeAsync(new SKContext(kernel, contextVariables));
     }
 }
