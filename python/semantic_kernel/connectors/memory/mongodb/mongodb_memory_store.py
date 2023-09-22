@@ -14,23 +14,19 @@ from .utils import (
     DEFAULT_INSERT_BATCH_SIZE,
     SEARCH_FIELD_ID,
     dict_to_memory_record,
-    get_azuremongodb_similarity_query,
     get_mongodb_resources,
-    get_mongodbatlas_similarity_query,
     memory_record_to_mongodb_record,
 )
 
 
-class MongoDBMemoryStore(MemoryStoreBase):
+class AzureCosmosMongoDBMemoryStore(MemoryStoreBase):
     """
     A class representing a memory store for Azure Cosmos DB MongoDB API.
 
     Args:
-        vector_size (int): The size of the vector.
+        vector_size (int): The size of the vector. 
         connection_string (str, optional): The connection string for the MongoDB client.
         database_name (str, optional): The name of the MongoDB database.
-        api_type (str, optional): The type of the MongoDB API. Defaults to "azuremongodb".
-                                 Options are "azuremongodb" and "mongodbatlas".
         embedding_key (str, optional): The key used for embedding. Defaults to SEARCH_FIELD_EMBEDDING.
         batch_size (int, optional): The batch size for inserting records. Defaults to DEFAULT_INSERT_BATCH_SIZE.
         logger (Optional[Logger], optional): The logger instance. Defaults to None.
@@ -51,9 +47,7 @@ class MongoDBMemoryStore(MemoryStoreBase):
         vector_size: int,
         connection_string: str = None,
         database_name: str = None,
-        api_type: str = "azuremongodb",
         embedding_key: str = "embedding",
-        collection_name: str = None,
         index_name: str = "vectorSearchIndex",  # Only for MongoDB Atlas
         batch_size: int = DEFAULT_INSERT_BATCH_SIZE,
         logger: Optional[Logger] = None,
@@ -67,20 +61,9 @@ class MongoDBMemoryStore(MemoryStoreBase):
         if database_name is None:
             raise ValueError("database_name must be specified")
 
-        if collection_name is None:
-            raise ValueError("collection_name must be specified")
-
-        if not self.does_index_exist_async(
-            collection_name,
-            index_name=self._index_name and self._api_type == "mongodbatlas",
-        ):
-            raise ValueError("Index does not exist")
-
         self._mongodb_client, self._database = get_mongodb_resources(
             connection_string, database_name
         )
-        self._api_type = api_type
-        self._collection = self._database[collection_name]
         self._index_name = index_name
         self._embedding_key = embedding_key
         self._vector_size = vector_size
@@ -99,7 +82,7 @@ class MongoDBMemoryStore(MemoryStoreBase):
         num_lists: int = 100,
     ) -> None:
         """
-        Creates a new collection in the MongoDB database with the given name,
+        Creates a new collection in the Azure Cosmos with the given name,
         if it does not already exist.
         Also creates an index on the collection for vector search
         using the given similarity metric and number of lists.
@@ -117,31 +100,24 @@ class MongoDBMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        if self._api_type == "azuremongodb":
-            if not await self.does_collection_exist_async(collection_name):
-                self._database.command(
-                    {
-                        "createIndexes": collection_name,
-                        "indexes": [
-                            {
-                                "name": "vectorSearchIndex",
-                                "key": {self._embedding_key: "cosmosSearch"},
-                                "cosmosSearchOptions": {
-                                    "kind": "vector-ivf",
-                                    "numLists": num_lists,
-                                    "similarity": similarity,
-                                    "dimensions": self._vector_size,
-                                },
-                            }
-                        ],
-                    }
-                )
-        elif self._api_type == "mongodbatlas":
-            # Create the collection if it does not exist, Currently its not supported
-            # vector index creation through
-            #  Pymongo on MongoDB Atlas
-            if not await self.does_collection_exist_async(collection_name):
-                self._database.create_collection(collection_name)
+        if not await self.does_collection_exist_async(collection_name):
+            self._database.command(
+                {
+                    "createIndexes": collection_name,
+                    "indexes": [
+                        {
+                            "name": "vectorSearchIndex",
+                            "key": {self._embedding_key: "cosmosSearch"},
+                            "cosmosSearchOptions": {
+                                "kind": "vector-ivf",
+                                "numLists": num_lists,
+                                "similarity": similarity,
+                                "dimensions": self._vector_size,
+                            },
+                        }
+                    ],
+                }
+            )
 
     async def get_collections_async(self) -> List[str]:
         """Gets the list of collections.
@@ -349,17 +325,18 @@ class MongoDBMemoryStore(MemoryStoreBase):
             corresponding similarity scores.
         """
 
-        if self._api_type == "azuremongodb":
-            search_pipeline = get_azuremongodb_similarity_query(
-                embeddings=embedding, embedding_key=self._embedding_key, limit=limit
-            )
-        else:
-            search_pipeline = get_mongodbatlas_similarity_query(
-                embeddings=embedding,
-                embedding_key=self._embedding_key,
-                collection_name=collection_name,
-                limit=limit,
-            )
+        search_pipeline = [
+            {
+                "$search": {
+                    "cosmosSearch": {
+                        "vector": embedding.tolist(),
+                        "path": self._embedding_key,
+                        "k": limit,
+                    },
+                    "returnStoredSource": True,
+                }
+            },
+        ]
 
         collection = self._database[collection_name]
         search_cursor = collection.aggregate(search_pipeline)

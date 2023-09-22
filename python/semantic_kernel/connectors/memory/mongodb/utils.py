@@ -6,7 +6,6 @@ SEARCH_FIELD_ID = "Id"
 SEARCH_FIELD_TEXT = "Text"
 SEARCH_FIELD_SRC = "ExternalSourceName"
 SEARCH_FIELD_DESC = "Description"
-SEARCH_FIELD_METADATA = "AdditionalMetadata"
 SEARCH_FIELD_IS_REF = "IsReference"
 DEFAULT_INSERT_BATCH_SIZE = 1000
 
@@ -27,7 +26,6 @@ def dict_to_memory_record(data: dict, embedding_key) -> MemoryRecord:
         text=data[SEARCH_FIELD_TEXT],
         external_source_name=data[SEARCH_FIELD_SRC],
         description=data[SEARCH_FIELD_DESC],
-        additional_metadata=data[SEARCH_FIELD_METADATA],
         is_reference=data[SEARCH_FIELD_IS_REF],
         embedding=data[embedding_key],
         timestamp=None,
@@ -49,7 +47,6 @@ def memory_record_to_mongodb_record(record: MemoryRecord, embedding_key) -> dict
         SEARCH_FIELD_TEXT: str(record._text),
         SEARCH_FIELD_SRC: record._external_source_name or "",
         SEARCH_FIELD_DESC: record._description or "",
-        SEARCH_FIELD_METADATA: record._additional_metadata or "",
         SEARCH_FIELD_IS_REF: record._is_reference,
         embedding_key: record._embedding.tolist(),
     }
@@ -80,40 +77,3 @@ def get_mongodb_resources(connection_string: str, database_name: str):
         raise Exception(f"Error while connecting to MongoDB: {exc}") from exc
 
     return client, database
-
-
-def get_mongodbatlas_similarity_query(
-    embeddings, embedding_key, collection_name, limit=10
-):
-    knn_beta = {
-        "vector": embeddings.tolist(),
-        "path": embedding_key,
-        "k": limit,
-    }
-    pipeline = [
-        {
-            "$search": {
-                "index": collection_name,
-                "knnBeta": knn_beta,
-            }
-        },
-        # TODO: Add mapping while serializing to get score
-        # {"$project": {"score": {"$meta": "searchScore"}, "full_document": "$$ROOT"}},
-    ]
-    return pipeline
-
-
-def get_azuremongodb_similarity_query(embeddings, embedding_key, limit):
-    similarity_query = [
-        {
-            "$search": {
-                "cosmosSearch": {
-                    "vector": embeddings.tolist(),
-                    "path": embedding_key,
-                    "k": limit,
-                },
-                "returnStoredSource": True,
-            }
-        },
-    ]
-    return similarity_query

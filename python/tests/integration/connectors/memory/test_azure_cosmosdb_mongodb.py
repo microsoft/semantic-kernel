@@ -5,9 +5,7 @@ import numpy as np
 import pytest
 
 import semantic_kernel as sk
-from semantic_kernel.connectors.memory.mongodb.mongodb_memory_store import (
-    MongoDBMemoryStore,
-)
+from semantic_kernel.connectors.memory.mongodb.mongodb_memory_store import AzureCosmosMongoDBMemoryStore
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 try:
@@ -24,21 +22,18 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(scope="session", params=["azuremongodb", "mongodbatlas"])
-def connection(request):
-    api_type = request.param
+@pytest.fixture(scope="session")
+def connection():
     if "Python_Integration_Tests" in os.environ:
-        connection_string = os.environ["AZURE_COSMODB_MONGO_CONNECTION_STRING"]
+        connection_string = os.environ["AZURE_COSMOSDB_MONGO_CONNECTION_STRING"]
     else:
         # Load credentials from .env file, or go to default if not found
         try:
             connection_string = sk.azure_cosmos_mongodb_settings_from_dot_env()
         except Exception:
-            if api_type == "azuremongodb":
-                connection_string = "azureconnectionstring"
-            else:
-                connection_string = "mongodbatlasconnectionstring"
-    return connection_string, api_type
+            connection_string = ""
+
+    return connection_string
 
 
 @pytest.fixture
@@ -49,7 +44,6 @@ def memory_record1():
         is_reference=False,
         embedding=np.array([0.5, 0.5]),
         description="description",
-        additional_metadata="additional metadata",
         external_source_name="external source",
     )
 
@@ -62,7 +56,6 @@ def memory_record2():
         is_reference=False,
         embedding=np.array([0.25, 0.75]),
         description="description",
-        additional_metadata="additional metadata",
         external_source_name="external source",
     )
 
@@ -75,7 +68,6 @@ def memory_record3():
         is_reference=False,
         embedding=np.array([0.25, 0.80]),
         description="description",
-        additional_metadata="additional metadata",
         external_source_name="external source",
     )
 
@@ -83,11 +75,9 @@ def memory_record3():
 @pytest.fixture
 def memory_store(connection):
     # Setup and yield
-    mongodb_mem_store = MongoDBMemoryStore(
-        connection_string=connection[0],
+    mongodb_mem_store = AzureCosmosMongoDBMemoryStore(
+        connection_string=connection,
         vector_size=TEST_VEC_SIZE,
-        api_type=connection[1],
-        collection_name=TEST_COLLECTION_NAME,
         database_name="test_db",
         embedding_key="embedding",
     )
@@ -168,7 +158,6 @@ async def test_upsert_async_and_get_async(memory_store, memory_record1):
     assert fetch_1._external_source_name == memory_record1._external_source_name
     assert fetch_1._description == memory_record1._description
     assert fetch_1._text == memory_record1._text
-    assert fetch_1._additional_metadata == memory_record1._additional_metadata
     for expected, actual in zip(fetch_1.embedding, memory_record1.embedding):
         assert expected == actual, "Did not retain correct embedding"
 
@@ -251,7 +240,6 @@ async def test_get_nearest_match_async(memory_store, memory_record1, memory_reco
     assert result._external_source_name == memory_record1._external_source_name
     assert result._description == memory_record1._description
     assert result._text == memory_record1._text
-    assert result._additional_metadata == memory_record1._additional_metadata
     for i in range(len(result._embedding)):
         assert result._embedding[i] == memory_record1._embedding[i]
 
