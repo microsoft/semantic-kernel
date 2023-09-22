@@ -32,7 +32,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
     {
         Verify.NotNull(kernel);
 
-        // Set up config with default value and excluded skills
+        // Set up config with default value and excluded plugins
         this.Config = config ?? new();
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
