@@ -23,10 +23,10 @@ public static class Example09_FunctionTypes
         var fakeContext = new SKContext(kernel);
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
-        var test = kernel.ImportPlugin(new LocalExamplePlugin(), "test");
+        var test = kernel.ImportFunctions(new LocalExamplePlugin(), "test");
 
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
         // The kernel takes care of wiring the input appropriately
         await kernel.RunAsync(

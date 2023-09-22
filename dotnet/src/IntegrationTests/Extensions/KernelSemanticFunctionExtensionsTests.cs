@@ -32,7 +32,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
-        var emailPlugin = target.ImportPlugin(new EmailPluginFake());
+        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
 
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress}}";
 
@@ -51,7 +51,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
-        var emailPlugin = target.ImportPlugin(new EmailPluginFake());
+        var emailFunctions = target.ImportFunctions(new EmailPluginFake());
 
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress \"a person\"}}";
 

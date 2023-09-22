@@ -47,7 +47,7 @@ public static class Example07_BingAndGooglePlugins
         {
             var bingConnector = new BingConnector(bingApiKey);
             var bing = new WebSearchEnginePlugin(bingConnector);
-            var search = kernel.ImportPlugin(bing, "bing");
+            var search = kernel.ImportFunctions(bing, "bing");
             await Example1Async(kernel, "bing");
             await Example2Async(kernel);
         }
@@ -66,7 +66,7 @@ public static class Example07_BingAndGooglePlugins
                 apiKey: googleApiKey,
                 searchEngineId: googleSearchEngineId);
             var google = new WebSearchEnginePlugin(googleConnector);
-            var search = kernel.ImportPlugin(new WebSearchEnginePlugin(googleConnector), "google");
+            var search = kernel.ImportFunctions(new WebSearchEnginePlugin(googleConnector), "google");
             await Example1Async(kernel, "google");
         }
     }

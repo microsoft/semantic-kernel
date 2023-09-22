@@ -120,11 +120,11 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
 
-        kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         return kernel;
     }

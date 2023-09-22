@@ -30,13 +30,13 @@ internal static class Example31_CustomPlanner
         SKContext context = CreateContextQueryContext(kernel);
 
         // Create a memory store using the VolatileMemoryStore and the embedding generator registered in the kernel
-        kernel.ImportPlugin(new TextMemoryPlugin(kernel.Memory));
+        kernel.ImportFunctions(new TextMemoryPlugin(kernel.Memory));
 
         // Setup defined memories for recall
         await RememberFactsAsync(kernel);
 
         // MarkupPlugin named "markup"
-        var markup = kernel.ImportPlugin(new MarkupPlugin(), "markup");
+        var markup = kernel.ImportFunctions(new MarkupPlugin(), "markup");
 
         // contextQuery "Who is my president? Who was president 3 years ago? What should I eat for dinner" | markup
         // Create a plan to execute the ContextQuery and then run the markup plugin on the output
@@ -87,7 +87,7 @@ internal static class Example31_CustomPlanner
 
     private static async Task RememberFactsAsync(IKernel kernel)
     {
-        kernel.ImportPlugin(new TextMemoryPlugin(kernel.Memory));
+        kernel.ImportFunctions(new TextMemoryPlugin(kernel.Memory));
 
         List<string> memoriesToSave = new()
         {
@@ -115,13 +115,13 @@ internal static class Example31_CustomPlanner
     private static IDictionary<string, ISKFunction> LoadQAPlugin(IKernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var bing = new WebSearchEnginePlugin(new BingConnector(TestConfiguration.Bing.ApiKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        var search = kernel.ImportPlugin(bing, "bing");
+        var search = kernel.ImportFunctions(bing, "bing");
 
-        return kernel.ImportSemanticPluginFromDirectory(folder, "QAPlugin");
+        return kernel.ImportSemanticFunctionsFromDirectory(folder, "QAPlugin");
     }
 
     private static IKernel InitializeKernel()

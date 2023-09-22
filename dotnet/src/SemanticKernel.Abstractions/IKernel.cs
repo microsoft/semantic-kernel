@@ -85,15 +85,15 @@ public interface IKernel
     /// Import a set of functions as a plugin from the given object instance. Only the functions that have the `SKFunction` attribute will be included in the plugin.
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>
-    /// <param name="pluginInstance">Instance of a class containing functions</param>
+    /// <param name="functionsInstance">Instance of a class containing functions</param>
     /// <param name="pluginName">Name of the plugin for function collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportPlugin(object pluginInstance, string? pluginName = null);
+    IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null);
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
-    IDictionary<string, ISKFunction> ImportSkill(object pluginInstance, string? pluginName = null);
+    IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null);
 #pragma warning restore CS1591
 
     /// <summary>

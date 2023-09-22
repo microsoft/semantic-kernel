@@ -20,7 +20,7 @@ internal static class FunctionHelpers
     {
         var kernel = Kernel.Builder.Build();
 
-        IDictionary<string, ISKFunction> plugin = kernel.ImportPlugin(pluginInstance);
+        IDictionary<string, ISKFunction> functions = kernel.ImportFunctions(pluginInstance);
 
         SKContext context = kernel.CreateNewContext();
         foreach ((string Name, string Value) pair in variables)
@@ -28,6 +28,6 @@ internal static class FunctionHelpers
             context.Variables.Set(pair.Name, pair.Value);
         }
 
-        return plugin[methodName].InvokeAsync(context);
+        return functions[methodName].InvokeAsync(context);
     }
 }
