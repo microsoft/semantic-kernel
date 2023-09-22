@@ -27,7 +27,7 @@ public sealed class ParseResultTests
         var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
-        var planner = new Planners.StepwisePlanner(kernel.Object);
+        var planner = new StepwisePlanner(kernel.Object);
 
         // Act
         var result = planner.ParseResult(input);
@@ -79,7 +79,7 @@ public sealed class ParseResultTests
         var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
-        var planner = new Planners.StepwisePlanner(kernel.Object);
+        var planner = new StepwisePlanner(kernel.Object);
 
         // Act
         var result = planner.ParseResult(input);

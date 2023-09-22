@@ -383,7 +383,7 @@ public class StepwisePlanner : IStepwisePlanner
         string? originalThought = null;
 
         var tokenCount = chatHistory.GetTokenCount();
-        while (tokenCount >= this.Config.MaxPromptTokens && chatHistory.Count > skipStart + skipCount + messagesToKeep)
+        while (tokenCount >= this.Config.MaxPromptTokens && chatHistory.Count > (skipStart + skipCount + messagesToKeep))
         {
             originalThought = $"{Thought} {stepsTaken.FirstOrDefault()?.Thought}";
             tokenCount = chatHistory.GetTokenCount($"{originalThought}\n{string.Format(CultureInfo.InvariantCulture, TrimMessageFormat, skipCount)}", skipStart, ++skipCount);
@@ -410,7 +410,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (aiService is IChatCompletion chatCompletion)
         {
-            var llmResponse = await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.Completion, token).ConfigureAwait(false);
+            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.Completion, token).ConfigureAwait(false));
             return llmResponse;
         }
         else if (aiService is ITextCompletion textCompletion)
