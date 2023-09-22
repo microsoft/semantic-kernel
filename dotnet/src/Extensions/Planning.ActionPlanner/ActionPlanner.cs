@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -55,19 +54,18 @@ public sealed class ActionPlanner : IActionPlanner
     /// </summary>
     /// <param name="kernel">The semantic kernel instance.</param>
     /// <param name="config">The planner configuration.</param>
-    /// <param name="prompt">Optional prompt override</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public ActionPlanner(
         IKernel kernel,
-        ActionPlannerConfig? config = null,
-        string? prompt = null,
-        ILoggerFactory? loggerFactory = null)
+        ActionPlannerConfig? config = null)
     {
         Verify.NotNull(kernel);
+        this._kernel = kernel;
 
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ActionPlanner)) : NullLogger.Instance;
+        // Set up Config with default values and excluded skills
+        this.Config = config ?? new();
+        this.Config.ExcludedPlugins.Add(PluginName);
 
-        string promptTemplate = prompt ?? EmbeddedResource.Read("skprompt.txt");
+        string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("skprompt.txt");
 
         this._plannerFunction = kernel.CreateSemanticFunction(
             pluginName: PluginName,
@@ -83,12 +81,9 @@ public sealed class ActionPlanner : IActionPlanner
 
         kernel.ImportPlugin(this, pluginName: PluginName);
 
-        this._kernel = kernel;
+        // Create context and logger
         this._context = kernel.CreateNewContext();
-
-        // Set up Config with default values and excluded plugins
-        this._config = config ?? new();
-        this._config.ExcludedPlugins.Add(PluginName);
+        this._logger = this._kernel.LoggerFactory.CreateLogger(this.GetType());
     }
 
     /// <inheritdoc />
@@ -248,7 +243,7 @@ Goal: tell me a joke.
     /// <summary>
     /// The configuration for the ActionPlanner
     /// </summary>
-    private ActionPlannerConfig _config { get; }
+    private ActionPlannerConfig Config { get; }
 
     /// <summary>
     /// Native function that filters out good JSON from planner result in case additional text is present
@@ -321,8 +316,8 @@ Goal: tell me a joke.
     {
         Verify.NotNull(context.Functions);
 
-        var excludedPlugins = this._config.ExcludedPlugins ?? new();
-        var excludedFunctions = this._config.ExcludedFunctions ?? new();
+        var excludedPlugins = this.Config.ExcludedPlugins ?? new();
+        var excludedFunctions = this.Config.ExcludedFunctions ?? new();
 
         var availableFunctions = context.Functions.GetFunctionViews()
                 .Where(s => !excludedPlugins.Contains(s.PluginName, StringComparer.CurrentCultureIgnoreCase)

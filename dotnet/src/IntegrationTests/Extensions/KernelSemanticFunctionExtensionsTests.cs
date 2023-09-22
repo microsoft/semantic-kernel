@@ -14,11 +14,11 @@ using SemanticKernel.IntegrationTests.Fakes;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.SkillDefinition;
+namespace SemanticKernel.IntegrationTests.Extensions;
 
-public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
+public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
 {
-    public InlineFunctionsDefinitionExtensionsTests(ITestOutputHelper output)
+    public KernelSemanticFunctionExtensionsTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
         this._target = new PromptTemplateEngine();
@@ -32,7 +32,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
-        var emailSkill = target.ImportPlugin(new EmailSkillFake());
+        var emailPlugin = target.ImportPlugin(new EmailPluginFake());
 
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress}}";
 
@@ -51,7 +51,7 @@ public sealed class InlineFunctionsDefinitionExtensionsTests : IDisposable
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
 
-        var emailSkill = target.ImportPlugin(new EmailSkillFake());
+        var emailPlugin = target.ImportPlugin(new EmailPluginFake());
 
         var prompt = "Hey {{_GLOBAL_FUNCTIONS_.GetEmailAddress \"a person\"}}";
 
