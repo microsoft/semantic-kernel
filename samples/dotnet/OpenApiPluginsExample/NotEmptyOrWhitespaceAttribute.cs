@@ -3,7 +3,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace OpenApiSkillsExample;
+namespace OpenApiPluginsExample;
 
 /// <summary>
 /// If the string is set, it must not be empty or whitespace.
