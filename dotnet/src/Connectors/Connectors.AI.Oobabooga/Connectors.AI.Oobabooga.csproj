@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
 </Project>
