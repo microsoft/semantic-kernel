@@ -734,26 +734,24 @@ class Kernel:
             )
 
         skill_name = os.path.basename(skill_directory)
-        try:
-            spec = importlib.util.spec_from_file_location(
-                MODULE_NAME, native_py_file_path
-            )
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
 
-            class_name = next(
-                (
-                    name
-                    for name, cls in inspect.getmembers(module, inspect.isclass)
-                    if cls.__module__ == MODULE_NAME
-                ),
-                None,
-            )
-            if class_name:
-                skill_obj = getattr(module, class_name)()
-                return self.import_skill(skill_obj, skill_name)
-        except Exception:
-            pass
+        spec = importlib.util.spec_from_file_location(
+            MODULE_NAME, native_py_file_path
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        class_name = next(
+            (
+                name
+                for name, cls in inspect.getmembers(module, inspect.isclass)
+                if cls.__module__ == MODULE_NAME
+            ),
+            None,
+        )
+        if class_name:
+            skill_obj = getattr(module, class_name)()
+            return self.import_skill(skill_obj, skill_name)
 
         return {}
 

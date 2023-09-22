@@ -2,24 +2,27 @@
 
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition.sk_function_decorator import sk_function
-
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 def test_init_native_function_with_input_description():
-    class MockMethodWithInputDescription:
-        __sk_function__ = True
-        __sk_function_name__ = "mock_function"
-        __sk_function_description__ = "Mock description"
-        __sk_function_input_description__ = "Mock input description"
-        __sk_function_input_default_value__ = "default_input_value"
-        __sk_function_context_parameters__ = [
-            {
-                "name": "param1",
-                "description": "Param 1 description",
-                "default_value": "default_param1_value",
-            }
-        ]
+    def mock_function(input: str, context: "SKContext") -> None:
+        pass
+    mock_function.__sk_function__ = True
+    mock_function.__sk_function_name__ = "mock_function"
+    mock_function.__sk_function_description__ = "Mock description"
+    mock_function.__sk_function_input_description__ = "Mock input description"
+    mock_function.__sk_function_input_default_value__ = "default_input_value"
+    mock_function.__sk_function_context_parameters__ = [
+        {
+            "name": "param1",
+            "description": "Param 1 description",
+            "default_value": "default_param1_value",
+        }
+    ]
 
-    mock_method = MockMethodWithInputDescription
+    mock_method = mock_function
 
     native_function = SKFunction.from_native_method(mock_method, "MockSkill")
 
@@ -33,19 +36,20 @@ def test_init_native_function_with_input_description():
 
 
 def test_init_native_function_without_input_description():
-    class MockMethodWithoutInputDescription:
-        __sk_function__ = True
-        __sk_function_name__ = "mock_function_no_input_desc"
-        __sk_function_description__ = "Mock description no input desc"
-        __sk_function_context_parameters__ = [
-            {
-                "name": "param1",
-                "description": "Param 1 description",
-                "default_value": "default_param1_value",
-            }
-        ]
+    def mock_function(context: "SKContext") -> None:
+        pass
+    mock_function.__sk_function__ = True
+    mock_function.__sk_function_name__ = "mock_function_no_input_desc"
+    mock_function.__sk_function_description__ = "Mock description no input desc"
+    mock_function.__sk_function_context_parameters__ = [
+        {
+            "name": "param1",
+            "description": "Param 1 description",
+            "default_value": "default_param1_value",
+        }
+    ]
 
-    mock_method = MockMethodWithoutInputDescription
+    mock_method = mock_function
 
     native_function = SKFunction.from_native_method(mock_method, "MockSkill")
 
@@ -62,7 +66,7 @@ def test_init_native_function_from_sk_function_decorator():
         input_description="Test input description",
         input_default_value="test_default_value",
     )
-    def decorated_function():
+    def decorated_function() -> None:
         pass
 
     assert decorated_function.__sk_function__ is True
@@ -85,7 +89,7 @@ def test_init_native_function_from_sk_function_decorator():
 
 def test_init_native_function_from_sk_function_decorator_defaults():
     @sk_function()
-    def decorated_function():
+    def decorated_function() -> None:
         pass
 
     assert decorated_function.__sk_function__ is True
