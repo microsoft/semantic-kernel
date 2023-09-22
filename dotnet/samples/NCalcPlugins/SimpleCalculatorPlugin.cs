@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.AI;
 namespace NCalcPlugins;
 
 /// <summary>
-/// Simple calculator skill that evaluates a mathematical expression.
+/// Simple calculator plugin that evaluates a mathematical expression.
 /// </summary>
 public class SimpleCalculatorPlugin
 {

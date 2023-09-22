@@ -57,7 +57,7 @@ public static class Example57_FunctionEventHandlers
 
         var excuseFunction = kernel.CreateSemanticFunction(
             FunctionPrompt,
-            pluginName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "Excuse",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
@@ -104,7 +104,7 @@ public static class Example57_FunctionEventHandlers
 
         var writerFunction = kernel.CreateSemanticFunction(
             FunctionPrompt,
-            pluginName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "Writer",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
@@ -140,7 +140,7 @@ public static class Example57_FunctionEventHandlers
 
         var writerFunction = kernel.CreateSemanticFunction(
             FunctionPrompt,
-            pluginName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "Writer",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
@@ -209,11 +209,11 @@ public static class Example57_FunctionEventHandlers
            .Build();
 
         var skipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Skipping",
-            pluginName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "SkipMe");
 
         var dontSkipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Handlers",
-            pluginName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "DontSkipMe");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -254,7 +254,7 @@ public static class Example57_FunctionEventHandlers
         var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
 
         var repeatMeFunction = kernel.CreateSemanticFunction("Write a sentence about {{$input}}",
-            pluginName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "RepeatMe");
 
         var repeatTimes = 0;

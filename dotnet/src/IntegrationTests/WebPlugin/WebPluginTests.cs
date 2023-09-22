@@ -11,13 +11,13 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.WebSkill;
+namespace SemanticKernel.IntegrationTests.WebPlugin;
 
-public sealed class WebSkillTests : IDisposable
+public sealed class WebPluginTests : IDisposable
 {
     private readonly string _bingApiKey;
 
-    public WebSkillTests(ITestOutputHelper output)
+    public WebPluginTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
         this._output = output;
@@ -30,7 +30,7 @@ public sealed class WebSkillTests : IDisposable
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<WebSkillTests>()
+            .AddUserSecrets<WebPluginTests>()
             .Build();
 
         string? bingApiKeyCandidate = configuration["Bing:ApiKey"];
@@ -40,7 +40,7 @@ public sealed class WebSkillTests : IDisposable
 
     [Theory(Skip = "Bing search results not consistent enough for testing.")]
     [InlineData("What is generally recognized as the tallest building in Seattle, Washington, USA?", "Columbia Center")]
-    public async Task BingSkillTestAsync(string prompt, string expectedAnswerContains)
+    public async Task BingPluginTestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
         IKernel kernel = Kernel.Builder.WithLoggerFactory(this._logger).Build();
@@ -49,8 +49,8 @@ public sealed class WebSkillTests : IDisposable
         BingConnector connector = new(this._bingApiKey, connectorLogger);
         Assert.NotEmpty(this._bingApiKey);
 
-        WebSearchEnginePlugin skill = new(connector);
-        var search = kernel.ImportPlugin(skill, "WebSearchEngine");
+        WebSearchEnginePlugin plugin = new(connector);
+        var search = kernel.ImportPlugin(plugin, "WebSearchEngine");
 
         // Act
         SKContext result = await kernel.RunAsync(
@@ -63,13 +63,13 @@ public sealed class WebSkillTests : IDisposable
     }
 
     [Fact]
-    public async Task WebFileDownloadSkillFileTestAsync()
+    public async Task WebFileDownloadPluginFileTestAsync()
     {
         // Arrange
         IKernel kernel = Kernel.Builder.WithLoggerFactory(this._logger).Build();
-        using XunitLogger<WebFileDownloadPlugin> skillLogger = new(this._output);
-        var skill = new WebFileDownloadPlugin(skillLogger);
-        var download = kernel.ImportPlugin(skill, "WebFileDownload");
+        using XunitLogger<WebFileDownloadPlugin> pluginLogger = new(this._output);
+        var plugin = new WebFileDownloadPlugin(pluginLogger);
+        var download = kernel.ImportPlugin(plugin, "WebFileDownload");
         string fileWhereToSaveWebPage = Path.GetTempFileName();
         var contextVariables = new ContextVariables("https://www.microsoft.com");
         contextVariables.Set(WebFileDownloadPlugin.FilePathParamName, fileWhereToSaveWebPage);
@@ -96,7 +96,7 @@ public sealed class WebSkillTests : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ~WebSkillTests()
+    ~WebPluginTests()
     {
         this.Dispose(false);
     }
