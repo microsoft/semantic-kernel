@@ -91,7 +91,7 @@ public static class Example59_OpenAIFunctionCalling
             if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
             {
                 var result = await kernel.RunAsync(func, context).ConfigureAwait(false);
-                Console.WriteLine(result.Result);
+                Console.WriteLine(result.GetValue<string>());
             }
             else
             {
