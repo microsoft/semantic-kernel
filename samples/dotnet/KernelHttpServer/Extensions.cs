@@ -182,7 +182,9 @@ internal static class Extensions
                 {
                     kernel.ImportSemanticPluginFromDirectory(skillsFolder, currentFolder.Name);
                 }
+#pragma warning disable CA1031
                 catch (Exception e)
+#pragma warning restore CA1031
                 {
                     logger.LogWarning("Could not load skill from {0} with error: {1}", currentFolder.Name, e.Message);
                 }
