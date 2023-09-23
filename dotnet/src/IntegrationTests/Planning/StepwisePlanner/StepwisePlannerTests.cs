@@ -51,8 +51,8 @@ public sealed class StepwisePlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
@@ -79,8 +79,8 @@ public sealed class StepwisePlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new StepwisePlannerConfig() { MaxIterations = 10 });
 
@@ -100,12 +100,12 @@ public sealed class StepwisePlannerTests : IDisposable
         IKernel kernel = this.InitializeKernel();
         var bingConnector = new BingConnector(this._bingApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPlugin(new TextPlugin(), "text");
-        kernel.ImportPlugin(new ConversationSummaryPlugin(kernel), "ConversationSummary");
-        kernel.ImportPlugin(new MathPlugin(), "Math");
-        kernel.ImportPlugin(new FileIOPlugin(), "FileIO");
-        kernel.ImportPlugin(new HttpPlugin(), "Http");
+        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportFunctions(new TextPlugin(), "text");
+        kernel.ImportFunctions(new ConversationSummaryPlugin(kernel), "ConversationSummary");
+        kernel.ImportFunctions(new MathPlugin(), "Math");
+        kernel.ImportFunctions(new FileIOPlugin(), "FileIO");
+        kernel.ImportFunctions(new HttpPlugin(), "Http");
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel, new() { MaxTokens = 1000 });
 
