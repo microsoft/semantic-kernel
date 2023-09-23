@@ -30,7 +30,7 @@ public class PluginTests
         var plugin = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiPluginExecutionParameters(httpClient));
+            new OpenApiFunctionExecutionParameters(httpClient));
 
         var contextVariables = new ContextVariables();
         contextVariables["q"] = query;
@@ -62,7 +62,7 @@ public class PluginTests
         var plugin = await kernel.ImportAIPluginAsync(
             name,
             new Uri(pluginEndpoint),
-            new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;
@@ -93,7 +93,7 @@ public class PluginTests
             var plugin = await kernel.ImportAIPluginAsync(
                 name,
                 stream,
-                new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+                new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
             var contextVariables = new ContextVariables();
             contextVariables["payload"] = payload;
@@ -123,7 +123,7 @@ public class PluginTests
         var plugin = await kernel.ImportAIPluginAsync(
             name,
             pluginFilePath,
-            new OpenApiPluginExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
+            new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
 
         var contextVariables = new ContextVariables();
         contextVariables["payload"] = payload;

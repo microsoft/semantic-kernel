@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -28,7 +29,7 @@ public static class KernelGrpcExtensions
     /// <param name="pluginDirectoryName">Name of the directory containing the selected plugin.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static IDictionary<string, ISKFunction> ImportGrpcPluginFromDirectory(
+    public static IDictionary<string, ISKFunction> ImportGrpcFunctionsFromDirectory(
         this IKernel kernel,
         string parentDirectory,
         string pluginDirectoryName,
@@ -51,7 +52,7 @@ public static class KernelGrpcExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterGrpcPlugin(stream, pluginDirectoryName, httpClient);
+        return kernel.RegisterGrpcFunctions(stream, pluginDirectoryName, httpClient);
     }
 
     /// <summary>
@@ -62,7 +63,7 @@ public static class KernelGrpcExtensions
     /// <param name="filePath">File path to .proto document.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static IDictionary<string, ISKFunction> ImportGrpcPluginFromFile(
+    public static IDictionary<string, ISKFunction> ImportGrpcFunctionsFromFile(
         this IKernel kernel,
         string pluginName,
         string filePath,
@@ -77,7 +78,7 @@ public static class KernelGrpcExtensions
 
         using var stream = File.OpenRead(filePath);
 
-        return kernel.RegisterGrpcPlugin(stream, pluginName, httpClient);
+        return kernel.RegisterGrpcFunctions(stream, pluginName, httpClient);
     }
 
     /// <summary>
@@ -88,7 +89,7 @@ public static class KernelGrpcExtensions
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="httpClient">HttpClient to use for sending requests.</param>
     /// <returns>A list of all the semantic functions representing the plugin.</returns>
-    public static IDictionary<string, ISKFunction> RegisterGrpcPlugin(
+    public static IDictionary<string, ISKFunction> RegisterGrpcFunctions(
         this IKernel kernel,
         Stream documentStream,
         string pluginName,
@@ -193,6 +194,49 @@ public static class KernelGrpcExtensions
 
         return kernel.RegisterCustomFunction(function);
     }
+
+    #endregion
+
+    #region obsolete
+
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportGrpcFunctionsFromDirectory instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static IDictionary<string, ISKFunction> ImportGrpcSkillFromDirectory(
+        this IKernel kernel,
+        string parentDirectory,
+        string skillDirectoryName,
+        HttpClient? httpClient = null)
+    {
+        return kernel.ImportGrpcFunctionsFromDirectory(parentDirectory, skillDirectoryName, httpClient);
+    }
+#pragma warning restore CS1591
+
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportGrpcFunctionsFromFile instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static IDictionary<string, ISKFunction> ImportGrpcSkillFromFile(
+        this IKernel kernel,
+        string skillName,
+        string filePath,
+        HttpClient? httpClient = null)
+    {
+        return kernel.ImportGrpcFunctionsFromFile(skillName, filePath, httpClient);
+    }
+#pragma warning restore CS1591
+
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.RegisterGrpcFunctions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static IDictionary<string, ISKFunction> RegisterGrpcSkill(
+        this IKernel kernel,
+        Stream documentStream,
+        string skillName,
+        HttpClient? httpClient = null)
+    {
+        return kernel.RegisterGrpcFunctions(documentStream, skillName, httpClient);
+    }
+#pragma warning restore CS1591
 
     #endregion
 }

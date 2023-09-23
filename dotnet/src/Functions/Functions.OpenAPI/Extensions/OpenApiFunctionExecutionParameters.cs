@@ -8,9 +8,9 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 /// <summary>
-/// OpenAPI plugin execution parameters.
+/// OpenAPI function execution parameters.
 /// </summary>
-public class OpenApiPluginExecutionParameters
+public class OpenApiFunctionExecutionParameters
 {
     /// <summary>
     /// HttpClient to use for sending HTTP requests.
@@ -55,7 +55,7 @@ public class OpenApiPluginExecutionParameters
     public bool EnablePayloadNamespacing { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenApiPluginExecutionParameters"/> class.
+    /// Initializes a new instance of the <see cref="OpenApiFunctionExecutionParameters"/> class.
     /// </summary>
     /// <param name="httpClient">The HttpClient to use for sending HTTP requests.</param>
     /// <param name="authCallback">The callback for adding authentication data to HTTP requests.</param>
@@ -68,7 +68,7 @@ public class OpenApiPluginExecutionParameters
     /// If false, the operation payload must be provided via the 'payload' context variable.</param>
     /// <param name="enablePayloadNamespacing">Determines whether payload parameter names are augmented with namespaces.
     /// Namespaces prevent naming conflicts by adding the parent parameter name as a prefix, separated by dots.</param>
-    public OpenApiPluginExecutionParameters(
+    public OpenApiFunctionExecutionParameters(
         HttpClient? httpClient = null,
         AuthenticateRequestAsyncCallback? authCallback = null,
         Uri? serverUrlOverride = null,
