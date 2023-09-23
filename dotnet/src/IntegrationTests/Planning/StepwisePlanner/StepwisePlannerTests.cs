@@ -123,7 +123,7 @@ public sealed class StepwisePlannerTests : IDisposable
         // Arrange
         IKernel kernel = this.InitializeKernel();
 
-        _ = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiPluginExecutionParameters(enableDynamicOperationPayload: true));
+        _ = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters(enableDynamicOperationPayload: true));
 
         var planner = new Microsoft.SemanticKernel.Planning.StepwisePlanner(kernel);
 

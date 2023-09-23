@@ -552,8 +552,8 @@ public class StepwisePlanner : IStepwisePlanner
         {
             return this._kernel.Functions.GetFunction(pluginName, functionName);
         };
-        var getPluginFunction = this.Config.GetPluginFunction ?? getFunction;
-        var function = getPluginFunction(targetFunction.PluginName, targetFunction.Name);
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? getFunction;
+        var function = getFunctionCallback(targetFunction.PluginName, targetFunction.Name);
         return function;
     }
 
