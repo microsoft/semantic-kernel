@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Connectors.WebApi.Rest;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public class RestApiOperationTests
 {

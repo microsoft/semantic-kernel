@@ -21,7 +21,7 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.Connectors.WebApi.Rest;
+namespace SemanticKernel.Functions.UnitTests.OpenAPI;
 
 public sealed class RestApiOperationRunnerTests : IDisposable
 {
@@ -80,7 +80,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         var arguments = new Dictionary<string, string>
         {
-            { "payload", System.Text.Json.JsonSerializer.Serialize(payload) },
+            { "payload", JsonSerializer.Serialize(payload) },
             { "content-type", "application/json" }
         };
 
@@ -167,7 +167,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Length != 0);
 
-        var payloadText = System.Text.Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
+        var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
 
         Assert.NotNull(result);
@@ -583,7 +583,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Length != 0);
 
-        var payloadText = System.Text.Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
+        var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
     }
 
@@ -625,7 +625,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(messageContent);
         Assert.True(messageContent.Length != 0);
 
-        var payloadText = System.Text.Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
+        var payloadText = Encoding.UTF8.GetString(messageContent, 0, messageContent.Length);
         Assert.Equal("fake-input-value", payloadText);
     }
 
