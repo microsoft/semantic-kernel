@@ -19,14 +19,14 @@ public static class Example03_Variables
         Console.WriteLine("======== Variables ========");
 
         IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
-        var text = kernel.ImportPlugin(new StaticTextPlugin(), "text");
+        var textFunctions = kernel.ImportFunctions(new StaticTextPlugin(), "text");
 
         var variables = new ContextVariables("Today is: ");
         variables.Set("day", DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture));
 
         KernelResult result = await kernel.RunAsync(variables,
-            text["AppendDay"],
-            text["Uppercase"]);
+            textFunctions["AppendDay"],
+            textFunctions["Uppercase"]);
 
         Console.WriteLine(result.GetValue<string>());
     }

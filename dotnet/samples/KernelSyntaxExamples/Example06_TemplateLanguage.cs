@@ -37,7 +37,7 @@ public static class Example06_TemplateLanguage
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         // Semantic Function invoking time.Date and time.Time native functions
         const string FunctionDefinition = @"
