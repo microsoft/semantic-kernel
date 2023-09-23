@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Planners.UnitTests.XunitHelpers;
 using Microsoft.SemanticKernel.Planning;
 using Moq;
 using Xunit;
