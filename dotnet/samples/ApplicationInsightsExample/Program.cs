@@ -70,7 +70,7 @@ public sealed class Program
             var result = await kernel.RunAsync(plan);
 
             Console.WriteLine("Result:");
-            Console.WriteLine(result.Result);
+            Console.WriteLine(result.GetValue<string>());
         }
         finally
         {
@@ -108,9 +108,9 @@ public sealed class Program
 
     private static IKernel GetKernel(ILoggerFactory loggerFactory)
     {
-        var folder = RepoFiles.SampleSkillsPath();
+        var folder = RepoFiles.SamplePluginsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
         var kernel = new KernelBuilder()
             .WithLoggerFactory(loggerFactory)
@@ -120,9 +120,9 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill", "WriterSkill");
+        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
 
-        kernel.ImportPlugin(webSearchEngineSkill, "WebSearch");
+        kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
         kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
         kernel.ImportPlugin(new TimePlugin(), "time");
 

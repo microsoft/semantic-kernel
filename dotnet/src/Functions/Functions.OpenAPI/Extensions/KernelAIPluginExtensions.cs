@@ -305,7 +305,7 @@ public static class KernelAIPluginExtensions
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
-    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>

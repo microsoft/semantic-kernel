@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
+using Plugins;
 using RepoUtils;
-using Skills;
 
 // ReSharper disable once InconsistentNaming
 public static class Example03_Variables
@@ -24,10 +24,10 @@ public static class Example03_Variables
         var variables = new ContextVariables("Today is: ");
         variables.Set("day", DateTimeOffset.Now.ToString("dddd", CultureInfo.CurrentCulture));
 
-        SKContext result = await kernel.RunAsync(variables,
+        KernelResult result = await kernel.RunAsync(variables,
             text["AppendDay"],
             text["Uppercase"]);
 
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }
