@@ -14,15 +14,13 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Document;
-using Microsoft.SemanticKernel.Skills.Document.FileSystem;
-using Microsoft.SemanticKernel.Skills.Document.OpenXml;
-using Microsoft.SemanticKernel.Skills.MsGraph;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Document;
+using Microsoft.SemanticKernel.Plugins.Document.FileSystem;
+using Microsoft.SemanticKernel.Plugins.Document.OpenXml;
+using Microsoft.SemanticKernel.Plugins.MsGraph;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Plugins.Web;
 using static KernelHttpServer.Config.Constants;
 using Directory = System.IO.Directory;
 
@@ -88,81 +86,81 @@ internal static class Extensions
         return response;
     }
 
-    internal static ISKFunction GetFunction(this IReadOnlySkillCollection skills, string skillName, string functionName)
+    internal static ISKFunction GetFunction(this IReadOnlyFunctionCollection skills, string skillName, string functionName)
     {
         return skills.GetFunction(skillName, functionName);
     }
 
-    internal static bool HasSemanticOrNativeFunction(this IReadOnlySkillCollection skills, string skillName, string functionName)
+    internal static bool HasSemanticOrNativeFunction(this IReadOnlyFunctionCollection skills, string skillName, string functionName)
     {
         return skills.TryGetFunction(skillName, functionName, out _);
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The caller invokes native skills during a request and the HttpClient instance must remain alive for those requests to be successful.")]
-    internal static void RegisterNativeGraphSkills(this IKernel kernel, string graphToken, IEnumerable<string>? skillsToLoad = null)
+    internal static void RegisterNativeGraphPlugins(this IKernel kernel, string graphToken, IEnumerable<string>? skillsToLoad = null)
     {
         IList<DelegatingHandler> handlers = GraphClientFactory.CreateDefaultHandlers(new TokenAuthenticationProvider(graphToken));
         GraphServiceClient graphServiceClient = new(GraphClientFactory.Create(handlers));
 
-        if (ShouldLoad(nameof(CloudDriveSkill), skillsToLoad))
+        if (ShouldLoad(nameof(CloudDrivePlugin), skillsToLoad))
         {
-            CloudDriveSkill cloudDriveSkill = new(new OneDriveConnector(graphServiceClient));
-            _ = kernel.ImportSkill(cloudDriveSkill, nameof(cloudDriveSkill));
+            CloudDrivePlugin cloudDrivePlugin = new(new OneDriveConnector(graphServiceClient));
+            _ = kernel.ImportPlugin(cloudDrivePlugin, nameof(cloudDrivePlugin));
         }
 
-        if (ShouldLoad(nameof(TaskListSkill), skillsToLoad))
+        if (ShouldLoad(nameof(TaskListPlugin), skillsToLoad))
         {
-            TaskListSkill taskListSkill = new(new MicrosoftToDoConnector(graphServiceClient));
-            _ = kernel.ImportSkill(taskListSkill, nameof(taskListSkill));
+            TaskListPlugin taskListPlugin = new(new MicrosoftToDoConnector(graphServiceClient));
+            _ = kernel.ImportPlugin(taskListPlugin, nameof(taskListPlugin));
         }
 
-        if (ShouldLoad(nameof(EmailSkill), skillsToLoad))
+        if (ShouldLoad(nameof(EmailPlugin), skillsToLoad))
         {
-            EmailSkill emailSkill = new(new OutlookMailConnector(graphServiceClient));
-            _ = kernel.ImportSkill(emailSkill, nameof(emailSkill));
+            EmailPlugin emailPlugin = new(new OutlookMailConnector(graphServiceClient));
+            _ = kernel.ImportPlugin(emailPlugin, nameof(emailPlugin));
         }
 
-        if (ShouldLoad(nameof(CalendarSkill), skillsToLoad))
+        if (ShouldLoad(nameof(CalendarPlugin), skillsToLoad))
         {
-            CalendarSkill calendarSkill = new(new OutlookCalendarConnector(graphServiceClient));
-            _ = kernel.ImportSkill(calendarSkill, nameof(calendarSkill));
+            CalendarPlugin calendarPlugin = new(new OutlookCalendarConnector(graphServiceClient));
+            _ = kernel.ImportPlugin(calendarPlugin, nameof(calendarPlugin));
         }
     }
 
     internal static void RegisterTextMemory(this IKernel kernel)
     {
-        _ = kernel.ImportSkill(new TextMemorySkill(kernel.Memory), nameof(TextMemorySkill));
+        _ = kernel.ImportPlugin(new TextMemoryPlugin(kernel.Memory), nameof(TextMemoryPlugin));
     }
 
-    internal static void RegisterNativeSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
+    internal static void RegisterNativePlugins(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
     {
-        if (ShouldLoad(nameof(DocumentSkill), skillsToLoad))
+        if (ShouldLoad(nameof(DocumentPlugin), skillsToLoad))
         {
-            DocumentSkill documentSkill = new(new WordDocumentConnector(), new LocalFileSystemConnector());
-            _ = kernel.ImportSkill(documentSkill, nameof(DocumentSkill));
+            DocumentPlugin documentPlugin = new(new WordDocumentConnector(), new LocalFileSystemConnector());
+            _ = kernel.ImportPlugin(documentPlugin, nameof(DocumentPlugin));
         }
 
-        if (ShouldLoad(nameof(ConversationSummarySkill), skillsToLoad))
+        if (ShouldLoad(nameof(ConversationSummaryPlugin), skillsToLoad))
         {
-            ConversationSummarySkill conversationSummarySkill = new(kernel);
-            _ = kernel.ImportSkill(conversationSummarySkill, nameof(ConversationSummarySkill));
+            ConversationSummaryPlugin conversationSummaryPlugin = new(kernel);
+            _ = kernel.ImportPlugin(conversationSummaryPlugin, nameof(ConversationSummaryPlugin));
         }
 
-        if (ShouldLoad(nameof(WebFileDownloadSkill), skillsToLoad))
+        if (ShouldLoad(nameof(WebFileDownloadPlugin), skillsToLoad))
         {
-            var webFileDownloadSkill = new WebFileDownloadSkill();
-            _ = kernel.ImportSkill(webFileDownloadSkill, nameof(WebFileDownloadSkill));
+            var webFileDownloadPlugin = new WebFileDownloadPlugin();
+            _ = kernel.ImportPlugin(webFileDownloadPlugin, nameof(WebFileDownloadPlugin));
         }
 
         if (ShouldLoad(nameof(GitHubPlugin), skillsToLoad))
         {
             GitHubPlugin githubPlugin = new(kernel);
-            _ = kernel.ImportSkill(githubPlugin, nameof(GitHubPlugin));
+            _ = kernel.ImportPlugin(githubPlugin, nameof(GitHubPlugin));
         }
     }
 
-    internal static void RegisterSemanticSkills(
+    internal static void RegisterSemanticFunctions(
         this IKernel kernel,
         string skillsFolder,
         ILogger logger,
@@ -182,9 +180,9 @@ internal static class Extensions
             {
                 try
                 {
-                    _ = kernel.ImportSemanticSkillFromDirectory(skillsFolder, currentFolder.Name);
+                    kernel.ImportSemanticPluginFromDirectory(skillsFolder, currentFolder.Name);
                 }
-                catch (TemplateException e)
+                catch (Exception e)
                 {
                     logger.LogWarning("Could not load skill from {0} with error: {1}", currentFolder.Name, e.Message);
                 }

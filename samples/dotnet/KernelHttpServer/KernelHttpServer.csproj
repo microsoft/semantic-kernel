@@ -15,10 +15,6 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.14.1" OutputItemType="Analyzer" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.19.0" />
     <PackageReference Include="Microsoft.Graph" Version="4.54.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="0.19.230804.2-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.Document" Version="0.19.230804.2-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.MsGraph" Version="0.19.230804.2-preview" />
-    <PackageReference Include="Microsoft.SemanticKernel.Skills.Web" Version="0.19.230804.2-preview" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,5 +31,12 @@
     <AssemblyAttribute Include="System.CLSCompliantAttribute">
       <_Parameter1>false</_Parameter1>
     </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\dotnet\src\Plugins\Plugins.Document\Plugins.Document.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\Plugins\Plugins.MsGraph\Plugins.MsGraph.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.MetaPackage\SemanticKernel.MetaPackage.csproj" />
   </ItemGroup>
 </Project>

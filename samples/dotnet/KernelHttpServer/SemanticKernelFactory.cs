@@ -89,12 +89,12 @@ internal static class SemanticKernelFactory
     {
         IKernel kernel = builder.Build();
 
-        kernel.RegisterSemanticSkills(RepoFiles.SampleSkillsPath(), logger, skillsToLoad);
-        kernel.RegisterNativeSkills(skillsToLoad);
+        kernel.RegisterSemanticFunctions(RepoFiles.SampleSkillsPath(), logger, skillsToLoad);
+        kernel.RegisterNativePlugins(skillsToLoad);
 
         if (req.Headers.TryGetValues(SKHttpHeaders.MSGraph, out var graphToken))
         {
-            kernel.RegisterNativeGraphSkills(graphToken.First());
+            kernel.RegisterNativeGraphPlugins(graphToken.First());
         }
 
         kernel.RegisterTextMemory();

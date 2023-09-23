@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Text;
 
 namespace KernelHttpServer.Plugins;
@@ -62,11 +62,9 @@ BEGIN SUMMARY:
 
         this._summarizeCodeFunction = kernel.CreateSemanticFunction(
             SummarizeCodeSnippetDefinition,
-            skillName: nameof(GitHubPlugin),
+            pluginName: nameof(GitHubPlugin),
             description: "Given a snippet of code, summarize the part of the file.",
-            maxTokens: MaxTokens,
-            temperature: 0.1,
-            topP: 0.5);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = MaxTokens, Temperature = 0.1, TopP = 0.5 });
     }
 
     /// <summary>

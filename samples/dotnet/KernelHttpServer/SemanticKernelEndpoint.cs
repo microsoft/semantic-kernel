@@ -9,7 +9,6 @@ using KernelHttpServer.Model;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -54,7 +53,7 @@ public class SemanticKernelEndpoint
             return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, "Missing one or more expected HTTP Headers");
         }
 
-        var f = kernel.Skills.GetFunction(skillName, functionName);
+        var f = kernel.Functions.GetFunction(skillName, functionName);
 
         var contextVariables = new ContextVariables(ask.Value);
 
@@ -64,14 +63,10 @@ public class SemanticKernelEndpoint
         }
 
         var result = await kernel.RunAsync(contextVariables, f);
-
-        if (result.ErrorOccurred)
-        {
-            return await ResponseErrorWithMessageAsync(req, result.LastException!);
-        }
+        var resultText = result.GetValue<string>();
 
         var r = req.CreateResponse(HttpStatusCode.OK);
-        await r.WriteAsJsonAsync(new AskResult { Value = result.Result, State = result.Variables.Select(v => new AskInput { Key = v.Key, Value = v.Value }) });
+        await r.WriteAsJsonAsync(new AskResult { Value = resultText ?? string.Empty, State = contextVariables.Select(v => new AskInput { Key = v.Key, Value = v.Value }) });
         return r;
     }
 
@@ -139,7 +134,7 @@ public class SemanticKernelEndpoint
         }
 
         // Reload the plan with full context to be executed
-        var plan = Plan.FromJson(ask.Value, context);
+        var plan = Plan.FromJson(ask.Value, kernel.Functions);
         var r = req.CreateResponse(HttpStatusCode.OK);
 
         try
@@ -147,7 +142,8 @@ public class SemanticKernelEndpoint
             if (plan.Steps.Count < maxSteps)
             {
                 var planResult = await plan.InvokeAsync(context);
-                await r.WriteAsJsonAsync(new AskResult { Value = planResult.Result });
+                var planText = planResult.GetValue<string>();
+                await r.WriteAsJsonAsync(new AskResult { Value = planText ?? string.Empty });
             }
             else
             {
@@ -162,7 +158,7 @@ public class SemanticKernelEndpoint
                 await r.WriteAsJsonAsync(new AskResult { Value = plan.State.ToString() });
             }
         }
-        catch (KernelException exception)
+        catch (Exception exception)
         {
             return await ResponseErrorWithMessageAsync(req, exception);
         }
@@ -172,8 +168,6 @@ public class SemanticKernelEndpoint
 
     private static async Task<HttpResponseData> ResponseErrorWithMessageAsync(HttpRequestData req, Exception exception)
     {
-        return exception is AIException aiException && aiException.Detail is not null
-            ? await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, string.Concat(aiException.Message, " - Detail: " + aiException.Detail))
-            : await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, exception.Message);
+        return await req.CreateResponseWithMessageAsync(HttpStatusCode.BadRequest, exception.Message);
     }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>MsGraphPluginsExample</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
@@ -36,10 +36,5 @@
     <AssemblyAttribute Include="System.CLSCompliantAttribute">
       <_Parameter1>false</_Parameter1>
     </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\dotnet\src\Plugins\Plugins.MsGraph\Plugins.MsGraph.csproj" />
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.MetaPackage\SemanticKernel.MetaPackage.csproj" />
   </ItemGroup>
 </Project>

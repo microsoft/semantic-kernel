@@ -1,17 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>MsGraphPluginsExample</RootNamespace>
+    <RootNamespace></RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
     <OutputType>Exe</OutputType>
-    <IsPackable>false</IsPackable>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <NoWarn>CA1050</NoWarn>
-    <!-- Suppress: "Declare types in namespaces" -->
-    <UserSecretsId>d255a2b4-c92e-4b26-b8e1-a29584583b92</UserSecretsId>
+    <IsPackable>false</IsPackable>
+    <UserSecretsId>0c5a3194-f4af-4ecd-b558-8bf0ebd01d92</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="GitHubPlugin\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="GitHubPlugin\openapi.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
@@ -24,22 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="appsettings.Development.json" Condition="Exists('appsettings.Development.json')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.CLSCompliantAttribute">
-      <_Parameter1>false</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\dotnet\src\Plugins\Plugins.MsGraph\Plugins.MsGraph.csproj" />
-    <ProjectReference Include="..\..\..\dotnet\src\SemanticKernel.MetaPackage\SemanticKernel.MetaPackage.csproj" />
   </ItemGroup>
 </Project>

@@ -13,11 +13,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.Skills.MsGraph;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.Client;
-using Microsoft.SemanticKernel.Skills.MsGraph.Connectors.CredentialManagers;
+using Microsoft.SemanticKernel.Plugins.MsGraph;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
 using DayOfWeek = System.DayOfWeek;
 
 namespace MsGraphPluginsExample;
@@ -101,14 +100,13 @@ public sealed class Program
         using HttpClient httpClient = GraphClientFactory.Create(handlers);
         GraphServiceClient graphServiceClient = new(httpClient);
 
-        // Initialize SK Graph API Skills we'll be using in the plan.
-        CloudDriveSkill oneDriveSkill = new(new OneDriveConnector(graphServiceClient), loggerFactory.CreateLogger<CloudDriveSkill>());
-        TaskListSkill todoSkill = new(new MicrosoftToDoConnector(graphServiceClient), loggerFactory.CreateLogger<TaskListSkill>());
-        EmailSkill outlookSkill = new(new OutlookMailConnector(graphServiceClient), loggerFactory.CreateLogger<EmailSkill>());
+        // Initialize SK Graph API Plugins we'll be using in the plan.
+        CloudDrivePlugin oneDrivePlugin = new(new OneDriveConnector(graphServiceClient), loggerFactory);
+        TaskListPlugin todoPlugin = new(new MicrosoftToDoConnector(graphServiceClient), loggerFactory);
+        EmailPlugin outlookPlugin = new(new OutlookMailConnector(graphServiceClient), loggerFactory);
 
         // Initialize the Semantic Kernel and and register connections with OpenAI/Azure OpenAI instances.
-        KernelBuilder builder = Kernel.Builder
-            .WithLogger(loggerFactory.CreateLogger<IKernel>());
+        KernelBuilder builder = Kernel.Builder.WithLoggerFactory(loggerFactory);
 
         if (configuration.GetSection("AzureOpenAI:ServiceId").Value != null)
         {
@@ -139,14 +137,14 @@ public sealed class Program
 
         IKernel sk = builder.Build();
 
-        var onedrive = sk.ImportSkill(oneDriveSkill, "onedrive");
-        var todo = sk.ImportSkill(todoSkill, "todo");
-        var outlook = sk.ImportSkill(outlookSkill, "outlook");
+        var onedriveFunctions = sk.ImportPlugin(oneDrivePlugin, "onedrive");
+        var todoFunctions = sk.ImportPlugin(todoPlugin, "todo");
+        var outlookFunctions = sk.ImportPlugin(outlookPlugin, "outlook");
 
         string skillParentDirectory = RepoFiles.SamplePluginsPath();
 
-        IDictionary<string, ISKFunction> summarizeSkills =
-            sk.ImportSemanticSkillFromDirectory(skillParentDirectory, "SummarizeSkill");
+        IDictionary<string, ISKFunction> summarizeFunctions =
+            sk.ImportSemanticPluginFromDirectory(skillParentDirectory, "SummarizePlugin");
 
         //
         // The static plan below is meant to emulate a plan generated from the following request:
@@ -159,36 +157,31 @@ public sealed class Program
         }
 
         // Get file content
-        SKContext fileContentResult = await sk.RunAsync(pathToFile,
-            onedrive["GetFileContent"],
-            summarizeSkills["Summarize"]);
-        if (fileContentResult.ErrorOccurred)
-        {
-            throw new InvalidOperationException("Failed to get file content.", fileContentResult.LastException!);
-        }
-
-        string fileSummary = fileContentResult.Result;
+        KernelResult fileContentResult = await sk.RunAsync(pathToFile,
+            onedriveFunctions["GetFileContent"],
+            summarizeFunctions["Summarize"]);
+        string? fileSummary = fileContentResult.GetValue<string>();
 
         // Get my email address
-        SKContext emailAddressResult = await sk.RunAsync(string.Empty, outlook["GetMyEmailAddress"]);
-        string myEmailAddress = emailAddressResult.Result;
+        KernelResult emailAddressResult = await sk.RunAsync(string.Empty, outlookFunctions["GetMyEmailAddress"]);
+        string? myEmailAddress = emailAddressResult.GetValue<string>();
 
         // Create a link to the file
-        SKContext fileLinkResult = await sk.RunAsync(pathToFile, onedrive["CreateLink"]);
-        string fileLink = fileLinkResult.Result;
+        KernelResult fileLinkResult = await sk.RunAsync(pathToFile, onedriveFunctions["CreateLink"]);
+        string? fileLink = fileLinkResult.GetValue<string>();
 
         // Send me an email with the summary and a link to the file.
         ContextVariables emailMemory = new($"{fileSummary}{Environment.NewLine}{Environment.NewLine}{fileLink}");
-        emailMemory.Set(EmailSkill.Parameters.Recipients, myEmailAddress);
-        emailMemory.Set(EmailSkill.Parameters.Subject, $"Summary of {pathToFile}");
+        emailMemory.Set(EmailPlugin.Parameters.Recipients, myEmailAddress);
+        emailMemory.Set(EmailPlugin.Parameters.Subject, $"Summary of {pathToFile}");
 
-        await sk.RunAsync(emailMemory, outlook["SendEmail"]);
+        await sk.RunAsync(emailMemory, outlookFunctions["SendEmail"]);
 
         // Add a reminder to follow-up next week.
         ContextVariables followUpTaskMemory = new($"Follow-up about {pathToFile}.");
-        DateTimeOffset nextMonday = TaskListSkill.GetNextDayOfWeek(DayOfWeek.Monday, TimeSpan.FromHours(9));
-        followUpTaskMemory.Set(TaskListSkill.Parameters.Reminder, nextMonday.ToString("o"));
-        await sk.RunAsync(followUpTaskMemory, todo["AddTask"]);
+        DateTimeOffset nextMonday = TaskListPlugin.GetNextDayOfWeek(DayOfWeek.Monday, TimeSpan.FromHours(9));
+        followUpTaskMemory.Set(TaskListPlugin.Parameters.Reminder, nextMonday.ToString("o"));
+        await sk.RunAsync(followUpTaskMemory, todoFunctions["AddTask"]);
 
         logger.LogInformation("Done!");
     }

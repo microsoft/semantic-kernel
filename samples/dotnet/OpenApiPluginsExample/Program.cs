@@ -13,10 +13,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Skills.OpenAPI.Extensions;
 
 namespace OpenApiPluginsExample;
 
@@ -51,8 +50,7 @@ internal sealed class Program
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()
             ?? throw new InvalidOperationException($"Missing configuration for {AIServiceOptions.PropertyName}.");
 
-        KernelBuilder kb = Kernel.Builder
-            .WithLogger(loggerFactory.CreateLogger<IKernel>());
+        KernelBuilder kb = Kernel.Builder.WithLoggerFactory(loggerFactory);
 
         switch (aiOptions.Type)
         {
@@ -75,13 +73,13 @@ internal sealed class Program
         BearerAuthenticationProvider authenticationProvider = new(() => Task.FromResult(gitHubOptions.Key));
 
         await kernel.ImportAIPluginAsync(
-            skillName: "GitHubPlugin",
+            pluginName: "GitHubPlugin",
             filePath: Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "GitHubPlugin/openapi.json"),
-            new OpenApiSkillExecutionParameters(authCallback: authenticationProvider.AuthenticateRequestAsync));
+            new OpenApiFunctionExecutionParameters(authCallback: authenticationProvider.AuthenticateRequestAsync));
 
         // Use a planner to decide when to call the GitHub plugin. Since we are not chaining operations, use
         // the ActionPlanner which is a simplified planner that will always return a 0 or 1 step plan.
-        ActionPlanner planner = new(kernel, logger: logger);
+        ActionPlanner planner = new(kernel);
 
         // Chat loop
         IChatCompletion chatGPT = kernel.GetService<IChatCompletion>();
@@ -99,7 +97,7 @@ internal sealed class Program
 
             // Add GitHub's response, if any, to the chat history.
             int planResultTokenAllowance = (int)(aiOptions.TokenLimit * 0.25); // Allow up to 25% of our token limit to be from GitHub.
-            string planResult = await PlanGitHubPluginAsync(gitHubOptions, planner, chatHistory, input, planResultTokenAllowance, logger);
+            string planResult = await PlanGitHubPluginAsync(kernel, gitHubOptions, planner, chatHistory, input, planResultTokenAllowance, logger);
             if (!string.IsNullOrWhiteSpace(planResult))
             {
                 chatHistory.AddUserMessage(planResult);
@@ -130,7 +128,7 @@ internal sealed class Program
     /// <summary>
     /// Run the planner to decide whether to run the GitHub plugin function and add the result to the chat history.
     /// </summary>
-    private static async Task<string> PlanGitHubPluginAsync(
+    private static async Task<string> PlanGitHubPluginAsync(IKernel kernel,
         GitHubPluginOptions gitHubOptions, ActionPlanner planner, OpenAIChatHistory chatHistory, string input, int tokenAllowance, ILogger logger)
     {
         // Ask the planner to create a plan based off the user's input. If the plan elicits no steps, continue normally.
@@ -141,24 +139,20 @@ internal sealed class Program
         plan.State.Set("owner", gitHubOptions.Owner);
 
         // Run the plan
-        SKContext planContext = await plan.InvokeAsync(logger: logger);
-        if (planContext.ErrorOccurred)
+        var planResult = await plan.InvokeAsync(kernel.CreateNewContext());
+        var planText = planResult.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(planText))
         {
-            logger.LogError(planContext.LastException!, "Unexpected failure executing plan");
             return string.Empty;
         }
-        else if (string.IsNullOrWhiteSpace(planContext.Result))
-        {
-            return planContext.Result;
-        }
 
-        if (!TryExtractJsonFromOpenApiPlanResult(planContext.Result, logger, out string planResult))
+        if (!TryExtractJsonFromOpenApiPlanResult(planText, logger, out string planJson))
         {
-            planResult = planContext.Result;
+            planJson = planText;
         }
 
         // GitHub responses can be very lengthy - optimize the output so we don't immediately go beyond token limits.
-        return OptimizeGitHubPullRequestResponse(planResult, tokenAllowance);
+        return OptimizeGitHubPullRequestResponse(planJson, tokenAllowance);
     }
 
     /// <summary>
