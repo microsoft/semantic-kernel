@@ -158,9 +158,11 @@ public class SemanticKernelEndpoint
                 await r.WriteAsJsonAsync(new AskResult { Value = plan.State.ToString() });
             }
         }
-        catch (Exception exception)
+#pragma warning disable CA1031
+        catch (Exception e)
+#pragma warning restore CA1031
         {
-            return await ResponseErrorWithMessageAsync(req, exception);
+            return await ResponseErrorWithMessageAsync(req, e);
         }
 
         return r;
