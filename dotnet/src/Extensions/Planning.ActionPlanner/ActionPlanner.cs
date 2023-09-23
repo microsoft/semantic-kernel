@@ -79,7 +79,7 @@ public sealed class ActionPlanner : IActionPlanner
                 }
             });
 
-        kernel.ImportPlugin(this, pluginName: PluginName);
+        kernel.ImportFunctions(this, pluginName: PluginName);
 
         // Create context and logger
         this._context = kernel.CreateNewContext();

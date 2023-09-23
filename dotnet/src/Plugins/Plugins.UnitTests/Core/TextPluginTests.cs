@@ -22,7 +22,7 @@ public class TextPluginTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportPlugin(new TextPlugin(), "text");
+        kernel.ImportFunctions(new TextPlugin(), "text");
     }
 
     [Fact]

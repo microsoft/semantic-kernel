@@ -20,12 +20,12 @@ public static class Example02_Pipeline
         IKernel kernel = new KernelBuilder().WithLoggerFactory(s_loggerFactory).Build();
 
         // Load native plugin
-        var text = kernel.ImportPlugin(new TextPlugin());
+        var textFunctions = kernel.ImportFunctions(new TextPlugin());
 
         KernelResult result = await kernel.RunAsync("    i n f i n i t e     s p a c e     ",
-            text["TrimStart"],
-            text["TrimEnd"],
-            text["Uppercase"]);
+            textFunctions["TrimStart"],
+            textFunctions["TrimEnd"],
+            textFunctions["Uppercase"]);
 
         Console.WriteLine(result.GetValue<string>());
     }

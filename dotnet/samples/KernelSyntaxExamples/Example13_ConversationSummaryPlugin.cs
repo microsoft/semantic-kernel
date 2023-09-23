@@ -133,7 +133,7 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummaryPlugin =
-             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
+             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
@@ -148,12 +148,12 @@ Jane: Goodbye!
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
         IKernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummaryPlugin =
-             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
+        IDictionary<string, ISKFunction> conversationSummary =
+             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
-            conversationSummaryPlugin["GetConversationActionItems"]);
+            conversationSummary["GetConversationActionItems"]);
 
         Console.WriteLine("Generated Action Items:");
         Console.WriteLine(summary.GetValue<string>());
@@ -164,12 +164,12 @@ Jane: Goodbye!
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
         IKernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummaryPlugin =
-             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
+        IDictionary<string, ISKFunction> conversationSummary =
+             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
         KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
-            conversationSummaryPlugin["GetConversationTopics"]);
+            conversationSummary["GetConversationTopics"]);
 
         Console.WriteLine("Generated Topics:");
         Console.WriteLine(summary.GetValue<string>());

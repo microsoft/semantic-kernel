@@ -28,7 +28,7 @@ public class TimePluginTests
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
     }
 
     [Fact]
