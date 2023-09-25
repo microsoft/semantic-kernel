@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Plugins.Core</AssemblyName>
-    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.Functions.Semantic</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
@@ -12,12 +12,16 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Core Plugins</Title>
-    <Description>Semantic Kernel core plugins.</Description>
+    <Title>Semantic Kernel - Semantic Functions</Title>
+    <Description>Semantic Kernel Semantic Functions</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Functions\Functions.Semantic\Functions.Semantic.csproj" />
+    <InternalsVisibleTo Include="SemanticKernel.Functions.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

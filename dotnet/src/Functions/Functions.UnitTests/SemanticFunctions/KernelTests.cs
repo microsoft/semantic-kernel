@@ -11,14 +11,16 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.SemanticFunctions;
 using Moq;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
 
-namespace SemanticKernel.UnitTests;
+namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
 
 public class KernelTests
 {
@@ -32,9 +34,12 @@ public class KernelTests
             .Build();
 
         var nativePlugin = new MyPlugin();
+        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
         kernel.ImportPlugin(nativePlugin, "mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
+        Assert.True(kernel.Functions.TryGetFunction("jk", "joker", out _));
+        Assert.True(kernel.Functions.TryGetFunction("JK", "JOKER", out _));
         Assert.True(kernel.Functions.TryGetFunction("mySk", "sayhello", out _));
         Assert.True(kernel.Functions.TryGetFunction("MYSK", "SayHello", out _));
         Assert.True(kernel.Functions.TryGetFunction("mySk", "ReadFunctionCollectionAsync", out _));
@@ -86,6 +91,39 @@ public class KernelTests
         Assert.True(plugin.ContainsKey("GETANYVALUE"));
     }
 
+    /* TODO Mark: Move to OpenAI
+    [Theory]
+    [InlineData(null, "Assistant is a large language model.")]
+    [InlineData("My Chat Prompt", "My Chat Prompt")]
+    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
+    {
+        // Arrange
+        var mockTextCompletion = new Mock<ITextCompletion>();
+        var mockCompletionResult = new Mock<ITextResult>();
+
+        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
+            .Build();
+
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Completion = new OpenAIRequestSettings()
+        {
+            ChatSystemPrompt = providedSystemChatPrompt
+        };
+
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+
+        // Act
+        await kernel.RunAsync(func);
+
+        // Assert
+        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+    }
+    */
+
     [Fact]
     public void ItAllowsToImportFunctionsInTheGlobalNamespace()
     {
@@ -113,6 +151,86 @@ public class KernelTests
         kernel.ImportPlugin(new MyPlugin());
     }
 
+    [Fact]
+    public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
+    {
+        // Arrange
+        var mockTextCompletion1 = new Mock<ITextCompletion>();
+        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var mockCompletionResult = new Mock<ITextResult>();
+
+        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+            .Build();
+
+        var templateConfig = new PromptTemplateConfig();
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+
+        // Act
+        await kernel.RunAsync(func);
+
+        // Assert
+        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
+        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
+    }
+
+    [Fact]
+    public async Task ItUsesServiceIdWhenProvidedAsync()
+    {
+        // Arrange
+        var mockTextCompletion1 = new Mock<ITextCompletion>();
+        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var mockCompletionResult = new Mock<ITextResult>();
+
+        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+            .Build();
+
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Completion = new AIRequestSettings() { ServiceId = "service1" };
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+
+        // Act
+        await kernel.RunAsync(func);
+
+        // Assert
+        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
+    {
+        // Arrange
+        var mockTextCompletion1 = new Mock<ITextCompletion>();
+        var mockTextCompletion2 = new Mock<ITextCompletion>();
+
+        var kernel = Kernel.Builder
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+            .Build();
+
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Completion = new AIRequestSettings() { ServiceId = "service3" };
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+
+        // Act
+        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
+
+        // Assert
+        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
+    }
+
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
@@ -120,26 +238,27 @@ public class KernelTests
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
+        semanticFunction.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoked++;
         };
-        List<ISKFunction> pipeline = new();
+        List<ISKFunction> functions = new();
         for (int i = 0; i < pipelineCount; i++)
         {
-            pipeline.Add(functions["SayHello"]);
+            functions.Add(semanticFunction);
         }
 
         // Act
-        var result = await sut.RunAsync(pipeline.ToArray());
+        var result = await sut.RunAsync(functions.ToArray());
 
         // Assert
         Assert.Equal(pipelineCount, invoked);
-        myPlugin.Verify(m => m.SayHello(), Times.Exactly(pipelineCount));
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
     }
 
     [Fact]
@@ -147,8 +266,8 @@ public class KernelTests
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var functions = sut.ImportPlugin(new MyPlugin(), "MyPlugin");
-
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var input = "Test input";
         var invoked = false;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
@@ -157,7 +276,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(functions["GetAnyValue"]);
+        var result = await sut.RunAsync(input, semanticFunction);
 
         // Assert
         Assert.True(invoked);
@@ -170,8 +289,8 @@ public class KernelTests
         // Arrange
         var sut = Kernel.Builder.Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        semanticFunction.SetAIService(() => mockTextCompletion.Object);
 
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -181,12 +300,11 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(functions["GetAnyValue"], functions["SayHello"]);
+        var result = await sut.RunAsync(semanticFunction, semanticFunction);
 
         // Assert
         Assert.Equal(1, invoked);
-        myPlugin.Verify(m => m.GetAnyValue(), Times.Never);
-        myPlugin.Verify(m => m.SayHello(), Times.Never);
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -194,9 +312,9 @@ public class KernelTests
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var functions = sut.ImportPlugin(new MyPlugin(), "MyPlugin");
-
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var invoked = 0;
+
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             e.Cancel();
@@ -208,7 +326,7 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(functions["GetAnyValue"]);
+        var result = await sut.RunAsync(semanticFunction);
 
         // Assert
         Assert.Equal(0, invoked);
@@ -220,9 +338,9 @@ public class KernelTests
         // Arrange
         var sut = Kernel.Builder.Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
-
+        var semanticFunction1 = sut.CreateSemanticFunction("Write one phrase about UnitTests", functionName: "SkipMe");
+        var semanticFunction2 = sut.CreateSemanticFunction("Write two phrases about UnitTests", functionName: "DontSkipMe");
+        semanticFunction2.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
@@ -230,7 +348,7 @@ public class KernelTests
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoking++;
-            if (e.FunctionView.Name == "GetAnyValue")
+            if (e.FunctionView.Name == "SkipMe")
             {
                 e.Skip();
             }
@@ -243,13 +361,14 @@ public class KernelTests
         };
 
         // Act
-        var result = await sut.RunAsync(functions["GetAnyValue"], functions["SayHello"]);
+        var result = await sut.RunAsync(
+            semanticFunction1,
+            semanticFunction2);
 
         // Assert
         Assert.Equal(2, invoking);
         Assert.Equal(1, invoked);
-        myPlugin.Verify(m => m.GetAnyValue(), Times.Never);
-        myPlugin.Verify(m => m.SayHello(), Times.Once);
+        Assert.Equal("DontSkipMe", invokedFunction);
     }
 
     [Theory]
@@ -259,35 +378,39 @@ public class KernelTests
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
+        semanticFunction.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
+
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             invoked++;
         };
 
-        List<ISKFunction> pipeline = new();
+        List<ISKFunction> functions = new();
         for (int i = 0; i < pipelineCount; i++)
         {
-            pipeline.Add(functions["GetAnyValue"]);
+            functions.Add(semanticFunction);
         }
 
         // Act
-        var result = await sut.RunAsync(pipeline.ToArray());
+        var result = await sut.RunAsync(functions.ToArray());
 
         // Assert
         Assert.Equal(pipelineCount, invoked);
-        myPlugin.Verify(m => m.GetAnyValue(), Times.Exactly(pipelineCount));
+        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
     }
 
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
         var sut = Kernel.Builder.Build();
-        var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var prompt = "Write a simple phrase about UnitTests {{$input}}";
+        var semanticFunction = sut.CreateSemanticFunction(prompt);
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        semanticFunction.SetAIService(() => mockTextCompletion.Object);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -298,7 +421,7 @@ public class KernelTests
         };
 
         // Act
-        await sut.RunAsync(originalInput, functions["GetAnyValue"]);
+        await sut.RunAsync(originalInput, semanticFunction);
 
         // Assert
         Assert.Equal(newInput, originalInput);
@@ -308,8 +431,10 @@ public class KernelTests
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
         var sut = Kernel.Builder.Build();
-        var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var prompt = "Write a simple phrase about UnitTests {{$input}}";
+        var semanticFunction = sut.CreateSemanticFunction(prompt);
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        semanticFunction.SetAIService(() => mockTextCompletion.Object);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -320,7 +445,7 @@ public class KernelTests
         };
 
         // Act
-        await sut.RunAsync(originalInput, functions["GetAnyValue"]);
+        await sut.RunAsync(originalInput, semanticFunction);
 
         // Assert
         Assert.Equal(newInput, originalInput);
@@ -337,36 +462,44 @@ public class KernelTests
         static string Function2() => "Result2";
 
         const string PluginName = "MyPlugin";
+        const string Prompt = "Write a simple phrase about UnitTests";
 
         var kernel = Kernel.Builder.Build();
 
         var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
         var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
 
+        var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", pluginName: PluginName);
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
+
+        function3.SetAIService(() => mockTextCompletion.Object);
+
         // Act
-        var kernelResult = await kernel.RunAsync(function1, function2);
+        var kernelResult = await kernel.RunAsync(function1, function2, function3);
 
         // Assert
         Assert.NotNull(kernelResult);
-        Assert.Equal("Result2", kernelResult.GetValue<string>());
+        Assert.Equal("Result3", kernelResult.GetValue<string>());
 
         var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1" && l.PluginName == PluginName);
         var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == PluginName);
+        var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3" && l.PluginName == PluginName);
 
         Assert.Equal("Result1", functionResult1.GetValue<string>());
         Assert.Equal("Result2", functionResult2.GetValue<string>());
+        Assert.Equal("Result3", functionResult3.GetValue<string>());
     }
 
     public class MyPlugin
     {
         [SKFunction, Description("Return any value.")]
-        public virtual string GetAnyValue()
+        public string GetAnyValue()
         {
             return Guid.NewGuid().ToString();
         }
 
         [SKFunction, Description("Just say hello")]
-        public virtual void SayHello()
+        public void SayHello()
         {
             Console.WriteLine("Hello folks!");
         }

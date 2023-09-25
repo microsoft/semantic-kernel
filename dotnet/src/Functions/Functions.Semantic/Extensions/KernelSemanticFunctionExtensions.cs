@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
@@ -22,6 +23,43 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class KernelSemanticFunctionExtensions
 {
+    /// <summary>
+    /// Build and register a function in the internal function collection, in a global generic plugin.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
+    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
+    public static ISKFunction RegisterSemanticFunction(
+        this IKernel kernel,
+        string functionName,
+        SemanticFunctionConfig functionConfig)
+    {
+        return kernel.RegisterSemanticFunction("TODO", functionName, functionConfig);
+    }
+
+    /// <summary>
+    /// Build and register a function in the internal function collection.
+    /// </summary>
+    /// <param name="kernel">Semantic Kernel instance</param>
+    /// <param name="pluginName">Name of the plugin containing the function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
+    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
+    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
+    public static ISKFunction RegisterSemanticFunction(
+        this IKernel kernel,
+        string pluginName,
+        string functionName,
+        SemanticFunctionConfig functionConfig)
+    {
+        // Future-proofing the name not to contain special chars
+        Verify.ValidPluginName(pluginName);
+        Verify.ValidFunctionName(functionName);
+
+        ISKFunction function = kernel.CreateSemanticFunction(pluginName, functionName, functionConfig);
+        return kernel.RegisterCustomFunction(function);
+    }
+
     /// <summary>
     /// Define a string-to-string semantic function, with no direct support for input context.
     /// The function can be referenced in templates and will receive the context, but when invoked programmatically you
@@ -231,4 +269,34 @@ public static class KernelSemanticFunctionExtensions
     }
 
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");
+
+    private static ISKFunction CreateSemanticFunction(
+        this IKernel kernel,
+        string pluginName,
+        string functionName,
+        SemanticFunctionConfig functionConfig)
+    {
+        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
+        }
+
+        ISKFunction func = SemanticFunction.FromSemanticConfig(
+            pluginName,
+            functionName,
+            functionConfig,
+            kernel.LoggerFactory
+        );
+
+        // Connect the function to the current kernel function collection, in case the function
+        // is invoked manually without a context and without a way to find other functions.
+        func.SetDefaultFunctionCollection(kernel.Functions);
+
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
+
+        // Note: the service is instantiated using the kernel configuration state when the function is invoked
+        func.SetAIService(() => kernel.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
+
+        return func;
+    }
 }

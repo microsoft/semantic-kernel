@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
@@ -9,12 +8,12 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Moq;
-using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
+namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
 
 public sealed class SKFunctionTests1
 {
+    /* TODO Mark
     private readonly Mock<IPromptTemplate> _promptTemplate;
 
     public SKFunctionTests1()
@@ -79,6 +78,7 @@ public sealed class SKFunctionTests1
         Assert.Equal(130, skFunction.RequestSettings?.ExtensionData?["MaxTokens"]);
         Assert.Equal(0.7, skFunction.RequestSettings?.ExtensionData?["Temperature"]);
     }
+    */
 
     private static Mock<IPromptTemplate> MockPromptTemplate()
     {

@@ -13,6 +13,7 @@
     <Description>Semantic Kernel Stepwise Planner</Description>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Functions\Functions.Semantic\Functions.Semantic.csproj" />
     <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />

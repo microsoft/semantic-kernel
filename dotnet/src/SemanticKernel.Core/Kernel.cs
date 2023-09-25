@@ -7,13 +7,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -91,25 +89,6 @@ public sealed class Kernel : IKernel, IDisposable
         this._functionCollection = functionCollection;
 
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
-    {
-        return this.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsCollectionName, functionName, functionConfig);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string pluginName, string functionName, SemanticFunctionConfig functionConfig)
-    {
-        // Future-proofing the name not to contain special chars
-        Verify.ValidPluginName(pluginName);
-        Verify.ValidFunctionName(functionName);
-
-        ISKFunction function = this.CreateSemanticFunction(pluginName, functionName, functionConfig);
-        this._functionCollection.AddFunction(function);
-
-        return function;
     }
 
     /// <inheritdoc/>
@@ -334,35 +313,6 @@ repeat:
         }
 
         return null;
-    }
-
-    private ISKFunction CreateSemanticFunction(
-        string pluginName,
-        string functionName,
-        SemanticFunctionConfig functionConfig)
-    {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
-        ISKFunction func = SemanticFunction.FromSemanticConfig(
-            pluginName,
-            functionName,
-            functionConfig,
-            this.LoggerFactory
-        );
-
-        // Connect the function to the current kernel function collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultFunctionCollection(this.Functions);
-
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
-
-        return func;
     }
 
     /// <summary>
