@@ -16,9 +16,30 @@ public static class PostgresKernelBuilderExtensions
     /// Registers Postgres Memory Store.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
+    /// <param name="connectionString">Postgres database connection string.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="schema">Schema of collection tables.</param>
+    /// <returns>Self instance</returns>
+    public static KernelBuilder WithPostgresMemoryStore(this KernelBuilder builder,
+        string connectionString,
+        int vectorSize,
+        string schema = PostgresMemoryStore.DefaultSchema)
+    {
+        builder.WithMemoryStorage((loggerFactory) =>
+        {
+            return new PostgresMemoryStore(connectionString, vectorSize, schema);
+        });
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Registers Postgres Memory Store.
+    /// </summary>
+    /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
-    /// <param name="schema">Schema of collection tables. The default value is "public".</param>
+    /// <param name="schema">Schema of collection tables.</param>
     /// <returns>Self instance</returns>
     public static KernelBuilder WithPostgresMemoryStore(this KernelBuilder builder,
         NpgsqlDataSource dataSource,
