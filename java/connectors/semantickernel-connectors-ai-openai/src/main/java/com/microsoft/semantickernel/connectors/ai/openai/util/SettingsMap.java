@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -136,12 +137,12 @@ public class SettingsMap {
         }
 
         // lowercase and replace _ with ., to convert environment variables to properties
-        Map<String, Map.Entry<String, String>> envVariables =
+        Map<String, String> envVariables =
                 System.getenv().entrySet().stream()
                         .collect(
                                 Collectors.toMap(
                                         key -> key.getKey().toLowerCase().replace("_", "."),
-                                        value -> value));
+                                        Entry::getValue));
 
         // Overlay environment variables
         properties.putAll(envVariables);

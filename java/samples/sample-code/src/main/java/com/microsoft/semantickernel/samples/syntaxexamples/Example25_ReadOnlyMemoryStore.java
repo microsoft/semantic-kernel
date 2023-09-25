@@ -48,7 +48,7 @@ public class Example25_ReadOnlyMemoryStore
                 });
 
         mono = mono.then(
-                store.getNearestMatchAsync("collection", embedding, 0.0, true)
+                store.getNearestMatchAsync("collection", embedding, 0f, true)
                         .mapNotNull(result -> {
                                     Float similarity = result.getT2().floatValue();
                                     MemoryRecord memoryRecord = result.getT1();
@@ -130,7 +130,7 @@ public class Example25_ReadOnlyMemoryStore
         }
 
         @Override
-        public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, double minRelevanceScore,
+        public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(String collectionName, Embedding embedding, float minRelevanceScore,
                                                                         boolean withEmbedding)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
@@ -154,7 +154,7 @@ public class Example25_ReadOnlyMemoryStore
 
         @Override
         public Mono<Collection<Tuple2<MemoryRecord, Float>>> getNearestMatchesAsync(String collectionName, Embedding embedding, int limit,
-            double minRelevanceScore, boolean withEmbeddings)
+            float minRelevanceScore, boolean withEmbeddings)
         {
             // Note: with this simple implementation, the MemoryRecord will always contain the embedding.
             return Mono.justOrEmpty(

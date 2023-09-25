@@ -8,10 +8,10 @@
     </Appenders>
     <Loggers>
         <Logger name="reactor.netty" level="warn">
-            <AppenderRef ref="Console"/>
         </Logger>
         <Logger name="io.netty" level="warn">
-            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="io.quarkus" level="warn">
         </Logger>
         <Root level="debug">
             <AppenderRef ref="Console"/>

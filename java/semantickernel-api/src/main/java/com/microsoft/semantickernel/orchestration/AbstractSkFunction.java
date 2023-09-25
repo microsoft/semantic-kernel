@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParame
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
@@ -24,6 +25,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     private final String skillName;
     private final String functionName;
     private final String description;
+
+    private final List<ParameterView> returnParameters;
     @Nullable private KernelSkillsSupplier skillsSupplier;
 
     /**
@@ -40,12 +43,14 @@ public abstract class AbstractSkFunction<RequestConfiguration>
             String skillName,
             String functionName,
             String description,
+            List<ParameterView> returnParameters,
             @Nullable KernelSkillsSupplier skillsSupplier) {
 
         this.parameters = new ArrayList<>(parameters);
         this.skillName = skillName;
         this.functionName = functionName;
         this.description = description;
+        this.returnParameters = Collections.unmodifiableList(returnParameters);
         this.skillsSupplier = skillsSupplier;
     }
 
@@ -180,7 +185,7 @@ public abstract class AbstractSkFunction<RequestConfiguration>
     }
 
     @Override
-    public String toManualString() {
+    public String toManualString(boolean includeOutputs) {
         String inputs =
                 parameters.stream()
                         .map(
@@ -207,7 +212,31 @@ public abstract class AbstractSkFunction<RequestConfiguration>
                                             + parameter.getDescription()
                                             + defaultValueString;
                                 })
+                        .map(s -> s.toLowerCase(Locale.ROOT))
+                        .sorted()
+                        .distinct()
                         .collect(Collectors.joining("\n"));
+
+        String outputsList = "";
+
+        if (returnParameters.size() > 0) {
+
+            outputsList =
+                    returnParameters.stream()
+                            .filter(it -> !it.getDescription().isEmpty())
+                            .map(it -> "  - " + it.getName() + ": " + it.getDescription())
+                            .collect(Collectors.joining("\n"));
+        }
+
+        String outputs = "";
+        if (includeOutputs) {
+            outputs = "\n  outputs:\n";
+            if (outputsList.length() > 0) {
+                outputs += outputsList;
+            } else {
+                outputs += "  - return: void";
+            }
+        }
 
         return toFullyQualifiedName()
                 + ":\n"
@@ -215,7 +244,8 @@ public abstract class AbstractSkFunction<RequestConfiguration>
                 + getDescription()
                 + "\n"
                 + "  inputs:\n"
-                + inputs;
+                + inputs
+                + outputs;
     }
 
     @Override

@@ -10,6 +10,8 @@ import com.microsoft.semantickernel.orchestration.ContextVariables;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.orchestration.SKFunction;
 import com.microsoft.semantickernel.orchestration.WritableContextVariables;
+import com.microsoft.semantickernel.planner.PlanningException;
+import com.microsoft.semantickernel.planner.PlanningException.ErrorCodes;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.KernelSkillsSupplier;
 import com.microsoft.semantickernel.skilldefinition.ParameterView;
@@ -17,6 +19,7 @@ import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParame
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -51,7 +54,13 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
             String goal,
             ContextVariables state,
             @Nullable KernelSkillsSupplier kernelSkillsSupplier) {
-        super(new ArrayList<>(), Plan.class.getName(), "", goal, kernelSkillsSupplier);
+        super(
+                new ArrayList<>(),
+                Plan.class.getName(),
+                "",
+                goal,
+                Collections.emptyList(),
+                kernelSkillsSupplier);
         this.state = state;
     }
 
@@ -69,6 +78,7 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 function.getSkillName(),
                 function.getName(),
                 function.getDescription(),
+                formReturnParameters(functionOutputs),
                 kernelSkillsSupplier);
 
         this.parameters = null;
@@ -88,11 +98,16 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
                 function.getSkillName(),
                 function.getName(),
                 function.getDescription(),
+                formReturnParameters(functionOutputs),
                 kernelSkillsSupplier);
         this.parameters = parameters;
         this.function = function;
         this.outputs = new ArrayList<>(functionOutputs);
         this.state = state;
+    }
+
+    private static List<ParameterView> formReturnParameters(List<String> functionOutputs) {
+        return functionOutputs.stream().map(ParameterView::new).collect(Collectors.toList());
     }
 
     public Plan(
@@ -233,58 +248,57 @@ public class Plan extends AbstractSkFunction<CompletionRequestSettings> {
 
                     return step.invokeAsync(functionContext, settings)
                             .flatMap(
-                                    result -> {
-                                        String resultValue = result.getResult();
-                                        if (resultValue == null) {
-                                            return Mono.error(
-                                                    new RuntimeException("No result returned"));
-                                        }
-
-                                        resultValue = resultValue.trim();
-
-                                        WritableContextVariables updatedContext =
-                                                currentContext.getVariables().writableClone();
-
-                                        String finalResultValue = resultValue;
-
-                                        step.outputs.forEach(
-                                                item -> {
-                                                    if (result.getVariables()
-                                                            .asMap()
-                                                            .containsKey(item)) {
-                                                        String variable =
-                                                                result.getVariables().get(item);
-                                                        if (variable != null) {
-                                                            updatedContext.setVariable(
-                                                                    item, variable);
-                                                        }
-                                                    } else {
-                                                        updatedContext.setVariable(
-                                                                item, finalResultValue);
-                                                    }
-                                                });
-
-                                        // If this function produces an output, don't overwrite the
-                                        // current
-                                        // result
-                                        if (step.outputs.size() > 0) {
-                                            updatedContext.setVariable(
-                                                    ContextVariables.MAIN_KEY,
-                                                    currentContext.getResult());
-                                        } else {
-                                            updatedContext.update(finalResultValue);
-                                        }
-
-                                        updatedContext.setVariable(
-                                                DefaultResultKey, finalResultValue);
-
-                                        return Mono.just(
-                                                SKBuilders.context()
-                                                        .clone(context)
-                                                        .withVariables(updatedContext)
-                                                        .build());
-                                    });
+                                    result ->
+                                            processInvocationResult(
+                                                    context, step, currentContext, result))
+                            .switchIfEmpty(
+                                    processInvocationResult(
+                                            context,
+                                            step,
+                                            currentContext,
+                                            functionContext.copy().update("")));
                 });
+    }
+
+    private static Mono<SKContext> processInvocationResult(
+            SKContext context, Plan step, SKContext currentContext, SKContext result) {
+        String resultValue = result.getResult();
+
+        if (resultValue == null) {
+            return Mono.error(
+                    new PlanningException(ErrorCodes.UNKNOWN_ERROR, "No result returned"));
+        }
+
+        resultValue = resultValue.trim();
+
+        WritableContextVariables updatedContext = currentContext.getVariables().writableClone();
+
+        String finalResultValue = resultValue;
+
+        step.outputs.forEach(
+                item -> {
+                    if (result.getVariables().asMap().containsKey(item)) {
+                        String variable = result.getVariables().get(item);
+                        if (variable != null) {
+                            updatedContext.setVariable(item, variable);
+                        }
+                    } else {
+                        updatedContext.setVariable(item, finalResultValue);
+                    }
+                });
+
+        // If this function produces an output, don't overwrite the
+        // current
+        // result
+        if (step.outputs.size() > 0) {
+            updatedContext.setVariable(ContextVariables.MAIN_KEY, currentContext.getResult());
+        } else {
+            updatedContext.update(finalResultValue);
+        }
+
+        updatedContext.setVariable(DefaultResultKey, finalResultValue);
+
+        return Mono.just(SKBuilders.context().clone(context).withVariables(updatedContext).build());
     }
 
     public Mono<SKContext> invokeAsync(

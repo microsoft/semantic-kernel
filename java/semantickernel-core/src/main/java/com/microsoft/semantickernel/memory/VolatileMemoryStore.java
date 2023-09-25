@@ -70,8 +70,8 @@ public class VolatileMemoryStore implements MemoryStore {
                     // Contract:
                     //    Does not guarantee that the collection exists.
 
-                    // getCollection throws MemoryException if the collection does not exist.
-                    Map<String, MemoryRecord> collection = getCollection(collectionName);
+                    Map<String, MemoryRecord> collection =
+                            _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
 
                     String key = record.getMetadata().getId();
                     // Assumption is that MemoryRecord will always have a non-null id.
@@ -93,7 +93,8 @@ public class VolatileMemoryStore implements MemoryStore {
 
         return Mono.fromCallable(
                 () -> {
-                    Map<String, MemoryRecord> collection = getCollection(collectionName);
+                    Map<String, MemoryRecord> collection =
+                            _store.computeIfAbsent(collectionName, k -> new ConcurrentHashMap<>());
                     Set<String> keys = new HashSet<>();
                     records.forEach(
                             record -> {
@@ -191,7 +192,7 @@ public class VolatileMemoryStore implements MemoryStore {
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
             int limit,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
@@ -252,7 +253,7 @@ public class VolatileMemoryStore implements MemoryStore {
     public Mono<Tuple2<MemoryRecord, Float>> getNearestMatchAsync(
             @Nonnull String collectionName,
             @Nonnull Embedding embedding,
-            double minRelevanceScore,
+            float minRelevanceScore,
             boolean withEmbedding) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(embedding);
@@ -279,9 +280,9 @@ public class VolatileMemoryStore implements MemoryStore {
         return collection;
     }
 
-    public static class Builder implements MemoryStore.Builder {
+    public static class Builder implements MemoryStore.Builder<VolatileMemoryStore> {
         @Override
-        public MemoryStore build() {
+        public VolatileMemoryStore build() {
             return new VolatileMemoryStore();
         }
     }
