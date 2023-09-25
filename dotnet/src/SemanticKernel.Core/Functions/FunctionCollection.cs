@@ -33,7 +33,7 @@ public class FunctionCollection : IFunctionCollection
     /// <param name="loggerFactory">The logger factory.</param>
     public FunctionCollection(IReadOnlyFunctionCollection? readOnlyFunctionCollection = null, ILoggerFactory? loggerFactory = null)
     {
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(FunctionCollection)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(FunctionCollection)) ?? NullLogger.Instance;
 
         // Important: names are case insensitive
         this._functionCollection = new(StringComparer.OrdinalIgnoreCase);

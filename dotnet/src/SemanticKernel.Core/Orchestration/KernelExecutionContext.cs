@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// </summary>
 internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposable
 {
-    private Kernel _kernel;
+    private readonly Kernel _kernel;
 
     /// <inheritdoc/>
     public ILoggerFactory LoggerFactory => this._kernel.LoggerFactory;
@@ -36,7 +36,7 @@ internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposa
     }
 
     /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(ContextVariables variables, ISKFunction skFunction, CancellationToken cancellationToken = default)
+    public Task<KernelResult> RunAsync(ISKFunction skFunction, ContextVariables variables, CancellationToken cancellationToken = default)
     {
         return this._kernel.RunAsync(variables, cancellationToken, skFunction);
     }

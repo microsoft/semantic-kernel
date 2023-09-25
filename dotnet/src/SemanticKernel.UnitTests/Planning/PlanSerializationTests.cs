@@ -15,7 +15,7 @@ namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
-    private Mock<IKernelExecutionContext> _kernelContext = new();
+    private readonly Mock<IKernelExecutionContext> _kernelContext = new();
 
     [Fact]
     public void CanSerializePlan()
@@ -277,8 +277,8 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
-        this._kernelContext.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction>(), It.IsAny<CancellationToken>()))
-        .Returns<ContextVariables, ISKFunction, CancellationToken>((variables, function, ct) =>
+        this._kernelContext.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+        .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
         {
             var c = new SKContext(new Mock<IKernelExecutionContext>().Object, variables);
             returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input);
@@ -357,8 +357,8 @@ public sealed class PlanSerializationTests
 
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName"));
 
-        this._kernelContext.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction>(), It.IsAny<CancellationToken>()))
-                .Returns<ContextVariables, ISKFunction, CancellationToken>((variables, function, ct) =>
+        this._kernelContext.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+                .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
                 {
                     var c = new SKContext(new Mock<IKernelExecutionContext>().Object, variables);
                     c.Variables.TryGetValue("variables", out string? v);
@@ -399,7 +399,7 @@ public sealed class PlanSerializationTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        this._kernelContext.Verify(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        this._kernelContext.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -461,8 +461,8 @@ public sealed class PlanSerializationTests
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
-        this._kernelContext.Setup(k => k.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction>(), It.IsAny<CancellationToken>()))
-                .Returns<ContextVariables, ISKFunction, CancellationToken>((variables, function, ct) =>
+        this._kernelContext.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+                .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
                 {
                     var c = new SKContext(new Mock<IKernelExecutionContext>().Object, variables);
                     c.Variables.TryGetValue("variables", out string? v);
@@ -502,7 +502,7 @@ public sealed class PlanSerializationTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        this._kernelContext.Verify(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<ISKFunction>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        this._kernelContext.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();

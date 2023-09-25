@@ -195,10 +195,6 @@ public sealed class Kernel : IKernel, IKernelExecutionContext, IDisposable
         => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(ContextVariables variables, ISKFunction skFunction, CancellationToken cancellationToken = default)
-        => this.RunAsync(variables, cancellationToken, new[] { skFunction });
-
-    /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = new SKContext(this, variables);
