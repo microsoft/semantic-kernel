@@ -69,7 +69,7 @@ public static class Example30_ChatWithPrompts
 
         // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         // We need a kernel context to store some information to pass to the prompts and the list
         // of available plugins needed to render prompt templates.

@@ -107,9 +107,9 @@ public static class Example51_StepwisePlanner
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
 
-        kernel.ImportPlugin(webSearchEngineSkill, "WebSearch");
-        kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(webSearchEngineSkill, "WebSearch");
+        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         // StepwisePlanner is instructed to depend on available functions.
         // We expose this function to increase the flexibility in it's ability to answer

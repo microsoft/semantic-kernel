@@ -92,22 +92,22 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportPlugin(object pluginInstance, string? pluginName = null)
+    public IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null)
     {
-        Verify.NotNull(pluginInstance);
+        Verify.NotNull(functionsInstance);
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
             pluginName = FunctionCollection.GlobalFunctionsCollectionName;
-            this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", pluginInstance.GetType().FullName);
+            this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", functionsInstance.GetType().FullName);
         }
         else
         {
-            this._logger.LogTrace("Importing functions from {0} to the {1} namespace", pluginInstance.GetType().FullName, pluginName);
+            this._logger.LogTrace("Importing functions from {0} to the {1} namespace", functionsInstance.GetType().FullName, pluginName);
         }
 
         Dictionary<string, ISKFunction> functions = ImportFunctions(
-            pluginInstance,
+            functionsInstance,
             pluginName!,
             this._logger,
             this.LoggerFactory
@@ -124,9 +124,9 @@ public sealed class Kernel : IKernel, IDisposable
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
-    public IDictionary<string, ISKFunction> ImportSkill(object pluginInstance, string? pluginName = null)
+    public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)
     {
-        return this.ImportPlugin(pluginInstance, pluginName);
+        return this.ImportFunctions(functionsInstance, pluginName);
     }
 #pragma warning restore CS1591
 
@@ -185,7 +185,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         foreach (ISKFunction skFunction in pipeline)
         {
-repeat:
+        repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try

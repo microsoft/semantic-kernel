@@ -50,12 +50,12 @@ public sealed class WebPluginTests : IDisposable
         Assert.NotEmpty(this._bingApiKey);
 
         WebSearchEnginePlugin plugin = new(connector);
-        var search = kernel.ImportPlugin(plugin, "WebSearchEngine");
+        var searchFunctions = kernel.ImportFunctions(plugin, "WebSearchEngine");
 
         // Act
         KernelResult result = await kernel.RunAsync(
             prompt,
-            search["Search"]
+            searchFunctions["Search"]
         );
 
         // Assert
@@ -69,13 +69,13 @@ public sealed class WebPluginTests : IDisposable
         IKernel kernel = Kernel.Builder.WithLoggerFactory(this._logger).Build();
         using XunitLogger<WebFileDownloadPlugin> pluginLogger = new(this._output);
         var plugin = new WebFileDownloadPlugin(pluginLogger);
-        var download = kernel.ImportPlugin(plugin, "WebFileDownload");
+        var downloadFunctions = kernel.ImportFunctions(plugin, "WebFileDownload");
         string fileWhereToSaveWebPage = Path.GetTempFileName();
         var contextVariables = new ContextVariables("https://www.microsoft.com");
         contextVariables.Set(WebFileDownloadPlugin.FilePathParamName, fileWhereToSaveWebPage);
 
         // Act
-        await kernel.RunAsync(contextVariables, download["DownloadToFile"]);
+        await kernel.RunAsync(contextVariables, downloadFunctions["DownloadToFile"]);
 
         // Assert
         var fileInfo = new FileInfo(fileWhereToSaveWebPage);
