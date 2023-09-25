@@ -15,20 +15,27 @@ from azure.search.documents.indexes.models import (
 from azure.search.documents.models import Vector
 from numpy import ndarray
 
+from azure.search.documents.indexes.models import (
+    SearchableField,
+    SearchField,
+    SearchFieldDataType,
+    SimpleField,
+)
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
-    SEARCH_FIELD_EMBEDDING,
-    SEARCH_FIELD_ID,
-    dict_to_memory_record,
+    decode_id,
     encode_id,
-    get_field_selection,
-    get_index_schema,
     get_search_index_async_client,
-    memory_record_to_search_record,
+    SEARCH_FIELD_ID_KEY,
+    SEARCH_FIELD_TEXT_KEY,
+    SEARCH_FIELD_EMBEDDING_KEY,
+    SEARCH_FIELD_SRC_KEY,
+    SEARCH_FIELD_DESC_KEY,
+    SEARCH_FIELD_METADATA_KEY,
+    SEARCH_FIELD_IS_REF_KEY,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
-
 
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
@@ -42,6 +49,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         admin_key: Optional[str] = None,
         azure_credentials: Optional[AzureKeyCredential] = None,
         token_credentials: Optional[TokenCredential] = None,
+        custom_schema: Optional[dict] = None,
         logger: Optional[Logger] = None,
     ) -> None:
         """Initializes a new instance of the AzureCognitiveSearchMemoryStore class.
@@ -67,7 +75,15 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                 "Error: Unable to import Azure Cognitive Search client python package."
                 "Please install Azure Cognitive Search client"
             )
-
+        self._schema = {
+            SEARCH_FIELD_ID_KEY : custom_schema.get("SEARCH_FIELD_ID", "Id"),
+            SEARCH_FIELD_TEXT_KEY : custom_schema.get("SEARCH_FIELD_TEXT", "Text"),
+            SEARCH_FIELD_EMBEDDING_KEY : custom_schema.get("SEARCH_FIELD_EMBEDDING", "Embedding"),
+            SEARCH_FIELD_SRC_KEY : custom_schema.get("SEARCH_FIELD_SRC", "ExternalSourceName"),
+            SEARCH_FIELD_DESC_KEY : custom_schema.get("SEARCH_FIELD_DESC", "Description"),
+            SEARCH_FIELD_METADATA_KEY : custom_schema.get("SEARCH_FIELD_METADATA", "AdditionalMetadata"),
+            SEARCH_FIELD_IS_REF_KEY : custom_schema.get("SEARCH_FIELD_IS_REF", "IsReference"),
+        }
         self._logger = logger or NullLogger()
         self._vector_size = vector_size
         self._search_index_client = get_search_index_async_client(
@@ -136,7 +152,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             # Create the search index with the semantic settings
             index = SearchIndex(
                 name=collection_name.lower(),
-                fields=get_index_schema(self._vector_size),
+                fields=self.get_index_schema(self._vector_size),
                 vector_search=vector_search,
             )
 
@@ -239,7 +255,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             if not record._id:
                 record._id = str(uuid.uuid4())
 
-            search_record = memory_record_to_search_record(record)
+            search_record = self.memory_record_to_search_record(record)
             search_records.append(search_record)
             search_ids.append(record._id)
 
@@ -272,7 +288,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         try:
             search_result = await search_client.get_document(
-                key=encode_id(key), selected_fields=get_field_selection(with_embedding)
+                key=encode_id(key), selected_fields=self.get_field_selection(with_embedding)
             )
         except ResourceNotFoundError:
             await search_client.close()
@@ -281,7 +297,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         await search_client.close()
 
         # Create Memory record from document
-        return dict_to_memory_record(search_result, with_embedding)
+        return self.dict_to_memory_record(search_result, with_embedding)
 
     async def get_batch_async(
         self, collection_name: str, keys: List[str], with_embeddings: bool = False
@@ -340,7 +356,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         search_client = self._search_index_client.get_search_client(
             collection_name.lower()
         )
-        docs_to_delete = {SEARCH_FIELD_ID: encode_id(key)}
+        docs_to_delete = {self._schema[SEARCH_FIELD_ID_KEY]: encode_id(key)}
 
         await search_client.delete_documents(documents=[docs_to_delete])
         await search_client.close()
@@ -404,13 +420,13 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         )
 
         vector = Vector(
-            value=embedding.flatten(), k=limit, fields=SEARCH_FIELD_EMBEDDING
+            value=embedding.flatten(), k=limit, fields=self._schema[SEARCH_FIELD_EMBEDDING_KEY]
         )
 
         search_results = await search_client.search(
             search_text="*",
             vectors=[vector],
-            select=get_field_selection(with_embeddings),
+            select=self.get_field_selection(with_embeddings),
         )
 
         if not search_results or search_results is None:
@@ -423,8 +439,144 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             if search_record["@search.score"] < min_relevance_score:
                 continue
 
-            memory_record = dict_to_memory_record(search_record, with_embeddings)
+            memory_record = self.dict_to_memory_record(search_record, with_embeddings)
             nearest_results.append((memory_record, search_record["@search.score"]))
 
         await search_client.close()
         return nearest_results
+    
+
+    def get_index_schema(self, vector_size: int) -> list:
+        """Return the schema of search indexes.
+
+        Arguments:
+            vector_size {int} -- The size of the vectors being stored in collection/index.
+
+        Returns:
+            list -- The Azure Cognitive Search schema as list type.
+        """
+
+        search_fields = [
+            SimpleField(
+                name=self._schema[SEARCH_FIELD_ID_KEY],
+                type=SearchFieldDataType.String,
+                searchable=True,
+                filterable=True,
+                retrievable=True,
+                key=True,
+            ),
+            SearchableField(
+                name=self._schema[SEARCH_FIELD_TEXT_KEY],
+                type=SearchFieldDataType.String,
+                searchable=True,
+                filterable=True,
+                retrievable=True,
+            ),
+            SearchField(
+                name=self._schema[SEARCH_FIELD_EMBEDDING_KEY],
+                type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
+                searchable=True,
+                vector_search_dimensions=vector_size,
+                vector_search_configuration="az-vector-config",
+            ),
+            SimpleField(
+                name=self._schema[SEARCH_FIELD_SRC_KEY],
+                type=SearchFieldDataType.String,
+                searchable=True,
+                filterable=True,
+                retrievable=True,
+            ),
+            SimpleField(
+                name=self._schema[SEARCH_FIELD_DESC_KEY],
+                type=SearchFieldDataType.String,
+                searchable=True,
+                filterable=True,
+                retrievable=True,
+            ),
+            SimpleField(
+                name=self._schema[SEARCH_FIELD_METADATA_KEY],
+                type=SearchFieldDataType.String,
+                searchable=True,
+                filterable=True,
+                retrievable=True,
+            ),
+            SimpleField(
+                name=self._schema[SEARCH_FIELD_IS_REF_KEY],
+                type=SearchFieldDataType.Boolean,
+                searchable=True,
+                filterable=True,
+                retrievable=True,
+            ),
+        ]
+
+        return search_fields
+
+
+    def get_field_selection(self, with_embeddings: bool) -> List[str]:
+        """Get the list of fields to search and load.
+
+        Arguments:
+            with_embedding {bool} -- Whether to include the embedding vector field.
+
+        Returns:
+            List[str] -- List of fields.
+        """
+
+        field_selection = [
+            self._schema[SEARCH_FIELD_ID_KEY],
+            self._schema[SEARCH_FIELD_TEXT_KEY],
+            self._schema[SEARCH_FIELD_SRC_KEY],
+            self._schema[SEARCH_FIELD_DESC_KEY],
+            self._schema[SEARCH_FIELD_METADATA_KEY],
+            self._schema[SEARCH_FIELD_IS_REF_KEY],
+        ]
+
+        if with_embeddings:
+            field_selection.append(self._schema[SEARCH_FIELD_EMBEDDING_KEY])
+
+        return field_selection
+
+
+    def dict_to_memory_record(self, data: dict, with_embeddings: bool) -> MemoryRecord:
+        """Converts a search result to a MemoryRecord.
+
+        Arguments:
+            data {dict} -- Azure Cognitive Search result data.
+
+        Returns:
+            MemoryRecord -- The MemoryRecord from Azure Cognitive Search Data Result.
+        """
+
+        sk_result = MemoryRecord(
+            id=decode_id(data[self._schema[SEARCH_FIELD_ID_KEY]]),
+            key=data[self._schema[SEARCH_FIELD_ID_KEY]],
+            text=data[self._schema[SEARCH_FIELD_TEXT_KEY]],
+            external_source_name=data[self._schema[SEARCH_FIELD_SRC_KEY]],
+            description=data[self._schema[SEARCH_FIELD_DESC_KEY]],
+            additional_metadata=data[self._schema[SEARCH_FIELD_METADATA_KEY]],
+            is_reference=data[self._schema[SEARCH_FIELD_IS_REF_KEY]],
+            embedding=data[self._schema[SEARCH_FIELD_EMBEDDING_KEY]] if with_embeddings else None,
+            timestamp=None,
+        )
+        return sk_result
+
+
+    def memory_record_to_search_record(self, record: MemoryRecord) -> dict:
+        """Convert a MemoryRecord to a dictionary
+
+        Arguments:
+            record {MemoryRecord} -- The MemoryRecord from Azure Cognitive Search Data Result.
+
+        Returns:
+            data {dict} -- Dictionary data.
+        """
+
+        return {
+                self._schema[SEARCH_FIELD_ID_KEY]: encode_id(record._id),
+            self._schema[SEARCH_FIELD_TEXT_KEY]: str(record._text),
+            self._schema[SEARCH_FIELD_SRC_KEY]: record._external_source_name or "",
+            self._schema[SEARCH_FIELD_DESC_KEY]: record._description or "",
+            self._schema[SEARCH_FIELD_METADATA_KEY]: record._additional_metadata or "",
+            self._schema[SEARCH_FIELD_IS_REF_KEY]: str(record._is_reference),
+            self._schema[SEARCH_FIELD_EMBEDDING_KEY]: record._embedding.tolist(),
+        }
