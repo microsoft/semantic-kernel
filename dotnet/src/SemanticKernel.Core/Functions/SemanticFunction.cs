@@ -229,7 +229,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
                 result = new FunctionResult(this.Name, this.PluginName, context, completion);
             }
 
-
             result.AddModelResults(modelResults);
         }
         catch (Exception ex) when (!ex.IsCriticalException())

@@ -21,7 +21,7 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     public ChatStreamingResult(StreamingChatCompletions resultData, StreamingChatChoice choice)
     {
         Verify.NotNull(choice);
-        this._modelResult = new ModelResult(resultData);
+        this._modelResult = new(new StreamingChatModelResult(resultData, choice));
         this._choice = choice;
     }
 

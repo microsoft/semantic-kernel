@@ -18,7 +18,7 @@ internal sealed class TextStreamingResult : ITextStreamingResult
 
     public TextStreamingResult(StreamingCompletions resultData, StreamingChoice choice)
     {
-        this.ModelResult = new ModelResult(resultData);
+        this.ModelResult = new(new StreamingTextModelResult(resultData, choice));
         this._choice = choice;
     }
 

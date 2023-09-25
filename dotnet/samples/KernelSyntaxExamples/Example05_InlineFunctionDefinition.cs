@@ -71,7 +71,7 @@ Event: {{$input}}
                     MaxTokens = 100
                 });
 
-        await foreach(string token in (await kernel.RunAsync(fixedFunction)).GetValue<IAsyncEnumerable<string>>()!)
+        await foreach (string token in (await kernel.RunAsync(fixedFunction)).GetValue<IAsyncEnumerable<string>>()!)
         {
             Console.Write(token);
         }
