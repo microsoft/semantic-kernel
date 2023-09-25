@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
@@ -91,7 +92,6 @@ public class KernelTests
         Assert.True(testFunctions.ContainsKey("GETANYVALUE"));
     }
 
-    /* TODO Mark: Move to OpenAI
     [Theory]
     [InlineData(null, "Assistant is a large language model.")]
     [InlineData("My Chat Prompt", "My Chat Prompt")]
@@ -122,7 +122,6 @@ public class KernelTests
         // Assert
         mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
     }
-    */
 
     [Fact]
     public void ItAllowsToImportFunctionsInTheGlobalNamespace()

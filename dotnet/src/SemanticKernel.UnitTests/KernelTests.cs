@@ -86,41 +86,6 @@ public class KernelTests
         Assert.True(functions.ContainsKey("GETANYVALUE"));
     }
 
-    /* TODO Mark
-        [Theory]
-        [InlineData(null, "Assistant is a large language model.")]
-        [InlineData("My Chat Prompt", "My Chat Prompt")]
-        public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
-        {
-            // Arrange
-            var mockTextCompletion = new Mock<ITextCompletion>();
-            var mockCompletionResult = new Mock<ITextResult>();
-
-            mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-            mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
-
-            var kernel = Kernel.Builder
-                .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
-                .Build();
-
-            var templateConfig = new PromptTemplateConfig
-            {
-                Completion = new OpenAIRequestSettings()
-                {
-                    ChatSystemPrompt = providedSystemChatPrompt
-                }
-            };
-
-            var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
-
-            // Act
-            await kernel.RunAsync(func);
-
-            // Assert
-            mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
-        }
-    */
-
     [Fact]
     public void ItAllowsToImportFunctionsInTheGlobalNamespace()
     {
