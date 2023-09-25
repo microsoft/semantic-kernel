@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
 /// <summary>
 /// A <see cref="Block"/> that represents a named argument for a function call.
-/// For example, in the template {{ MySkill.MyFunction var1="foo" }}, var1="foo" is a named arg block.
+/// For example, in the template {{ MyPlugin.MyFunction var1="foo" }}, var1="foo" is a named arg block.
 /// </summary>
 internal sealed class NamedArgBlock : Block, ITextRendering
 {

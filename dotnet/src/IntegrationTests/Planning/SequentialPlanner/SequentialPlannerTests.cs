@@ -34,13 +34,13 @@ public sealed class SequentialPlannerTests : IDisposable
     [Theory]
     [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
     [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedSkill)
+    public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = false;
         IKernel kernel = this.InitializeKernel(useEmbeddings, useChatModel);
-        _ = kernel.ImportSkill(new EmailSkillFake());
-        TestHelpers.GetSkills(kernel, "FunSkill");
+        kernel.ImportFunctions(new EmailPluginFake());
+        TestHelpers.ImportSamplePlugins(kernel, "FunPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
 
@@ -52,16 +52,16 @@ public sealed class SequentialPlannerTests : IDisposable
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
+                step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
-    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterSkill", "<!--===ENDPART===-->")]
-    public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedSkill, string expectedDefault)
+    [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin", "<!--===ENDPART===-->")]
+    public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin, string expectedDefault)
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        TestHelpers.GetSkills(kernel, "WriterSkill");
+        TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel);
 
@@ -73,21 +73,21 @@ public sealed class SequentialPlannerTests : IDisposable
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase) &&
+                step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase) &&
                 step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
     [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
-    public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedSkill)
+    public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
         bool useEmbeddings = true;
         IKernel kernel = this.InitializeKernel(useEmbeddings);
-        _ = kernel.ImportSkill(new EmailSkillFake());
+        kernel.ImportFunctions(new EmailPluginFake());
 
-        // Import all sample skills available for demonstration purposes.
-        TestHelpers.ImportSampleSkills(kernel);
+        // Import all sample plugins available for demonstration purposes.
+        TestHelpers.ImportAllSamplePlugins(kernel);
 
         var planner = new Microsoft.SemanticKernel.Planning.SequentialPlanner(kernel,
             new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
@@ -100,7 +100,7 @@ public sealed class SequentialPlannerTests : IDisposable
             plan.Steps,
             step =>
                 step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.SkillName.Equals(expectedSkill, StringComparison.OrdinalIgnoreCase));
+                step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
     private IKernel InitializeKernel(bool useEmbeddings = false, bool useChatModel = false)
