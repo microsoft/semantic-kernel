@@ -39,7 +39,7 @@ public static class KernelAIPluginExtensions
         this IKernel kernel,
         string pluginName,
         string filePath,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -78,7 +78,7 @@ public static class KernelAIPluginExtensions
         this IKernel kernel,
         string pluginName,
         Uri uri,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -118,7 +118,7 @@ public static class KernelAIPluginExtensions
         this IKernel kernel,
         string pluginName,
         Stream stream,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
@@ -146,7 +146,7 @@ public static class KernelAIPluginExtensions
         string pluginContents,
         string pluginName,
         HttpClient httpClient,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
@@ -174,7 +174,7 @@ public static class KernelAIPluginExtensions
     private static async Task<IDictionary<string, ISKFunction>> LoadPluginAsync(
         IKernel kernel,
         string pluginName,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         string pluginJson,
         Uri? documentUri = null,
@@ -220,7 +220,7 @@ public static class KernelAIPluginExtensions
     private static async Task<string> LoadDocumentFromUriAsync(
         IKernel kernel,
         Uri uri,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         CancellationToken cancellationToken)
     {
@@ -239,7 +239,7 @@ public static class KernelAIPluginExtensions
     private static async Task<string> LoadDocumentFromFilePathAsync(
         IKernel kernel,
         string filePath,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         CancellationToken cancellationToken)
     {
@@ -305,7 +305,7 @@ public static class KernelAIPluginExtensions
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
-    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
@@ -314,7 +314,7 @@ public static class KernelAIPluginExtensions
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {

@@ -39,20 +39,20 @@ public class SequentialPlanParserTests
                 serviceId: azureOpenAIConfiguration.ServiceId,
                 setAsDefault: true)
             .Build();
-        kernel.ImportPlugin(new EmailSkillFake(), "email");
-        TestHelpers.ImportSamplePlugins(kernel, "SummarizeSkill", "WriterSkill");
+        kernel.ImportFunctions(new EmailPluginFake(), "email");
+        TestHelpers.ImportSamplePlugins(kernel, "SummarizePlugin", "WriterPlugin");
 
         var planString =
             @"<plan>
-    <function.SummarizeSkill.Summarize/>
-    <function.WriterSkill.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
+    <function.SummarizePlugin.Summarize/>
+    <function.WriterPlugin.Translate language=""French"" setContextVariable=""TRANSLATED_SUMMARY""/>
     <function.email.GetEmailAddress input=""John Doe"" setContextVariable=""EMAIL_ADDRESS""/>
     <function.email.SendEmail input=""$TRANSLATED_SUMMARY"" email_address=""$EMAIL_ADDRESS""/>
 </plan>";
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);
@@ -62,12 +62,12 @@ public class SequentialPlanParserTests
         Assert.Collection<Plan>(plan.Steps,
             step =>
             {
-                Assert.Equal("SummarizeSkill", step.PluginName);
+                Assert.Equal("SummarizePlugin", step.PluginName);
                 Assert.Equal("Summarize", step.Name);
             },
             step =>
             {
-                Assert.Equal("WriterSkill", step.PluginName);
+                Assert.Equal("WriterPlugin", step.PluginName);
                 Assert.Equal("Translate", step.Name);
                 Assert.Equal("French", step.Parameters["language"]);
                 Assert.True(step.Outputs.Contains("TRANSLATED_SUMMARY"));
