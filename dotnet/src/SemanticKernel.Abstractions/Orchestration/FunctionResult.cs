@@ -46,6 +46,7 @@ public sealed class FunctionResult
         this.FunctionName = functionName;
         this.PluginName = pluginName;
         this.Context = context;
+        this.PopulateMetadata();
     }
 
     /// <summary>
@@ -79,5 +80,16 @@ public sealed class FunctionResult
         }
 
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
+    }
+
+    /// <summary>
+    /// Populates metadata with variables from <see cref="SKContext"/>.
+    /// </summary>
+    internal void PopulateMetadata()
+    {
+        foreach (var variable in this.Context.Variables)
+        {
+            this.Metadata[variable.Key] = variable.Value;
+        }
     }
 }
