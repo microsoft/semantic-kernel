@@ -314,16 +314,16 @@ public class JDBCMemoryStoreTest {
                         .mapToObj(i -> "test_collection" + i)
                         .toArray(String[]::new);
 
-        Collection<String> collections = this.db.getCollectionsAsync().block();
+        Collection<String> collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         int initialSize = collections.size();
 
         Flux.fromArray(testCollections)
-                .concatMap(collection -> this.db.createCollectionAsync(collection))
+                .concatMap(collection -> db.createCollectionAsync(collection))
                 .blockLast();
 
         // Act
-        collections = this.db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
 
         // Assert
         assertNotNull(collections);
@@ -655,27 +655,27 @@ public class JDBCMemoryStoreTest {
                         .mapToObj(i -> "test_collection" + i)
                         .toArray(String[]::new);
 
-        Collection<String> collections = this.db.getCollectionsAsync().block();
+        Collection<String> collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         int initialSize = collections.size();
 
         Flux.fromArray(testCollections)
-                .concatMap(collection -> this.db.createCollectionAsync(collection))
+                .concatMap(collection -> db.createCollectionAsync(collection))
                 .blockLast();
         collectionNum += numCollections;
 
         // Act
-        collections = this.db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         assertEquals(initialSize + numCollections, collections.size());
 
         // Act
         for (String collection : collections) {
-            this.db.deleteCollectionAsync(collection).block();
+            db.deleteCollectionAsync(collection).block();
         }
 
         // Assert
-        collections = this.db.getCollectionsAsync().block();
+        collections = db.getCollectionsAsync().block();
         assertNotNull(collections);
         assertEquals(0, collections.size());
     }

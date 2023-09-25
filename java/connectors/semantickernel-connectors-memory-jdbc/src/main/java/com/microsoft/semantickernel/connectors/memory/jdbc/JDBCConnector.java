@@ -12,7 +12,9 @@ import java.sql.Statement;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -48,6 +50,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
     protected static String DEFAULT_COLLECTIONS_TABLE_NAME() {
         return COLLECTIONS_TABLE_NAME;
     }
+
     /**
      * Returns the name of the Semantic Kernel table.
      *
@@ -56,6 +59,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
     protected static String DEFAULT_TABLE_NAME() {
         return TABLE_NAME;
     }
+
     /**
      * Returns the name of the index on the Semantic Kernel table.
      *
@@ -79,8 +83,8 @@ public class JDBCConnector implements SQLConnector, Closeable {
                                     "CREATE TABLE IF NOT EXISTS "
                                             + TABLE_NAME
                                             + " ("
-                                            + "collection TEXT, "
-                                            + "key TEXT, "
+                                            + "collection TEXT NOT NULL, "
+                                            + "key TEXT NOT NULL, "
                                             + "metadata TEXT, "
                                             + "embedding TEXT, "
                                             + "timestamp TEXT, "
@@ -133,57 +137,28 @@ public class JDBCConnector implements SQLConnector, Closeable {
                 .then();
     }
 
-    public Mono<Void> updateAsync(
-            String collection,
-            String key,
-            String metadata,
-            String embedding,
-            ZonedDateTime timestamp) {
-
-        return Mono.fromRunnable(
-                        () -> {
-                            String query =
-                                    "UPDATE "
-                                            + TABLE_NAME
-                                            + " SET metadata = ?, embedding = ?, timestamp = ?"
-                                            + " WHERE collection = ?"
-                                            + " AND key = ?";
-                            try (PreparedStatement statement =
-                                    this.connection.prepareStatement(query)) {
-                                statement.setString(1, metadata != null ? metadata : "");
-                                statement.setString(2, embedding != null ? embedding : "");
-                                statement.setString(3, formatDatetime(timestamp));
-                                statement.setString(4, collection);
-                                statement.setString(5, key != null && !key.isEmpty() ? key : null);
-                                statement.executeUpdate();
-                            } catch (SQLException e) {
-                                throw new SQLConnectorException(
-                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                        "\"UPDATE\" failed",
-                                        e);
-                            }
-                        })
-                .subscribeOn(Schedulers.boundedElastic())
-                .then();
+    protected String resolveKey(String key) {
+        return key != null && !key.isEmpty() ? key : UUID.randomUUID().toString();
     }
 
-    public Mono<Void> insertOrIgnoreAsync(
+    public Mono<String> upsertAsync(
             String collection,
             String key,
             String metadata,
             String embedding,
             ZonedDateTime timestamp) {
+        final String upsertKey = resolveKey(key);
         return Mono.fromRunnable(
                         () -> {
                             String query =
-                                    "INSERT OR IGNORE INTO "
+                                    "INSERT OR REPLACE INTO "
                                             + TABLE_NAME
                                             + " (collection, key, metadata, embedding, timestamp)"
                                             + " VALUES (?, ?, ?, ?, ?)";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 statement.setString(1, collection);
-                                statement.setString(2, key);
+                                statement.setString(2, upsertKey);
                                 statement.setString(3, metadata != null ? metadata : "");
                                 statement.setString(4, embedding != null ? embedding : "");
                                 statement.setString(5, formatDatetime(timestamp));
@@ -191,12 +166,55 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
                                         SQLConnectorException.ErrorCodes.SQL_ERROR,
-                                        "\"INSERT OR IGNORE INTO\" failed",
+                                        "\"INSERT OR REPLACE INTO\" failed",
                                         e);
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
-                .then();
+                .thenReturn(upsertKey);
+    }
+
+    @Override
+    public Mono<Collection<String>> upsertBatchAsync(
+            String collection, Collection<DatabaseEntry> records) {
+        Collection<String> keys = new ArrayList<>();
+        return Mono.fromRunnable(
+                        () -> {
+                            String query =
+                                    "INSERT OR REPLACE INTO "
+                                            + TABLE_NAME
+                                            + " (collection, key, metadata, embedding, timestamp)"
+                                            + " VALUES (?, ?, ?, ?, ?)";
+                            try (PreparedStatement statement =
+                                    this.connection.prepareStatement(query)) {
+                                for (DatabaseEntry entry : records) {
+                                    final String upsertKey = resolveKey(entry.getKey());
+
+                                    statement.setString(1, collection);
+                                    statement.setString(2, upsertKey);
+                                    statement.setString(
+                                            3,
+                                            entry.getMetadata() != null ? entry.getMetadata() : "");
+                                    statement.setString(
+                                            4,
+                                            entry.getEmbedding() != null
+                                                    ? entry.getEmbedding()
+                                                    : "");
+                                    statement.setString(5, formatDatetime(entry.getTimestamp()));
+                                    statement.addBatch();
+                                    keys.add(upsertKey);
+                                }
+
+                                statement.executeBatch();
+                            } catch (SQLException e) {
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"INSERT OR REPLACE INTO\" failed",
+                                        e);
+                            }
+                        })
+                .subscribeOn(Schedulers.boundedElastic())
+                .thenReturn(keys);
     }
 
     public Mono<Boolean> doesCollectionExistsAsync(String collectionName) {
@@ -302,6 +320,77 @@ public class JDBCConnector implements SQLConnector, Closeable {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
+    enum BatchOperation {
+        SELECT,
+        DELETE
+    }
+
+    protected String batchQuery(BatchOperation operation, Collection<String> keys) {
+        String queryPrefix;
+        switch (operation) {
+            case SELECT:
+                queryPrefix = "SELECT * FROM " + TABLE_NAME + " WHERE collection = ?";
+                break;
+            case DELETE:
+                queryPrefix = "DELETE FROM " + TABLE_NAME + " WHERE collection = ?";
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid batch operation");
+        }
+        StringBuilder queryBuilder = new StringBuilder(queryPrefix);
+        queryBuilder.append(" AND key IN (");
+
+        // Add placeholders for each key
+        for (int i = 0; i < keys.size(); i++) {
+            queryBuilder.append("?");
+            if (i < keys.size() - 1) {
+                queryBuilder.append(",");
+            }
+        }
+
+        queryBuilder.append(")");
+        return queryBuilder.toString();
+    }
+
+    @Override
+    public Mono<Collection<DatabaseEntry>> readBatchAsync(
+            String collectionName, Collection<String> keys) {
+        return Mono.defer(
+                        () -> {
+                            Collection<DatabaseEntry> entries = new ArrayList<>();
+                            String query = batchQuery(BatchOperation.SELECT, keys);
+
+                            try (PreparedStatement statement =
+                                    this.connection.prepareStatement(query)) {
+                                statement.setString(1, collectionName);
+                                int index = 2;
+                                for (String key : keys) {
+                                    statement.setString(index++, key);
+                                }
+                                ResultSet resultSet = statement.executeQuery();
+
+                                while (resultSet.next()) {
+                                    String key = resultSet.getString("key");
+                                    String metadata = resultSet.getString("metadata");
+                                    String embedding = resultSet.getString("embedding");
+                                    String timestamp = resultSet.getString("timestamp");
+                                    ZonedDateTime zonedDateTime = parseDatetime(timestamp);
+                                    entries.add(
+                                            new DatabaseEntry(
+                                                    key, metadata, embedding, zonedDateTime));
+                                }
+                            } catch (SQLException e) {
+                                return Mono.error(
+                                        new SQLConnectorException(
+                                                SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                                "\"SELECT * FROM\" failed",
+                                                e));
+                            }
+                            return Mono.just(entries);
+                        })
+                .subscribeOn(Schedulers.boundedElastic());
+    }
+
     public Mono<Void> deleteCollectionAsync(String collectionName) {
         return Mono.fromRunnable(
                         () -> {
@@ -354,6 +443,29 @@ public class JDBCConnector implements SQLConnector, Closeable {
                 .then();
     }
 
+    public Mono<Void> deleteBatchAsync(String collectionName, Collection<String> keys) {
+        return Mono.fromRunnable(
+                        () -> {
+                            String query = batchQuery(BatchOperation.DELETE, keys);
+                            try (PreparedStatement statement =
+                                    this.connection.prepareStatement(query)) {
+                                statement.setString(1, collectionName);
+                                int index = 2;
+                                for (String key : keys) {
+                                    statement.setString(index++, key);
+                                }
+                                statement.executeUpdate();
+                            } catch (SQLException e) {
+                                throw new SQLConnectorException(
+                                        SQLConnectorException.ErrorCodes.SQL_ERROR,
+                                        "\"DELETE FROM\" failed",
+                                        e);
+                            }
+                        })
+                .subscribeOn(Schedulers.boundedElastic())
+                .then();
+    }
+
     public Mono<Void> deleteEmptyAsync(String collectionName) {
         return Mono.fromRunnable(
                         () -> {
@@ -383,7 +495,9 @@ public class JDBCConnector implements SQLConnector, Closeable {
             this.connection.close();
         } catch (SQLException e) {
             throw new SQLConnectorException(
-                    SQLConnectorException.ErrorCodes.SQL_ERROR, "Database access error while closing connection", e);
+                    SQLConnectorException.ErrorCodes.SQL_ERROR,
+                    "Database access error while closing connection",
+                    e);
         }
     }
 }
