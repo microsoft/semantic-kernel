@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Reliability;
 /// Deprecated A factory class for creating instances of <see cref="DefaultHttpRetryHandler"/>.
 /// Implements the <see cref="IDelegatingHandlerFactory"/> interface.
 /// </summary>
-[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated.\nCheck KernelSyntaxExamples.Example42_KernelBuilder.cs for alternatives")]
+[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated.\nCheck 00-Kernel-Syntax-Examples.Example42_KernelBuilder.cs for alternatives")]
 public class DefaultHttpRetryHandlerFactory : IDelegatingHandlerFactory
 {
     /// <summary>

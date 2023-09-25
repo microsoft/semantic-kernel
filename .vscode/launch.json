@@ -8,13 +8,13 @@
       "name": ".NET Core Launch (dotnet-kernel-syntax-examples)",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build (KernelSyntaxExamples)",
+      "preLaunchTask": "build (00-Kernel-Syntax-Examples)",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/bin/Debug/net6.0/KernelSyntaxExamples.dll",
+      "program": "${workspaceFolder}/dotnet/samples/00-Kernel-Syntax-Examples/bin/Debug/net6.0/00-Kernel-Syntax-Examples.dll",
       "args": [
         /*"example0"*/
       ],
-      "cwd": "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples",
+      "cwd": "${workspaceFolder}/dotnet/samples/00-Kernel-Syntax-Examples",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
       "stopAtEntry": false

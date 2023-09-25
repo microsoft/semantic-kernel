@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
@@ -27,7 +27,7 @@
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
-    <ProjectReference Include="..\NCalcPlugins\NCalcPlugins.csproj" />
+    <ProjectReference Include="..\17-N-Calc-Plugins\17-N-Calc-Plugins.csproj" />
   </ItemGroup>
 
 </Project>

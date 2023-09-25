@@ -7,7 +7,7 @@ The examples are ordered by number, starting with very basic examples.
 
 ## Running Examples with Filters
 
-You can run individual examples in the KernelSyntaxExamples project using various methods to specify a filter. This allows you to execute specific examples without running all of them. Choose one of the following options to apply a filter:
+You can run individual examples in the 00-Kernel-Syntax-Examples project using various methods to specify a filter. This allows you to execute specific examples without running all of them. Choose one of the following options to apply a filter:
 
 ### Option 1: Set the Default Filter in Program.cs
 
@@ -19,6 +19,7 @@ string defaultFilter = "Example0"; // will run all examples that contain 'exampl
 ```
 
 ### Option 2: Set Command-Line Arguments
+
 Right-click on your console application project in the Solution Explorer.
 
 Choose "Properties" from the context menu.
@@ -30,13 +31,15 @@ Supply Command-Line Arguments:
 In the "Command line arguments" field, enter the command-line arguments that your console application expects. Separate multiple arguments with spaces.
 
 ### Option 3: Use Visual Studio Code Filters
+
 If you are using Visual Studio Code, you can specify a filter using the built-in filter options provided by the IDE. These options can be helpful when running your code in a debugging environment. Consult the documentation for Visual Studio Code or the specific extension you're using for information on applying filters.
 
 ### Option 4: Modify launch.json
+
 If you are using Visual Studio or a similar IDE that utilizes launch configurations, you can specify the filter in your launch.json configuration file. Edit the configuration for your project to include the filter parameter.
 
-
 ## Configuring Secrets
+
 Most of the examples will require secrets and credentials, to access OpenAI, Azure OpenAI,
 Bing and other resources. We suggest using .NET
 [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets)
@@ -44,8 +47,9 @@ to avoid the risk of leaking secrets into the repository, branches and pull requ
 You can also use environment variables if you prefer.
 
 To set your secrets with Secret Manager:
+
 ```
-cd dotnet/samples/KernelSyntaxExamples
+cd dotnet/samples/00-Kernel-Syntax-Examples
 
 dotnet user-secrets init
 
@@ -105,6 +109,7 @@ dotnet user-secrets set "Kusto:ConnectionString" "..."
 ```
 
 To set your secrets with environment variables, use these names:
+
 ```
 # OpenAI
 OpenAI__ModelId

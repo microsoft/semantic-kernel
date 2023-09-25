@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Reliability;
 /// <summary>
 /// A delegating handler that provides retry logic for HTTP requests.
 /// </summary>
-[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated.\nCheck KernelSyntaxExamples.Example42_KernelBuilder.cs for alternatives")]
+[Obsolete("Usage of Semantic Kernel internal retry abstractions is deprecated.\nCheck 00-Kernel-Syntax-Examples.Example42_KernelBuilder.cs for alternatives")]
 public sealed class DefaultHttpRetryHandler : DelegatingHandler
 {
     /// <summary>

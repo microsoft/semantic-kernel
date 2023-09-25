@@ -3,7 +3,7 @@
 Telemetry in Semantic Kernel (SK) .NET implementation includes _logging_, _metering_ and _tracing_.
 The code is instrumented using native .NET instrumentation tools, which means that it's possible to use different monitoring platforms (e.g. Application Insights, Prometheus, Grafana etc.).
 
-Code example using Application Insights can be found [here](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/ApplicationInsightsExample/Program.cs).
+Code example using Application Insights can be found [here](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/16-Application-Insights-Example/Program.cs).
 
 ## Logging
 
