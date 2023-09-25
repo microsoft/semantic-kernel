@@ -170,4 +170,4 @@ def test_chat_prompt_template_with_system_prompt():
     print(chat_prompt_template.messages)
     assert len(chat_prompt_template.messages) == 1
     assert chat_prompt_template.messages[0]["role"] == "system"
-    assert chat_prompt_template.messages[0]["message"] == "Custom system prompt."
+    assert chat_prompt_template.messages[0]["content"] == "Custom system prompt."

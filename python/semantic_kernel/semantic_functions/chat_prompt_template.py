@@ -30,7 +30,12 @@ class ChatPromptTemplate(PromptTemplate):
         super().__init__(template, template_engine, prompt_config, log)
         self._messages = []
         if self._prompt_config.completion.chat_system_prompt:
-            self.add_system_message(self._prompt_config.completion.chat_system_prompt)
+            self._messages.append(
+                ChatMessage(
+                    role="system",
+                    fixed_content=self._prompt_config.completion.chat_system_prompt,
+                )
+            )
 
     async def render_async(self, context: "SKContext") -> str:
         raise NotImplementedError(

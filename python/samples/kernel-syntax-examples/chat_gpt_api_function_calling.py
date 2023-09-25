@@ -49,14 +49,18 @@ kernel.import_skill(MathSkill(), skill_name="math")
 # the format for that is 'SkillName-FunctionName', (i.e. 'math-Add').
 # if the model or api version do not support this you will get an error.
 prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
-    max_tokens=2000, temperature=0.7, top_p=0.8, function_call="auto"
+    max_tokens=2000,
+    temperature=0.7,
+    top_p=0.8,
+    function_call="auto",
+    chat_system_prompt=system_message,
 )
 
 prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
 
-prompt_template.add_system_message(system_message)
+# prompt_template.add_system_message(system_message)
 prompt_template.add_user_message("Hi there, who are you?")
 prompt_template.add_assistant_message(
     "I am Mosscap, a chat bot. I'm trying to figure out what people need."
