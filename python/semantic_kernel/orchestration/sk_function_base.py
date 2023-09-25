@@ -82,22 +82,6 @@ class SKFunctionBase(PydanticField):
         """
         pass
 
-    # @property
-    # @abstractmethod
-    # def function_calling_enabled(self) -> bool:
-    #     """
-    #     Whether the function can be used as a function call that is passed to the API.
-    #     """
-    #     pass
-
-    # @property
-    # @abstractmethod
-    # def is_function_call(self) -> bool:
-    #     """
-    #     Whether the function is a function call that is passed to the API.
-    #     """
-    #     pass
-
     @property
     @abstractmethod
     def request_settings(self) -> CompleteRequestSettings:

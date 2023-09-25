@@ -36,18 +36,3 @@ class FunctionView(SKBaseModel):
             function_calling_enabled=function_calling_enabled,
             is_asynchronous=is_asynchronous,
         )
-
-    # @property
-    # def callable_function_object(self) -> Dict[str, Any]:
-    #     return {
-    #         "name": self.full_name,
-    #         "description": self.description,
-    #         "parameters": {
-    #             "type": "object",
-    #             "properties": {
-    #                 param.name: param.callable_function_object
-    #                 for param in self.parameters
-    #             },
-    #             "required": [p.name for p in self.parameters if p.required],
-    #         },
-    #     }

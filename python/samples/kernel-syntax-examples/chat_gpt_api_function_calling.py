@@ -2,10 +2,12 @@
 
 import asyncio
 import os
+from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.core_skills import MathSkill
+from semantic_kernel.models.chat.function_call import FunctionCall
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -64,42 +66,79 @@ function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
 
 
-async def chat() -> bool:
-    context_vars = sk.ContextVariables()
-
+async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
     try:
         user_input = input("User:> ")
-        context_vars["user_input"] = user_input
+        context.variables["user_input"] = user_input
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
-        return False
+        return False, None
     except EOFError:
         print("\n\nExiting chat...")
-        return False
+        return False, None
 
     if user_input == "exit":
         print("\n\nExiting chat...")
-        return False
+        return False, None
 
     # calling the chat, you could add a overloaded version of the settings here,
     # to enable or disable function calling or set the function calling to a specific skill.
-    filters = {"exclude_skill": ["FunSkill"]}
-    answer = await chat_function.invoke_async(
-        variables=context_vars, functions_filter=filters
-    )
-    print(f"Mosscap:> {answer}")
-    return True
+    filter = {"exclude_skill": ["FunSkill", "ChatBot"]}
+    functions = context.skill_collection.get_function_calling_object(filter)
+    # alternatively you can include your own function definition
+    # functions = [
+    #     {
+    #         "name": "search_hotels",
+    #         "description": "Retrieves hotels from the search index based on the parameters provided",
+    #         "parameters": {
+    #             "type": "object",
+    #             "properties": {
+    #                 "location": {
+    #                     "type": "string",
+    #                     "description": "The location of the hotel (i.e. Seattle, WA)",
+    #                 },
+    #                 "max_price": {
+    #                     "type": "number",
+    #                     "description": "The maximum price for the hotel",
+    #                 },
+    #                 "features": {
+    #                     "type": "string",
+    #                     "description": "A comma separated list of features (i.e. beachfront, free wifi, etc.)",
+    #                 },
+    #             },
+    #             "required": ["location"],
+    #         },
+    #     }
+    # ]
+    context = await chat_function.invoke_async(context=context, functions=functions)
+    if context.variables.get("function_call") is not None:
+        # take action on the function call, and add (if necessary) the result to the context or chat prompt template.
+        # this only works for functions that have come from the kernel, not for functions that you have added yourself.
+        fc: FunctionCall = context.variables["function_call"]
+        print(f"    Function call:> {fc}")
+        result = await kernel.run_async(
+            kernel.func(**fc.split_name_dict()), input_vars=fc.to_context_variables()
+        )
+        prompt_template.add_function_response_message(name=fc.name, content=str(result))
+        print(f"    Result:> {result}")
+
+        # clearing the function_call param so that it does not try to call the function again on the next iteration.
+        context.variables.set("function_call", None)
+        context = await chat_function.invoke_async(context=context, functions=functions)
+    print(f"Mosscap:> {context.result}")
+    return True, context
 
 
 async def main() -> None:
     chatting = True
+    context = kernel.create_new_context()
     print(
         "Welcome to the chat bot!\
 \n  Type 'exit' to exit.\
 \n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
     )
     while chatting:
-        chatting = await chat()
+        chatting, context = await chat(context)
 
 
 if __name__ == "__main__":

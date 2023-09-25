@@ -109,7 +109,6 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=method.__sk_function_name__,
             is_semantic=False,
-            # function_calling_enabled=method.__sk_function_function_calling_enabled__,
             log=log,
         )
 
@@ -138,74 +137,43 @@ class SKFunction(SKFunctionBase):
                 context.fail(str(e), e)
                 return context
 
-            functions = kwargs.get("functions")
-
             as_chat_prompt = cast(ChatPromptTemplate, function_config.prompt_template)
 
             # Similar to non-chat, render prompt (which renders to a
             # dict of <role, content, name> messages)
             messages = await as_chat_prompt.render_messages_async(context)
 
-            if not functions:
-                try:
+            functions = (
+                kwargs.get("functions")
+                if request_settings.function_call is not None
+                else None
+            )
+            if request_settings.function_call is not None and functions is None:
+                log.warning("Function call is not None, but functions is None")
+            try:
+                if functions and hasattr(client, "complete_chat_with_functions_async"):
+                    (
+                        completion,
+                        function_call,
+                    ) = await client.complete_chat_with_functions_async(
+                        messages, functions, request_settings
+                    )
+                    as_chat_prompt.add_assistant_message(completion, function_call)
+                    if completion is not None:
+                        context.variables.update(completion)
+                    if function_call is not None:
+                        context.variables["function_call"] = function_call
+                else:
                     completion = await client.complete_chat_async(
                         messages, request_settings
                     )
                     as_chat_prompt.add_assistant_message(completion)
                     context.variables.update(completion)
-                except Exception as exc:
-                    # TODO: "critical exceptions"
-                    context.fail(str(exc), exc)
-                finally:
-                    return context
-
-            try:
-                assert hasattr(client, "complete_chat_with_functions_async")
-                (
-                    completion,
-                    function_call,
-                ) = await client.complete_chat_with_functions_async(
-                    messages, functions, request_settings
-                )
-                as_chat_prompt.add_assistant_message(completion, function_call)
             except Exception as exc:
+                # TODO: "critical exceptions"
                 context.fail(str(exc), exc)
+            finally:
                 return context
-
-            if function_call is not None:
-                if context.skill_collection.has_function(*function_call.split_name()):
-                    func = context.skill_collection.get_function(
-                        *function_call.split_name()
-                    )
-                else:
-                    raise KernelException(
-                        KernelException.ErrorCodes.FunctionNotAvailable,
-                        f"Function {function_call.name} not found",
-                    )
-                context.variables.merge_or_overwrite(
-                    function_call.to_context_variables()
-                )
-                try:
-                    await func.invoke_async(context=context)
-                    if context.error_occurred:
-                        return context
-                    as_chat_prompt.add_function_response_message(
-                        name=function_call.name,
-                        content=context.variables.input,
-                    )
-                    return await _local_func(
-                        client,
-                        request_settings,
-                        context,
-                        functions=functions,
-                    )
-                except Exception as exc:
-                    context.fail(str(exc), exc)
-                    return context
-
-            # Update context
-            context.variables.update(completion)
-            return context
 
         async def _local_stream_func(client, request_settings, context):
             if client is None:
@@ -259,7 +227,6 @@ class SKFunction(SKFunctionBase):
             skill_name=skill_name,
             function_name=function_name,
             is_semantic=True,
-            # function_calling_enabled=function_config.prompt_template_config.function_calling_enabled,
             log=log,
         )
 
@@ -291,14 +258,6 @@ class SKFunction(SKFunctionBase):
     def is_native(self) -> bool:
         return not self._is_semantic
 
-    # @property
-    # def function_calling_enabled(self) -> bool:
-    #     return self._function_calling_enabled
-
-    # @property
-    # def is_function_call(self) -> bool:
-    #     return self._is_function_call
-
     @property
     def request_settings(self) -> CompleteRequestSettings:
         return self._ai_request_settings
@@ -312,7 +271,6 @@ class SKFunction(SKFunctionBase):
         skill_name: str,
         function_name: str,
         is_semantic: bool,
-        # function_calling_enabled: bool = False,
         log: Optional[Logger] = None,
         delegate_stream_function: Optional[Callable[..., Any]] = None,
     ) -> None:
@@ -323,7 +281,6 @@ class SKFunction(SKFunctionBase):
         self._skill_name = skill_name
         self._name = function_name
         self._is_semantic = is_semantic
-        # self._function_calling_enabled = function_calling_enabled
         self._log = log if log is not None else NullLogger()
         self._stream_function = delegate_stream_function
         self._skill_collection = None
@@ -387,7 +344,6 @@ class SKFunction(SKFunctionBase):
             skill_name=self.skill_name,
             description=self.description,
             is_semantic=self.is_semantic,
-            # function_calling_enabled=self._function_calling_enabled,
             parameters=self._parameters,
         )
 
@@ -465,7 +421,7 @@ class SKFunction(SKFunctionBase):
         memory: Optional[SemanticTextMemoryBase] = None,
         settings: Optional[CompleteRequestSettings] = None,
         log: Optional[Logger] = None,
-        functions_filter: Optional[Dict[str, List[str]]] = None,
+        **kwargs: Dict[str, Any],
     ) -> "SKContext":
         from semantic_kernel.orchestration.sk_context import SKContext
 
@@ -490,18 +446,14 @@ class SKFunction(SKFunctionBase):
 
         try:
             if self.is_semantic:
-                return await self._invoke_semantic_async(
-                    context, settings, functions_filter
-                )
+                return await self._invoke_semantic_async(context, settings, **kwargs)
             else:
-                return await self._invoke_native_async(context)
+                return await self._invoke_native_async(context, **kwargs)
         except Exception as e:
             context.fail(str(e), e)
             return context
 
-    async def _invoke_semantic_async(
-        self, context: "SKContext", settings, functions_filter
-    ):
+    async def _invoke_semantic_async(self, context: "SKContext", settings, **kwargs):
         self._verify_is_semantic()
 
         self._ensure_context_has_skills(context)
@@ -517,21 +469,12 @@ class SKFunction(SKFunctionBase):
                     "Semantic functions must have either an AI service or Chat service",
                 )
 
-        functions = context.skill_collection.get_function_calling_object(
-            filter=functions_filter,
-            caller_function_name=self.full_name,
-        )
-
         service = (
             self._ai_service if self._ai_service is not None else self._chat_service
         )
-        if settings.function_call is not None and functions:
-            new_context = await self._function(
-                service, settings, context, functions=functions
-            )
-        else:
-            settings.function_call = None
-            new_context = await self._function(service, settings, context)
+        new_context = await self._function(
+            service, settings, context, functions=kwargs.get("functions", None)
+        )
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 

@@ -57,14 +57,6 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
             return False
         return self.data[s_name][f_name].is_native
 
-    # def has_callable_function(self, skill_name: str, function_name: str) -> bool:
-    #     s_name, f_name = self._normalize_names(skill_name, function_name, True)
-    #     if s_name not in self.data:
-    #         return False
-    #     if f_name not in self.data[s_name]:
-    #         return False
-    #     return self.data[s_name][f_name].function_calling_enabled
-
     def get_semantic_function(
         self, skill_name: str, function_name: str
     ) -> "SKFunctionBase":
@@ -90,19 +82,6 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
             KernelException.ErrorCodes.FunctionNotAvailable,
             f"Function not available: {s_name}.{f_name}",
         )
-
-    # def get_callable_function(
-    #     self, skill_name: str, function_name: str
-    # ) -> "SKFunctionBase":
-    #     s_name, f_name = self._normalize_names(skill_name, function_name, True)
-    #     if self.has_callable_function(s_name, f_name):
-    #         return self.data[s_name][f_name]
-
-    #     self._log.error(f"Function not available: {s_name}.{f_name}")
-    #     raise KernelException(
-    #         KernelException.ErrorCodes.FunctionNotAvailable,
-    #         f"Function not available: {s_name}.{f_name}",
-    #     )
 
     def get_functions_view(
         self, include_semantic: bool = True, include_native: bool = True
@@ -148,7 +127,7 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
         return s_name, f_name
 
     def get_function_calling_object(
-        self, filter: Dict[str, List[str]], caller_function_name: str
+        self, filter: Dict[str, List[str]]
     ) -> List[Dict[str, str]]:
         """Create the object used for function_calling.
 
@@ -202,10 +181,8 @@ class ReadOnlySkillCollection(SKBaseModel, ReadOnlySkillCollectionBase):
                 continue
             for function_name, function in skill.items():
                 current_name = f"{skill_name}-{function_name}"
-                if (
-                    current_name == caller_function_name.lower()
-                    or current_name in exclude_function
-                    or (include_function and current_name not in include_function)
+                if current_name in exclude_function or (
+                    include_function and current_name not in include_function
                 ):
                     continue
                 result.append(function._function_calling_description)
