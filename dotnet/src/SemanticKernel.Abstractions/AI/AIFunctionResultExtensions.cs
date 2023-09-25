@@ -21,13 +21,28 @@ public static class AIFunctionResultExtensions
     /// <param name="result">Instance of <see cref="FunctionResult"/> class.</param>
     public static IReadOnlyCollection<ModelResult>? GetModelResults(this FunctionResult result)
     {
-        if (result.Metadata.TryGetValue(ModelResultsMetadataKey, out object modelResultObject) &&
-            modelResultObject is IReadOnlyCollection<ModelResult> modelResults)
+        if (result.TryGetValue(ModelResultsMetadataKey, out IReadOnlyCollection<ModelResult>? modelResults))
         {
             return modelResults;
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Get typed value from <see cref="FunctionResult"/> metadata.
+    /// </summary>
+    public static bool TryGetValue<T>(this FunctionResult result, string key, out T value)
+    {
+        if (result.Metadata.TryGetValue(key, out object? valueObject) &&
+            valueObject is T valueT)
+        {
+            value = valueT;
+            return true;
+        }
+
+        value = default!;
+        return false;
     }
 
     /// <summary>

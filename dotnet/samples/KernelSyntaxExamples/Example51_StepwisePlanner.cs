@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -154,6 +155,7 @@ public static class Example51_StepwisePlanner
             var plan = planner.CreatePlan(question);
 
             var kernelResult = await kernel.RunAsync(plan);
+            var planResult = kernelResult.FunctionResults.First();
             var result = kernelResult.GetValue<string>()!;
 
             if (result.Contains("Result not found, review _stepsTaken to see what", StringComparison.OrdinalIgnoreCase))
@@ -167,18 +169,18 @@ public static class Example51_StepwisePlanner
                 currentExecutionResult.answer = result;
             }
 
-            if (kernelResult.FunctionResults.First().Metadata.TryGetValue("stepCount", out object? stepCountObj) && stepCountObj is string stepCount)
+            if (planResult.TryGetValue("stepCount", out string stepCount))
             {
                 Console.WriteLine("Steps Taken: " + stepCount);
                 currentExecutionResult.stepsTaken = stepCount;
             }
 
-            if (kernelResult.FunctionResults.First().Metadata.TryGetValue("functionCount", out object? functionCountObj) && functionCountObj is string functionCount)
+            if (planResult.TryGetValue("functionCount", out string functionCount))
             {
                 Console.WriteLine("Functions Used: " + functionCount);
             }
 
-            if (kernelResult.FunctionResults.First().Metadata.TryGetValue("iterations", out object? iterationsObj) && iterationsObj is string iterations)
+            if (planResult.TryGetValue("iterations", out string iterations))
             {
                 Console.WriteLine("Iterations: " + iterations);
                 currentExecutionResult.iterations = iterations;
