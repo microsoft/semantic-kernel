@@ -12,7 +12,6 @@ extend-exclude = [
     "*.bicep",
     "encoder.json",
     "vocab.bpe",
-    "GPT3TokenizerTests.cs",
     "CodeTokenizerTests.cs",
     "test_code_tokenizer.py",
 ]

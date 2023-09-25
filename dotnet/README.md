@@ -117,7 +117,7 @@ requirements and setup instructions.
 # Nuget packages
 
 Semantic Kernel provides a set of nuget packages to allow extending the core with
-more features, such as connectors to services and Skills to perform specific actions.
+more features, such as connectors to services and plugins to perform specific actions.
 Unless you need to optimize which packages to include in your app, you will usually
 start by installing this meta-package first:
 
@@ -134,19 +134,19 @@ Packages included in **Microsoft.SemanticKernel**:
    engineering, semantic memory and semantic functions definition and orchestration.
 1. **Microsoft.SemanticKernel.Connectors.AI.OpenAI**: connectors to OpenAI and Azure
    OpenAI, allowing to run semantic functions, chats, image generation with GPT3,
-   GPT3.5, GPT4, DALL-E2. Includes also GPT tokenizers.
+   GPT3.5, GPT4, DALL-E2.
 
 Other SK packages available at nuget.org:
 
 1. **Microsoft.SemanticKernel.Connectors.Memory.Qdrant**: Qdrant connector for
-   skills and semantic memory.
+   plugins and semantic memory.
 2. **Microsoft.SemanticKernel.Connectors.Memory.Sqlite**: SQLite connector for
-   skills and semantic memory
-3. **Microsoft.SemanticKernel.Skills.Document**: Document Skill: Word processing,
+   plugins and semantic memory
+3. **Microsoft.SemanticKernel.Plugins.Document**: Document Plugin: Word processing,
    OpenXML, etc.
-4. **Microsoft.SemanticKernel.Skills.MsGraph**: Microsoft Graph Skill: access your
+4. **Microsoft.SemanticKernel.Plugins.MsGraph**: Microsoft Graph Plugin: access your
    tenant data, schedule meetings, send emails, etc.
-5. **Microsoft.SemanticKernel.Skills.OpenAPI**: OpenAPI skill.
-6. **Microsoft.SemanticKernel.Skills.Web**: Web Skill: search the web, download
+5. **Microsoft.SemanticKernel.Plugins.OpenAPI**: OpenAPI Plugin.
+6. **Microsoft.SemanticKernel.Plugins.Web**: Web Plugin: search the web, download
    files, etc.
 7. **Microsoft.SemanticKernel.Reliability.Polly**: Extension for http resiliency.
