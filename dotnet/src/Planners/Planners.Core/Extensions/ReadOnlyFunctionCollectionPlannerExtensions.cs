@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning;
 
@@ -131,7 +132,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
 cancellationToken: cancellationToken);
 
             // Add functions that were found in the search results.
-            result.AddRange(await GetRelevantFunctionsAsync(availableFunctions, memories, logger, cancellationToken).ConfigureAwait(false));
+            result.AddRange(await GetRelevantFunctionsAsync(availableFunctions, memories, logger ?? NullLogger.Instance, cancellationToken).ConfigureAwait(false));
 
             // Add any missing functions that were included but not found in the search results.
             var missingFunctions = semanticMemoryConfig.IncludedFunctions
@@ -149,7 +150,7 @@ cancellationToken: cancellationToken);
     private static async Task<IEnumerable<FunctionView>> GetRelevantFunctionsAsync(
         IEnumerable<FunctionView> availableFunctions,
         IAsyncEnumerable<MemoryQueryResult> memories,
-        ILogger? logger = null,
+        ILogger logger,
         CancellationToken cancellationToken = default)
     {
         var relevantFunctions = new ConcurrentBag<FunctionView>();
@@ -158,7 +159,7 @@ cancellationToken: cancellationToken);
             var function = availableFunctions.FirstOrDefault(x => x.ToFullyQualifiedName() == memoryEntry.Metadata.Id);
             if (function != null)
             {
-                if (logger is not null && logger.IsEnabled(LogLevel.Debug))
+                if (logger.IsEnabled(LogLevel.Debug))
                 {
                     logger.LogDebug("Found relevant function. Relevance Score: {0}, Function: {1}", memoryEntry.Relevance, function.ToFullyQualifiedName());
                 }
