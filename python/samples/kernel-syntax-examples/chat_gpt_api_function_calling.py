@@ -55,12 +55,9 @@ prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     function_call="auto",
     chat_system_prompt=system_message,
 )
-
 prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
-
-# prompt_template.add_system_message(system_message)
 prompt_template.add_user_message("Hi there, who are you?")
 prompt_template.add_assistant_message(
     "I am Mosscap, a chat bot. I'm trying to figure out what people need."

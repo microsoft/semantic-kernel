@@ -80,10 +80,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
 
         if len(response.choices) == 1:
             return response.choices[0].message.content
-        return [
-            choice.message.content
-            for choice in response.choices
-        ]
+        return [choice.message.content for choice in response.choices]
 
     async def complete_chat_with_functions_async(
         self,
