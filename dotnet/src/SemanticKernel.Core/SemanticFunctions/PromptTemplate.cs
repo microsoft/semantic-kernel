@@ -68,7 +68,7 @@ public sealed class PromptTemplate : IPromptTemplate
         return await this._templateEngine.RenderAsync(this._template, executionContext, cancellationToken).ConfigureAwait(false);
     }
 
-    private Lazy<IReadOnlyList<ParameterView>> _params;
+    private readonly Lazy<IReadOnlyList<ParameterView>> _params;
 
     private List<ParameterView> InitParameters()
     {
