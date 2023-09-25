@@ -7,13 +7,13 @@ import com.azure.ai.openai.models.Completions;
 import com.azure.ai.openai.models.CompletionsOptions;
 import com.microsoft.semantickernel.Verify;
 import com.microsoft.semantickernel.ai.AIException;
+import com.microsoft.semantickernel.chatcompletion.ChatRequestSettings;
 import com.microsoft.semantickernel.connectors.ai.openai.azuresdk.ClientBase;
 import com.microsoft.semantickernel.exceptions.NotSupportedException;
 import com.microsoft.semantickernel.exceptions.NotSupportedException.ErrorCodes;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 import com.microsoft.semantickernel.textcompletion.CompletionType;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
-import com.microsoft.semantickernel.textcompletion.TextCompletion.Builder;
 import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
 
     @Override
     public CompletionType defaultCompletionType() {
-        return CompletionType.STREAMING;
+        return defaultCompletionType;
     }
 
     private Flux<String> generateMessageStream(CompletionsOptions completionsOptions) {
@@ -115,17 +115,22 @@ public class OpenAITextCompletion extends ClientBase implements TextCompletion {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST, "Max tokens must be >0");
         }
 
-        return new CompletionsOptions(Collections.singletonList(text))
-                .setMaxTokens(requestSettings.getMaxTokens())
-                .setTemperature(requestSettings.getTemperature())
-                .setTopP(requestSettings.getTopP())
-                .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
-                .setPresencePenalty(requestSettings.getPresencePenalty())
-                .setModel(getModelId())
-                .setUser(requestSettings.getUser())
-                .setBestOf(requestSettings.getBestOf())
-                .setLogitBias(new HashMap<>())
-                .setStop(requestSettings.getStopSequences());
+        CompletionsOptions options =
+                new CompletionsOptions(Collections.singletonList(text))
+                        .setMaxTokens(requestSettings.getMaxTokens())
+                        .setTemperature(requestSettings.getTemperature())
+                        .setTopP(requestSettings.getTopP())
+                        .setFrequencyPenalty(requestSettings.getFrequencyPenalty())
+                        .setPresencePenalty(requestSettings.getPresencePenalty())
+                        .setModel(getModelId())
+                        .setUser(requestSettings.getUser())
+                        .setBestOf(requestSettings.getBestOf())
+                        .setLogitBias(new HashMap<>());
+
+        if (requestSettings instanceof ChatRequestSettings) {
+            options = options.setStop(requestSettings.getStopSequences());
+        }
+        return options;
     }
 
     public static final class Builder implements TextCompletion.Builder {
