@@ -185,7 +185,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         foreach (ISKFunction skFunction in pipeline)
         {
-        repeat:
+repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try
