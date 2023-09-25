@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from typing import TYPE_CHECKING
+
 from semantic_kernel.orchestration.sk_function import SKFunction
 from semantic_kernel.skill_definition.sk_function_decorator import sk_function
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext

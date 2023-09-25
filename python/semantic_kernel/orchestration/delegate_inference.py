@@ -256,7 +256,7 @@ class DelegateInference(PydanticField):
         if _no_return(function_signature):
             raise KernelException(
                 KernelException.ErrorCodes.FunctionTypeNotSupported,
-                f"No return type specified, unable to infer DelegateType.",
+                "No return type specified, unable to infer DelegateType.",
             )
 
         awaitable = iscoroutinefunction(function)
