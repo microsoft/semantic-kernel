@@ -43,12 +43,12 @@ public static class Example24_OpenApiPlugin_Jira
         if (useLocalFile)
         {
             var apiSkillFile = "./../../../Skills/JiraSkill/openapi.json";
-            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillFile, new OpenApiPluginExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillFile, new OpenApiFunctionExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
         }
         else
         {
             var apiSkillRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
-            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillRawFileURL, new OpenApiPluginExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
+            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillRawFileURL, new OpenApiFunctionExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
         }
 
         // GetIssue Skill
@@ -60,7 +60,7 @@ public static class Example24_OpenApiPlugin_Jira
             var result = await kernel.RunAsync(contextVariables, jiraSkills["GetIssue"]);
 
             Console.WriteLine("\n\n\n");
-            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
+            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
             Console.WriteLine("GetIssue jiraSkills response: \n{0}", formattedContent);
         }
 
@@ -74,7 +74,7 @@ public static class Example24_OpenApiPlugin_Jira
             var result = await kernel.RunAsync(contextVariables, jiraSkills["AddComment"]);
 
             Console.WriteLine("\n\n\n");
-            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.Result), Formatting.Indented);
+            var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
             Console.WriteLine("AddComment jiraSkills response: \n{0}", formattedContent);
         }
     }

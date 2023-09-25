@@ -32,7 +32,7 @@ internal static class Example12_SequentialPlanner
 
         // Load additional plugins to enable planner but not enough for the given goal.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
         try
         {
@@ -78,7 +78,7 @@ internal static class Example12_SequentialPlanner
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder,
+        kernel.ImportSemanticFunctionsFromDirectory(folder,
            "SummarizePlugin",
            "WriterPlugin");
 
@@ -99,18 +99,18 @@ internal static class Example12_SequentialPlanner
         var result = await kernel.RunAsync(plan);
 
         Console.WriteLine("Result:");
-        Console.WriteLine(result.Result);
+        Console.WriteLine(result.GetValue<string>());
     }
 
     private static async Task EmailSamplesWithRecallAsync()
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Email Plan ========");
         var kernel = InitializeKernelAndPlanner(out var planner, 512);
-        kernel.ImportPlugin(new EmailPlugin(), "email");
+        kernel.ImportFunctions(new EmailPlugin(), "email");
 
         // Load additional plugins to enable planner to do non-trivial asks.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder,
+        kernel.ImportSemanticFunctionsFromDirectory(folder,
            "SummarizePlugin",
            "WriterPlugin");
 
@@ -187,7 +187,7 @@ internal static class Example12_SequentialPlanner
             var result = await kernel.RunAsync(restoredPlan, new(newInput));
 
             Console.WriteLine("Result:");
-            Console.WriteLine(result.Result);
+            Console.WriteLine(result.GetValue<string>());
         }
     }
 
@@ -198,8 +198,8 @@ internal static class Example12_SequentialPlanner
 
         // Load additional plugins to enable planner to do non-trivial asks.
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "WriterPlugin");
-        kernel.ImportSemanticPluginFromDirectory(folder, "MiscPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "WriterPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "MiscPlugin");
 
         var originalPlan = await planner.CreatePlanAsync("Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'");
 
@@ -230,7 +230,7 @@ internal static class Example12_SequentialPlanner
         var kernel = InitializeKernelWithMemory();
 
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder,
+        kernel.ImportSemanticFunctionsFromDirectory(folder,
            "SummarizePlugin",
            "WriterPlugin",
            "CalendarPlugin",
@@ -243,9 +243,9 @@ internal static class Example12_SequentialPlanner
            "MiscPlugin",
            "QAPlugin");
 
-        kernel.ImportPlugin(new EmailPlugin(), "email");
-        kernel.ImportPlugin(new StaticTextPlugin(), "statictext");
-        kernel.ImportPlugin(new TextPlugin(), "coretext");
+        kernel.ImportFunctions(new EmailPlugin(), "email");
+        kernel.ImportFunctions(new StaticTextPlugin(), "statictext");
+        kernel.ImportFunctions(new TextPlugin(), "coretext");
 
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 

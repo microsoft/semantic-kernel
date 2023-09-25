@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extensions methods to define semantic functions.
 /// </summary>
-public static class InlineFunctionsDefinitionExtension
+public static class KernelSemanticFunctionExtensions
 {
     /// <summary>
     /// Define a string-to-string semantic function, with no direct support for input context.
@@ -99,8 +99,8 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="pluginName">Optional plugin name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
     /// <param name="requestSettings">Optional LLM request settings</param>
-    /// <returns>A function ready to use</returns>
-    public static Task<SKContext> InvokeSemanticFunctionAsync(
+    /// <returns>Kernel execution result</returns>
+    public static Task<KernelResult> InvokeSemanticFunctionAsync(
         this IKernel kernel,
         string promptTemplate,
         string? functionName = null,
@@ -118,13 +118,13 @@ public static class InlineFunctionsDefinitionExtension
         return kernel.RunAsync(skfunction);
     }
 
-    [Obsolete("Methods and classes which isnclud Skill in the name have been renamed to use Plugin. Use Kernel.ImportSemanticFunctionsFromDirectory instead. This will be removed in a future release.")]
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportSemanticFunctionsFromDirectory instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public static IDictionary<string, ISKFunction> ImportSemanticSkillFromDirectory(
         this IKernel kernel, string parentDirectory, params string[] pluginDirectoryNames)
     {
-        return kernel.ImportSemanticPluginFromDirectory(parentDirectory, pluginDirectoryNames);
+        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginDirectoryNames);
     }
 #pragma warning restore CS1591
 
@@ -174,8 +174,8 @@ public static class InlineFunctionsDefinitionExtension
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="parentDirectory">Directory containing the plugin directory, e.g. "d:\myAppPlugins"</param>
     /// <param name="pluginDirectoryNames">Name of the directories containing the selected plugins, e.g. "StrategyPlugin"</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    public static IDictionary<string, ISKFunction> ImportSemanticPluginFromDirectory(
+    /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
+    public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
         this IKernel kernel, string parentDirectory, params string[] pluginDirectoryNames)
     {
         const string ConfigFile = "config.json";

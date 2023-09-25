@@ -14,10 +14,13 @@
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageVersion Include="Polly" Version="7.2.4" />
-    <PackageVersion Include="SharpToken" Version="1.2.12" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Text.Json" Version="6.0.8" />
+    <!-- Tokenizers -->
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="0.21.0-preview.23266.6" />
+    <PackageVersion Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.2" />
+    <PackageVersion Include="SharpToken" Version="1.2.12" />
     <!-- Microsoft.Extensions.Logging -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />

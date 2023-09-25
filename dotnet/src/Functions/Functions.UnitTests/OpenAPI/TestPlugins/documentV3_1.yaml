@@ -115,7 +115,7 @@ paths:
       responses:
         '200':
           description: default
-  /FunSkill/Excuses:
+  /FunPlugin/Excuses:
     post:
       summary: Turn a scenario into a creative or humorous excuse to send your boss
       operationId: Excuses

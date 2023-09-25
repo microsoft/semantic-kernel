@@ -18,7 +18,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Milvus Connector</Title>
-    <Description>Milvus connector for Semantic Kernel skills and semantic memory</Description>
+    <Description>Milvus connector for Semantic Kernel plugins and semantic memory</Description>
   </PropertyGroup>
 
   <ItemGroup>

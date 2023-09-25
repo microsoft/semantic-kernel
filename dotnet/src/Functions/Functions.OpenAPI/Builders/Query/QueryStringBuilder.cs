@@ -20,7 +20,8 @@ internal class QueryStringBuilder : IQueryStringBuilder
     private static Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_queryStringParameterSerializers = new()
     {
         { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize },
-        { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize }
+        { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },
+        { RestApiOperationParameterStyle.PipeDelimited, PipeDelimitedStyleParameterSerializer.Serialize }
     };
 
     ///<inheritdoc/>
