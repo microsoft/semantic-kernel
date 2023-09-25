@@ -39,7 +39,7 @@ public class SequentialPlanParserTests
                 serviceId: azureOpenAIConfiguration.ServiceId,
                 setAsDefault: true)
             .Build();
-        kernel.ImportPlugin(new EmailPluginFake(), "email");
+        kernel.ImportFunctions(new EmailPluginFake(), "email");
         TestHelpers.ImportSamplePlugins(kernel, "SummarizePlugin", "WriterPlugin");
 
         var planString =
