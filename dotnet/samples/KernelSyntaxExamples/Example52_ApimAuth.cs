@@ -65,17 +65,17 @@ public static class Example52_ApimAuth
                 new AzureChatCompletion(TestConfiguration.AzureOpenAI.ChatDeploymentName, openAIClient, loggerFactory))
             .Build();
 
-        // Load semantic skill defined with prompt templates
-        string folder = RepoFiles.SampleSkillsPath();
+        // Load semantic plugin defined with prompt templates
+        string folder = RepoFiles.SamplePluginsPath();
 
-        var funSkill = kernel.ImportSemanticPluginFromDirectory(
+        var funFunctions = kernel.ImportSemanticFunctionsFromDirectory(
             folder,
-            "FunSkill");
+            "FunPlugin");
 
         // Run
         var result = await kernel.RunAsync(
             "I have no homework",
-            funSkill["Excuses"]
+            funFunctions["Excuses"]
         );
         Console.WriteLine(result);
 

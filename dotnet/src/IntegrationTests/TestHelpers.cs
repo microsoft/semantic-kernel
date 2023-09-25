@@ -12,18 +12,18 @@ internal static class TestHelpers
 {
     internal static void ImportAllSamplePlugins(IKernel kernel)
     {
-        var chatSkill = ImportSamplePlugins(kernel,
-            "ChatSkill",
-            "SummarizeSkill",
-            "WriterSkill",
-            "CalendarSkill",
-            "ChildrensBookSkill",
-            "ClassificationSkill",
-            "CodingSkill",
-            "FunSkill",
-            "IntentDetectionSkill",
-            "MiscSkill",
-            "QASkill");
+        var chatPlugin = ImportSamplePlugins(kernel,
+            "ChatPlugin",
+            "SummarizePlugin",
+            "WriterPlugin",
+            "CalendarPlugin",
+            "ChildrensBookPlugin",
+            "ClassificationPlugin",
+            "CodingPlugin",
+            "FunPlugin",
+            "IntentDetectionPlugin",
+            "MiscPlugin",
+            "QAPlugin");
     }
 
     internal static IDictionary<string, ISKFunction> ImportSamplePlugins(IKernel kernel, params string[] pluginNames)
@@ -34,8 +34,8 @@ internal static class TestHelpers
             throw new InvalidOperationException("Unable to determine current assembly directory.");
         }
 
-        string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/skills"));
+        string parentDirectory = Path.GetFullPath(Path.Combine(currentAssemblyDirectory, "../../../../../../samples/plugins"));
 
-        return kernel.ImportSemanticPluginFromDirectory(parentDirectory, pluginNames);
+        return kernel.ImportSemanticFunctionsFromDirectory(parentDirectory, pluginNames);
     }
 }

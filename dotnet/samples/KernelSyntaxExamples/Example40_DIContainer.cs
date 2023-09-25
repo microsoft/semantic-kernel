@@ -48,7 +48,7 @@ public static class Example40_DIContainer
             .Build();
         });
 
-        //Registering class that uses Kernel to execute a skill
+        //Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
 
         //Creating a service provider for resolving registered services
@@ -88,7 +88,7 @@ public static class Example40_DIContainer
         //Registering Kernel
         collection.AddTransient<IKernel, Kernel>();
 
-        //Registering class that uses Kernel to execute a skill
+        //Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
 
         //Creating a service provider for resolving registered services
@@ -120,11 +120,11 @@ public static class Example40_DIContainer
 
         public async Task SummarizeAsync(string ask)
         {
-            string folder = RepoFiles.SampleSkillsPath();
+            string folder = RepoFiles.SamplePluginsPath();
 
-            var sumSkill = this._kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
+            var summarizeFunctions = this._kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
-            var result = await this._kernel.RunAsync(ask, sumSkill["Summarize"]);
+            var result = await this._kernel.RunAsync(ask, summarizeFunctions["Summarize"]);
 
             this._logger.LogWarning("Result - {0}", result);
         }

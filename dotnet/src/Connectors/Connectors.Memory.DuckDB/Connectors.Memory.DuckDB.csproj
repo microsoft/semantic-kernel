@@ -14,7 +14,7 @@
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - DuckDB Connector</Title>
-    <Description>DuckDB connector for Semantic Kernel skills and semantic memory</Description>
+    <Description>DuckDB connector for Semantic Kernel plugins and semantic memory</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
 </Project>

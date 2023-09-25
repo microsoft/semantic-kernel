@@ -85,15 +85,15 @@ public interface IKernel
     /// Import a set of functions as a plugin from the given object instance. Only the functions that have the `SKFunction` attribute will be included in the plugin.
     /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
     /// </summary>
-    /// <param name="pluginInstance">Instance of a class containing functions</param>
+    /// <param name="functionsInstance">Instance of a class containing functions</param>
     /// <param name="pluginName">Name of the plugin for function collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportPlugin(object pluginInstance, string? pluginName = null);
+    IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null);
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
-    IDictionary<string, ISKFunction> ImportSkill(object pluginInstance, string? pluginName = null);
+    IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null);
 #pragma warning restore CS1591
 
     /// <summary>
@@ -109,7 +109,7 @@ public interface IKernel
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         ISKFunction skFunction,
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default);
@@ -119,7 +119,7 @@ public interface IKernel
     /// </summary>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         params ISKFunction[] pipeline);
 
     /// <summary>
@@ -128,7 +128,7 @@ public interface IKernel
     /// <param name="input">Input to process</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         string input,
         params ISKFunction[] pipeline);
 
@@ -138,7 +138,7 @@ public interface IKernel
     /// <param name="variables">Input to process</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         ContextVariables variables,
         params ISKFunction[] pipeline);
 
@@ -148,7 +148,7 @@ public interface IKernel
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
 
@@ -159,7 +159,7 @@ public interface IKernel
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         string input,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);
@@ -171,7 +171,7 @@ public interface IKernel
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         ContextVariables variables,
         CancellationToken cancellationToken,
         params ISKFunction[] pipeline);

@@ -32,7 +32,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
     {
         Verify.NotNull(kernel);
 
-        // Set up config with default value and excluded skills
+        // Set up config with default value and excluded plugins
         this.Config = config ?? new();
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
@@ -72,16 +72,23 @@ public sealed class SequentialPlanner : ISequentialPlanner
             [AvailableFunctionsKey] = relevantFunctionsManual
         };
 
-        var planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
+        KernelResult planResult = await this._kernel.RunAsync(this._functionFlowFunction, vars, cancellationToken).ConfigureAwait(false);
 
-        string planResultString = planResult.Result.Trim();
+        string? planResultString = planResult.GetValue<string>()?.Trim();
 
-        var getPluginFunction = this.Config.GetPluginFunction ?? SequentialPlanParser.GetPluginFunction(this._kernel.Functions);
+        if (string.IsNullOrWhiteSpace(planResultString))
+        {
+            throw new SKException(
+                "Unable to create plan. No response from Function Flow function. " +
+                $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
+        }
+
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? SequentialPlanParser.GetFunctionCallback(this._kernel.Functions);
 
         Plan plan;
         try
         {
-            plan = planResultString.ToPlanFromXml(goal, getPluginFunction, this.Config.AllowMissingFunctions);
+            plan = planResultString!.ToPlanFromXml(goal, getFunctionCallback, this.Config.AllowMissingFunctions);
         }
         catch (SKException e)
         {
