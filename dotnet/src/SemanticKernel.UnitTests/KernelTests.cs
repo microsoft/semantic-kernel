@@ -86,42 +86,41 @@ public class KernelTests
         Assert.True(functions.ContainsKey("GETANYVALUE"));
     }
 
-<<<<<<< HEAD
-=======
-    [Theory]
-    [InlineData(null, "Assistant is a large language model.")]
-    [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
-    {
-        // Arrange
-        var mockTextCompletion = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
-
-        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
-
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
-            .Build();
-
-        var templateConfig = new PromptTemplateConfig
+    /* TODO Mark
+        [Theory]
+        [InlineData(null, "Assistant is a large language model.")]
+        [InlineData("My Chat Prompt", "My Chat Prompt")]
+        public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
         {
-            Completion = new OpenAIRequestSettings()
+            // Arrange
+            var mockTextCompletion = new Mock<ITextCompletion>();
+            var mockCompletionResult = new Mock<ITextResult>();
+
+            mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+            mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+
+            var kernel = Kernel.Builder
+                .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
+                .Build();
+
+            var templateConfig = new PromptTemplateConfig
             {
-                ChatSystemPrompt = providedSystemChatPrompt
-            }
-        };
+                Completion = new OpenAIRequestSettings()
+                {
+                    ChatSystemPrompt = providedSystemChatPrompt
+                }
+            };
 
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+            var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
-        // Act
-        await kernel.RunAsync(func);
+            // Act
+            await kernel.RunAsync(func);
 
-        // Assert
-        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
-    }
+            // Assert
+            mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+        }
+    */
 
->>>>>>> upstream/main
     [Fact]
     public void ItAllowsToImportFunctionsInTheGlobalNamespace()
     {
@@ -149,93 +148,6 @@ public class KernelTests
         kernel.ImportFunctions(new MyPlugin());
     }
 
-<<<<<<< HEAD
-=======
-    [Fact]
-    public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
-    {
-        // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
-
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
-
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
-            .Build();
-
-        var templateConfig = new PromptTemplateConfig();
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
-
-        // Act
-        await kernel.RunAsync(func);
-
-        // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [Fact]
-    public async Task ItUsesServiceIdWhenProvidedAsync()
-    {
-        // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
-
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
-
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
-            .Build();
-
-        var templateConfig = new PromptTemplateConfig
-        {
-            Completion = new AIRequestSettings() { ServiceId = "service1" }
-        };
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
-
-        // Act
-        await kernel.RunAsync(func);
-
-        // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
-    }
-
-    [Fact]
-    public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
-    {
-        // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
-            .Build();
-
-        var templateConfig = new PromptTemplateConfig
-        {
-            Completion = new AIRequestSettings() { ServiceId = "service3" }
-        };
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
-
-        // Act
-        var exception = await Assert.ThrowsAsync<SKException>(() => kernel.RunAsync(func));
-
-        // Assert
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", exception.Message);
-    }
-
->>>>>>> upstream/main
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
@@ -244,7 +156,7 @@ public class KernelTests
         // Arrange
         var sut = Kernel.Builder.Build();
         var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -270,7 +182,7 @@ public class KernelTests
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var functions = sut.ImportPlugin(new MyPlugin(), "MyPlugin");
+        var functions = sut.ImportFunctions(new MyPlugin(), "MyPlugin");
 
         var invoked = false;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -294,7 +206,7 @@ public class KernelTests
         var sut = Kernel.Builder.Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -317,7 +229,7 @@ public class KernelTests
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var functions = sut.ImportPlugin(new MyPlugin(), "MyPlugin");
+        var functions = sut.ImportFunctions(new MyPlugin(), "MyPlugin");
 
         var invoked = 0;
         sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -344,7 +256,7 @@ public class KernelTests
         var sut = Kernel.Builder.Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
         var invoked = 0;
         var invoking = 0;
@@ -383,7 +295,7 @@ public class KernelTests
         // Arrange
         var sut = Kernel.Builder.Build();
         var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
         var invoked = 0;
         sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
@@ -410,7 +322,7 @@ public class KernelTests
     {
         var sut = Kernel.Builder.Build();
         var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -432,7 +344,7 @@ public class KernelTests
     {
         var sut = Kernel.Builder.Build();
         var myPlugin = new Mock<MyPlugin>();
-        var functions = sut.ImportPlugin(myPlugin.Object, "MyPlugin");
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
         var originalInput = "Importance";
         var newInput = "Problems";
