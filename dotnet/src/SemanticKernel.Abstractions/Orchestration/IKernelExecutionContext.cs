@@ -25,11 +25,11 @@ public interface IKernelExecutionContext
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="variables">Input to process</param>
-    /// <param name="pipeline">Target functions to run in sequence</param>
+    /// <param name="skFunction">Target function to run</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function composition</returns>
-    Task<SKContext> RunAsync(
+    Task<KernelResult> RunAsync(
         ContextVariables variables,
-        ISKFunction[] pipeline,
+        ISKFunction skFunction,
         CancellationToken cancellationToken = default);
 }

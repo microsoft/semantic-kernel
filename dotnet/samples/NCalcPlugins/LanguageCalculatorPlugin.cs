@@ -95,11 +95,12 @@ Question: {{ $input }}
         string input,
         SKContext context)
     {
-        SKContext answer;
+        string answer;
 
         try
         {
-            answer = await context.Kernel.RunAsync(input, this._mathTranslator).ConfigureAwait(false);
+            var kernelResult = await context.Kernel.RunAsync(new ContextVariables(input), this._mathTranslator).ConfigureAwait(false);
+            answer = kernelResult.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)
         {
@@ -108,14 +109,14 @@ Question: {{ $input }}
 
         string pattern = @"```\s*(.*?)\s*```";
 
-        Match match = Regex.Match(answer.Result, pattern, RegexOptions.Singleline);
+        Match match = Regex.Match(answer, pattern, RegexOptions.Singleline);
         if (match.Success)
         {
             var result = EvaluateMathExpression(match);
             return result;
         }
 
-        throw new InvalidOperationException($"Input value [{input}] could not be understood, received following {answer.Result}");
+        throw new InvalidOperationException($"Input value [{input}] could not be understood, received following {answer}");
     }
 
     private static string EvaluateMathExpression(Match match)

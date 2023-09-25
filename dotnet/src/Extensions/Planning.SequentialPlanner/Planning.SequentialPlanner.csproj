@@ -17,11 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
-    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="IntegrationTests" />
     <InternalsVisibleTo Include="SemanticKernel.Extensions.UnitTests" />
   </ItemGroup>
@@ -31,6 +26,11 @@
     <EmbeddedResource Include="skprompt.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
 </Project>

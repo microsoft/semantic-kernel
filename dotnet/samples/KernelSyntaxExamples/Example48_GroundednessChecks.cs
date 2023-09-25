@@ -66,7 +66,7 @@ after this event Caroline became his wife.""";
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        var functions = kernel.ImportSemanticPluginFromDirectory(folder,
+        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
             "SummarizePlugin",
             "GroundingPlugin");
 
@@ -88,7 +88,7 @@ her a beggar. My father came to her aid and two years later they married.
         context.Variables.Set("topic", "people and places");
         context.Variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
 
-        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).Result;
+        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).GetValue<string>();
 
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
@@ -96,7 +96,7 @@ her a beggar. My father came to her aid and two years later they married.
         context.Variables.Update(extractionResult);
         context.Variables.Set("reference_context", s_groundingText);
 
-        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).Result;
+        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).GetValue<string>();
 
         Console.WriteLine("======== Reference Check ========");
         Console.WriteLine(groundingResult);
@@ -106,7 +106,7 @@ her a beggar. My father came to her aid and two years later they married.
         var excisionResult = await kernel.RunAsync(context.Variables, entity_excision);
 
         Console.WriteLine("======== Excise Entities ========");
-        Console.WriteLine(excisionResult.Result);
+        Console.WriteLine(excisionResult.GetValue<string>());
     }
 
     public static async Task PlanningWithGroundednessAsync()
@@ -131,18 +131,18 @@ which are not grounded in the original.
             .Build();
 
         string folder = RepoFiles.SamplePluginsPath();
-        var functions = kernel.ImportSemanticPluginFromDirectory(folder,
+        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
             "SummarizePlugin",
             "GroundingPlugin");
 
-        kernel.ImportPlugin(new TextPlugin());
+        kernel.ImportFunctions(new TextPlugin());
 
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
         var results = await kernel.RunAsync(s_groundingText, plan);
-        Console.WriteLine(results.Result);
+        Console.WriteLine(results.GetValue<string>());
     }
 }
 

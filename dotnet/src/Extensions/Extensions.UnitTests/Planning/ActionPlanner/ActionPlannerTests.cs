@@ -180,7 +180,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             default
         )).Callback<SKContext, object, CancellationToken>(
             (c, s, ct) => c.Variables.Update("Hello world!")
-        ).Returns(() => Task.FromResult(returnContext));
+        ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, testPlanString)));
 
         kernelContext.Setup(x => x.Functions).Returns(functions.Object);
         kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns(context);
@@ -228,7 +228,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
                 .Returns<SKContext, AIRequestSettings, CancellationToken>((context, settings, CancellationToken) =>
                 {
                     context.Variables.Update("MOCK FUNCTION CALLED");
-                    return Task.FromResult(context);
+                    return Task.FromResult(new FunctionResult(name, pluginName, context));
                 });
             plugins.Setup(x => x.GetFunction(pluginName, name))
                 .Returns(mockFunction.Object);

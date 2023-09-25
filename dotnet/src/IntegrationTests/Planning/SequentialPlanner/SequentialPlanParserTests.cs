@@ -39,7 +39,7 @@ public class SequentialPlanParserTests
                 serviceId: azureOpenAIConfiguration.ServiceId,
                 setAsDefault: true)
             .Build();
-        kernel.ImportPlugin(new EmailPluginFake(), "email");
+        kernel.ImportFunctions(new EmailPluginFake(), "email");
         TestHelpers.ImportSamplePlugins(kernel, "SummarizePlugin", "WriterPlugin");
 
         var planString =
@@ -52,7 +52,7 @@ public class SequentialPlanParserTests
         var goal = "Summarize an input, translate to french, and e-mail to John Doe";
 
         // Act
-        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetPluginFunction(kernel.Functions));
+        var plan = planString.ToPlanFromXml(goal, SequentialPlanParser.GetFunctionCallback(kernel.Functions));
 
         // Assert
         Assert.NotNull(plan);

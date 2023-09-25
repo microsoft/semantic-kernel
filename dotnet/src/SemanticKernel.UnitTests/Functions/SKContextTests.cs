@@ -42,19 +42,20 @@ public class SKContextTests
     public async Task ItHasHelpersForFunctionCollectionAsync()
     {
         // Arrange
-        IDictionary<string, ISKFunction> plugin = KernelBuilder.Create().ImportPlugin(new Parrot(), "test");
-        this._functions.Setup(x => x.GetFunction("func")).Returns(plugin["say"]);
+        IDictionary<string, ISKFunction> functions = KernelBuilder.Create().ImportFunctions(new Parrot(), "test");
+        this._functions.Setup(x => x.GetFunction("func")).Returns(functions["say"]);
         var (kernel, kernelContext) = this.SetupKernelMock(this._functions.Object);
-
         var target = new SKContext(kernelContext.Object, new ContextVariables());
         Assert.NotNull(target.Functions);
 
         // Act
         var say = target.Functions.GetFunction("func");
-        SKContext result = await say.InvokeAsync("ciao", kernel.Object);
+
+        FunctionResult result = await say.InvokeAsync("ciao", kernel.Object);
 
         // Assert
-        Assert.Equal("ciao", result.Result);
+        Assert.Equal("ciao", result.Context.Result);
+        Assert.Equal("ciao", result.GetValue<string>());
     }
 
     private (Mock<IKernel> kernelMock, Mock<IKernelExecutionContext> kernelContextMock) SetupKernelMock(IReadOnlyFunctionCollection? skills = null)

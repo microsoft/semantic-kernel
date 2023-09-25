@@ -84,7 +84,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
 
-        MethodDetails methodDetails = GetMethodDetails(method, target, logger);
+        MethodDetails methodDetails = GetMethodDetails(method, target, pluginName!, logger);
 
         return new NativeFunction(
             delegateFunction: methodDetails.Function,
@@ -115,16 +115,16 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     {
         ILogger logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(ISKFunction)) : NullLogger.Instance;
 
-        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, logger);
-
-        functionName ??= methodDetails.Name;
-        parameters ??= methodDetails.Parameters;
-        description ??= methodDetails.Description;
-
         if (string.IsNullOrWhiteSpace(pluginName))
         {
             pluginName = FunctionCollection.GlobalFunctionsCollectionName;
         }
+
+        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, pluginName!, logger);
+
+        functionName ??= methodDetails.Name;
+        parameters ??= methodDetails.Parameters;
+        description ??= methodDetails.Description;
 
         return new NativeFunction(
             delegateFunction: methodDetails.Function,
@@ -140,7 +140,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         => this._view.Value;
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -207,19 +207,19 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> _function;
+    private NativeFunctionDelegate _function;
     private readonly ILogger _logger;
 
     private struct MethodDetails
     {
-        public Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> Function { get; set; }
+        public NativeFunctionDelegate Function { get; set; }
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }
 
     internal NativeFunction(
-        Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> delegateFunction,
+        NativeFunctionDelegate delegateFunction,
         IReadOnlyList<ParameterView> parameters,
         string pluginName,
         string functionName,
@@ -257,6 +257,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     private static MethodDetails GetMethodDetails(
         MethodInfo method,
         object? target,
+        string pluginName,
         ILogger? logger = null)
     {
         Verify.NotNull(method);
@@ -289,7 +290,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             Description = description ?? string.Empty,
         };
 
-        (result.Function, result.Parameters) = GetDelegateInfo(target, method);
+        (result.Function, result.Parameters) = GetDelegateInfo(functionName!, pluginName, target, method);
 
         logger?.LogTrace("Method '{0}' found", result.Name);
 
@@ -319,7 +320,11 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     // Inspect a method and returns the corresponding delegate and related info
-    private static (Func<ITextCompletion?, AIRequestSettings?, SKContext, CancellationToken, Task<SKContext>> function, List<ParameterView>) GetDelegateInfo(object? instance, MethodInfo method)
+    private static (NativeFunctionDelegate function, List<ParameterView>) GetDelegateInfo(
+        string functionName,
+        string pluginName,
+        object? instance,
+        MethodInfo method)
     {
         ThrowForInvalidSignatureIf(method.IsGenericMethodDefinition, method, "Generic methods are not supported");
 
@@ -341,10 +346,10 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
 
         // Get marshaling func for the return value.
-        Func<object?, SKContext, Task<SKContext>> returnFunc = GetReturnValueMarshalerDelegate(method);
+        Func<string, string, object?, SKContext, Task<FunctionResult>> returnFunc = GetReturnValueMarshalerDelegate(method);
 
         // Create the func
-        Task<SKContext> function(ITextCompletion? text, AIRequestSettings? requestSettings, SKContext context, CancellationToken cancellationToken)
+        Task<FunctionResult> Function(ITextCompletion? text, AIRequestSettings? requestSettings, SKContext context, CancellationToken cancellationToken)
         {
             // Create the arguments.
             object?[] args = parameterFuncs.Length != 0 ? new object?[parameterFuncs.Length] : Array.Empty<object?>();
@@ -357,7 +362,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             object? result = method.Invoke(instance, args);
 
             // Extract and return the result.
-            return returnFunc(result, context);
+            return returnFunc(functionName, pluginName, result, context);
         }
 
         // Add parameters applied to the method that aren't part of the signature.
@@ -369,7 +374,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         Verify.ParametersUniqueness(stringParameterViews);
 
         // Return the function and its parameter views.
-        return (function, stringParameterViews);
+        return (Function, stringParameterViews);
     }
 
     /// <summary>
@@ -518,7 +523,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{SKContext}"/> to return from the invocation.
     /// </summary>
-    private static Func<object?, SKContext, Task<SKContext>> GetReturnValueMarshalerDelegate(MethodInfo method)
+    private static Func<string, string, object?, SKContext, Task<FunctionResult>> GetReturnValueMarshalerDelegate(MethodInfo method)
     {
         // Handle each known return type for the method
         Type returnType = method.ReturnType;
@@ -527,24 +532,25 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (returnType == typeof(void))
         {
-            return static (result, context) => Task.FromResult(context);
+            return static (functionName, pluginName, result, context) =>
+                Task.FromResult(new FunctionResult(functionName, pluginName, context));
         }
 
         if (returnType == typeof(Task))
         {
-            return async static (result, context) =>
+            return async static (functionName, pluginName, result, context) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return context;
+                return new FunctionResult(functionName, pluginName, context);
             };
         }
 
         if (returnType == typeof(ValueTask))
         {
-            return async static (result, context) =>
+            return async static (functionName, pluginName, result, context) =>
             {
                 await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
-                return context;
+                return new FunctionResult(functionName, pluginName, context);
             };
         }
 
@@ -552,45 +558,60 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (returnType == typeof(SKContext))
         {
-            return static (result, _) => Task.FromResult((SKContext)ThrowIfNullResult(result));
+            return static (functionName, pluginName, result, _) =>
+            {
+                var context = (SKContext)ThrowIfNullResult(result);
+                return Task.FromResult(new FunctionResult(functionName, pluginName, context, context.Result));
+            };
         }
 
         if (returnType == typeof(Task<SKContext>))
         {
-            return static (result, _) => (Task<SKContext>)ThrowIfNullResult(result);
+            return static async (functionName, pluginName, result, _) =>
+            {
+                var context = await ((Task<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return new FunctionResult(functionName, pluginName, context, context.Result);
+            };
         }
 
         if (returnType == typeof(ValueTask<SKContext>))
         {
-            return static (result, context) => ((ValueTask<SKContext>)ThrowIfNullResult(result)).AsTask();
+            return static async (functionName, pluginName, result, _) =>
+            {
+                var context = await ((ValueTask<SKContext>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                return new FunctionResult(functionName, pluginName, context, context);
+            };
         }
 
         // string (which is special as no marshaling is required), either synchronous (string) or asynchronous (Task<string> / ValueTask<string>)
 
         if (returnType == typeof(string))
         {
-            return static (result, context) =>
+            return static (functionName, pluginName, result, context) =>
             {
-                context.Variables.Update((string?)result);
-                return Task.FromResult(context);
+                var resultString = (string?)result;
+                context.Variables.Update(resultString);
+                return Task.FromResult(new FunctionResult(functionName, pluginName, context, resultString));
             };
         }
 
         if (returnType == typeof(Task<string>))
         {
-            return async static (result, context) =>
+            return async static (functionName, pluginName, result, context) =>
             {
-                context.Variables.Update(await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
-                return context;
+                var resultString = await ((Task<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                context.Variables.Update(resultString);
+                return new FunctionResult(functionName, pluginName, context, resultString);
             };
         }
 
         if (returnType == typeof(ValueTask<string>))
         {
-            return async static (result, context) =>
+            return async static (functionName, pluginName, result, context) =>
             {
-                context.Variables.Update(await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false));
-                return context;
+                var resultString = await ((ValueTask<string>)ThrowIfNullResult(result)).ConfigureAwait(false);
+                context.Variables.Update(resultString);
+                return new FunctionResult(functionName, pluginName, context, resultString);
             };
         }
 
@@ -603,10 +624,10 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
                 throw GetExceptionForInvalidSignature(method, $"Unknown return type {returnType}");
             }
 
-            return (result, context) =>
+            return (functionName, pluginName, result, context) =>
             {
                 context.Variables.Update(formatter(result, context.Culture));
-                return Task.FromResult(context);
+                return Task.FromResult(new FunctionResult(functionName, pluginName, context, result));
             };
         }
 
@@ -618,11 +639,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo taskResultGetter &&
             GetFormatter(taskResultGetter.ReturnType) is Func<object?, CultureInfo, string> taskResultFormatter)
         {
-            return async (result, context) =>
+            return async (functionName, pluginName, result, context) =>
             {
                 await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
-                context.Variables.Update(taskResultFormatter(taskResultGetter.Invoke(result!, Array.Empty<object>()), context.Culture));
-                return context;
+
+                var taskResult = taskResultGetter.Invoke(result!, Array.Empty<object>());
+
+                context.Variables.Update(taskResultFormatter(taskResult, context.Culture));
+                return new FunctionResult(functionName, pluginName, context, taskResult);
             };
         }
 
@@ -633,13 +657,41 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.GetGetMethod() is MethodInfo asTaskResultGetter &&
             GetFormatter(asTaskResultGetter.ReturnType) is Func<object?, CultureInfo, string> asTaskResultFormatter)
         {
-            return async (result, context) =>
+            return async (functionName, pluginName, result, context) =>
             {
                 Task task = (Task)valueTaskAsTask.Invoke(ThrowIfNullResult(result), Array.Empty<object>());
                 await task.ConfigureAwait(false);
-                context.Variables.Update(asTaskResultFormatter(asTaskResultGetter.Invoke(task!, Array.Empty<object>()), context.Culture));
-                return context;
+
+                var taskResult = asTaskResultGetter.Invoke(task!, Array.Empty<object>());
+
+                context.Variables.Update(asTaskResultFormatter(taskResult, context.Culture));
+                return new FunctionResult(functionName, pluginName, context, taskResult);
             };
+        }
+
+        // IAsyncEnumerable<T>
+        if (returnType.GetGenericTypeDefinition() is Type genericAsyncEnumerable && genericAsyncEnumerable == typeof(IAsyncEnumerable<>))
+        {
+            Type elementType = returnType.GetGenericArguments()[0];
+
+            MethodInfo getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>)
+                .MakeGenericType(elementType)
+                .GetMethod("GetAsyncEnumerator");
+
+            if (getAsyncEnumeratorMethod is not null)
+            {
+                return (functionName, pluginName, result, context) =>
+                {
+                    var asyncEnumerator = getAsyncEnumeratorMethod.Invoke(result, new object[] { default(CancellationToken) });
+
+                    if (asyncEnumerator is not null)
+                    {
+                        return Task.FromResult(new FunctionResult(functionName, pluginName, context, asyncEnumerator));
+                    }
+
+                    return Task.FromResult(new FunctionResult(functionName, pluginName, context));
+                };
+            }
         }
 
         // Unrecognized return type.

@@ -36,9 +36,9 @@ internal sealed class KernelExecutionContext : IKernelExecutionContext, IDisposa
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ContextVariables variables, ISKFunction[] pipeline, CancellationToken cancellationToken = default)
+    public Task<KernelResult> RunAsync(ContextVariables variables, ISKFunction skFunction, CancellationToken cancellationToken = default)
     {
-        return this._kernel.RunAsync(variables, cancellationToken, pipeline);
+        return this._kernel.RunAsync(variables, cancellationToken, skFunction);
     }
 
     /// <inheritdoc/>

@@ -252,9 +252,13 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var result = await context.Kernel.RunAsync(functionVariables, step, cancellationToken).ConfigureAwait(false);
+            var kernelResult = await context.Kernel.RunAsync(functionVariables, step, cancellationToken).ConfigureAwait(false);
 
-            var resultValue = result.Result.Trim();
+            // result.Context.Result is used for backward compatibility and can be removed in the future
+            var result = kernelResult.FunctionResults.First();
+            var resultString = result.GetValue<string>() ?? result.Context.Result;
+
+            var resultValue = resultString.Trim();
 
             #region Update State
 
@@ -277,7 +281,7 @@ public sealed class Plan : IPlan
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Variables.TryGetValue(item, out string? val))
+                if (result.Context.Variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -325,20 +329,21 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        var result = new FunctionResult(this.Name, this.PluginName, context);
+
         if (this.Function is not null)
         {
             AddVariablesToContext(this.State, context);
-            var result = await this.Function
+
+            result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-
-            context.Variables.Update(result.Result);
         }
         else
         {
@@ -348,10 +353,12 @@ public sealed class Plan : IPlan
                 AddVariablesToContext(this.State, context);
                 await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
                 this.UpdateContextWithOutputs(context);
+
+                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
             }
         }
 
-        return context;
+        return result;
     }
 
     /// <inheritdoc/>
