@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
@@ -90,7 +89,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         using var messageHandlerStub = new HttpMessageHandlerStub(openApiDocument);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        var executionParameters = new OpenApiPluginExecutionParameters { HttpClient = httpClient, ServerUrlOverride = new Uri(ServerUrlOverride) };
+        var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient, ServerUrlOverride = new Uri(ServerUrlOverride) };
         var variables = this.GetFakeContextVariables();
 
         // Act
@@ -128,7 +127,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         using var messageHandlerStub = new HttpMessageHandlerStub(openApiDocument);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        var executionParameters = new OpenApiPluginExecutionParameters { HttpClient = httpClient };
+        var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient };
         var variables = this.GetFakeContextVariables();
 
         // Act
@@ -173,7 +172,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         using var messageHandlerStub = new HttpMessageHandlerStub(content);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        var executionParameters = new OpenApiPluginExecutionParameters { HttpClient = httpClient };
+        var executionParameters = new OpenApiFunctionExecutionParameters { HttpClient = httpClient };
         var variables = this.GetFakeContextVariables();
 
         // Act

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of SKContext
@@ -30,7 +29,7 @@ public static class SKContextSequentialPlannerExtensions
     /// </summary>
     /// <param name="context">The SKContext to get the functions manual for.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
-    /// <param name="config">The planner skill config.</param>
+    /// <param name="config">The planner plugin config.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A string containing the manual for all available functions.</returns>
     public static async Task<string> GetFunctionsManualAsync(
@@ -50,23 +49,23 @@ public static class SKContextSequentialPlannerExtensions
     }
 
     /// <summary>
-    /// Returns a list of functions that are available to the user based on the semantic query and the excluded skills and functions.
+    /// Returns a list of functions that are available to the user based on the semantic query and the excluded plugins and functions.
     /// </summary>
     /// <param name="context">The SKContext</param>
     /// <param name="config">The planner config.</param>
     /// <param name="semanticQuery">The semantic query for finding relevant registered functions</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A list of functions that are available to the user based on the semantic query and the excluded skills and functions.</returns>
+    /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
     public static async Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(
         this SKContext context,
         SequentialPlannerConfig config,
         string? semanticQuery = null,
         CancellationToken cancellationToken = default)
     {
-        var functionsView = context.Skills.GetFunctionViews();
+        var functionsView = context.Functions.GetFunctionViews();
 
         var availableFunctions = functionsView
-            .Where(s => !config.ExcludedSkills.Contains(s.SkillName, StringComparer.OrdinalIgnoreCase)
+            .Where(s => !config.ExcludedPlugins.Contains(s.PluginName, StringComparer.OrdinalIgnoreCase)
                 && !config.ExcludedFunctions.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
@@ -97,14 +96,14 @@ public static class SKContextSequentialPlannerExtensions
 
             // Add any missing functions that were included but not found in the search results.
             var missingFunctions = config.IncludedFunctions
-                .Except(result.Select(x => x.Name))
-                .Join(availableFunctions, f => f, af => af.Name, (_, af) => af);
+                .Except(result.Select(x => (x.PluginName, x.Name)))
+                .Join(availableFunctions, f => f, af => (af.PluginName, af.Name), (_, af) => af);
 
             result.AddRange(missingFunctions);
         }
 
         return result
-            .OrderBy(x => x.SkillName)
+            .OrderBy(x => x.PluginName)
             .ThenBy(x => x.Name);
     }
 

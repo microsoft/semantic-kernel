@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -57,24 +58,25 @@ public static class Example57_FunctionEventHandlers
 
         var excuseFunction = kernel.CreateSemanticFunction(
             FunctionPrompt,
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "Excuse",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel();
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -104,7 +106,7 @@ public static class Example57_FunctionEventHandlers
 
         var writerFunction = kernel.CreateSemanticFunction(
             FunctionPrompt,
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "Writer",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
@@ -140,14 +142,14 @@ public static class Example57_FunctionEventHandlers
 
         var writerFunction = kernel.CreateSemanticFunction(
             FunctionPrompt,
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "Writer",
             requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : FunctionInvoking - Cancelling all subsequent invocations");
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
         };
 
@@ -209,11 +211,11 @@ public static class Example57_FunctionEventHandlers
            .Build();
 
         var skipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Skipping",
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "SkipMe");
 
         var dontSkipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Handlers",
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "DontSkipMe");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -233,11 +235,11 @@ public static class Example57_FunctionEventHandlers
             Console.WriteLine($"Only not skipped functions will trigger invoked event - Function name: {e.FunctionView.Name}");
         };
 
-        var context = await kernel.RunAsync(
+        var result = await kernel.RunAsync(
             skipMeFunction,
             dontSkipMeFunction);
 
-        Console.WriteLine($"Final result: {context.Result}");
+        Console.WriteLine($"Final result: {result.GetValue<string>()}");
     }
 
     private static async Task RepeatFunctionsAsync()
@@ -254,7 +256,7 @@ public static class Example57_FunctionEventHandlers
         var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
 
         var repeatMeFunction = kernel.CreateSemanticFunction("Write a sentence about {{$input}}",
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "RepeatMe");
 
         var repeatTimes = 0;

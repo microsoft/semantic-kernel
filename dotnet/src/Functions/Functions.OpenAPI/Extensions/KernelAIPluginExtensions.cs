@@ -18,7 +18,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
@@ -40,11 +39,11 @@ public static class KernelAIPluginExtensions
         this IKernel kernel,
         string pluginName,
         string filePath,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -79,11 +78,11 @@ public static class KernelAIPluginExtensions
         this IKernel kernel,
         string pluginName,
         Uri uri,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -119,11 +118,11 @@ public static class KernelAIPluginExtensions
         this IKernel kernel,
         string pluginName,
         Stream stream,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -147,7 +146,7 @@ public static class KernelAIPluginExtensions
         string pluginContents,
         string pluginName,
         HttpClient httpClient,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
@@ -175,7 +174,7 @@ public static class KernelAIPluginExtensions
     private static async Task<IDictionary<string, ISKFunction>> LoadPluginAsync(
         IKernel kernel,
         string pluginName,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         string pluginJson,
         Uri? documentUri = null,
@@ -221,7 +220,7 @@ public static class KernelAIPluginExtensions
     private static async Task<string> LoadDocumentFromUriAsync(
         IKernel kernel,
         Uri uri,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         CancellationToken cancellationToken)
     {
@@ -240,7 +239,7 @@ public static class KernelAIPluginExtensions
     private static async Task<string> LoadDocumentFromFilePathAsync(
         IKernel kernel,
         string filePath,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         CancellationToken cancellationToken)
     {
@@ -306,7 +305,7 @@ public static class KernelAIPluginExtensions
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
-    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
@@ -315,7 +314,7 @@ public static class KernelAIPluginExtensions
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
@@ -392,7 +391,7 @@ public static class KernelAIPluginExtensions
             nativeFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
-            skillName: pluginName,
+            pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: kernel.LoggerFactory);
 
