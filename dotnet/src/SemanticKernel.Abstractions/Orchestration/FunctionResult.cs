@@ -83,6 +83,7 @@ public sealed class FunctionResult
             return typedResult;
         }
 
+        // Retro-compatibility with legacy non streaming functions
         if (this.Value is IAsyncEnumerable<string> asyncEnumerableString)
         {
             return (T)(object)this.ReadAllTextStreaming(asyncEnumerableString);
