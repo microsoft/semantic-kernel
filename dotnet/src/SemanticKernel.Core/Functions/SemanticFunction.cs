@@ -183,12 +183,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
 
-    private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
-    {
-        // To avoid any unexpected behavior we only take the first completion result (when running from the Kernel)
-        return await completions[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
-    }
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{this.Name} ({this.Description})";
 
@@ -218,10 +212,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
             var completionStreamingResults = client.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ToEnumerable(cancellationToken).ToArray();
-            //string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
-
-            // Update the result with the completion
-            // context.Variables.Update(completion);
 
             result = new FunctionResult(this.Name, this.PluginName, context, completionStreamingResults[0].GetCompletionStreamingAsync(cancellationToken));
 
