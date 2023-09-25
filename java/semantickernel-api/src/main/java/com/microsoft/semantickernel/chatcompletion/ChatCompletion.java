@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 public interface ChatCompletion<ChatHistoryType extends ChatHistory>
         extends AIService, TextCompletion, Buildable {
+
     /**
      * Generate a new chat message
      *
@@ -39,11 +40,13 @@ public interface ChatCompletion<ChatHistoryType extends ChatHistory>
             ChatHistoryType chat, ChatRequestSettings requestSettings);
 
     @SuppressWarnings("unchecked")
-    static <ChatHistoryType extends ChatHistory, E extends ChatCompletion<ChatHistoryType>> Builder<ChatHistoryType> builder() {
-        return (Builder<ChatHistoryType>)BuildersSingleton.INST.getInstance(Builder.class);
+    static <ChatHistoryType extends ChatHistory, E extends ChatCompletion<ChatHistoryType>>
+            Builder<ChatHistoryType> builder() {
+        return (Builder<ChatHistoryType>) BuildersSingleton.INST.getInstance(Builder.class);
     }
 
-    interface Builder<ChatHistoryType extends ChatHistory> extends SemanticKernelBuilder<ChatCompletion<ChatHistoryType>> {
+    interface Builder<ChatHistoryType extends ChatHistory>
+            extends SemanticKernelBuilder<ChatCompletion<ChatHistoryType>> {
 
         Builder<ChatHistoryType> withOpenAIClient(OpenAIAsyncClient client);
 

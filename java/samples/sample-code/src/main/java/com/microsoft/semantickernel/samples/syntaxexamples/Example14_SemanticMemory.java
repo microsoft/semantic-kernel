@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.SamplesConfig;
-import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemory;
+import com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryStore;
 import com.microsoft.semantickernel.memory.VolatileMemoryStore;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,14 +32,21 @@ public class Example14_SemanticMemory {
         System.out.println("======== Semantic Memory using Azure Cognitive Search ========");
         System.out.println("==============================================================");
 
-        /* This example leverages Azure Cognitive Search to provide SK with Semantic Memory.
+      var openAIAsyncClient = SamplesConfig.getClient();
+
+      /* This example leverages Azure Cognitive Search to provide SK with Semantic Memory.
          *
          * Azure Cognitive Search automatically indexes your data semantically, so you don't
          * need to worry about embedding generation.
          */
-        var kernelWithACS = SKBuilders.kernel()
-                .withMemory(new AzureCognitiveSearchMemory(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
-                .build();
+      var kernelWithACS = SKBuilders.kernel()
+          .withMemoryStorage(
+              new AzureCognitiveSearchMemoryStore(System.getenv("ACS_ENDPOINT"), System.getenv("ACS_API_KEY")))
+          .withDefaultAIService(SKBuilders.textEmbeddingGeneration()
+              .withOpenAIClient(openAIAsyncClient)
+              .withModelId("text-embedding-ada-002")
+              .build())
+          .build();
 
         runExampleAsync(kernelWithACS).block();
 
@@ -55,7 +62,6 @@ public class Example14_SemanticMemory {
          * You can replace VolatileMemoryStore with Qdrant (see QdrantMemoryStore connector)
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
          */
-        var openAIAsyncClient = SamplesConfig.getClient();
 
         var kernelWithCustomDb = SKBuilders.kernel()
                 .withDefaultAIService(SKBuilders.textEmbeddingGeneration()
@@ -106,7 +112,7 @@ public class Example14_SemanticMemory {
     }
 
     private static Mono<Void> searchMemoryAsync(Kernel kernel, String query) {
-        return kernel.getMemory().searchAsync(MEMORY_COLLECTION_NAME, query, 2, 0.5, false)
+        return kernel.getMemory().searchAsync(MEMORY_COLLECTION_NAME, query, 2, 0.5f, false)
                 .mapNotNull(memories -> {
                     System.out.println("\nQuery: " + query + "\n");
                     for (int n = 0; n < memories.size(); n++) {

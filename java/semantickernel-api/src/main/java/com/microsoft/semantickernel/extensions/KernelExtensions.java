@@ -9,21 +9,20 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import java.io.BufferedReader;
+import com.microsoft.semantickernel.util.EmbeddedResourceLoader;
+import com.microsoft.semantickernel.util.EmbeddedResourceLoader.ResourceLocation;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KernelExtensions {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelExtensions.class);
     private static final String CONFIG_FILE = "config.json";
     private static final String PROMPT_FILE = "skprompt.txt";
@@ -133,20 +132,13 @@ public class KernelExtensions {
                         + File.separator
                         + PROMPT_FILE;
 
-        InputStream promptFileStream;
-        if (clazz == null) {
-            promptFileStream =
-                    KernelExtensions.class.getClassLoader().getResourceAsStream(promptFileName);
-        } else {
-            promptFileStream = clazz.getResourceAsStream(promptFileName);
-        }
-
-        String template;
-
-        try (BufferedReader promptFile =
-                new BufferedReader(
-                        new InputStreamReader(promptFileStream, Charset.defaultCharset()))) {
-            template = promptFile.lines().collect(Collectors.joining("\n"));
+        try {
+            return EmbeddedResourceLoader.readFile(
+                    promptFileName,
+                    clazz,
+                    ResourceLocation.CLASSPATH_ROOT,
+                    ResourceLocation.CLASSPATH,
+                    ResourceLocation.FILESYSTEM);
         } catch (IOException e) {
             LOGGER.error("Failed to read file " + promptFileName, e);
 
@@ -154,7 +146,6 @@ public class KernelExtensions {
                     ErrorCodes.FUNCTION_NOT_AVAILABLE,
                     "No Skills found in directory " + promptFileName);
         }
-        return template;
     }
 
     private static PromptTemplateConfig getPromptTemplateConfig(
@@ -168,20 +159,16 @@ public class KernelExtensions {
                         + File.separator
                         + CONFIG_FILE;
 
-        InputStream configFileStream;
-        if (clazz == null) {
-            configFileStream =
-                    KernelExtensions.class.getClassLoader().getResourceAsStream(configFileName);
-        } else {
-            configFileStream = clazz.getResourceAsStream(configFileName);
-        }
+        try {
+            String config =
+                    EmbeddedResourceLoader.readFile(
+                            configFileName,
+                            clazz,
+                            ResourceLocation.CLASSPATH_ROOT,
+                            ResourceLocation.CLASSPATH,
+                            ResourceLocation.FILESYSTEM);
 
-        if (configFileStream == null) {
-            return null;
-        }
-
-        try (InputStream is = configFileStream) {
-            return new ObjectMapper().readValue(is, PromptTemplateConfig.class);
+            return new ObjectMapper().readValue(config, PromptTemplateConfig.class);
         } catch (IOException e) {
             LOGGER.debug("No config for " + functionName + " in " + pluginName);
             return null;

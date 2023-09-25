@@ -97,10 +97,7 @@ public class InlineFunctionExample {
                         .buildAsyncClient();
 
         TextCompletion textCompletion =
-                SKBuilders.textCompletion()
-                        .withOpenAIClient(client)
-                        .withModelId(MODEL)
-                        .build();
+                SKBuilders.textCompletion().withOpenAIClient(client).withModelId(MODEL).build();
         String prompt = "{{$input}}\n" + "Summarize the content above.";
 
         Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();

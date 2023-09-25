@@ -5,7 +5,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-bom</artifactId>
-    <version>0.2.9-alpha-SNAPSHOT</version>
+    <version>0.2.10-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Semantic Kernel Java BOM</name>
@@ -142,7 +142,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-search-documents</artifactId>
-                <version>11.6.0-beta.6</version>
+                <version>11.6.0-beta.9</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.inject</groupId>
@@ -154,6 +154,12 @@
                 <groupId>org.xerial</groupId>
                 <artifactId>sqlite-jdbc</artifactId>
                 <version>3.42.0.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>42.6.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -192,6 +198,6 @@
         <url>https://github.com/microsoft/semantic-kernel</url>
         <connection>scm:git:https://github.com/microsoft/semantic-kernel.git</connection>
         <developerConnection>scm:git:https://github.com/microsoft/semantic-kernel.git</developerConnection>
-        <tag>java-0.2.8-alpha</tag>
+        <tag>java-0.2.9-alpha</tag>
     </scm>
 </project>

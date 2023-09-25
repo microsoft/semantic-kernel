@@ -13,4 +13,8 @@ public @interface DefineSKFunction {
     String description() default "";
 
     String name() default "";
+
+    String returnType() default "void";
+
+    String returnDescription() default "";
 }
