@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Planners.Core</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Planners</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Planners</Title>
+    <Description>Semantic Kernel Core Planners which include the Action, Sequential, and Stepwise planners.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Action\skprompt.txt" />
+    <None Remove="Sequential\skprompt.txt" />
+    <None Remove="Stepwise\Plugin\RenderFunctionManual\config.json" />
+    <None Remove="Stepwise\Plugin\RenderFunctionManual\skprompt.txt" />
+    <None Remove="Stepwise\Plugin\RenderQuestion\config.json" />
+    <None Remove="Stepwise\Plugin\RenderQuestion\skprompt.txt" />
+    <None Remove="Stepwise\Plugin\StepwiseStep\config.json" />
+    <None Remove="Stepwise\Plugin\StepwiseStep\skprompt.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Action\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sequential\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stepwise\Plugin\RenderFunctionManual\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stepwise\Plugin\RenderFunctionManual\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stepwise\Plugin\RenderQuestion\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stepwise\Plugin\RenderQuestion\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stepwise\Plugin\StepwiseStep\config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stepwise\Plugin\StepwiseStep\skprompt.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="IntegrationTests" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Planners.Core.UnitTests" />
+  </ItemGroup>
+
+</Project>

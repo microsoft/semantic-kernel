@@ -3,8 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Action;
+using Microsoft.SemanticKernel.Planners;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
