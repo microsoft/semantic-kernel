@@ -228,8 +228,6 @@ repeat:
 
                 functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                context = functionResult.Context;
-
                 allFunctionResults.Add(functionResult);
 
                 var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);

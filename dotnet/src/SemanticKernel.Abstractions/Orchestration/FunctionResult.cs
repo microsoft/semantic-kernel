@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -33,7 +35,10 @@ public sealed class FunctionResult
     /// <summary>
     /// Instance of <see cref="SKContext"/> to pass in function pipeline.
     /// </summary>
-    internal SKContext Context { get; private set; }
+    /// <remarks>
+    /// Getting this property will block await until the streaming completes as SKContext needs the full result.
+    /// </remarks>
+    internal SKContext Context => this.GetResultingSKContext();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
@@ -45,7 +50,7 @@ public sealed class FunctionResult
     {
         this.FunctionName = functionName;
         this.PluginName = pluginName;
-        this.Context = context;
+        this._inputContext = context;
     }
 
     /// <summary>
@@ -79,5 +84,59 @@ public sealed class FunctionResult
         }
 
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
+    }
+
+    private SKContext _inputContext;
+    private SKContext? _outputContext = null;
+
+    /// <summary>
+    /// Gets the resulting context lazily.
+    /// This will block await until the streaming completes as SKContext uses the full result to return.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    private SKContext GetResultingSKContext()
+    {
+        if (this._outputContext is not null)
+        {
+            return this._outputContext;
+        }
+
+        this._outputContext = this._inputContext.Clone();
+
+        // No return value, just return the non modified context
+        if (this.Value is null)
+        {
+            return this._outputContext;
+        }
+
+        string fullResult;
+        if (this.Value is string)
+        {
+            fullResult = this.GetValue<string>()!;
+        }
+        else if (this.Value is IAsyncEnumerable<string> streamingValues)
+        {
+            fullResult = this.ReadAllTextStreaming(streamingValues);
+        }
+        else
+        {
+            fullResult = Convert.ToString(this.Value, this._outputContext.Culture);
+        }
+
+        this._outputContext.Variables.Update(fullResult);
+
+        return this._outputContext;
+    }
+
+    private string ReadAllTextStreaming(IAsyncEnumerable<string> streamingValues)
+    {
+        StringBuilder fullResult = new();
+        foreach (string token in streamingValues.ToEnumerable())
+        {
+            fullResult.Append(token);
+        }
+
+        return fullResult.ToString();
     }
 }

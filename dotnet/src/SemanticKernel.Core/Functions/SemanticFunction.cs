@@ -217,15 +217,15 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
-            string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
+            var completionStreamingResults = client.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ToEnumerable(cancellationToken).ToArray();
+            //string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion
-            context.Variables.Update(completion);
+            // context.Variables.Update(completion);
 
-            result = new FunctionResult(this.Name, this.PluginName, context, completion);
+            result = new FunctionResult(this.Name, this.PluginName, context, completionStreamingResults[0].GetCompletionStreamingAsync(cancellationToken));
 
-            var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
+            var modelResults = completionStreamingResults.Select(c => c.ModelResult).ToArray();
 
             result.AddModelResults(modelResults);
         }

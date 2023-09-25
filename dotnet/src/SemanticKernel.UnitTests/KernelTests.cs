@@ -99,10 +99,10 @@ public class KernelTests
     {
         // Arrange
         var mockTextCompletion = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var mockCompletionResult = new Mock<ITextStreamingResult>();
 
-        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+        mockTextCompletion.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockCompletionResult.Setup(cr => cr.GetCompletionStreamingAsync(It.IsAny<CancellationToken>())).Returns(new[] { "llmResult" }.ToAsyncEnumerable());
 
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
@@ -122,7 +122,7 @@ public class KernelTests
         await kernel.RunAsync(func);
 
         // Assert
-        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion.Verify(a => a.GetStreamingCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -158,11 +158,11 @@ public class KernelTests
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var mockCompletionResult = new Mock<ITextStreamingResult>();
 
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+        mockTextCompletion1.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockTextCompletion2.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockCompletionResult.Setup(cr => cr.GetCompletionStreamingAsync(It.IsAny<CancellationToken>())).Returns(new[] { "llmResult" }.ToAsyncEnumerable());
 
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
@@ -176,8 +176,8 @@ public class KernelTests
         await kernel.RunAsync(func);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion1.Verify(a => a.GetStreamingCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
+        mockTextCompletion2.Verify(a => a.GetStreamingCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -186,11 +186,11 @@ public class KernelTests
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var mockCompletionResult = new Mock<ITextStreamingResult>();
 
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+        mockTextCompletion1.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockTextCompletion2.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockCompletionResult.Setup(cr => cr.GetCompletionStreamingAsync(It.IsAny<CancellationToken>())).Returns(new[] { "llmResult" }.ToAsyncEnumerable());
 
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
@@ -207,8 +207,8 @@ public class KernelTests
         await kernel.RunAsync(func);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextCompletion1.Verify(a => a.GetStreamingCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion2.Verify(a => a.GetStreamingCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public class KernelTests
 
         // Assert
         Assert.Equal(pipelineCount, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        mockTextCompletion.Verify(m => m.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
     }
 
     [Fact]
@@ -405,7 +405,7 @@ public class KernelTests
 
         // Assert
         Assert.Equal(pipelineCount, invoked);
-        mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        mockTextCompletion.Verify(m => m.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
     }
 
     [Fact]
@@ -484,15 +484,18 @@ public class KernelTests
 
         // Assert
         Assert.NotNull(kernelResult);
-        Assert.Equal("Result3", kernelResult.GetValue<string>());
+        var resultText = string.Join(string.Empty, kernelResult.GetValue<IAsyncEnumerable<string>>()!.ToEnumerable());
+
+        Assert.Equal("Result3", resultText);
 
         var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1" && l.PluginName == PluginName);
         var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == PluginName);
         var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3" && l.PluginName == PluginName);
+        var function3ResultText = string.Join(string.Empty, functionResult3.GetValue<IAsyncEnumerable<string>>()!.ToEnumerable());
 
         Assert.Equal("Result1", functionResult1.GetValue<string>());
         Assert.Equal("Result2", functionResult2.GetValue<string>());
-        Assert.Equal("Result3", functionResult3.GetValue<string>());
+        Assert.Equal("Result3", function3ResultText);
     }
 
     public class MyPlugin
@@ -528,13 +531,13 @@ public class KernelTests
         }
     }
 
-    private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
+    private (Mock<ITextStreamingResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
     {
-        var mockTextResult = new Mock<ITextResult>();
-        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
+        var mockTextResult = new Mock<ITextStreamingResult>();
+        mockTextResult.Setup(m => m.GetCompletionStreamingAsync(It.IsAny<CancellationToken>())).Returns(() => new List<string> { completionResult ?? "LLM Result about UnitTests" }.ToAsyncEnumerable());
 
         var mockTextCompletion = new Mock<ITextCompletion>();
-        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
+        mockTextCompletion.Setup(m => m.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new List<ITextStreamingResult> { mockTextResult.Object }.ToAsyncEnumerable());
 
         return (mockTextResult, mockTextCompletion);
     }
