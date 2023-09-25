@@ -107,7 +107,7 @@ public sealed class ActionPlanner : IActionPlanner
         // Build and return plan
         Plan? plan = null;
 
-        FunctionUtils.GetFunctionCallbackNames(planData.Plan.Function, out var pluginName, out var functionName);
+        FunctionUtils.SplitPluginFunctionName(planData.Plan.Function, out var pluginName, out var functionName);
         if (!string.IsNullOrEmpty(functionName))
         {
             var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();

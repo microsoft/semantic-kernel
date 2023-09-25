@@ -116,7 +116,7 @@ internal static class SequentialPlanParser
                 if (childNode.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
                 {
                     var pluginFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
-                    FunctionUtils.GetFunctionCallbackNames(pluginFunctionName, out var pluginName, out var functionName);
+                    FunctionUtils.SplitPluginFunctionName(pluginFunctionName, out var pluginName, out var functionName);
 
                     if (!string.IsNullOrEmpty(functionName))
                     {

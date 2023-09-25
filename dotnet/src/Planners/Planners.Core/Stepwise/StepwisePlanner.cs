@@ -520,7 +520,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private async Task<string?> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables, CancellationToken cancellationToken)
     {
-        FunctionUtils.GetFunctionCallbackNames(actionName, out var pluginName, out var functionName);
+        FunctionUtils.SplitPluginFunctionName(actionName, out var pluginName, out var functionName);
         if (string.IsNullOrEmpty(functionName))
         {
             this._logger?.LogDebug("Attempt to invoke action {Action} failed", actionName);
