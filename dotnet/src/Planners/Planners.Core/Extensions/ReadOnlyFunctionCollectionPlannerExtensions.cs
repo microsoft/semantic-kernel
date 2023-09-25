@@ -109,7 +109,7 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
             .ToList();
 
         List<FunctionView>? result = null;
-        var semanticMemoryConfig = config.SemanticMemory;
+        var semanticMemoryConfig = config.SemanticMemoryConfig;
         if (string.IsNullOrEmpty(semanticQuery) || semanticMemoryConfig.Memory is NullMemory)
         {
             // If no semantic query is provided, return all available functions.

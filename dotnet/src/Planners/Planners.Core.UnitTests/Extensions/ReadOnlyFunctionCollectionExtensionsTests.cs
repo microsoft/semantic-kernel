@@ -63,7 +63,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Never);
 
-        config.SemanticMemory = new();
+        config.SemanticMemoryConfig = new();
 
         // Act
         result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
@@ -74,7 +74,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Never);
 
-        config.SemanticMemory = new() { Memory = memory.Object };
+        config.SemanticMemoryConfig = new() { Memory = memory.Object };
 
         // Act
         result = await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery, null, cancellationToken);
@@ -140,8 +140,8 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         Assert.Equal(functionView, result[0]);
 
         // Arrange update IncludedFunctions
-        config.SemanticMemory = new() { Memory = memory.Object };
-        config.SemanticMemory.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
+        config.SemanticMemoryConfig = new() { Memory = memory.Object };
+        config.SemanticMemoryConfig.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
 
         // Act
         result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
@@ -198,7 +198,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernel.Object, variables, functions.Object);
         var config = InitializeConfig(t);
-        config.SemanticMemory = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
+        config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act
@@ -210,7 +210,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         Assert.Equal(functionView, result[0]);
 
         // Arrange update IncludedFunctions
-        config.SemanticMemory.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
+        config.SemanticMemoryConfig.IncludedFunctions.UnionWith(new List<(string, string)> { ("pluginName", "nativeFunctionName") });
 
         // Act
         result = (await context.Functions.GetAvailableFunctionsAsync(config, semanticQuery)).ToList();
@@ -255,7 +255,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernel.Object, variables, functions);
         var config = InitializeConfig(t);
-        config.SemanticMemory = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
+        config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
 
         // Act

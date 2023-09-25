@@ -73,7 +73,7 @@ public abstract class PlannerConfigBase
     /// <remarks>
     /// This configuration will be ignored if <see cref="GetAvailableFunctionsAsync"/> is set.
     /// </remarks>
-    public SemanticMemoryConfig SemanticMemory { get; set; } = new();
+    public SemanticMemoryConfig SemanticMemoryConfig { get; set; } = new();
 
     /// <summary>
     /// Callback to get the available functions for planning (optional).
