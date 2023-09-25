@@ -34,7 +34,7 @@ public static class Example33_StreamingChat
             .Build();
 
         var prompt = "Write one paragraph why AI is awesome";
-        var function = kernel.CreateSemanticFunction(prompt);
+        var function = kernel.CreateSemanticFunction(prompt, requestSettings: new() { Streaming = true });
         var result = await kernel.RunAsync(function);
 
         Console.WriteLine("Prompt: " + prompt);
@@ -55,7 +55,7 @@ public static class Example33_StreamingChat
             .Build();
 
         var prompt = "Write one paragraph why AI is awesome";
-        var function = kernel.CreateSemanticFunction(prompt);
+        var function = kernel.CreateSemanticFunction(prompt, requestSettings: new() { Streaming = true });
         var result = await kernel.RunAsync(function);
 
         Console.WriteLine("Prompt: " + prompt);

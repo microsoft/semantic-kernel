@@ -59,9 +59,7 @@ public static class Example36_MultiCompletion
         await foreach (string message in chatCompletion.GenerateMessageStreamAsync(chatHistory))
         {
             Console.Write(message);
-            Console.WriteLine("-------------");
         }
-
-        Console.WriteLine();
+        Console.WriteLine("-------------");
     }
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -210,27 +211,24 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-
             var modelResults = new List<ModelResult>();
-            var getEnumerator = client.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
-            ITextStreamingResult? firstResult = null;
 
-            while (await getEnumerator.MoveNextAsync().ConfigureAwait(false))
+            if (this.CanStream(requestSettings))
             {
-                firstResult ??= getEnumerator.Current;
+                var getEnumerator = client.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                await getEnumerator.MoveNextAsync().ConfigureAwait(false);
+                var firstResult = getEnumerator.Current;
                 modelResults.Add(getEnumerator.Current.ModelResult);
-
-                if (requestSettings is null
-                    || !requestSettings.ExtensionData.TryGetValue("results_per_prompt", out var results)
-                    || (int)results == 1)
-                {
-                    // Enumerating the next result drops the streaming behavior and awaits until all results are returned
-                    // To keep the streaming behavior with the first result, we break here
-                    break;
-                }
+                result = new FunctionResult(this.Name, this.PluginName, context, firstResult!.GetCompletionStreamingAsync(cancellationToken));
+            }
+            else
+            {
+                IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+                string completion = await completionResults[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+                modelResults.AddRange(completionResults.Select(c => c.ModelResult).ToArray());
+                result = new FunctionResult(this.Name, this.PluginName, context, completion);
             }
 
-            result = new FunctionResult(this.Name, this.PluginName, context, firstResult!.GetCompletionStreamingAsync(cancellationToken));
 
             result.AddModelResults(modelResults);
         }
@@ -243,6 +241,16 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return result;
     }
 
+    // To be able to stream, the request settings must allow streaming and only one result must be requested
+    private bool CanStream(AIRequestSettings? requestSettings)
+    {
+        var streamEnabled = requestSettings?.Streaming ?? false;
+        var multipleResultsRequested = requestSettings is not null
+                                       && requestSettings.ExtensionData.TryGetValue("results_per_prompt", out var results)
+                                       && (int)results > 1;
+
+        return streamEnabled && !multipleResultsRequested;
+    }
     #endregion
 
     #region Obsolete

@@ -24,6 +24,16 @@ public static class OpenAIModelResultExtension
     }
 
     /// <summary>
+    /// Retrieves a typed <see cref="Completions"/> OpenAI / AzureOpenAI result from text completion prompt.
+    /// </summary>
+    /// <param name="resultBase">Current context</param>
+    /// <returns>OpenAI / AzureOpenAI result<see cref="Completions"/></returns>
+    public static StreamingTextModelResult GetOpenAIStreamingTextResult(this ModelResult resultBase)
+    {
+        return resultBase.GetResult<StreamingTextModelResult>();
+    }
+
+    /// <summary>
     /// Retrieves a typed <see cref="ChatCompletions"/> OpenAI / AzureOpenAI result from chat completion prompt.
     /// </summary>
     /// <param name="resultBase">Current context</param>
@@ -31,5 +41,15 @@ public static class OpenAIModelResultExtension
     public static ChatModelResult GetOpenAIChatResult(this ModelResult resultBase)
     {
         return resultBase.GetResult<ChatModelResult>();
+    }
+
+    /// <summary>
+    /// Retrieves a typed <see cref="ChatCompletions"/> OpenAI / AzureOpenAI result from chat completion prompt.
+    /// </summary>
+    /// <param name="resultBase">Current context</param>
+    /// <returns>OpenAI / AzureOpenAI result<see cref="ChatCompletions"/></returns>
+    public static StreamingChatModelResult GetOpenAIStreamingChatResult(this ModelResult resultBase)
+    {
+        return resultBase.GetResult<StreamingChatModelResult>();
     }
 }

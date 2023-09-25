@@ -22,6 +22,11 @@ public class AIRequestSettings
     public string? ServiceId { get; set; } = null;
 
     /// <summary>
+    /// Enables streaming behavior when available
+    /// </summary>
+    public bool? Streaming { get; set; } = false;
+
+    /// <summary>
     /// Extra properties
     /// </summary>
     [JsonExtensionData]

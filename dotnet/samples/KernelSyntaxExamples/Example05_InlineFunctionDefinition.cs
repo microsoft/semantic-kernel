@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -52,14 +53,29 @@ Event: {{$input}}
         var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var result = await kernel.RunAsync("I missed the F1 final race", excuseFunction);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         result = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
 
         result = await kernel.RunAsync(fixedFunction);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
+
+        // Streaming result
+        fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format",
+                requestSettings: new OpenAIRequestSettings
+                {
+                    Streaming = true,
+                    MaxTokens = 100
+                });
+
+        await foreach(string token in (await kernel.RunAsync(fixedFunction)).GetValue<IAsyncEnumerable<string>>()!)
+        {
+            Console.Write(token);
+        }
+
+        Console.WriteLine();
     }
 }

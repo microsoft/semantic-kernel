@@ -70,7 +70,22 @@ public class OpenAIRequestSettings : AIRequestSettings
     /// </summary>
     [JsonPropertyName("results_per_prompt")]
     [JsonPropertyOrder(7)]
-    public int ResultsPerPrompt { get; set; } = 1;
+    public int ResultsPerPrompt
+    {
+        get
+        {
+            if (this.ExtensionData.TryGetValue("results_per_prompt", out var value))
+            {
+                return (int)value;
+            }
+
+            return 1;
+        }
+        set
+        {
+            this.ExtensionData["results_per_prompt"] = value;
+        }
+    }
 
     /// <summary>
     /// The system prompt to use when generating text completions using a chat model.
