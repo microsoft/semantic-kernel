@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -37,6 +39,11 @@ public sealed class KernelResult
             return typedResult;
         }
 
+        if (this.Value is IAsyncEnumerable<string> asyncEnumerableString)
+        {
+            return (T)(object)this.ReadAllTextStreaming(asyncEnumerableString);
+        }
+
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
 
@@ -52,5 +59,16 @@ public sealed class KernelResult
             Value = value,
             FunctionResults = functionResults
         };
+    }
+
+    private string ReadAllTextStreaming(IAsyncEnumerable<string> streamingValues)
+    {
+        StringBuilder fullResult = new();
+        foreach (var token in streamingValues.ToEnumerable())
+        {
+            fullResult.Append(token);
+        }
+
+        return fullResult.ToString();
     }
 }

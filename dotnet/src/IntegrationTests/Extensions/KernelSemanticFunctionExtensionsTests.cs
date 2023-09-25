@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,18 +73,18 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
 
     private sealed class RedirectTextCompletion : ITextCompletion
     {
-        Task<IReadOnlyList<ITextResult>> ITextCompletion.GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
         }
 
-        IAsyncEnumerable<ITextStreamingResult> ITextCompletion.GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
+        public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException(); // TODO
+            return new List<ITextStreamingResult> { new RedirectTextCompletionResult(text) }.ToAsyncEnumerable();
         }
     }
 
-    internal sealed class RedirectTextCompletionResult : ITextResult
+    internal sealed class RedirectTextCompletionResult : ITextStreamingResult
     {
         private readonly string _completion;
 
@@ -97,6 +98,11 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._completion);
+        }
+
+        public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
+        {
+            return new[] { this._completion }.ToAsyncEnumerable();
         }
     }
 }

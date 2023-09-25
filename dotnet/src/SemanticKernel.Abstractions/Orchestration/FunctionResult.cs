@@ -83,6 +83,11 @@ public sealed class FunctionResult
             return typedResult;
         }
 
+        if (this.Value is IAsyncEnumerable<string> asyncEnumerableString)
+        {
+            return (T)(object)this.ReadAllTextStreaming(asyncEnumerableString);
+        }
+
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
 
@@ -132,7 +137,7 @@ public sealed class FunctionResult
     private string ReadAllTextStreaming(IAsyncEnumerable<string> streamingValues)
     {
         StringBuilder fullResult = new();
-        foreach (string token in streamingValues.ToEnumerable())
+        foreach (var token in streamingValues.ToEnumerable())
         {
             fullResult.Append(token);
         }

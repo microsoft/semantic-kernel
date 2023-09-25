@@ -491,11 +491,14 @@ public class KernelTests
         var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1" && l.PluginName == PluginName);
         var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == PluginName);
         var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3" && l.PluginName == PluginName);
-        var function3ResultText = string.Join(string.Empty, functionResult3.GetValue<IAsyncEnumerable<string>>()!.ToEnumerable());
+
+        var function3Result = functionResult3.GetValue<string>();
+        var function3ResultStreamText = string.Join(string.Empty, functionResult3.GetValue<IAsyncEnumerable<string>>()!.ToEnumerable());
 
         Assert.Equal("Result1", functionResult1.GetValue<string>());
         Assert.Equal("Result2", functionResult2.GetValue<string>());
-        Assert.Equal("Result3", function3ResultText);
+        Assert.Equal("Result3", function3Result);
+        Assert.Equal("Result3", function3ResultStreamText);
     }
 
     public class MyPlugin
