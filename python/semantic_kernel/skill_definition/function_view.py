@@ -13,7 +13,6 @@ class FunctionView(SKBaseModel):
     description: str
     is_semantic: bool
     parameters: List[ParameterView]
-    function_calling_enabled: bool = False
     is_asynchronous: bool = True
 
     def __init__(
@@ -23,7 +22,6 @@ class FunctionView(SKBaseModel):
         description: str,
         parameters: List[ParameterView],
         is_semantic: bool,
-        function_calling_enabled: bool = False,
         is_asynchronous: bool = True,
     ) -> None:
         validate_function_name(name)
@@ -33,6 +31,5 @@ class FunctionView(SKBaseModel):
             description=description,
             parameters=parameters,
             is_semantic=is_semantic,
-            function_calling_enabled=function_calling_enabled,
             is_asynchronous=is_asynchronous,
         )

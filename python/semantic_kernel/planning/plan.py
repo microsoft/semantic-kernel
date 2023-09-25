@@ -78,14 +78,6 @@ class Plan(SKFunctionBase):
             return not self._is_semantic
 
     @property
-    def function_calling_enabled(self) -> bool:
-        """
-        Whether the function can be used as a function call that is passed to the API.
-        """
-        # TODO: discuss if a plan can be used in function calling?
-        return False
-
-    @property
     def request_settings(self) -> CompleteRequestSettings:
         return self._request_settings
 

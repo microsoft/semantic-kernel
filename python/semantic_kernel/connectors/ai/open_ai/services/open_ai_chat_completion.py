@@ -148,12 +148,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         )
 
         if len(response.choices) == 1:
-            if response["choices"][0].finish_reason == "content_filter":
-                raise AIException(
-                    AIException.ErrorCodes.ContentFilterTriggered,
-                    "OpenAI service failed to complete the chat because the content filter was triggered",
-                    None,
-                )
             return response.choices[0].message.content
         else:
             return [choice.message.content for choice in response.choices]
@@ -200,7 +194,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Completes the given user message with an asynchronous stream.
 
         Arguments:
-            message {str} -- The message (from a user) to respond to.
+            messages {List[Tuple[str,str]]} -- The messages (from a user) to respond to.
             request_settings {ChatRequestSettings} -- The request settings.
             stream {bool} -- Whether to stream the response.
             functions {List[Dict[str, Any]]} -- The functions available to the api.

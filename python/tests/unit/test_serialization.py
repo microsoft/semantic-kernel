@@ -84,7 +84,6 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
                 parameters=[],
                 is_semantic=False,
                 is_asynchronous=True,
-                function_calling_enabled=True,
             )
         )
         result.add_function(
@@ -95,7 +94,6 @@ def sk_factory() -> t.Callable[[t.Type[_Serializable]], _Serializable]:
                 parameters=[],
                 is_semantic=True,
                 is_asynchronous=True,
-                function_calling_enabled=False,
             )
         )
         return result
