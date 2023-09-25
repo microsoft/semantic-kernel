@@ -27,16 +27,16 @@ public static class Example10_DescribeAllPluginsAndFunctions
             .Build();
 
         // Import a native plugin
-        var plugin1 = new StaticTextPlugin();
-        kernel.ImportPlugin(plugin1, "StaticTextPlugin");
+        var staticText = new StaticTextPlugin();
+        kernel.ImportFunctions(staticText, "StaticTextPlugin");
 
         // Import another native plugin
-        var plugin2 = new TextPlugin();
-        kernel.ImportPlugin(plugin2, "AnotherTextPlugin");
+        var text = new TextPlugin();
+        kernel.ImportFunctions(text, "AnotherTextPlugin");
 
         // Import a semantic plugin
         string folder = RepoFiles.SamplePluginsPath();
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
         // Define a semantic function inline, without naming
         var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
