@@ -63,20 +63,6 @@ public sealed class FunctionResult
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionResult"/> class.
-    /// </summary>
-    /// <param name="functionName">Name of executed function.</param>
-    /// <param name="pluginName">Name of the plugin containing the function.</param>
-    /// <param name="context">Instance of <see cref="SKContext"/> to pass in function pipeline.</param>
-    /// <param name="value">Function result object.</param>
-    /// <param name="modelResults">Collection of <see cref="ModelResult"/> records.</param>
-    public FunctionResult(string functionName, string pluginName, SKContext context, object? value, IReadOnlyCollection<ModelResult> modelResults)
-        : this(functionName, pluginName, context, value)
-    {
-        this.AddModelResults(modelResults);
-    }
-
-    /// <summary>
     /// Returns function result value.
     /// </summary>
     /// <typeparam name="T">Target type for result value casting.</typeparam>
