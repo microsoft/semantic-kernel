@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Planning;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel.Planners;
