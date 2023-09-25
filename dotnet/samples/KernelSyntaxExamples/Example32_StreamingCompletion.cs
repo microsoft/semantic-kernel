@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
@@ -18,8 +20,54 @@ public static class Example32_StreamingCompletion
 {
     public static async Task RunAsync()
     {
+        await AzureOpenAIKernelStreamAsync();
+        await OpenAIKernelStreamAsync();
+
         await AzureOpenAITextCompletionStreamAsync();
         await OpenAITextCompletionStreamAsync();
+    }
+
+    private async static Task AzureOpenAIKernelStreamAsync()
+    {
+        Console.WriteLine("======== Azure OpenAI - Kernel RunAsync - Text Streaming ========");
+
+        var kernel = Kernel.Builder.WithAzureTextCompletionService(
+            TestConfiguration.AzureOpenAI.DeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey)
+            .Build();
+
+        var prompt = "Write one paragraph why AI is awesome";
+        var function = kernel.CreateSemanticFunction(prompt);
+        var result = await kernel.RunAsync(function);
+
+        Console.WriteLine("Prompt: " + prompt);
+        await foreach (string message in result.GetValue<IAsyncEnumerable<string>>()!)
+        {
+            Console.Write(message);
+        }
+        Console.WriteLine();
+    }
+
+    private async static Task OpenAIKernelStreamAsync()
+    {
+        Console.WriteLine("======== OpenAI - Kernel RunAsync - Text Streaming ========");
+
+        var kernel = Kernel.Builder.WithOpenAITextCompletionService(
+            TestConfiguration.OpenAI.ModelId,
+            TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        var prompt = "Write one paragraph why AI is awesome";
+        var function = kernel.CreateSemanticFunction(prompt);
+        var result = await kernel.RunAsync(function);
+
+        Console.WriteLine("Prompt: " + prompt);
+        await foreach (string message in result.GetValue<IAsyncEnumerable<string>>()!)
+        {
+            Console.Write(message);
+        }
+        Console.WriteLine();
     }
 
     private static async Task AzureOpenAITextCompletionStreamAsync()

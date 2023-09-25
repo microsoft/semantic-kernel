@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -211,11 +210,27 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            var completionStreamingResults = client.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ToEnumerable(cancellationToken).ToArray();
 
-            result = new FunctionResult(this.Name, this.PluginName, context, completionStreamingResults[0].GetCompletionStreamingAsync(cancellationToken));
+            var modelResults = new List<ModelResult>();
+            var getEnumerator = client.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            ITextStreamingResult? firstResult = null;
 
-            var modelResults = completionStreamingResults.Select(c => c.ModelResult).ToArray();
+            while (await getEnumerator.MoveNextAsync().ConfigureAwait(false))
+            {
+                firstResult ??= getEnumerator.Current;
+                modelResults.Add(getEnumerator.Current.ModelResult);
+
+                if (requestSettings is null
+                    || !requestSettings.ExtensionData.TryGetValue("results_per_prompt", out var results)
+                    || (int)results == 1)
+                {
+                    // Enumerating the next result drops the streaming behavior and awaits until all results are returned
+                    // To keep the streaming behavior with the first result, we break here
+                    break;
+                }
+            }
+
+            result = new FunctionResult(this.Name, this.PluginName, context, firstResult!.GetCompletionStreamingAsync(cancellationToken));
 
             result.AddModelResults(modelResults);
         }

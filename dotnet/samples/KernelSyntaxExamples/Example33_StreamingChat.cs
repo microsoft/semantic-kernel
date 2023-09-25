@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 
@@ -14,8 +16,54 @@ public static class Example33_StreamingChat
 {
     public static async Task RunAsync()
     {
+        await AzureOpenAIKernelStreamAsync();
+        await OpenAIKernelStreamAsync();
+
         await AzureOpenAIChatStreamSampleAsync();
         await OpenAIChatStreamSampleAsync();
+    }
+
+    private async static Task AzureOpenAIKernelStreamAsync()
+    {
+        Console.WriteLine("======== Azure OpenAI - Kernel RunAsync - Chat Streaming ========");
+
+        var kernel = Kernel.Builder.WithAzureChatCompletionService(
+            TestConfiguration.AzureOpenAI.ChatDeploymentName,
+            TestConfiguration.AzureOpenAI.Endpoint,
+            TestConfiguration.AzureOpenAI.ApiKey)
+            .Build();
+
+        var prompt = "Write one paragraph why AI is awesome";
+        var function = kernel.CreateSemanticFunction(prompt);
+        var result = await kernel.RunAsync(function);
+
+        Console.WriteLine("Prompt: " + prompt);
+        await foreach (string message in result.GetValue<IAsyncEnumerable<string>>()!)
+        {
+            Console.Write(message);
+        }
+        Console.WriteLine();
+    }
+
+    private async static Task OpenAIKernelStreamAsync()
+    {
+        Console.WriteLine("======== OpenAI - Kernel RunAsync - Chat Streaming ========");
+
+        var kernel = Kernel.Builder.WithOpenAIChatCompletionService(
+            TestConfiguration.OpenAI.ChatModelId,
+            TestConfiguration.OpenAI.ApiKey)
+            .Build();
+
+        var prompt = "Write one paragraph why AI is awesome";
+        var function = kernel.CreateSemanticFunction(prompt);
+        var result = await kernel.RunAsync(function);
+
+        Console.WriteLine("Prompt: " + prompt);
+        await foreach (string message in result.GetValue<IAsyncEnumerable<string>>()!)
+        {
+            Console.Write(message);
+        }
+        Console.WriteLine();
     }
 
     private static async Task OpenAIChatStreamSampleAsync()
