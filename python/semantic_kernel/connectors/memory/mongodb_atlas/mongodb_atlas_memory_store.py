@@ -11,7 +11,6 @@ from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
-    DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
     document_to_memory_record,
@@ -47,7 +46,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         )
         self._logger = logger or NullLogger()
         self.__database_name = database_name or DEFAULT_DB_NAME
-        self.__index_name = index_name or DEFAULT_SEARCH_INDEX_NAME
+        self.__index_name = index_name
 
     @property
     def database_name(self) -> str:
@@ -58,7 +57,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         return self._mongo_client[self.database_name]
 
     @property
-    def index_name(self) -> str:
+    def index_name(self) -> Optional[str]:
         return self.__index_name
 
     async def close_async(self):
@@ -276,7 +275,6 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         pipeline: list[dict[str, Any]] = []
         vector_search_query: List[Mapping[str, Any]] = {
             "$search": {
-                "index": self.index_name,
                 "knnBeta": {
                     "vector": embedding.tolist(),
                     "k": limit,
@@ -284,6 +282,8 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
                 },
             }
         }
+        if self.index_name:
+            vector_search_query["$search"]["index"] = self.index_name
 
         pipeline.append(vector_search_query)
         # add meta search scoring
