@@ -30,22 +30,6 @@ public static class AIFunctionResultExtensions
     }
 
     /// <summary>
-    /// Get typed value from <see cref="FunctionResult"/> metadata.
-    /// </summary>
-    public static bool TryGetMetadataValue<T>(this FunctionResult result, string key, out T value)
-    {
-        if (result.Metadata.TryGetValue(key, out object? valueObject) &&
-            valueObject is T typedValue)
-        {
-            value = typedValue;
-            return true;
-        }
-
-        value = default!;
-        return false;
-    }
-
-    /// <summary>
     /// Adds collection of <see cref="ModelResult"/> records to <see cref="FunctionResult"/> metadata.
     /// </summary>
     /// <param name="result">Instance of <see cref="FunctionResult"/> class.</param>
