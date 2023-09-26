@@ -76,7 +76,12 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
     /// <param name="logger">The logger to use for logging.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of functions that are available to the user based on the semantic query and the excluded plugins and functions.</returns>
-    public static async Task<IOrderedEnumerable<FunctionView>> GetFunctionsAsync(this IReadOnlyFunctionCollection functions, PlannerConfigBase config, string? semanticQuery, ILogger? logger, CancellationToken cancellationToken)
+    public static async Task<IOrderedEnumerable<FunctionView>> GetFunctionsAsync(
+        this IReadOnlyFunctionCollection functions,
+        PlannerConfigBase config,
+        string? semanticQuery,
+        ILogger? logger,
+        CancellationToken cancellationToken)
     {
         // Use configured function provider if available, otherwise use the default SKContext function provider.
         return config.GetAvailableFunctionsAsync is null ?
@@ -127,8 +132,8 @@ public static class ReadOnlyFunctionCollectionPlannerExtensions
                 PlannerMemoryCollectionName,
                 semanticQuery!,
                 semanticMemoryConfig.MaxRelevantFunctions,
-                semanticMemoryConfig.RelevancyThreshold.HasValue ? semanticMemoryConfig.RelevancyThreshold.Value : 0.0,
-cancellationToken: cancellationToken);
+                semanticMemoryConfig.RelevancyThreshold ?? 0.0,
+                cancellationToken: cancellationToken);
 
             // Add functions that were found in the search results.
             result.AddRange(await GetRelevantFunctionsAsync(availableFunctions, memories, logger ?? NullLogger.Instance, cancellationToken).ConfigureAwait(false));
