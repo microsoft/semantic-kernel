@@ -247,8 +247,12 @@ public abstract class ClientBase
         }
 
         using StreamingChatCompletions streamingChatCompletions = response.Value;
+        var resultCount = 0;
+
+        var enumerator = streamingChatCompletions.GetChoicesStreaming(cancellationToken).GetAsyncEnumerator();
         await foreach (StreamingChatChoice choice in streamingChatCompletions.GetChoicesStreaming(cancellationToken).ConfigureAwait(false))
         {
+            resultCount++;
             yield return new ChatStreamingResult(response.Value, choice);
         }
     }
@@ -288,11 +292,6 @@ public abstract class ClientBase
         {
             resultCount++;
             yield return (ITextStreamingResult)chatCompletionStreamingResult;
-
-            if (resultCount >= chatSettings.ResultsPerPrompt)
-            {
-                break;
-            }
         }
     }
 
