@@ -24,7 +24,7 @@ public static class Example23_OpenApiPlugin_GitHub
     public static async Task RunAsync()
     {
         var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(TestConfiguration.Github.PAT); });
-        Console.WriteLine("== Example22_c_OpenApiSkill_GitHub ==");
+        Console.WriteLine("== Example23_OpenApiPlugin_GitHub ==");
         var firstPRNumber = await ListPullRequestsFromGitHubAsync(authenticationProvider);
         await GetPullRequestFromGitHubAsync(authenticationProvider, firstPRNumber);
     }
@@ -33,7 +33,7 @@ public static class Example23_OpenApiPlugin_GitHub
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
             "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
@@ -65,7 +65,7 @@ public static class Example23_OpenApiPlugin_GitHub
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
             "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
