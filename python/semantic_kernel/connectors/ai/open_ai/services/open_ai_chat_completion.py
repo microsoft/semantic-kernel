@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
+from types import AsyncGeneratorType
 from typing import Any, List, Optional, Tuple, Union
 
 import openai
@@ -238,7 +239,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 ex,
             )
 
-        if "usage" in response:
+        if not isinstance(response, AsyncGeneratorType) and "usage" in response:
             self._log.info(f"OpenAI usage: {response.usage}")
             self._prompt_tokens += response.usage.prompt_tokens
             self._completion_tokens += response.usage.completion_tokens
