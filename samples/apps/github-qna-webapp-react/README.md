@@ -1,5 +1,10 @@
 # GitHub Repo Q&A Bot Sample
 
+> [!IMPORTANT]
+> This sample will be removed in a future release. If you are looking for samples that demonstrate
+> how to use Semantic Kernel, please refer to the sample folders in the root [python](../../../python/samples/)
+> and [dotnet](../../../dotnet/samples/) folders.
+
 > **!IMPORTANT**
 > This learning sample is for educational purposes only and should not be used in any
 > production use case. It is intended to highlight concepts of Semantic Kernel and not
@@ -13,7 +18,7 @@
 2. Ensure the service API is already running `http://localhost:7071`. If not, learn
    how to start it [here](../../dotnet/KernelHttpServer/README.md).
 3. You will also need to Copy **[.env.example](.env.example)** into a new file with name "**.env**".
-   > **Note**: Samples are configured to use chat completion AI models (e.g., gpt-3.5-turbo, gpt-4, etc.). See https://platform.openai.com/docs/models/model-endpoint-compatibility for chat completion model options.
+    > **Note**: Samples are configured to use chat completion AI models (e.g., gpt-3.5-turbo, gpt-4, etc.). See https://platform.openai.com/docs/models/model-endpoint-compatibility for chat completion model options.
 4. **Run** the following command `yarn install` (if you have never run the sample before)
    and/or `yarn start` from the command line.
 5. A browser will open or you can navigate to `http://localhost:3000` to use the sample.
@@ -37,9 +42,9 @@ only content extracted from markdown files.
 > Each function will call Open AI which will use tokens that you will be billed for.
 
 ## Working with private repositories
+
 The GitHub Repo Q&A Bot sample allows you to pull in data from a private GitHub repo. To do so, you must create a [fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) if you have not already. The token must have access to the repository you are trying to pull data from as well as read access to the Contents of the repository:
 ![Alt text](contents-read-access.png)
-
 
 ## Next Steps
 
