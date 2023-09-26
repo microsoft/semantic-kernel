@@ -169,18 +169,18 @@ public static class Example51_StepwisePlanner
                 currentExecutionResult.answer = result;
             }
 
-            if (planResult.TryGetValue("stepCount", out string stepCount))
+            if (planResult.TryGetMetadataValue("stepCount", out string stepCount))
             {
                 Console.WriteLine("Steps Taken: " + stepCount);
                 currentExecutionResult.stepsTaken = stepCount;
             }
 
-            if (planResult.TryGetValue("functionCount", out string functionCount))
+            if (planResult.TryGetMetadataValue("functionCount", out string functionCount))
             {
                 Console.WriteLine("Functions Used: " + functionCount);
             }
 
-            if (planResult.TryGetValue("iterations", out string iterations))
+            if (planResult.TryGetMetadataValue("iterations", out string iterations))
             {
                 Console.WriteLine("Iterations: " + iterations);
                 currentExecutionResult.iterations = iterations;
