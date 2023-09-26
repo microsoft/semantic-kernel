@@ -22,11 +22,11 @@ public static class Example54_AzureChatCompletionWithData
         // they uncovered a groundbreaking phenomenon in glaciology that could
         // potentially reshape our understanding of climate change.
 
-        await ExampleWithChatCompletion();
-        await ExampleWithKernel();
+        await ExampleWithChatCompletionAsync();
+        await ExampleWithKernelAsync();
     }
 
-    private static async Task ExampleWithChatCompletion()
+    private static async Task ExampleWithChatCompletionAsync()
     {
         Console.WriteLine("=== Example with Chat Completion ===");
 
@@ -82,7 +82,7 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine(Environment.NewLine);
     }
 
-    private static async Task ExampleWithKernel()
+    private static async Task ExampleWithKernelAsync()
     {
         Console.WriteLine("=== Example with Kernel ===");
 

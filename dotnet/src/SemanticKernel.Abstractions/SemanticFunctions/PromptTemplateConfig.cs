@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.SemanticFunctions;
@@ -12,68 +13,6 @@ namespace Microsoft.SemanticKernel.SemanticFunctions;
 /// </summary>
 public class PromptTemplateConfig
 {
-    /// <summary>
-    /// Completion configuration parameters.
-    /// </summary>
-    public class CompletionConfig
-    {
-        /// <summary>
-        /// Sampling temperature to use, between 0 and 2. Higher values will make the output more random.
-        /// Lower values will make it more focused and deterministic.
-        /// </summary>
-        [JsonPropertyName("temperature")]
-        [JsonPropertyOrder(1)]
-        public double Temperature { get; set; } = 0.0f;
-
-        /// <summary>
-        /// Cut-off of top_p probability mass of tokens to consider.
-        /// For example, 0.1 means only the tokens comprising the top 10% probability mass are considered.
-        /// </summary>
-        [JsonPropertyName("top_p")]
-        [JsonPropertyOrder(2)]
-        public double TopP { get; set; } = 0.0f;
-
-        /// <summary>
-        /// Lowers the probability of a word appearing if it already appeared in the predicted text.
-        /// Unlike the frequency penalty, the presence penalty does not depend on the frequency at which words
-        /// appear in past predictions.
-        /// </summary>
-        [JsonPropertyName("presence_penalty")]
-        [JsonPropertyOrder(3)]
-        public double PresencePenalty { get; set; } = 0.0f;
-
-        /// <summary>
-        /// Controls the model’s tendency to repeat predictions. The frequency penalty reduces the probability
-        /// of words that have already been generated. The penalty depends on how many times a word has already
-        /// occurred in the prediction.
-        /// </summary>
-        [JsonPropertyName("frequency_penalty")]
-        [JsonPropertyOrder(4)]
-        public double FrequencyPenalty { get; set; } = 0.0f;
-
-        /// <summary>
-        /// Maximum number of tokens that can be generated.
-        /// </summary>
-        [JsonPropertyName("max_tokens")]
-        [JsonPropertyOrder(5)]
-        public int? MaxTokens { get; set; }
-
-        /// <summary>
-        /// Stop sequences are optional sequences that tells the AI model when to stop generating tokens.
-        /// </summary>
-        [JsonPropertyName("stop_sequences")]
-        [JsonPropertyOrder(6)]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<string> StopSequences { get; set; } = new();
-
-        /// <summary>
-        /// When provided will be used to set the system prompt while using Chat Completions
-        /// </summary>
-        [JsonPropertyName("chat_system_prompt")]
-        [JsonPropertyOrder(7)]
-        public string? ChatSystemPrompt { get; set; }
-    }
-
     /// <summary>
     /// Input parameter for semantic functions.
     /// </summary>
@@ -144,7 +83,7 @@ public class PromptTemplateConfig
     [JsonPropertyName("completion")]
     [JsonPropertyOrder(4)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public CompletionConfig Completion { get; set; } = new();
+    public AIRequestSettings? Completion { get; set; }
 
     /// <summary>
     /// Default AI services to use.
@@ -161,25 +100,6 @@ public class PromptTemplateConfig
     [JsonPropertyOrder(6)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public InputConfig Input { get; set; } = new();
-
-    /// <summary>
-    /// Removes some default properties to reduce the JSON complexity.
-    /// </summary>
-    /// <returns>Compacted prompt template configuration.</returns>
-    public PromptTemplateConfig Compact()
-    {
-        if (this.Completion.StopSequences.Count == 0)
-        {
-            this.Completion.StopSequences = null!;
-        }
-
-        if (this.DefaultServices.Count == 0)
-        {
-            this.DefaultServices = null!;
-        }
-
-        return this;
-    }
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.

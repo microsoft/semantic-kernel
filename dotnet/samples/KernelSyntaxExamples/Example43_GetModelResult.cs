@@ -5,9 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
@@ -31,16 +34,20 @@ public static class Example43_GetModelResult
         var myFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var textResult = await myFunction.InvokeAsync("Sci-fi",
-            settings: new CompleteRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
-        Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAIChatResult()).AsJson());
+        var functionResult = await myFunction.InvokeAsync("Sci-fi",
+            kernel,
+            requestSettings: new OpenAIRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+
+        Console.WriteLine(functionResult.GetValue<string>());
+        Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
-        textResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
-        Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
+        var kernelResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
+        var modelResults = kernelResult.FunctionResults.SelectMany(l => l.GetModelResults() ?? Enumerable.Empty<ModelResult>());
+
+        Console.WriteLine(kernelResult.GetValue<string>());
+        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly
@@ -49,7 +56,7 @@ public static class Example43_GetModelResult
             apiKey: TestConfiguration.OpenAI.ApiKey);
         var prompt = FunctionDefinition.Replace("{{$input}}", $"Translate this date {DateTimeOffset.Now:f} to French format", StringComparison.InvariantCultureIgnoreCase);
 
-        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new CompleteRequestSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
+        IReadOnlyList<ITextResult> completionResults = await chatCompletion.GetCompletionsAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 500, Temperature = 1, TopP = 0.5 });
 
         Console.WriteLine(await completionResults[0].GetCompletionAsync());
         Console.WriteLine(completionResults[0].ModelResult.GetOpenAIChatResult().Usage.AsJson());
@@ -60,12 +67,17 @@ public static class Example43_GetModelResult
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "Invalid Key")
             .Build();
         var errorFunction = kernel.CreateSemanticFunction(FunctionDefinition);
-        var failedContext = await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
 
-        if (failedContext.ErrorOccurred)
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
         {
-            Console.WriteLine(OutputExceptionDetail(failedContext.LastException?.InnerException));
+            await kernel.RunAsync("sorry I forgot your birthday", errorFunction);
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine(OutputExceptionDetail(ex.InnerException));
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         string OutputExceptionDetail(Exception? exception)
         {

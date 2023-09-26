@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "semantic-kernel"
-version = "0.3.11.dev"
+version = "0.3.13.dev"
 description = ""
 authors = ["Microsoft <SK-Support@microsoft.com>"]
 readme = "pip/README.md"
@@ -9,7 +9,7 @@ packages = [{include = "semantic_kernel"}]
 [tool.poetry.dependencies]
 python = "^3.8"
 numpy = "^1.24.2"
-openai = "^0.27.0"
+openai = ">=0.27,<0.29"
 aiofiles = "^23.1.0"
 python-dotenv = "1.0.0"
 regex = "^2023.6.3"
@@ -21,8 +21,8 @@ pydantic = "<2"
 pre-commit = "3.3.3"
 black = {version = "23.7.0", allow-prereleases = true}
 ipykernel = "^6.21.1"
-pytest = "7.4.0"
-ruff = "0.0.285"
+pytest = "7.4.2"
+ruff = "0.0.289"
 pytest-asyncio = "0.21.1"
 snoop = "0.4.3"
 
@@ -66,7 +66,7 @@ azure-identity = "^1.13.0"
 
 [tool.poetry.group.usearch.dependencies]
 usearch = "^1.1.1"
-pyarrow = "^12.0.1"
+pyarrow = ">=12.0.1,<14.0.0"
 
 [tool.isort]
 profile = "black"
