@@ -51,7 +51,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
                 {
                     { "Temperature", 0.0 },
                     { "StopSequences", new[] { StopSequence } },
-                    { "MaxTokens", this.Config.MaxTokens ?? 1024 },
+                    { "MaxTokens", this.Config.MaxTokens },
                 }
             });
 

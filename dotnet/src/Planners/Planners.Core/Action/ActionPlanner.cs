@@ -76,7 +76,7 @@ public sealed class ActionPlanner : IActionPlanner
                 ExtensionData = new Dictionary<string, object>()
                 {
                     { "StopSequences", new[] { StopSequence } },
-                    { "MaxTokens", 1024 },
+                    { "MaxTokens", this.Config.MaxTokens },
                 }
             });
 
