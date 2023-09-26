@@ -75,7 +75,6 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             None
         """
-        # Defining the search index enforces its creation
         if not await self.does_collection_exist_async(collection_name):
             await self.database.create_collection(collection_name)
 
