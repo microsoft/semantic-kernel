@@ -66,7 +66,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
             throw new SKException("The goal specified is empty");
         }
 
-        string relevantFunctionsManual = await this._kernel.CreateNewContext().GetFunctionsManualAsync(goal, this.Config, cancellationToken).ConfigureAwait(false);
+        string relevantFunctionsManual = await this._kernel.Functions.GetFunctionsManualAsync(this.Config, goal, null, cancellationToken).ConfigureAwait(false);
 
         ContextVariables vars = new(goal)
         {
@@ -84,7 +84,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
                 $"\nGoal:{goal}\nFunctions:\n{relevantFunctionsManual}");
         }
 
-        var getFunctionCallback = this.Config.GetFunctionCallback ?? SequentialPlanParser.GetFunctionCallback(this._kernel.Functions);
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();
 
         Plan plan;
         try

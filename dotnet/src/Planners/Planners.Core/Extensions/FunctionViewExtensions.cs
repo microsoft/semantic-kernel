@@ -2,8 +2,13 @@
 
 using System.Linq;
 
-namespace Microsoft.SemanticKernel.Planners.Sequential;
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
 
+/// <summary>
+/// Provides extension methods for the <see cref="FunctionView"/> class.
+/// </summary>
 internal static class FunctionViewExtensions
 {
     /// <summary>

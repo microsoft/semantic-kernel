@@ -90,7 +90,7 @@ public sealed class SequentialPlannerTests : IDisposable
         TestHelpers.ImportAllSamplePlugins(kernel);
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel,
-            new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
+            new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory } });
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);
