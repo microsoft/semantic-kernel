@@ -371,11 +371,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             return returnFunc(functionName, pluginName, result, context);
         }
 
-        // Add parameters applied to the method that aren't part of the signature.
-        stringParameterViews.AddRange(method
-            .GetCustomAttributes<SKParameterAttribute>(inherit: true)
-            .Select(x => new ParameterView(x.Name ?? string.Empty, x.Description ?? string.Empty, x.DefaultValue ?? string.Empty)));
-
         // Check for param names conflict
         Verify.ParametersUniqueness(stringParameterViews);
 
