@@ -93,16 +93,18 @@ public class KernelTests
     }
 
     [Theory]
-    [InlineData(null, "Assistant is a large language model.")]
-    [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt)
+    [InlineData(null, "Assistant is a large language model.", true)]
+    [InlineData("My Chat Prompt", "My Chat Prompt", false)]
+    public async Task ItUsesChatSystemPromptWhenProvidedAsync(string providedSystemChatPrompt, string expectedSystemChatPrompt, bool useStream)
     {
         // Arrange
         var mockTextCompletion = new Mock<ITextCompletion>();
         var mockCompletionResult = new Mock<ITextStreamingResult>();
 
         mockTextCompletion.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionStreamingAsync(It.IsAny<CancellationToken>())).Returns(new[] { "llmResult" }.ToAsyncEnumerable());
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
@@ -112,7 +114,8 @@ public class KernelTests
         {
             Completion = new OpenAIRequestSettings()
             {
-                ChatSystemPrompt = providedSystemChatPrompt
+                ChatSystemPrompt = providedSystemChatPrompt,
+                Streaming = useStream
             }
         };
 
@@ -122,7 +125,14 @@ public class KernelTests
         await kernel.RunAsync(func);
 
         // Assert
-        mockTextCompletion.Verify(a => a.GetStreamingCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+        if (useStream)
+        {
+            mockTextCompletion.Verify(a => a.GetStreamingCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+        }
+        else
+        {
+            mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<OpenAIRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+        }
     }
 
     [Fact]
@@ -152,8 +162,11 @@ public class KernelTests
         kernel.ImportFunctions(new MyPlugin());
     }
 
-    [Fact]
-    public async Task ItUsesDefaultServiceWhenSpecifiedAsync()
+    [Theory]
+    [InlineData(null)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItUsesDefaultServiceWhenSpecifiedAsync(bool? useStream)
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -161,8 +174,13 @@ public class KernelTests
         var mockCompletionResult = new Mock<ITextStreamingResult>();
 
         mockTextCompletion1.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+
         mockTextCompletion2.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+
         mockCompletionResult.Setup(cr => cr.GetCompletionStreamingAsync(It.IsAny<CancellationToken>())).Returns(new[] { "llmResult" }.ToAsyncEnumerable());
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
@@ -170,18 +188,38 @@ public class KernelTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
+        if (useStream is not null)
+        {
+            templateConfig.Completion = new() { Streaming = useStream };
+        };
+
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
         await kernel.RunAsync(func);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetStreamingCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
-        mockTextCompletion2.Verify(a => a.GetStreamingCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
+        if (useStream is null)
+        {
+            mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Never());
+            mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", null, It.IsAny<CancellationToken>()), Times.Once());
+        }
+        else if (useStream == false)
+        {
+            mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(rs => rs.Streaming == useStream), It.IsAny<CancellationToken>()), Times.Never());
+            mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(rs => rs.Streaming == useStream), It.IsAny<CancellationToken>()), Times.Once());
+        }
+        else
+        {
+            mockTextCompletion1.Verify(a => a.GetStreamingCompletionsAsync("template", It.Is<AIRequestSettings>(rs => rs.Streaming == useStream), It.IsAny<CancellationToken>()), Times.Never());
+            mockTextCompletion2.Verify(a => a.GetStreamingCompletionsAsync("template", It.Is<AIRequestSettings>(rs => rs.Streaming == useStream), It.IsAny<CancellationToken>()), Times.Once());
+        }
     }
 
-    [Fact]
-    public async Task ItUsesServiceIdWhenProvidedAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ItUsesServiceIdWhenProvidedAsync(bool useStream)
     {
         // Arrange
         var mockTextCompletion1 = new Mock<ITextCompletion>();
@@ -189,8 +227,13 @@ public class KernelTests
         var mockCompletionResult = new Mock<ITextStreamingResult>();
 
         mockTextCompletion1.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+
         mockTextCompletion2.Setup(c => c.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new[] { mockCompletionResult.Object }.ToAsyncEnumerable());
+        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+
         mockCompletionResult.Setup(cr => cr.GetCompletionStreamingAsync(It.IsAny<CancellationToken>())).Returns(new[] { "llmResult" }.ToAsyncEnumerable());
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
         var kernel = Kernel.Builder
             .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
@@ -199,7 +242,7 @@ public class KernelTests
 
         var templateConfig = new PromptTemplateConfig
         {
-            Completion = new AIRequestSettings() { ServiceId = "service1" }
+            Completion = new AIRequestSettings() { ServiceId = "service1", Streaming = useStream }
         };
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
@@ -207,8 +250,16 @@ public class KernelTests
         await kernel.RunAsync(func);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetStreamingCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextCompletion2.Verify(a => a.GetStreamingCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+        if (useStream)
+        {
+            mockTextCompletion1.Verify(a => a.GetStreamingCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
+            mockTextCompletion2.Verify(a => a.GetStreamingCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+        }
+        else
+        {
+            mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
+            mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+        }
     }
 
     [Fact]
@@ -237,13 +288,13 @@ public class KernelTests
     }
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
+    [InlineData(1, true)]
+    [InlineData(2, false)]
+    public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount, bool useStream)
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests", requestSettings: new() { Streaming = useStream });
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
@@ -263,7 +314,14 @@ public class KernelTests
 
         // Assert
         Assert.Equal(pipelineCount, invoked);
-        mockTextCompletion.Verify(m => m.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        if (useStream)
+        {
+            mockTextCompletion.Verify(m => m.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        }
+        else
+        {
+            mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        }
     }
 
     [Fact]
@@ -377,13 +435,19 @@ public class KernelTests
     }
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
+    [InlineData(1, null)]
+    [InlineData(1, true)]
+    [InlineData(1, false)]
+    [InlineData(2, null)]
+    [InlineData(2, true)]
+    [InlineData(2, false)]
+    public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount, bool? useStream)
     {
         // Arrange
         var sut = Kernel.Builder.Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
+        AIRequestSettings? requestSettings = (useStream is null) ? null : new() { Streaming = useStream };
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests", requestSettings: requestSettings);
+
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
@@ -405,7 +469,14 @@ public class KernelTests
 
         // Assert
         Assert.Equal(pipelineCount, invoked);
-        mockTextCompletion.Verify(m => m.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        if (useStream == true)
+        {
+            mockTextCompletion.Verify(m => m.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        }
+        else
+        {
+            mockTextCompletion.Verify(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()), Times.Exactly(pipelineCount));
+        }
     }
 
     [Fact]
@@ -484,20 +555,63 @@ public class KernelTests
 
         // Assert
         Assert.NotNull(kernelResult);
-        var resultText = string.Join(string.Empty, kernelResult.GetValue<IAsyncEnumerable<string>>()!.ToEnumerable());
+        Assert.Equal("Result3", kernelResult.GetValue<string>());
 
-        Assert.Equal("Result3", resultText);
+        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1" && l.PluginName == PluginName);
+        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == PluginName);
+        var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3" && l.PluginName == PluginName);
+
+        Assert.Equal("Result1", functionResult1.GetValue<string>());
+        Assert.Equal("Result2", functionResult2.GetValue<string>());
+        Assert.Equal("Result3", functionResult3.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task ItReturnsStreamingFunctionResultsCorrectlyAsync()
+    {
+        // Arrange
+        [SKName("Function1")]
+        static string Function1() => "Result1";
+
+        [SKName("Function2")]
+        static string Function2() => "Result2";
+
+        const string PluginName = "MyPlugin";
+        const string Prompt = "Write a simple phrase about UnitTests";
+
+        var kernel = Kernel.Builder.Build();
+
+        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
+        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
+
+        var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", pluginName: PluginName, requestSettings: new()
+        {
+            Streaming = true
+        });
+
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
+
+        function3.SetAIService(() => mockTextCompletion.Object);
+
+        // Act
+        var kernelResult = await kernel.RunAsync(function1, function2, function3);
+
+        // Assert
+        Assert.NotNull(kernelResult);
 
         var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1" && l.PluginName == PluginName);
         var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == PluginName);
         var functionResult3 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function3" && l.PluginName == PluginName);
 
         var function3Result = functionResult3.GetValue<string>();
-        var function3ResultStreamText = string.Join(string.Empty, functionResult3.GetValue<IAsyncEnumerable<string>>()!.ToEnumerable());
-
         Assert.Equal("Result1", functionResult1.GetValue<string>());
         Assert.Equal("Result2", functionResult2.GetValue<string>());
         Assert.Equal("Result3", function3Result);
+
+        var resultText = string.Join(string.Empty, kernelResult.GetValue<IAsyncEnumerable<string>>()!.ToEnumerable());
+        Assert.Equal("Result3", resultText);
+
+        var function3ResultStreamText = string.Join(string.Empty, functionResult3.GetValue<IAsyncEnumerable<string>>()!.ToEnumerable());
         Assert.Equal("Result3", function3ResultStreamText);
     }
 
@@ -538,9 +652,11 @@ public class KernelTests
     {
         var mockTextResult = new Mock<ITextStreamingResult>();
         mockTextResult.Setup(m => m.GetCompletionStreamingAsync(It.IsAny<CancellationToken>())).Returns(() => new List<string> { completionResult ?? "LLM Result about UnitTests" }.ToAsyncEnumerable());
+        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
 
         var mockTextCompletion = new Mock<ITextCompletion>();
         mockTextCompletion.Setup(m => m.GetStreamingCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).Returns(new List<ITextStreamingResult> { mockTextResult.Object }.ToAsyncEnumerable());
+        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextStreamingResult> { mockTextResult.Object });
 
         return (mockTextResult, mockTextCompletion);
     }
