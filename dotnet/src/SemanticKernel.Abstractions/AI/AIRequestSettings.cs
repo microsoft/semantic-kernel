@@ -17,14 +17,14 @@ public class AIRequestSettings
 {
     /// <summary>
     /// Service identifier.
-    /// This idetifies a service and is set when the AI service is registered.
+    /// This identifies a service and is set when the AI service is registered.
     /// </summary>
     [JsonPropertyName("service_id")]
     public string? ServiceId { get; set; } = null;
 
     /// <summary>
     /// Model identifier.
-    /// This idetifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
+    /// This identifies the AI model these settings are configured for e.g., gpt-4, gpt-3.5-turbo
     /// </summary>
     [JsonPropertyName("model_id")]
     public string? ModelId { get; set; } = null;
