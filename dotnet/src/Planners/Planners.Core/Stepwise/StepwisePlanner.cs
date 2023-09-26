@@ -64,7 +64,7 @@ public class StepwisePlanner : IStepwisePlanner
         {
             this._promptConfig.Completion = new AIRequestSettings();
         }
-        this._promptConfig.Completion.ExtensionData["max_tokens"] = this.Config.MaxCompletionTokens;
+        this._promptConfig.Completion.ExtensionData["MaxTokens"] = this.Config.MaxCompletionTokens;
 
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
