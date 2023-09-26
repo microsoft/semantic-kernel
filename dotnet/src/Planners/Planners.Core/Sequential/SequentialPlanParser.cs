@@ -41,26 +41,6 @@ internal static class SequentialPlanParser
     /// </summary>
     internal const string AppendToResultTag = "appendToResult";
 
-    internal static Func<string, string, ISKFunction?> GetFunctionCallback(IReadOnlyFunctionCollection functions)
-    {
-        return (pluginName, functionName) =>
-        {
-            if (string.IsNullOrEmpty(pluginName))
-            {
-                if (functions.TryGetFunction(functionName, out var pluginFunction))
-                {
-                    return pluginFunction;
-                }
-            }
-            else if (functions.TryGetFunction(pluginName, functionName, out var pluginFunction))
-            {
-                return pluginFunction;
-            }
-
-            return null;
-        };
-    }
-
     /// <summary>
     /// Convert a plan xml string to a plan.
     /// </summary>
@@ -136,7 +116,7 @@ internal static class SequentialPlanParser
                 if (childNode.Name.StartsWith(FunctionTag, StringComparison.OrdinalIgnoreCase))
                 {
                     var pluginFunctionName = childNode.Name.Split(s_functionTagArray, StringSplitOptions.None)?[1] ?? string.Empty;
-                    GetFunctionCallbackNames(pluginFunctionName, out var pluginName, out var functionName);
+                    FunctionUtils.SplitPluginFunctionName(pluginFunctionName, out var pluginName, out var functionName);
 
                     if (!string.IsNullOrEmpty(functionName))
                     {
@@ -206,13 +186,6 @@ internal static class SequentialPlanParser
         }
 
         return plan;
-    }
-
-    private static void GetFunctionCallbackNames(string pluginFunctionName, out string pluginName, out string functionName)
-    {
-        var pluginFunctionNameParts = pluginFunctionName.Split('.');
-        pluginName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[0] : string.Empty;
-        functionName = pluginFunctionNameParts?.Length > 1 ? pluginFunctionNameParts[1] : pluginFunctionName;
     }
 
     private static readonly string[] s_functionTagArray = new string[] { FunctionTag };
