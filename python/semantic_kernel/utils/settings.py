@@ -184,6 +184,24 @@ def google_palm_settings_from_dot_env() -> str:
     return api_key
 
 
+def azure_cosmos_db_settings_from_dot_env() -> dict:
+    """
+    Reads the Azure CosmosDB environment variables for the .env file.
+
+    Returns:
+        dict: The Azure CosmosDB environment variables
+    """
+    config = dotenv_values(".env")
+    env_variables = {
+        "AZCOSMOS_API": "mongo",  # Right now CosmosDB only supports vector search in Mongo.
+        "AZCOSMOS_CONNSTR": config.get("AZCOSMOS_CONNSTR"),
+        "AZCOSMOS_DATABASE_NAME": config.get("AZCOSMOS_DATABASE_NAME"),
+        "AZCOSMOS_CONTAINER_NAME": config.get("AZCOSMOS_CONTAINER_NAME")
+    }
+
+    return env_variables
+
+
 def redis_settings_from_dot_env() -> str:
     """Reads the Redis connection string from the .env file.
 

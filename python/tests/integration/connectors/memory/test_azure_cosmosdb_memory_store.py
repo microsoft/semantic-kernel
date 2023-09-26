@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from datetime import datetime
-
 import pytest
 import numpy as np
+
+from datetime import datetime
 
 from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import \
     AzureCosmosDBMemoryStore

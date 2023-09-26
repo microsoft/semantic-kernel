@@ -2,24 +2,24 @@
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Tuple, List
+from typing import List, Tuple
 
 import numpy as np
-from dotenv import load_dotenv
 from numpy import ndarray
 from pymongo.mongo_client import MongoClient
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
+from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
 
 # Load environment variables
-load_dotenv()
+config = azure_cosmos_db_settings_from_dot_env()
 
-# Read environment variables for Mongo
-AZCOSMOS_API = os.getenv("AZCOSMOS_API", "mongo")
-AZCOSMOS_CONNSTR = os.getenv("AZCOSMOS_CONNSTR")
-AZCOSMOS_DATABASE_NAME = os.getenv("AZCOSMOS_DATABASE_NAME")
-AZCOSMOS_CONTAINER_NAME = os.getenv("AZCOSMOS_CONTAINER_NAME")
+# Read environment variables for Cosmos DB
+AZCOSMOS_API = config["AZCOSMOS_API"]
+AZCOSMOS_CONNSTR = config["AZCOSMOS_CONNSTR"]
+AZCOSMOS_DATABASE_NAME = config["AZCOSMOS_DATABASE_NAME"]
+AZCOSMOS_CONTAINER_NAME = config["AZCOSMOS_CONTAINER_NAME"]
 assert AZCOSMOS_API is not None
 assert AZCOSMOS_CONNSTR is not None
 assert AZCOSMOS_DATABASE_NAME is not None
