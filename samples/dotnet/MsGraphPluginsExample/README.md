@@ -1,5 +1,10 @@
 ﻿# Graph API Plugin Example
 
+> [!IMPORTANT]
+> This sample will be removed in a future release. If you are looking for samples that demonstrate
+> how to use Semantic Kernel, please refer to the sample folders in the root [python](../../../python/samples/)
+> and [dotnet](../../../dotnet/samples/) folders.
+
 This example program demonstrates how to use the Microsoft Graph API plugins with the Semantic Kernel.
 
 ## Setup
