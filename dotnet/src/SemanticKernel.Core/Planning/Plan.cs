@@ -359,6 +359,7 @@ public sealed class Plan : IPlan
                 this.UpdateContextWithOutputs(context);
 
                 result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
+                this.UpdateFunctionResultWithOutputs(result);
             }
         }
 
@@ -486,6 +487,26 @@ public sealed class Plan : IPlan
         }
 
         return context;
+    }
+
+    private FunctionResult UpdateFunctionResultWithOutputs(FunctionResult functionResult)
+    {
+        var resultString = this.State.TryGetValue(DefaultResultKey, out string? result) ? result : this.State.ToString();
+
+        // copy previous step's variables to the next step
+        foreach (string item in this._steps[this.NextStepIndex - 1].Outputs)
+        {
+            if (this.State.TryGetValue(item, out string? val))
+            {
+                functionResult.Metadata[item] = val;
+            }
+            else
+            {
+                functionResult.Metadata[item] = resultString;
+            }
+        }
+
+        return functionResult;
     }
 
     /// <summary>
