@@ -50,11 +50,11 @@ after this event Caroline became his wife.""";
 
     public static async Task RunAsync()
     {
-        await GroundednessCheckingSkillAsync();
+        await GroundednessCheckingAsync();
         await PlanningWithGroundednessAsync();
     }
 
-    public static async Task GroundednessCheckingSkillAsync()
+    public static async Task GroundednessCheckingAsync()
     {
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
@@ -180,9 +180,9 @@ which are not grounded in the original.
 Steps:
   - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
   - SummarizePlugin.Summarize INPUT='' => RESULT__SUMMARY
-  - GroundingSkill.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
-  - GroundingSkill.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
-  - GroundingSkill.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
+  - GroundingPlugin.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
+  - GroundingPlugin.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
+  - GroundingPlugin.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
 A possible summary is:
 
 

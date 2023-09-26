@@ -105,9 +105,9 @@ public static class Example51_StepwisePlanner
     {
         currentExecutionResult.question = question;
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
-        kernel.ImportFunctions(webSearchEngineSkill, "WebSearch");
+        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
         kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "semanticCalculator");
         kernel.ImportFunctions(new TimePlugin(), "time");
 
