@@ -213,12 +213,29 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
             var modelResults = new List<ModelResult>();
 
-            if (this.CanStream(requestSettings))
+            if (requestSettings?.Streaming == true)
             {
+                int resultsCount = (requestSettings is not null && requestSettings.ExtensionData.TryGetValue("results_per_prompt", out var results))
+                                        ? (int)results : 1;
+
+                int currentResult = 0;
                 var getEnumerator = client.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
-                await getEnumerator.MoveNextAsync().ConfigureAwait(false);
-                var firstResult = getEnumerator.Current;
-                modelResults.Add(getEnumerator.Current.ModelResult);
+                ITextStreamingResult? firstResult = null;
+
+                while (await getEnumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    currentResult++;
+                    firstResult ??= getEnumerator.Current;
+                    modelResults.Add(getEnumerator.Current.ModelResult);
+
+                    if (resultsCount == currentResult)
+                    {
+                        // For some unknown reason, checking the final result makes result not streaming anymore
+                        // This break prevents going to the last result.
+                        break;
+                    }
+                }
+
                 result = new FunctionResult(this.Name, this.PluginName, context, firstResult!.GetCompletionStreamingAsync(cancellationToken));
             }
             else
@@ -238,17 +255,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         }
 
         return result;
-    }
-
-    // To be able to stream, the request settings must allow streaming and only one result must be requested
-    private bool CanStream(AIRequestSettings? requestSettings)
-    {
-        var streamEnabled = requestSettings?.Streaming ?? false;
-        var multipleResultsRequested = requestSettings is not null
-                                       && requestSettings.ExtensionData.TryGetValue("results_per_prompt", out var results)
-                                       && (int)results > 1;
-
-        return streamEnabled && !multipleResultsRequested;
     }
     #endregion
 

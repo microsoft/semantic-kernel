@@ -283,9 +283,16 @@ public abstract class ClientBase
         ChatHistory chat = PrepareChatHistory(text, requestSettings, out OpenAIRequestSettings chatSettings);
 
         IAsyncEnumerable<IChatStreamingResult> chatCompletionStreamingResults = this.InternalGetChatStreamingResultsAsync(chat, chatSettings, cancellationToken);
+        var resultCount = 0;
         await foreach (var chatCompletionStreamingResult in chatCompletionStreamingResults)
         {
+            resultCount++;
             yield return (ITextStreamingResult)chatCompletionStreamingResult;
+
+            if (resultCount >= chatSettings.ResultsPerPrompt)
+            {
+                break;
+            }
         }
     }
 

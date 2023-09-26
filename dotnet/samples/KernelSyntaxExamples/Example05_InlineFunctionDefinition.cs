@@ -64,11 +64,12 @@ Event: {{$input}}
         Console.WriteLine(result.GetValue<string>());
 
         // Streaming result
-        fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format",
+        fixedFunction = kernel.CreateSemanticFunction($"Write a paragraph about streaming",
                 requestSettings: new OpenAIRequestSettings
                 {
                     Streaming = true,
-                    MaxTokens = 100
+                    MaxTokens = 1000,
+                    ResultsPerPrompt = 1
                 });
 
         await foreach (string token in (await kernel.RunAsync(fixedFunction)).GetValue<IAsyncEnumerable<string>>()!)
