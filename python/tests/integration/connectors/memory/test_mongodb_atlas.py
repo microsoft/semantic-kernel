@@ -26,6 +26,7 @@ pytestmark = pytest.mark.skipif(
 )
 DUPLICATE_INDEX_ERR_CODE = 68
 READ_ONLY_COLLECTION = "nearestSearch"
+DIMENSIONS = 3
 
 
 def is_equal_memory_record(
@@ -48,7 +49,7 @@ def memory_record_gen():
             id=str(_id),
             text=f"{_id} text",
             is_reference=False,
-            embedding=np.array([1 / (_id + 1)] * 3),
+            embedding=np.array([1 / (_id + val) for val in range(0, DIMENSIONS)]),
             description=f"{_id} description",
             external_source_name=f"{_id} external source",
             additional_metadata=f"{_id} additional metadata",
@@ -209,7 +210,8 @@ async def test_collection_batch_get(
 
 @pytest.mark.asyncio
 async def test_collection_knn_match(read_only_vector_search, memory_record_gen):
-    mem = memory_record_gen(3)
+    mem = memory_record_gen(7)
+    await read_only_vector_search.upsert_async(READ_ONLY_COLLECTION, mem)
     result, score = await read_only_vector_search.get_nearest_match_async(
         collection_name=READ_ONLY_COLLECTION,
         embedding=mem._embedding,
@@ -242,6 +244,9 @@ async def knn_matcher(
 @pytest.mark.asyncio
 async def test_collection_knn_matches(read_only_vector_search, memory_record_gen):
     mems = {str(i): memory_record_gen(i) for i in range(1, 4)}
+    await read_only_vector_search.upsert_batch_async(
+        READ_ONLY_COLLECTION, mems.values()
+    )
     await knn_matcher(
         read_only_vector_search,
         READ_ONLY_COLLECTION,
