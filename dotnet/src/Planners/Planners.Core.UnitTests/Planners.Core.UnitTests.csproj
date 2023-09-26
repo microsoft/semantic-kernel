@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>SemanticKernel.Extensions.UnitTests</AssemblyName>
-    <RootNamespace>SemanticKernel.Extensions.UnitTests</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.Planners.Core.UnitTests</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Planners.UnitTests</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
     <RollForward>LatestMajor</RollForward>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <NoWarn>CA2007,VSTHRD111</NoWarn>
   </PropertyGroup>
@@ -28,9 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
-    <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
+    <ProjectReference Include="..\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
 
 </Project>
