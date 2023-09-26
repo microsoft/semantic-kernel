@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 
@@ -55,27 +54,15 @@ internal sealed class CodeBlock : Block, ICodeRendering
             }
         }
 
-        if (this._tokens.Count > 1)
+        if (this._tokens.Count > 0 && this._tokens[0].Type == BlockTypes.NamedArg)
         {
-            if (this._tokens[0].Type != BlockTypes.FunctionId)
-            {
-                errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
-                this.Logger.LogError(errorMsg);
-                return false;
-            }
-
-            if (this._tokens[1].Type is not BlockTypes.Value and not BlockTypes.Variable)
-            {
-                errorMsg = "Functions support only one parameter";
-                this.Logger.LogError(errorMsg);
-                return false;
-            }
+            errorMsg = "Unexpected named argument found. Expected function name first.";
+            this.Logger.LogError(errorMsg);
+            return false;
         }
 
-        if (this._tokens.Count > 2)
+        if (this._tokens.Count > 1 && !this.IsValidFunctionCall(out errorMsg))
         {
-            errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
-            this.Logger.LogError(errorMsg);
             return false;
         }
 
@@ -92,7 +79,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
             throw new SKException(error);
         }
 
-        this.Logger.LogTrace("Rendering code: `{0}`", this.Content);
+        this.Logger.LogTrace("Rendering code: `{Content}`", this.Content);
 
         switch (this._tokens[0].Type)
         {
@@ -114,12 +101,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
     private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context)
     {
-        if (context.Skills == null)
+        if (context.Functions == null)
         {
-            throw new SKException("Skill collection not found in the context");
+            throw new SKException("Function collection not found in the context");
         }
 
-        if (!this.GetFunctionFromSkillCollection(context.Skills!, fBlock, out ISKFunction? function))
+        if (!this.GetFunction(context.Functions!, fBlock, out ISKFunction? function))
         {
             var errorMsg = $"Function `{fBlock.Content}` not found";
             this.Logger.LogError(errorMsg);
@@ -132,52 +119,105 @@ internal sealed class CodeBlock : Block, ICodeRendering
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
         {
-            // Sensitive data, logging as trace, disabled by default
-            this.Logger.LogTrace("Passing variable/value: `{0}`", this._tokens[1].Content);
-
-            string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
-            // Keep previous trust information when updating the input
-            contextClone.Variables.Update(input);
+            contextClone = this.PopulateContextWithFunctionArguments(contextClone);
         }
 
-        Exception? localException = null;
         try
         {
-            contextClone = await function!.InvokeAsync(contextClone).ConfigureAwait(false);
+            await function!.InvokeAsync(contextClone).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            this.Logger.LogError(ex, "Something went wrong when invoking function with custom input: {0}.{1}. Error: {2}",
-                function!.SkillName, function.Name, ex.Message);
-            localException = ex;
-        }
-
-        if (contextClone.ErrorOccurred || localException is not null)
-        {
-            var lastException = localException ?? contextClone.LastException;
-            var errorMsg = $"Function `{fBlock.Content}` execution failed. {lastException?.GetType().FullName}: {lastException?.Message}";
-            this.Logger.LogError(errorMsg);
-            throw new SKException(errorMsg, lastException);
+            this.Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", function!.PluginName, function.Name, ex.Message);
+            throw;
         }
 
         return contextClone.Result;
     }
 
-    private bool GetFunctionFromSkillCollection(
-        IReadOnlySkillCollection skills,
+    private bool GetFunction(
+        IReadOnlyFunctionCollection functions,
         FunctionIdBlock fBlock,
         out ISKFunction? function)
     {
-        if (string.IsNullOrEmpty(fBlock.SkillName))
+        if (string.IsNullOrEmpty(fBlock.PluginName))
         {
-            // Function in the global skill
-            return skills.TryGetFunction(fBlock.FunctionName, out function);
+            // Function in the global plugin
+            return functions.TryGetFunction(fBlock.FunctionName, out function);
         }
 
-        // Function within a specific skill
-        return skills.TryGetFunction(fBlock.SkillName, fBlock.FunctionName, out function);
+        // Function within a specific plugin
+        return functions.TryGetFunction(fBlock.PluginName, fBlock.FunctionName, out function);
     }
 
+    private bool IsValidFunctionCall(out string errorMsg)
+    {
+        errorMsg = "";
+        if (this._tokens[0].Type != BlockTypes.FunctionId)
+        {
+            errorMsg = $"Unexpected second token found: {this._tokens[1].Content}";
+            this.Logger.LogError(errorMsg);
+            return false;
+        }
+
+        if (this._tokens[1].Type is not BlockTypes.Value and not BlockTypes.Variable and not BlockTypes.NamedArg)
+        {
+            errorMsg = "The first arg of a function must be a quoted string, variable or named argument";
+            this.Logger.LogError(errorMsg);
+            return false;
+        }
+
+        for (int i = 2; i < this._tokens.Count; i++)
+        {
+            if (this._tokens[i].Type is not BlockTypes.NamedArg)
+            {
+                errorMsg = $"Functions only support named arguments after the first argument. Argument {i} is not named.";
+                this.Logger.LogError(errorMsg);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private SKContext PopulateContextWithFunctionArguments(SKContext context)
+    {
+        // Clone the context to avoid unexpected and hard to test input mutation
+        var contextClone = context.Clone();
+        var firstArg = this._tokens[1];
+
+        // Sensitive data, logging as trace, disabled by default
+        this.Logger.LogTrace("Passing variable/value: `{Content}`", firstArg.Content);
+
+        var namedArgsStartIndex = 1;
+        if (firstArg.Type is not BlockTypes.NamedArg)
+        {
+            string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
+            // Keep previous trust information when updating the input
+            contextClone.Variables.Update(input);
+            namedArgsStartIndex++;
+        }
+
+        for (int i = namedArgsStartIndex; i < this._tokens.Count; i++)
+        {
+            var arg = this._tokens[i] as NamedArgBlock;
+
+            // When casting fails because the block isn't a NamedArg, arg is null
+            if (arg == null)
+            {
+                var errorMsg = "Functions support up to one positional argument";
+                this.Logger.LogError(errorMsg);
+                throw new SKException($"Unexpected first token type: {this._tokens[i].Type:G}");
+            }
+
+            // Sensitive data, logging as trace, disabled by default
+            this.Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
+
+            contextClone.Variables.Set(arg.Name, arg.GetValue(context.Variables));
+        }
+
+        return contextClone;
+    }
     #endregion
 }
 // ReSharper restore TemplateIsNotCompileTimeConstantProblem

@@ -4,13 +4,13 @@ from logging import Logger
 from typing import List, Optional, Tuple
 
 import numpy as np
-from numpy import ndarray
-
 import redis
+from numpy import ndarray
 from redis.commands.search.field import TextField, VectorField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 from redis.exceptions import ResponseError
+
 from semantic_kernel.connectors.memory.redis.utils import (
     deserialize_document_to_record,
     deserialize_redis_to_record,

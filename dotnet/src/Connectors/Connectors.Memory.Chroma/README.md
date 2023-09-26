@@ -2,6 +2,8 @@
 
 This assembly contains implementation of Semantic Kernel Memory Store using [Chroma](https://docs.trychroma.com/), open-source embedding database.
 
+**Note:** Chroma connector is verified using Chroma version **0.4.10**. Any higher versions may introduce incompatibility.
+
 ## Quickstart using local Chroma server
 
 1. Clone Chroma:

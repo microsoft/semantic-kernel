@@ -20,24 +20,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Tokenizers\Settings\encoder.json" />
-    <Content Include="Tokenizers\Settings\encoder.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-    <None Remove="Tokenizers\Settings\vocab.bpe" />
-    <Content Include="Tokenizers\Settings\vocab.bpe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
   </ItemGroup>
 
 </Project>
