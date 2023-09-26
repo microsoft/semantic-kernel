@@ -95,6 +95,7 @@ public class StepwisePlanner : IStepwisePlanner
         Plan plan = new(goal);
 
         plan.AddSteps(planStep);
+        plan.Outputs.Add("iterations");
 
         return plan;
     }

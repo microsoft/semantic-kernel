@@ -348,6 +348,7 @@ public sealed class Plan : IPlan
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(context, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
+            this.UpdateFunctionResultWithOutputs(result);
         }
         else
         {
@@ -489,20 +490,22 @@ public sealed class Plan : IPlan
         return context;
     }
 
+    /// <summary>
+    /// Update the function result with the outputs from the current state.
+    /// </summary>
+    /// <param name="functionResult">The function result to update.</param>
+    /// <returns>The updated function result.</returns>
     private FunctionResult UpdateFunctionResultWithOutputs(FunctionResult functionResult)
     {
-        var resultString = this.State.TryGetValue(DefaultResultKey, out string? result) ? result : this.State.ToString();
-
-        // copy previous step's variables to the next step
-        foreach (string item in this._steps[this.NextStepIndex - 1].Outputs)
+        foreach (var output in this.Outputs)
         {
-            if (this.State.TryGetValue(item, out string? val))
+            if (this.State.ContainsKey(output))
             {
-                functionResult.Metadata[item] = val;
+                functionResult.Metadata[output] = this.State[output];
             }
-            else
+            else if (functionResult.Context.Variables.TryGetValue(output, out var val))
             {
-                functionResult.Metadata[item] = resultString;
+                functionResult.Metadata[output] = val;
             }
         }
 

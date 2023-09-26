@@ -765,6 +765,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         // Assert
         Assert.Equal(expected, result.Context.Result);
         Assert.Equal(expected, result.GetValue<string>());
+        Assert.True(result.TryGetMetadataValue<string>("RESULT__CHAPTER_1", out var chapter1));
+        Assert.True(result.TryGetMetadataValue<string>("RESULT__CHAPTER_2", out var chapter2));
+        Assert.True(result.TryGetMetadataValue<string>("CHAPTER_3", out var chapter3));
+        Assert.False(result.TryGetMetadataValue<string>("CHAPTER_3_SYNOPSIS", out var chapter3Synopsis));
     }
 
     [Fact]
