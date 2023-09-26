@@ -29,7 +29,7 @@ public static class Example24_OpenApiPlugin_Jira
         string serverUrl = $"https://{TestConfiguration.Jira.Domain}.atlassian.net/rest/api/latest/";
         contextVariables.Set("server-url", serverUrl);
 
-        IDictionary<string, ISKFunction> jiraSkills;
+        IDictionary<string, ISKFunction> jiraFunctions;
         var tokenProvider = new BasicAuthenticationProvider(() =>
         {
             string s = $"{TestConfiguration.Jira.Email}:{TestConfiguration.Jira.ApiKey}";
@@ -42,40 +42,40 @@ public static class Example24_OpenApiPlugin_Jira
         bool useLocalFile = true;
         if (useLocalFile)
         {
-            var apiSkillFile = "./../../../Skills/JiraSkill/openapi.json";
-            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillFile, new OpenApiFunctionExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
+            var apiPluginFile = "./../../../Plugins/JiraPlugin/openapi.json";
+            jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginFile, new OpenApiFunctionExecutionParameters(authCallback: tokenProvider.AuthenticateRequestAsync));
         }
         else
         {
-            var apiSkillRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
-            jiraSkills = await kernel.ImportAIPluginAsync("jiraSkills", apiSkillRawFileURL, new OpenApiFunctionExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
+            var apiPluginRawFileURL = new Uri("https://raw.githubusercontent.com/microsoft/PowerPlatformConnectors/dev/certified-connectors/JIRA/apiDefinition.swagger.json");
+            jiraFunctions = await kernel.ImportPluginFunctionsAsync("jiraPlugin", apiPluginRawFileURL, new OpenApiFunctionExecutionParameters(httpClient, tokenProvider.AuthenticateRequestAsync));
         }
 
-        // GetIssue Skill
+        // GetIssue Function
         {
             // Set Properties for the Get Issue operation in the openAPI.swagger.json
             contextVariables.Set("issueKey", "SKTES-2");
 
             // Run operation via the semantic kernel
-            var result = await kernel.RunAsync(contextVariables, jiraSkills["GetIssue"]);
+            var result = await kernel.RunAsync(contextVariables, jiraFunctions["GetIssue"]);
 
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
-            Console.WriteLine("GetIssue jiraSkills response: \n{0}", formattedContent);
+            Console.WriteLine("GetIssue jiraPlugin response: \n{0}", formattedContent);
         }
 
-        // AddComment Skill
+        // AddComment Function
         {
             // Set Properties for the AddComment operation in the openAPI.swagger.json
             contextVariables.Set("issueKey", "SKTES-1");
             contextVariables.Set("body", "Here is a rad comment");
 
             // Run operation via the semantic kernel
-            var result = await kernel.RunAsync(contextVariables, jiraSkills["AddComment"]);
+            var result = await kernel.RunAsync(contextVariables, jiraFunctions["AddComment"]);
 
             Console.WriteLine("\n\n\n");
             var formattedContent = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(result.GetValue<string>()!), Formatting.Indented);
-            Console.WriteLine("AddComment jiraSkills response: \n{0}", formattedContent);
+            Console.WriteLine("AddComment jiraPlugin response: \n{0}", formattedContent);
         }
     }
 }
