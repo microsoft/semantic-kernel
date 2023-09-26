@@ -80,6 +80,20 @@ public static class KernelAIPluginExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string pluginName,
+        Uri uri,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await kernel.ImportPluginFunctionsAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+    }
+#pragma warning restore CS1591
+
     /// <summary>
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
