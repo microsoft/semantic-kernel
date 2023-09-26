@@ -3,6 +3,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
@@ -52,7 +53,7 @@ public static class Example59_OpenAIFunctionCalling
             .Build();
 
         // Load functions to kernel
-        kernel.ImportPlugin(new TimePlugin(), "TimePlugin");
+        kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
         await kernel.ImportAIPluginAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters());
 
         return kernel;
@@ -71,6 +72,9 @@ public static class Example59_OpenAIFunctionCalling
         if (!string.IsNullOrEmpty(chatMessage.Content))
         {
             Console.WriteLine(chatMessage.Content);
+
+            // Add the response to chat history
+            chatHistory.AddAssistantMessage(chatMessage.Content);
         }
 
         // Check for function response
@@ -90,8 +94,14 @@ public static class Example59_OpenAIFunctionCalling
             // you can invoke it using the following code.
             if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
             {
-                var result = await kernel.RunAsync(func, context).ConfigureAwait(false);
-                Console.WriteLine(result.GetValue<string>());
+                var result = (await kernel.RunAsync(func, context)).GetValue<string>();
+                if (!string.IsNullOrEmpty(result))
+                {
+                    Console.WriteLine(result);
+
+                    // Add the function result to chat history
+                    chatHistory.AddAssistantMessage(result);
+                }
             }
             else
             {
