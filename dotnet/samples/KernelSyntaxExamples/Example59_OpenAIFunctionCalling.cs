@@ -53,7 +53,7 @@ public static class Example59_OpenAIFunctionCalling
 
         // Load functions to kernel
         kernel.ImportFunctions(new TimePlugin(), "TimePlugin");
-        await kernel.ImportAIPluginAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters());
+        await kernel.ImportPluginFunctionsAsync("KlarnaShoppingPlugin", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters());
 
         return kernel;
     }
