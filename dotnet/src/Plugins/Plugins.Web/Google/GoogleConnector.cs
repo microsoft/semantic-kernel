@@ -63,9 +63,15 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
         int offset,
         CancellationToken cancellationToken)
     {
-        if (count is <= 0 or > 10) { throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be between 0 and 10, inclusive."); }
+        if (count is <= 0 or > 10)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be must be greater than 0 and less than or equals 10.");
+        }
 
-        if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
 
         var search = this._search.Cse.List();
         search.Cx = this._searchEngineId;
