@@ -20,13 +20,13 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
 
     public ModelResult ModelResult => this._responseData;
 
-    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    public Task<string> GetTextAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._responseData.GetResult<TextCompletionResponse>().Text ?? string.Empty);
     }
 
-    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetTextStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        yield return await this.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+        yield return await this.GetTextAsync(cancellationToken).ConfigureAwait(false);
     }
 }

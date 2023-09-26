@@ -67,7 +67,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextStreamingC
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    public IAsyncEnumerable<ITextStreamingResult> GetTextStreamingResultsAsync(
         string text,
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
@@ -77,7 +77,7 @@ public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextStreamingC
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+    public Task<IReadOnlyList<ITextResult>> GetTextResultsAsync(
         string text,
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)

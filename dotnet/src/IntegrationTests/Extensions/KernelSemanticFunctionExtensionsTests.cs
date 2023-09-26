@@ -71,14 +71,14 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         this._logger.Dispose();
     }
 
-    private sealed class RedirectTextCompletion : ITextCompletion
+    private sealed class RedirectTextCompletion : ITextStreamingCompletion
     {
-        public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<ITextResult>> GetTextResultsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult> { new RedirectTextCompletionResult(text) });
         }
 
-        public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
+        public IAsyncEnumerable<ITextStreamingResult> GetTextStreamingResultsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken)
         {
             return new List<ITextStreamingResult> { new RedirectTextCompletionResult(text) }.ToAsyncEnumerable();
         }
@@ -95,12 +95,12 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
 
         public ModelResult ModelResult => new(this._completion);
 
-        public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+        public Task<string> GetTextAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(this._completion);
         }
 
-        public IAsyncEnumerable<string> GetCompletionStreamingAsync(CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<string> GetTextStreamingAsync(CancellationToken cancellationToken = default)
         {
             return new[] { this._completion }.ToAsyncEnumerable();
         }

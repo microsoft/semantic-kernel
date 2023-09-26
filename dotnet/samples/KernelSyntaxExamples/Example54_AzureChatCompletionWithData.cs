@@ -38,7 +38,7 @@ public static class Example54_AzureChatCompletionWithData
         chatHistory.AddUserMessage(ask);
 
         // Chat Completion example
-        var chatResult = (await chatCompletion.GetChatCompletionsAsync(chatHistory))[0];
+        var chatResult = (await chatCompletion.GetChatResultsAsync(chatHistory))[0];
         var chatMessage = await chatResult.GetChatMessageAsync();
 
         var response = chatMessage.Content;
@@ -67,9 +67,9 @@ public static class Example54_AzureChatCompletionWithData
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine("Response: ");
 
-        await foreach (var result in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory))
+        await foreach (var result in chatCompletion.GetChatStreamingResultsAsync(chatHistory))
         {
-            await foreach (var message in result.GetStreamingChatMessageAsync())
+            await foreach (var message in result.GetChatMessageStreamingAsync())
             {
                 // Output
                 // Ask: What are Emily and David studying?

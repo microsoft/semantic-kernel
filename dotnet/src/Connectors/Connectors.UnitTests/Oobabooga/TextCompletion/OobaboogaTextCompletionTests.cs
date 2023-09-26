@@ -57,7 +57,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, null);
+        await sut.GetTextResultsAsync(CompletionText, null);
 
         //Assert
         Assert.True(this._messageHandlerStub.RequestHeaders?.Contains("User-Agent"));
@@ -78,7 +78,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, null);
+        await sut.GetTextResultsAsync(CompletionText, null);
 
         //Assert
         Assert.StartsWith(EndPoint, this._messageHandlerStub.RequestUri?.AbsoluteUri, StringComparison.OrdinalIgnoreCase);
@@ -94,7 +94,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText);
+        await sut.GetTextResultsAsync(CompletionText);
         var expectedUri = new UriBuilder(this._endPointUri)
         {
             Path = OobaboogaTextCompletion.BlockingUriPath,
@@ -115,7 +115,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        await sut.GetCompletionsAsync(CompletionText, null);
+        await sut.GetTextResultsAsync(CompletionText, null);
 
         //Assert
         var requestPayload = JsonSerializer.Deserialize<TextCompletionRequest>(this._messageHandlerStub.RequestContent);
@@ -134,7 +134,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
             logger: this._logger);
 
         //Act
-        var result = await sut.GetCompletionsAsync(CompletionText, null);
+        var result = await sut.GetTextResultsAsync(CompletionText, null);
 
         //Assert
         Assert.NotNull(result);
@@ -142,7 +142,7 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
         var completions = result.SingleOrDefault();
         Assert.NotNull(completions);
 
-        var completion = await completions.GetCompletionAsync();
+        var completion = await completions.GetTextAsync();
         Assert.Equal("This is test completion response", completion);
     }
 

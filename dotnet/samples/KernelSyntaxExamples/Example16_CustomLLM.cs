@@ -29,7 +29,7 @@ using RepoUtils;
  */
 public class MyTextCompletionService : ITextStreamingCompletion
 {
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<ITextResult>> GetTextResultsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<ITextResult>>(new List<ITextResult>
         {
@@ -37,7 +37,7 @@ public class MyTextCompletionService : ITextStreamingCompletion
         });
     }
 
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(string text, AIRequestSettings? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ITextStreamingResult> GetTextStreamingResultsAsync(string text, AIRequestSettings? requestSettings, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return new MyTextCompletionStreamingResult();
     }
@@ -62,7 +62,7 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
 
     public ModelResult ModelResult => this._modelResult;
 
-    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    public async Task<string> GetTextAsync(CancellationToken cancellationToken = default)
     {
         // Forcing a 2 sec delay (Simulating custom LLM lag)
         await Task.Delay(2000, cancellationToken);
@@ -70,7 +70,7 @@ providing personalized recommendations, entertainment, and assistance. AI is awe
         return Text;
     }
 
-    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetTextStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         yield return Environment.NewLine;
 

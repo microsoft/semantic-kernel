@@ -52,7 +52,7 @@ public sealed class AzureChatCompletionWithData : IChatStreamingCompletion, ITex
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+    public async Task<IReadOnlyList<IChatResult>> GetChatResultsAsync(
         ChatHistory chat,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -67,7 +67,7 @@ public sealed class AzureChatCompletionWithData : IChatStreamingCompletion, ITex
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
+    public IAsyncEnumerable<IChatStreamingResult> GetChatStreamingResultsAsync(
         ChatHistory chat,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -82,7 +82,7 @@ public sealed class AzureChatCompletionWithData : IChatStreamingCompletion, ITex
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+    public async Task<IReadOnlyList<ITextResult>> GetTextResultsAsync(
         string text,
         AIRequestSettings? requestSettings,
         CancellationToken cancellationToken = default)
@@ -91,13 +91,13 @@ public sealed class AzureChatCompletionWithData : IChatStreamingCompletion, ITex
 
         var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
-        return (await this.GetChatCompletionsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
+        return (await this.GetChatResultsAsync(chat, chatRequestSettings, cancellationToken).ConfigureAwait(false))
             .OfType<ITextResult>()
             .ToList();
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    public async IAsyncEnumerable<ITextStreamingResult> GetTextStreamingResultsAsync(
         string text,
         AIRequestSettings? requestSettings,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -106,7 +106,7 @@ public sealed class AzureChatCompletionWithData : IChatStreamingCompletion, ITex
 
         var chat = this.PrepareChatHistory(text, chatRequestSettings);
 
-        IAsyncEnumerable<IChatStreamingResult> results = this.GetStreamingChatCompletionsAsync(chat, chatRequestSettings, cancellationToken);
+        IAsyncEnumerable<IChatStreamingResult> results = this.GetChatStreamingResultsAsync(chat, chatRequestSettings, cancellationToken);
         await foreach (var result in results)
         {
             yield return (ITextStreamingResult)result;

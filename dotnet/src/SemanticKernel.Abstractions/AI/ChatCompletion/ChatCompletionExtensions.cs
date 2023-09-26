@@ -27,7 +27,7 @@ public static class ChatCompletionExtensions
         CancellationToken cancellationToken = default)
     {
         // Using var below results in Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'
-        IReadOnlyList<IChatResult> chatResults = await chatCompletion.GetChatCompletionsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<IChatResult> chatResults = await chatCompletion.GetChatResultsAsync(chat, requestSettings, cancellationToken).ConfigureAwait(false);
         var firstChatMessage = await chatResults[0].GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
         return firstChatMessage.Content;
     }

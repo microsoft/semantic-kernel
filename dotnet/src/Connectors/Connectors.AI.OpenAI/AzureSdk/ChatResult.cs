@@ -26,7 +26,7 @@ internal sealed class ChatResult : IChatResult, ITextResult
     public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
         => Task.FromResult<ChatMessageBase>(new SKChatMessage(this._choice.Message));
 
-    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    public Task<string> GetTextAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._choice.Message.Content);
     }

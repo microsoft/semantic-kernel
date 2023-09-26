@@ -68,7 +68,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatStreamingC
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(
+    public Task<IReadOnlyList<IChatResult>> GetChatResultsAsync(
         ChatHistory chat,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -78,7 +78,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatStreamingC
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(
+    public IAsyncEnumerable<IChatStreamingResult> GetChatStreamingResultsAsync(
         ChatHistory chat,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -94,7 +94,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatStreamingC
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    public IAsyncEnumerable<ITextStreamingResult> GetTextStreamingResultsAsync(
         string text,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -104,7 +104,7 @@ public sealed class AzureChatCompletion : AzureOpenAIClientBase, IChatStreamingC
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+    public Task<IReadOnlyList<ITextResult>> GetTextResultsAsync(
         string text,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)

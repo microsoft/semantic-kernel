@@ -26,10 +26,10 @@ public static class TextCompletionExtensions
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var completions = await textCompletion.GetCompletionsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
+        var completions = await textCompletion.GetTextResultsAsync(text, requestSettings, cancellationToken).ConfigureAwait(false);
         var firstResult = completions[0];
 
-        return await firstResult.GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+        return await firstResult.GetTextAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -46,11 +46,11 @@ public static class TextCompletionExtensions
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IAsyncEnumerable<ITextStreamingResult> completionResults = textCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
+        IAsyncEnumerable<ITextStreamingResult> completionResults = textCompletion.GetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
 
         await foreach (var completionResult in completionResults)
         {
-            await foreach (var word in completionResult.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var word in completionResult.GetTextStreamingAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return word;
             }
@@ -72,11 +72,11 @@ public static class TextCompletionExtensions
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IAsyncEnumerable<ITextStreamingResult> completionResults = textCompletion.GetStreamingCompletionsAsync(text, requestSettings, cancellationToken);
+        IAsyncEnumerable<ITextStreamingResult> completionResults = textCompletion.GetTextStreamingResultsAsync(text, requestSettings, cancellationToken);
 
         await foreach (var completionResult in completionResults)
         {
-            await foreach (var word in completionResult.GetCompletionStreamingAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var word in completionResult.GetTextStreamingAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return word;
             }

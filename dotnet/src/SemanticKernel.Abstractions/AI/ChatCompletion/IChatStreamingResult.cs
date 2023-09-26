@@ -15,5 +15,5 @@ public interface IChatStreamingResult : IChatResult
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Current chat message streaming content</returns>
-    IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync(CancellationToken cancellationToken = default);
+    IAsyncEnumerable<ChatMessageBase> GetChatMessageStreamingAsync(CancellationToken cancellationToken = default);
 }

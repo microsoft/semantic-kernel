@@ -32,7 +32,7 @@ public sealed class MyChatCompletionService : IChatStreamingCompletion
         return chatHistory;
     }
 
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<IChatResult>> GetChatResultsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<IChatResult>>(new List<IChatResult>
         {
@@ -40,7 +40,7 @@ public sealed class MyChatCompletionService : IChatStreamingCompletion
         });
     }
 
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IChatStreamingResult> GetChatStreamingResultsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return (new List<IChatStreamingResult>
         {
@@ -67,7 +67,7 @@ public class MyChatStreamingResult : IChatStreamingResult
         return Task.FromResult(this._message);
     }
 
-    public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageBase> GetChatMessageStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var streamedOutput = this._message.Content.Split(' ');
         foreach (string word in streamedOutput)

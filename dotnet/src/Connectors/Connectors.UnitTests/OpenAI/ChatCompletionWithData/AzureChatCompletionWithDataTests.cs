@@ -36,7 +36,7 @@ public sealed class AzureChatCompletionWithDataTests : IDisposable
         var chatCompletion = new AzureChatCompletionWithData(this._config, this._httpClient);
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(new ChatHistory());
+        await chatCompletion.GetChatResultsAsync(new ChatHistory());
 
         // Assert
         var actualUri = this._messageHandlerStub.RequestUri?.AbsoluteUri;
@@ -61,7 +61,7 @@ public sealed class AzureChatCompletionWithDataTests : IDisposable
         var chatCompletion = new AzureChatCompletionWithData(config, this._httpClient);
 
         // Act
-        await chatCompletion.GetChatCompletionsAsync(new ChatHistory());
+        await chatCompletion.GetChatResultsAsync(new ChatHistory());
 
         // Assert
         var actualUri = this._messageHandlerStub.RequestUri?.AbsoluteUri;

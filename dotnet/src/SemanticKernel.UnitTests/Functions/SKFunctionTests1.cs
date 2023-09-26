@@ -100,11 +100,11 @@ public sealed class SKFunctionTests1
         var textCompletionResult = new Mock<ITextResult>();
 
         textCompletionResult
-            .Setup(x => x.GetCompletionAsync(It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTextAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(result);
 
         aiService
-            .Setup(x => x.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetTextResultsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ITextResult[] { textCompletionResult.Object });
 
         return aiService;

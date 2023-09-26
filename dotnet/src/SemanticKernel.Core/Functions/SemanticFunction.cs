@@ -219,7 +219,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
                 int resultsCount = GetResultsCountOrDefault(requestSettings, 1);
 
                 int currentResult = 0;
-                var getEnumerator = streamingClient.GetStreamingCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
+                var getEnumerator = streamingClient.GetTextStreamingResultsAsync(renderedPrompt, requestSettings, cancellationToken).GetAsyncEnumerator(cancellationToken);
                 ITextStreamingResult? firstResult = null;
 
                 // Break before checking for end of iteration as it seems to wait until the streaming finishes (Not streaming behavior).
@@ -232,12 +232,12 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
                     modelResults.Add(getEnumerator.Current.ModelResult);
                 }
 
-                result = new FunctionResult(this.Name, this.PluginName, context, firstResult!.GetCompletionStreamingAsync(cancellationToken));
+                result = new FunctionResult(this.Name, this.PluginName, context, firstResult!.GetTextStreamingAsync(cancellationToken));
             }
             else
             {
-                IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
-                string completion = await completionResults[0].GetCompletionAsync(cancellationToken).ConfigureAwait(false);
+                IReadOnlyList<ITextResult> completionResults = await client.GetTextResultsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+                string completion = await completionResults[0].GetTextAsync(cancellationToken).ConfigureAwait(false);
                 modelResults.AddRange(completionResults.Select(c => c.ModelResult).ToArray());
                 result = new FunctionResult(this.Name, this.PluginName, context, completion);
             }

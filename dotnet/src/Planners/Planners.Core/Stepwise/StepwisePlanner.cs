@@ -425,14 +425,14 @@ public class StepwisePlanner : IStepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.Completion, token).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> results = await textCompletion.GetTextResultsAsync(thoughtProcess, this._promptConfig.Completion, token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {
                 throw new SKException("No completions returned.");
             }
 
-            return await results[0].GetCompletionAsync(token).ConfigureAwait(false);
+            return await results[0].GetTextAsync(token).ConfigureAwait(false);
         }
 
         throw new SKException("No AIService available for getting completions.");

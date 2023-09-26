@@ -37,7 +37,7 @@ internal sealed class ChatWithDataResult : IChatResult, ITextResult
         return Task.FromResult<ChatMessageBase>(new SKChatMessage(message.Role, message.Content));
     }
 
-    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    public async Task<string> GetTextAsync(CancellationToken cancellationToken = default)
     {
         var message = await this.GetChatMessageAsync(cancellationToken).ConfigureAwait(false);
 

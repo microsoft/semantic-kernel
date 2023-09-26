@@ -21,7 +21,7 @@ internal sealed class TextCompletionResult : ITextResult
 
     public ModelResult ModelResult => this._responseData;
 
-    public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    public Task<string> GetTextAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(this._responseData.GetResult<TextCompletionResponseText>().Text ?? string.Empty);
     }

@@ -41,11 +41,11 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
         this._responseChannel.Writer.Complete();
     }
 
-    public async Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
+    public async Task<string> GetTextAsync(CancellationToken cancellationToken = default)
     {
         StringBuilder resultBuilder = new();
 
-        await foreach (var chunk in this.GetCompletionStreamingAsync(cancellationToken))
+        await foreach (var chunk in this.GetTextStreamingAsync(cancellationToken))
         {
             resultBuilder.Append(chunk);
         }
@@ -53,7 +53,7 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
         return resultBuilder.ToString();
     }
 
-    public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> GetTextStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         while (await this._responseChannel.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
         {

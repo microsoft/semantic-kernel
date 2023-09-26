@@ -64,7 +64,7 @@ public sealed class HuggingFaceTextCompletion : ITextStreamingCompletion
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    public async IAsyncEnumerable<ITextStreamingResult> GetTextStreamingResultsAsync(
         string text,
         AIRequestSettings? requestSettings = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -76,7 +76,7 @@ public sealed class HuggingFaceTextCompletion : ITextStreamingCompletion
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(
+    public async Task<IReadOnlyList<ITextResult>> GetTextResultsAsync(
         string text,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)

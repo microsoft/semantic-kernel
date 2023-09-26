@@ -64,7 +64,7 @@ public static class Example37_MultiStreamingCompletion
 
         List<Task> resultTasks = new();
         int currentResult = 0;
-        await foreach (var completionResult in textCompletion.GetStreamingCompletionsAsync(prompt, requestSettings, CancellationToken.None))
+        await foreach (var completionResult in textCompletion.GetTextStreamingResultsAsync(prompt, requestSettings, CancellationToken.None))
         {
             resultTasks.Add(ProcessStreamAsyncEnumerableAsync(completionResult, currentResult++, consoleLinesPerResult));
         }
@@ -80,7 +80,7 @@ public static class Example37_MultiStreamingCompletion
     private static async Task ProcessStreamAsyncEnumerableAsync(ITextStreamingResult result, int resultNumber, int linesPerResult)
     {
         var fullSentence = string.Empty;
-        await foreach (var word in result.GetCompletionStreamingAsync())
+        await foreach (var word in result.GetTextStreamingAsync())
         {
             fullSentence += word;
 

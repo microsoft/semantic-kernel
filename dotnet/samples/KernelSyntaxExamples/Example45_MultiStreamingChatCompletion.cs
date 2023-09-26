@@ -70,7 +70,7 @@ public static class Example45_MultiStreamingChatCompletion
 
         List<Task> resultTasks = new();
         int currentResult = 0;
-        await foreach (var completionResult in chatCompletion.GetStreamingChatCompletionsAsync(chatHistory, requestSettings))
+        await foreach (var completionResult in chatCompletion.GetChatStreamingResultsAsync(chatHistory, requestSettings))
         {
             resultTasks.Add(ProcessStreamAsyncEnumerableAsync(completionResult, currentResult++, consoleLinesPerResult));
         }
@@ -87,7 +87,7 @@ public static class Example45_MultiStreamingChatCompletion
     {
         string message = string.Empty;
 
-        await foreach (var chatMessage in result.GetStreamingChatMessageAsync())
+        await foreach (var chatMessage in result.GetChatMessageStreamingAsync())
         {
             string role = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(chatMessage.Role.Label);
             message += chatMessage.Content;

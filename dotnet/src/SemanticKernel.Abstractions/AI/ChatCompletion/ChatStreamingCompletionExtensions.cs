@@ -28,10 +28,10 @@ public static class ChatStreamingCompletionExtensions
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         // Using var below results in Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : Cannot apply indexing with [] to an expression of type 'object'
-        IAsyncEnumerable<IChatStreamingResult> chatCompletionResults = chatCompletion.GetStreamingChatCompletionsAsync(chat, requestSettings, cancellationToken);
+        IAsyncEnumerable<IChatStreamingResult> chatCompletionResults = chatCompletion.GetChatStreamingResultsAsync(chat, requestSettings, cancellationToken);
         await foreach (var chatCompletionResult in chatCompletionResults)
         {
-            await foreach (var chatMessageStream in chatCompletionResult.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var chatMessageStream in chatCompletionResult.GetChatMessageStreamingAsync(cancellationToken).ConfigureAwait(false))
             {
                 yield return chatMessageStream.Content;
             }
