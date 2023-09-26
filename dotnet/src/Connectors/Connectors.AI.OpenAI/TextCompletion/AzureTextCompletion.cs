@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
 /// Azure OpenAI text completion client.
 /// TODO: forward ETW logging to ILogger, see https://learn.microsoft.com/en-us/dotnet/azure/sdk/logging
 /// </summary>
-public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextCompletion
+public sealed class AzureTextCompletion : AzureOpenAIClientBase, ITextStreamingCompletion
 {
     /// <summary>
     /// Creates a new AzureTextCompletion client instance using API Key auth

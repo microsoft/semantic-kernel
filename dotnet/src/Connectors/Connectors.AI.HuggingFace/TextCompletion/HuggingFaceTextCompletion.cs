@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 /// HuggingFace text completion service.
 /// </summary>
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-public sealed class HuggingFaceTextCompletion : ITextCompletion
+public sealed class HuggingFaceTextCompletion : ITextStreamingCompletion
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
     private const string HuggingFaceApiEndpoint = "https://api-inference.huggingface.co/models";

@@ -91,7 +91,7 @@ public static class Example32_StreamingCompletion
         await TextCompletionStreamAsync(textCompletion);
     }
 
-    private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
+    private static async Task TextCompletionStreamAsync(ITextStreamingCompletion textCompletion)
     {
         var requestSettings = new OpenAIRequestSettings()
         {

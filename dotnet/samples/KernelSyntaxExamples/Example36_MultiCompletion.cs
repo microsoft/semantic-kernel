@@ -34,14 +34,14 @@ public static class Example36_MultiCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Chat Completion ========");
 
-        IChatCompletion chatCompletion = new OpenAIChatCompletion(
+        IChatStreamingCompletion chatCompletion = new OpenAIChatCompletion(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
         await ChatCompletionAsync(chatCompletion);
     }
 
-    private static async Task ChatCompletionAsync(IChatCompletion chatCompletion)
+    private static async Task ChatCompletionAsync(IChatStreamingCompletion chatCompletion)
     {
         var requestSettings = new OpenAIRequestSettings()
         {

@@ -4,11 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
-using RepoUtils;
 
 /**
  * The following example shows how to use Semantic Kernel with streaming Multiple Results Chat Completion
@@ -20,7 +18,7 @@ public static class Example37_MultiStreamingCompletion
 
     public static async Task RunAsync()
     {
-        //await AzureOpenAIMultiTextCompletionStreamAsync();
+        await AzureOpenAIMultiTextCompletionStreamAsync();
         await OpenAITextCompletionStreamAsync();
     }
 
@@ -40,14 +38,14 @@ public static class Example37_MultiStreamingCompletion
     {
         Console.WriteLine("======== Open AI - Multiple Text Completion - Raw Streaming ========");
 
-        ITextCompletion textCompletion = new OpenAIChatCompletion(
+        ITextStreamingCompletion textCompletion = new OpenAIChatCompletion(
             TestConfiguration.OpenAI.ChatModelId,
             TestConfiguration.OpenAI.ApiKey);
 
         await TextCompletionStreamAsync(textCompletion);
     }
 
-    private static async Task TextCompletionStreamAsync(ITextCompletion textCompletion)
+    private static async Task TextCompletionStreamAsync(ITextStreamingCompletion textCompletion)
     {
         var requestSettings = new OpenAIRequestSettings()
         {
@@ -55,7 +53,8 @@ public static class Example37_MultiStreamingCompletion
             FrequencyPenalty = 0,
             PresencePenalty = 0,
             Temperature = 1,
-            TopP = 0.5
+            TopP = 0.5,
+            ResultsPerPrompt = 3
         };
 
         var prompt = "Write one paragraph why AI is awesome";
@@ -65,8 +64,7 @@ public static class Example37_MultiStreamingCompletion
 
         List<Task> resultTasks = new();
         int currentResult = 0;
-        using var ct = new CancellationTokenSource();
-        await foreach (var completionResult in textCompletion.GetStreamingCompletionsAsync(prompt, requestSettings, ct.Token))
+        await foreach (var completionResult in textCompletion.GetStreamingCompletionsAsync(prompt, requestSettings, CancellationToken.None))
         {
             resultTasks.Add(ProcessStreamAsyncEnumerableAsync(completionResult, currentResult++, consoleLinesPerResult));
         }
@@ -74,47 +72,6 @@ public static class Example37_MultiStreamingCompletion
         Console.WriteLine();
 
         await Task.WhenAll(resultTasks.ToArray());
-
-
-        // Streaming result
-        IKernel kernel = new KernelBuilder()
-            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithOpenAIChatCompletionService(
-                modelId: TestConfiguration.OpenAI.ChatModelId,
-                apiKey: TestConfiguration.OpenAI.ApiKey)
-            .Build();
-
-        var fixedFunction = kernel.CreateSemanticFunction($"Write a paragraph about streaming",
-                requestSettings: new OpenAIRequestSettings
-                {
-                    Streaming = true,
-                    MaxTokens = 1000,
-                    ResultsPerPrompt = 2
-                });
-
-        var result = await kernel.RunAsync(fixedFunction);
-        await foreach (string token in (await kernel.RunAsync(fixedFunction)).GetValue<IAsyncEnumerable<string>>()!)
-        {
-            Console.Write(token);
-        }
-
-        /*
-        
-        int position = 0;
-        await foreach (ITextCompletionStreamingResult completionResult in textCompletion.CompleteMultiStreamAsync(prompt, requestSettings))
-        {
-            string fullMessage = string.Empty;
-
-            await foreach (string message in completionResult.GetCompletionStreamingAsync())
-            {
-                fullMessage += message;
-
-                Console.SetCursorPosition(0, (position * consoleLinesPerResult));
-                Console.Write(fullMessage);
-            }
-
-            position++;
-        }*/
 
         Console.SetCursorPosition(0, requestSettings.ResultsPerPrompt * consoleLinesPerResult);
         Console.WriteLine();

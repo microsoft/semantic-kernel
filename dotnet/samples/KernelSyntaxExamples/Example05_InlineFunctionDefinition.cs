@@ -64,12 +64,11 @@ Event: {{$input}}
         Console.WriteLine(result.GetValue<string>());
 
         // Streaming result
-        fixedFunction = kernel.CreateSemanticFunction($"Write a paragraph about streaming",
+        fixedFunction = kernel.CreateSemanticFunction("Write a paragraph about streaming",
                 requestSettings: new OpenAIRequestSettings
                 {
                     Streaming = true,
-                    MaxTokens = 1000,
-                    ResultsPerPrompt = 1
+                    MaxTokens = 1000
                 });
 
         await foreach (string token in (await kernel.RunAsync(fixedFunction)).GetValue<IAsyncEnumerable<string>>()!)

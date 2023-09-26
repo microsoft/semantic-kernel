@@ -87,7 +87,7 @@ public static class Example33_StreamingChat
         await StartStreamingChatAsync(azureChatCompletion);
     }
 
-    private static async Task StartStreamingChatAsync(IChatCompletion chatCompletion)
+    private static async Task StartStreamingChatAsync(IChatStreamingCompletion chatCompletion)
     {
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
@@ -110,7 +110,7 @@ public static class Example33_StreamingChat
         await StreamMessageOutputAsync(chatCompletion, chatHistory, AuthorRole.Assistant);
     }
 
-    private static async Task StreamMessageOutputAsync(IChatCompletion chatGPT, ChatHistory chatHistory, AuthorRole authorRole)
+    private static async Task StreamMessageOutputAsync(IChatStreamingCompletion chatGPT, ChatHistory chatHistory, AuthorRole authorRole)
     {
         Console.Write($"{authorRole}: ");
         string fullMessage = string.Empty;

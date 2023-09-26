@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.Orchestration;
  * - You are using OpenAI/Azure OpenAI models but the models are behind a web service with a different API schema
  * - You want to use a local model
  */
-public sealed class MyChatCompletionService : IChatCompletion
+public sealed class MyChatCompletionService : IChatStreamingCompletion
 {
     public ChatHistory CreateNewChat(string? instructions = null)
     {
@@ -151,12 +151,12 @@ public static class Example34_CustomChatModel
     {
         Console.WriteLine("======== Custom LLM - Chat Completion Streaming ========");
 
-        IChatCompletion customChat = new MyChatCompletionService();
+        IChatStreamingCompletion customChat = new MyChatCompletionService();
 
         await StartStreamingChatAsync(customChat);
     }
 
-    private static async Task StartStreamingChatAsync(IChatCompletion customChat)
+    private static async Task StartStreamingChatAsync(IChatStreamingCompletion customChat)
     {
         Console.WriteLine("Chat content:");
         Console.WriteLine("------------------------");
@@ -185,7 +185,7 @@ public static class Example34_CustomChatModel
         return Task.CompletedTask;
     }
 
-    private static async Task StreamMessageOutputAsync(IChatCompletion customChat, MyChatHistory chatHistory, MyRoles myModelRole = MyRoles.Bot)
+    private static async Task StreamMessageOutputAsync(IChatStreamingCompletion customChat, MyChatHistory chatHistory, MyRoles myModelRole = MyRoles.Bot)
     {
         Console.Write($"{myModelRole}: ");
         string fullMessage = string.Empty;

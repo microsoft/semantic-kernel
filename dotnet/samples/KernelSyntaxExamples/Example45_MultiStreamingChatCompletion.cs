@@ -46,7 +46,7 @@ public static class Example45_MultiStreamingChatCompletion
         await StreamingChatCompletionAsync(openAIChatCompletion);
     }
 
-    private static async Task StreamingChatCompletionAsync(IChatCompletion chatCompletion)
+    private static async Task StreamingChatCompletionAsync(IChatStreamingCompletion chatCompletion)
     {
         var requestSettings = new OpenAIRequestSettings()
         {

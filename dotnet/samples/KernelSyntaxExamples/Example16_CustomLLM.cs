@@ -27,7 +27,7 @@ using RepoUtils;
  *
  * Refer to example 33 for streaming chat completion.
  */
-public class MyTextCompletionService : ITextCompletion
+public class MyTextCompletionService : ITextStreamingCompletion
 {
     public Task<IReadOnlyList<ITextResult>> GetCompletionsAsync(string text, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default)
     {
@@ -137,13 +137,13 @@ public static class Example16_CustomLLM
         Console.WriteLine("======== Custom LLM  - Text Completion - Raw Streaming ========");
 
         IKernel kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
-        ITextCompletion textCompletion = new MyTextCompletionService();
+        ITextStreamingCompletion textCompletion = new MyTextCompletionService();
 
         var prompt = "Write one paragraph why AI is awesome";
         await TextCompletionStreamAsync(prompt, textCompletion);
     }
 
-    private static async Task TextCompletionStreamAsync(string prompt, ITextCompletion textCompletion)
+    private static async Task TextCompletionStreamAsync(string prompt, ITextStreamingCompletion textCompletion)
     {
         var requestSettings = new OpenAIRequestSettings()
         {
