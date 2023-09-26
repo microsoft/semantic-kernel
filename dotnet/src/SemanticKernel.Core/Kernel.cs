@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
@@ -341,11 +343,6 @@ repeat:
         string functionName,
         SemanticFunctionConfig functionConfig)
     {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
         ISKFunction func = SemanticFunction.FromSemanticConfig(
             pluginName,
             functionName,
@@ -357,10 +354,10 @@ repeat:
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultFunctionCollection(this.Functions);
 
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Models.FirstOrDefault<AIRequestSettings>());
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
+        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Models.FirstOrDefault<AIRequestSettings>()?.ServiceId ?? null));
 
         return func;
     }

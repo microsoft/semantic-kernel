@@ -108,13 +108,11 @@ public class KernelTests
             .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Models.Add(new OpenAIRequestSettings()
         {
-            Completion = new OpenAIRequestSettings()
-            {
-                ChatSystemPrompt = providedSystemChatPrompt
-            }
-        };
+            ChatSystemPrompt = providedSystemChatPrompt
+        });
 
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
@@ -197,10 +195,9 @@ public class KernelTests
             .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig
-        {
-            Completion = new AIRequestSettings() { ServiceId = "service1" }
-        };
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Models.Add(new AIRequestSettings() { ServiceId = "service1" });
+
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
@@ -223,10 +220,9 @@ public class KernelTests
             .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
             .Build();
 
-        var templateConfig = new PromptTemplateConfig
-        {
-            Completion = new AIRequestSettings() { ServiceId = "service3" }
-        };
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Models.Add(new AIRequestSettings() { ServiceId = "service3" });
+
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act

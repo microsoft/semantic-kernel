@@ -47,9 +47,11 @@ public static class KernelSemanticFunctionExtensions
         var config = new PromptTemplateConfig
         {
             Description = description ?? "Generic function, unknown purpose",
-            Type = "completion",
-            Completion = requestSettings
         };
+        if (requestSettings is not null)
+        {
+            config.Models.Add(requestSettings);
+        }
 
         return kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,

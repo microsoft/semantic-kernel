@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
+using Microsoft.SemanticKernel.SemanticFunctions;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Functions;
@@ -49,5 +50,96 @@ public class PromptTemplateConfigTests
         Assert.NotNull(requestSettings);
         Assert.NotNull(requestSettings.ChatSystemPrompt);
         Assert.Equal("I am a prompt", requestSettings.ChatSystemPrompt);
+    }
+
+    [Fact]
+    public void DeserializingExpectMultipleModels()
+    {
+        // Arrange
+        string configPayload = @"
+{
+  ""schema"": 1,
+  ""description"": """",
+  ""models"": 
+  [
+    {
+      ""model_id"": ""gpt-4"",
+      ""max_tokens"": 200,
+      ""temperature"": 0.2,
+      ""top_p"": 0.0,
+      ""presence_penalty"": 0.0,
+      ""frequency_penalty"": 0.0,
+      ""stop_sequences"": 
+      [
+        ""Human"",
+        ""AI""
+      ]
+    },
+    {
+      ""model_id"": ""gpt-3.5_turbo"",
+      ""max_tokens"": 256,
+      ""temperature"": 0.3,
+      ""top_p"": 0.0,
+      ""presence_penalty"": 0.0,
+      ""frequency_penalty"": 0.0,
+      ""stop_sequences"": 
+      [
+        ""Human"",
+        ""AI""
+      ]
+    }
+  ]
+}
+        ";
+
+        // Act
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+#pragma warning disable CS0618 // Ensure backward compatibility
+        Assert.NotNull(promptTemplateConfig.Completion);
+        Assert.Equal("gpt-4", promptTemplateConfig.Completion.ModelId);
+#pragma warning restore CS0618 // Ensure backward compatibility
+        Assert.NotNull(promptTemplateConfig.Models);
+        Assert.Equal(2, promptTemplateConfig.Models.Count);
+    }
+
+    [Fact]
+    public void DeserializingExpectCompletion()
+    {
+        // Arrange
+        string configPayload = @"
+{
+  ""schema"": 1,
+  ""description"": """",
+  ""models"": 
+  [
+    {
+      ""model_id"": ""gpt-4"",
+      ""max_tokens"": 200,
+      ""temperature"": 0.2,
+      ""top_p"": 0.0,
+      ""presence_penalty"": 0.0,
+      ""frequency_penalty"": 0.0,
+      ""stop_sequences"": 
+      [
+        ""Human"",
+        ""AI""
+      ]
+    }
+  ]
+}
+        ";
+
+        // Act
+        var promptTemplateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
+
+        // Assert
+        Assert.NotNull(promptTemplateConfig);
+#pragma warning disable CS0618 // Ensure backward compatibility
+        Assert.NotNull(promptTemplateConfig.Completion);
+        Assert.Equal("gpt-4", promptTemplateConfig.Completion.ModelId);
+#pragma warning restore CS0618 // Ensure backward compatibility
     }
 }

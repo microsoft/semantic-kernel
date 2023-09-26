@@ -50,10 +50,8 @@ public sealed class SKFunctionTests1
                 { "MaxTokens", 1024 },
             }
         };
-        var templateConfig = new PromptTemplateConfig()
-        {
-            Completion = requestSettings
-        };
+        var templateConfig = new PromptTemplateConfig();
+        templateConfig.Models.Add(requestSettings);
         var functionConfig = new SemanticFunctionConfig(templateConfig, this._promptTemplate.Object);
         var skFunction = SKFunction.FromSemanticConfig("sk", "name", functionConfig);
 
