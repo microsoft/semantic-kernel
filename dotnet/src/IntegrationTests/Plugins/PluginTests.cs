@@ -27,7 +27,7 @@ public class PluginTests
         var kernel = new KernelBuilder().Build();
         using HttpClient httpClient = new();
 
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient));
@@ -59,7 +59,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             name,
             new Uri(pluginEndpoint),
             new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -90,7 +90,7 @@ public class PluginTests
             using HttpClient httpClient = new();
 
             //note that this plugin is not compliant according to the underlying validator in SK
-            var plugin = await kernel.ImportAIPluginAsync(
+            var plugin = await kernel.ImportPluginFunctionsAsync(
                 name,
                 stream,
                 new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
@@ -120,7 +120,7 @@ public class PluginTests
         using HttpClient httpClient = new();
 
         //note that this plugin is not compliant according to the underlying validator in SK
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             name,
             pluginFilePath,
             new OpenApiFunctionExecutionParameters(httpClient) { IgnoreNonCompliantErrors = true });
