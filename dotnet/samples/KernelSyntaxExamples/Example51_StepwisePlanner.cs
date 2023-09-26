@@ -152,8 +152,6 @@ public static class Example51_StepwisePlanner
         {
             StepwisePlanner planner = new(kernel: kernel, config: plannerConfig);
             var plan = planner.CreatePlan(question);
-            plan.Outputs.Add("stepCount");
-            plan.Outputs.Add("functionCount");
 
             var kernelResult = await kernel.RunAsync(plan);
             var planResult = kernelResult.FunctionResults.First();

@@ -482,6 +482,7 @@ public sealed class PlanTests
             .Callback<SKContext, AIRequestSettings, CancellationToken>((c, s, ct) =>
                 returnContext.Variables.Update("Here is a poem about " + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
 
         var plan = new Plan(mockFunction.Object);
         plan.State.Set("input", "Cleopatra");
@@ -547,6 +548,7 @@ public sealed class PlanTests
                 returnContext.Variables.Update($"Here is a {t} about " + c.Variables.Input);
             })
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext, returnContext.Result)));
+        mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
 
         var plan = new Plan(mockFunction.Object);
         plan.State.Set("input", "Cleopatra");
