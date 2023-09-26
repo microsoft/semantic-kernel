@@ -53,9 +53,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <inheritdoc/>
     public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
-        if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
-
-        if (count >= 50) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be less than 50."); }
+        if (count is <= 0 or >= 50) { throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be less than 50."); }
 
         if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
 

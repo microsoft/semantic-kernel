@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 /// <summary>
 /// Represents a query string builder for REST API operations.
 /// </summary>
-internal class QueryStringBuilder : IQueryStringBuilder
+internal sealed class QueryStringBuilder : IQueryStringBuilder
 {
     /// <summary>
     /// Query string parameter serializers.
