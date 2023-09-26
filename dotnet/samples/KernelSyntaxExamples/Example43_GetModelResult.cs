@@ -47,7 +47,7 @@ public static class Example43_GetModelResult
         var modelResults = kernelResult.FunctionResults.SelectMany(l => l.GetModelResults() ?? Enumerable.Empty<ModelResult>());
 
         Console.WriteLine(kernelResult.GetValue<string>());
-        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.AsJson());
+        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly
