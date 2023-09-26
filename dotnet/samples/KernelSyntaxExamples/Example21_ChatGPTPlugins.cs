@@ -22,7 +22,7 @@ public static class Example21_ChatGptPlugins
         using HttpClient httpClient = new();
 
         //Import a ChatGPT plugin via URI
-        var plugin = await kernel.ImportAIPluginAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenApiFunctionExecutionParameters(httpClient) { EnableDynamicPayload = true });
+        var plugin = await kernel.ImportPluginFunctionsAsync("<plugin name>", new Uri("<chatGPT-plugin>"), new OpenApiFunctionExecutionParameters(httpClient) { EnableDynamicPayload = true });
 
         //Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -38,7 +38,7 @@ public static class Example21_ChatGptPlugins
 
         //var kernel = new KernelBuilder().WithLogger(ConsoleLogger.LoggerFactory).Build();
 
-        //var plugin = await kernel.ImportAIPluginAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters(httpClient));
+        //var plugin = await kernel.ImportPluginFunctionsAsync("Klarna", new Uri("https://www.klarna.com/.well-known/ai-plugin.json"), new OpenApiFunctionExecutionParameters(httpClient));
 
         //var contextVariables = new ContextVariables();
         //contextVariables.Set("q", "Laptop");      // A precise query that matches one very small category or product that needs to be searched for to find the products the user is looking for. If the user explicitly stated what they want, use that as a query. The query is as specific as possible to the product name or category mentioned by the user in its singular form, and don't contain any clarifiers like latest, newest, cheapest, budget, premium, expensive or similar. The query is always taken from the latest topic, if there is a new topic a new query is started.
