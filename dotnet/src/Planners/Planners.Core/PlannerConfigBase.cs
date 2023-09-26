@@ -19,7 +19,7 @@ public abstract class PlannerConfigBase
     /// <summary>
     /// Delegate to get the prompt template string.
     /// </summary>
-    public Func<string>? GetPromptTemplate { get; set; } = null;
+    public Func<string>? GetPromptTemplate { get; set; }
 
     /// <summary>
     /// A list of plugins to exclude from the plan creation request.
