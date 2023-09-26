@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
-
+import json
 import os
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Tuple, List
 
 import numpy as np
@@ -106,8 +105,6 @@ class AzureCosmosDBStoreApi(ABC):
 
 class MongoStoreApi(AzureCosmosDBStoreApi):
     def __init__(self, mongoClient: MongoClient):
-        """Initializes a new instance of the AzureCosmosDBMemoryStore"""
-
         self.collection = None
         self.mongoClient = mongoClient
 
@@ -138,10 +135,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
 
     async def upsert_core(self, collection_name: str, record: MemoryRecord) -> str:
         result = await self.upsert_batch_core(collection_name, [record])
-        if result:
-            return result[0]
-        else:
-            raise Exception("Upsert failed")
+        return result[0]
 
     async def upsert_batch_core(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
         doc_ids: List[str] = []
@@ -152,17 +146,15 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 "embedding": record.embedding.tolist(),
                 "text": record.text,
                 "description": record.description,
-                "metadata": record.additional_metadata.__dict__
+                "metadata": self.__serialize_metadata(record)
             }
             if record.timestamp is not None:
-                cosmosRecord["timestamp"] = datetime.fromisoformat(record.timestamp)
+                cosmosRecord["timestamp"] = record.timestamp
+
             doc_ids.append(cosmosRecord["_id"])
             cosmosRecords.append(cosmosRecord)
-        result = await self.collection.insert_many(cosmosRecords)
-        if result[0].succeeded:
-            return doc_ids
-        else:
-            raise Exception("Upsert failed")
+        self.collection.insert_many(cosmosRecords)
+        return doc_ids
 
     async def get_core(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         if not with_embedding:
@@ -171,14 +163,12 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             result = self.collection.find_one({"_id": key})
         return MemoryRecord.local_record(
             id=result["_id"],
-            embedding=np.fromstring(
-                result["embedding"].strip("[]"), dtype=float, sep=","
-            )
+            embedding=np.array(result["embedding"])
             if with_embedding
             else np.array([]),
             text=result["text"],
             description=result["description"],
-            additional_metadata=result["additional_metadata"],
+            additional_metadata=result["metadata"],
             timestamp=result["timestamp"]
         )
 
@@ -191,14 +181,12 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         return [
             MemoryRecord.local_record(
                 id=result["_id"],
-                embedding=np.fromstring(
-                    result["embedding"].strip("[]"), dtype=float, sep=","
-                )
+                embedding=np.array(result["embedding"])
                 if with_embeddings
                 else np.array([]),
                 text=result["text"],
                 description=result["description"],
-                additional_metadata=result["additional_metadata"],
+                additional_metadata=result["metadata"],
                 timestamp=result["timestamp"]
             )
             for result in results
@@ -214,26 +202,21 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                                        min_relevance_score: float, with_embeddings: bool) -> List[
         Tuple[MemoryRecord, float]]:
         pipeline = [
-            {"$search": {"cosmosSearch": {"vector": embedding, "path": "embedding", "k": limit}}}
+            {"$search": {"cosmosSearch": {"vector": embedding.tolist(), "path": "embedding", "k": limit}}}
         ]
         nearest_results = []
         # Perform vector search
         for aggResult in self.collection.aggregate(pipeline):
-            cosmosRecord = aggResult["metadata"]
-            if cosmosRecord["timestamp"] is not None:
-                cosmosRecord["timestamp"] = datetime.fromisoformat(cosmosRecord["timestamp"])
             # TODO: Add check for search score is not less than min_relevance_score (once it can ve satisfied)
             result = MemoryRecord.local_record(
-                id=result["_id"],
-                embedding=np.fromstring(
-                    result["embedding"].strip("[]"), dtype=float, sep=","
-                )
+                id=aggResult["_id"],
+                embedding=np.array(aggResult["embedding"])
                 if with_embeddings
                 else np.array([]),
-                text=result["text"],
-                description=result["description"],
-                additional_metadata=result["additional_metadata"],
-                timestamp=result["timestamp"]
+                text=aggResult["text"],
+                description=aggResult["description"],
+                additional_metadata=aggResult["metadata"],
+                timestamp=aggResult["timestamp"]
             )
             nearest_results.append((result, 1))  # TODO: Need to fill up score once there's meta queries.
         return nearest_results
@@ -252,6 +235,16 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
             return nearest_results[0]
         else:
             return None
+
+    @staticmethod
+    def __serialize_metadata(record: MemoryRecord) -> str:
+        return json.dumps(
+            {
+                "text": record.text,
+                "description": record.description,
+                "additional_metadata": record.additional_metadata,
+            }
+        )
 
 
 class AzureCosmosDBMemoryStore(MemoryStoreBase):

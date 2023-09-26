@@ -53,10 +53,6 @@ class MemoryRecord:
         self._additional_metadata = additional_metadata
         self._embedding = embedding
 
-    @property
-    def embedding(self) -> ndarray:
-        return self._embedding
-
     @staticmethod
     def reference_record(
         external_id: str,
@@ -119,3 +115,27 @@ class MemoryRecord:
             timestamp=timestamp,
             embedding=embedding,
         )
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def embedding(self) -> ndarray:
+        return self._embedding
+
+    @property
+    def text(self):
+        return self._text
+
+    @property
+    def additional_metadata(self):
+        return self._additional_metadata
+
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def timestamp(self):
+        return self._timestamp
