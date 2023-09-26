@@ -7,12 +7,12 @@ using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Serialization;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 
-namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
+namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 
 /// <summary>
 /// Represents a query string builder for REST API operations.
 /// </summary>
-internal class QueryStringBuilder : IQueryStringBuilder
+internal static class QueryStringBuilder
 {
     /// <summary>
     /// Query string parameter serializers.
@@ -25,7 +25,7 @@ internal class QueryStringBuilder : IQueryStringBuilder
     };
 
     ///<inheritdoc/>
-    public string Build(RestApiOperation operation, IDictionary<string, string> arguments)
+    public static string BuildQueryString(this RestApiOperation operation, IDictionary<string, string> arguments)
     {
         var segments = new List<string>();
 
