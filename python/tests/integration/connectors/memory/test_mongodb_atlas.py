@@ -103,9 +103,9 @@ async def vector_search_store():
 
 
 @pytest_asyncio.fixture
-async def read_only_vector_search():
+async def nearest_match_store():
     """Fixture for read only vector store; the URI for test needs atlas configured"""
-    async with MongoDBAtlasMemoryStore(database_name="readOnly") as memory:
+    async with MongoDBAtlasMemoryStore(database_name="pyMSKNearestTest") as memory:
         if not await memory.does_collection_exist_async("nearestSearch"):
             pytest.skip(
                 reason="db: readOnly collection: nearestSearch not found, "
@@ -209,10 +209,10 @@ async def test_collection_batch_get(
 
 
 @pytest.mark.asyncio
-async def test_collection_knn_match(read_only_vector_search, memory_record_gen):
+async def test_collection_knn_match(nearest_match_store, memory_record_gen):
     mem = memory_record_gen(7)
-    await read_only_vector_search.upsert_async(READ_ONLY_COLLECTION, mem)
-    result, score = await read_only_vector_search.get_nearest_match_async(
+    await nearest_match_store.upsert_async(READ_ONLY_COLLECTION, mem)
+    result, score = await nearest_match_store.get_nearest_match_async(
         collection_name=READ_ONLY_COLLECTION,
         embedding=mem._embedding,
         with_embedding=True,
@@ -222,13 +222,13 @@ async def test_collection_knn_match(read_only_vector_search, memory_record_gen):
 
 
 async def knn_matcher(
-    read_only_vector_search,
+    nearest_match_store,
     test_collection,
     mems,
     query_limit,
     expected_limit,
 ):
-    results_and_scores = await read_only_vector_search.get_nearest_matches_async(
+    results_and_scores = await nearest_match_store.get_nearest_matches_async(
         collection_name=test_collection,
         embedding=mems["2"]._embedding,
         limit=query_limit,
@@ -242,13 +242,11 @@ async def knn_matcher(
 
 
 @pytest.mark.asyncio
-async def test_collection_knn_matches(read_only_vector_search, memory_record_gen):
+async def test_collection_knn_matches(nearest_match_store, memory_record_gen):
     mems = {str(i): memory_record_gen(i) for i in range(1, 4)}
-    await read_only_vector_search.upsert_batch_async(
-        READ_ONLY_COLLECTION, mems.values()
-    )
+    await nearest_match_store.upsert_batch_async(READ_ONLY_COLLECTION, mems.values())
     await knn_matcher(
-        read_only_vector_search,
+        nearest_match_store,
         READ_ONLY_COLLECTION,
         mems,
         query_limit=2,

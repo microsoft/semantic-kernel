@@ -11,6 +11,8 @@ from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
+    DEFAULT_NUM_CANDIDATES,
+    DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
     document_to_memory_record,
@@ -31,12 +33,14 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     _logger: Logger
     __database_name: str
     __index_name: str
+    __num_candidates: int
 
     def __init__(
         self,
         index_name: Optional[str] = None,
         connection_string: Optional[str] = None,
         database_name: Optional[str] = None,
+        num_candidates: Optional[int] = None,
         logger: Optional[Logger] = None,
         read_preference: Optional[ReadPreference] = ReadPreference.PRIMARY,
     ):
@@ -46,7 +50,8 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         )
         self._logger = logger or NullLogger()
         self.__database_name = database_name or DEFAULT_DB_NAME
-        self.__index_name = index_name
+        self.__index_name = index_name or DEFAULT_SEARCH_INDEX_NAME
+        self.__num_candidates = num_candidates or DEFAULT_NUM_CANDIDATES
 
     @property
     def database_name(self) -> str:
@@ -57,8 +62,12 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         return self._mongo_client[self.database_name]
 
     @property
-    def index_name(self) -> Optional[str]:
+    def index_name(self) -> str:
         return self.__index_name
+
+    @property
+    def num_candidates(self) -> int:
+        return self.__num_candidates
 
     async def close_async(self):
         """Async close connection, invoked by MemoryStoreBase.__aexit__()"""
@@ -273,20 +282,18 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         """
         pipeline: list[dict[str, Any]] = []
         vector_search_query: List[Mapping[str, Any]] = {
-            "$search": {
-                "knnBeta": {
-                    "vector": embedding.tolist(),
-                    "k": limit,
-                    "path": MONGODB_FIELD_EMBEDDING,
-                },
+            "$vectorSearch": {
+                "queryVector": embedding.tolist(),
+                "limit": limit,
+                "numCandidates": self.num_candidates,
+                "path": MONGODB_FIELD_EMBEDDING,
+                "index": self.index_name,
             }
         }
-        if self.index_name:
-            vector_search_query["$search"]["index"] = self.index_name
 
         pipeline.append(vector_search_query)
         # add meta search scoring
-        pipeline.append({"$set": {"score": {"$meta": "searchScore"}}})
+        pipeline.append({"$set": {"score": {"$meta": "vectorSearchScore"}}})
 
         if min_relevance_score:
             pipeline.append({"$match": {"$gte": ["$score", min_relevance_score]}})

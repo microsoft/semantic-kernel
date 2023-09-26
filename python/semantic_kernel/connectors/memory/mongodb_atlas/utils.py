@@ -6,6 +6,8 @@ from numpy import array
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 DEFAULT_DB_NAME = "default"
+DEFAULT_SEARCH_INDEX_NAME = "default"
+DEFAULT_NUM_CANDIDATES = 100
 
 MONGODB_FIELD_ID = "_id"
 MONGODB_FIELD_TEXT = "text"
