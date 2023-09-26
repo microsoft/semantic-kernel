@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -137,17 +136,12 @@ public class JDBCConnector implements SQLConnector, Closeable {
                 .then();
     }
 
-    protected String resolveKey(String key) {
-        return key != null && !key.isEmpty() ? key : UUID.randomUUID().toString();
-    }
-
     public Mono<String> upsertAsync(
             String collection,
             String key,
             String metadata,
             String embedding,
             ZonedDateTime timestamp) {
-        final String upsertKey = resolveKey(key);
         return Mono.fromRunnable(
                         () -> {
                             String query =
@@ -158,7 +152,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 statement.setString(1, collection);
-                                statement.setString(2, upsertKey);
+                                statement.setString(2, key);
                                 statement.setString(3, metadata != null ? metadata : "");
                                 statement.setString(4, embedding != null ? embedding : "");
                                 statement.setString(5, formatDatetime(timestamp));
@@ -171,7 +165,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
-                .thenReturn(upsertKey);
+                .thenReturn(key);
     }
 
     @Override
@@ -188,10 +182,8 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 for (DatabaseEntry entry : records) {
-                                    final String upsertKey = resolveKey(entry.getKey());
-
                                     statement.setString(1, collection);
-                                    statement.setString(2, upsertKey);
+                                    statement.setString(2, entry.getKey());
                                     statement.setString(
                                             3,
                                             entry.getMetadata() != null ? entry.getMetadata() : "");
@@ -202,7 +194,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
                                                     : "");
                                     statement.setString(5, formatDatetime(entry.getTimestamp()));
                                     statement.addBatch();
-                                    keys.add(upsertKey);
+                                    keys.add(entry.getKey());
                                 }
 
                                 statement.executeBatch();

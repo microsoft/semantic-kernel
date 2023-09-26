@@ -69,7 +69,7 @@ public class JDBCMemoryStore implements SQLMemoryStore {
     protected DatabaseEntry memoryRecordToDatabaseEntry(MemoryRecord record) {
         try {
             return new DatabaseEntry(
-                    record.getKey(),
+                    record.getMetadata().getId(),
                     record.getSerializedMetadata(),
                     record.getSerializedEmbedding(),
                     record.getTimestamp());

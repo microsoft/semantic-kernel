@@ -76,7 +76,6 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
             String metadata,
             String embedding,
             ZonedDateTime timestamp) {
-        final String upsertKey = resolveKey(key);
         return Mono.fromRunnable(
                         () -> {
                             String query =
@@ -92,7 +91,7 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                 String embeddingString = embedding != null ? embedding : "";
                                 String timestampString = formatDatetime(timestamp);
                                 statement.setString(1, collection);
-                                statement.setString(2, upsertKey);
+                                statement.setString(2, key);
                                 statement.setString(3, metadataString);
                                 statement.setString(4, embeddingString);
                                 statement.setString(5, timestampString);
@@ -108,7 +107,7 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                             }
                         })
                 .subscribeOn(Schedulers.boundedElastic())
-                .thenReturn(upsertKey);
+                .thenReturn(key);
     }
 
     @Override
@@ -127,7 +126,6 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 for (DatabaseEntry entry : records) {
-                                    final String upsertKey = resolveKey(entry.getKey());
                                     String metadataString =
                                             entry.getMetadata() != null ? entry.getMetadata() : "";
                                     String embeddingString =
@@ -136,7 +134,7 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                                     : "";
                                     String timestampString = formatDatetime(entry.getTimestamp());
                                     statement.setString(1, collection);
-                                    statement.setString(2, upsertKey);
+                                    statement.setString(2, entry.getKey());
                                     statement.setString(3, metadataString);
                                     statement.setString(4, embeddingString);
                                     statement.setString(5, timestampString);
@@ -144,7 +142,7 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                     statement.setString(7, embeddingString);
                                     statement.setString(8, timestampString);
                                     statement.addBatch();
-                                    keys.add(upsertKey);
+                                    keys.add(entry.getKey());
                                 }
 
                                 statement.executeBatch();
