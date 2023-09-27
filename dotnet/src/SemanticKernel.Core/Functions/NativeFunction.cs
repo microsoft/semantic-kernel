@@ -207,7 +207,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private NativeFunctionDelegate _function;
+    private readonly NativeFunctionDelegate _function;
     private readonly ILogger _logger;
 
     private struct MethodDetails

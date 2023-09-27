@@ -145,14 +145,14 @@ public static class KernelSemanticFunctionExtensions
         string? description = null,
         AIRequestSettings? requestSettings = null)
     {
-        var skfunction = kernel.CreateSemanticFunction(
+        var skFunction = kernel.CreateSemanticFunction(
             promptTemplate,
             functionName,
             pluginName,
             description,
             requestSettings);
 
-        return kernel.RunAsync(skfunction);
+        return kernel.RunAsync(skFunction);
     }
 
     [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportSemanticFunctionsFromDirectory instead. This will be removed in a future release.")]
@@ -175,7 +175,7 @@ public static class KernelSemanticFunctionExtensions
     /// <para>
     /// This method accepts the path of the parent directory (e.g. "d:\plugins") and the name of the plugin directory
     /// (e.g. "OfficePlugin"), which is used also as the "plugin name" in the internal function collection (note that
-    /// pligin and function names can contain only alphanumeric chars and underscore).
+    /// plugin and function names can contain only alphanumeric chars and underscore).
     /// </para>
     /// <code>
     /// Example:
