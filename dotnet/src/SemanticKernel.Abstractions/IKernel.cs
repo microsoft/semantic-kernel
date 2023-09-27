@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -51,28 +50,6 @@ public interface IKernel
     /// Reference to Http handler factory
     /// </summary>
     IDelegatingHandlerFactory HttpHandlerFactory { get; }
-
-    /// <summary>
-    /// Build and register a function in the internal function collection, in a global generic plugin.
-    /// </summary>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string functionName,
-        SemanticFunctionConfig functionConfig);
-
-    /// <summary>
-    /// Build and register a function in the internal function collection.
-    /// </summary>
-    /// <param name="pluginName">Name of the plugin containing the function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string pluginName,
-        string functionName,
-        SemanticFunctionConfig functionConfig);
 
     /// <summary>
     /// Registers a custom function in the internal function collection.

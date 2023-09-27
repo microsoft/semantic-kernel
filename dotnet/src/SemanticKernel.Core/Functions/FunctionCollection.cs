@@ -24,7 +24,10 @@ namespace Microsoft.SemanticKernel;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class FunctionCollection : IFunctionCollection
 {
-    internal const string GlobalFunctionsCollectionName = "_GLOBAL_FUNCTIONS_";
+    /// <summary>
+    /// Plugin name used when storing global functions.
+    /// </summary>
+    public const string GlobalFunctionsPluginName = "_GLOBAL_FUNCTIONS_";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
@@ -55,7 +58,7 @@ public class FunctionCollection : IFunctionCollection
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string functionName) =>
-        this.GetFunction(GlobalFunctionsCollectionName, functionName);
+        this.GetFunction(GlobalFunctionsPluginName, functionName);
 
     /// <inheritdoc/>
     public ISKFunction GetFunction(string pluginName, string functionName)
@@ -70,7 +73,7 @@ public class FunctionCollection : IFunctionCollection
 
     /// <inheritdoc/>
     public bool TryGetFunction(string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction) =>
-        this.TryGetFunction(GlobalFunctionsCollectionName, functionName, out availableFunction);
+        this.TryGetFunction(GlobalFunctionsPluginName, functionName, out availableFunction);
 
     /// <inheritdoc/>
     public bool TryGetFunction(string pluginName, string functionName, [NotNullWhen(true)] out ISKFunction? availableFunction)

@@ -223,11 +223,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             // Update the result with the completion
             context.Variables.Update(completion);
 
-            result = new FunctionResult(this.Name, this.PluginName, context, completion);
-
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            result.AddModelResults(modelResults);
+            result = new FunctionResult(this.Name, this.PluginName, context, completion);
+
+            result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
