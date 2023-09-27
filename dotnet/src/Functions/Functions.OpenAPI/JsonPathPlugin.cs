@@ -4,7 +4,6 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

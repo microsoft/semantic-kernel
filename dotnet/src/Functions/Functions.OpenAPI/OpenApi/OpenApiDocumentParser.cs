@@ -224,6 +224,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
                 parameter.Name,
                 parameter.Schema.Type,
                 parameter.Required,
+                parameter.Explode,
                 (RestApiOperationParameterLocation)Enum.Parse(typeof(RestApiOperationParameterLocation), parameter.In.ToString()),
                 (RestApiOperationParameterStyle)Enum.Parse(typeof(RestApiOperationParameterStyle), parameter.Style.ToString()),
                 parameter.Schema.Items?.Type,
