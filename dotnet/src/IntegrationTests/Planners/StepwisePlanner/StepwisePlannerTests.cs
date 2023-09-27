@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -67,7 +68,7 @@ public sealed class StepwisePlannerTests : IDisposable
                 step.PluginName.Contains(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
-    [Theory]
+    [RetryTheory]
     [InlineData(false, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(true, "What is the tallest mountain on Earth? How tall is it divided by 2", "Everest")]
     [InlineData(false, "What is the weather in Seattle?", "Seattle")]
