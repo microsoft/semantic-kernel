@@ -87,20 +87,17 @@ internal sealed class CodeTokenizer
         // 1 char only edge case
         if (text.Length == 1)
         {
-            switch (nextChar)
+            if (Block.IsVarPrefix(nextChar))
             {
-                case Symbols.VarPrefix:
-                    blocks.Add(new VarBlock(text, this._loggerFactory));
-                    break;
-
-                case Symbols.DblQuote:
-                case Symbols.SglQuote:
-                    blocks.Add(new ValBlock(text, this._loggerFactory));
-                    break;
-
-                default:
-                    blocks.Add(new FunctionIdBlock(text, this._loggerFactory));
-                    break;
+                blocks.Add(new VarBlock(text, this._loggerFactory));
+            }
+            else if (Block.IsQuote(nextChar))
+            {
+                blocks.Add(new ValBlock(text, this._loggerFactory));
+            }
+            else
+            {
+                blocks.Add(new FunctionIdBlock(text, this._loggerFactory));
             }
 
             return blocks;
@@ -121,11 +118,11 @@ internal sealed class CodeTokenizer
             // First char is easy
             if (nextCharCursor == 1)
             {
-                if (IsVarPrefix(currentChar))
+                if (Block.IsVarPrefix(currentChar))
                 {
                     currentTokenType = TokenTypes.Variable;
                 }
-                else if (IsQuote(currentChar))
+                else if (Block.IsQuote(currentChar))
                 {
                     currentTokenType = TokenTypes.Value;
                     textValueDelimiter = currentChar;
@@ -140,13 +137,13 @@ internal sealed class CodeTokenizer
             }
 
             // While reading a values between quotes
-            if (currentTokenType == TokenTypes.Value || (currentTokenType == TokenTypes.NamedArg && IsQuote(namedArgValuePrefix)))
+            if (currentTokenType == TokenTypes.Value || (currentTokenType == TokenTypes.NamedArg && Block.IsQuote(namedArgValuePrefix)))
             {
                 // If the current char is escaping the next special char:
                 // - skip the current char (escape char)
                 // - add the next (special char)
                 // - jump to the one after (to handle "\\" properly)
-                if (currentChar == Symbols.EscapeChar && CanBeEscaped(nextChar))
+                if (currentChar == Symbols.EscapeChar && Block.CanBeEscaped(nextChar))
                 {
                     currentTokenContent.Append(nextChar);
                     skipNextChar = true;
@@ -178,7 +175,7 @@ internal sealed class CodeTokenizer
 
             // If we're not between quotes, a space signals the end of the current token
             // Note: there might be multiple consecutive spaces
-            if (IsBlankSpace(currentChar))
+            if (Block.IsBlankSpace(currentChar))
             {
                 if (currentTokenType == TokenTypes.Variable)
                 {
@@ -229,7 +226,7 @@ internal sealed class CodeTokenizer
                 else
                 {
                     namedArgValuePrefix = currentChar;
-                    if (!IsQuote((char)namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix)
+                    if (!Block.IsQuote((char)namedArgValuePrefix) && !Block.IsVarPrefix((char)namedArgValuePrefix))
                     {
                         throw new SKException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
                     }
@@ -248,13 +245,13 @@ internal sealed class CodeTokenizer
                     throw new SKException("Tokens must be separated by one space least");
                 }
 
-                if (IsQuote(currentChar))
+                if (Block.IsQuote(currentChar))
                 {
                     // A quoted value starts here
                     currentTokenType = TokenTypes.Value;
                     textValueDelimiter = currentChar;
                 }
-                else if (IsVarPrefix(currentChar))
+                else if (Block.IsVarPrefix(currentChar))
                 {
                     // A variable starts here
                     currentTokenType = TokenTypes.Variable;
@@ -307,26 +304,6 @@ internal sealed class CodeTokenizer
         }
 
         return blocks;
-    }
-
-    private static bool IsVarPrefix(char c)
-    {
-        return (c == Symbols.VarPrefix);
-    }
-
-    private static bool IsBlankSpace(char c)
-    {
-        return c is Symbols.Space or Symbols.NewLine or Symbols.CarriageReturn or Symbols.Tab;
-    }
-
-    private static bool IsQuote(char c)
-    {
-        return c is Symbols.DblQuote or Symbols.SglQuote;
-    }
-
-    private static bool CanBeEscaped(char c)
-    {
-        return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
     }
 
     [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",

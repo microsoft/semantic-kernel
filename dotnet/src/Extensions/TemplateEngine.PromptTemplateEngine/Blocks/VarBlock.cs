@@ -37,7 +37,7 @@ internal sealed class VarBlock : Block, ITextRendering
             return false;
         }
 
-        if (this.Content[0] != Symbols.VarPrefix)
+        if (!IsVarPrefix(this.Content[0]))
         {
             errorMsg = $"A variable must start with the symbol {Symbols.VarPrefix}";
             this.Logger.LogError(errorMsg);

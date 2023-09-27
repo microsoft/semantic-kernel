@@ -41,4 +41,24 @@ public abstract class Block
     /// <param name="errorMsg">Error message in case the content is not valid</param>
     /// <returns>True if the block content is valid</returns>
     public abstract bool IsValid(out string errorMsg);
+
+    internal static bool IsVarPrefix(char c)
+    {
+        return (c == Symbols.VarPrefix);
+    }
+
+    internal static bool IsBlankSpace(char c)
+    {
+        return c is Symbols.Space or Symbols.NewLine or Symbols.CarriageReturn or Symbols.Tab;
+    }
+
+    internal static bool IsQuote(char c)
+    {
+        return c is Symbols.DblQuote or Symbols.SglQuote;
+    }
+
+    internal static bool CanBeEscaped(char c)
+    {
+        return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
+    }
 }

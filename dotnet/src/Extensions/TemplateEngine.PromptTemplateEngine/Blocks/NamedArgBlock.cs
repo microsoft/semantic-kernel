@@ -48,7 +48,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             throw new SKException($"A function named argument must contain a quoted value or variable after the '{Symbols.NamedArgBlockSeparator}' character.");
         }
 
-        if (argValue[0] == Symbols.VarPrefix)
+        if (IsVarPrefix(argValue[0]))
         {
             this._argValueAsVarBlock = new VarBlock(argValue);
         }
