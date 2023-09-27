@@ -47,7 +47,7 @@ public sealed class TextMemoryPlugin
     private const double DefaultRelevance = 0.0;
     private const int DefaultLimit = 1;
 
-    private ISemanticTextMemory _memory;
+    private readonly ISemanticTextMemory _memory;
 
     /// <summary>
     /// Creates a new instance of the TextMemoryPlugin

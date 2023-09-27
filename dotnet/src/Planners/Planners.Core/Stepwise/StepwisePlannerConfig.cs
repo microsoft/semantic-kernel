@@ -37,12 +37,12 @@ public sealed class StepwisePlannerConfig : PlannerConfigBase
     /// <summary>
     /// The minimum time to wait between iterations in milliseconds.
     /// </summary>
-    public int MinIterationTimeMs { get; set; } = 0;
+    public int MinIterationTimeMs { get; set; }
 
     /// <summary>
     /// The configuration to use for the prompt template.
     /// </summary>
-    public PromptTemplateConfig? PromptUserConfig { get; set; } = null;
+    public PromptTemplateConfig? PromptUserConfig { get; set; }
 
     /// <summary>
     /// A suffix to use within the default prompt template.

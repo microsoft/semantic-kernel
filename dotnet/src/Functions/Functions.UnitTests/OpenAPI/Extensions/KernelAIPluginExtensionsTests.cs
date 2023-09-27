@@ -30,7 +30,7 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
     /// <summary>
     /// IKernel instance.
     /// </summary>
-    private IKernel _kernel;
+    private readonly IKernel _kernel;
 
     /// <summary>
     /// Creates an instance of a <see cref="KernelAIPluginExtensionsTests"/> class.

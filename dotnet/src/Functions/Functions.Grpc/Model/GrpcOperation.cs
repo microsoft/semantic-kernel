@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Functions.Grpc.Model;
 /// <summary>
 /// The gRPC operation.
 /// </summary>
-internal class GrpcOperation
+internal sealed class GrpcOperation
 {
     /// <summary>
     /// Name of 'address' argument used as override for the address provided by gRPC operation.

@@ -23,8 +23,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private const int StreamingPort = 5005;
 
     private readonly IConfigurationRoot _configuration;
-    private List<ClientWebSocket> _webSockets = new();
-    private Func<ClientWebSocket> _webSocketFactory;
+    private readonly List<ClientWebSocket> _webSockets = new();
+    private readonly Func<ClientWebSocket> _webSocketFactory;
 
     public OobaboogaTextCompletionTests()
     {

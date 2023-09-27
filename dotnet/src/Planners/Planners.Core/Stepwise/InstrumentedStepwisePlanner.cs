@@ -80,17 +80,17 @@ public class InstrumentedStepwisePlanner : IStepwisePlanner
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for planner-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(InstrumentedStepwisePlanner).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(InstrumentedStepwisePlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for planner-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(InstrumentedStepwisePlanner).FullName);
+    private static readonly Meter s_meter = new(typeof(InstrumentedStepwisePlanner).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to record plan creation execution time.
     /// </summary>
-    private static Histogram<double> s_createPlanExecutionTime =
+    private static readonly Histogram<double> s_createPlanExecutionTime =
         s_meter.CreateHistogram<double>(
             name: $"SK.{PlannerType}.CreatePlan.ExecutionTime",
             unit: "ms",

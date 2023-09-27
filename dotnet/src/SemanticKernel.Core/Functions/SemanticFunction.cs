@@ -179,8 +179,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
     private IReadOnlyFunctionCollection? _functionCollection;
-    private Lazy<ITextCompletion>? _aiService = null;
-    private Lazy<FunctionView> _view;
+    private Lazy<ITextCompletion>? _aiService;
+    private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
