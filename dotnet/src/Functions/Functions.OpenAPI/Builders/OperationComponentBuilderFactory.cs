@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 /// <summary>
 /// Defines factory for creating builders used to construct various components(path, query string, payload, etc...) of REST API operations.
 /// </summary>
-internal class OperationComponentBuilderFactory : IOperationComponentBuilderFactory
+internal sealed class OperationComponentBuilderFactory : IOperationComponentBuilderFactory
 {
     private readonly Lazy<IQueryStringBuilder> _queryStringBuilder = new(() => new QueryStringBuilder());
 
