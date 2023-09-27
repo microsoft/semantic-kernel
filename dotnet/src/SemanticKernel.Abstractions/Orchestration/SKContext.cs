@@ -53,7 +53,7 @@ public sealed class SKContext
     public ILoggerFactory LoggerFactory => this.Kernel.LoggerFactory;
 
     /// <summary>
-    /// Kernel context reference
+    /// Kernel execution context reference
     /// </summary>
     public IKernelExecutionContext Kernel => this.GetKernelContext();
 
