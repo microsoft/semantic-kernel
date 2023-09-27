@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -60,7 +61,7 @@ public class SequentialPlanParserTests
         var kernelContextMock = new Mock<IKernelExecutionContext>();
 
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>()))
+        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>()))
             .Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
             {
                 kernelContextMock.SetupGet(x => x.Functions).Returns(skills ?? kernelMock.Object.Functions);

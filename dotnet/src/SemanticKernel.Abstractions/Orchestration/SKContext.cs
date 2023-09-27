@@ -72,15 +72,17 @@ public sealed class SKContext
     /// </summary>
     /// <param name="kernelContext">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
+    /// <param name="culture">Culture related to the context</param>
     internal SKContext(
         IKernelExecutionContext kernelContext,
-        ContextVariables? variables = null)
+        ContextVariables? variables = null,
+        CultureInfo? culture = null)
     {
         Verify.NotNull(kernelContext, nameof(kernelContext));
 
         this._kernelContext = kernelContext;
         this.Variables = variables ?? new();
-        this._culture = CultureInfo.CurrentCulture;
+        this._culture = culture ?? CultureInfo.CurrentCulture;
     }
 
     /// <summary>

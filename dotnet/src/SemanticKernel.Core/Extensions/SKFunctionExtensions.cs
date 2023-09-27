@@ -46,9 +46,7 @@ public static class SKFunctionExtensions
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
-        var context = kernel.CreateNewContext(variables, functions);
-        context.Culture = culture!;
-
+        var context = kernel.CreateNewContext(variables, functions, culture);
         return function.InvokeAsync(context, requestSettings ?? function.RequestSettings, cancellationToken);
     }
 

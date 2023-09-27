@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -258,7 +259,10 @@ repeat:
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext(ContextVariables? variables = null, IReadOnlyFunctionCollection? functions = null)
+    public SKContext CreateNewContext(
+        ContextVariables? variables = null,
+        IReadOnlyFunctionCollection? functions = null,
+        CultureInfo? culture = null)
     {
 #pragma warning disable CA2000 // Dispose objects before losing scope
         var kernelContext = new KernelExecutionContext(
@@ -266,7 +270,7 @@ repeat:
             functions ?? this._functionCollection,
             this._aiServiceProvider);
 
-        return new SKContext(kernelContext, variables);
+        return new SKContext(kernelContext, variables, culture);
 #pragma warning restore CA2000 // Dispose objects before losing scope
     }
 

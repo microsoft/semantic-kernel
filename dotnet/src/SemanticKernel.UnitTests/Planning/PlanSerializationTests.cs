@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -262,7 +263,7 @@ public sealed class PlanSerializationTests
         kernel.SetupGet(x => x.Functions).Returns(functions.Object);
         kernelContext.SetupGet(x => x.Functions).Returns(functions.Object);
 
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, functions) =>
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, functions) =>
         {
             this._kernelContext.SetupGet(x => x.Functions).Returns(functions ?? kernel.Object.Functions);
             return new SKContext(this._kernelContext.Object, contextVariables);
@@ -335,7 +336,7 @@ public sealed class PlanSerializationTests
         this._kernelContext.SetupGet(x => x.Functions).Returns(functions.Object);
         kernel.SetupGet(x => x.Functions).Returns(functions.Object);
 
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, functions) =>
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, functions) =>
         {
             this._kernelContext.SetupGet(x => x.Functions).Returns(functions ?? kernel.Object.Functions);
             return new SKContext(this._kernelContext.Object, contextVariables);
@@ -432,7 +433,7 @@ public sealed class PlanSerializationTests
             new ContextVariables(stepOutput)
         );
 
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, functions) =>
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, functions) =>
         {
             this._kernelContext.SetupGet(x => x.Functions).Returns(functions ?? kernel.Object.Functions);
             return new SKContext(this._kernelContext.Object, contextVariables);

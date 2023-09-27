@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -828,7 +829,7 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         kernel.SetupGet(x => x.Functions).Returns(skills);
         kernelContext.SetupGet(x => x.Functions).Returns(skills);
         kernel.SetupGet(x => x.Functions).Returns(skills);
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
         {
             kernelContext.SetupGet(x => x.Functions).Returns(skills ?? kernel.Object.Functions);
             return new SKContext(kernelContext.Object, contextVariables);

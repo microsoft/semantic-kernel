@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
@@ -68,7 +69,7 @@ public class SKContextTests
         kernel.SetupGet(x => x.Functions).Returns(skills);
         kernelContext.SetupGet(x => x.Functions).Returns(skills);
         kernel.SetupGet(x => x.Functions).Returns(skills);
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
         {
             kernelContext.SetupGet(x => x.Functions).Returns(skills ?? kernel.Object.Functions);
             return new SKContext(kernelContext.Object, contextVariables);
