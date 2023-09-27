@@ -55,7 +55,7 @@ class FileIOSkill(PydanticField):
     )
     @sk_function_context_parameter(name="path", description="Destination path")
     @sk_function_context_parameter(name="content", description="File content")
-    async def write_async(self, context: "SKContext"):
+    async def write_async(self, context: "SKContext") -> None:
         """
         Write a file
 
@@ -64,9 +64,6 @@ class FileIOSkill(PydanticField):
         Args:
             Contains the 'path' for the Destination file and
             the 'content' of the file to write.
-
-        Returns:
-            The contents of the file
         """
         has_path, path = context.variables.get("path")
         has_content, content = context.variables.get("content")
