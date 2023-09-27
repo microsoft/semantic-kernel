@@ -17,16 +17,9 @@ public static class Example59_HuggingFaceEmbedding
     {
         Console.WriteLine("======== Example59_HuggingFaceEmbedding ========");
 
-        var CERT_PATH = "C:\\Users\\Ashish.Shiwalkar\\AppData\\Roaming\\ZscalerRootCA.cer";
-        var handler = new HttpClientHandler();
-        handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-        handler.SslProtocols = SslProtocols.Tls12;
-        handler.ClientCertificates.Add(new X509Certificate2(CERT_PATH));
-        var client = new HttpClient(handler);
-        client.BaseAddress = new Uri("https://api-inference.huggingface.co/pipeline/feature-extraction");
 
         IKernel kernel = Kernel.Builder
-                .WithHuggingFaceTextEmbeddingGenerationService("sentence-transformers/all-MiniLM-L6-v2", httpClient: client)
+                .WithHuggingFaceTextEmbeddingGenerationService("sentence-transformers/all-MiniLM-L6-v2", "https://api-inference.huggingface.co/pipeline/feature-extraction")
 
       .Build();
         var embedinggenerator = kernel.GetService<ITextEmbeddingGeneration>();
