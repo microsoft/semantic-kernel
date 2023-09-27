@@ -1,4 +1,5 @@
 {
+  "name": "breakfast_flow",
   "goal": "Make breakfast",
   "steps": [
     {
@@ -47,6 +48,11 @@
       "provides": [
         "breakfast"
       ]
+    },
+    {
+      "flowName": "lunch_flow",
+      "completionType": "Optional",
+      "startingMessage": "Would you like to prepare the lunch as well?"
     }
   ],
   "provides": [

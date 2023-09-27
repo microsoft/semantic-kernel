@@ -133,6 +133,7 @@ internal sealed class ReActEngine
         this._logger?.LogInformation("Scratchpad: {ScratchPad}", scratchPad);
 
         var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
+
         string llmResponseText = llmResponse.Result.Trim();
         this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
 
@@ -166,7 +167,7 @@ internal sealed class ReActEngine
 
         try
         {
-            var function = kernel.Func(targetFunction.SkillName, targetFunction.Name);
+            var function = kernel.Skills.GetFunction(targetFunction.SkillName, targetFunction.Name);
             var actionContext = this.CreateActionContext(variables, kernel, context);
 
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);

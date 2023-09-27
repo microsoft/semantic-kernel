@@ -1,4 +1,4 @@
-name: flow
+name: breakfast_flow
 goal: Make breakfast
 steps:
   - goal: Make coffee
@@ -24,6 +24,7 @@ steps:
     provides:
       - ingredients
     completionType: AtLeastOnce
+    transitionMessage: Do you want to add one more recipe?
 
   - goal: Cook
     skills:
@@ -34,5 +35,10 @@ steps:
       - ingredients
     provides:
         - breakfast
+  
+  - flowName: lunch_flow
+    completionType: Optional
+    startingMessage: Would you like to prepare the lunch as well?
+
 provides:
   - breakfast

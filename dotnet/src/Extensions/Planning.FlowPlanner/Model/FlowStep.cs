@@ -15,11 +15,11 @@ using System.Reflection;
 /// </summary>
 public class FlowStep
 {
-    private List<string> _requires = new();
+    private readonly List<string> _requires = new();
 
-    private List<string> _provides = new();
+    private readonly List<string> _provides = new();
 
-    private List<string> _passthrough = new();
+    private readonly List<string> _passthrough = new();
 
     private Dictionary<string, Type?> _skillTypes = new();
 
@@ -34,13 +34,6 @@ public class FlowStep
     {
         this.Goal = goal;
         this._skillsFactory = skillsFactory;
-    }
-
-    /// <summary>
-    /// Deserialization only
-    /// </summary>
-    public FlowStep() : this(string.Empty)
-    {
     }
 
     /// <summary>
@@ -59,36 +52,24 @@ public class FlowStep
     public string? StartingMessage { get; set; }
 
     /// <summary>
-    /// If the CompletionType is CompletionType.AtleastOnce or CompletionType.ZeroOrMore, this message will be used to ask the user if they want to try the step again.
+    /// If the CompletionType is CompletionType.AtLeastOnce or CompletionType.ZeroOrMore, this message will be used to ask the user if they want to try the step again.
     /// </summary>
-    public string TransitionMessage { get; set; } = "Did you want to try the previous step again?";
+    public string? TransitionMessage { get; set; } = "Did you want to try the previous step again?";
 
     /// <summary>
     /// Parameters required for executing the step
     /// </summary>
-    public List<string> Requires
-    {
-        get => this._requires;
-        set => this._requires = value;
-    }
+    public virtual IEnumerable<string> Requires => this._requires;
 
     /// <summary>
     /// Variables to be provided by the step
     /// </summary>
-    public List<string> Provides
-    {
-        get => this._provides;
-        set => this._provides = value;
-    }
+    public IEnumerable<string> Provides => this._provides;
 
     /// <summary>
     /// Variables to be passed through on iterations of the step
     /// </summary>
-    public List<string> Passthrough
-    {
-        get => this._passthrough;
-        set => this._passthrough = value;
-    }
+    public IEnumerable<string> Passthrough => this._passthrough;
 
     /// <summary>
     /// Gets or sets the skill available for the current step
@@ -194,7 +175,7 @@ public class FlowStep
     /// <param name="passthroughArguments">Array of passthrough arguments</param>
     public void AddPassthrough(params string[] passthroughArguments)
     {
-        if (this.CompletionType != CompletionType.AtLeastOnce && this.CompletionType != CompletionType.ZeroOrMore)
+        if (passthroughArguments.Length != 0 && this.CompletionType != CompletionType.AtLeastOnce && this.CompletionType != CompletionType.ZeroOrMore)
         {
             throw new ArgumentException("Passthrough arguments can only be set for the AtLeastOnce or ZeroOrMore completion type");
         }
