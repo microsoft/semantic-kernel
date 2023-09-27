@@ -625,32 +625,32 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// Planner native functions
     /// </summary>
-    private IDictionary<string, ISKFunction> _nativeFunctions = new Dictionary<string, ISKFunction>();
+    private readonly IDictionary<string, ISKFunction> _nativeFunctions = new Dictionary<string, ISKFunction>();
 
     /// <summary>
     /// The prompt template to use for the system step
     /// </summary>
-    private string _promptTemplate;
+    private readonly string _promptTemplate;
 
     /// <summary>
     /// The question template to use for the system step
     /// </summary>
-    private string _questionTemplate;
+    private readonly string _questionTemplate;
 
     /// <summary>
     /// The function manual template to use for the system step
     /// </summary>
-    private string _manualTemplate;
+    private readonly string _manualTemplate;
 
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private PromptTemplateEngine _promptRenderer;
+    private readonly PromptTemplateEngine _promptRenderer;
 
     /// <summary>
     /// The prompt config to use for the system step
     /// </summary>
-    private PromptTemplateConfig _promptConfig;
+    private readonly PromptTemplateConfig _promptConfig;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation

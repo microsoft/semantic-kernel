@@ -632,7 +632,7 @@ public sealed class Plan : IPlan
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 
-    private ISKFunction? Function { get; set; } = null;
+    private ISKFunction? Function { get; set; }
 
     private readonly List<Plan> _steps = new();
 

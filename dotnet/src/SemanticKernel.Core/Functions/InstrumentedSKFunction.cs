@@ -110,32 +110,32 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for function-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for function-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(SKFunction).FullName);
+    private static readonly Meter s_meter = new(typeof(SKFunction).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of function execution.
     /// </summary>
-    private Histogram<double> _executionTimeHistogram;
+    private readonly Histogram<double> _executionTimeHistogram;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of function executions.
     /// </summary>
-    private Counter<int> _executionTotalCounter;
+    private readonly Counter<int> _executionTotalCounter;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful function executions.
     /// </summary>
-    private Counter<int> _executionSuccessCounter;
+    private readonly Counter<int> _executionSuccessCounter;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed function executions.
     /// </summary>
-    private Counter<int> _executionFailureCounter;
+    private readonly Counter<int> _executionFailureCounter;
 
     /// <summary>
     /// Wrapper for instrumentation to be used in multiple invocation places.
