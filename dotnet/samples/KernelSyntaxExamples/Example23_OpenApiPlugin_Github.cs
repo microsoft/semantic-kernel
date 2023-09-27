@@ -35,7 +35,7 @@ public static class Example23_OpenApiPlugin_GitHub
 
         var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
-            "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
+            "../../../samples/dotnet/OpenApiPluginsExample/GitHubPlugin/openapi.json",
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
