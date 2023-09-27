@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -14,7 +13,6 @@ using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Moq;
 using Xunit;
@@ -23,7 +21,7 @@ using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
 
-public class KernelTests
+public class SemanticFunctionTests
 {
     [Fact]
     public void ItProvidesAccessToFunctionsViaFunctionCollection()
@@ -34,62 +32,11 @@ public class KernelTests
             .WithDefaultAIService<ITextCompletion>(factory.Object)
             .Build();
 
-        var nativePlugin = new MyPlugin();
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
-        kernel.ImportFunctions(nativePlugin, "mySk");
 
         // Act & Assert - 3 functions, var name is not case sensitive
         Assert.True(kernel.Functions.TryGetFunction("jk", "joker", out _));
         Assert.True(kernel.Functions.TryGetFunction("JK", "JOKER", out _));
-        Assert.True(kernel.Functions.TryGetFunction("mySk", "sayhello", out _));
-        Assert.True(kernel.Functions.TryGetFunction("MYSK", "SayHello", out _));
-        Assert.True(kernel.Functions.TryGetFunction("mySk", "ReadFunctionCollectionAsync", out _));
-        Assert.True(kernel.Functions.TryGetFunction("MYSK", "ReadFunctionCollectionAsync", out _));
-    }
-
-    [Fact]
-    public async Task RunAsyncDoesNotRunWhenCancelledAsync()
-    {
-        // Arrange
-        var kernel = Kernel.Builder.Build();
-        var nativePlugin = new MyPlugin();
-        var plugin = kernel.ImportFunctions(nativePlugin, "mySk");
-
-        using CancellationTokenSource cts = new();
-        cts.Cancel();
-
-        // Act
-        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, plugin["GetAnyValue"]));
-    }
-
-    [Fact]
-    public async Task RunAsyncRunsWhenNotCancelledAsync()
-    {
-        // Arrange
-        var kernel = Kernel.Builder.Build();
-        var nativePlugin = new MyPlugin();
-        kernel.ImportFunctions(nativePlugin, "mySk");
-
-        using CancellationTokenSource cts = new();
-
-        // Act
-        KernelResult result = await kernel.RunAsync(cts.Token, kernel.Functions.GetFunction("mySk", "GetAnyValue"));
-
-        // Assert
-        Assert.False(string.IsNullOrEmpty(result.GetValue<string>()));
-    }
-
-    [Fact]
-    public void ItImportsPluginsNotCaseSensitive()
-    {
-        // Act
-        IDictionary<string, ISKFunction> testFunctions = Kernel.Builder.Build().ImportFunctions(new MyPlugin(), "test");
-
-        // Assert
-        Assert.Equal(3, testFunctions.Count);
-        Assert.True(testFunctions.ContainsKey("GetAnyValue"));
-        Assert.True(testFunctions.ContainsKey("getanyvalue"));
-        Assert.True(testFunctions.ContainsKey("GETANYVALUE"));
     }
 
     [Theory]
@@ -124,30 +71,17 @@ public class KernelTests
     }
 
     [Fact]
-    public void ItAllowsToImportFunctionsInTheGlobalNamespace()
+    public void ItAllowsToCreateFunctionsInTheGlobalNamespace()
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
+        var templateConfig = new PromptTemplateConfig();
 
         // Act
-        IDictionary<string, ISKFunction> plugin = kernel.ImportFunctions(new MyPlugin());
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName");
 
         // Assert
-        Assert.Equal(3, plugin.Count);
-        Assert.True(kernel.Functions.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
-        Assert.NotNull(functionInstance);
-    }
-
-    [Fact]
-    public void ItAllowsToImportTheSamePluginMultipleTimes()
-    {
-        // Arrange
-        var kernel = Kernel.Builder.Build();
-
-        // Act - Assert no exception occurs
-        kernel.ImportFunctions(new MyPlugin());
-        kernel.ImportFunctions(new MyPlugin());
-        kernel.ImportFunctions(new MyPlugin());
+        Assert.Equal(FunctionCollection.GlobalFunctionsPluginName, func.PluginName);
     }
 
     [Fact]
@@ -487,39 +421,6 @@ public class KernelTests
         Assert.Equal("Result1", functionResult1.GetValue<string>());
         Assert.Equal("Result2", functionResult2.GetValue<string>());
         Assert.Equal("Result3", functionResult3.GetValue<string>());
-    }
-
-    public class MyPlugin
-    {
-        [SKFunction, Description("Return any value.")]
-        public string GetAnyValue()
-        {
-            return Guid.NewGuid().ToString();
-        }
-
-        [SKFunction, Description("Just say hello")]
-        public void SayHello()
-        {
-            Console.WriteLine("Hello folks!");
-        }
-
-        [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
-        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context)
-        {
-            await Task.Delay(0);
-
-            if (context.Functions == null)
-            {
-                Assert.Fail("Functions collection is missing");
-            }
-
-            foreach (var function in context.Functions.GetFunctionViews())
-            {
-                context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
-            }
-
-            return context;
-        }
     }
 
     private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)

@@ -35,7 +35,7 @@ public static class KernelSemanticFunctionExtensions
         string functionName,
         SemanticFunctionConfig functionConfig)
     {
-        return kernel.RegisterSemanticFunction("TODO", functionName, functionConfig);
+        return kernel.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsPluginName, functionName, functionConfig);
     }
 
     /// <summary>
@@ -53,7 +53,6 @@ public static class KernelSemanticFunctionExtensions
         SemanticFunctionConfig functionConfig)
     {
         // Future-proofing the name not to contain special chars
-        Verify.ValidPluginName(pluginName);
         Verify.ValidFunctionName(functionName);
 
         ISKFunction function = kernel.CreateSemanticFunction(pluginName, functionName, functionConfig);

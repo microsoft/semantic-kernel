@@ -48,8 +48,4 @@
     <ProjectReference Include="..\Functions.Semantic\Functions.Semantic.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="SemanticFunctions\" />
-  </ItemGroup>
-
 </Project>

@@ -98,7 +98,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
             this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", functionsInstance.GetType().FullName);
         }
         else
