@@ -31,7 +31,7 @@ public class SamplePluginsTests
     }
 
     [Fact]
-    // Including this to ensure backward compatability as tools like Prompt Factory still use the old format
+    // Including this to ensure backward compatibility as tools like Prompt Factory still use the old format
     public void CanLoadSampleSkillsCompletions()
     {
         // Arrange
