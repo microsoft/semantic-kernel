@@ -179,8 +179,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
     private IReadOnlyFunctionCollection? _functionCollection;
-    private Lazy<ITextCompletion>? _aiService = null;
-    private Lazy<FunctionView> _view;
+    private Lazy<ITextCompletion>? _aiService;
+    private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
 
     private static async Task<string> GetCompletionsResultContentAsync(IReadOnlyList<ITextResult> completions, CancellationToken cancellationToken = default)
@@ -223,11 +223,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             // Update the result with the completion
             context.Variables.Update(completion);
 
-            result = new FunctionResult(this.Name, this.PluginName, context, completion);
-
             var modelResults = completionResults.Select(c => c.ModelResult).ToArray();
 
-            result.AddModelResults(modelResults);
+            result = new FunctionResult(this.Name, this.PluginName, context, completion);
+
+            result.Metadata.Add(AIFunctionResultExtensions.ModelResultsMetadataKey, modelResults);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
         {
