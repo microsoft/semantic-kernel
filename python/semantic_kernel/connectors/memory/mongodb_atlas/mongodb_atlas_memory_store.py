@@ -11,7 +11,7 @@ from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
-    DEFAULT_NUM_CANDIDATES,
+    NUM_CANDIDATES_SCALAR,
     DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
@@ -33,14 +33,12 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
     _logger: Logger
     __database_name: str
     __index_name: str
-    __num_candidates: int
 
     def __init__(
         self,
         index_name: Optional[str] = None,
         connection_string: Optional[str] = None,
         database_name: Optional[str] = None,
-        num_candidates: Optional[int] = None,
         logger: Optional[Logger] = None,
         read_preference: Optional[ReadPreference] = ReadPreference.PRIMARY,
     ):
@@ -51,7 +49,6 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         self._logger = logger or NullLogger()
         self.__database_name = database_name or DEFAULT_DB_NAME
         self.__index_name = index_name or DEFAULT_SEARCH_INDEX_NAME
-        self.__num_candidates = num_candidates or DEFAULT_NUM_CANDIDATES
 
     @property
     def database_name(self) -> str:
@@ -285,7 +282,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
             "$vectorSearch": {
                 "queryVector": embedding.tolist(),
                 "limit": limit,
-                "numCandidates": self.num_candidates,
+                "numCandidates": limit * NUM_CANDIDATES_SCALAR,
                 "path": MONGODB_FIELD_EMBEDDING,
                 "index": self.index_name,
             }
