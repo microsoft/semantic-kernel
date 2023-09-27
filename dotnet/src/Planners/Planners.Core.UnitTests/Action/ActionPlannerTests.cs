@@ -99,7 +99,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     }
 
     [Fact]
-    public void ListOfFunctionsIncludesNativeAndSemanticFunctions()
+    public async Task ListOfFunctionsIncludesNativeAndSemanticFunctionsAsync()
     {
         // Arrange
         var plugins = this.CreateMockFunctionCollection();
@@ -108,7 +108,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var context = kernel.Object.CreateNewContext();
 
         // Act
-        var result = planner.ListOfFunctions("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal", context);
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List pull requests.{Environment.NewLine}GitHubPlugin.PullsList{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
@@ -116,7 +116,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     }
 
     [Fact]
-    public void ListOfFunctionsExcludesExcludedPlugins()
+    public async Task ListOfFunctionsExcludesExcludedPluginsAsync()
     {
         // Arrange
         var plugins = this.CreateMockFunctionCollection();
@@ -127,7 +127,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var context = kernel.Object.CreateNewContext();
 
         // Act
-        var result = planner.ListOfFunctions("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal", context);
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}";
@@ -135,7 +135,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     }
 
     [Fact]
-    public void ListOfFunctionsExcludesExcludedFunctions()
+    public async Task ListOfFunctionsExcludesExcludedFunctionsAsync()
     {
         // Arrange
         var plugins = this.CreateMockFunctionCollection();
@@ -146,7 +146,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         var context = kernel.Object.CreateNewContext();
 
         // Act
-        var result = planner.ListOfFunctions("goal", context);
+        var result = await planner.ListOfFunctionsAsync("goal", context);
 
         // Assert
         var expected = $"// Send an e-mail.{Environment.NewLine}email.SendEmail{Environment.NewLine}// List repositories.{Environment.NewLine}GitHubPlugin.RepoList{Environment.NewLine}";
