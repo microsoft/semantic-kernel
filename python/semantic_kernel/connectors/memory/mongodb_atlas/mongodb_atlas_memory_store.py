@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 from __future__ import annotations
 
-import uuid
 from logging import Logger
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -11,10 +10,10 @@ from pymongo import DeleteOne, ReadPreference, UpdateOne, results
 
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import (
     DEFAULT_DB_NAME,
-    NUM_CANDIDATES_SCALAR,
     DEFAULT_SEARCH_INDEX_NAME,
     MONGODB_FIELD_EMBEDDING,
     MONGODB_FIELD_ID,
+    NUM_CANDIDATES_SCALAR,
     document_to_memory_record,
     memory_record_to_mongo_document,
 )
@@ -130,9 +129,6 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         """
         await self.create_collection_async(collection_name)
 
-        if not record._id:
-            record._id = str(uuid.uuid4())
-
         document: Mapping[str, Any] = memory_record_to_mongo_document(record)
 
         update_result: results.UpdateResult = await self.database[
@@ -160,13 +156,6 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
         upserts: List[UpdateOne] = []
         for record in records:
-            if not record._id:
-                record._id = str(uuid.uuid4())
-                self._logger.debug(
-                    "record id not found for Memory Store, mutated with new uuid {}".format(
-                        record._id
-                    )
-                )
             document = memory_record_to_mongo_document(record)
             upserts.append(UpdateOne(document, {"$set": document}, upsert=True))
         bulk_update_result: results.BulkWriteResult = await self.database[
