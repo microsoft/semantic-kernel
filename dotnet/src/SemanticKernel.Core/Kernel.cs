@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -186,7 +185,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         foreach (ISKFunction skFunction in pipeline)
         {
-        repeat:
+repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try

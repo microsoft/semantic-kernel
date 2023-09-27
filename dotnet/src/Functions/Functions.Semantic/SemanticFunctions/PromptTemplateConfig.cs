@@ -80,6 +80,7 @@ public class PromptTemplateConfig
 
     /// <summary>
     /// Model request settings.
+    /// Initially only a single model request settings is supported.
     /// </summary>
     [JsonPropertyName("models")]
     [JsonPropertyOrder(4)]

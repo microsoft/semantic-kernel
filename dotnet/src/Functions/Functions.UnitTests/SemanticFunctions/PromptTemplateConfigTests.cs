@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Functions;
+namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
 
 public class PromptTemplateConfigTests
 {
