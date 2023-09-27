@@ -79,7 +79,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
         }
 
         ILogger logger = loggerFactory?.CreateLogger(method.DeclaringType ?? typeof(SKFunction)) ?? NullLogger.Instance;
@@ -117,7 +117,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
         }
 
         MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, pluginName!, logger);
@@ -207,7 +207,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private NativeFunctionDelegate _function;
+    private readonly NativeFunctionDelegate _function;
     private readonly ILogger _logger;
 
     private struct MethodDetails
@@ -370,11 +370,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             // Extract and return the result.
             return returnFunc(functionName, pluginName, result, context);
         }
-
-        // Add parameters applied to the method that aren't part of the signature.
-        stringParameterViews.AddRange(method
-            .GetCustomAttributes<SKParameterAttribute>(inherit: true)
-            .Select(x => new ParameterView(x.Name ?? string.Empty, x.Description ?? string.Empty, x.DefaultValue ?? string.Empty)));
 
         // Check for param names conflict
         Verify.ParametersUniqueness(stringParameterViews);

@@ -30,7 +30,7 @@ Chosen option: "Enable the dynamic creation of payload and/or namespacing based 
 In order to enable the dynamic creation of payloads/bodies for PUT and POST RestAPI operations, please set the `EnableDynamicPayload` property of the `OpenApiSkillExecutionParameters` execution parameters to `true` when importing the AI plugin:
 
 ```csharp
-var plugin = await kernel.ImportAIPluginAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient) { EnableDynamicPayload = true });
+var plugin = await kernel.ImportPluginFunctionsAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient) { EnableDynamicPayload = true });
 ```
 
 To dynamically construct a payload for a RestAPI operation that requires payload like this:
@@ -55,7 +55,7 @@ contextVariables.Set("enabled", true);
 To enable namespacing, set the `EnablePayloadNamespacing` property of the `OpenApiSkillExecutionParameters` execution parameters to `true` when importing the AI plugin:
 
 ```csharp
-var plugin = await kernel.ImportAIPluginAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient) { EnablePayloadNamespacing = true });
+var plugin = await kernel.ImportPluginFunctionsAsync("<skill name>", new Uri("<chatGPT-plugin>"), new OpenApiSkillExecutionParameters(httpClient) { EnablePayloadNamespacing = true });
 ```
 Remember that the namespacing mechanism depends on prefixing parameter names with their parent parameter name, separated by dots. So, use the 'namespaced' parameter names when adding arguments for them to the context variables. Let's consider this JSON:
 

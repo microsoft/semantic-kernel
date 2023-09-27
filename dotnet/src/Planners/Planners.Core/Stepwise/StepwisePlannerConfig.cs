@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
 #pragma warning disable IDE0130
@@ -14,13 +13,12 @@ namespace Microsoft.SemanticKernel.Planners;
 public sealed class StepwisePlannerConfig : PlannerConfigBase
 {
     /// <summary>
-    /// The maximum total number of tokens to allow in a completion request,
-    /// which includes the tokens from the prompt and completion
+    /// Initializes a new instance of the <see cref="StepwisePlannerConfig"/>
     /// </summary>
-    /// <remarks>
-    /// Default value is 4000.
-    /// </remarks>
-    public int MaxTokens { get; set; } = 4000;
+    public StepwisePlannerConfig()
+    {
+        this.MaxTokens = 4000;
+    }
 
     /// <summary>
     /// The ratio of tokens to allocate to the completion request. (prompt / (prompt + completion))
@@ -39,12 +37,12 @@ public sealed class StepwisePlannerConfig : PlannerConfigBase
     /// <summary>
     /// The minimum time to wait between iterations in milliseconds.
     /// </summary>
-    public int MinIterationTimeMs { get; set; } = 0;
+    public int MinIterationTimeMs { get; set; }
 
     /// <summary>
     /// The configuration to use for the prompt template.
     /// </summary>
-    public PromptTemplateConfig? PromptUserConfig { get; set; } = null;
+    public PromptTemplateConfig? PromptUserConfig { get; set; }
 
     /// <summary>
     /// A suffix to use within the default prompt template.

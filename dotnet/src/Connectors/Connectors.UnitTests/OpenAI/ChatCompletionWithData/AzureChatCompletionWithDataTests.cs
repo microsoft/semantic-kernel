@@ -15,10 +15,10 @@ namespace SemanticKernel.Connectors.UnitTests.OpenAI.ChatCompletionWithData;
 /// </summary>
 public sealed class AzureChatCompletionWithDataTests : IDisposable
 {
-    private AzureChatCompletionWithDataConfig _config;
+    private readonly AzureChatCompletionWithDataConfig _config;
 
-    private HttpMessageHandlerStub _messageHandlerStub;
-    private HttpClient _httpClient;
+    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly HttpClient _httpClient;
 
     public AzureChatCompletionWithDataTests()
     {
