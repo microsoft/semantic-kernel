@@ -42,7 +42,7 @@ class PromptTemplateConfig:
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
-        keys=["schema", "type", "description"]
+        keys = ["schema", "type", "description"]
         for key in keys:
             if key in data:
                 setattr(config, key, data[key])
@@ -50,7 +50,18 @@ class PromptTemplateConfig:
         # Some skills may not have all completion parameters defined
         config.completion = PromptTemplateConfig.CompletionConfig()
         completion_dict = data["completion"]
-        completion_keys = ['temperature', 'top_p', 'presence_penalty', 'frequency_penalty', 'max_tokens', 'number_of_responses', 'stop_sequences', 'token_selection_biases', 'default_services', 'chat_system_prompt']
+        completion_keys = [
+            "temperature",
+            "top_p",
+            "presence_penalty",
+            "frequency_penalty",
+            "max_tokens",
+            "number_of_responses",
+            "stop_sequences",
+            "token_selection_biases",
+            "default_services",
+            "chat_system_prompt",
+        ]
         for comp_key in completion_keys:
             if comp_key in completion_dict:
                 setattr(config.completion, comp_key, completion_dict[comp_key])
