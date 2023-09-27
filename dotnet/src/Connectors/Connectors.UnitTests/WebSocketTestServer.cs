@@ -21,13 +21,13 @@ internal class WebSocketTestServer : IDisposable
     private readonly CancellationTokenSource _socketCancellationTokenSource;
     private bool _serverIsRunning;
 
-    private Func<ArraySegment<byte>, List<ArraySegment<byte>>> _arraySegmentHandler;
+    private readonly Func<ArraySegment<byte>, List<ArraySegment<byte>>> _arraySegmentHandler;
     private readonly ConcurrentDictionary<Guid, ConcurrentQueue<byte[]>> _requestContentQueues;
     private readonly ConcurrentBag<Task> _runningTasks = new();
 
     private readonly ConcurrentDictionary<Guid, ConnectedClient> _clients = new();
 
-    private Task? _handleRequestTask = null;
+    private readonly Task? _handleRequestTask = null;
 
     public TimeSpan RequestProcessingDelay { get; set; } = TimeSpan.Zero;
     public TimeSpan SegmentMessageDelay { get; set; } = TimeSpan.Zero;
