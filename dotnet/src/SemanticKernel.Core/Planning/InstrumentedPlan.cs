@@ -82,7 +82,7 @@ public sealed class InstrumentedPlan : IPlan
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-    this._plan.SetDefaultFunctionCollection(skills);
+        this._plan.SetDefaultFunctionCollection(skills);
 
     #region private ================================================================================
 
@@ -92,12 +92,12 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(Plan).FullName);
+    private static readonly Meter s_meter = new(typeof(Plan).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of plan execution.
     /// </summary>
-    private static Histogram<double> s_executionTimeHistogram =
+    private static readonly Histogram<double> s_executionTimeHistogram =
         s_meter.CreateHistogram<double>(
             name: "SK.Plan.Execution.ExecutionTime",
             unit: "ms",
@@ -106,7 +106,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of plan executions.
     /// </summary>
-    private static Counter<int> s_executionTotalCounter =
+    private static readonly Counter<int> s_executionTotalCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionTotal",
             description: "Total number of plan executions");
@@ -114,7 +114,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful plan executions.
     /// </summary>
-    private static Counter<int> s_executionSuccessCounter =
+    private static readonly Counter<int> s_executionSuccessCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionSuccess",
             description: "Number of successful plan executions");
@@ -122,7 +122,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed plan executions.
     /// </summary>
-    private static Counter<int> s_executionFailureCounter =
+    private static readonly Counter<int> s_executionFailureCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionFailure",
             description: "Number of failed plan executions");

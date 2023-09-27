@@ -294,7 +294,7 @@ public sealed class KernelBuilder
 ///
 /// This is a temporary solution to avoid breaking existing clients.
 /// </summary>
-internal class NullPromptTemplateEngine : IPromptTemplateEngine
+internal sealed class NullPromptTemplateEngine : IPromptTemplateEngine
 {
     public Task<string> RenderAsync(string templateText, SKContext context, CancellationToken cancellationToken = default)
     {

@@ -320,10 +320,10 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
 
     #region private ================================================================================
 
-    private Disposer _disposer;
-    private object _lock = new();
+    private readonly Disposer _disposer;
+    private readonly object _lock = new();
 
-    private string _database;
+    private readonly string _database;
 
     private static ClientRequestProperties GetClientRequestProperties() => new()
     {
