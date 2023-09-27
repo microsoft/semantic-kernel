@@ -208,7 +208,7 @@ public sealed class Kernel : IKernel, IDisposable
 
         foreach (ISKFunction skFunction in pipeline)
         {
-repeat:
+        repeat:
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -354,10 +354,10 @@ repeat:
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultFunctionCollection(this.Functions);
 
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Models.FirstOrDefault<AIRequestSettings>());
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.DefaultRequestSettings());
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Models.FirstOrDefault<AIRequestSettings>()?.ServiceId ?? null));
+        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.DefaultRequestSettings()?.ServiceId ?? null));
 
         return func;
     }

@@ -48,6 +48,7 @@ public static class KernelSemanticFunctionExtensions
         {
             Description = description ?? "Generic function, unknown purpose",
         };
+
         if (requestSettings is not null)
         {
             config.Models.Add(requestSettings);
