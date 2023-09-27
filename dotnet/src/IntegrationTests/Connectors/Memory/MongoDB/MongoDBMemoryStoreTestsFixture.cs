@@ -42,8 +42,8 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
         var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
         mongoClientSettings.ApplicationName = GetRandomName();
 
-        this.DatabaseTestName = GetRandomName();
-        this.ListCollectionsDatabaseTestName = GetRandomName();
+        this.DatabaseTestName = "dotnetMSKIntergationTests1";
+        this.ListCollectionsDatabaseTestName = "dotnetMSKIntergationTests2";
 
         this._mongoClient = new MongoClient(mongoClientSettings);
         this.MemoryStore = new MongoDBMemoryStore(this._mongoClient, this.DatabaseTestName);
@@ -58,14 +58,26 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await this._mongoClient.DropDatabaseAsync(this.DatabaseTestName);
-        await this._mongoClient.DropDatabaseAsync(this.ListCollectionsDatabaseTestName);
+        await this.DropAllCollectionsAsync(this.DatabaseTestName);
+        await this.DropAllCollectionsAsync(this.ListCollectionsDatabaseTestName);
 
         this.MemoryStore.Dispose();
         this.VectorSearchMemoryStore.Dispose();
     }
 
     #region private ================================================================================
+
+    private async Task DropAllCollectionsAsync(string databaseName)
+    {
+        var database = this._mongoClient.GetDatabase(databaseName);
+        var allCollectionCursor = await database.ListCollectionNamesAsync();
+        var allCollectionNames = await allCollectionCursor.ToListAsync();
+
+        foreach (var collectionName in allCollectionNames)
+        {
+            await database.DropCollectionAsync(collectionName);
+        }
+    }
 
     private static string GetSetting(IConfigurationRoot configuration, string settingName)
     {
