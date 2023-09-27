@@ -77,7 +77,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             functionName: functionName,
             loggerFactory: loggerFactory
         );
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Models.FirstOrDefault<AIRequestSettings>());
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.DefaultRequestSettings());
 
         return func;
     }

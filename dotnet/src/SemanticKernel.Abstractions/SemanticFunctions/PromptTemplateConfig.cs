@@ -113,7 +113,7 @@ public class PromptTemplateConfig
     [Obsolete("Completion is no longer no longer supported. Use PromptTemplateConfig.Models collection instead. This will be removed in a future release.")]
     public AIRequestSettings? Completion
     {
-        get { return this.Models.FirstOrDefault<AIRequestSettings>(); }
+        get { return this.DefaultRequestSettings(); }
         set
         {
             if (value is not null)
