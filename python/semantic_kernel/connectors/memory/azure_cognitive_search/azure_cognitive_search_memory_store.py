@@ -9,33 +9,32 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.search.documents.indexes.aio import SearchIndexClient
 from azure.search.documents.indexes.models import (
     HnswVectorSearchAlgorithmConfiguration,
+    SearchableField,
+    SearchField,
+    SearchFieldDataType,
     SearchIndex,
+    SimpleField,
     VectorSearch,
 )
 from azure.search.documents.models import Vector
 from numpy import ndarray
 
-from azure.search.documents.indexes.models import (
-    SearchableField,
-    SearchField,
-    SearchFieldDataType,
-    SimpleField,
-)
 from semantic_kernel.connectors.memory.azure_cognitive_search.utils import (
+    SEARCH_FIELD_DESC_KEY,
+    SEARCH_FIELD_EMBEDDING_KEY,
+    SEARCH_FIELD_ID_KEY,
+    SEARCH_FIELD_IS_REF_KEY,
+    SEARCH_FIELD_METADATA_KEY,
+    SEARCH_FIELD_SRC_KEY,
+    SEARCH_FIELD_TEXT_KEY,
     decode_id,
     encode_id,
     get_search_index_async_client,
-    SEARCH_FIELD_ID_KEY,
-    SEARCH_FIELD_TEXT_KEY,
-    SEARCH_FIELD_EMBEDDING_KEY,
-    SEARCH_FIELD_SRC_KEY,
-    SEARCH_FIELD_DESC_KEY,
-    SEARCH_FIELD_METADATA_KEY,
-    SEARCH_FIELD_IS_REF_KEY,
 )
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.null_logger import NullLogger
+
 
 class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
     _search_index_client: SearchIndexClient = None
@@ -76,13 +75,23 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
                 "Please install Azure Cognitive Search client"
             )
         self._schema = {
-            SEARCH_FIELD_ID_KEY : custom_schema.get("SEARCH_FIELD_ID", "Id"),
-            SEARCH_FIELD_TEXT_KEY : custom_schema.get("SEARCH_FIELD_TEXT", "Text"),
-            SEARCH_FIELD_EMBEDDING_KEY : custom_schema.get("SEARCH_FIELD_EMBEDDING", "Embedding"),
-            SEARCH_FIELD_SRC_KEY : custom_schema.get("SEARCH_FIELD_SRC", "ExternalSourceName"),
-            SEARCH_FIELD_DESC_KEY : custom_schema.get("SEARCH_FIELD_DESC", "Description"),
-            SEARCH_FIELD_METADATA_KEY : custom_schema.get("SEARCH_FIELD_METADATA", "AdditionalMetadata"),
-            SEARCH_FIELD_IS_REF_KEY : custom_schema.get("SEARCH_FIELD_IS_REF", "IsReference"),
+            SEARCH_FIELD_ID_KEY: custom_schema.get("SEARCH_FIELD_ID", "Id"),
+            SEARCH_FIELD_TEXT_KEY: custom_schema.get("SEARCH_FIELD_TEXT", "Text"),
+            SEARCH_FIELD_EMBEDDING_KEY: custom_schema.get(
+                "SEARCH_FIELD_EMBEDDING", "Embedding"
+            ),
+            SEARCH_FIELD_SRC_KEY: custom_schema.get(
+                "SEARCH_FIELD_SRC", "ExternalSourceName"
+            ),
+            SEARCH_FIELD_DESC_KEY: custom_schema.get(
+                "SEARCH_FIELD_DESC", "Description"
+            ),
+            SEARCH_FIELD_METADATA_KEY: custom_schema.get(
+                "SEARCH_FIELD_METADATA", "AdditionalMetadata"
+            ),
+            SEARCH_FIELD_IS_REF_KEY: custom_schema.get(
+                "SEARCH_FIELD_IS_REF", "IsReference"
+            ),
         }
         self._logger = logger or NullLogger()
         self._vector_size = vector_size
@@ -288,7 +297,8 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         try:
             search_result = await search_client.get_document(
-                key=encode_id(key), selected_fields=self.get_field_selection(with_embedding)
+                key=encode_id(key),
+                selected_fields=self.get_field_selection(with_embedding),
             )
         except ResourceNotFoundError:
             await search_client.close()
@@ -420,7 +430,9 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         )
 
         vector = Vector(
-            value=embedding.flatten(), k=limit, fields=self._schema[SEARCH_FIELD_EMBEDDING_KEY]
+            value=embedding.flatten(),
+            k=limit,
+            fields=self._schema[SEARCH_FIELD_EMBEDDING_KEY],
         )
 
         search_results = await search_client.search(
@@ -444,7 +456,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         await search_client.close()
         return nearest_results
-    
 
     def get_index_schema(self, vector_size: int) -> list:
         """Return the schema of search indexes.
@@ -511,7 +522,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         return search_fields
 
-
     def get_field_selection(self, with_embeddings: bool) -> List[str]:
         """Get the list of fields to search and load.
 
@@ -536,7 +546,6 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
 
         return field_selection
 
-
     def dict_to_memory_record(self, data: dict, with_embeddings: bool) -> MemoryRecord:
         """Converts a search result to a MemoryRecord.
 
@@ -555,11 +564,12 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
             description=data[self._schema[SEARCH_FIELD_DESC_KEY]],
             additional_metadata=data[self._schema[SEARCH_FIELD_METADATA_KEY]],
             is_reference=data[self._schema[SEARCH_FIELD_IS_REF_KEY]],
-            embedding=data[self._schema[SEARCH_FIELD_EMBEDDING_KEY]] if with_embeddings else None,
+            embedding=data[self._schema[SEARCH_FIELD_EMBEDDING_KEY]]
+            if with_embeddings
+            else None,
             timestamp=None,
         )
         return sk_result
-
 
     def memory_record_to_search_record(self, record: MemoryRecord) -> dict:
         """Convert a MemoryRecord to a dictionary
@@ -572,7 +582,7 @@ class AzureCognitiveSearchMemoryStore(MemoryStoreBase):
         """
 
         return {
-                self._schema[SEARCH_FIELD_ID_KEY]: encode_id(record._id),
+            self._schema[SEARCH_FIELD_ID_KEY]: encode_id(record._id),
             self._schema[SEARCH_FIELD_TEXT_KEY]: str(record._text),
             self._schema[SEARCH_FIELD_SRC_KEY]: record._external_source_name or "",
             self._schema[SEARCH_FIELD_DESC_KEY]: record._description or "",

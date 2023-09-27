@@ -2,7 +2,7 @@
 
 import base64
 import os
-from typing import List, Optional
+from typing import Optional
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from dotenv import load_dotenv
@@ -14,6 +14,7 @@ SEARCH_FIELD_SRC_KEY = "SEARCH_FIELD_SRC"
 SEARCH_FIELD_DESC_KEY = "SEARCH_FIELD_DESC"
 SEARCH_FIELD_METADATA_KEY = "SEARCH_FIELD_METADATA"
 SEARCH_FIELD_IS_REF_KEY = "SEARCH_FIELD_IS_REF"
+
 
 def get_search_index_async_client(
     search_endpoint: Optional[str] = None,
