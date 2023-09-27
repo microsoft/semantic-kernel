@@ -43,7 +43,6 @@ public sealed class MongoDBMemoryEntry
     /// Nearest match score.
     /// </summary>
     [BsonIgnoreIfDefault]
-    [BsonElement("score")]
     public double Score { get; set; }
 
     /// <summary>

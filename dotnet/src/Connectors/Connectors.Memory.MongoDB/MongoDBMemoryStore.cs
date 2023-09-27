@@ -149,7 +149,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(string collectionName, ReadOnlyMemory<float> embedding, int limit, double minRelevanceScore = 0, bool withEmbeddings = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var cursor = await this.SearchKnn(collectionName, embedding, limit, minRelevanceScore, withEmbeddings, cancellationToken).ConfigureAwait(false);
+        using var cursor = await this.VectorSearch(collectionName, embedding, limit, minRelevanceScore, withEmbeddings, cancellationToken).ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -163,7 +163,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false, CancellationToken cancellationToken = default)
     {
-        using var cursor = await this.SearchKnn(collectionName, embedding, 1, minRelevanceScore, withEmbedding, cancellationToken).ConfigureAwait(false);
+        using var cursor = await this.VectorSearch(collectionName, embedding, 1, minRelevanceScore, withEmbedding, cancellationToken).ConfigureAwait(false);
 
         var result = await cursor.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
@@ -220,16 +220,19 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     private static FilterDefinition<MongoDBMemoryEntry> GetFilterByIds(IEnumerable<string> ids) =>
         Builders<MongoDBMemoryEntry>.Filter.In(m => m.Id, ids);
 
-    private static BsonDocument GetKnnOperator(ReadOnlyMemory<float> embedding, double minRelevanceScore, int k) =>
-        new("knnBeta",
-            new BsonDocument()
-            {
-                { "path", "embedding" },
-                { "vector", new BsonArray(embedding.ToArray()) },
-                { "k", k }
-            });
+    private static PipelineStageDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry> GetVectorSearchStage(ReadOnlyMemory<float> embedding, double minRelevanceScore, int k, string? index) =>
+        new BsonDocumentPipelineStageDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>(
+            new("$vectorSearch",
+                new BsonDocument()
+                {
+                    { "path", "embedding" },
+                    { "queryVector", new BsonArray(embedding.ToArray()) },
+                    { "limit", k },
+                    { "numCandidates", 100 },
+                    { "index", index ?? "default" },
+                }));
 
-    private Task<IAsyncCursor<MongoDBMemoryEntry>> SearchKnn(
+    private Task<IAsyncCursor<MongoDBMemoryEntry>> VectorSearch(
         string collectionName,
         ReadOnlyMemory<float> embedding,
         int limit = 1,
@@ -237,11 +240,9 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        var knnBetaOperator = GetKnnOperator(embedding, minRelevanceScore, limit);
-
-        var projectionDefinition = Builders<MongoDBMemoryEntry>
-            .Projection
-            .MetaSearchScore(nameof(MongoDBMemoryEntry.Score))
+        var vectorSearchStage = GetVectorSearchStage(embedding, minRelevanceScore, limit, this._indexName);
+        var projectionDefinition = Builders<MongoDBMemoryEntry>.Projection
+            .Meta(nameof(MongoDBMemoryEntry.Score), "vectorSearchScore")
             .Include(e => e.Metadata)
             .Include(e => e.Timestamp);
 
@@ -252,7 +253,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
         var aggregationPipeline = this.GetCollection(collectionName)
             .Aggregate()
-            .Search(knnBetaOperator, indexName: this._indexName)
+            .AppendStage(vectorSearchStage)
             .Project<MongoDBMemoryEntry>(projectionDefinition);
 
         if (minRelevanceScore > 0)
