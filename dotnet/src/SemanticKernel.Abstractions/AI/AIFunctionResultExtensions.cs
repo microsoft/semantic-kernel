@@ -21,8 +21,7 @@ public static class AIFunctionResultExtensions
     /// <param name="result">Instance of <see cref="FunctionResult"/> class.</param>
     public static IReadOnlyCollection<ModelResult>? GetModelResults(this FunctionResult result)
     {
-        if (result.Metadata.TryGetValue(ModelResultsMetadataKey, out object modelResultObject) &&
-            modelResultObject is IReadOnlyCollection<ModelResult> modelResults)
+        if (result.TryGetMetadataValue(ModelResultsMetadataKey, out IReadOnlyCollection<ModelResult>? modelResults))
         {
             return modelResults;
         }

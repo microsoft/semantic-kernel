@@ -80,4 +80,20 @@ public sealed class FunctionResult
 
         throw new InvalidCastException($"Cannot cast {this.Value.GetType()} to {typeof(T)}");
     }
+
+    /// <summary>
+    /// Get typed value from metadata.
+    /// </summary>
+    public bool TryGetMetadataValue<T>(string key, out T value)
+    {
+        if (this.Metadata.TryGetValue(key, out object? valueObject) &&
+            valueObject is T typedValue)
+        {
+            value = typedValue;
+            return true;
+        }
+
+        value = default!;
+        return false;
+    }
 }
