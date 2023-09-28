@@ -25,12 +25,6 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public string PluginName => this._plan.PluginName;
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this._plan.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     public string Description => this._plan.Description;
 
@@ -77,12 +71,6 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
         this._plan.SetDefaultFunctionCollection(functions);
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-        this._plan.SetDefaultFunctionCollection(skills);
 
     #region private ================================================================================
 
@@ -172,9 +160,19 @@ public sealed class InstrumentedPlan : IPlan
     #region Obsolete =======================================================================
 
     /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this._plan.PluginName;
+
+    /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool IsSemantic => this._plan.IsSemantic;
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this._plan.SetDefaultFunctionCollection(skills);
 
     #endregion
 }
