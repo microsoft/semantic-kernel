@@ -196,7 +196,7 @@ def azure_cosmos_db_settings_from_dot_env() -> dict:
         "AZCOSMOS_API": "mongo",  # Right now CosmosDB only supports vector search in Mongo.
         "AZCOSMOS_CONNSTR": config.get("AZCOSMOS_CONNSTR"),
         "AZCOSMOS_DATABASE_NAME": config.get("AZCOSMOS_DATABASE_NAME"),
-        "AZCOSMOS_CONTAINER_NAME": config.get("AZCOSMOS_CONTAINER_NAME")
+        "AZCOSMOS_CONTAINER_NAME": config.get("AZCOSMOS_CONTAINER_NAME"),
     }
 
     return env_variables
