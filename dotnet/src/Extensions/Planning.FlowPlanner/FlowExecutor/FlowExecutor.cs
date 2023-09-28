@@ -129,9 +129,7 @@ internal class FlowExecutor : IFlowExecutor
         this._logger?.LogInformation("Executing flow {FlowName} with sessionId={SessionId}.", flow.Name, sessionId);
         var sortedSteps = flow.SortSteps();
 
-        SKContext rootContext = this._systemKernel.CreateNewContext();
-        // populate context variables from upstream
-        rootContext.Variables.Update(contextVariables);
+        SKContext rootContext = new SKContext(this._systemKernel, contextVariables.Clone());
 
         // populate persisted state variables
         ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
