@@ -22,17 +22,19 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     // If null, all tests will be enabled
     private const string SkipReason = "Requires Weaviate server up and running";
 
-    private readonly HttpClient httpClient;
-    private readonly WeaviateMemoryStore weaviateMemoryStore;
-    private readonly string authToken;
+    private readonly HttpClient _httpClient;
+    private readonly WeaviateMemoryStore _weaviateMemoryStore;
+    private readonly string _authToken;
 
     public WeaviateMemoryStoreTests()
     {
-        this.httpClient = new();
-        this.httpClient.BaseAddress = new Uri("http://localhost:8080");
-        this.authToken = "my-secret-key";
+        this._httpClient = new()
+        {
+            BaseAddress = new Uri("http://localhost:8080")
+        };
+        this._authToken = "my-secret-key";
 
-        this.weaviateMemoryStore = new(this.httpClient, this.authToken);
+        this._weaviateMemoryStore = new(this._httpClient, this._authToken);
     }
 
     [Fact(Skip = SkipReason)]
@@ -40,12 +42,12 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     {
         var collectionName = "SK" + Guid.NewGuid();
 
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
+        Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
         await Assert.ThrowsAsync<HttpOperationException>(async () =>
-            await this.weaviateMemoryStore.CreateCollectionAsync(conflictingCollectionName));
+            await this._weaviateMemoryStore.CreateCollectionAsync(conflictingCollectionName));
     }
 
     [Fact(Skip = SkipReason)]
@@ -53,12 +55,12 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     {
         var collectionName = "SK" + Guid.NewGuid();
 
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
+        Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
         await Assert.ThrowsAsync<SKException>(async () =>
-            await this.weaviateMemoryStore.DoesCollectionExistAsync(conflictingCollectionName));
+            await this._weaviateMemoryStore.DoesCollectionExistAsync(conflictingCollectionName));
     }
 
     [Fact(Skip = SkipReason)]
@@ -66,21 +68,21 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     {
         var collectionName = "SK" + Guid.NewGuid();
 
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
+        Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
         var conflictingCollectionName = $"___{collectionName}";
         await Assert.ThrowsAsync<SKException>(async () =>
-            await this.weaviateMemoryStore.DeleteCollectionAsync(conflictingCollectionName));
+            await this._weaviateMemoryStore.DeleteCollectionAsync(conflictingCollectionName));
     }
 
     [Fact(Skip = SkipReason)]
     public async Task ItCreatesNewCollectionAsync()
     {
         var collectionName = "SK" + Guid.NewGuid();
-        Assert.False(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
+        Assert.False(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
+        Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
     }
 
     [Fact(Skip = SkipReason)]
@@ -88,19 +90,19 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     {
         await this.DeleteAllClassesAsync();
 
-        Assert.Empty(await this.weaviateMemoryStore.GetCollectionsAsync().ToListAsync());
+        Assert.Empty(await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync());
 
         var collectionName = "SK" + Guid.NewGuid();
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
+        Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
-        Assert.Single((await this.weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
+        Assert.Single((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
 
         var collectionName2 = "SK" + Guid.NewGuid();
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName2);
-        Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName2));
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName2);
+        Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName2));
 
-        Assert.Equal(2, (await this.weaviateMemoryStore.GetCollectionsAsync().ToListAsync()).Count);
+        Assert.Equal(2, (await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()).Count);
     }
 
     [Fact(Skip = SkipReason)]
@@ -108,17 +110,17 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
     {
         await this.DeleteAllClassesAsync();
 
-        Assert.Empty((await this.weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
+        Assert.Empty((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
 
         var collectionName = "SK" + Guid.NewGuid();
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        Assert.True(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
+        Assert.True(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
 
-        Assert.Single((await this.weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
+        Assert.Single((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
 
-        await this.weaviateMemoryStore.DeleteCollectionAsync(collectionName);
-        Assert.False(await this.weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
-        Assert.Empty((await this.weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
+        await this._weaviateMemoryStore.DeleteCollectionAsync(collectionName);
+        Assert.False(await this._weaviateMemoryStore.DoesCollectionExistAsync(collectionName));
+        Assert.Empty((await this._weaviateMemoryStore.GetCollectionsAsync().ToListAsync()));
     }
 
     [Fact(Skip = SkipReason)]
@@ -138,11 +140,11 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             key: "existing+" + id,
             timestamp: timestamp);
 
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        var responseId = await this.weaviateMemoryStore.UpsertAsync(collectionName, memoryRecord);
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
+        var responseId = await this._weaviateMemoryStore.UpsertAsync(collectionName, memoryRecord);
         Assert.Equal(id, responseId);
 
-        var memoryRecordResultNoVector = await this.weaviateMemoryStore.GetAsync(collectionName, id);
+        var memoryRecordResultNoVector = await this._weaviateMemoryStore.GetAsync(collectionName, id);
         if (memoryRecordResultNoVector == null)
         {
             Assert.Fail("Unable to retrieve record");
@@ -159,7 +161,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecordResultNoVector.Metadata.ExternalSourceName, memoryRecordResultNoVector.Metadata.ExternalSourceName);
         Assert.Equal(memoryRecordResultNoVector.Metadata.IsReference, memoryRecordResultNoVector.Metadata.IsReference);
 
-        var memoryRecordResultWithVector = await this.weaviateMemoryStore.GetAsync(collectionName, id, true);
+        var memoryRecordResultWithVector = await this._weaviateMemoryStore.GetAsync(collectionName, id, true);
         if (memoryRecordResultWithVector == null)
         {
             Assert.Fail("Unable to retrieve record");
@@ -176,8 +178,8 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecordResultNoVector.Metadata.ExternalSourceName, memoryRecordResultWithVector.Metadata.ExternalSourceName);
         Assert.Equal(memoryRecordResultNoVector.Metadata.IsReference, memoryRecordResultWithVector.Metadata.IsReference);
 
-        await this.weaviateMemoryStore.RemoveAsync(collectionName, id);
-        var memoryRecordAfterDeletion = await this.weaviateMemoryStore.GetAsync(collectionName, id);
+        await this._weaviateMemoryStore.RemoveAsync(collectionName, id);
+        var memoryRecordAfterDeletion = await this._weaviateMemoryStore.GetAsync(collectionName, id);
         if (memoryRecordAfterDeletion != null)
         {
             Assert.Fail("Unable to delete record");
@@ -228,13 +230,13 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
             key: "existing3+" + id3,
             timestamp: timestamp3);
 
-        await this.weaviateMemoryStore.CreateCollectionAsync(collectionName);
-        var response = await this.weaviateMemoryStore.UpsertBatchAsync(collectionName, new[] { memoryRecord1, memoryRecord2, memoryRecord3 }).ToListAsync();
+        await this._weaviateMemoryStore.CreateCollectionAsync(collectionName);
+        var response = await this._weaviateMemoryStore.UpsertBatchAsync(collectionName, new[] { memoryRecord1, memoryRecord2, memoryRecord3 }).ToListAsync();
         Assert.Equal(id1, response[0]);
         Assert.Equal(id2, response[1]);
         Assert.Equal(id3, response[2]);
 
-        var results = await this.weaviateMemoryStore.GetNearestMatchesAsync(collectionName, embedding1, 100, 0.8, true).ToListAsync();
+        var results = await this._weaviateMemoryStore.GetNearestMatchesAsync(collectionName, embedding1, 100, 0.8, true).ToListAsync();
 
         (MemoryRecord, double) first = results[0];
         (MemoryRecord, double) second = results[1];
@@ -261,7 +263,7 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecord2.Metadata.ExternalSourceName, second.Item1.Metadata.ExternalSourceName);
         Assert.Equal(memoryRecord2.Metadata.IsReference, second.Item1.Metadata.IsReference);
 
-        var closest = await this.weaviateMemoryStore.GetNearestMatchAsync(collectionName, embedding1, 0.8, true);
+        var closest = await this._weaviateMemoryStore.GetNearestMatchAsync(collectionName, embedding1, 0.8, true);
         Assert.Equal(id3, closest!.Value.Item1.Key);
         Assert.Equal(memoryRecord3.Timestamp, closest.Value.Item1.Timestamp);
         Assert.True(memoryRecord3.Embedding.Span.SequenceEqual(closest.Value.Item1.Embedding.Span));
@@ -273,25 +275,25 @@ public sealed class WeaviateMemoryStoreTests : IDisposable
         Assert.Equal(memoryRecord3.Metadata.ExternalSourceName, closest.Value.Item1.Metadata.ExternalSourceName);
         Assert.Equal(memoryRecord3.Metadata.IsReference, closest.Value.Item1.Metadata.IsReference);
 
-        await this.weaviateMemoryStore.RemoveBatchAsync(collectionName, new[] { id1, id2, id3 });
-        var memoryRecordsAfterDeletion = await this.weaviateMemoryStore.GetBatchAsync(collectionName, new[] { id1, id2, id3 }).ToListAsync();
+        await this._weaviateMemoryStore.RemoveBatchAsync(collectionName, new[] { id1, id2, id3 });
+        var memoryRecordsAfterDeletion = await this._weaviateMemoryStore.GetBatchAsync(collectionName, new[] { id1, id2, id3 }).ToListAsync();
         Assert.Empty(memoryRecordsAfterDeletion);
     }
 
     private async Task DeleteAllClassesAsync()
     {
-        var classes = this.weaviateMemoryStore.GetCollectionsAsync();
+        var classes = this._weaviateMemoryStore.GetCollectionsAsync();
         await foreach (var @class in classes)
         {
             using var requestMessage = new HttpRequestMessage(HttpMethod.Delete, $"v1/schema/{@class}");
-            requestMessage.Headers.Add("authorization", this.authToken);
-            var result = await this.httpClient.SendAsync(requestMessage);
+            requestMessage.Headers.Add("authorization", this._authToken);
+            var result = await this._httpClient.SendAsync(requestMessage);
             result.EnsureSuccessStatusCode();
         }
     }
 
     public void Dispose()
     {
-        this.httpClient.Dispose();
+        this._httpClient.Dispose();
     }
 }

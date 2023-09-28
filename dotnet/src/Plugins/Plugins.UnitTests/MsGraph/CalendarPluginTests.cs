@@ -40,7 +40,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+        var context = await FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("input", anySubject),
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
@@ -78,7 +78,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+        var context = await FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("input", anySubject),
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
@@ -115,7 +115,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+        var context = await FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("input", anySubject),
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
@@ -152,7 +152,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        var context = await FunctionHelpers.CallViaKernel(target, "AddEvent",
+        var context = await FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("input", anySubject),
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
@@ -178,7 +178,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act and Assert
-        await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
+        await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("input", anySubject),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
@@ -202,7 +202,7 @@ public class CalendarPluginTests
         CalendarPlugin target = new(connectorMock.Object);
 
         // Act
-        await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
+        await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("input", anySubject),
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
@@ -225,8 +225,8 @@ public class CalendarPluginTests
 
         CalendarPlugin target = new(connectorMock.Object);
 
-        // Act
-        var ex = await Assert.ThrowsAsync<ArgumentException>(() => FunctionHelpers.CallViaKernel(target, "AddEvent",
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<SKException>(() => FunctionHelpers.CallViaKernelAsync(target, "AddEvent",
             ("start", anyStartTime.ToString(CultureInfo.InvariantCulture)),
             ("end", anyEndTime.ToString(CultureInfo.InvariantCulture)),
             ("location", anyLocation),
@@ -234,7 +234,7 @@ public class CalendarPluginTests
             ("attendees", string.Join(";", anyAttendees)))
         );
 
-        // Assert
-        Assert.Equal("subject", ex.ParamName);
+        Assert.True(ex.InnerException is ArgumentException);
+        Assert.Equal("input", ((ArgumentException)ex.InnerException).ParamName);
     }
 }

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.SemanticFunctions;
 
@@ -14,10 +13,9 @@ namespace Microsoft.SemanticKernel.SemanticFunctions;
 public interface IPromptTemplate
 {
     /// <summary>
-    /// Get the list of parameters required by the template, using configuration and template info.
+    /// The list of parameters required by the template, using configuration and template info.
     /// </summary>
-    /// <returns>List of parameters</returns>
-    IList<ParameterView> GetParameters();
+    IReadOnlyList<ParameterView> Parameters { get; }
 
     /// <summary>
     /// Render the template using the information in the context
