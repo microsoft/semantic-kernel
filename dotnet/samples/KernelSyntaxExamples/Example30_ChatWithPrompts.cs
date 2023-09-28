@@ -36,7 +36,7 @@ using Resources;
  * TLDR: how to render a prompt:
  *
  *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
- *      ... import skills and functions ...
+ *      ... import plugins and functions ...
  *      var context = kernel.CreateNewContext();
  *      ... set variables ...
  *
@@ -67,12 +67,12 @@ public static class Example30_ChatWithPrompts
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
-        // As an example, we import the time skill, which is used in system prompt to read the current date.
+        // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         // We need a kernel context to store some information to pass to the prompts and the list
-        // of available skills needed to render prompt templates.
+        // of available plugins needed to render prompt templates.
         var context = kernel.CreateNewContext();
 
         // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).

@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Text;
 #pragma warning disable CA1024
 
 namespace Microsoft.SemanticKernel.Orchestration;
+
 /// <summary>
 /// Represents a result from a model execution.
 /// </summary>

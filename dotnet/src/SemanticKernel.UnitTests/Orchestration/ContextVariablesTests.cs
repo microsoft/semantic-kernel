@@ -248,14 +248,13 @@ public class ContextVariablesTests
         string anyContent = Guid.NewGuid().ToString();
         string someOtherMainContent = Guid.NewGuid().ToString();
         string someOtherContent = Guid.NewGuid().ToString();
-        ContextVariables target = new();
-        ContextVariables original = new(mainContent);
 
+        ContextVariables original = new(mainContent);
         original.Set(anyName, anyContent);
 
         // Act
         // Clone original into target
-        target.Update(original);
+        ContextVariables target = original.Clone();
         // Update original
         original.Update(someOtherMainContent);
         original.Set(anyName, someOtherContent);

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,11 +15,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
@@ -27,6 +26,20 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 /// </summary>
 public static class KernelAIPluginExtensions
 {
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string pluginName,
+        string filePath,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await kernel.ImportPluginFunctionsAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+    }
+#pragma warning restore CS1591
+
     /// <summary>
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
@@ -36,15 +49,15 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         string filePath,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -66,6 +79,20 @@ public static class KernelAIPluginExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string pluginName,
+        Uri uri,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await kernel.ImportPluginFunctionsAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+    }
+#pragma warning restore CS1591
+
     /// <summary>
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
@@ -75,15 +102,15 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         Uri uri,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -115,15 +142,15 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         Stream stream,
-        OpenApiPluginExecutionParameters? executionParameters = null,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        Verify.ValidSkillName(pluginName);
+        Verify.ValidPluginName(pluginName);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
         var httpClient = HttpClientProvider.GetHttpClient(kernel.HttpHandlerFactory, executionParameters?.HttpClient, kernel.LoggerFactory);
@@ -147,14 +174,14 @@ public static class KernelAIPluginExtensions
         string pluginContents,
         string pluginName,
         HttpClient httpClient,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
         if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
             return await kernel
-                .ImportAIPluginAsync(
+                .ImportPluginFunctionsAsync(
                     pluginName,
                     new Uri(openApiUrl),
                     executionParameters,
@@ -175,7 +202,7 @@ public static class KernelAIPluginExtensions
     private static async Task<IDictionary<string, ISKFunction>> LoadPluginAsync(
         IKernel kernel,
         string pluginName,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         string pluginJson,
         Uri? documentUri = null,
@@ -188,7 +215,6 @@ public static class KernelAIPluginExtensions
             var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(
-                new OperationComponentBuilderFactory(),
                 httpClient,
                 executionParameters?.AuthCallback,
                 executionParameters?.UserAgent,
@@ -221,7 +247,7 @@ public static class KernelAIPluginExtensions
     private static async Task<string> LoadDocumentFromUriAsync(
         IKernel kernel,
         Uri uri,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         CancellationToken cancellationToken)
     {
@@ -240,7 +266,7 @@ public static class KernelAIPluginExtensions
     private static async Task<string> LoadDocumentFromFilePathAsync(
         IKernel kernel,
         string filePath,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         HttpClient httpClient,
         CancellationToken cancellationToken)
     {
@@ -306,7 +332,7 @@ public static class KernelAIPluginExtensions
     /// <param name="pluginName">Plugin name.</param>
     /// <param name="runner">The REST API operation runner.</param>
     /// <param name="operation">The REST API operation.</param>
-    /// <param name="executionParameters">Skill execution parameters.</param>
+    /// <param name="executionParameters">Function execution parameters.</param>
     /// <param name="documentUri">The URI of OpenApi document.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An instance of <see cref="SKFunction"/> class.</returns>
@@ -315,7 +341,7 @@ public static class KernelAIPluginExtensions
         string pluginName,
         RestApiOperationRunner runner,
         RestApiOperation operation,
-        OpenApiPluginExecutionParameters? executionParameters,
+        OpenApiFunctionExecutionParameters? executionParameters,
         Uri? documentUri = null,
         CancellationToken cancellationToken = default)
     {
@@ -380,9 +406,8 @@ public static class KernelAIPluginExtensions
         }
 
         var parameters = restOperationParameters
-            .Select(p => new ParameterView
+            .Select(p => new ParameterView(p.AlternativeName ?? p.Name)
             {
-                Name = p.AlternativeName ?? p.Name,
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
@@ -393,7 +418,7 @@ public static class KernelAIPluginExtensions
             nativeFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
-            skillName: pluginName,
+            pluginName: pluginName,
             functionName: ConvertOperationIdToValidFunctionName(operation.Id, logger),
             loggerFactory: kernel.LoggerFactory);
 

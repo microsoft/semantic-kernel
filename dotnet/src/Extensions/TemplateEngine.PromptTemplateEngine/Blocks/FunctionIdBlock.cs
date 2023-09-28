@@ -12,7 +12,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.FunctionId;
 
-    internal string SkillName { get; } = string.Empty;
+    internal string PluginName { get; } = string.Empty;
 
     internal string FunctionName { get; } = string.Empty;
 
@@ -23,12 +23,12 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
         if (functionNameParts.Length > 2)
         {
             this.Logger.LogError("Invalid function name `{FunctionName}`.", this.Content);
-            throw new SKException($"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the skill name from the function name");
+            throw new SKException($"Invalid function name `{this.Content}`. A function name can contain at most one dot separating the plugin name from the function name");
         }
 
         if (functionNameParts.Length == 2)
         {
-            this.SkillName = functionNameParts[0];
+            this.PluginName = functionNameParts[0];
             this.FunctionName = functionNameParts[1];
             return;
         }
@@ -46,7 +46,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
         if (HasMoreThanOneDot(this.Content))
         {
-            errorMsg = "The function identifier can contain max one '.' char separating skill name from function name";
+            errorMsg = "The function identifier can contain max one '.' char separating plugin name from function name";
             return false;
         }
 

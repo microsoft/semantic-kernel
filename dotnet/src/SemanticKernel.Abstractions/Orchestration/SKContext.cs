@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -26,7 +25,8 @@ public sealed class SKContext
     /// When a prompt is processed, aka the current data after any model results processing occurred.
     /// (One prompt can have multiple results).
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
+    [Obsolete($"ModelResults are now part of {nameof(FunctionResult.Metadata)} property. Use 'ModelResults' key or available extension methods to get model results.")]
+    public IReadOnlyCollection<ModelResult> ModelResults => Array.Empty<ModelResult>();
 
     /// <summary>
     /// The culture currently associated with this context.
@@ -43,9 +43,9 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Read only skills collection
+    /// Read only functions collection
     /// </summary>
-    public IReadOnlySkillCollection Skills { get; }
+    public IReadOnlyFunctionCollection Functions { get; }
 
     /// <summary>
     /// App logger
@@ -72,17 +72,17 @@ public sealed class SKContext
     /// </summary>
     /// <param name="kernel">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
+    /// <param name="functions">Functions to include in context.</param>
     public SKContext(
         IKernel kernel,
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null)
+        IReadOnlyFunctionCollection? functions = null)
     {
         Verify.NotNull(kernel, nameof(kernel));
 
         this._originalKernel = kernel;
         this.Variables = variables ?? new();
-        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
+        this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = kernel.LoggerFactory;
         this._culture = CultureInfo.CurrentCulture;
     }
@@ -94,7 +94,7 @@ public sealed class SKContext
     /// <param name="variables">Context variables to include in context.</param>
     public SKContext(
         IKernel kernel,
-        ContextVariables? variables = null) : this(kernel, variables, kernel.Skills)
+        ContextVariables? variables = null) : this(kernel, variables, kernel.Functions)
     {
     }
 
@@ -102,10 +102,10 @@ public sealed class SKContext
     /// Constructor for the context.
     /// </summary>
     /// <param name="kernel">Kernel instance parameter</param>
-    /// <param name="skills">Skills to include in context.</param>
+    /// <param name="functions">Functions to include in context.</param>
     public SKContext(
         IKernel kernel,
-        IReadOnlySkillCollection? skills = null) : this(kernel, null, skills)
+        IReadOnlyFunctionCollection? functions = null) : this(kernel, null, functions)
     {
     }
 
@@ -113,7 +113,7 @@ public sealed class SKContext
     /// Constructor for the context.
     /// </summary>
     /// <param name="kernel">Kernel instance parameter</param>
-    public SKContext(IKernel kernel) : this(kernel, null, kernel.Skills)
+    public SKContext(IKernel kernel) : this(kernel, null, kernel.Functions)
     {
     }
 
@@ -127,7 +127,7 @@ public sealed class SKContext
     }
 
     /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
     /// <returns>A new context copied from the current one</returns>
@@ -158,10 +158,10 @@ public sealed class SKContext
         {
             string display = this.Variables.DebuggerDisplay;
 
-            if (this.Skills is IReadOnlySkillCollection skills)
+            if (this.Functions is IReadOnlyFunctionCollection functions)
             {
-                var view = skills.GetFunctionViews();
-                display += $", Skills = {view.Count}";
+                var view = functions.GetFunctionViews();
+                display += $", Functions = {view.Count}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";

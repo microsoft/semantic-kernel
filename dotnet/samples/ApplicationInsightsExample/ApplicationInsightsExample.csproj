@@ -19,12 +19,10 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" />
-    <ProjectReference Include="..\..\src\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" />
-    <ProjectReference Include="..\..\src\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
-    <ProjectReference Include="..\..\src\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+    <ProjectReference Include="..\..\src\Planners\Planners.Core\Planners.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\NCalcPlugins\NCalcPlugins.csproj" />
