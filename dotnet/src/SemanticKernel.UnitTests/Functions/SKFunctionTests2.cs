@@ -458,7 +458,6 @@ public sealed class SKFunctionTests2
         }
 
         var context = this.MockContext("");
-
         // Act
         var function = SKFunction.FromNativeMethod(Method(Test), loggerFactory: this._logger.Object);
         Assert.NotNull(function);
@@ -482,11 +481,10 @@ public sealed class SKFunctionTests2
             context.Variables["canary"] = s_expected;
             context.Variables.Update("x y z");
 
-            // This value should overwrite "x y z". Contexts are merged.
-            var newContext = new SKContext(
-                context.Kernel,
-                new ContextVariables(input));
+            var newContext = context.Clone();
+            newContext.Variables.Clear();
 
+            // This value should overwrite "x y z". Contexts are merged.
             newContext.Variables.Update("new data");
             newContext.Variables["canary2"] = "222";
 
@@ -501,7 +499,6 @@ public sealed class SKFunctionTests2
         Assert.NotNull(function);
 
         FunctionResult result = await function.InvokeAsync(oldContext);
-
         var newContext = result.Context;
 
         // Assert
@@ -532,9 +529,8 @@ public sealed class SKFunctionTests2
         static ValueTask<SKContext> Test(string input, SKContext context)
         {
             // This value should overwrite "x y z". Contexts are merged.
-            var newCx = new SKContext(
-                context.Kernel,
-                new ContextVariables(input + "abc"));
+            var newCx = context.Clone();
+            newCx.Variables.Update(input + "abc");
 
             return new ValueTask<SKContext>(newCx);
         }

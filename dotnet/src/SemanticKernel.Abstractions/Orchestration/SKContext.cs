@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 
@@ -45,27 +47,25 @@ public sealed class SKContext
     /// <summary>
     /// Read only functions collection
     /// </summary>
-    public IReadOnlyFunctionCollection Functions => this.Kernel.Functions;
+    public IReadOnlyFunctionCollection Functions => this._kernelContext.Functions;
 
     /// <summary>
     /// App logger
     /// </summary>
-    public ILoggerFactory LoggerFactory => this.Kernel.LoggerFactory;
+    public ILoggerFactory LoggerFactory => this._kernelContext.LoggerFactory;
 
     /// <summary>
-    /// Kernel execution context reference
+    /// Run a new function withing the same context of the current.
     /// </summary>
-    public IKernelExecutionContext Kernel => this.GetKernelContext();
-
-    /// <summary>
-    /// Spawns the kernel for the context.
-    /// </summary>
-    /// <remarks>
-    /// The kernel context is a lightweight instance of the main kernel with its services.
-    /// </remarks>
-    /// <returns>Kernel reference</returns>
-    private IKernelExecutionContext GetKernelContext()
-        => (IKernelExecutionContext)this._kernelContext; // TODO: Clone a lightweight kernel instead of returning the same instance
+    /// <param name="skFunction">Target function to run</param>
+    /// <param name="variables">Input to process</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function composition</returns>
+    public Task<KernelResult> RunAsync(
+        ISKFunction skFunction,
+        ContextVariables variables,
+        CancellationToken cancellationToken = default)
+        => this._kernelContext.RunAsync(skFunction, variables, cancellationToken);
 
     /// <summary>
     /// Constructor for the context.
