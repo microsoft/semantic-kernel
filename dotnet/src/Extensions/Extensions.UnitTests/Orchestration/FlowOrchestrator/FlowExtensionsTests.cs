@@ -99,7 +99,9 @@ public class FlowExtensionsTests
             // phase 2: build references
             foreach (var flow in flows)
             {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                 flow.BuildReferenceAsync(this).Wait();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
             }
         }
 
