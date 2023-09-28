@@ -411,6 +411,7 @@ public static class KernelAIPluginExtensions
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
+                IsRequired = p.IsRequired,
             })
             .ToList();
 
