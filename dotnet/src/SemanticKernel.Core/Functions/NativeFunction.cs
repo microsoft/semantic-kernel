@@ -286,8 +286,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             }
         }
 
-        SKFunctionAttribute? functionAttribute = method.GetCustomAttribute<SKFunctionAttribute>(inherit: true);
-
         string? description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
         var result = new MethodDetails
