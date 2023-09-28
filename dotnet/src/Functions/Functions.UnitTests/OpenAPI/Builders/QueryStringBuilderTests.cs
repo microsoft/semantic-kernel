@@ -4,20 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenAPI.Builders;
 public class QueryStringBuilderTests
 {
-    private readonly QueryStringBuilder _sut;
-
-    public QueryStringBuilderTests()
-    {
-        this._sut = new QueryStringBuilder();
-    }
-
     [Fact]
     public void ShouldAddQueryStringParametersAndUseValuesFromArguments()
     {
@@ -54,7 +47,7 @@ public class QueryStringBuilderTests
         };
 
         // Act
-        var queryString = this._sut.Build(operation, arguments);
+        var queryString = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.Equal("p1=v1&p2=v2", queryString);
@@ -95,7 +88,7 @@ public class QueryStringBuilderTests
         };
 
         // Act
-        var queryString = this._sut.Build(operation, arguments);
+        var queryString = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.Equal("p2=v2", queryString);
@@ -136,7 +129,7 @@ public class QueryStringBuilderTests
         };
 
         //Act and assert
-        Assert.Throws<SKException>(() => this._sut.Build(operation, arguments));
+        Assert.Throws<SKException>(() => operation.BuildQueryString(arguments));
     }
 
     [Theory]
@@ -166,7 +159,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var queryString = this._sut.Build(operation, arguments);
+        var queryString = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(queryString);
@@ -207,7 +200,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -248,7 +241,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -288,7 +281,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -329,7 +322,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -370,7 +363,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -411,7 +404,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -452,7 +445,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -502,7 +495,7 @@ public class QueryStringBuilderTests
         var operation = new RestApiOperation("fake_id", new Uri("https://fake-random-test-host"), "fake_path", HttpMethod.Get, "fake_description", metadata, new Dictionary<string, string>());
 
         // Act
-        var result = this._sut.Build(operation, arguments);
+        var result = operation.BuildQueryString(arguments);
 
         // Assert
         Assert.NotNull(result);
