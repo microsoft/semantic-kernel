@@ -38,7 +38,7 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
-    <ProjectReference Include="..\Extensions\Planning.FlowPlanner\Planning.FlowPlanner.csproj" />
+    <ProjectReference Include="..\Extensions\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
