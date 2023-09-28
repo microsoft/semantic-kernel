@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
 /// Chat ReAct Engine
@@ -40,7 +39,7 @@ internal sealed class ReActEngine
     /// <summary>
     /// The goal to use when creating semantic functions that are restricted from flow creation
     /// </summary>
-    private const string RestrictedSkillName = "ReActEngine_Excluded";
+    private const string RestrictedPluginName = "ReActEngine_Excluded";
 
     /// <summary>
     /// The Action tag
@@ -92,7 +91,7 @@ internal sealed class ReActEngine
         this._logger = logger;
 
         this._config = config;
-        this._config.ExcludedSkills.Add(RestrictedSkillName);
+        this._config.ExcludedSkills.Add(RestrictedPluginName);
 
         var promptConfig = config.ReActPromptTemplateConfig;
         if (promptConfig == null)
@@ -107,7 +106,7 @@ internal sealed class ReActEngine
             }
             else
             {
-                promptConfig.Completion.MaxTokens = config.MaxTokens;
+                promptConfig.Completion!.ExtensionData["MaxTokens"] = config.MaxTokens;
             }
         }
 
@@ -134,7 +133,7 @@ internal sealed class ReActEngine
 
         var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
 
-        string llmResponseText = llmResponse.Result.Trim();
+        string llmResponseText = llmResponse.GetValue<string>()!.Trim();
         this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
 
         var actionStep = this.ParseResult(llmResponseText);
@@ -167,7 +166,7 @@ internal sealed class ReActEngine
 
         try
         {
-            var function = kernel.Skills.GetFunction(targetFunction.SkillName, targetFunction.Name);
+            var function = kernel.Skills.GetFunction(targetFunction.PluginName, targetFunction.Name);
             var actionContext = this.CreateActionContext(variables, kernel, context);
 
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
@@ -177,27 +176,20 @@ internal sealed class ReActEngine
                 context.Variables.Set(variable.Key, variable.Value);
             }
 
-            this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.Result);
+            this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.GetValue<string>());
 
-            return result.Result;
+            return result.ToString();
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger?.LogError(e, "Something went wrong in action step: {0}.{1}. Error: {2}", targetFunction.SkillName, targetFunction.Name, e.Message);
-            return $"Something went wrong in action step: {targetFunction.SkillName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException?.Message}";
+            this._logger?.LogError(e, "Something went wrong in action step: {0}.{1}. Error: {2}", targetFunction.PluginName, targetFunction.Name, e.Message);
+            return $"Something went wrong in action step: {targetFunction.PluginName}.{targetFunction.Name}. Error: {e.Message} {e.InnerException?.Message}";
         }
     }
 
     private SKContext CreateActionContext(Dictionary<string, string> actionVariables, IKernel kernel, SKContext context)
     {
-        var actionContext = kernel.CreateNewContext();
-        actionContext.Variables.Update(context.Variables);
-        foreach (var kvp in actionVariables)
-        {
-            actionContext.Variables.Set(kvp.Key, kvp.Value);
-        }
-
-        return actionContext;
+        return new SKContext(kernel, context.Variables.Clone());
     }
 
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
@@ -205,7 +197,7 @@ internal sealed class ReActEngine
         var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
         var functionConfig = new SemanticFunctionConfig(config, template);
 
-        return kernel.RegisterSemanticFunction(RestrictedSkillName, functionName, functionConfig);
+        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, functionConfig);
     }
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)
@@ -342,17 +334,15 @@ internal sealed class ReActEngine
 
     private IEnumerable<FunctionView> GetAvailableFunctions(SKContext context)
     {
-        FunctionsView functionsView = context.Skills!.GetFunctionsView();
+        var functionsViews = context.Functions!.GetFunctionViews();
 
         var excludedSkills = this._config.ExcludedSkills ?? new HashSet<string>();
         var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();
 
         var availableFunctions =
-            functionsView.NativeFunctions
-                .Concat(functionsView.SemanticFunctions)
-                .SelectMany(x => x.Value)
-                .Where(s => !excludedSkills.Contains(s.SkillName) && !excludedFunctions.Contains(s.Name))
-                .OrderBy(x => x.SkillName)
+            functionsViews
+                .Where(s => !excludedSkills.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
+                .OrderBy(x => x.PluginName)
                 .ThenBy(x => x.Name);
         return availableFunctions;
     }
@@ -377,6 +367,6 @@ internal sealed class ReActEngine
 
     private static string ToFullyQualifiedName(FunctionView function)
     {
-        return $"{function.SkillName}.{function.Name}";
+        return $"{function.PluginName}.{function.Name}";
     }
 }

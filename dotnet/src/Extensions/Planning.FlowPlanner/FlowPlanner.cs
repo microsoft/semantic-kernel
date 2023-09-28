@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning.Flow;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
 /// A planner that execute plan in iterative way

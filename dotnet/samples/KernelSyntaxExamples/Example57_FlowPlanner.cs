@@ -9,7 +9,9 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -17,8 +19,6 @@ using Microsoft.SemanticKernel.Planning.Flow;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
-using Microsoft.SemanticKernel.SkillDefinition;
-
 /**
  * This example shows how to use FlowPlanner to execute a given flow with interaction with client.
  */
@@ -183,12 +183,12 @@ If I cannot answer, say that I don't know.
 
         private int MaxTokens { get; set; } = 256;
 
-        private readonly ChatRequestSettings _chatRequestSettings;
+        private readonly AIRequestSettings _chatRequestSettings;
 
         public CollectEmailSkill(IKernel kernel)
         {
             this._chat = kernel.GetService<IChatCompletion>();
-            this._chatRequestSettings = new ChatRequestSettings
+            this._chatRequestSettings = new OpenAIRequestSettings()
             {
                 MaxTokens = this.MaxTokens,
                 StopSequences = new List<string>() { "Observation:" },
