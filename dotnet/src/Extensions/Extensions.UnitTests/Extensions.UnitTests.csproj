@@ -25,7 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Planning.FlowPlanner\Planning.FlowPlanner.csproj" />
+    <ProjectReference Include="..\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
