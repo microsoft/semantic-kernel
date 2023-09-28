@@ -53,11 +53,17 @@ public sealed class RestApiOperationParameter
     public string? DefaultValue { get; }
 
     /// <summary>
+    /// Specifies whether arrays and objects should generate separate parameters for each array item or object property.
+    /// </summary>
+    public bool Expand { get; }
+
+    /// <summary>
     /// Creates an instance of a <see cref="RestApiOperationParameter"/> class.
     /// </summary>
     /// <param name="name">The parameter name.</param>
     /// <param name="type">The parameter type.</param>
     /// <param name="isRequired">Flag specifying if the parameter is required or not.</param>
+    /// <param name="expand">Specifies whether arrays and objects should generate separate parameters for each array item or object property.</param>
     /// <param name="location">The parameter location.</param>
     /// <param name="style">The parameter style - defines how multiple values are delimited.</param>
     /// <param name="arrayItemType">Type of array item for parameters of "array" type.</param>
@@ -67,6 +73,7 @@ public sealed class RestApiOperationParameter
         string name,
         string type,
         bool isRequired,
+        bool expand,
         RestApiOperationParameterLocation location,
         RestApiOperationParameterStyle? style = null,
         string? arrayItemType = null,
@@ -76,6 +83,7 @@ public sealed class RestApiOperationParameter
         this.Name = name;
         this.Type = type;
         this.IsRequired = isRequired;
+        this.Expand = expand;
         this.Location = location;
         this.Style = style;
         this.ArrayItemType = arrayItemType;

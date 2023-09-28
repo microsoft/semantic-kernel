@@ -7,7 +7,7 @@ using Reliability;
 
 public sealed class TestConfiguration
 {
-    private IConfigurationRoot _configRoot;
+    private readonly IConfigurationRoot _configRoot;
     private static TestConfiguration? s_instance;
 
     private TestConfiguration(IConfigurationRoot configRoot)
