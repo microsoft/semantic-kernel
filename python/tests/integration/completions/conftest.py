@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import sys
 import random
+import sys
+
 import pytest
+
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.hugging_face as sk_hf
 
@@ -39,11 +41,10 @@ def setup_hf_text_completion_function(create_kernel, request):
 
     yield kernel, text2text_function, simple_input
 
+
 @pytest.fixture(
     scope="module",
-    params=[
-        ("facebook/bart-large-cnn", "text2text-generation")
-    ],
+    params=[("facebook/bart-large-cnn", "text2text-generation")],
 )
 def setup_hf_text_completion_function_multiple_response(request):
     kernel = sk.Kernel()
@@ -54,13 +55,17 @@ def setup_hf_text_completion_function_multiple_response(request):
         sk_hf.HuggingFaceTextCompletion(request.param[0], task=request.param[1]),
     )
 
-    num_responses=random.randint(1,5)
+    num_responses = random.randint(1, 5)
     # Define semantic function using SK prompt template language
     sk_prompt = "Hello, I like {{$input}}{{$input2}}"
 
     # Create the semantic function
     text2text_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=25, temperature=0.7, top_p=0.5, number_of_responses=num_responses
+        sk_prompt,
+        max_tokens=25,
+        temperature=0.7,
+        top_p=0.5,
+        number_of_responses=num_responses,
     )
 
     # User input

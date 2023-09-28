@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
 import random
+
+import pytest
 from transformers import AutoTokenizer
 
 import semantic_kernel as sk
@@ -9,21 +10,35 @@ import semantic_kernel.connectors.ai.hugging_face as sk_hf
 
 
 @pytest.mark.asyncio
-async def test_text2text_generation_input_str_multiple(setup_hf_text_completion_function_multiple_response):
-    kernel, text2text_function, simple_input, n_responses = setup_hf_text_completion_function_multiple_response
+async def test_text2text_generation_input_str_multiple(
+    setup_hf_text_completion_function_multiple_response,
+):
+    (
+        kernel,
+        text2text_function,
+        simple_input,
+        n_responses,
+    ) = setup_hf_text_completion_function_multiple_response
 
     # Complete input string and print
     summary = await kernel.run_async(text2text_function, input_str=simple_input)
 
     output = str(summary)
     print(f"Completion using input string: '{output}'")
-    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
-    assert len(output) > 0 and output.count('\n')==n_responses-1
+    print(f"n_responses : {n_responses}" + " lines : ", {output.count("\n")})
+    assert len(output) > 0 and output.count("\n") == n_responses - 1
 
 
 @pytest.mark.asyncio
-async def test_text2text_generation_input_vars_multiple(setup_hf_text_completion_function_multiple_response):
-    kernel, text2text_function, simple_input, n_responses = setup_hf_text_completion_function_multiple_response
+async def test_text2text_generation_input_vars_multiple(
+    setup_hf_text_completion_function_multiple_response,
+):
+    (
+        kernel,
+        text2text_function,
+        simple_input,
+        n_responses,
+    ) = setup_hf_text_completion_function_multiple_response
 
     # Complete input as context variable and print
     context_vars = sk.ContextVariables(simple_input)
@@ -31,12 +46,20 @@ async def test_text2text_generation_input_vars_multiple(setup_hf_text_completion
 
     output = str(summary)
     print(f"Completion using context variables: '{output}'")
-    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
-    assert len(output) > 0 and output.count('\n')==n_responses-1
+    print(f"n_responses : {n_responses}" + " lines : ", {output.count("\n")})
+    assert len(output) > 0 and output.count("\n") == n_responses - 1
+
 
 @pytest.mark.asyncio
-async def test_text2text_generation_input_context_multiple(setup_hf_text_completion_function_multiple_response):
-    kernel, text2text_function, simple_input, n_responses = setup_hf_text_completion_function_multiple_response
+async def test_text2text_generation_input_context_multiple(
+    setup_hf_text_completion_function_multiple_response,
+):
+    (
+        kernel,
+        text2text_function,
+        simple_input,
+        n_responses,
+    ) = setup_hf_text_completion_function_multiple_response
 
     # Complete input context and print
     context = kernel.create_new_context()
@@ -45,14 +68,20 @@ async def test_text2text_generation_input_context_multiple(setup_hf_text_complet
 
     output = str(summary)
     print(f"Completion using input context: '{output}'")
-    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
-    assert len(output) > 0 and output.count('\n')==n_responses-1
+    print(f"n_responses : {n_responses}" + " lines : ", {output.count("\n")})
+    assert len(output) > 0 and output.count("\n") == n_responses - 1
+
 
 @pytest.mark.asyncio
 async def test_text2text_generation_input_context_with_vars_multiple(
     setup_hf_text_completion_function_multiple_response,
 ):
-    kernel, text2text_function, simple_input, n_responses = setup_hf_text_completion_function_multiple_response
+    (
+        kernel,
+        text2text_function,
+        simple_input,
+        n_responses,
+    ) = setup_hf_text_completion_function_multiple_response
 
     # Complete input context with additional variables and print
     context = kernel.create_new_context()
@@ -64,14 +93,20 @@ async def test_text2text_generation_input_context_with_vars_multiple(
 
     output = str(summary)
     print(f"Completion using context and additional variables: '{output}'")
-    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
-    assert len(output) > 0 and output.count('\n')==n_responses-1
+    print(f"n_responses : {n_responses}" + " lines : ", {output.count("\n")})
+    assert len(output) > 0 and output.count("\n") == n_responses - 1
+
 
 @pytest.mark.asyncio
 async def test_text2text_generation_input_context_with_str_multiple(
     setup_hf_text_completion_function_multiple_response,
 ):
-    kernel, text2text_function, simple_input, n_responses = setup_hf_text_completion_function_multiple_response
+    (
+        kernel,
+        text2text_function,
+        simple_input,
+        n_responses,
+    ) = setup_hf_text_completion_function_multiple_response
 
     # Complete input context with additional input string and print
     context = kernel.create_new_context()
@@ -82,14 +117,20 @@ async def test_text2text_generation_input_context_with_str_multiple(
 
     output = str(summary)
     print(f"Completion using context and additional string: '{output}'")
-    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
-    assert len(output) > 0 and output.count('\n')==n_responses-1
+    print(f"n_responses : {n_responses}" + " lines : ", {output.count("\n")})
+    assert len(output) > 0 and output.count("\n") == n_responses - 1
+
 
 @pytest.mark.asyncio
 async def test_text2text_generation_input_context_with_vars_and_str_multiple(
     setup_hf_text_completion_function_multiple_response,
 ):
-    kernel, text2text_function, simple_input, n_responses = setup_hf_text_completion_function_multiple_response
+    (
+        kernel,
+        text2text_function,
+        simple_input,
+        n_responses,
+    ) = setup_hf_text_completion_function_multiple_response
 
     # Complete input context with additional variables and string and print
     context = kernel.create_new_context()
@@ -106,8 +147,9 @@ async def test_text2text_generation_input_context_with_vars_and_str_multiple(
     print(
         f"Completion using context, additional variables, and additional string: '{output}'"
     )
-    print(f'n_responses : {n_responses}'+' lines : ',{output.count('\n')})
-    assert len(output) > 0 and output.count('\n')==n_responses-1
+    print(f"n_responses : {n_responses}" + " lines : ", {output.count("\n")})
+    assert len(output) > 0 and output.count("\n") == n_responses - 1
+
 
 @pytest.mark.asyncio
 async def test_text_generation_with_kwargs():
@@ -132,9 +174,13 @@ async def test_text_generation_with_kwargs():
 
     # Define semantic function using SK prompt template language
     sk_prompt = "Hello, I like {{$input}}{{$input2}}"
-    num_of_responses = random.randint(1,5)
+    num_of_responses = random.randint(1, 5)
     text2text_function = kernel.create_semantic_function(
-        sk_prompt, max_tokens=25, temperature=0.2, top_p=0.5, number_of_responses=num_of_responses
+        sk_prompt,
+        max_tokens=25,
+        temperature=0.2,
+        top_p=0.5,
+        number_of_responses=num_of_responses,
     )
 
     # Complete input context with additional variables and string and print
@@ -152,5 +198,5 @@ async def test_text_generation_with_kwargs():
     print(
         f"Completion using context, additional variables, and additional string: '{output}'"
     )
-    print(f'n_responses : {num_of_responses}'+' lines : ',{output.count('\n')})
-    assert len(output) > 0 and output.count('\n')==num_of_responses-1
+    print(f"n_responses : {num_of_responses}" + " lines : ", {output.count("\n")})
+    assert len(output) > 0 and output.count("\n") == num_of_responses - 1
