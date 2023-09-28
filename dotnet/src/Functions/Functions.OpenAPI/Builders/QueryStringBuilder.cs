@@ -17,7 +17,7 @@ internal static class QueryStringBuilder
     /// <summary>
     /// Query string parameter serializers.
     /// </summary>
-    private static Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_queryStringParameterSerializers = new()
+    private static readonly Dictionary<RestApiOperationParameterStyle, Func<RestApiOperationParameter, string, string>> s_queryStringParameterSerializers = new()
     {
         { RestApiOperationParameterStyle.Form, FormStyleParameterSerializer.Serialize },
         { RestApiOperationParameterStyle.SpaceDelimited, SpaceDelimitedStyleParameterSerializer.Serialize },

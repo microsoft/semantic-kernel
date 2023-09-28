@@ -56,7 +56,7 @@ public class WeaviateMemoryStore : IMemoryStore
     private readonly ILogger _logger;
     private readonly Uri? _endpoint = null;
     private readonly string? _apiVersion;
-    private string? _apiKey;
+    private readonly string? _apiKey;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateMemoryStore"/> class.
