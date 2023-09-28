@@ -62,7 +62,7 @@ public class SequentialPlanParserTests
 
         // For Create
         kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>()))
-            .Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
+            .Returns<ContextVariables, IReadOnlyFunctionCollection, CultureInfo>((contextVariables, skills, culture) =>
             {
                 kernelContextMock.SetupGet(x => x.Functions).Returns(skills ?? kernelMock.Object.Functions);
                 return this.CreateSKContext(kernelContextMock.Object, contextVariables);

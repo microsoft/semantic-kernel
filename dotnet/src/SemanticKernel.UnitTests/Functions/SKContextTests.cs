@@ -69,7 +69,7 @@ public class SKContextTests
         kernel.SetupGet(x => x.Functions).Returns(skills);
         kernelContext.SetupGet(x => x.Functions).Returns(skills);
         kernel.SetupGet(x => x.Functions).Returns(skills);
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns<ContextVariables, IReadOnlyFunctionCollection>((contextVariables, skills) =>
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns<ContextVariables, IReadOnlyFunctionCollection, CultureInfo>((contextVariables, skills, culture) =>
         {
             kernelContext.SetupGet(x => x.Functions).Returns(skills ?? kernel.Object.Functions);
             return new SKContext(kernelContext.Object, contextVariables);
