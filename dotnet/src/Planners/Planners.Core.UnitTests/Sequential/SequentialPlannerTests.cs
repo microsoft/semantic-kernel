@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Moq;
 using Xunit;
 
@@ -60,19 +59,18 @@ public sealed class SequentialPlannerTests
         }
 
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-        var kernelContext = new Mock<IKernelExecutionContext>();
-        kernelContext.SetupGet(x => x.Functions).Returns(functions.Object);
+        var functionExecutor = new Mock<IFunctionExecutor>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedPlugins = input.Select(x => x.pluginName).ToList();
 
         var context = new SKContext(
-            kernelContext.Object,
+            functionExecutor.Object,
             new ContextVariables());
 
         var returnContext = new SKContext(
-            kernelContext.Object,
+            functionExecutor.Object,
             new ContextVariables());
 
         var planString =
@@ -97,13 +95,11 @@ public sealed class SequentialPlannerTests
 
         // Mock Plugins
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns(context);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns(context);
 
-        kernel.Setup(x => x.RegisterSemanticFunction(
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>()
-        )).Returns(mockFunctionFlowFunction.Object);
+        kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
+            .Returns(mockFunctionFlowFunction.Object);
 
         var planner = new SequentialPlanner(kernel.Object);
 
@@ -150,12 +146,11 @@ public sealed class SequentialPlannerTests
     public async Task InvalidXMLThrowsAsync()
     {
         // Arrange
-        var kernelContext = new Mock<IKernelExecutionContext>();
+        var kernelContext = new Mock<IFunctionExecutor>();
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 
         functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
-        kernelContext.SetupGet(x => x.Functions).Returns(functions.Object);
 
         var planString = "<plan>notvalid<</plan>";
         var returnContext = new SKContext(kernelContext.Object, new ContextVariables(planString));
@@ -179,14 +174,12 @@ public sealed class SequentialPlannerTests
                 var functionResult = await function.InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
                 return KernelResult.FromFunctionResults(functionResult.GetValue<string>(), new List<FunctionResult> { functionResult });
             });
-        kernelContext.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns(context);
 
-        kernel.Setup(x => x.RegisterSemanticFunction(
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>()
-        )).Returns(mockFunctionFlowFunction.Object);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns(context);
+
+        kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
+            .Returns(mockFunctionFlowFunction.Object);
 
         var planner = new SequentialPlanner(kernel.Object);
 

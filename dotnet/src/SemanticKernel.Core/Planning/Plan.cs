@@ -252,7 +252,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var kernelResult = await context.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+            var kernelResult = await context.Executor.ExecuteAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
             // result.Context.Result is used for backward compatibility and can be removed in the future
             var result = kernelResult.FunctionResults.First();
@@ -338,12 +338,19 @@ public sealed class Plan : IPlan
 
         if (this.Function is not null)
         {
+            // Merge state with the current context variables.
+            // Then filter the variables to only those needed for the next step.
+            // This is done to prevent the function from having access to variables that it shouldn't.
             AddVariablesToContext(this.State, context);
+            var functionVariables = this.GetNextStepVariables(context.Variables, this);
+            var functionContext = context.Clone(functionVariables, context.Functions);
 
+            // Execute the step
             result = await this.Function
                 .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(context, requestSettings, cancellationToken)
+                .InvokeAsync(functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
+            this.UpdateFunctionResultWithOutputs(result);
         }
         else
         {
@@ -355,6 +362,7 @@ public sealed class Plan : IPlan
                 this.UpdateContextWithOutputs(context);
 
                 result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
+                this.UpdateFunctionResultWithOutputs(result);
             }
         }
 
@@ -485,6 +493,28 @@ public sealed class Plan : IPlan
     }
 
     /// <summary>
+    /// Update the function result with the outputs from the current state.
+    /// </summary>
+    /// <param name="functionResult">The function result to update.</param>
+    /// <returns>The updated function result.</returns>
+    private FunctionResult UpdateFunctionResultWithOutputs(FunctionResult functionResult)
+    {
+        foreach (var output in this.Outputs)
+        {
+            if (this.State.TryGetValue(output, out var value))
+            {
+                functionResult.Metadata[output] = value;
+            }
+            else if (functionResult.Context.Variables.TryGetValue(output, out var val))
+            {
+                functionResult.Metadata[output] = val;
+            }
+        }
+
+        return functionResult;
+    }
+
+    /// <summary>
     /// Get the variables for the next step in the plan.
     /// </summary>
     /// <param name="variables">The current context variables.</param>
@@ -598,7 +628,7 @@ public sealed class Plan : IPlan
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 
-    private ISKFunction? Function { get; set; } = null;
+    private ISKFunction? Function { get; set; }
 
     private readonly List<Plan> _steps = new();
 

@@ -11,7 +11,6 @@ using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -52,28 +51,6 @@ public interface IKernel
     /// Reference to Http handler factory
     /// </summary>
     IDelegatingHandlerFactory HttpHandlerFactory { get; }
-
-    /// <summary>
-    /// Build and register a function in the internal function collection, in a global generic plugin.
-    /// </summary>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string functionName,
-        SemanticFunctionConfig functionConfig);
-
-    /// <summary>
-    /// Build and register a function in the internal function collection.
-    /// </summary>
-    /// <param name="pluginName">Name of the plugin containing the function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
-    ISKFunction RegisterSemanticFunction(
-        string pluginName,
-        string functionName,
-        SemanticFunctionConfig functionConfig);
 
     /// <summary>
     /// Registers a custom function in the internal function collection.
@@ -181,12 +158,14 @@ public interface IKernel
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
     /// <param name="variables">Initializes the context with the provided variables</param>
-    /// <param name="functions">Provide specific scoped skills. Defaults to all existing in the kernel</param>
+    /// <param name="functions">Provide specific scoped functions. Defaults to all existing in the kernel</param>
+    /// <param name="loggerFactory">Logged factory used within the context</param>
     /// <param name="culture">Optional culture info related to the context</param>
     /// <returns>SK context</returns>
     SKContext CreateNewContext(
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null);
 
     /// <summary>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Moq;
@@ -21,7 +22,7 @@ public class SKContextTests
     {
         // Arrange
         var variables = new ContextVariables();
-        var target = new SKContext(new Mock<IKernelExecutionContext>().Object, variables);
+        var target = new SKContext(new Mock<IFunctionExecutor>().Object, variables);
         variables.Set("foo1", "bar1");
 
         // Act
@@ -46,7 +47,7 @@ public class SKContextTests
         IDictionary<string, ISKFunction> functions = KernelBuilder.Create().ImportFunctions(new Parrot(), "test");
         this._functions.Setup(x => x.GetFunction("func")).Returns(functions["say"]);
         var (kernel, kernelContext) = this.SetupKernelMock(this._functions.Object);
-        var target = new SKContext(kernelContext.Object, new ContextVariables());
+        var target = new SKContext(kernelContext.Object, new ContextVariables(), this._functions.Object);
         Assert.NotNull(target.Functions);
 
         // Act
@@ -59,19 +60,17 @@ public class SKContextTests
         Assert.Equal("ciao", result.GetValue<string>());
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IKernelExecutionContext> kernelContextMock) SetupKernelMock(IReadOnlyFunctionCollection? skills = null)
+    private (Mock<IKernel> kernelMock, Mock<IFunctionExecutor> kernelContextMock) SetupKernelMock(IReadOnlyFunctionCollection? functions = null)
     {
-        skills ??= new Mock<IFunctionCollection>().Object;
+        functions ??= new Mock<IFunctionCollection>().Object;
 
         var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelExecutionContext>();
+        var kernelContext = new Mock<IFunctionExecutor>();
 
-        kernel.SetupGet(x => x.Functions).Returns(skills);
-        kernelContext.SetupGet(x => x.Functions).Returns(skills);
-        kernel.SetupGet(x => x.Functions).Returns(skills);
-        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns<ContextVariables, IReadOnlyFunctionCollection, CultureInfo>((contextVariables, skills, culture) =>
+        kernel.SetupGet(x => x.Functions).Returns(functions);
+        kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
         {
-            kernelContext.SetupGet(x => x.Functions).Returns(skills ?? kernel.Object.Functions);
             return new SKContext(kernelContext.Object, contextVariables);
         });
 

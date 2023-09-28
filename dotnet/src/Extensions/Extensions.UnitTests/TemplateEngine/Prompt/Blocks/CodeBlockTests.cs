@@ -20,19 +20,18 @@ public class CodeBlockTests
 {
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
-    private readonly Mock<IKernelExecutionContext> _kernelContext = new();
+    private readonly Mock<IFunctionExecutor> _kernelContext = new();
 
     public CodeBlockTests()
     {
         this._functions = new Mock<IReadOnlyFunctionCollection>();
-        this._kernelContext.SetupGet(x => x.Functions).Returns(this._functions.Object);
     }
 
     [Fact]
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var kernelContext = new Mock<IKernelExecutionContext>();
+        var kernelContext = new Mock<IFunctionExecutor>();
         var context = new SKContext(this._kernelContext.Object);
         this._functions.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._logger);
@@ -45,7 +44,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionCallThrowsAsync()
     {
         // Arrange
-        var context = new SKContext(this._kernelContext.Object);
+        var context = new SKContext(this._kernelContext.Object, functions: this._functions.Object);
         var function = new Mock<ISKFunction>();
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
@@ -141,7 +140,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "foo" };
-        var context = new SKContext(this._kernelContext.Object, variables);
+        var context = new SKContext(this._kernelContext.Object, variables, functions: this._functions.Object);
 
         // Act
         var codeBlock = new CodeBlock("$varName", NullLoggerFactory.Instance);
@@ -156,7 +155,7 @@ public class CodeBlockTests
     {
         // Arrange
         var variables = new ContextVariables { ["varName"] = "bar" };
-        var context = new SKContext(this._kernelContext.Object, variables);
+        var context = new SKContext(this._kernelContext.Object, variables, functions: this._functions.Object);
         var varBlock = new VarBlock("$varName");
 
         // Act
@@ -205,7 +204,7 @@ public class CodeBlockTests
         const string Plugin = "pluginName";
 
         var variables = new ContextVariables { ["input"] = "zero", ["var1"] = "uno", ["var2"] = "due" };
-        var context = new SKContext(this._kernelContext.Object, variables);
+        var context = new SKContext(this._kernelContext.Object, variables, functions: this._functions.Object);
         var funcId = new FunctionIdBlock(Func);
 
         var canary0 = string.Empty;
@@ -255,7 +254,7 @@ public class CodeBlockTests
         const string VarValue = "varValue";
 
         var variables = new ContextVariables { [Var] = VarValue };
-        var context = new SKContext(this._kernelContext.Object, variables);
+        var context = new SKContext(this._kernelContext.Object, variables, functions: this._functions.Object);
         var funcId = new FunctionIdBlock(Func);
         var varBlock = new VarBlock($"${Var}");
 
@@ -290,7 +289,7 @@ public class CodeBlockTests
         const string Plugin = "pluginName";
         const string Value = "value";
 
-        var context = new SKContext(this._kernelContext.Object, variables: null);
+        var context = new SKContext(this._kernelContext.Object, variables: null, functions: this._functions.Object);
         var funcId = new FunctionIdBlock(Func);
         var valBlock = new ValBlock($"'{Value}'");
 
@@ -330,7 +329,7 @@ public class CodeBlockTests
         var variables = new ContextVariables();
         variables.Set("bob", BobValue);
         variables.Set("input", Value);
-        var context = new SKContext(this._kernelContext.Object, variables: variables);
+        var context = new SKContext(this._kernelContext.Object, variables: variables, functions: this._functions.Object);
         var funcId = new FunctionIdBlock(Func);
         var namedArgBlock1 = new NamedArgBlock($"foo='{FooValue}'");
         var namedArgBlock2 = new NamedArgBlock("baz=$bob");

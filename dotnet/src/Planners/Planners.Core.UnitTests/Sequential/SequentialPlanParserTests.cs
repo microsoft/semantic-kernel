@@ -37,10 +37,10 @@ public class SequentialPlanParserTests
     }
 
     private SKContext CreateSKContext(
-        IKernelExecutionContext kernelContext,
+        IFunctionExecutor functionExecutor,
         ContextVariables? variables = null)
     {
-        return new SKContext(kernelContext, variables);
+        return new SKContext(functionExecutor, variables);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -58,14 +58,13 @@ public class SequentialPlanParserTests
         var kernelMock = this.CreateKernelMock(out var functionCollection, out _);
         kernel = kernelMock.Object;
 
-        var kernelContextMock = new Mock<IKernelExecutionContext>();
+        var functionExecutorMock = new Mock<IFunctionExecutor>();
 
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>()))
-            .Returns<ContextVariables, IReadOnlyFunctionCollection, CultureInfo>((contextVariables, skills, culture) =>
+        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
             {
-                kernelContextMock.SetupGet(x => x.Functions).Returns(skills ?? kernelMock.Object.Functions);
-                return this.CreateSKContext(kernelContextMock.Object, contextVariables);
+                return this.CreateSKContext(functionExecutorMock.Object, contextVariables);
             });
 
         var functionsView = new List<FunctionView>();
@@ -78,7 +77,7 @@ public class SequentialPlanParserTests
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
-            var result = this.CreateSKContext(kernelContextMock.Object);
+            var result = this.CreateSKContext(functionExecutorMock.Object);
             result.Variables.Update(resultString);
             mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FunctionResult(name, pluginName, result));
@@ -102,8 +101,6 @@ public class SequentialPlanParserTests
         }
 
         functionCollection.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-
-        kernelContextMock.SetupGet(x => x.Functions).Returns(functionCollection.Object);
     }
 
     [Fact]
@@ -241,7 +238,7 @@ public class SequentialPlanParserTests
         // Arrange
         var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
         {
-            ("Echo", "_GLOBAL_FUNCTIONS_", "Echo an input", true, "Mock Echo Result"),
+            ("Echo", FunctionCollection.GlobalFunctionsPluginName, "Echo an input", true, "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
@@ -252,7 +249,7 @@ public class SequentialPlanParserTests
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
         Assert.Single(plan.Steps);
-        Assert.Equal("_GLOBAL_FUNCTIONS_", plan.Steps[0].PluginName);
+        Assert.Equal(FunctionCollection.GlobalFunctionsPluginName, plan.Steps[0].PluginName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
 

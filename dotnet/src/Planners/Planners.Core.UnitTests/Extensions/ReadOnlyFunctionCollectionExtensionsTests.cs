@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.UnitTests.XunitHelpers;
 using Moq;
 using Xunit;
 
@@ -57,8 +56,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var kernelContext = new Mock<IKernelExecutionContext>();
-        kernelContext.SetupGet(x => x.Functions).Returns(functions);
+        var kernelContext = new Mock<IFunctionExecutor>();
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(kernelContext.Object, variables);
@@ -137,11 +135,10 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
-        var kernelContext = new Mock<IKernelExecutionContext>();
-        kernelContext.SetupGet(x => x.Functions).Returns(functions.Object);
+        var kernelContext = new Mock<IFunctionExecutor>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernelContext.Object, variables);
+        var context = new SKContext(kernelContext.Object, variables, functions.Object);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -208,12 +205,10 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
-        var kernelContext = new Mock<IKernelExecutionContext>();
-        kernelContext.SetupGet(k => k.LoggerFactory).Returns(TestConsoleLogger.LoggerFactory);
-        kernelContext.SetupGet(x => x.Functions).Returns(functions.Object);
+        var kernelContext = new Mock<IFunctionExecutor>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernelContext.Object, variables);
+        var context = new SKContext(kernelContext.Object, variables, functions.Object);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
@@ -247,13 +242,11 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IKernelExecutionContext>();
+        var kernelContext = new Mock<IFunctionExecutor>();
 
         var variables = new ContextVariables();
         var functions = new FunctionCollection();
         var cancellationToken = default(CancellationToken);
-
-        kernelContext.SetupGet(x => x.Functions).Returns(functions);
 
         // Arrange Mock Memory and Result
         var memory = new Mock<ISemanticTextMemory>();

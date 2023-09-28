@@ -4,10 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading.Tasks;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -47,41 +46,39 @@ public sealed class SKContext
     /// <summary>
     /// Read only functions collection
     /// </summary>
-    public IReadOnlyFunctionCollection Functions => this._kernelContext.Functions;
+    public IReadOnlyFunctionCollection Functions { get; }
 
     /// <summary>
     /// App logger
     /// </summary>
-    public ILoggerFactory LoggerFactory => this._kernelContext.LoggerFactory;
+    public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
-    /// Run a new function withing the same context of the current.
+    /// Executes functions using the current resources loaded in the context
     /// </summary>
-    /// <param name="skFunction">Target function to run</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function composition</returns>
-    public Task<KernelResult> RunAsync(
-        ISKFunction skFunction,
-        ContextVariables variables,
-        CancellationToken cancellationToken = default)
-        => this._kernelContext.RunAsync(skFunction, variables, cancellationToken);
+    public IFunctionExecutor Executor { get; }
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="kernelContext">Kernel reference</param>
+    /// <param name="functionExecutor">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
+    /// <param name="functions">Functions to include in context.</param>
+    /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
-        IKernelExecutionContext kernelContext,
+        IFunctionExecutor functionExecutor,
         ContextVariables? variables = null,
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
-        Verify.NotNull(kernelContext, nameof(kernelContext));
+        Verify.NotNull(functionExecutor, nameof(functionExecutor));
 
-        this._kernelContext = kernelContext;
+        this.Executor = functionExecutor;
         this.Variables = variables ?? new();
+        this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
         this._culture = culture ?? CultureInfo.CurrentCulture;
     }
 
@@ -98,26 +95,31 @@ public sealed class SKContext
     /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
-    /// <returns>A new context copied from the current one</returns>
+    /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
+        => this.Clone(null, null);
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
+    /// and optionally allows overriding the variables and functions.
+    /// </summary>
+    /// <param name="variables">Override the variables with the provided ones</param>
+    /// <param name="functions">Override the functions with the provided ones</param>
+    /// <returns>A new context cloned from the current one</returns>
+    public SKContext Clone(ContextVariables? variables, IReadOnlyFunctionCollection? functions)
     {
         return new SKContext(
-            kernelContext: this._kernelContext,
-            variables: this.Variables.Clone())
-        {
-            Culture = this.Culture,
-        };
+            this.Executor,
+            variables ?? this.Variables.Clone(),
+            functions ?? this.Functions,
+            this.LoggerFactory,
+            this.Culture);
     }
 
     /// <summary>
     /// The culture currently associated with this context.
     /// </summary>
     private CultureInfo _culture;
-
-    /// <summary>
-    /// Kernel instance reference for this context.
-    /// </summary>
-    private readonly IKernelExecutionContext _kernelContext;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Moq;
 using Xunit;
 
@@ -162,13 +162,12 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             functions = new Mock<IFunctionCollection>();
             functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
-        var kernelContext = new Mock<IKernelExecutionContext>();
-        kernelContext.SetupGet(k => k.Functions).Returns(functions.Object);
+        var functionExecutor = new Mock<IFunctionExecutor>();
         var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext(kernelContext.Object, new ContextVariables(testPlanString));
+        var returnContext = new SKContext(functionExecutor.Object, new ContextVariables(testPlanString), functions.Object);
 
-        var context = new SKContext(kernelContext.Object);
+        var context = new SKContext(functionExecutor.Object, functions: functions.Object);
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
@@ -179,16 +178,13 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, testPlanString)));
 
-        kernelContext.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CultureInfo>())).Returns(context);
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns(context);
         kernel.Setup(x => x.Functions).Returns(functions.Object);
         kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
-        kernel.Setup(x => x.RegisterSemanticFunction(
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<SemanticFunctionConfig>()
-        )).Returns(mockFunctionFlowFunction.Object);
+        kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
+            .Returns(mockFunctionFlowFunction.Object);
 
         return kernel;
     }

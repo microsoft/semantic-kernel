@@ -1,35 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
-/// Kernel execution context
+/// Function executor interface extensions
 /// </summary>
-public interface IKernelExecutionContext
+public static class FunctionExecutorExtension
 {
     /// <summary>
-    /// App logger
+    /// Execute a function using the resources loaded in the context.
     /// </summary>
-    ILoggerFactory LoggerFactory { get; }
-
-    /// <summary>
-    /// Read only skills collection
-    /// </summary>
-    IReadOnlyFunctionCollection Functions { get; }
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
+    /// <param name="functionExecutor"></param>
     /// <param name="skFunction">Target function to run</param>
     /// <param name="variables">Input to process</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function composition</returns>
-    Task<KernelResult> RunAsync(
+    public static Task<KernelResult> ExecuteAsync(this IFunctionExecutor functionExecutor,
         ISKFunction skFunction,
         ContextVariables variables,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default)
+    {
+        return functionExecutor.ExecuteAsync(skFunction, variables, null, cancellationToken);
+    }
 }
