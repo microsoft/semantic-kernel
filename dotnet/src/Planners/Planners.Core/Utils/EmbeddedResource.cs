@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Planners.Action;
+namespace Microsoft.SemanticKernel.Planners;
 
 internal static class EmbeddedResource
 {
