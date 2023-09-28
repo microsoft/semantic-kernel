@@ -31,10 +31,10 @@
     <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Planning\**\*.json">
+    <None Update="Orchestration\**\*.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Planning\**\*.yml">
+    <None Update="Orchestration\**\*.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
