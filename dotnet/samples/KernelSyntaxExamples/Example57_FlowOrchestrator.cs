@@ -70,7 +70,7 @@ steps:
             { new TimePlugin(), "time" }
         };
 
-        FlowOrchestrator planner = new(GetKernelBuilder(), new FlowStatusProvider(new VolatileMemoryStore()), skills);
+        FlowOrchestrator orchestrator = new(GetKernelBuilder(), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), skills);
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
@@ -96,7 +96,7 @@ steps:
                 input = Console.ReadLine() ?? string.Empty;
             }
 
-            result = await planner.ExecuteFlowAsync(s_flow, sessionId, input); // This should change to be a FunctionResult or KernelResult probably
+            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, input); // This should change to be a FunctionResult or KernelResult probably
         } while (!string.IsNullOrEmpty(result.ToString()) && result.ToString() != "[]");
 
         Console.WriteLine("Assistant: " + result["answer"]);
@@ -115,14 +115,14 @@ steps:
             { new TimePlugin(), "time" }
         };
 
-        FlowOrchestrator planner = new(GetKernelBuilder(), new FlowStatusProvider(new VolatileMemoryStore()), skills);
+        FlowOrchestrator orchestrator = new(GetKernelBuilder(), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), skills);
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
         Stopwatch sw = new();
         sw.Start();
         Console.WriteLine("Flow: " + s_flow.Name);
-        var result = await planner.ExecuteFlowAsync(s_flow, sessionId, "Execute the flow").ConfigureAwait(false);
+        var result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, "Execute the flow").ConfigureAwait(false);
         Console.WriteLine("Assistant: " + result.ToString());
         Console.WriteLine("\tAnswer: " + result["answer"]);
 
@@ -138,7 +138,7 @@ steps:
         foreach (var t in userInputs)
         {
             Console.WriteLine($"User: {t}");
-            result = await planner.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
+            result = await orchestrator.ExecuteFlowAsync(s_flow, sessionId, t).ConfigureAwait(false);
             Console.WriteLine("Assistant: " + result.ToString());
         }
 

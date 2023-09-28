@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-#pragma warning restore IDE0130
 
 using System.Collections.Generic;
 
-#pragma warning disable IDE0130
-// ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticKernel.Extensions;
 /// <summary>
 /// Dictionary extension methods.
 /// </summary>

@@ -6,11 +6,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SemanticKernel.IntegrationTests.Orchestration.FlowOrchestrator;
+namespace SemanticKernel.IntegrationTests.Orchestration.Flow;
 
 public sealed class CollectEmailSkill
 {
@@ -29,12 +31,12 @@ If I cannot answer, say that I don't know.
 
     private int MaxTokens { get; set; } = 256;
 
-    private readonly ChatRequestSettings _chatRequestSettings;
+    private readonly AIRequestSettings _chatRequestSettings;
 
     public CollectEmailSkill(IKernel kernel)
     {
         this._chat = kernel.GetService<IChatCompletion>();
-        this._chatRequestSettings = new ChatRequestSettings
+        this._chatRequestSettings = new OpenAIRequestSettings
         {
             MaxTokens = this.MaxTokens,
             StopSequences = new List<string>() { "Observation:" },

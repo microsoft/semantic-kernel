@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
@@ -75,7 +76,7 @@ public class FlowOrchestrator
             throw new SKException("Invalid flow", ex);
         }
 
-        var executor = new FlowExecutor.FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalSkillCollection, this._config);
+        var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalSkillCollection, this._config);
         return await executor.ExecuteAsync(flow, sessionId, input, contextVariables ?? new ContextVariables(null)).ConfigureAwait(false);
     }
 }

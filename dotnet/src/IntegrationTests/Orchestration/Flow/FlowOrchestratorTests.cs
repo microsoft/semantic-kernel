@@ -16,7 +16,7 @@ using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace SemanticKernel.IntegrationTests.Orchestration.FlowOrchestrator;
+namespace SemanticKernel.IntegrationTests.Orchestration.Flow;
 
 public sealed class FlowOrchestratorTests : IDisposable
 {
@@ -56,7 +56,7 @@ public sealed class FlowOrchestratorTests : IDisposable
             { new TimePlugin(), "time" }
         };
 
-        Flow flow = FlowSerializer.DeserializeFromYaml(@"
+        Microsoft.SemanticKernel.Experimental.Orchestration.Flow flow = FlowSerializer.DeserializeFromYaml(@"
 goal: answer question and sent email
 steps:
   - goal: Who is the current president of the United States? What is his current age divided by 2
@@ -80,20 +80,20 @@ steps:
       - email
 ");
 
-        var flowOrchestrator = new FlowOrchestrator(builder, new FlowStatusProvider(new VolatileMemoryStore()), skills);
+        var flowOrchestrator = new FlowOrchestrator(builder, await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()), skills);
 
         // Act
         var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "Who is the current president of the United States? What is his current age divided by 2");
 
         // Assert
         // Loose assertion -- make sure that the plan was executed and pause when it needs interact with user to get more input
-        Assert.Contains("email", result.Result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("email", result.ToString(), StringComparison.InvariantCultureIgnoreCase);
 
         // Act
         result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, $"my email is {email}");
 
         // Assert
-        var emailPayload = result.Variables["email"];
+        var emailPayload = result["email"];
         Assert.Contains(email, emailPayload, StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("biden", emailPayload, StringComparison.InvariantCultureIgnoreCase);
     }

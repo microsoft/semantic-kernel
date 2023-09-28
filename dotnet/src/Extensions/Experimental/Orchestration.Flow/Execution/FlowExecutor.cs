@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.FlowExecutor;
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 /// <summary>
 /// This is a flow executor which iterates over the flow steps and executes them one by one.
@@ -209,9 +209,9 @@ internal class FlowExecutor : IFlowExecutor
 
                 foreach (var key in step.Passthrough)
                 {
-                    if (rootContext.ContainsKey(key))
+                    if (rootContext.TryGetValue(key, out var val))
                     {
-                        stepContext.Variables.Set(key, rootContext[key]);
+                        stepContext.Variables.Set(key, val);
                     }
                 }
 
@@ -446,7 +446,7 @@ internal class FlowExecutor : IFlowExecutor
 
         var llmResponse = await this._systemKernel.RunAsync(context, function).ConfigureAwait(false);
 
-        string llmResponseText = llmResponse.GetValue<string>().Trim();
+        string llmResponseText = llmResponse.GetValue<string>()?.Trim() ?? string.Empty;
         this._logger?.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
 
         Match finalAnswerMatch = s_finalAnswerRegex.Match(llmResponseText);
@@ -592,13 +592,13 @@ internal class FlowExecutor : IFlowExecutor
                             }
                         }
 
-                        if (actionContext.Variables.ContainsKey(Constants.ChatSkillVariables.PromptInputName))
+                        if (actionContext.Variables.TryGetValue(Constants.ChatSkillVariables.PromptInputName, out var value))
                         {
-                            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, actionContext.Variables[Constants.ChatSkillVariables.PromptInputName]);
+                            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, value);
                         }
-                        else if (actionContext.Variables.ContainsKey(Constants.ChatSkillVariables.ExitLoopName))
+                        else if (actionContext.Variables.TryGetValue(Constants.ChatSkillVariables.ExitLoopName, out value))
                         {
-                            context.Variables.Set(Constants.ChatSkillVariables.ExitLoopName, actionContext.Variables[Constants.ChatSkillVariables.ExitLoopName]);
+                            context.Variables.Set(Constants.ChatSkillVariables.ExitLoopName, value);
                         }
                     }
                 }

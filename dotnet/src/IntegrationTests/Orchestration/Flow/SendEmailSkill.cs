@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace SemanticKernel.IntegrationTests.Orchestration.FlowOrchestrator;
+namespace SemanticKernel.IntegrationTests.Orchestration.Flow;
 
 public sealed class SendEmailSkill
 {

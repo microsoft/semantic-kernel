@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.FlowExecutor;
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 internal static class ChatHistorySerializer
 {

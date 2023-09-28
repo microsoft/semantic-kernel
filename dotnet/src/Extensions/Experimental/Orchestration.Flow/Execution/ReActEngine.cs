@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
-namespace Microsoft.SemanticKernel.Experimental.Orchestration.FlowExecutor;
+namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
 /// <summary>
 /// Chat ReAct Engine
@@ -101,7 +101,7 @@ internal sealed class ReActEngine
             {
                 promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
             }
-            else
+            else if (promptConfig.Completion is not null)
             {
                 promptConfig.Completion.ExtensionData["MaxTokens"] = config.MaxTokens;
             }
@@ -130,7 +130,7 @@ internal sealed class ReActEngine
 
         var llmResponse = await this._reActFunction.InvokeAsync(context).ConfigureAwait(false);
 
-        string llmResponseText = llmResponse.GetValue<string>().Trim();
+        string llmResponseText = llmResponse.GetValue<string>()!.Trim();
         this._logger?.LogDebug("Response : {ActionText}", llmResponseText);
 
         var actionStep = this.ParseResult(llmResponseText);
@@ -163,7 +163,7 @@ internal sealed class ReActEngine
 
         try
         {
-            var function = kernel.Skills.GetFunction(targetFunction.PluginName, targetFunction.Name);
+            var function = kernel.Functions.GetFunction(targetFunction.PluginName, targetFunction.Name);
             var actionContext = this.CreateActionContext(variables, kernel, context);
 
             var result = await function.InvokeAsync(actionContext).ConfigureAwait(false);
@@ -175,7 +175,7 @@ internal sealed class ReActEngine
 
             this._logger?.LogDebug("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result.GetValue<string>());
 
-            return result.GetValue<string>();
+            return result.GetValue<string>() ?? string.Empty;
         }
         catch (Exception e) when (!e.IsCriticalException())
         {

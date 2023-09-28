@@ -3,10 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-using Microsoft.SemanticKernel.Experimental.Orchestration.FlowExecutor;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable IDE0130
@@ -16,7 +17,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 /// <summary>
 /// Default flow status provider implemented on top of <see cref="IMemoryStore"/>
 /// </summary>
-public class FlowStatusProvider : IFlowStatusProvider
+public sealed class FlowStatusProvider : IFlowStatusProvider
 {
     private readonly IMemoryStore _memoryStore;
 
@@ -25,19 +26,21 @@ public class FlowStatusProvider : IFlowStatusProvider
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStatusProvider"/> class.
     /// </summary>
+    public static async Task<FlowStatusProvider> ConnectAsync(IMemoryStore memoryStore, string? collectionName = null)
+    {
+        var provider = new FlowStatusProvider(memoryStore, collectionName);
+        return await InitializeProviderStoreAsync(provider).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FlowStatusProvider"/> class.
+    /// </summary>
     /// <param name="memoryStore"><see cref="IMemoryStore"/> instance</param>
     /// <param name="collectionName">Collection name in <see cref="IMemoryStore"/> instance</param>
-    public FlowStatusProvider(IMemoryStore memoryStore, string? collectionName = null)
+    private FlowStatusProvider(IMemoryStore memoryStore, string? collectionName = null)
     {
         this._memoryStore = memoryStore;
         this._collectionName = collectionName ?? nameof(FlowStatusProvider);
-        Task.Run(async () =>
-        {
-            if (!await this._memoryStore.DoesCollectionExistAsync(this._collectionName).ConfigureAwait(false))
-            {
-                await this._memoryStore.CreateCollectionAsync(this._collectionName).ConfigureAwait(false);
-            }
-        }).GetAwaiter().GetResult();
     }
 
     /// <inheritdoc/>
@@ -142,6 +145,16 @@ public class FlowStatusProvider : IFlowStatusProvider
         var json = JsonSerializer.Serialize(steps);
         await this._memoryStore.UpsertAsync(this._collectionName, this.CreateMemoryRecord(this.GetStepsStorageKey(sessionId, stepId), json))
             .ConfigureAwait(false);
+    }
+
+    private static async Task<FlowStatusProvider> InitializeProviderStoreAsync(FlowStatusProvider flowProvider, CancellationToken cancellationToken = default)
+    {
+        if (!await flowProvider._memoryStore.DoesCollectionExistAsync(flowProvider._collectionName, cancellationToken).ConfigureAwait(false))
+        {
+            await flowProvider._memoryStore.CreateCollectionAsync(flowProvider._collectionName, cancellationToken).ConfigureAwait(false);
+        }
+
+        return flowProvider;
     }
 
     private string GetStepsStorageKey(string sessionId, string stepId)
