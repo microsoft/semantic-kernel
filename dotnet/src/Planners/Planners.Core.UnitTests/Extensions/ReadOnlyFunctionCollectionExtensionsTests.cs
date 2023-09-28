@@ -43,7 +43,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 additionalMetadata: "value"),
             relevance: 0.8,
             embedding: null);
-        var asyncEnumerable = ToAsyncEnumerable(new[] { memoryQueryResult });
+        var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
@@ -115,7 +115,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                     additionalMetadata: "value"),
                 relevance: 0.8,
                 embedding: null);
-        var asyncEnumerable = ToAsyncEnumerable(new[] { memoryQueryResult });
+        var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
@@ -184,7 +184,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                     additionalMetadata: "value"),
                 relevance: 0.8,
                 embedding: null);
-        var asyncEnumerable = ToAsyncEnumerable(new[] { memoryQueryResult });
+        var asyncEnumerable = new[] { memoryQueryResult }.ToAsyncEnumerable();
         var memory = new Mock<ISemanticTextMemory>();
         memory.Setup(x =>
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
