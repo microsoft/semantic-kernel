@@ -46,8 +46,8 @@ public class SKContextTests
         // Arrange
         IDictionary<string, ISKFunction> functions = KernelBuilder.Create().ImportFunctions(new Parrot(), "test");
         this._functions.Setup(x => x.GetFunction("func")).Returns(functions["say"]);
-        var (kernel, kernelContext) = this.SetupKernelMock(this._functions.Object);
-        var target = new SKContext(kernelContext.Object, new ContextVariables(), this._functions.Object);
+        var (kernel, functionExecutor) = this.SetupKernelMock(this._functions.Object);
+        var target = new SKContext(functionExecutor.Object, new ContextVariables(), this._functions.Object);
         Assert.NotNull(target.Functions);
 
         // Act
@@ -60,21 +60,21 @@ public class SKContextTests
         Assert.Equal("ciao", result.GetValue<string>());
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IFunctionExecutor> kernelContextMock) SetupKernelMock(IReadOnlyFunctionCollection? functions = null)
+    private (Mock<IKernel> kernelMock, Mock<IFunctionExecutor> functionExecutorMock) SetupKernelMock(IReadOnlyFunctionCollection? functions = null)
     {
         functions ??= new Mock<IFunctionCollection>().Object;
 
         var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionExecutor>();
 
         kernel.SetupGet(x => x.Functions).Returns(functions);
         kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
             .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
         {
-            return new SKContext(kernelContext.Object, contextVariables);
+            return new SKContext(functionExecutor.Object, contextVariables);
         });
 
-        return (kernel, kernelContext);
+        return (kernel, functionExecutor);
     }
 
     private sealed class Parrot

@@ -146,16 +146,16 @@ public sealed class SequentialPlannerTests
     public async Task InvalidXMLThrowsAsync()
     {
         // Arrange
-        var kernelContext = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionExecutor>();
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 
         functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
 
         var planString = "<plan>notvalid<</plan>";
-        var returnContext = new SKContext(kernelContext.Object, new ContextVariables(planString));
+        var returnContext = new SKContext(functionExecutor.Object, new ContextVariables(planString));
 
-        var context = new SKContext(kernelContext.Object, new ContextVariables());
+        var context = new SKContext(functionExecutor.Object, new ContextVariables());
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(

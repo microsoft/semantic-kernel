@@ -56,10 +56,10 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var kernelContext = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionExecutor>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernelContext.Object, variables);
+        var context = new SKContext(functionExecutor.Object, variables);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -135,10 +135,10 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
-        var kernelContext = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionExecutor>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernelContext.Object, variables, functions.Object);
+        var context = new SKContext(functionExecutor.Object, variables, functions.Object);
         var config = InitializeConfig(t);
         var semanticQuery = "test";
 
@@ -205,10 +205,10 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
-        var kernelContext = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionExecutor>();
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernelContext.Object, variables, functions.Object);
+        var context = new SKContext(functionExecutor.Object, variables, functions.Object);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";
@@ -242,7 +242,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var kernelContext = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionExecutor>();
 
         var variables = new ContextVariables();
         var functions = new FunctionCollection();
@@ -267,7 +267,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
             .Returns(asyncEnumerable);
 
         // Arrange GetAvailableFunctionsAsync parameters
-        var context = new SKContext(kernelContext.Object, variables);
+        var context = new SKContext(functionExecutor.Object, variables);
         var config = InitializeConfig(t);
         config.SemanticMemoryConfig = new() { RelevancyThreshold = 0.78, Memory = memory.Object };
         var semanticQuery = "test";

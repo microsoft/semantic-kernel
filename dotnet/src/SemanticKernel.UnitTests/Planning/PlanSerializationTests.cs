@@ -256,7 +256,7 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
-        var kernelContext = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionExecutor>();
         kernel.SetupGet(x => x.Functions).Returns(functions.Object);
 
         kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
@@ -265,7 +265,7 @@ public sealed class PlanSerializationTests
             return new SKContext(this._functionExecutor.Object, contextVariables, functions);
         });
 
-        var returnContext = new SKContext(kernelContext.Object, new ContextVariables(stepOutput)
+        var returnContext = new SKContext(functionExecutor.Object, new ContextVariables(stepOutput)
         );
 
         var mockFunction = new Mock<ISKFunction>();
