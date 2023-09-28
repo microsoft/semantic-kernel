@@ -211,7 +211,7 @@ internal sealed class RestApiOperationRunner
     private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
     {
         //Build operation payload dynamically
-        if (this._enableDynamicPayload is true)
+        if (this._enableDynamicPayload)
         {
             if (payloadMetadata == null)
             {
@@ -345,7 +345,7 @@ internal sealed class RestApiOperationRunner
     /// <returns>The argument name for the payload property.</returns>
     private string GetArgumentNameForPayload(string propertyName, string? propertyNamespace)
     {
-        if (this._enablePayloadNamespacing is false)
+        if (!this._enablePayloadNamespacing)
         {
             return propertyName;
         }
