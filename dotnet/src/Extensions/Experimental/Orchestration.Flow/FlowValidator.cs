@@ -3,11 +3,10 @@
 using System;
 using System.Linq;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 #pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Orchestration;
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 
 /// <summary>

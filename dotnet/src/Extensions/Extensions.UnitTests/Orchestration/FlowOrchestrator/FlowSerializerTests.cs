@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Extensions.UnitTests.Planning.FlowOrchestrator;
-
 using System.IO;
 using System.Linq;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Xunit;
+
+namespace SemanticKernel.Extensions.UnitTests.Orchestration.FlowOrchestrator;
 
 public class FlowSerializerTests
 {

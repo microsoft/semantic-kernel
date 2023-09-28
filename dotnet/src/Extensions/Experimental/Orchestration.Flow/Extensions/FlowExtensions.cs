@@ -12,7 +12,6 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
-
 /// <summary>
 /// Extension methods for <see cref="Flow"/>.
 /// </summary>

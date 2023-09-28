@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 
 /// <summary>

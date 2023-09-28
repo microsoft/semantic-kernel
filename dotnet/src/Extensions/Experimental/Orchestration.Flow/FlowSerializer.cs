@@ -4,12 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Experimental.Orchestration;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 #pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Orchestration;
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 
 /// <summary>

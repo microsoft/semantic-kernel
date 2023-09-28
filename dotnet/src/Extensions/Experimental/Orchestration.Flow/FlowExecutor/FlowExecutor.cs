@@ -189,7 +189,7 @@ internal class FlowExecutor : IFlowExecutor
                             executionState.Variables[variable] = "[]";
                         }
 
-                        await this.CompleteStep(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
+                        await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
                         this._logger?.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                         continue;
                     }
@@ -225,7 +225,7 @@ internal class FlowExecutor : IFlowExecutor
                     var stepSkills = step.GetSKills(stepKernel, this._globalSkillCollection);
                     foreach (var skill in stepSkills)
                     {
-                        stepKernel.ImportSkill(skill);
+                        stepKernel.ImportFunctions(skill);
                     }
 
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
@@ -327,13 +327,13 @@ internal class FlowExecutor : IFlowExecutor
                     else
                     {
                         // completed
-                        await this.CompleteStep(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
+                        await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
                         this._logger?.LogInformation("Completed step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                     }
                 }
                 else
                 {
-                    await this.CompleteStep(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
+                    await this.CompleteStepAsync(rootContext, sessionId, executionState, step, stepState).ConfigureAwait(false);
                 }
             }
             else
@@ -365,7 +365,7 @@ internal class FlowExecutor : IFlowExecutor
         }
     }
 
-    private async Task CompleteStep(ContextVariables context, string sessionId, ExecutionState state, FlowStep step, ExecutionState.StepExecutionState stepState)
+    private async Task CompleteStepAsync(ContextVariables context, string sessionId, ExecutionState state, FlowStep step, ExecutionState.StepExecutionState stepState)
     {
         stepState.Status = ExecutionState.Status.Completed;
         state.CurrentStepIndex++;

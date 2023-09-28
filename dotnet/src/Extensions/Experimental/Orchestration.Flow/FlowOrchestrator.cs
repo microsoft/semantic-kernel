@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Experimental.Orchestration;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
-using Microsoft.SemanticKernel.Experimental.Orchestration.FlowExecutor;
+using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Orchestration;
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -59,7 +58,7 @@ public class FlowOrchestrator
     /// <param name="sessionId">execution session id</param>
     /// <param name="input">current input</param>
     /// <param name="contextVariables">execution context variables</param>
-    /// <returns>SKContext, which includes a json array of strings as output. The flow result is also exposed through the context when completes.</returns>
+    /// <returns>ContextVariables, which includes a json array of strings as output. The flow result is also exposed through the context when completes.</returns>
     public async Task<ContextVariables> ExecuteFlowAsync(
         [Description("The flow to execute")] Flow flow,
         [Description("Execution session id")] string sessionId,
@@ -76,7 +75,7 @@ public class FlowOrchestrator
             throw new SKException("Invalid flow", ex);
         }
 
-        FlowExecutor executor = new(this._kernelBuilder, this._flowStatusProvider, this._globalSkillCollection, this._config);
+        var executor = new FlowExecutor.FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalSkillCollection, this._config);
         return await executor.ExecuteAsync(flow, sessionId, input, contextVariables ?? new ContextVariables(null)).ConfigureAwait(false);
     }
 }

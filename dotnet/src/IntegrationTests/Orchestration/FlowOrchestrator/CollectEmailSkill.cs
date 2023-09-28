@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Planning.FlowOrchestrator;
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -11,7 +9,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
+
+namespace SemanticKernel.IntegrationTests.Orchestration.FlowOrchestrator;
 
 public sealed class CollectEmailSkill
 {

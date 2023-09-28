@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Extensions.UnitTests.Planning.FlowOrchestrator;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Xunit;
+
+namespace SemanticKernel.Extensions.UnitTests.Orchestration.FlowOrchestrator;
 
 public class FlowExtensionsTests
 {
     [Fact]
-    public async Task TestBuildReferenceStep()
+    public async Task TestBuildReferenceStepAsync()
     {
         // Arrange
         var flow1 = CreateFlowWithReferenceStep("flow2");
@@ -27,7 +28,7 @@ public class FlowExtensionsTests
 
         // Act
         var catalog = new InMemoryFlowCatalog(new List<Flow> { flow1, flow2 });
-        var flow1InCatalog = await catalog.GetFlowAsync("flow1").ConfigureAwait(false);
+        var flow1InCatalog = await catalog.GetFlowAsync("flow1");
         Assert.NotNull(flow1InCatalog);
 
         // Assert

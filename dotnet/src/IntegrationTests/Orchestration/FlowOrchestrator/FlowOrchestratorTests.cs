@@ -14,8 +14,9 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
+using System.Threading.Tasks;
 
-namespace SemanticKernel.IntegrationTests.Planning.FlowOrchestrator;
+namespace SemanticKernel.IntegrationTests.Orchestration.FlowOrchestrator;
 
 public sealed class FlowOrchestratorTests : IDisposable
 {
@@ -40,7 +41,7 @@ public sealed class FlowOrchestratorTests : IDisposable
     }
 
     [Fact]
-    public async void CanExecuteFlowAsync()
+    public async Task CanExecuteFlowAsync()
     {
         // Arrange
         KernelBuilder builder = this.InitializeKernelBuilder();
@@ -79,17 +80,17 @@ steps:
       - email
 ");
 
-        var planner = new Microsoft.SemanticKernel.Planning.FlowOrchestrator(builder, new FlowStatusProvider(new VolatileMemoryStore()), skills);
+        var flowOrchestrator = new FlowOrchestrator(builder, new FlowStatusProvider(new VolatileMemoryStore()), skills);
 
         // Act
-        var result = await planner.ExecuteFlowAsync(flow, sessionId, "Who is the current president of the United States? What is his current age divided by 2");
+        var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "Who is the current president of the United States? What is his current age divided by 2");
 
         // Assert
         // Loose assertion -- make sure that the plan was executed and pause when it needs interact with user to get more input
         Assert.Contains("email", result.Result, StringComparison.InvariantCultureIgnoreCase);
 
         // Act
-        result = await planner.ExecuteFlowAsync(flow, sessionId, $"my email is {email}");
+        result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, $"my email is {email}");
 
         // Assert
         var emailPayload = result.Variables["email"];

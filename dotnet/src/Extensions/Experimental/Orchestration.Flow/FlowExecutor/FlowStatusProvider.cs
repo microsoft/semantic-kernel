@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Experimental.Orchestration.FlowExecutor;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Orchestration;
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -32,10 +32,13 @@ public class FlowStatusProvider : IFlowStatusProvider
         this._memoryStore = memoryStore;
         this._collectionName = collectionName ?? nameof(FlowStatusProvider);
 
-        if (!this._memoryStore.DoesCollectionExistAsync(this._collectionName).Result)
+        Task.Run(async () =>
         {
-            Task.Run(async () => await this._memoryStore.CreateCollectionAsync(this._collectionName).ConfigureAwait(false));
-        }
+            if (!await this._memoryStore.DoesCollectionExistAsync(this._collectionName).ConfigureAwait(false))
+            {
+                await this._memoryStore.CreateCollectionAsync(this._collectionName).ConfigureAwait(false);
+            }
+        }).GetAwaiter().GetResult();
     }
 
     /// <inheritdoc/>

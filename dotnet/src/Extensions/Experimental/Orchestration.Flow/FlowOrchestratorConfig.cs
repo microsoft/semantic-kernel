@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.SemanticKernel.SemanticFunctions;
 
 #pragma warning disable IDE0130
-namespace Microsoft.SemanticKernel.Orchestration;
+namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 
 /// <summary>

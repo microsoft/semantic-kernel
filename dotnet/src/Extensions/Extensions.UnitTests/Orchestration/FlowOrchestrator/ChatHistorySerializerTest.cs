@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Extensions.UnitTests.Planning.FlowOrchestrator;
-
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Experimental.Orchestration;
+using Microsoft.SemanticKernel.Experimental.Orchestration.FlowExecutor;
 using Xunit;
+
+namespace SemanticKernel.Extensions.UnitTests.Orchestration.FlowOrchestrator;
 
 public class ChatHistorySerializerTest
 {

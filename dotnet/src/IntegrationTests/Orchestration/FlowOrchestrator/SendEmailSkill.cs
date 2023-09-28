@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.IntegrationTests.Planning.FlowOrchestrator;
-
 using System.ComponentModel;
 using System.Text.Json;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
+
+namespace SemanticKernel.IntegrationTests.Orchestration.FlowOrchestrator;
 
 public sealed class SendEmailSkill
 {
