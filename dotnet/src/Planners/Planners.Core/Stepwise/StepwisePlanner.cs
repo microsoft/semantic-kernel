@@ -79,17 +79,13 @@ public class StepwisePlanner : IStepwisePlanner
             throw new SKException("The goal specified is empty");
         }
 
-        Plan planStep = new(this._nativeFunctions["ExecutePlan"]);
-        planStep.Parameters.Set("question", goal);
+        Plan plan = new(this._nativeFunctions["ExecutePlan"]);
+        plan.Parameters.Set("question", goal);
 
-        planStep.Outputs.Add("stepCount");
-        planStep.Outputs.Add("functionCount");
-        planStep.Outputs.Add("stepsTaken");
-        planStep.Outputs.Add("iterations");
-
-        Plan plan = new(goal);
-
-        plan.AddSteps(planStep);
+        plan.Outputs.Add("stepCount");
+        plan.Outputs.Add("functionCount");
+        plan.Outputs.Add("stepsTaken");
+        plan.Outputs.Add("iterations");
 
         return plan;
     }

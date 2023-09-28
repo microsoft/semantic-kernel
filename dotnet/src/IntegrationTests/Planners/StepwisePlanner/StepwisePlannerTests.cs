@@ -61,11 +61,9 @@ public sealed class StepwisePlannerTests : IDisposable
         var plan = planner.CreatePlan(prompt);
 
         // Assert
-        Assert.Contains(
-            plan.Steps,
-            step =>
-                step.Name.Equals(expectedFunction, StringComparison.OrdinalIgnoreCase) &&
-                step.PluginName.Contains(expectedPlugin, StringComparison.OrdinalIgnoreCase));
+        Assert.Empty(plan.Steps);
+        Assert.Equal(expectedFunction, plan.Name);
+        Assert.Contains(expectedPlugin, plan.PluginName, StringComparison.OrdinalIgnoreCase);
     }
 
     [RetryTheory]
@@ -87,11 +85,15 @@ public sealed class StepwisePlannerTests : IDisposable
 
         // Act
         var plan = planner.CreatePlan(prompt);
-        var result = (await plan.InvokeAsync(kernel)).GetValue<string>();
+        var planResult = await plan.InvokeAsync(kernel);
+        var result = planResult.GetValue<string>();
 
         // Assert - should contain the expected answer
         Assert.NotNull(result);
         Assert.Contains(partialExpectedAnswer, result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.True(planResult.TryGetMetadataValue("iterations", out string iterations));
+        Assert.True(int.Parse(iterations, System.Globalization.CultureInfo.InvariantCulture) > 0);
+        Assert.True(int.Parse(iterations, System.Globalization.CultureInfo.InvariantCulture) <= 10);
     }
 
     [Fact]
