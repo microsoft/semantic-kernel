@@ -129,7 +129,9 @@ internal class FlowExecutor : IFlowExecutor
         this._logger?.LogInformation("Executing flow {FlowName} with sessionId={SessionId}.", flow.Name, sessionId);
         var sortedSteps = flow.SortSteps();
 
-        SKContext rootContext = new SKContext(this._systemKernel, contextVariables.Clone());
+        SKContext rootContext = this._systemKernel.CreateNewContext();
+        // populate context variables from upstream
+        rootContext.Variables.Update(contextVariables);
 
         // populate persisted state variables
         ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
@@ -157,10 +159,12 @@ internal class FlowExecutor : IFlowExecutor
             ExecutionState.StepExecutionState stepState = executionState.StepStates[stepKey];
             var stepId = $"{stepKey}_{stepState.ExecutionCount}";
 
-            bool completed = step.Provides.All(_ => executionState.Variables.ContainsKey(_));
+            var continueLoop = false;
+            var completed = step.Provides.All(_ => executionState.Variables.ContainsKey(_));
+
             if (!completed)
             {
-                // On the first iteration of a ZeroOrMore step, we need to check whether the user wants to start the step
+                // On the first iteration of an Optional or ZeroOrMore step, we need to check whether the user wants to start the step
                 if (step.CompletionType is CompletionType.Optional or CompletionType.ZeroOrMore && stepState.Status == ExecutionState.Status.NotStarted)
                 {
                     RepeatOrStartStepResult? startStep = await this.CheckStartStepAsync(rootContext, step, sessionId, stepId, input).ConfigureAwait(false);
@@ -263,6 +267,11 @@ internal class FlowExecutor : IFlowExecutor
 
                     this._logger?.LogInformation("Exiting loop for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
                 }
+                else if (stepResult.IsContinueLoop())
+                {
+                    continueLoop = true;
+                    this._logger?.LogInformation("Continuing to the next loop iteration for step {StepIndex} with iteration={Iteration}, goal={StepGoal}.", stepIndex, stepState.ExecutionCount, step.Goal);
+                }
 
                 // check if current execution is complete by checking whether all variables are already provided
                 completed = true;
@@ -301,7 +310,11 @@ internal class FlowExecutor : IFlowExecutor
                 if (step.CompletionType is CompletionType.AtLeastOnce or CompletionType.ZeroOrMore && stepState.Status != ExecutionState.Status.Completed)
                 {
                     var nextStepId = $"{stepKey}_{stepState.ExecutionCount + 1}";
-                    RepeatOrStartStepResult? repeatStep = await this.CheckRepeatStepAsync(rootContext, step, sessionId, nextStepId, input).ConfigureAwait(false);
+
+                    var repeatStep = continueLoop
+                        ? new RepeatOrStartStepResult(true, null)
+                        : await this.CheckRepeatStepAsync(rootContext, step, sessionId, nextStepId, input).ConfigureAwait(false);
+
                     if (repeatStep == null)
                     {
                         // unknown error, try again
@@ -398,19 +411,6 @@ internal class FlowExecutor : IFlowExecutor
         if (step.Requires.Any(p => !context.Variables.ContainsKey(p)))
         {
             throw new SKException($"Step {step.Goal} requires variables {string.Join(",", step.Requires.Where(p => !context.Variables.ContainsKey(p)))} that are not provided. ");
-        }
-
-        if (step.CompletionType != CompletionType.AtLeastOnce
-            && step.CompletionType != CompletionType.ZeroOrMore
-            && step.Passthrough.Any())
-        {
-            throw new ArgumentException("Passthrough arguments can only be set for the AtLeastOnce/ZeroOrMore completion types.");
-        }
-
-        // There is a logical default value for TransitionMessage which is why it's not required. However, the StartingMessage is something the user needs to provide
-        if (step.CompletionType is CompletionType.ZeroOrMore or CompletionType.Optional && step.StartingMessage == null)
-        {
-            throw new ArgumentException("StartingMessage needs to be set for a step with the ZeroOrMore/Optional completion type.");
         }
     }
 
@@ -594,13 +594,12 @@ internal class FlowExecutor : IFlowExecutor
                             }
                         }
 
-                        if (actionContext.Variables.ContainsKey(Constants.ChatSkillVariables.PromptInputName))
+                        foreach (var variable in Constants.ChatSkillVariables.ControlVariables)
                         {
-                            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, actionContext.Variables[Constants.ChatSkillVariables.PromptInputName]);
-                        }
-                        else if (actionContext.Variables.ContainsKey(Constants.ChatSkillVariables.ExitLoopName))
-                        {
-                            context.Variables.Set(Constants.ChatSkillVariables.ExitLoopName, actionContext.Variables[Constants.ChatSkillVariables.ExitLoopName]);
+                            if (actionContext.Variables.ContainsKey(variable))
+                            {
+                                context.Variables.Set(variable, actionContext.Variables[variable]);
+                            }
                         }
                     }
                 }
@@ -627,12 +626,16 @@ internal class FlowExecutor : IFlowExecutor
 
                 if (!string.IsNullOrEmpty(context.Result))
                 {
-                    if (context.Variables.ContainsKey(Constants.ChatSkillVariables.PromptInputName) || context.Variables.ContainsKey(Constants.ChatSkillVariables.ExitLoopName))
+                    foreach (var variable in Constants.ChatSkillVariables.ControlVariables)
                     {
-                        // redirect control to client if new input is required or the loop should be exited
-                        return context;
+                        if (context.Variables.ContainsKey(variable))
+                        {
+                            // redirect control to client
+                            return context;
+                        }
                     }
-                    else if (!step.Provides.Except(context.Variables.Where(v => !string.IsNullOrEmpty(v.Value)).Select(_ => _.Key)).Any())
+
+                    if (!step.Provides.Except(context.Variables.Where(v => !string.IsNullOrEmpty(v.Value)).Select(_ => _.Key)).Any())
                     {
                         // step is complete
                         return context;

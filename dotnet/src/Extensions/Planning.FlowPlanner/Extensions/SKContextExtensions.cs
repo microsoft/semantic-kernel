@@ -53,7 +53,7 @@ public static class SKContextExtensions
         // Cant prompt the user for input and exit the execution at the same time
         if (!context.Variables.ContainsKey(Constants.ChatSkillVariables.ExitLoopName))
         {
-            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, Constants.ChatSkillVariables.PromptInputValue);
+            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, Constants.ChatSkillVariables.DefaultValue);
         }
     }
 
@@ -72,12 +72,31 @@ public static class SKContextExtensions
     }
 
     /// <summary>
-    /// Check if should prompt user for input based on current context.
+    /// Signal the orchestrator to go to the next iteration of the loop in the AtLeastOnce or ZeroOrMore step.
+    /// </summary>
+    /// <param name="context">context</param>
+    public static void ContinueLoop(this SKContext context)
+    {
+        context.Variables.Set(Constants.ChatSkillVariables.ContinueLoopName, Constants.ChatSkillVariables.DefaultValue);
+    }
+
+    /// <summary>
+    /// Check if we should prompt user for input based on current context.
     /// </summary>
     /// <param name="context">context</param>
     internal static bool IsPromptInput(this SKContext context)
     {
         return context.Variables.TryGetValue(Constants.ChatSkillVariables.PromptInputName, out string? promptInput)
-               && promptInput == Constants.ChatSkillVariables.PromptInputValue;
+               && promptInput == Constants.ChatSkillVariables.DefaultValue;
+    }
+
+    /// <summary>
+    /// Check if we should force the next iteration loop based on current context.
+    /// </summary>
+    /// <param name="context">context</param>
+    internal static bool IsContinueLoop(this SKContext context)
+    {
+        return context.Variables.TryGetValue(Constants.ChatSkillVariables.ContinueLoopName, out string? continueLoop)
+               && continueLoop == Constants.ChatSkillVariables.DefaultValue;
     }
 }
