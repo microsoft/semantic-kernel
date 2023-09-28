@@ -12,7 +12,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -67,25 +66,42 @@ public class JDBCMemoryStore implements SQLMemoryStore {
                 .then(internalUpsertAsync(collectionName, record));
     }
 
+    protected DatabaseEntry memoryRecordToDatabaseEntry(MemoryRecord record) {
+        try {
+            return new DatabaseEntry(
+                    record.getMetadata().getId(),
+                    record.getSerializedMetadata(),
+                    record.getSerializedEmbedding(),
+                    record.getTimestamp());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected MemoryRecord databaseEntryToMemoryRecord(DatabaseEntry entry, boolean withEmbedding) {
+        try {
+            Embedding embedding =
+                    withEmbedding
+                            ? new ObjectMapper().readValue(entry.getEmbedding(), Embedding.class)
+                            : Embedding.empty();
+            return MemoryRecord.fromJsonMetadata(
+                    entry.getMetadata(), embedding, entry.getKey(), entry.getTimestamp());
+        } catch (JsonProcessingException e) {
+            throw new SQLConnectorException(
+                    SQLConnectorException.ErrorCodes.SQL_ERROR,
+                    "Error deserializing database entry",
+                    e);
+        }
+    }
+
     private Mono<String> internalUpsertAsync(String collectionName, MemoryRecord record) {
         try {
-            Mono<Void> update =
-                    this.dbConnector.updateAsync(
-                            collectionName,
-                            record.getMetadata().getId(),
-                            record.getSerializedMetadata(),
-                            record.getSerializedEmbedding(),
-                            record.getTimestamp());
-
-            Mono<Void> insert =
-                    this.dbConnector.insertOrIgnoreAsync(
-                            collectionName,
-                            record.getMetadata().getId(),
-                            record.getSerializedMetadata(),
-                            record.getSerializedEmbedding(),
-                            record.getTimestamp());
-
-            return update.then(insert).then(Mono.just(record.getMetadata().getId()));
+            return this.dbConnector.upsertAsync(
+                    collectionName,
+                    record.getMetadata().getId(),
+                    record.getSerializedMetadata(),
+                    record.getSerializedEmbedding(),
+                    record.getTimestamp());
         } catch (JsonProcessingException e) {
             throw new SQLConnectorException(
                     SQLConnectorException.ErrorCodes.SQL_ERROR,
@@ -113,9 +129,11 @@ public class JDBCMemoryStore implements SQLMemoryStore {
                             sink.next(exists);
                         })
                 .then(
-                        Flux.fromIterable(records)
-                                .concatMap(record -> internalUpsertAsync(collectionName, record))
-                                .collect(Collectors.toCollection(ArrayList::new)));
+                        dbConnector.upsertBatchAsync(
+                                collectionName,
+                                records.stream()
+                                        .map(this::memoryRecordToDatabaseEntry)
+                                        .collect(Collectors.toList())));
     }
 
     @Override
@@ -124,22 +142,6 @@ public class JDBCMemoryStore implements SQLMemoryStore {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(key);
         return this.internalGetAsync(collectionName, key, withEmbedding);
-    }
-
-    private MemoryRecord memoryRecordFromDatabaseEntry(DatabaseEntry entry, boolean withEmbedding) {
-        try {
-            Embedding embedding =
-                    withEmbedding
-                            ? new ObjectMapper().readValue(entry.getEmbedding(), Embedding.class)
-                            : Embedding.empty();
-            return MemoryRecord.fromJsonMetadata(
-                    entry.getMetadata(), embedding, entry.getKey(), entry.getTimestamp());
-        } catch (JsonProcessingException e) {
-            throw new SQLConnectorException(
-                    SQLConnectorException.ErrorCodes.SQL_ERROR,
-                    "Error deserializing database entry",
-                    e);
-        }
     }
 
     private Mono<MemoryRecord> internalGetAsync(
@@ -157,7 +159,7 @@ public class JDBCMemoryStore implements SQLMemoryStore {
 
                             return entry.map(
                                     databaseEntry ->
-                                            memoryRecordFromDatabaseEntry(
+                                            databaseEntryToMemoryRecord(
                                                     databaseEntry, withEmbedding));
                         });
     }
@@ -169,9 +171,16 @@ public class JDBCMemoryStore implements SQLMemoryStore {
             boolean withEmbeddings) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(keys);
-        return Flux.fromIterable(keys)
-                .concatMap(key -> internalGetAsync(collectionName, key, withEmbeddings))
-                .collect(Collectors.toCollection(ArrayList::new));
+        return this.dbConnector
+                .readBatchAsync(collectionName, keys)
+                .flatMap(
+                        databaseEntries -> {
+                            List<MemoryRecord> records = new ArrayList<>();
+                            for (DatabaseEntry entry : databaseEntries) {
+                                records.add(databaseEntryToMemoryRecord(entry, withEmbeddings));
+                            }
+                            return Mono.just(records);
+                        });
     }
 
     @Override
@@ -186,9 +195,7 @@ public class JDBCMemoryStore implements SQLMemoryStore {
             @Nonnull String collectionName, @Nonnull Collection<String> keys) {
         Objects.requireNonNull(collectionName);
         Objects.requireNonNull(keys);
-        return Flux.fromIterable(keys)
-                .concatMap(key -> this.dbConnector.deleteAsync(collectionName, key))
-                .then();
+        return this.dbConnector.deleteBatchAsync(collectionName, keys);
     }
 
     @Override
