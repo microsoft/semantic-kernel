@@ -23,6 +23,7 @@ public class FlowValidator : IFlowValidator
         this.ValidatePartialOrder(flow);
         this.ValidateReferenceStep(flow);
         this.ValidateStartingMessage(flow);
+        this.ValidatePassthroughVariables(flow);
     }
 
     private void ValidateStartingMessage(Flow flow)
@@ -34,6 +35,20 @@ public class FlowValidator : IFlowValidator
             {
                 throw new ArgumentException(
                     $"Missing starting message for step={step.Goal} with completion type={step.CompletionType}");
+            }
+        }
+    }
+
+    private void ValidatePassthroughVariables(Flow flow)
+    {
+        foreach (var step in flow.Steps)
+        {
+            if (step.CompletionType != CompletionType.AtLeastOnce
+                && step.CompletionType != CompletionType.ZeroOrMore
+                && step.Passthrough.Any())
+            {
+                throw new ArgumentException(
+                    $"step={step.Goal} with completion type={step.CompletionType} cannot have passthrough variables as that is only applicable for the AtLeastOnce or ZeroOrMore completion types");
             }
         }
     }

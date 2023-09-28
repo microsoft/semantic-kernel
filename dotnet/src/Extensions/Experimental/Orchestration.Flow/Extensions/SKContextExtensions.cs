@@ -2,11 +2,10 @@
 
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
-using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 // ReSharper disable once CheckNamespace
-namespace Microsoft.SemanticKernel.Experimental.Orchestration;
+namespace Microsoft.SemanticKernel.Orchestration;
 #pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
@@ -54,7 +53,7 @@ public static class SKContextExtensions
         // Cant prompt the user for input and exit the execution at the same time
         if (!context.Variables.ContainsKey(Constants.ChatSkillVariables.ExitLoopName))
         {
-            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, Constants.ChatSkillVariables.PromptInputValue);
+            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, Constants.ChatSkillVariables.DefaultValue);
         }
     }
 
@@ -73,12 +72,11 @@ public static class SKContextExtensions
     }
 
     /// <summary>
-    /// Check if should prompt user for input based on current context.
+    /// Signal the orchestrator to go to the next iteration of the loop in the AtLeastOnce or ZeroOrMore step.
     /// </summary>
     /// <param name="context">context</param>
-    internal static bool IsPromptInput(this ContextVariables context)
+    public static void ContinueLoop(this SKContext context)
     {
-        return context.TryGetValue(Constants.ChatSkillVariables.PromptInputName, out string? promptInput)
-               && promptInput == Constants.ChatSkillVariables.PromptInputValue;
+        context.Variables.Set(Constants.ChatSkillVariables.ContinueLoopName, Constants.ChatSkillVariables.DefaultValue);
     }
 }

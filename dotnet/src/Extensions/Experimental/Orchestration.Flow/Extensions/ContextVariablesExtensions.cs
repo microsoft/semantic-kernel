@@ -1,0 +1,36 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
+
+#pragma warning disable IDE0130 // Namespace does not match folder structure
+// ReSharper disable once CheckNamespace
+namespace Microsoft.SemanticKernel.Orchestration;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
+
+/// <summary>
+/// Extension methods for <see cref="SKContext"/>
+/// </summary>
+// ReSharper disable once InconsistentNaming
+public static class ContextVariablesExtensions
+{
+    /// <summary>
+    /// Check if we should prompt user for input based on current context.
+    /// </summary>
+    /// <param name="context">context</param>
+    internal static bool IsPromptInput(this ContextVariables context)
+    {
+        return context.TryGetValue(Constants.ChatSkillVariables.PromptInputName, out string? promptInput)
+               && promptInput == Constants.ChatSkillVariables.DefaultValue;
+    }
+
+    /// <summary>
+    /// Check if we should force the next iteration loop based on current context.
+    /// </summary>
+    /// <param name="context">context</param>
+    internal static bool IsContinueLoop(this ContextVariables context)
+    {
+        return context.TryGetValue(Constants.ChatSkillVariables.ContinueLoopName, out string? continueLoop)
+               && continueLoop == Constants.ChatSkillVariables.DefaultValue;
+    }
+}
