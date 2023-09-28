@@ -16,7 +16,6 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 /// <summary>
 /// This is a flow executor which iterates over the flow steps and executes them one by one.
@@ -130,9 +129,7 @@ internal class FlowExecutor : IFlowExecutor
         this._logger?.LogInformation("Executing flow {FlowName} with sessionId={SessionId}.", flow.Name, sessionId);
         var sortedSteps = flow.SortSteps();
 
-        SKContext rootContext = this._systemKernel.CreateNewContext();
-        // populate context variables from upstream
-        rootContext.Variables.Update(contextVariables);
+        SKContext rootContext = new SKContext(this._systemKernel, contextVariables.Clone());
 
         // populate persisted state variables
         ExecutionState executionState = await this._flowStatusProvider.GetExecutionStateAsync(sessionId).ConfigureAwait(false);
@@ -451,7 +448,7 @@ internal class FlowExecutor : IFlowExecutor
 
         var llmResponse = await function.InvokeAsync(context).ConfigureAwait(false);
 
-        string llmResponseText = llmResponse.Result.Trim();
+        string llmResponseText = llmResponse.GetValue<string>()!.Trim();
         this._logger?.LogInformation("Response from {Function} : {ActionText}", "CheckRepeatOrStartStep", llmResponseText);
 
         Match finalAnswerMatch = s_finalAnswerRegex.Match(llmResponseText);

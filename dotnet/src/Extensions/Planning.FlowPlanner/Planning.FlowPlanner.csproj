@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Planning.FlowPlanner</AssemblyName>
@@ -7,36 +6,30 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
   </PropertyGroup>
-
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
-
   <PropertyGroup>
     <!-- NuGet Package Settings -->
     <Title>Semantic Kernel - Flow Planner</Title>
     <Description>Semantic Kernel Flow Planner</Description>
   </PropertyGroup>
-  
   <ItemGroup>
     <None Remove="Skills/**/*" />
     <EmbeddedResource Include="Skills/**/*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
-    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\Functions\Functions.Semantic\Functions.Semantic.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>SemanticKernel.Extensions.UnitTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
-
 </Project>
