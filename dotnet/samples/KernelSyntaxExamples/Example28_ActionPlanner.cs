@@ -3,9 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Action;
+using Microsoft.SemanticKernel.Planners;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -22,12 +20,12 @@ public static class Example28_ActionPlanner
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        string folder = RepoFiles.SampleSkillsPath();
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "WriterSkill");
-        kernel.ImportSemanticSkillFromDirectory(folder, "FunSkill");
+        string samplesDirectory = RepoFiles.SamplePluginsPath();
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "SummarizePlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "WriterPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(samplesDirectory, "FunPlugin");
 
-        // Create an optional config for the ActionPlanner. Use this to exclude skills and functions if needed
+        // Create an optional config for the ActionPlanner. Use this to exclude plugins and functions if needed
         var config = new ActionPlannerConfig();
         config.ExcludedFunctions.Add("MakeAbstractReadable");
 
@@ -43,10 +41,10 @@ public static class Example28_ActionPlanner
         var plan = await planner.CreatePlanAsync(goal);
 
         // Execute the full plan (which is a single function)
-        SKContext result = await plan.InvokeAsync();
+        var result = await plan.InvokeAsync(kernel);
 
         // Show the result, which should match the given goal
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* Output:
          *

@@ -9,15 +9,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
-/// TextMemoryPlugin provides a skill to save or recall information from the long or short term memory.
+/// TextMemoryPlugin provides a plugin to save or recall information from the long or short term memory.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("memory", new TextMemoryPlugin());
+/// Usage: kernel.ImportPlugin("memory", new TextMemoryPlugin());
 /// Examples:
 /// SKContext.Variables["input"] = "what is the capital of France?"
 /// {{memory.recall $input }} => "Paris"
@@ -48,7 +47,7 @@ public sealed class TextMemoryPlugin
     private const double DefaultRelevance = 0.0;
     private const int DefaultLimit = 1;
 
-    private ISemanticTextMemory _memory;
+    private readonly ISemanticTextMemory _memory;
 
     /// <summary>
     /// Creates a new instance of the TextMemoryPlugin

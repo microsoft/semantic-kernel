@@ -28,7 +28,7 @@ internal sealed class XunitLogger<T> : ILoggerFactory, ILogger, IDisposable
     public bool IsEnabled(LogLevel logLevel) => true;
 
     /// <inheritdoc/>
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull
         => this;
 
     /// <inheritdoc/>

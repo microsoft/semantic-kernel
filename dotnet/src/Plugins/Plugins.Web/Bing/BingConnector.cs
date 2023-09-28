@@ -53,17 +53,21 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <inheritdoc/>
     public async Task<IEnumerable<string>> SearchAsync(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
-        if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
+        if (count is <= 0 or >= 50)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, $"{nameof(count)} value must be greater than 0 and less than 50.");
+        }
 
-        if (count >= 50) { throw new ArgumentOutOfRangeException(nameof(count), $"{nameof(count)} value must be less than 50."); }
-
-        if (offset < 0) { throw new ArgumentOutOfRangeException(nameof(offset)); }
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        }
 
         Uri uri = new($"https://api.bing.microsoft.com/v7.0/search?q={Uri.EscapeDataString(query)}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {Uri}", uri);
 
-        using HttpResponseMessage response = await this.SendGetRequest(uri, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await this.SendGetRequestAsync(uri, cancellationToken).ConfigureAwait(false);
 
         this._logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
@@ -85,7 +89,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="uri">The URI to send the request to.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the request.</param>
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
-    private async Task<HttpResponseMessage> SendGetRequest(Uri uri, CancellationToken cancellationToken = default)
+    private async Task<HttpResponseMessage> SendGetRequestAsync(Uri uri, CancellationToken cancellationToken = default)
     {
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
