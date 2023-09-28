@@ -99,7 +99,7 @@ Question: {{ $input }}
 
         try
         {
-            var kernelResult = await context.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            var kernelResult = await context.Executor.ExecuteAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
             answer = kernelResult.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

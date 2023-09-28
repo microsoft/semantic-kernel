@@ -247,8 +247,8 @@ repeat:
         return new SKContext(
             new FunctionExecutor(this),
             variables,
-            functions,
-            loggerFactory,
+            functions ?? this.Functions,
+            loggerFactory ?? this.LoggerFactory,
             culture);
     }
 
