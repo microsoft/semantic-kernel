@@ -31,7 +31,6 @@ public class FlowStatusProvider : IFlowStatusProvider
     {
         this._memoryStore = memoryStore;
         this._collectionName = collectionName ?? nameof(FlowStatusProvider);
-
         Task.Run(async () =>
         {
             if (!await this._memoryStore.DoesCollectionExistAsync(this._collectionName).ConfigureAwait(false))

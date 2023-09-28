@@ -7,8 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
+using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.IntegrationTests.Orchestration.FlowOrchestrator;
 
