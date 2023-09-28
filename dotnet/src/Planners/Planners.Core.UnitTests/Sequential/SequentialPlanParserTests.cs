@@ -231,7 +231,7 @@ public class SequentialPlanParserTests
         // Arrange
         var functions = new List<(string name, string pluginName, string description, bool isSemantic, string result)>()
         {
-            ("Echo", "_GLOBAL_FUNCTIONS_", "Echo an input", true, "Mock Echo Result"),
+            ("Echo", FunctionCollection.GlobalFunctionsPluginName, "Echo an input", true, "Mock Echo Result"),
         };
         this.CreateKernelAndFunctionCreateMocks(functions, out var kernel);
 
@@ -242,7 +242,7 @@ public class SequentialPlanParserTests
         Assert.NotNull(plan);
         Assert.Equal(goalText, plan.Description);
         Assert.Single(plan.Steps);
-        Assert.Equal("_GLOBAL_FUNCTIONS_", plan.Steps[0].PluginName);
+        Assert.Equal(FunctionCollection.GlobalFunctionsPluginName, plan.Steps[0].PluginName);
         Assert.Equal("Echo", plan.Steps[0].Name);
     }
 
