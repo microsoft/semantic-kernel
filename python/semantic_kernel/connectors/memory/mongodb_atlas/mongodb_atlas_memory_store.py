@@ -127,7 +127,6 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             str -- The unique identifier for the memory record.
         """
-        await self.create_collection_async(collection_name)
 
         document: Mapping[str, Any] = memory_record_to_mongo_document(record)
 
@@ -152,7 +151,6 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         Returns:
             List[str] -- The unique identifiers for the memory records.
         """
-        await self.create_collection_async(collection_name)
 
         upserts: List[UpdateOne] = []
         for record in records:

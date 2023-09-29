@@ -40,6 +40,7 @@ def document_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord
         is_reference=meta.get(MONGODB_FIELD_IS_REF),
         embedding=array(data.get(MONGODB_FIELD_EMBEDDING)) if with_embeddings else None,
         timestamp=data.get(MONGODB_FIELD_TIMESTAMP),
+        key=meta.get(MONGODB_FIELD_ID),
     )
 
 
