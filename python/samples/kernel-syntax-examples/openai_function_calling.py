@@ -97,14 +97,12 @@ async def main() -> None:
     ] = "I want to find a hotel in Seattle with free wifi and a pool."
 
     context = await chat_function.invoke_async(context=context, functions=functions)
-    fc_exists, function_call = context.variables.get("function_call")
-    if not fc_exists:
-        print("No function was called")
-        print(f"Output was: {str(context)}")
+    if function_call := context.pop_function_call():
+        print(f"Function to be called: {function_call.name}")
+        print(f"Function parameters: \n{function_call.arguments}")
         return
-    function_call = context.variables["function_call"]
-    print(f"Function to be called: {function_call.name}")
-    print(f"Function parameters: \n{function_call.arguments}")
+    print("No function was called")
+    print(f"Output was: {str(context)}")
 
 
 if __name__ == "__main__":

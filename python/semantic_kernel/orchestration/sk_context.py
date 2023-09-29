@@ -5,6 +5,7 @@ from typing import Any, Generic, Literal, Optional, Tuple, Union
 
 import pydantic as pdt
 
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import (
     SemanticTextMemoryBase,
@@ -31,6 +32,7 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
     _error_occurred: bool = pdt.PrivateAttr(False)
     _last_exception: Optional[Exception] = pdt.PrivateAttr(None)
     _last_error_description: str = pdt.PrivateAttr("")
+    _function_call: Optional[FunctionCall] = pdt.PrivateAttr(None)
     _logger: Logger = pdt.PrivateAttr()
 
     def __init__(
@@ -117,6 +119,29 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
             Exception -- The most recent exception.
         """
         return self._last_exception
+
+    @property
+    def function_call(self) -> Optional[FunctionCall]:
+        """
+        The function call.
+
+        Returns:
+            FunctionCall -- The function call.
+        """
+        return self._function_call
+
+    def pop_function_call(self) -> Optional[FunctionCall]:
+        """
+        Pop the function call.
+
+        Returns:
+            FunctionCall -- The function call.
+        """
+        if self._function_call is None:
+            return None
+        result = self._function_call
+        self._function_call = None
+        return result
 
     @property
     def skills(self) -> ReadOnlySkillCollectionBase:

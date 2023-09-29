@@ -157,9 +157,8 @@ async def chat_completion_with_function_call(
         # when the maximum number of function calls is reached, execute the chat function without Functions.
         functions=[] if current_call_count >= max_function_calls else functions,
     )
-    if "function_call" not in context.variables.variables:
+    if not (function_call := context.pop_function_call()):
         return context
-    function_call = context.variables.variables.pop("function_call")
     result = await execute_function_call(kernel, function_call, log=log)
     # add the result to the chat prompt template
     chat_function._chat_prompt_template.add_function_response_message(
