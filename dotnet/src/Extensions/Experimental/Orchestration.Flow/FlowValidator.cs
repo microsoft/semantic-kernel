@@ -23,6 +23,7 @@ public class FlowValidator : IFlowValidator
         this.ValidatePartialOrder(flow);
         this.ValidateReferenceStep(flow);
         this.ValidateStartingMessage(flow);
+        this.ValidatePassthroughVariables(flow);
     }
 
     private void ValidateStartingMessage(Flow flow)
@@ -81,6 +82,20 @@ public class FlowValidator : IFlowValidator
             if (step.Skills?.Count != 0)
             {
                 throw new ArgumentException("Reference flow step cannot have any direct skills.");
+            }
+        }
+    }
+
+    private void ValidatePassthroughVariables(Flow flow)
+    {
+        foreach (var step in flow.Steps)
+        {
+            if (step.CompletionType != CompletionType.AtLeastOnce
+                && step.CompletionType != CompletionType.ZeroOrMore
+                && step.Passthrough.Any())
+            {
+                throw new ArgumentException(
+                    $"step={step.Goal} with completion type={step.CompletionType} cannot have passthrough variables as that is only applicable for the AtLeastOnce or ZeroOrMore completion types");
             }
         }
     }

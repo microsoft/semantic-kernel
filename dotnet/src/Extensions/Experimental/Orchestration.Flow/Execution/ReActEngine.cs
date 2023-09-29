@@ -186,7 +186,13 @@ internal sealed class ReActEngine
 
     private SKContext CreateActionContext(Dictionary<string, string> actionVariables, IKernel kernel, SKContext context)
     {
-        return new SKContext(kernel, context.Variables.Clone());
+        var actionContext = new SKContext(kernel, context.Variables.Clone());
+        foreach (var kvp in actionVariables)
+        {
+            actionContext.Variables.Set(kvp.Key, kvp.Value);
+        }
+
+        return actionContext;
     }
 
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)

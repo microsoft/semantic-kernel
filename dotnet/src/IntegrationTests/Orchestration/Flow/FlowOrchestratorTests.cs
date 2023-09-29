@@ -46,13 +46,13 @@ public sealed class FlowOrchestratorTests : IDisposable
         // Arrange
         KernelBuilder builder = this.InitializeKernelBuilder();
         var bingConnector = new BingConnector(this._bingApiKey);
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         var sessionId = Guid.NewGuid().ToString();
         string email = "abc@xyz.com";
 
         Dictionary<object, string?> skills = new()
         {
-            { webSearchEngineSkill, "WebSearch" },
+            { webSearchEnginePlugin, "WebSearch" },
             { new TimePlugin(), "time" }
         };
 
@@ -61,8 +61,8 @@ goal: answer question and sent email
 steps:
   - goal: Who is the current president of the United States? What is his current age divided by 2
     skills:
-      - WebSearchEngineSkill
-      - TimeSkill
+      - WebSearchEnginePlugin
+      - TimePlugin
     provides:
       - answer
   - goal: Collect email address

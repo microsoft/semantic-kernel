@@ -32,8 +32,8 @@ goal: answer question and send email
 steps:
   - goal: Who is the current president of the United States? What is his current age divided by 2
     skills:
-      - WebSearchEngineSkill
-      - TimeSkill
+      - WebSearchEnginePlugin
+      - TimePlugin
     provides:
       - answer
   - goal: Collect email address
@@ -63,10 +63,10 @@ steps:
     public static async Task RunInteractiveAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
         Dictionary<object, string?> skills = new()
         {
-            { webSearchEngineSkill, "WebSearch" },
+            { webSearchEnginePlugin, "WebSearch" },
             { new TimePlugin(), "time" }
         };
 
@@ -152,12 +152,13 @@ steps:
     private static KernelBuilder GetKernelBuilder()
     {
         var builder = new KernelBuilder();
+
         return builder.WithAzureChatCompletionService(
-            TestConfiguration.AzureOpenAI.ChatDeploymentName,
-            TestConfiguration.AzureOpenAI.Endpoint,
-            TestConfiguration.AzureOpenAI.ApiKey,
-            alsoAsTextCompletion: true,
-            setAsDefault: true)
+                TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                TestConfiguration.AzureOpenAI.Endpoint,
+                TestConfiguration.AzureOpenAI.ApiKey,
+                alsoAsTextCompletion: true,
+                setAsDefault: true)
             .WithRetryBasic(new()
             {
                 MaxRetryCount = 3,
@@ -200,7 +201,8 @@ If I cannot answer, say that I don't know.
         [Description("This function is used to prompt user to provide a valid email address.")]
         [SKName("CollectEmailAddress")]
         public async Task<string> CollectEmailAsync(
-            [SKName("email")] string email,
+            [SKName("email")] [Description("The email address provided by the user")]
+            string email,
             SKContext context)
         {
             var chat = this._chat.CreateNewChat(SystemPrompt);
