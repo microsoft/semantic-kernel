@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import openai
 
-from semantic_kernel.models.chat.chat_message import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 
 if TYPE_CHECKING:
     from openai.openai_object import OpenAIObject
@@ -255,7 +255,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             ),
         }
 
-        if request_settings.function_call is not None:
+        if functions and request_settings.function_call is not None:
             model_args["function_call"] = request_settings.function_call
             if request_settings.function_call != "auto":
                 model_args["functions"] = [

@@ -58,7 +58,7 @@ class SKFunction(SKFunctionBase):
     _ai_request_settings: CompleteRequestSettings
     _chat_service: Optional[ChatCompletionClientBase]
     _chat_request_settings: ChatRequestSettings
-    _function_calling_description: str
+    _chat_prompt_template: ChatPromptTemplate
 
     @staticmethod
     def from_native_method(method, skill_name="", log=None) -> "SKFunction":
@@ -81,8 +81,8 @@ class SKFunction(SKFunctionBase):
                         name=param["name"],
                         description=param["description"],
                         default_value=param["default_value"],
-                        type=param.get("type"),
-                        required=param.get("required"),
+                        type=param.get("type", "string"),
+                        required=param.get("required", False),
                     )
                 )
 
@@ -96,7 +96,7 @@ class SKFunction(SKFunctionBase):
                 description=method.__sk_function_input_description__,
                 default_value=method.__sk_function_input_default_value__,
                 type="string",
-                required=True,
+                required=False,
             )
             parameters = [input_param] + parameters
 
@@ -228,6 +228,9 @@ class SKFunction(SKFunctionBase):
             function_name=function_name,
             is_semantic=True,
             log=log,
+            chat_prompt_template=function_config.prompt_template
+            if function_config.has_chat_prompt
+            else None,
         )
 
     @property
@@ -237,10 +240,6 @@ class SKFunction(SKFunctionBase):
     @property
     def skill_name(self) -> str:
         return self._skill_name
-
-    @property
-    def full_name(self) -> str:
-        return f"{self.skill_name}-{self.name}"
 
     @property
     def description(self) -> str:
@@ -273,6 +272,7 @@ class SKFunction(SKFunctionBase):
         is_semantic: bool,
         log: Optional[Logger] = None,
         delegate_stream_function: Optional[Callable[..., Any]] = None,
+        **kwargs: Dict[str, Any],
     ) -> None:
         self._delegate_type = delegate_type
         self._function = delegate_function
@@ -288,17 +288,7 @@ class SKFunction(SKFunctionBase):
         self._ai_request_settings = CompleteRequestSettings()
         self._chat_service = None
         self._chat_request_settings = ChatRequestSettings()
-        self._function_calling_description = {
-            "name": self.full_name,
-            "description": description,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    param.name: param.callable_function_object for param in parameters
-                },
-                "required": [p.name for p in parameters if p.required],
-            },
-        }
+        self._chat_prompt_template = kwargs.get("chat_prompt_template", None)
 
     def set_default_skill_collection(
         self, skills: ReadOnlySkillCollectionBase

@@ -1,6 +1,6 @@
 import pytest
 
-from semantic_kernel.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.orchestration.context_variables import ContextVariables
 
 

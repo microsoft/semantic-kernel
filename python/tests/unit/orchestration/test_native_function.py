@@ -35,12 +35,12 @@ def test_init_native_function_with_input_description():
     assert native_function._parameters[0].description == "Mock input description"
     assert native_function._parameters[0].default_value == "default_input_value"
     assert native_function._parameters[0].type_ == "string"
-    assert native_function._parameters[0].required is True
+    assert native_function._parameters[0].required is False
     assert native_function._parameters[1].name == "param1"
     assert native_function._parameters[1].description == "Param 1 description"
     assert native_function._parameters[1].default_value == "default_param1_value"
     assert native_function._parameters[1].type_ == "string"
-    assert native_function._parameters[1].required is True
+    assert native_function._parameters[1].required is False
 
 
 def test_init_native_function_without_input_description():
@@ -55,6 +55,7 @@ def test_init_native_function_without_input_description():
             "name": "param1",
             "description": "Param 1 description",
             "default_value": "default_param1_value",
+            "required": True,
         }
     ]
 
@@ -97,7 +98,7 @@ def test_init_native_function_from_sk_function_decorator():
     assert native_function._parameters[0].description == "Test input description"
     assert native_function._parameters[0].default_value == "test_default_value"
     assert native_function._parameters[0].type_ == "string"
-    assert native_function._parameters[0].required is True
+    assert native_function._parameters[0].required is False
 
 
 def test_init_native_function_from_sk_function_decorator_defaults():

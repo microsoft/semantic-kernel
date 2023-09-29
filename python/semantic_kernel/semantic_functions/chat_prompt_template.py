@@ -4,7 +4,8 @@ import asyncio
 from logging import Logger
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from semantic_kernel.models.chat.chat_message import ChatMessage, FunctionCall
+from semantic_kernel.connectors.ai.open_ai.models.chat.chat_message import ChatMessage
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -60,7 +61,7 @@ class ChatPromptTemplate(PromptTemplate):
     def add_assistant_message(
         self,
         message: Optional[str] = None,
-        function_call: Optional[FunctionCall] = None,
+        function_call: Optional["FunctionCall"] = None,
     ) -> None:
         """Add an assistant message to the chat template."""
         self._messages.append(

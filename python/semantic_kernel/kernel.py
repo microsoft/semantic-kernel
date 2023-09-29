@@ -689,6 +689,7 @@ class Kernel:
                 )
 
             function.set_chat_service(lambda: service(self))
+            function.prompt_template = function_config.prompt_template
         else:
             service = self.get_ai_service(
                 TextCompletionClientBase,

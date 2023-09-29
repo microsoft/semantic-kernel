@@ -2,14 +2,9 @@
 
 import asyncio
 import os
-from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.connectors.ai.open_ai.utils import (
-    chat_completion_with_function_call,
-    get_function_calling_object,
-)
 from semantic_kernel.core_skills import MathSkill
 
 system_message = """
@@ -68,50 +63,48 @@ prompt_template.add_assistant_message(
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
 chat_function = kernel.register_semantic_function("ChatBot", "Chat", function_config)
-
-# calling the chat, you could add a overloaded version of the settings here,
-# to enable or disable function calling or set the function calling to a specific skill.
-# see the openai_function_calling example for how to use this with a unrelated function definition
-filter = {"exclude_skill": ["ChatBot"]}
-functions = get_function_calling_object(kernel, filter)
-
-
-async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
-    try:
-        user_input = input("User:> ")
-        context.variables["user_input"] = user_input
-    except KeyboardInterrupt:
-        print("\n\nExiting chat...")
-        return False, None
-    except EOFError:
-        print("\n\nExiting chat...")
-        return False, None
-
-    if user_input == "exit":
-        print("\n\nExiting chat...")
-        return False, None
-
-    context = await chat_completion_with_function_call(
-        kernel,
-        chat_skill_name="ChatBot",
-        chat_function_name="Chat",
-        context=context,
-        functions=functions,
-    )
-    print(f"Mosscap:> {context.result}")
-    return True, context
+# define the functions available
+functions = [
+    {
+        "name": "search_hotels",
+        "description": "Retrieves hotels from the search index based on the parameters provided",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "location": {
+                    "type": "string",
+                    "description": "The location of the hotel (i.e. Seattle, WA)",
+                },
+                "max_price": {
+                    "type": "number",
+                    "description": "The maximum price for the hotel",
+                },
+                "features": {
+                    "type": "string",
+                    "description": "A comma separated list of features (i.e. beachfront, free wifi, etc.)",
+                },
+            },
+            "required": ["location"],
+        },
+    }
+]
 
 
 async def main() -> None:
-    chatting = True
     context = kernel.create_new_context()
-    print(
-        "Welcome to the chat bot!\
-\n  Type 'exit' to exit.\
-\n  Try a math question to see the function calling in action (i.e. what is 3+3?)."
-    )
-    while chatting:
-        chatting, context = await chat(context)
+    context.variables[
+        "user_input"
+    ] = "I want to find a hotel in Seattle with free wifi and a pool."
+
+    context = await chat_function.invoke_async(context=context, functions=functions)
+    fc_exists, function_call = context.variables.get("function_call")
+    if not fc_exists:
+        print("No function was called")
+        print(f"Output was: {str(context)}")
+        return
+    function_call = context.variables["function_call"]
+    print(f"Function to be called: {function_call.name}")
+    print(f"Function parameters: \n{function_call.arguments}")
 
 
 if __name__ == "__main__":
