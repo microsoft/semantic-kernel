@@ -28,11 +28,6 @@ public interface ISKFunction
     /// </summary>
     string PluginName { get; }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SkillName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    string SkillName { get; }
-
     /// <summary>
     /// Function description. The description is used in combination with embeddings when searching relevant functions.
     /// </summary>
@@ -69,11 +64,6 @@ public interface ISKFunction
     /// <returns>Self instance</returns>
     ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions);
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills);
-
     /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.
     /// The factory allows to lazily instantiate the client and to properly handle its disposal.
@@ -90,6 +80,23 @@ public interface ISKFunction
     ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
 
     #region Obsolete
+
+    /// <summary>
+    /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{skillName.functionName}}
+    /// </summary>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SkillName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    string SkillName { get; }
+
+    /// <summary>
+    /// Set the default function collection to use when the function is invoked
+    /// without a context or with a context that doesn't have a collection.
+    /// </summary>
+    /// <param name="skills">Kernel's function collection</param>
+    /// <returns>Self instance</returns>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills);
 
     /// <summary>
     /// Whether the function is defined using a prompt template.
