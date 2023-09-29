@@ -52,9 +52,9 @@ public static class SKContextExtensions
     public static void PromptInput(this SKContext context)
     {
         // Cant prompt the user for input and exit the execution at the same time
-        if (!context.Variables.ContainsKey(Constants.ChatSkillVariables.ExitLoopName))
+        if (!context.Variables.ContainsKey(Constants.ChatPluginVariables.ExitLoopName))
         {
-            context.Variables.Set(Constants.ChatSkillVariables.PromptInputName, Constants.ChatSkillVariables.DefaultValue);
+            context.Variables.Set(Constants.ChatPluginVariables.PromptInputName, Constants.ChatPluginVariables.DefaultValue);
         }
     }
 
@@ -66,9 +66,9 @@ public static class SKContextExtensions
     public static void ExitLoop(this SKContext context, string? response = null)
     {
         // Cant prompt the user for input and exit the execution at the same time
-        if (!context.Variables.ContainsKey(Constants.ChatSkillVariables.PromptInputName))
+        if (!context.Variables.ContainsKey(Constants.ChatPluginVariables.PromptInputName))
         {
-            context.Variables.Set(Constants.ChatSkillVariables.ExitLoopName, response ?? string.Empty);
+            context.Variables.Set(Constants.ChatPluginVariables.ExitLoopName, response ?? string.Empty);
         }
     }
 
@@ -78,6 +78,6 @@ public static class SKContextExtensions
     /// <param name="context">context</param>
     public static void ContinueLoop(this SKContext context)
     {
-        context.Variables.Set(Constants.ChatSkillVariables.ContinueLoopName, Constants.ChatSkillVariables.DefaultValue);
+        context.Variables.Set(Constants.ChatPluginVariables.ContinueLoopName, Constants.ChatPluginVariables.DefaultValue);
     }
 }

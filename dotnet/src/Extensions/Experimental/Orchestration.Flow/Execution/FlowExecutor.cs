@@ -40,9 +40,9 @@ internal class FlowExecutor : IFlowExecutor
     private readonly ILogger<FlowExecutor> _logger;
 
     /// <summary>
-    /// The global skill collection
+    /// The global plugin collection
     /// </summary>
-    private readonly Dictionary<object, string?> _globalSkillCollection;
+    private readonly Dictionary<object, string?> _globalPluginCollection;
 
     /// <summary>
     /// The flow planner config
@@ -65,9 +65,9 @@ internal class FlowExecutor : IFlowExecutor
     private readonly ReActEngine _reActEngine;
 
     /// <summary>
-    /// Restricted skill name
+    /// Restricted plugin name
     /// </summary>
-    private const string RestrictedSkillName = "FlowExecutor_Excluded";
+    private const string RestrictedPluginName = "FlowExecutor_Excluded";
 
     /// <summary>
     /// The regex for parsing the final answer response
@@ -97,7 +97,7 @@ internal class FlowExecutor : IFlowExecutor
     /// </summary>
     private readonly ISKFunction _checkStartStepFunction;
 
-    internal FlowExecutor(KernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalSkillCollection, FlowOrchestratorConfig? config = null)
+    internal FlowExecutor(KernelBuilder kernelBuilder, IFlowStatusProvider statusProvider, Dictionary<object, string?> globalPluginCollection, FlowOrchestratorConfig? config = null)
     {
         this._kernelBuilder = kernelBuilder;
         this._systemKernel = kernelBuilder.Build();
@@ -106,17 +106,17 @@ internal class FlowExecutor : IFlowExecutor
         this._config = config ?? new FlowOrchestratorConfig();
 
         this._flowStatusProvider = statusProvider;
-        this._globalSkillCollection = globalSkillCollection;
+        this._globalPluginCollection = globalPluginCollection;
 
-        var checkRepeatStepPrompt = EmbeddedResource.Read("Skills.CheckRepeatStep.skprompt.txt");
-        var checkRepeatStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Skills.CheckRepeatStep.config.json"));
+        var checkRepeatStepPrompt = EmbeddedResource.Read("Plugins.CheckRepeatStep.skprompt.txt");
+        var checkRepeatStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckRepeatStep.config.json"));
         this._checkRepeatStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckRepeatStep", checkRepeatStepPrompt, checkRepeatStepConfig);
 
-        var checkStartStepPrompt = EmbeddedResource.Read("Skills.CheckStartStep.skprompt.txt");
-        var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Skills.CheckStartStep.config.json"));
+        var checkStartStepPrompt = EmbeddedResource.Read("Plugins.CheckStartStep.skprompt.txt");
+        var checkStartStepConfig = PromptTemplateConfig.FromJson(EmbeddedResource.Read("Plugins.CheckStartStep.config.json"));
         this._checkStartStepFunction = this.ImportSemanticFunction(this._systemKernel, "CheckStartStep", checkStartStepPrompt, checkStartStepConfig);
 
-        this._config.ExcludedSkills.Add(RestrictedSkillName);
+        this._config.ExcludedPlugins.Add(RestrictedPluginName);
         this._reActEngine = new ReActEngine(this._systemKernel, this._logger, this._config);
     }
 
@@ -223,10 +223,10 @@ internal class FlowExecutor : IFlowExecutor
                 }
                 else
                 {
-                    var stepSkills = step.GetSKills(stepKernel, this._globalSkillCollection);
-                    foreach (var skill in stepSkills)
+                    var stepPlugins = step.LoadPlugins(stepKernel, this._globalPluginCollection);
+                    foreach (var plugin in stepPlugins)
                     {
-                        stepKernel.ImportFunctions(skill);
+                        stepKernel.ImportFunctions(plugin);
                     }
 
                     stepResult = await this.ExecuteStepAsync(step, sessionId, stepId, input, stepKernel, stepContext).ConfigureAwait(false);
@@ -244,7 +244,7 @@ internal class FlowExecutor : IFlowExecutor
                         outputs.Add(stepResult.ToString());
                     }
                 }
-                else if (stepResult.TryGetValue(Constants.ChatSkillVariables.ExitLoopName, out var exitResponse))
+                else if (stepResult.TryGetValue(Constants.ChatPluginVariables.ExitLoopName, out var exitResponse))
                 {
                     stepState.Status = ExecutionState.Status.Completed;
                     foreach (var variable in step.Provides)
@@ -295,7 +295,7 @@ internal class FlowExecutor : IFlowExecutor
                 }
 
                 // propagate variables to root context, needed if Flow itself is a step
-                this.PropagateVariable(rootContext, stepResult, Constants.ChatSkillVariables.PromptInputName);
+                this.PropagateVariable(rootContext, stepResult, Constants.ChatPluginVariables.PromptInputName);
             }
 
             if (completed)
@@ -588,7 +588,7 @@ internal class FlowExecutor : IFlowExecutor
                             }
                         }
 
-                        foreach (var variable in Constants.ChatSkillVariables.ControlVariables)
+                        foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                         {
                             if (actionContext.Variables.TryGetValue(variable, out string? variableValue))
                             {
@@ -620,7 +620,7 @@ internal class FlowExecutor : IFlowExecutor
 
                 if (!string.IsNullOrEmpty(context.Result))
                 {
-                    foreach (var variable in Constants.ChatSkillVariables.ControlVariables)
+                    foreach (var variable in Constants.ChatPluginVariables.ControlVariables)
                     {
                         if (context.Variables.ContainsKey(variable))
                         {
@@ -667,7 +667,7 @@ internal class FlowExecutor : IFlowExecutor
         var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
         var functionConfig = new SemanticFunctionConfig(config, template);
 
-        return kernel.RegisterSemanticFunction(RestrictedSkillName, functionName, functionConfig);
+        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, functionConfig);
     }
 
     private class RepeatOrStartStepResult

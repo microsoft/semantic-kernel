@@ -2,40 +2,40 @@ name: breakfast_flow
 goal: Make breakfast
 steps:
   - goal: Make coffee
-    skills:
-      - MakeCoffeeSkill
+    plugins:
+      - MakeCoffeePlugin
     requires:
       - coffee_bean
     provides:
       - coffee
 
   - goal: Select coffee been
-    skills:
-      - CoffeeRecommendationSkill
+    plugins:
+      - CoffeeRecommendationPlugin
     provides:
       - coffee_bean
     completionType: AtLeastOnce
 
   - goal: Recipe
-    skills:
-      - WebSearchSkill
-      - CalorieCalculatorSkill
-      - HealthCheckSkill
+    plugins:
+      - WebSearchPlugin
+      - CalorieCalculatorPlugin
+      - HealthCheckPlugin
     provides:
       - ingredients
     completionType: AtLeastOnce
     transitionMessage: Do you want to add one more recipe?
 
   - goal: Cook
-    skills:
+    plugins:
       - CookSkill
-      - WebSearchSkill
+      - WebSearchPlugin
     requires:
       - coffee
       - ingredients
     provides:
-        - breakfast
-  
+      - breakfast
+
   - flowName: lunch_flow
     completionType: Optional
     startingMessage: Would you like to prepare the lunch as well?

@@ -14,15 +14,14 @@
     <Description>Semantic Kernel Flow Orchestrator</Description>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Skills/**/*" />
-    <EmbeddedResource Include="Skills/**/*">
+    <None Remove="Plugins/**/*" />
+    <EmbeddedResource Include="Plugins/**/*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <!-- <ProjectReference Include="..\..\..\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" /> -->
     <ProjectReference Include="..\..\..\Functions\Functions.Semantic\Functions.Semantic.csproj" />
   </ItemGroup>
   <ItemGroup>

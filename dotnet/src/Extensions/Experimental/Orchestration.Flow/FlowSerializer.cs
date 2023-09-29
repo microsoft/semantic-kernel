@@ -75,7 +75,7 @@ public static class FlowSerializer
         result.CompletionType = step.CompletionType;
         result.StartingMessage = step.StartingMessage;
         result.TransitionMessage = step.TransitionMessage;
-        result.Skills = step.Skills;
+        result.Plugins = step.Plugins;
 
         PopulateVariables(result, step);
 
@@ -105,7 +105,7 @@ public static class FlowSerializer
 
         public string? TransitionMessage { get; set; }
 
-        public List<string> Skills { get; set; } = new();
+        public List<string> Plugins { get; set; } = new();
 
         public string? FlowName { get; set; }
     }

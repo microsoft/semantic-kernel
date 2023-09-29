@@ -60,18 +60,18 @@ public sealed class FlowOrchestratorTests : IDisposable
 goal: answer question and sent email
 steps:
   - goal: Who is the current president of the United States? What is his current age divided by 2
-    skills:
+    plugins:
       - WebSearchEnginePlugin
       - TimePlugin
     provides:
       - answer
   - goal: Collect email address
-    skills:
+    plugins:
       - CollectEmailPlugin
     provides:
       - email_address
   - goal: Send email
-    skills:
+    plugins:
       - SendEmail
     requires:
       - email_address

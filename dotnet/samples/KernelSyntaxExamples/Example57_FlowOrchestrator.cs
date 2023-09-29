@@ -31,13 +31,13 @@ name: FlowOrchestrator_Example_Flow
 goal: answer question and send email
 steps:
   - goal: Who is the current president of the United States? What is his current age divided by 2
-    skills:
+    plugins:
       - WebSearchEnginePlugin
       - TimePlugin
     provides:
       - answer
   - goal: Collect email address
-    skills:
+    plugins:
       - CollectEmailPlugin
     completionType: AtLeastOnce
     transitionMessage: do you want to send it to another email address?
@@ -45,7 +45,7 @@ steps:
       - email_address
 
   - goal: Send email
-    skills:
+    plugins:
       - SendEmail
     requires:
       - email_address

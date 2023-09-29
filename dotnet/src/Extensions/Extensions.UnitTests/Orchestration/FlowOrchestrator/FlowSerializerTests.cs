@@ -48,8 +48,8 @@ public class FlowSerializerTests
         var makeCoffeeStep = flow.Steps.First(step => step.Goal == "Make coffee");
         Assert.Equal("coffee_bean", makeCoffeeStep.Requires.Single());
         Assert.Equal("coffee", makeCoffeeStep.Provides.Single());
-        Assert.NotNull(makeCoffeeStep.Skills);
-        Assert.Single(makeCoffeeStep.Skills);
+        Assert.NotNull(makeCoffeeStep.Plugins);
+        Assert.Single(makeCoffeeStep.Plugins);
         Assert.Equal(CompletionType.Once, makeCoffeeStep.CompletionType);
 
         var recipeStep = flow.Steps.First(step => step.Goal == "Recipe");

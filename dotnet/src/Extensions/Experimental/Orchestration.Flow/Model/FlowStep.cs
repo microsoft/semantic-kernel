@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Step within a <see cref="Flow"/> which defines the step goal, available skills, required and provided variables.
+/// Step within a <see cref="Flow"/> which defines the step goal, available plugins, required and provided variables.
 /// </summary>
 public class FlowStep
 {
@@ -21,19 +21,19 @@ public class FlowStep
 
     private readonly List<string> _passthrough = new();
 
-    private Dictionary<string, Type?> _skillTypes = new();
+    private Dictionary<string, Type?> _pluginTypes = new();
 
-    private Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? _skillsFactory;
+    private Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? _pluginsFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlowStep"/> class.
     /// </summary>
     /// <param name="goal">The goal of step</param>
-    /// <param name="skillsFactory">The factory to get skills</param>
-    public FlowStep(string goal, Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? skillsFactory = null)
+    /// <param name="pluginsFactory">The factory to get plugins</param>
+    public FlowStep(string goal, Func<IKernel, Dictionary<object, string?>, IEnumerable<object>>? pluginsFactory = null)
     {
         this.Goal = goal;
-        this._skillsFactory = skillsFactory;
+        this._pluginsFactory = pluginsFactory;
     }
 
     /// <summary>
@@ -72,14 +72,14 @@ public class FlowStep
     public IEnumerable<string> Passthrough => this._passthrough;
 
     /// <summary>
-    /// Gets or sets the skill available for the current step
+    /// Gets or sets the plugin available for the current step
     /// </summary>
-    public List<string>? Skills
+    public List<string>? Plugins
     {
-        get => this._skillTypes.Keys.ToList();
+        get => this._pluginTypes.Keys.ToList();
         set
         {
-            Dictionary<string, Type?> skills = new();
+            Dictionary<string, Type?> plugins = new();
 
             if (value != null)
             {
@@ -88,40 +88,40 @@ public class FlowStep
                     .SelectMany(a => a.GetTypes())
                     .ToList();
 
-                foreach (var skillName in value)
+                foreach (var pluginName in value)
                 {
-                    if (skillName == null)
+                    if (pluginName == null)
                     {
                         continue;
                     }
 
-                    var type = types.FirstOrDefault(predicate: t => t.FullName?.Equals(skillName, StringComparison.OrdinalIgnoreCase) ?? false);
+                    var type = types.FirstOrDefault(predicate: t => t.FullName?.Equals(pluginName, StringComparison.OrdinalIgnoreCase) ?? false);
                     if (type == null)
                     {
-                        type = types.FirstOrDefault(t => t.FullName?.Contains(skillName) ?? false);
+                        type = types.FirstOrDefault(t => t.FullName?.Contains(pluginName) ?? false);
 
                         if (type == null)
                         {
-                            // If not found, assume the skill would be loaded separately.
-                            skills.Add(skillName, null);
+                            // If not found, assume the plugin would be loaded separately.
+                            plugins.Add(pluginName, null);
                             continue;
                         }
                     }
 
-                    skills.Add(skillName, type);
+                    plugins.Add(pluginName, type);
                 }
             }
 
-            this._skillTypes = skills;
-            this._skillsFactory = (kernel, globalSkills) =>
+            this._pluginTypes = plugins;
+            this._pluginsFactory = (kernel, globalPlugins) =>
             {
-                return this._skillTypes.Select(kvp =>
+                return this._pluginTypes.Select(kvp =>
                 {
-                    var skillName = kvp.Key;
-                    var globalSkill = globalSkills.FirstOrDefault(_ => _.Key.GetType().Name.Contains(skillName)).Key;
-                    if (globalSkill != null)
+                    var pluginName = kvp.Key;
+                    var globalPlugin = globalPlugins.FirstOrDefault(_ => _.Key.GetType().Name.Contains(pluginName)).Key;
+                    if (globalPlugin != null)
                     {
-                        return globalSkill;
+                        return globalPlugin;
                     }
 
                     var type = kvp.Value;
@@ -144,7 +144,7 @@ public class FlowStep
                     }
 
                     return null;
-                }).Where(skill => skill != null).ToList()!;
+                }).Where(plugin => plugin != null).ToList()!;
             };
         }
     }
@@ -185,16 +185,16 @@ public class FlowStep
     }
 
     /// <summary>
-    /// Get the skill instances registered with the step
+    /// Get the plugin instances registered with the step
     /// </summary>
     /// <param name="kernel">The semantic kernel</param>
-    /// <param name="globalSkills">The global skills available</param>
+    /// <param name="globalPlugins">The global plugins available</param>
     /// <returns></returns>
-    public IEnumerable<object> GetSKills(IKernel kernel, Dictionary<object, string?> globalSkills)
+    public IEnumerable<object> LoadPlugins(IKernel kernel, Dictionary<object, string?> globalPlugins)
     {
-        if (this._skillsFactory != null)
+        if (this._pluginsFactory != null)
         {
-            return this._skillsFactory(kernel, globalSkills);
+            return this._pluginsFactory(kernel, globalPlugins);
         }
 
         return Enumerable.Empty<object>();
