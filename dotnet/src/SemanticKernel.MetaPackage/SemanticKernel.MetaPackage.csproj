@@ -14,11 +14,10 @@ Empowers app owners to integrate cutting-edge LLM technology quickly and easily 
   <ItemGroup>
     <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+    <ProjectReference Include="..\Functions\Functions.Semantic\Functions.Semantic.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" PrivateAssets="none" />
-    <ProjectReference Include="..\Extensions\Planning.ActionPlanner\Planning.ActionPlanner.csproj" PrivateAssets="none" />
-    <ProjectReference Include="..\Extensions\Planning.SequentialPlanner\Planning.SequentialPlanner.csproj" PrivateAssets="none" />
-    <ProjectReference Include="..\Extensions\Planning.StepwisePlanner\Planning.StepwisePlanner.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Planners\Planners.Core\Planners.Core.csproj" PrivateAssets="none" />
   </ItemGroup>
 </Project>

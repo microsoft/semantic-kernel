@@ -7,13 +7,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -94,41 +92,22 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
+    public IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null)
     {
-        return this.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsCollectionName, functionName, functionConfig);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string pluginName, string functionName, SemanticFunctionConfig functionConfig)
-    {
-        // Future-proofing the name not to contain special chars
-        Verify.ValidPluginName(pluginName);
-        Verify.ValidFunctionName(functionName);
-
-        ISKFunction function = this.CreateSemanticFunction(pluginName, functionName, functionConfig);
-        this._functionCollection.AddFunction(function);
-
-        return function;
-    }
-
-    /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportPlugin(object pluginInstance, string? pluginName = null)
-    {
-        Verify.NotNull(pluginInstance);
+        Verify.NotNull(functionsInstance);
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
-            this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", pluginInstance.GetType().FullName);
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
+            this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", functionsInstance.GetType().FullName);
         }
         else
         {
-            this._logger.LogTrace("Importing functions from {0} to the {1} namespace", pluginInstance.GetType().FullName, pluginName);
+            this._logger.LogTrace("Importing functions from {0} to the {1} namespace", functionsInstance.GetType().FullName, pluginName);
         }
 
         Dictionary<string, ISKFunction> functions = ImportFunctions(
-            pluginInstance,
+            functionsInstance,
             pluginName!,
             this._logger,
             this.LoggerFactory
@@ -145,9 +124,9 @@ public sealed class Kernel : IKernel, IDisposable
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
-    public IDictionary<string, ISKFunction> ImportSkill(object pluginInstance, string? pluginName = null)
+    public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)
     {
-        return this.ImportPlugin(pluginInstance, pluginName);
+        return this.ImportFunctions(functionsInstance, pluginName);
     }
 #pragma warning restore CS1591
 
@@ -169,37 +148,41 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ISKFunction skFunction,
+    public Task<KernelResult> RunAsync(ISKFunction skFunction,
         ContextVariables? variables = null,
         CancellationToken cancellationToken = default)
         => this.RunAsync(variables ?? new(), cancellationToken, skFunction);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(string input, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(input), pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
         => this.RunAsync(variables, CancellationToken.None, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public Task<SKContext> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public Task<KernelResult> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
         => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <inheritdoc/>
-    public async Task<SKContext> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
         var context = new SKContext(this, variables);
 
+        FunctionResult? functionResult = null;
+
         int pipelineStepCount = 0;
+        var allFunctionResults = new List<FunctionResult>();
+
         foreach (ISKFunction skFunction in pipeline)
         {
 repeat:
@@ -222,9 +205,13 @@ repeat:
                     continue;
                 }
 
-                context = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, context);
+                context = functionResult.Context;
+
+                allFunctionResults.Add(functionResult);
+
+                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
@@ -246,7 +233,7 @@ repeat:
             pipelineStepCount++;
         }
 
-        return context;
+        return KernelResult.FromFunctionResults(functionResult?.Value, allFunctionResults);
     }
 
     /// <inheritdoc/>
@@ -313,48 +300,19 @@ repeat:
     /// Execute the OnFunctionInvoked event handlers.
     /// </summary>
     /// <param name="functionView">Function view details</param>
-    /// <param name="context">SKContext after function invocation</param>
+    /// <param name="result">Function result after invocation</param>
     /// <returns>FunctionInvokedEventArgs if the event was handled, null otherwise</returns>
-    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, SKContext context)
+    private FunctionInvokedEventArgs? OnFunctionInvoked(FunctionView functionView, FunctionResult result)
     {
         if (this.FunctionInvoked is not null)
         {
-            var args = new FunctionInvokedEventArgs(functionView, context);
+            var args = new FunctionInvokedEventArgs(functionView, result);
             this.FunctionInvoked.Invoke(this, args);
 
             return args;
         }
 
         return null;
-    }
-
-    private ISKFunction CreateSemanticFunction(
-        string pluginName,
-        string functionName,
-        SemanticFunctionConfig functionConfig)
-    {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
-        ISKFunction func = SemanticFunction.FromSemanticConfig(
-            pluginName,
-            functionName,
-            functionConfig,
-            this.LoggerFactory
-        );
-
-        // Connect the function to the current kernel function collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultFunctionCollection(this.Functions);
-
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
-
-        return func;
     }
 
     /// <summary>

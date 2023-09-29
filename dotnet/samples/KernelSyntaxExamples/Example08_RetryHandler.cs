@@ -110,9 +110,9 @@ public static class Example08_RetryHandler
         // Load semantic plugin defined with prompt templates
         string folder = RepoFiles.SamplePluginsPath();
 
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
-        var qaPlugin = kernel.ImportSemanticPluginFromDirectory(
+        var qaPlugin = kernel.ImportSemanticFunctionsFromDirectory(
             folder,
             "QAPlugin");
 

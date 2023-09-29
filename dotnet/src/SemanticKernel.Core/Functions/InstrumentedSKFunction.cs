@@ -28,12 +28,6 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <inheritdoc/>
     public string PluginName => this._function.PluginName;
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this._function.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     public string Description => this._function.Description;
 
@@ -75,7 +69,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
         this._function.Describe();
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
@@ -96,12 +90,6 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
         this._function.SetDefaultFunctionCollection(functions);
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-        this._function.SetDefaultFunctionCollection(skills);
-
     #region private ================================================================================
 
     private readonly ISKFunction _function;
@@ -110,38 +98,38 @@ public sealed class InstrumentedSKFunction : ISKFunction
     /// <summary>
     /// Instance of <see cref="ActivitySource"/> for function-related activities.
     /// </summary>
-    private static ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
+    private static readonly ActivitySource s_activitySource = new(typeof(SKFunction).FullName);
 
     /// <summary>
     /// Instance of <see cref="Meter"/> for function-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(SKFunction).FullName);
+    private static readonly Meter s_meter = new(typeof(SKFunction).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of function execution.
     /// </summary>
-    private Histogram<double> _executionTimeHistogram;
+    private readonly Histogram<double> _executionTimeHistogram;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of function executions.
     /// </summary>
-    private Counter<int> _executionTotalCounter;
+    private readonly Counter<int> _executionTotalCounter;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful function executions.
     /// </summary>
-    private Counter<int> _executionSuccessCounter;
+    private readonly Counter<int> _executionSuccessCounter;
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed function executions.
     /// </summary>
-    private Counter<int> _executionFailureCounter;
+    private readonly Counter<int> _executionFailureCounter;
 
     /// <summary>
     /// Wrapper for instrumentation to be used in multiple invocation places.
     /// </summary>
     /// <param name="func">Delegate to instrument.</param>
-    private async Task<SKContext> InvokeWithInstrumentationAsync(Func<Task<SKContext>> func)
+    private async Task<FunctionResult> InvokeWithInstrumentationAsync(Func<Task<FunctionResult>> func)
     {
         using var activity = s_activitySource.StartActivity($"{this.PluginName}.{this.Name}");
 
@@ -150,7 +138,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        SKContext result;
+        FunctionResult result;
 
         try
         {
@@ -191,9 +179,19 @@ public sealed class InstrumentedSKFunction : ISKFunction
     #region Obsolete =======================================================================
 
     /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this._function.PluginName;
+
+    /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool IsSemantic => this._function.IsSemantic;
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this._function.SetDefaultFunctionCollection(skills);
 
     #endregion
 }

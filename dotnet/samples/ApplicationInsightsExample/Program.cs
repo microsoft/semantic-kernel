@@ -12,10 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Action;
-using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.Planning.Stepwise;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -33,7 +31,7 @@ public sealed class Program
     /// <see cref="LogLevel.Information"/> is set by default. <para />
     /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
     /// </remarks>
-    private static LogLevel s_logLevel = LogLevel.Information;
+    private const LogLevel MinLogLevel = LogLevel.Information;
 
     /// <summary>
     /// The main entry point for the application.
@@ -70,7 +68,7 @@ public sealed class Program
             var result = await kernel.RunAsync(plan);
 
             Console.WriteLine("Result:");
-            Console.WriteLine(result.Result);
+            Console.WriteLine(result.GetValue<string>());
         }
         finally
         {
@@ -96,8 +94,8 @@ public sealed class Program
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == s_logLevel);
-            loggingBuilder.SetMinimumLevel(s_logLevel);
+            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == MinLogLevel);
+            loggingBuilder.SetMinimumLevel(MinLogLevel);
         });
 
         services.AddApplicationInsightsTelemetryWorkerService(options =>
@@ -120,11 +118,11 @@ public sealed class Program
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticPluginFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
 
-        kernel.ImportPlugin(webSearchEnginePlugin, "WebSearch");
-        kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         return kernel;
     }

@@ -72,12 +72,6 @@ public sealed class Plan : IPlan
     [JsonPropertyName("plugin_name")]
     public string PluginName { get; set; } = string.Empty;
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
@@ -259,7 +253,10 @@ public sealed class Plan : IPlan
 
             var result = await step.InvokeAsync(functionContext, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            var resultValue = result.Result.Trim();
+            // result.Context.Result is used for backward compatibility and can be removed in the future
+            var resultString = result.GetValue<string>() ?? result.Context.Result;
+
+            var resultValue = resultString.Trim();
 
             #region Update State
 
@@ -282,7 +279,7 @@ public sealed class Plan : IPlan
             // Update state with outputs (if any)
             foreach (var item in step.Outputs)
             {
-                if (result.Variables.TryGetValue(item, out string? val))
+                if (result.Context.Variables.TryGetValue(item, out string? val))
                 {
                     this.State.Set(item, val);
                 }
@@ -322,7 +319,7 @@ public sealed class Plan : IPlan
             var matchingParameter = stepParameters.FirstOrDefault(sp => sp.Value.Equals($"${p.Key}", StringComparison.OrdinalIgnoreCase));
             var stepDescription = stepDescriptions.FirstOrDefault(sd => sd.Name.Equals(matchingParameter.Key, StringComparison.OrdinalIgnoreCase));
 
-            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type);
+            return new ParameterView(p.Key, stepDescription?.Description, stepDescription?.DefaultValue, stepDescription?.Type, stepDescription?.IsRequired);
         }
         ).ToList();
 
@@ -330,20 +327,28 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public async Task<SKContext> InvokeAsync(
+    public async Task<FunctionResult> InvokeAsync(
         SKContext context,
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default)
     {
+        var result = new FunctionResult(this.Name, this.PluginName, context);
+
         if (this.Function is not null)
         {
+            // Merge state with the current context variables.
+            // Then filter the variables to only those needed for the next step.
+            // This is done to prevent the function from having access to variables that it shouldn't.
             AddVariablesToContext(this.State, context);
-            var result = await this.Function
-                .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(context, requestSettings, cancellationToken)
-                .ConfigureAwait(false);
+            var functionVariables = this.GetNextStepVariables(context.Variables, this);
+            var functionContext = new SKContext(context.Kernel, functionVariables, context.Functions);
 
-            context.Variables.Update(result.Result);
+            // Execute the step
+            result = await this.Function
+                .WithInstrumentation(context.LoggerFactory)
+                .InvokeAsync(functionContext, requestSettings, cancellationToken)
+                .ConfigureAwait(false);
+            this.UpdateFunctionResultWithOutputs(result);
         }
         else
         {
@@ -353,10 +358,13 @@ public sealed class Plan : IPlan
                 AddVariablesToContext(this.State, context);
                 await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
                 this.UpdateContextWithOutputs(context);
+
+                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
+                this.UpdateFunctionResultWithOutputs(result);
             }
         }
 
-        return context;
+        return result;
     }
 
     /// <inheritdoc/>
@@ -364,12 +372,6 @@ public sealed class Plan : IPlan
     {
         return this.Function is not null ? this.Function.SetDefaultFunctionCollection(functions) : this;
     }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-        this.SetDefaultFunctionCollection(skills);
 
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
@@ -480,6 +482,28 @@ public sealed class Plan : IPlan
         }
 
         return context;
+    }
+
+    /// <summary>
+    /// Update the function result with the outputs from the current state.
+    /// </summary>
+    /// <param name="functionResult">The function result to update.</param>
+    /// <returns>The updated function result.</returns>
+    private FunctionResult UpdateFunctionResultWithOutputs(FunctionResult functionResult)
+    {
+        foreach (var output in this.Outputs)
+        {
+            if (this.State.TryGetValue(output, out var value))
+            {
+                functionResult.Metadata[output] = value;
+            }
+            else if (functionResult.Context.Variables.TryGetValue(output, out var val))
+            {
+                functionResult.Metadata[output] = val;
+            }
+        }
+
+        return functionResult;
     }
 
     /// <summary>
@@ -596,7 +620,7 @@ public sealed class Plan : IPlan
 
     private static string GetRandomPlanName() => "plan" + Guid.NewGuid().ToString("N");
 
-    private ISKFunction? Function { get; set; } = null;
+    private ISKFunction? Function { get; set; }
 
     private readonly List<Plan> _steps = new();
 
@@ -629,9 +653,20 @@ public sealed class Plan : IPlan
 
     /// <inheritdoc/>
     [JsonIgnore]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this.PluginName;
+
+    /// <inheritdoc/>
+    [JsonIgnore]
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool IsSemantic { get; private set; }
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this.SetDefaultFunctionCollection(skills);
 
     #endregion
 }

@@ -24,7 +24,7 @@ public static class Example23_OpenApiPlugin_GitHub
     public static async Task RunAsync()
     {
         var authenticationProvider = new BearerAuthenticationProvider(() => { return Task.FromResult(TestConfiguration.Github.PAT); });
-        Console.WriteLine("== Example22_c_OpenApiSkill_GitHub ==");
+        Console.WriteLine("== Example23_OpenApiPlugin_GitHub ==");
         var firstPRNumber = await ListPullRequestsFromGitHubAsync(authenticationProvider);
         await GetPullRequestFromGitHubAsync(authenticationProvider, firstPRNumber);
     }
@@ -33,10 +33,10 @@ public static class Example23_OpenApiPlugin_GitHub
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
-            "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
-            new OpenApiPluginExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            "../../../samples/dotnet/OpenApiPluginsExample/GitHubPlugin/openapi.json",
+            new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -47,7 +47,7 @@ public static class Example23_OpenApiPlugin_GitHub
         var result = await kernel.RunAsync(contextVariables, plugin["PullsList"]);
 
         Console.WriteLine("Successful GitHub List Pull Requests plugin response.");
-        var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.Result);
+        var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.GetValue<string>()!);
         var pullRequests = JArray.Parse((string)resultJson!["content"]);
 
         if (pullRequests != null && pullRequests.First != null)
@@ -65,10 +65,10 @@ public static class Example23_OpenApiPlugin_GitHub
     {
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        var plugin = await kernel.ImportAIPluginAsync(
+        var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
             "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
-            new OpenApiPluginExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();

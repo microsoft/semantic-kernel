@@ -1,0 +1,77 @@
+---
+title: Semantic Kernel Functions (v1.0)
+---
+classDiagram
+    %% Use https://mermaid.live/ to preview this diagram. The VS Code extension does not handle namespaces.
+    direction RL
+    namespace Function {
+        class ISKFunction {
+            <<interface>>
+            String : Name
+            String : SkillName
+            String : Description
+            JsonObject : Configuration
+            Describe(...)
+            InvokeAsync(...)
+            SetPluginProvider(...)
+            SetAIServiceProvider(...)
+            SetConfiguration(...)
+        }
+    }
+
+    namespace Functions_Native {
+        class NativeFunction
+    }
+
+    namespace Functions_Semantic {
+        class SemanticFunction
+    }
+
+    namespace Functions_Planning {
+        class Plan
+    }
+
+    namespace Functions_Grpc {
+        class KernelGrpcExtensions
+    }
+
+    namespace Functions_OpenApi {
+        class KernelOpenApiExtensions
+    }
+
+    namespace Plugins_MsGraph {
+        class CalendarPlugin
+    }
+
+    namespace Plugins_Web {
+        class SearchUrlPlugin
+    }
+
+    namespace Plugins_Document {
+        class DocumentPlugin
+    }
+
+    namespace Plugins_Core {
+        class TextPlugin
+        class ConversationSummaryPlugin
+    }
+
+    namespace Planners {
+        class ActionPlanner
+        class SequentialPlanner
+        class StepwisePlanner
+    }
+
+    ISKFunction <|.. NativeFunction
+    ISKFunction <|.. SemanticFunction
+    ISKFunction <|.. Plan
+    NativeFunction .. KernelGrpcExtensions
+    NativeFunction .. KernelOpenApiExtensions
+    NativeFunction .. CalendarPlugin
+    NativeFunction .. SearchUrlPlugin
+    NativeFunction .. DocumentPlugin
+    NativeFunction .. TextPlugin
+    SemanticFunction .. ConversationSummaryPlugin
+    Plan <.. ActionPlanner
+    Plan <.. SequentialPlanner
+    Plan <.. StepwisePlanner

@@ -133,14 +133,14 @@ Jane: Goodbye!
         IKernel kernel = InitializeKernel();
 
         IDictionary<string, ISKFunction> conversationSummaryPlugin =
-             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
+             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
-        SKContext summary = await kernel.RunAsync(
+        KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
             conversationSummaryPlugin["SummarizeConversation"]);
 
         Console.WriteLine("Generated Summary:");
-        Console.WriteLine(summary.Result);
+        Console.WriteLine(summary.GetValue<string>());
     }
 
     private static async Task GetConversationActionItemsAsync()
@@ -148,15 +148,15 @@ Jane: Goodbye!
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Action Items ========");
         IKernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummaryPlugin =
-             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
+        IDictionary<string, ISKFunction> conversationSummary =
+             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
-        SKContext summary = await kernel.RunAsync(
+        KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
-            conversationSummaryPlugin["GetConversationActionItems"]);
+            conversationSummary["GetConversationActionItems"]);
 
         Console.WriteLine("Generated Action Items:");
-        Console.WriteLine(summary.Result);
+        Console.WriteLine(summary.GetValue<string>());
     }
 
     private static async Task GetConversationTopicsAsync()
@@ -164,15 +164,15 @@ Jane: Goodbye!
         Console.WriteLine("======== SamplePlugins - Conversation Summary Plugin - Topics ========");
         IKernel kernel = InitializeKernel();
 
-        IDictionary<string, ISKFunction> conversationSummaryPlugin =
-             kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
+        IDictionary<string, ISKFunction> conversationSummary =
+             kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 
-        SKContext summary = await kernel.RunAsync(
+        KernelResult summary = await kernel.RunAsync(
             ChatTranscript,
-            conversationSummaryPlugin["GetConversationTopics"]);
+            conversationSummary["GetConversationTopics"]);
 
         Console.WriteLine("Generated Topics:");
-        Console.WriteLine(summary.Result);
+        Console.WriteLine(summary.GetValue<string>());
     }
 
     private static IKernel InitializeKernel()

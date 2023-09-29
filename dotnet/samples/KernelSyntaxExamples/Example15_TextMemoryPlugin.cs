@@ -188,8 +188,8 @@ public static class Example15_TextMemoryPlugin
         Console.WriteLine("== PART 2a: Saving Memories through the Kernel with TextMemoryPlugin and the 'Save' function ==");
 
         // Import the TextMemoryPlugin into the Kernel for other functions
-        var memorySkill = new TextMemoryPlugin(textMemory);
-        var memoryFunctions = kernel.ImportPlugin(memorySkill);
+        var memoryPlugin = new TextMemoryPlugin(textMemory);
+        var memoryFunctions = kernel.ImportFunctions(memoryPlugin);
 
         // Save a memory with the Kernel
         Console.WriteLine("Saving memory with key 'info5': \"My family is from New York\"");

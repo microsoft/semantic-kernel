@@ -19,9 +19,9 @@ public static class Example35_GrpcPlugins
         var kernel = new KernelBuilder().WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
         // Import a gRPC plugin using one of the following Kernel extension methods
-        // kernel.RegisterGrpcPlugin
-        // kernel.ImportGrpcPluginFromDirectory
-        var plugin = kernel.ImportGrpcPluginFromFile("<plugin-name>", "<path-to-.proto-file>");
+        // kernel.RegisterGrpcFunctions
+        // kernel.ImportGrpcFunctionsFromDirectory
+        var plugin = kernel.ImportGrpcFunctionsFromFile("<plugin-name>", "<path-to-.proto-file>");
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
@@ -31,6 +31,6 @@ public static class Example35_GrpcPlugins
         // Run
         var result = await kernel.RunAsync(contextVariables, plugin["<operation-name>"]);
 
-        Console.WriteLine("Skill response: {0}", result);
+        Console.WriteLine("Plugin response: {0}", result);
     }
 }

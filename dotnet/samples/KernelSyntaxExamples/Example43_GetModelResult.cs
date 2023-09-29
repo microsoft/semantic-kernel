@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 #pragma warning disable RCS1192 // (Unnecessary usage of verbatim string literal)
@@ -32,17 +34,20 @@ public static class Example43_GetModelResult
         var myFunction = kernel.CreateSemanticFunction(FunctionDefinition);
 
         // Using InvokeAsync with 3 results (Currently invoke only supports 1 result, but you can get the other results from the ModelResults)
-        var textResult = await myFunction.InvokeAsync("Sci-fi",
+        var functionResult = await myFunction.InvokeAsync("Sci-fi",
             kernel,
             requestSettings: new OpenAIRequestSettings { ResultsPerPrompt = 3, MaxTokens = 500, Temperature = 1, TopP = 0.5 });
-        Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.Select(result => result.GetOpenAIChatResult()).AsJson());
+
+        Console.WriteLine(functionResult.GetValue<string>());
+        Console.WriteLine(functionResult.GetModelResults()?.Select(result => result.GetOpenAIChatResult()).AsJson());
         Console.WriteLine();
 
         // Using the Kernel RunAsync
-        textResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
-        Console.WriteLine(textResult);
-        Console.WriteLine(textResult.ModelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
+        var kernelResult = await kernel.RunAsync("sorry I forgot your birthday", myFunction);
+        var modelResults = kernelResult.FunctionResults.SelectMany(l => l.GetModelResults() ?? Enumerable.Empty<ModelResult>());
+
+        Console.WriteLine(kernelResult.GetValue<string>());
+        Console.WriteLine(modelResults.LastOrDefault()?.GetOpenAIChatResult()?.Usage.AsJson());
         Console.WriteLine();
 
         // Using Chat Completion directly
