@@ -12,10 +12,10 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Microsoft.ML embeddings connectors.
 /// </summary>
-public static class MsMLTextKernelBuilderExtensions
+public static class MicrosoftMLTextKernelBuilderExtensions
 {
     /// <summary>
-    /// Configures the MsMLTextTextEmbeddingGenerationService for text embedding generation.
+    /// Configures the MicrosoftMLTextEmbeddingGenerationService for text embedding generation.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="vocabFilePath">The JSON file path containing the dictionary of string keys and their ids.</param>
@@ -43,7 +43,7 @@ public static class MsMLTextKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Configures the MsMLTextTextEmbeddingGenerationService for text embedding generation.
+    /// Configures the MicrosoftMLTextEmbeddingGenerationService for text embedding generation.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="tokenizer">The tokenizer to use for tokenization and embeddings generation.</param>

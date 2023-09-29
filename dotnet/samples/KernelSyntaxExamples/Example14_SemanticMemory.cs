@@ -103,7 +103,7 @@ public static class Example14_SemanticMemory
 
         var kernelWithLocalEmbeddings = Kernel.Builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithMicrosoftMLTextEmbeddingGenerationService(serviceId: "roberta", setAsDefault: true) // TODO Files are missing
+            .WithMicrosoftMLTextEmbeddingGenerationService(serviceId: "bpe", setAsDefault: true) // TODO Files are missing
             .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
