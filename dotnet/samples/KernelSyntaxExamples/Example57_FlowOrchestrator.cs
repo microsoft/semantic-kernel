@@ -38,7 +38,7 @@ steps:
       - answer
   - goal: Collect email address
     skills:
-      - CollectEmailSkill
+      - CollectEmailPlugin
     completionType: AtLeastOnce
     transitionMessage: do you want to send it to another email address?
     provides:
@@ -167,7 +167,7 @@ steps:
             });
     }
 
-    public sealed class CollectEmailSkill
+    public sealed class CollectEmailPlugin
     {
         private const string Goal = "Prompt user to provide a valid email address";
 
@@ -186,7 +186,7 @@ If I cannot answer, say that I don't know.
 
         private readonly AIRequestSettings _chatRequestSettings;
 
-        public CollectEmailSkill(IKernel kernel)
+        public CollectEmailPlugin(IKernel kernel)
         {
             this._chat = kernel.GetService<IChatCompletion>();
             this._chatRequestSettings = new OpenAIRequestSettings

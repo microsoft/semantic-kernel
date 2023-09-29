@@ -67,7 +67,7 @@ steps:
       - answer
   - goal: Collect email address
     skills:
-      - CollectEmailSkill
+      - CollectEmailPlugin
     provides:
       - email_address
   - goal: Send email
