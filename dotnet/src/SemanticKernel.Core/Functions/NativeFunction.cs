@@ -498,7 +498,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             var parameterView = new ParameterView(
                 name,
                 parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
-                defaultValue?.ToString() ?? string.Empty);
+                defaultValue?.ToString() ?? string.Empty,
+                IsRequired: !parameter.IsOptional);
 
             return (parameterFunc, parameterView);
         }
