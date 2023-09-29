@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Memory;
+using Reliability;
 using RepoUtils;
+using Resources;
 
 /* The files contains two examples about SK Semantic Memory.
  *
@@ -23,6 +25,26 @@ public static class Example14_SemanticMemory
     private const string MemoryCollectionName = "SKGitHub";
 
     public static async Task RunAsync()
+    {
+        await TryRun(RunACSExampleAsync);
+        await TryRun(RunVolatileExampleAsync);
+        await TryRun(RunLocalExampleAsync);
+        await TryRun(RunLocalCustomExampleAsync);
+    }
+
+    public static async Task TryRun(Func<Task> task)
+    {
+        try
+        {
+            await task();
+        }
+        catch (ConfigurationNotFoundException ex)
+        {
+            Console.WriteLine($"{ex.Message}. Skipping example {task.Method}.");
+        }
+    }
+
+    public static async Task RunACSExampleAsync()
     {
         Console.WriteLine("==============================================================");
         Console.WriteLine("======== Semantic Memory using Azure Cognitive Search ========");
@@ -41,7 +63,10 @@ public static class Example14_SemanticMemory
             .Build();
 
         await RunExampleAsync(kernelWithACS);
+    }
 
+    public static async Task RunVolatileExampleAsync()
+    {
         Console.WriteLine("====================================================");
         Console.WriteLine("======== Semantic Memory (volatile, in RAM) ========");
         Console.WriteLine("====================================================");
@@ -62,6 +87,61 @@ public static class Example14_SemanticMemory
             .Build();
 
         await RunExampleAsync(kernelWithCustomDb);
+    }
+
+    public static async Task RunLocalExampleAsync()
+    {
+        Console.WriteLine("====================================================");
+        Console.WriteLine("======== Semantic Memory (local embeddings) ========");
+        Console.WriteLine("====================================================");
+
+        /* You can also use a local embedding generator.
+         *
+         * In this example we use a local embedding generator that uses a local
+         * embedding generator based on Microsoft.ML tokenizers.
+         */
+
+        var kernelWithLocalEmbeddings = Kernel.Builder
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithMicrosoftMLTextEmbeddingGenerationService(serviceId: "roberta", setAsDefault: true) // TODO Files are missing
+            .WithMemoryStorage(new VolatileMemoryStore())
+            .Build();
+
+        await RunExampleAsync(kernelWithLocalEmbeddings);
+    }
+
+    public static async Task RunLocalCustomExampleAsync()
+    {
+        Console.WriteLine("====================================================");
+        Console.WriteLine("======== Semantic Memory (local custom embeddings) ========");
+        Console.WriteLine("====================================================");
+
+        /* You can also use a local embedding generator.
+         *
+         * In this example we use a local embedding generator that uses a local
+         * embedding generator based on Microsoft.ML tokenizers.
+         */
+
+        var encoder = EmbeddedResource.ReadStream("EnglishRoberta.encoder.json");
+        var vocab = EmbeddedResource.ReadStream("EnglishRoberta.vocab.bpe");
+        var dict = EmbeddedResource.ReadStream("EnglishRoberta.dict.txt");
+
+        if (encoder is null || vocab is null || dict is null)
+        {
+            throw new System.IO.FileNotFoundException("Missing required resources");
+        }
+
+        Microsoft.ML.Tokenizers.EnglishRoberta model = new(encoder, vocab, dict);
+
+        Microsoft.ML.Tokenizers.Tokenizer tokenizer = new(model, new Microsoft.ML.Tokenizers.RobertaPreTokenizer());
+
+        var kernelWithLocalEmbeddings = Kernel.Builder
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithMicrosoftMLTextEmbeddingGenerationService(tokenizer: tokenizer, serviceId: "roberta", setAsDefault: true) // TODO Array lengths must be equal
+            .WithMemoryStorage(new VolatileMemoryStore())
+            .Build();
+
+        await RunExampleAsync(kernelWithLocalEmbeddings);
     }
 
     public static async Task RunExampleAsync(IKernel kernel)
