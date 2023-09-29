@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.MicrosoftML.TextEmbedding;
 /// </summary>
 public sealed class MicrosoftMLTextEmbeddingGeneration : ITextEmbeddingGeneration
 {
-    private Tokenizer tokenizer;
+    private readonly Tokenizer _tokenizer;
 
     /// <summary>
     /// Gets the logger instance.
@@ -36,7 +36,7 @@ public sealed class MicrosoftMLTextEmbeddingGeneration : ITextEmbeddingGeneratio
         ILoggerFactory? loggerFactory = null
     )
     {
-        this.tokenizer = new Tokenizer(new Bpe(vocabFilePath, mergeFilePath));
+        this._tokenizer = new Tokenizer(new Bpe(vocabFilePath, mergeFilePath));
         this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
@@ -50,7 +50,7 @@ public sealed class MicrosoftMLTextEmbeddingGeneration : ITextEmbeddingGeneratio
         ILoggerFactory? loggerFactory = null
     )
     {
-        this.tokenizer = tokenizer;
+        this._tokenizer = tokenizer;
         this.Logger = loggerFactory is not null ? loggerFactory.CreateLogger(this.GetType()) : NullLogger.Instance;
     }
 
@@ -65,7 +65,7 @@ public sealed class MicrosoftMLTextEmbeddingGeneration : ITextEmbeddingGeneratio
         var result = new List<ReadOnlyMemory<float>>(data.Count);
         foreach (string text in data)
         {
-            var embeddings = GenerateEmbeddingsFromTokens(this.tokenizer.Encode(text), cancellationToken);
+            var embeddings = GenerateEmbeddingsFromTokens(this._tokenizer.Encode(text), cancellationToken);
 
             // Add the embeddings to the result list
             result.Add(embeddings);
