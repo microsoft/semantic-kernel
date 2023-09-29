@@ -24,7 +24,7 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
  */
 
 // ReSharper disable once InconsistentNaming
-public static class Example57_FlowOrchestrator
+public static class Example60_FlowOrchestrator
 {
     private static readonly Flow s_flow = FlowSerializer.DeserializeFromYaml(@"
 name: FlowOrchestrator_Example_Flow
@@ -64,13 +64,13 @@ steps:
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
         var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
-        Dictionary<object, string?> skills = new()
+        Dictionary<object, string?> plugins = new()
         {
             { webSearchEnginePlugin, "WebSearch" },
             { new TimePlugin(), "time" }
         };
 
-        FlowOrchestrator orchestrator = new(GetKernelBuilder(), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), skills);
+        FlowOrchestrator orchestrator = new(GetKernelBuilder(), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), plugins);
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
@@ -108,14 +108,14 @@ steps:
     private static async Task RunExampleAsync()
     {
         var bingConnector = new BingConnector(TestConfiguration.Bing.ApiKey);
-        var webSearchEngineSkill = new WebSearchEnginePlugin(bingConnector);
-        Dictionary<object, string?> skills = new()
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
+        Dictionary<object, string?> plugins = new()
         {
-            { webSearchEngineSkill, "WebSearch" },
+            { webSearchEnginePlugin, "WebSearch" },
             { new TimePlugin(), "time" }
         };
 
-        FlowOrchestrator orchestrator = new(GetKernelBuilder(), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), skills);
+        FlowOrchestrator orchestrator = new(GetKernelBuilder(), await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()).ConfigureAwait(false), plugins);
         var sessionId = Guid.NewGuid().ToString();
 
         Console.WriteLine("*****************************************************");
@@ -235,7 +235,7 @@ If I cannot answer, say that I don't know.
         }
     }
 
-    public sealed class SendEmailSkill
+    public sealed class SendEmailPlugin
     {
         [SKFunction]
         [Description("Send email")]

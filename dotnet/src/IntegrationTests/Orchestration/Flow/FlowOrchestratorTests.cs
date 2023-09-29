@@ -50,7 +50,7 @@ public sealed class FlowOrchestratorTests : IDisposable
         var sessionId = Guid.NewGuid().ToString();
         string email = "abc@xyz.com";
 
-        Dictionary<object, string?> skills = new()
+        Dictionary<object, string?> plugins = new()
         {
             { webSearchEnginePlugin, "WebSearch" },
             { new TimePlugin(), "time" }
@@ -80,7 +80,7 @@ steps:
       - email
 ");
 
-        var flowOrchestrator = new FlowOrchestrator(builder, await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()), skills);
+        var flowOrchestrator = new FlowOrchestrator(builder, await FlowStatusProvider.ConnectAsync(new VolatileMemoryStore()), plugins);
 
         // Act
         var result = await flowOrchestrator.ExecuteFlowAsync(flow, sessionId, "Who is the current president of the United States? What is his current age divided by 2");

@@ -28,7 +28,7 @@ steps:
 
   - goal: Cook
     plugins:
-      - CookSkill
+      - CookPlugin
       - WebSearchPlugin
     requires:
       - coffee

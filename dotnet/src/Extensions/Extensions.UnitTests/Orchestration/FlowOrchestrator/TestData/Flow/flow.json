@@ -25,7 +25,7 @@
     },
     {
       "goal": "Cook",
-      "plugins": ["CookSkill", "WebSearchPlugin"],
+      "plugins": ["CookPlugin", "WebSearchPlugin"],
       "requires": ["coffee", "ingredients"],
       "provides": ["breakfast"]
     },

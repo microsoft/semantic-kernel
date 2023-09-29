@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.IntegrationTests.Orchestration.Flow;
 
-public sealed class SendEmailSkill
+public sealed class SendEmailPlugin
 {
     [SKFunction]
     [Description("Send email")]
