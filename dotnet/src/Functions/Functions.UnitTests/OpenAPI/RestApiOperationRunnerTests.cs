@@ -15,8 +15,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders.Query;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Moq;
 using Xunit;
@@ -84,7 +82,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "application/json" }
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -149,7 +147,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", "text/plain"}
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -205,7 +203,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "fake-header", "fake-header-value" }
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         await sut.RunAsync(operation, arguments);
@@ -241,7 +239,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "fake-header", "fake-header-value" }
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, "fake-user-agent");
 
         // Act
         await sut.RunAsync(operation, arguments);
@@ -286,7 +284,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("name", "fake-name-value");
         arguments.Add("enabled", "true");
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -353,7 +351,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("count", "1");
         arguments.Add("params", "[1,2,3]");
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -440,7 +438,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("cc.upn", "fake-cc-upn");
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
@@ -506,7 +503,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var arguments = new Dictionary<string, string>();
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true);
@@ -535,7 +531,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var arguments = new Dictionary<string, string>();
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: false);
@@ -570,7 +565,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "payload", "fake-input-value" },
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: true);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -612,7 +607,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "content-type", $"{contentType}" },
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -656,7 +651,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var arguments = new Dictionary<string, string>();
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
@@ -705,7 +699,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         arguments.Add("upn", "fake-sender-upn");
 
         var sut = new RestApiOperationRunner(
-            new OperationComponentBuilderFactory(),
             this._httpClient,
             this._authenticationHandlerMock.Object,
             enableDynamicPayload: true,
@@ -765,7 +758,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", "v2" },
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -814,7 +807,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", "v2" },
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -862,7 +855,7 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             { "p2", "v2" }, //Providing argument for the required parameter only
         };
 
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act
         var result = await sut.RunAsync(operation, arguments);
@@ -873,18 +866,18 @@ public sealed class RestApiOperationRunnerTests : IDisposable
     }
 
     [Fact]
-    public async Task ItShouldDelegateQueryStringBuildingAsync()
+    public async Task ItShouldThrowExceptionIfNoArgumentProvidedForRequiredQueryStringParameterAsync()
     {
         // Arrange
-        var mockQueryStringBuilder = new Mock<IQueryStringBuilder>();
-        mockQueryStringBuilder
-            .Setup(b => b.Build(It.IsAny<RestApiOperation>(), It.IsAny<IDictionary<string, string>>()))
-            .Returns("p1=v1");
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
 
-        var mockOperationComponentBuilderFactory = new Mock<IOperationComponentBuilderFactory>();
-        mockOperationComponentBuilderFactory
-            .Setup(f => f.CreateQueryStringBuilder())
-            .Returns(mockQueryStringBuilder.Object);
+        var parameter = new RestApiOperationParameter(
+            "p1",
+            "string",
+            isRequired: true, //Marking the parameter as required
+            false,
+            RestApiOperationParameterLocation.Query,
+            RestApiOperationParameterStyle.Form);
 
         var operation = new RestApiOperation(
             "fake-id",
@@ -892,21 +885,17 @@ public sealed class RestApiOperationRunnerTests : IDisposable
             "fake-path",
             HttpMethod.Get,
             "fake-description",
-            new List<RestApiOperationParameter>(),
+            new List<RestApiOperationParameter>() { parameter },
             new Dictionary<string, string>(),
             payload: null
         );
 
-        var arguments = new Dictionary<string, string>();
+        var arguments = new Dictionary<string, string>(); //Providing no arguments
 
-        var sut = new RestApiOperationRunner(mockOperationComponentBuilderFactory.Object, this._httpClient, this._authenticationHandlerMock.Object);
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
-        // Act
-        var result = await sut.RunAsync(operation, arguments);
-
-        // Assert
-        Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
-        Assert.Equal("https://fake-random-test-host/fake-path?p1=v1", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
+        // Act and Assert
+        await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
     }
 
     [Fact]

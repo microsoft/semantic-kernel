@@ -41,12 +41,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public string PluginName { get; }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     public string Description { get; }
 
@@ -286,8 +280,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             }
         }
 
-        SKFunctionAttribute? functionAttribute = method.GetCustomAttribute<SKFunctionAttribute>(inherit: true);
-
         string? description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
 
         var result = new MethodDetails
@@ -512,7 +504,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             var parameterView = new ParameterView(
                 name,
                 parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description ?? string.Empty,
-                defaultValue?.ToString() ?? string.Empty);
+                defaultValue?.ToString() ?? string.Empty,
+                IsRequired: !parameter.IsOptional);
 
             return (parameterFunc, parameterView);
         }
@@ -901,9 +894,19 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     #region Obsolete
 
     /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this.PluginName;
+
+    /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public bool IsSemantic => false;
+    public bool IsSemantic => true;
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this.SetDefaultFunctionCollection(skills);
 
     #endregion
 }
