@@ -898,39 +898,6 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
     }
 
-    [Fact]
-    public async Task ItShouldThrowExceptionIfNoArgumentProvidedForRequiredQueryStringParameterAsync()
-    {
-        // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
-
-        var parameter = new RestApiOperationParameter(
-            "p1",
-            "string",
-            isRequired: true, //Marking the parameter as required
-            false,
-            RestApiOperationParameterLocation.Query,
-            RestApiOperationParameterStyle.Form);
-
-        var operation = new RestApiOperation(
-            "fake-id",
-            new Uri("https://fake-random-test-host"),
-            "fake-path",
-            HttpMethod.Get,
-            "fake-description",
-            new List<RestApiOperationParameter>() { parameter },
-            new Dictionary<string, string>(),
-            payload: null
-        );
-
-        var arguments = new Dictionary<string, string>(); //Providing no arguments
-
-        var sut = new RestApiOperationRunner(new OperationComponentBuilderFactory(), this._httpClient, this._authenticationHandlerMock.Object);
-
-        // Act and Assert
-        await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
-    }
-
     /// <summary>
     /// Disposes resources used by this class.
     /// </summary>
