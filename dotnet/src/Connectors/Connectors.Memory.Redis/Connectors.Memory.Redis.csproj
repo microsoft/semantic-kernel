@@ -18,7 +18,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="NRedisStack" />
+
+    <!-- NRedisStack pulls in a 7.0 version -->
+    <PackageVersion Update="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
