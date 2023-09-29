@@ -49,9 +49,6 @@
     <ProjectReference Include="..\Planners\Planners.Core\Planners.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="testsettings.development.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="testsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
