@@ -54,6 +54,7 @@ def memory_record_gen():
             external_source_name=f"{_id} external source",
             additional_metadata=f"{_id} additional metadata",
             timestamp=None,
+            key=str(_id),
         )
 
     return memory_record

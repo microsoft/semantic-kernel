@@ -162,10 +162,9 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
 
         # Assert the number matched and the number upserted equal the total batch updated
         self._logger.debug(
-            "matched_count={}, upserted_count={}".format(
-                bulk_update_result.matched_count,
-                bulk_update_result.upserted_count,
-            )
+            "matched_count=%s, upserted_count=%s",
+            bulk_update_result.matched_count,
+            bulk_update_result.upserted_count,
         )
         assert (
             bulk_update_result.matched_count + bulk_update_result.upserted_count
@@ -242,7 +241,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         bulk_write_result = await self.database[collection_name].bulk_write(
             deletes, ordered=False
         )
-        self._logger.debug("{} entries deleted".format(bulk_write_result.deleted_count))
+        self._logger.debug("%s entries deleted", bulk_write_result.deleted_count)
 
     async def get_nearest_matches_async(
         self,
