@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List
 
 if TYPE_CHECKING:
     from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -21,7 +21,6 @@ class CompleteRequestSettings:
     logprobs: int = 0
     token_selection_biases: Dict[int, int] = field(default_factory=dict)
     chat_system_prompt: str = "Assistant is a large language model."
-    function_call: Optional[str] = None
 
     def update_from_completion_config(
         self, completion_config: "PromptTemplateConfig.CompletionConfig"
@@ -34,7 +33,6 @@ class CompleteRequestSettings:
         self.stop_sequences = completion_config.stop_sequences
         self.number_of_responses = completion_config.number_of_responses
         self.token_selection_biases = completion_config.token_selection_biases
-        self.function_call = completion_config.function_call
 
         if completion_config.chat_system_prompt:
             self.chat_system_prompt = completion_config.chat_system_prompt

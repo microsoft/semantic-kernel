@@ -66,6 +66,7 @@ class PromptTemplateConfig:
             "token_selection_biases",
             "default_services",
             "chat_system_prompt",
+            "function_call",
         ]
         for comp_key in completion_keys:
             if comp_key in completion_dict:

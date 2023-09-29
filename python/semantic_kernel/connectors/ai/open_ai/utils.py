@@ -1,12 +1,9 @@
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from semantic_kernel import Kernel, SKContext
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
-
-if TYPE_CHECKING:
-    pass
 
 
 def _describe_function(function: SKFunctionBase) -> Dict[str, str]:
