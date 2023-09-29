@@ -26,13 +26,13 @@ public static class Example14_SemanticMemory
 
     public static async Task RunAsync()
     {
-        await TryRun(RunACSExampleAsync);
-        await TryRun(RunVolatileExampleAsync);
-        await TryRun(RunLocalExampleAsync);
-        await TryRun(RunLocalCustomExampleAsync);
+        await TryRunAsync(RunACSExampleAsync);
+        await TryRunAsync(RunVolatileExampleAsync);
+        await TryRunAsync(RunLocalExampleAsync);
+        await TryRunAsync(RunLocalCustomExampleAsync);
     }
 
-    public static async Task TryRun(Func<Task> task)
+    public static async Task TryRunAsync(Func<Task> task)
     {
         try
         {
