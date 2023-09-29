@@ -22,7 +22,7 @@ internal static class Constants
         public static readonly string[] All = new[] { ChatHistory, ChatInput };
     }
 
-    internal static class ChatSkillVariables
+    internal static class ChatPluginVariables
     {
         /// <summary>
         /// Variable name to prompt input

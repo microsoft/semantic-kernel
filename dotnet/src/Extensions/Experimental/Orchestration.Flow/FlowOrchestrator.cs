@@ -22,7 +22,7 @@ public class FlowOrchestrator
 
     private readonly IFlowStatusProvider _flowStatusProvider;
 
-    private readonly Dictionary<object, string?> _globalSkillCollection;
+    private readonly Dictionary<object, string?> _globalPluginCollection;
 
     private readonly IFlowValidator _flowValidator;
 
@@ -33,13 +33,13 @@ public class FlowOrchestrator
     /// </summary>
     /// <param name="kernelBuilder">The semantic kernel builder.</param>
     /// <param name="flowStatusProvider">The flow status provider.</param>
-    /// <param name="globalSkillCollection">The global skill collection</param>
+    /// <param name="globalPluginCollection">The global plugin collection</param>
     /// <param name="validator">The flow validator.</param>
     /// <param name="config">Optional configuration object</param>
     public FlowOrchestrator(
         KernelBuilder kernelBuilder,
         IFlowStatusProvider flowStatusProvider,
-        Dictionary<object, string?>? globalSkillCollection = null,
+        Dictionary<object, string?>? globalPluginCollection = null,
         IFlowValidator? validator = null,
         FlowOrchestratorConfig? config = null)
     {
@@ -47,7 +47,7 @@ public class FlowOrchestrator
 
         this._kernelBuilder = kernelBuilder;
         this._flowStatusProvider = flowStatusProvider;
-        this._globalSkillCollection = globalSkillCollection ?? new Dictionary<object, string?>();
+        this._globalPluginCollection = globalPluginCollection ?? new Dictionary<object, string?>();
         this._flowValidator = validator ?? new FlowValidator();
         this._config = config;
     }
@@ -76,7 +76,7 @@ public class FlowOrchestrator
             throw new SKException("Invalid flow", ex);
         }
 
-        var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalSkillCollection, this._config);
+        var executor = new FlowExecutor(this._kernelBuilder, this._flowStatusProvider, this._globalPluginCollection, this._config);
         return await executor.ExecuteAsync(flow, sessionId, input, contextVariables ?? new ContextVariables(null)).ConfigureAwait(false);
     }
 }

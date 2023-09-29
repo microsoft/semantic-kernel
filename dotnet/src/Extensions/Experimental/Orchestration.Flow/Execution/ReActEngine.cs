@@ -88,14 +88,14 @@ internal sealed class ReActEngine
         this._logger = logger;
 
         this._config = config;
-        this._config.ExcludedSkills.Add(RestrictedPluginName);
+        this._config.ExcludedPlugins.Add(RestrictedPluginName);
 
         var promptConfig = config.ReActPromptTemplateConfig;
         if (promptConfig == null)
         {
             promptConfig = new PromptTemplateConfig();
 
-            string promptConfigString = EmbeddedResource.Read(config.ReActModel == FlowOrchestratorConfig.ModelName.TEXT_DAVINCI_003 ? "Skills.ReActEngine.gpt3.config.json" : "Skills.ReActEngine.config.json");
+            string promptConfigString = EmbeddedResource.Read(config.ReActModel == FlowOrchestratorConfig.ModelName.TEXT_DAVINCI_003 ? "Plugins.ReActEngine.gpt3.config.json" : "Plugins.ReActEngine.config.json");
 
             if (!string.IsNullOrEmpty(promptConfigString))
             {
@@ -110,7 +110,7 @@ internal sealed class ReActEngine
         var promptTemplate = config.ReActPromptTemplate;
         if (string.IsNullOrEmpty(promptTemplate))
         {
-            promptTemplate = EmbeddedResource.Read(config.ReActModel == FlowOrchestratorConfig.ModelName.TEXT_DAVINCI_003 ? "Skills.ReActEngine.gpt3.skprompt.txt" : "Skills.ReActEngine.skprompt.txt");
+            promptTemplate = EmbeddedResource.Read(config.ReActModel == FlowOrchestratorConfig.ModelName.TEXT_DAVINCI_003 ? "Plugins.ReActEngine.gpt3.skprompt.txt" : "Plugins.ReActEngine.skprompt.txt");
         }
 
         this._reActFunction = this.ImportSemanticFunction(systemKernel, "ReActFunction", promptTemplate!, promptConfig);
@@ -339,12 +339,12 @@ internal sealed class ReActEngine
     {
         var functionViews = context.Functions!.GetFunctionViews();
 
-        var excludedSkills = this._config.ExcludedSkills ?? new HashSet<string>();
+        var excludedPlugins = this._config.ExcludedPlugins ?? new HashSet<string>();
         var excludedFunctions = this._config.ExcludedFunctions ?? new HashSet<string>();
 
         var availableFunctions =
             functionViews
-                .Where(s => !excludedSkills.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
+                .Where(s => !excludedPlugins.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
                 .OrderBy(x => x.PluginName)
                 .ThenBy(x => x.Name);
         return availableFunctions;

@@ -4,50 +4,30 @@
   "steps": [
     {
       "goal": "Make coffee",
-      "skills": [
-        "MakeCoffeeSkill"
-      ],
-      "requires": [
-        "coffee_bean"
-      ],
-      "provides": [
-        "coffee"
-      ]
+      "plugins": ["MakeCoffeePlugin"],
+      "requires": ["coffee_bean"],
+      "provides": ["coffee"]
     },
     {
       "goal": "Select coffee been",
-      "skills": [
-        "CoffeeRecommendationSkill"
-      ],
-      "provides": [
-        "coffee_bean"
-      ]
+      "plugins": ["CoffeeRecommendationPlugin"],
+      "provides": ["coffee_bean"]
     },
     {
       "goal": "Recipe",
-      "skills": [
-        "WebSearchSkill",
-        "CalorieCalculatorSkill",
-        "HealthCheckSkill"
+      "plugins": [
+        "WebSearchPlugin",
+        "CalorieCalculatorPlugin",
+        "HealthCheckPlugin"
       ],
-      "provides": [
-        "ingredients"
-      ],
+      "provides": ["ingredients"],
       "completionType": "AtLeastOnce"
     },
     {
       "goal": "Cook",
-      "skills": [
-        "CookSkill",
-        "WebSearchSkill"
-      ],
-      "requires": [
-        "coffee",
-        "ingredients"
-      ],
-      "provides": [
-        "breakfast"
-      ]
+      "plugins": ["CookSkill", "WebSearchPlugin"],
+      "requires": ["coffee", "ingredients"],
+      "provides": ["breakfast"]
     },
     {
       "flowName": "lunch_flow",
@@ -55,7 +35,5 @@
       "startingMessage": "Would you like to prepare the lunch as well?"
     }
   ],
-  "provides": [
-    "breakfast"
-  ]
+  "provides": ["breakfast"]
 }

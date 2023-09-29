@@ -31,21 +31,21 @@ name: FlowOrchestrator_Example_Flow
 goal: answer question and send email
 steps:
   - goal: Who is the current president of the United States? What is his current age divided by 2
-    skills:
+    plugins:
       - WebSearchEnginePlugin
       - TimePlugin
     provides:
       - answer
   - goal: Collect email address
-    skills:
-      - CollectEmailSkill
+    plugins:
+      - CollectEmailPlugin
     completionType: AtLeastOnce
     transitionMessage: do you want to send it to another email address?
     provides:
       - email_address
 
   - goal: Send email
-    skills:
+    plugins:
       - SendEmail
     requires:
       - email_address
@@ -167,7 +167,7 @@ steps:
             });
     }
 
-    public sealed class CollectEmailSkill
+    public sealed class CollectEmailPlugin
     {
         private const string Goal = "Prompt user to provide a valid email address";
 
@@ -186,7 +186,7 @@ If I cannot answer, say that I don't know.
 
         private readonly AIRequestSettings _chatRequestSettings;
 
-        public CollectEmailSkill(IKernel kernel)
+        public CollectEmailPlugin(IKernel kernel)
         {
             this._chat = kernel.GetService<IChatCompletion>();
             this._chatRequestSettings = new OpenAIRequestSettings

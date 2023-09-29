@@ -79,9 +79,9 @@ public class FlowValidator : IFlowValidator
                 throw new ArgumentException("Reference flow step cannot have any direct provides.");
             }
 
-            if (step.Skills?.Count != 0)
+            if (step.Plugins?.Count != 0)
             {
-                throw new ArgumentException("Reference flow step cannot have any direct skills.");
+                throw new ArgumentException("Reference flow step cannot have any direct plugins.");
             }
         }
     }

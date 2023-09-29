@@ -14,9 +14,9 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration;
 public sealed class FlowOrchestratorConfig
 {
     /// <summary>
-    /// A list of skills to exclude from the plan creation request.
+    /// A list of plugins to exclude from the plan creation request.
     /// </summary>
-    public HashSet<string> ExcludedSkills { get; } = new();
+    public HashSet<string> ExcludedPlugins { get; } = new();
 
     /// <summary>
     /// A list of functions to exclude from the plan creation request.
@@ -32,10 +32,10 @@ public sealed class FlowOrchestratorConfig
     /// The maximum length of a string variable.
     /// </summary>
     /// <remarks>
-    /// In most cases, the required variables are passed to ReAct engine to infer the next skill and parameters to execute.
+    /// In most cases, the required variables are passed to ReAct engine to infer the next plugin and parameters to execute.
     /// However when the variable is too long, it will either be truncated or decrease the robustness of value passing.
     /// To mitigate that, the <see cref="ReActEngine"/> will avoid rendering the variables exceeding MaxVariableLength in the prompt.
-    /// And the variables should be accessed implicitly from SKContext instead of function parameters by the skills.
+    /// And the variables should be accessed implicitly from SKContext instead of function parameters by the plugins.
     /// </remarks>
     public int MaxVariableLength { get; set; } = 400;
 

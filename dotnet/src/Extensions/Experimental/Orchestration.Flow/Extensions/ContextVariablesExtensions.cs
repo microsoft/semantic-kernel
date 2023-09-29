@@ -20,8 +20,8 @@ public static class ContextVariablesExtensions
     /// <param name="context">context</param>
     internal static bool IsPromptInput(this ContextVariables context)
     {
-        return context.TryGetValue(Constants.ChatSkillVariables.PromptInputName, out string? promptInput)
-               && promptInput == Constants.ChatSkillVariables.DefaultValue;
+        return context.TryGetValue(Constants.ChatPluginVariables.PromptInputName, out string? promptInput)
+               && promptInput == Constants.ChatPluginVariables.DefaultValue;
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ public static class ContextVariablesExtensions
     /// <param name="context">context</param>
     internal static bool IsContinueLoop(this ContextVariables context)
     {
-        return context.TryGetValue(Constants.ChatSkillVariables.ContinueLoopName, out string? continueLoop)
-               && continueLoop == Constants.ChatSkillVariables.DefaultValue;
+        return context.TryGetValue(Constants.ChatPluginVariables.ContinueLoopName, out string? continueLoop)
+               && continueLoop == Constants.ChatPluginVariables.DefaultValue;
     }
 }

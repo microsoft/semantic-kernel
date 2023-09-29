@@ -7,7 +7,6 @@ namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 /// <summary>
 /// Execution state
 /// </summary>
-#pragma warning disable CA1724 // The type name conflicts
 public sealed class ExecutionState
 {
     /// <summary>

@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace SemanticKernel.IntegrationTests.Orchestration.Flow;
 
-public sealed class CollectEmailSkill
+public sealed class CollectEmailPlugin
 {
     private const string Goal = "Collect email from user";
 
@@ -33,7 +33,7 @@ If I cannot answer, say that I don't know.
 
     private readonly AIRequestSettings _chatRequestSettings;
 
-    public CollectEmailSkill(IKernel kernel)
+    public CollectEmailPlugin(IKernel kernel)
     {
         this._chat = kernel.GetService<IChatCompletion>();
         this._chatRequestSettings = new OpenAIRequestSettings
