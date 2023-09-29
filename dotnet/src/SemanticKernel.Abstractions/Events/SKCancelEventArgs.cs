@@ -2,7 +2,6 @@
 
 using System.Threading;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Events;
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable
@@ -12,7 +11,7 @@ namespace Microsoft.SemanticKernel.Events;
 /// </summary>
 public abstract class SKCancelEventArgs : SKEventArgs
 {
-    private CancellationTokenSource _cancelTokenSource = new();
+    private readonly CancellationTokenSource _cancelTokenSource = new();
 
     internal SKCancelEventArgs(FunctionView functionView, SKContext context) : base(functionView, context)
     {

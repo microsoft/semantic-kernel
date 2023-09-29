@@ -18,7 +18,7 @@ class WaitSkill(PydanticField):
     """
 
     @sk_function(description="Wait for a certain number of seconds.")
-    async def wait(self, seconds_text: str):
+    async def wait(self, seconds_text: str) -> None:
         try:
             seconds = max(float(seconds_text), 0)
         except ValueError:
