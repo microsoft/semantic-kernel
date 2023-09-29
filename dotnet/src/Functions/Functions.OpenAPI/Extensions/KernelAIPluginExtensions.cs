@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
@@ -216,7 +215,6 @@ public static class KernelAIPluginExtensions
             var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(
-                new OperationComponentBuilderFactory(),
                 httpClient,
                 executionParameters?.AuthCallback,
                 executionParameters?.UserAgent,
@@ -413,6 +411,7 @@ public static class KernelAIPluginExtensions
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
+                IsRequired = p.IsRequired,
             })
             .ToList();
 
