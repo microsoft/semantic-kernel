@@ -22,7 +22,7 @@ class MathSkill(PydanticField):
     @sk_function(
         description="Adds value to a value",
         name="Add",
-        input_description="The value to add",
+        input_description="The value to add if value is a single number, else the sum of all given values",
     )
     @sk_function_context_parameter(
         name="Amount",
@@ -76,7 +76,7 @@ class MathSkill(PydanticField):
                 f"Initial value provided is not in numeric format: {initial_value_text}"
             )
 
-        context_amount = context["Amount"]
+        context_amount = context["Amount"] if "Amount" in context else 0
         if context_amount is not None:
             try:
                 amount = int(context_amount)
