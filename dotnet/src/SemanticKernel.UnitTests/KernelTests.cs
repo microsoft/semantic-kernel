@@ -611,11 +611,6 @@ public class KernelTests
         Assert.Equal(expectedInvocations, numberOfInvocations);
     }
 
-    private void Kernel_FunctionInvoked(object? sender, FunctionInvokedEventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-
     public class MyPlugin
     {
         [SKFunction, Description("Return any value.")]
