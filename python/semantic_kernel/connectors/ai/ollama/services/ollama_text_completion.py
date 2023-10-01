@@ -4,7 +4,7 @@ import json
 from logging import Logger
 from typing import Any, List, Optional, Union
 
-import requests
+import aiohttp
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
@@ -19,7 +19,7 @@ from semantic_kernel.utils.null_logger import NullLogger
 class OllamaTextCompletion(TextCompletionClientBase):
     _model_id: str
     _api_version: str
-    _endpoint: str
+    _base_url: str
     _log: Logger
     _prompt_tokens: int
     _completion_tokens: int
@@ -29,7 +29,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         model_id: str,
         api_version: Optional[str] = None,
-        endpoint: Optional[str] = None,
+        base_url: Optional[str] = None,
         log: Optional[Logger] = None,
     ) -> None:
         """
@@ -41,7 +41,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         """
         self._model_id = model_id
         self._api_version = api_version or '0.1.0'
-        self._endpoint = endpoint or 'http://127.0.0.1:11434'
+        self._base_url = base_url or 'http://127.0.0.1:11434'
         self._log = log if log is not None else NullLogger()
 
     async def complete_async(
@@ -53,7 +53,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         # TODO: tracking on token counts/etc.
         # assert request_settings.number_of_responses == 1
         result = ""
-        response = self._send_completion_request(prompt, request_settings, False, logger)
+        response = self._send_completion_request(prompt, request_settings, logger)
         async for c in response:
             result += c
         return result
@@ -65,7 +65,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         request_settings: CompleteRequestSettings,
         logger: Optional[Logger] = None,
     ):
-        response = self._send_completion_request(prompt, request_settings, True, logger)
+        response = self._send_completion_request(prompt, request_settings, logger)
 
         async for chunk in response:
             if request_settings.number_of_responses > 1:
@@ -81,7 +81,6 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        stream: bool,
         logger: Optional[Logger] = None
     ):
         """
@@ -123,25 +122,22 @@ class OllamaTextCompletion(TextCompletionClientBase):
             prompt=prompt,
         )
 
-        response_text = ""
         try:
             # Only streaming is supported.
-            # TODO Support aysnc.
-            r = requests.post(f'{self._endpoint}/api/generate', json=request, stream=True)
-            chunk: bytes
-            for chunk in r.iter_lines():
-                token_info = json.loads(chunk.decode('utf-8'))
-                if token_info['done']:
-                    # Can't use "%s" because we need to be compatible with `NullLogger`.
-                    logger.debug(f"Ollama response: {token_info}")
-                    break
-                token = token_info['response']
-                yield token
-                response_text += token
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f'{self._base_url}/api/generate', json=request) as r:
+                    async for chunk in r.content:
+                        token_info = json.loads(chunk.decode('utf-8'))
+                        if token_info['done']:
+                            # Can't use "%s" because we need to be compatible with `NullLogger`.
+                            logger.debug(f"Ollama response: {token_info}")
+                            break
+                        token = token_info['response']
+                        yield token
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
-                "Ollama service failed to complete the prompt",
+                "Ollama service failed to complete the prompt.",
                 ex,
             )
 
@@ -153,7 +149,7 @@ if __name__ == '__main__':
 
     async def main():
         print("streaming:")
-        r = o.complete_stream_async("Hello.\n", CompleteRequestSettings(max_tokens=10))
+        r = o.complete_stream_async("Hello.\n", CompleteRequestSettings())
         async for item in r:
             print(item)
 
