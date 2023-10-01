@@ -50,8 +50,8 @@ class OllamaTextCompletion(TextCompletionClientBase):
         request_settings: CompleteRequestSettings,
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
-        # TODO: tracking on token counts/etc.
-        # assert request_settings.number_of_responses == 1
+        # TODO Support choices/number_of_responses.
+        assert request_settings.number_of_responses == 1
         result = ""
         response = self._send_completion_request(prompt, request_settings, logger)
         async for c in response:
@@ -69,7 +69,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
 
         async for chunk in response:
             if request_settings.number_of_responses > 1:
-                # FIXME
+                # TODO Support choices/number_of_responses.
                 for choice in chunk.choices:
                     completions = [""] * request_settings.number_of_responses
                     completions[choice.index] = choice.text
@@ -148,7 +148,7 @@ if __name__ == '__main__':
     import asyncio
 
     async def main():
-        print("streaming:")
+        print("streaming: tokens:")
         r = o.complete_stream_async("Hello.\n", CompleteRequestSettings())
         async for item in r:
             print(item)
