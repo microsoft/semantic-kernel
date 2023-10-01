@@ -2,7 +2,7 @@
 
 import json
 from logging import Logger
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 
 import aiohttp
 
