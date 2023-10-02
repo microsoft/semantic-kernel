@@ -25,12 +25,6 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public string PluginName => this._plan.PluginName;
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public string SkillName => this._plan.PluginName;
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     public string Description => this._plan.Description;
 
@@ -78,12 +72,6 @@ public sealed class InstrumentedPlan : IPlan
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
         this._plan.SetDefaultFunctionCollection(functions);
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) =>
-    this._plan.SetDefaultFunctionCollection(skills);
-
     #region private ================================================================================
 
     private readonly IPlan _plan;
@@ -92,12 +80,12 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Meter"/> for plan-related metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(Plan).FullName);
+    private static readonly Meter s_meter = new(typeof(Plan).FullName);
 
     /// <summary>
     /// Instance of <see cref="Histogram{T}"/> to measure and track the time of plan execution.
     /// </summary>
-    private static Histogram<double> s_executionTimeHistogram =
+    private static readonly Histogram<double> s_executionTimeHistogram =
         s_meter.CreateHistogram<double>(
             name: "SK.Plan.Execution.ExecutionTime",
             unit: "ms",
@@ -106,7 +94,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of plan executions.
     /// </summary>
-    private static Counter<int> s_executionTotalCounter =
+    private static readonly Counter<int> s_executionTotalCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionTotal",
             description: "Total number of plan executions");
@@ -114,7 +102,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of successful plan executions.
     /// </summary>
-    private static Counter<int> s_executionSuccessCounter =
+    private static readonly Counter<int> s_executionSuccessCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionSuccess",
             description: "Number of successful plan executions");
@@ -122,7 +110,7 @@ public sealed class InstrumentedPlan : IPlan
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of failed plan executions.
     /// </summary>
-    private static Counter<int> s_executionFailureCounter =
+    private static readonly Counter<int> s_executionFailureCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Plan.Execution.ExecutionFailure",
             description: "Number of failed plan executions");
@@ -172,9 +160,19 @@ public sealed class InstrumentedPlan : IPlan
     #region Obsolete =======================================================================
 
     /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public string SkillName => this._plan.PluginName;
+
+    /// <inheritdoc/>
     [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool IsSemantic => this._plan.IsSemantic;
+
+    /// <inheritdoc/>
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this._plan.SetDefaultFunctionCollection(skills);
 
     #endregion
 }
