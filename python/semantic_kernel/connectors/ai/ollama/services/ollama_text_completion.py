@@ -45,7 +45,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self._base_url = base_url or "http://127.0.0.1:11434"
         self._log = log if log is not None else NullLogger()
 
-        # Ensure that the service is running and that the model is loaded.
+        # Ensure that the Ollama service is running and that the model is ready.
         try:
             show_info = asyncio.run(self.show(model_id))
             self._log.debug(show_info)
