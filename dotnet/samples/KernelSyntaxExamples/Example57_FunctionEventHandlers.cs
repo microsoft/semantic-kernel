@@ -88,7 +88,7 @@ public static class Example57_FunctionEventHandlers
 
         const string Input = "I missed the F1 final race";
         var result = await kernel.RunAsync(Input, excuseFunction);
-        Console.WriteLine($"Function Result: {result}");
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     private static async Task ChangingResultAsync()
@@ -124,7 +124,7 @@ public static class Example57_FunctionEventHandlers
 
         var result = await kernel.RunAsync(writerFunction);
 
-        Console.WriteLine($"Function Result: {result}");
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     private static async Task BeforeInvokeCancellationAsync()
