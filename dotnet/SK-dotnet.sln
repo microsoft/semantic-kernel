@@ -166,7 +166,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.Semantic", "src\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Milvus", "src\Connectors\Connectors.Memory.Milvus\Connectors.Memory.Milvus.csproj", "{8B754E80-7A97-4585-8D7E-1D588FA5F727}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.Memory", "src\Plugins\Plugins.Memory\Plugins.Memory.csproj", "{E91365A1-8B01-4AB8-825F-67E3515EADCD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugins.Memory", "src\Plugins\Plugins.Memory\Plugins.Memory.csproj", "{E91365A1-8B01-4AB8-825F-67E3515EADCD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

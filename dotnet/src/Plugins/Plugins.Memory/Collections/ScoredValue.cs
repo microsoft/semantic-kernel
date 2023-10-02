@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
+using System;
 
-namespace Microsoft.SemanticKernel.Memory.Collections;
+namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
 
 /// <summary>
 /// Structure for storing data which can be scored.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-internal readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
+public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ScoredValue{T}"/> struct.
