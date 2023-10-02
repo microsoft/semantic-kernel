@@ -209,9 +209,16 @@ repeat:
 
                 context = functionResult.Context;
 
+                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
+
+                if (functionInvokedArgs is not null)
+                {
+                    // All changes to the SKContext by invoked handlers may reflect in the original function result
+                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, functionInvokedArgs.SKContext, functionInvokedArgs.SKContext.Result);
+                }
+
                 allFunctionResults.Add(functionResult);
 
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
