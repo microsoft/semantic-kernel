@@ -1,5 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import pydantic as pdt
 
@@ -57,12 +57,11 @@ class ContextVariables(SKBaseModel):
 
         return self
 
-    def get(self, name: str) -> Tuple[bool, str]:
+    def get(self, name: str, fallback: Optional[str] = None) -> Optional[str]:
         name = name.lower()
         if name in self.variables:
-            return True, self.variables[name]
-
-        return False, ""
+            return self.variables[name]
+        return fallback
 
     def __getitem__(self, name: str) -> str:
         name = name.lower()
