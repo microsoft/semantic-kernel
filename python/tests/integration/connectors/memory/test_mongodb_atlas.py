@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+import os
 import random
 import time
 
@@ -67,7 +68,13 @@ def test_collection():
 
 @pytest_asyncio.fixture
 async def vector_search_store():
-    async with MongoDBAtlasMemoryStore(database_name="pyMSKTest") as memory:
+    if "Python_Integration_Tests" in os.environ:
+        connection_string = os.environ["MONGODB_ATLAS_CONNECTION_STRING"]
+    async with MongoDBAtlasMemoryStore(
+            connection_string=connection_string,
+            database_name="pyMSKTest"
+        ) as memory:
+        
         # Delete all collections before and after
         for cname in await memory.get_collections_async():
             await memory.delete_collection_async(cname)
@@ -106,7 +113,12 @@ async def vector_search_store():
 @pytest_asyncio.fixture
 async def nearest_match_store():
     """Fixture for read only vector store; the URI for test needs atlas configured"""
-    async with MongoDBAtlasMemoryStore(database_name="pyMSKNearestTest") as memory:
+    if "Python_Integration_Tests" in os.environ:
+        connection_string = os.environ["MONGODB_ATLAS_CONNECTION_STRING"]
+    async with MongoDBAtlasMemoryStore(
+            connection_string=connection_string,
+            database_name="pyMSKTest"
+        ) as memory:
         if not await memory.does_collection_exist_async("nearestSearch"):
             pytest.skip(
                 reason="db: readOnly collection: nearestSearch not found, "
