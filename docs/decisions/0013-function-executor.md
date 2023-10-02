@@ -11,27 +11,27 @@ informed:
 
 ## Context and Problem Statement
 
-Today there's not an abstraction to run/search functions and most of the internal implementations rely its own implementation to find and discover functions using SKContext.
+Today there no dedicated abstraction to run available functions.
+This brings a problem because many components has its own implementation to find, discover and invoke functions.
 
 ### Problem:
 
-Currently Invoking functions outside of Kernel using the `ISKFunction.InvokeAsync` don't give exposure and support for events and other features that are available when invoking functions from within the Kernel.
+Currently Invoking functions using the `ISKFunction.InvokeAsync` happens outside of the Kernel which don't give exposure and support for events and other features that are available when invoking functions from within the Kernel `RunAsync`.
 
-Many internal components (like `PromptTemplateEngine` and `Plan`s) implementation don't use Kernel, calling functions directly which also means that they don't support event triggering for example.
+Many internal components (like `PromptTemplateEngine` and `Plan`) implementation don't use Kernel `RunAsync` and need to be changed. 
 
-The internal implementations currently uses `SKContext` instances which already exposes the Kernel instance and can be used to invoke other functions using the `RunAsync` and be able to support events and other features that are available when invoking functions from within the Kernel.
+Usage of `SKContext` instances today already exposes the `Kernel/Runner` instance thru a property, this allows many of current services that depends on `SKContext` to invoke other functions using the `RunAsync` instead of `InvokeAsync`.
 
 ### Solution:
 
-This change addes the Runner abstraction which will be responsible to search and run functions from other components in the execution context, benefiting components like: TemplateEngine, Plans, Plugins, ...
+Instead of using `IKernel` interface directly we added a new `IFunctionRunner` abstraction which will be only responsible to Run functions,
 
-This also removes the `IKernel` replacing it `IFunctionRunner` abstraction which simplifies and only expose functions
-reponsible to run/execute functions from another function in the execution context
-of exposure to Kernel fuctions in the `SKContext` .
+Make `Kernel` class an implementer of `IFunctionRunner` abstraction.
 
-Calling functions using the `IFunctionRunner` will be the path forward replacing the current `ISKFunction.InvokeAsync` with the `SKContext.IFunctionRunner.RunAsync`.
+Change `SKContext.Kernel` to `SKContext.Runner` property which simplifies and only expose methods reponsible to run/execute functions.
 
-This changes also makes `Kernel` instance an implementer of `IFunctionRunner` interface and the `SKContext` will be responsible to expose the `IFunctionRunner` instance.
+Calling functions using the `IFunctionRunner` is the path forward replacing the current `ISKFunction.InvokeAsync` with the `SKContext.IFunctionRunner.RunAsync` in components like `PromptTemplateEngine`, `Plan` and Plugins.
+
 
 ```csharp
 interface IFunctionRunner
@@ -58,15 +58,9 @@ interface IKernel : IFunctionRunner
 
 ```
 
-## Decision Drivers
+## Examples:
 
-Have a new Runner abstraction which can be used to run functions from other components.
-Simplification of implementations and dependencies.
-A step forward moving from `ISKFunction.InvokeAsync` to `IKernel.RunAsync` approach on our internal implementations
-
-Examples:
-
-## Template Engine (CodeBlock.cs)
+#### Template Engine (CodeBlock.cs)
 
 Current state depends strongly on SKContext and ISKFunction.InvokeAsync
 
@@ -147,9 +141,9 @@ private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, Conte
 }
 ```
 
-## Plugins / Functions
+### Plugins / Functions
 
-### LanguageCalculatorPlugin.cs
+#### LanguageCalculatorPlugin.cs
 
 From:
 
@@ -163,11 +157,11 @@ To:
 var result = await context.Runner.RunAsync(this._mathTranslator, input).ConfigureAwait(false);
 ```
 
-## Plans
+### Plans
 
 Simplify calls to functions from within plans, removes the dependency on managing and creating SKContext, uses the Runner abstraction to run step functions.
 
-### Plan.cs
+#### Plan.cs
 
 From:
 
