@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import json
 from logging import Logger
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 import aiohttp
 
@@ -40,9 +41,29 @@ class OllamaTextCompletion(TextCompletionClientBase):
                 https://ollama.ai/library
         """
         self._model_id = model_id
-        self._api_version = api_version or '0.1.0'
-        self._base_url = base_url or 'http://127.0.0.1:11434'
+        self._api_version = api_version or "0.1.0"
+        self._base_url = base_url or "http://127.0.0.1:11434"
         self._log = log if log is not None else NullLogger()
+
+        # Ensure that the service is running and that the model is loaded.
+        try:
+            show_info = asyncio.run(self.show(model_id))
+            self._log.debug(show_info)
+        except Exception as ex:
+            raise AIException(
+                AIException.ErrorCodes.ServiceError,
+                "The Ollama service is not running or the model was not found.",
+                ex,
+            )
+
+    async def show(self, model_id: str) -> Any:
+        request = dict(name=model_id)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(f"{self._base_url}/api/show", json=request) as r:
+                result = await r.json()
+                error = result.get('error')
+                assert error is None, error
+                return result
 
     async def complete_async(
         self,
@@ -144,7 +165,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
 
 # TODO Move to a test after trying it.
 if __name__ == '__main__':
-    o = OllamaTextCompletion('orca-mini')
+    o = OllamaTextCompletion('orca-miniff')
     import asyncio
 
     async def main():
