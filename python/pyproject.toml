@@ -16,6 +16,7 @@ regex = "^2023.6.3"
 openapi_core = "^0.18.0"
 prance = "^23.6.21.0"
 pydantic = "<2"
+motor = "^3.3.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.3.3"
