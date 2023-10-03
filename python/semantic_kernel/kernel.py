@@ -22,6 +22,7 @@ from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.events import FunctionInvokedEventArgs, FunctionInvokingEventArgs
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
@@ -42,6 +43,7 @@ from semantic_kernel.semantic_functions.prompt_template_config import (
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )
+from semantic_kernel.skill_definition.function_view import FunctionView
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
@@ -96,6 +98,9 @@ class Kernel:
         self._default_text_embedding_generation_service: Optional[str] = None
 
         self._retry_mechanism: RetryMechanismBase = PassThroughWithoutRetry()
+
+        self._function_invoking_handlers = {}
+        self._function_invoked_handlers = {}
 
     @property
     def logger(self) -> Logger:
@@ -300,6 +305,20 @@ class Kernel:
             pipeline_step += 1
 
             try:
+                function_details = func.describe()
+
+                function_invoking_args = self.on_function_invoking(
+                    function_details, context
+                )
+                if (
+                    isinstance(function_invoking_args, FunctionInvokingEventArgs)
+                    and function_invoking_args.is_skip_requested
+                ):
+                    skip_message = "Execution was skipped on function invoking event of pipeline step"
+                    self._log.info(
+                        f"{skip_message} {pipeline_step}: {func.skill_name}.{func.name}."
+                    )
+
                 context = await func.invoke_async(input=None, context=context)
 
                 if context.error_occurred:
@@ -309,6 +328,19 @@ class Kernel:
                         f"Error description: '{context.last_error_description}'"
                     )
                     return context
+
+                function_invoked_args = self.on_function_invoked(
+                    function_details, context
+                )
+                if (
+                    isinstance(function_invoked_args, FunctionInvokedEventArgs)
+                    and function_invoked_args.is_repeat_requested
+                ):
+                    repeat_message = "Execution was repeated on function invoked event of pipeline step"
+                    self._log.info(
+                        f"{repeat_message} {pipeline_step}: {func.skill_name}.{func.name}."
+                    )
+
             except Exception as ex:
                 self._log.error(
                     f"Something went wrong in pipeline step {pipeline_step}. "
@@ -362,6 +394,26 @@ class Kernel:
             self.skills,
             self._log,
         )
+
+    def on_function_invoking(
+        self, function_view: FunctionView, context: SKContext
+    ) -> FunctionInvokingEventArgs:
+        if self._function_invoking_handlers:
+            args = FunctionInvokingEventArgs(function_view, context)
+            for handler in self._function_invoking_handlers.values():
+                handler(self, args)
+            return args
+        return None
+
+    def on_function_invoked(
+        self, function_view: FunctionView, context: SKContext
+    ) -> FunctionInvokedEventArgs:
+        if self._function_invoked_handlers:
+            args = FunctionInvokedEventArgs(function_view, context)
+            for handler in self._function_invoked_handlers.values():
+                handler(self, args)
+            return args
+        return None
 
     def import_skill(
         self, skill_instance: Any, skill_name: str = ""
@@ -847,3 +899,17 @@ class Kernel:
         return self.register_semantic_function(
             skill_name, function_name, function_config
         )
+
+    def add_function_invoking_handler(self, handler: Callable) -> None:
+        self._function_invoking_handlers[id(handler)] = handler
+
+    def add_function_invoked_handler(self, handler: Callable) -> None:
+        self._function_invoked_handlers[id(handler)] = handler
+
+    def remove_function_invoking_handler(self, handler: Callable) -> None:
+        if id(handler) in self._function_invoking_handlers:
+            del self._function_invoking_handlers[id(handler)]
+
+    def remove_function_invoked_handler(self, handler: Callable) -> None:
+        if id(handler) in self._function_invoked_handlers:
+            del self._function_invoked_handlers[id(handler)]
