@@ -84,9 +84,12 @@ public static class KernelSemanticFunctionExtensions
         var config = new PromptTemplateConfig
         {
             Description = description ?? "Generic function, unknown purpose",
-            Type = "completion",
-            Completion = requestSettings
         };
+
+        if (requestSettings is not null)
+        {
+            config.ModelSettings.Add(requestSettings);
+        }
 
         return kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,
@@ -275,11 +278,6 @@ public static class KernelSemanticFunctionExtensions
         string functionName,
         SemanticFunctionConfig functionConfig)
     {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
         ISKFunction func = SemanticFunction.FromSemanticConfig(
             pluginName,
             functionName,
@@ -291,10 +289,10 @@ public static class KernelSemanticFunctionExtensions
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultFunctionCollection(kernel.Functions);
 
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.GetDefaultRequestSettings());
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => kernel.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
+        func.SetAIService(() => kernel.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
 
         return func;
     }

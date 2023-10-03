@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Text;
@@ -63,43 +64,75 @@ public class PromptTemplateConfig
     public int Schema { get; set; } = 1;
 
     /// <summary>
-    /// Type, such as "completion", "embeddings", etc.
-    /// </summary>
-    /// <remarks>TODO: use enum</remarks>
-    [JsonPropertyName("type")]
-    [JsonPropertyOrder(2)]
-    public string Type { get; set; } = "completion";
-
-    /// <summary>
     /// Description
     /// </summary>
     [JsonPropertyName("description")]
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(2)]
     public string Description { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Completion configuration parameters.
-    /// </summary>
-    [JsonPropertyName("completion")]
-    [JsonPropertyOrder(4)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public AIRequestSettings? Completion { get; set; }
-
-    /// <summary>
-    /// Default AI services to use.
-    /// </summary>
-    [JsonPropertyName("default_services")]
-    [JsonPropertyOrder(5)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<string> DefaultServices { get; set; } = new();
 
     /// <summary>
     /// Input configuration (that is, list of all input parameters).
     /// </summary>
     [JsonPropertyName("input")]
-    [JsonPropertyOrder(6)]
+    [JsonPropertyOrder(3)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public InputConfig Input { get; set; } = new();
+
+    /// <summary>
+    /// Model request settings.
+    /// Initially only a single model request settings is supported.
+    /// </summary>
+    [JsonPropertyName("models")]
+    [JsonPropertyOrder(4)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<AIRequestSettings> ModelSettings { get; set; } = new();
+
+    /// <summary>
+    /// Return the default <see cref="AIRequestSettings"/>
+    /// </summary>
+    public AIRequestSettings GetDefaultRequestSettings()
+    {
+        return this.ModelSettings.FirstOrDefault<AIRequestSettings>();
+    }
+
+    #region Obsolete
+    /// <summary>
+    /// Type, such as "completion", "embeddings", etc.
+    /// </summary>
+    /// <remarks>TODO: use enum</remarks>
+    [JsonPropertyName("type")]
+    [JsonPropertyOrder(5)]
+    [Obsolete("Type property is no longer used. This will be removed in a future release.")]
+    public string Type { get; set; } = "completion";
+
+    /// <summary>
+    /// Completion configuration parameters.
+    /// </summary>
+    [JsonPropertyName("completion")]
+    [JsonPropertyOrder(6)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Obsolete("Completion is no longer no longer supported. Use PromptTemplateConfig.Models collection instead. This will be removed in a future release.")]
+    public AIRequestSettings? Completion
+    {
+        get { return this.GetDefaultRequestSettings(); }
+        set
+        {
+            if (value is not null)
+            {
+                this.ModelSettings.Add(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Default AI services to use.
+    /// </summary>
+    [JsonPropertyName("default_services")]
+    [JsonPropertyOrder(7)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Obsolete("DefaultServices property is no longer used. This will be removed in a future release.")]
+    public List<string> DefaultServices { get; set; } = new();
+    #endregion
 
     /// <summary>
     /// Creates a prompt template configuration from JSON.
