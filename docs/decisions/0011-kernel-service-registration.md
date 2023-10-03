@@ -154,13 +154,13 @@ var kernel = Kernel.Builder
     .WithServices(services) // Pass all registered services from host application to Kernel
     .Build();
 
-// Instead of this
+// Plugin Import - option #1
 var semanticTextMemory = kernel.Services.GetService<ISemanticTextMemory>();
 var memoryPlugin = new TextMemoryPlugin(semanticTextMemory);
 
 kernel.ImportFunctions(memoryPlugin);
 
-// Use this
+// Plugin Import - option #2
 kernel.ImportFunctions<TextMemoryPlugin>();
 ```
 
