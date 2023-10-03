@@ -10,11 +10,15 @@ import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 
+/**
+ * Show how to invoke a Native Function written in C#
+ * from a Semantic Function written in natural language
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
 public class Example06_TemplateLanguage {
-    /// <summary>
-    /// Show how to invoke a Native Function written in C#
-    /// from a Semantic Function written in natural language
-    /// </summary>
 
     public static void main(String[] args) throws ConfigurationException {
         System.out.println("======== TemplateLanguage ========");

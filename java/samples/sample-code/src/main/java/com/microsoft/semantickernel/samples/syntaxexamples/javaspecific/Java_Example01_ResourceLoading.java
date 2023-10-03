@@ -6,6 +6,9 @@ import com.microsoft.semantickernel.orchestration.SKFunction;
 
 import java.io.IOException;
 
+/**
+ * Import a skill from resources.
+ */
 public class Java_Example01_ResourceLoading {
 
     public static void main(String[] args) throws IOException {

@@ -7,6 +7,9 @@ import com.microsoft.semantickernel.orchestration.SKContext;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
 import reactor.core.publisher.Mono;
 
+/**
+ * Demonstrates running a pipeline (a sequence of functions) over some input.
+ */
 public class Example02_Pipeline {
     public static void main(String[] args) {
         Kernel kernel = SKBuilders.kernel().build();

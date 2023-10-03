@@ -34,12 +34,10 @@ They can then be run by:
 
 # Configuration
 
-By default, the samples will use the Open AI client, but you can also use the Azure Open AI client.
-
-## Open AI client type
-
-You can define the provider of Open AI (openai.com or Azure), this can be done by setting the `OPENAI_CLIENT_TYPE`
-property or environment variable to either `OPENAI` or `AZURE_OPEN_AI`, i.e.:
+You can define the provider of Open AI by setting the `OPENAI_CLIENT_TYPE`
+property or environment variable to either [`OPENAI`](https://openai.com/api/)
+or [`AZURE_OPEN_AI`](https://learn.microsoft.com/azure/cognitive-services/openai/).
+By default, the samples will use the Open AI client.
 
 ```shell
 OPENAI_CLIENT_TYPE=OPENAI ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
@@ -50,7 +48,7 @@ OR
 ```
 
 ## Client Settings
-The tests search for the client settings in the following order:
+The samples search for the client settings in the following order:
 1. Properties file whose location is defined by the `CONF_PROPERTIES` property or environment variable.
 1. System properties defined on the command line.
 1. Environment variables.

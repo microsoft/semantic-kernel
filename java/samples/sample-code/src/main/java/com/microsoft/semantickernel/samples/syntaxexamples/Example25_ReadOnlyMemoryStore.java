@@ -18,7 +18,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
- * This sample provides a custom implementation of {@code MemoryStore} that is read only.
+ * Demonstrates a custom implementation of {@code MemoryStore} that is read only.
  * In this sample, the data is stored in a JSON String and deserialized into an
  * {@code MemoryRecord[]}. For this specific sample, the implementation
  * of {@code MemoryStore}  has a single collection, and thus does not need to be named.

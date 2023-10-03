@@ -28,6 +28,10 @@ import java.io.IOException;
  * The repository includes some examples under the <a href=
  * "https://github.com/microsoft/semantic-kernel/tree/main/samples">samples</a>
  * folder.
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
  */
 public class Example02_RunnningPromptsFromFile {
 
