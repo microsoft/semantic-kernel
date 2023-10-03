@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import openai
 from numpy import array, ndarray
+from pydantic import Field
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
@@ -21,6 +22,9 @@ class OpenAIHandler(AIServiceClientBase, ABC):
     """Internal class for calls to OpenAI API's."""
 
     model_type: OpenAIModelTypes = OpenAIModelTypes.TEXT
+    prompt_tokens: int = Field(0, init=False)
+    completion_tokens: int = Field(0, init=False)
+    total_tokens: int = Field(0, init=False)
 
     async def _send_request(
         self,
@@ -120,6 +124,12 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 "OpenAI service failed to complete the prompt",
                 ex,
             ) from ex
+        
+        if not stream and 'usage' in response:
+            self._log.info(f"OpenAI usage: {response.usage}")
+            self.prompt_tokens += response.usage.prompt_tokens
+            self.completion_tokens += response.usage.completion_tokens
+            self.total_tokens += response.usage.total_tokens
 
         return response
 
