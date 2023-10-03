@@ -12,7 +12,8 @@
       "max_tokens": 2000,
       "number_of_responses": 1,
       "stop_sequences": [],
-      "token_selection_biases": {}
+      "token_selection_biases": {},
+      "chat_system_prompt": null
     },
     "default_services": [],
     "input": {
@@ -31,14 +32,6 @@
     {
       "role": "assistant",
       "message": "I am Mosscap, a chat bot. I'm trying to figure out what people need."
-    },
-    {
-      "role": "user",
-      "message": "what can you do?"
-    },
-    {
-      "role": "assistant",
-      "message": "Ah, the question of my capabilities! I am here to engage in meaningful conversations, to listen intently to your thoughts and queries, and to provide assistance in any way I can. Whether it's answering questions, offering advice, or simply engaging in friendly banter, I am here to serve. I possess a vast array of knowledge, encompassing various topics, and I am always eager to learn more. So, please, do not hesitate to share your thoughts, and together, let us embark on a journey of discovery and understanding."
     }
   ]
 }

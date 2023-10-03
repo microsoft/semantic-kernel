@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.chat_history.file_chat_history import FileChatHistory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_function import SKFunction
-from semantic_kernel.semantic_functions.file_chat_history import FileChatHistory
 from semantic_kernel.semantic_functions.semantic_function_config import (
     SemanticFunctionConfig,
 )

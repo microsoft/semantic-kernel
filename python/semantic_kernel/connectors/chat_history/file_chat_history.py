@@ -1,6 +1,6 @@
 import json
 from logging import Logger
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.semantic_functions.chat_history_base import ChatHistoryBase
@@ -19,8 +19,8 @@ class FileChatHistory(ChatHistoryBase):
         template: str,
         template_engine: PromptTemplatingEngine,
         prompt_config: PromptTemplateConfig,
-        messages: List[Dict[str, str]] | None = None,
-        log: Logger | None = None,
+        messages: Optional[List[Dict[str, str]]] = None,
+        log: Optional[Logger] = None,
     ) -> None:
         """Create a new FileChatHistory instance.
 
