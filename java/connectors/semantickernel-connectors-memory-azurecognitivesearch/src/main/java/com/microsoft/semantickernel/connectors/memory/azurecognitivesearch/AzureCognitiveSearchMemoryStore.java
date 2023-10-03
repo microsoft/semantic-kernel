@@ -215,7 +215,7 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
         SearchOptions searchOptions = new SearchOptions().setVectors(searchVector);
 
         return client.search(null, searchOptions)
-                .filter(result -> (double) minRelevanceScore >= result.getScore())
+                .filter(result -> (double) minRelevanceScore <= result.getScore())
                 .map(
                         result -> {
                             MemoryRecord memoryRecord =
@@ -418,7 +418,7 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
      * @param indexName Index name
      * @return Search client ready to read/write
      */
-    private SearchAsyncClient getSearchClient(@Nonnull String indexName) {
+    protected SearchAsyncClient getSearchClient(@Nonnull String indexName) {
         String normalizedIndexName = normalizeIndexName(indexName);
         return _clientsByIndex.computeIfAbsent(
                 normalizedIndexName, _adminClient::getSearchAsyncClient);
