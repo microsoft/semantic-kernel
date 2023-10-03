@@ -126,7 +126,7 @@ class OpenAIHandler(AIServiceClientBase, ABC):
             ) from ex
         
         if not stream and 'usage' in response:
-            self._log.info(f"OpenAI usage: {response.usage}")
+            self.log.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens
             self.completion_tokens += response.usage.completion_tokens
             self.total_tokens += response.usage.total_tokens
