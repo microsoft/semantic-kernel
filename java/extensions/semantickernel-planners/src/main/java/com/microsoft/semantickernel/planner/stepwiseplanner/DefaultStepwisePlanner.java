@@ -17,6 +17,7 @@ import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.SemanticFunctionConfig;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlyFunctionCollection;
+import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
 import com.microsoft.semantickernel.skilldefinition.annotations.DefineSKFunction;
 import com.microsoft.semantickernel.skilldefinition.annotations.SKFunctionParameters;
 import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
@@ -529,7 +530,17 @@ public class DefaultStepwisePlanner implements StepwisePlanner {
         List<SKFunction<?>> availableFunctions = this.getAvailableFunctions();
         Optional<SKFunction<?>> targetFunction =
                 availableFunctions.stream()
-                        .filter(f -> f.toFullyQualifiedName().equals(actionName))
+                        .filter(
+                                f -> {
+                                    return f.toFullyQualifiedName().equals(actionName)
+                                            || f.toFullyQualifiedName()
+                                                    .equals(
+                                                            ReadOnlySkillCollection.GlobalSkill
+                                                                    + "."
+                                                                    + actionName)
+                                            || f.toFullyQualifiedName()
+                                                    .equals("GLOBAL_FUNCTIONS." + actionName);
+                                })
                         .findFirst();
 
         if (!targetFunction.isPresent()) {

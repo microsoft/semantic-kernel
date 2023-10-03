@@ -30,8 +30,12 @@ import reactor.core.publisher.Mono;
 /** OpenAI chat completion client. */
 public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<OpenAIChatHistory> {
 
-    public OpenAIChatCompletion(OpenAIAsyncClient client, String modelId) {
+    private CompletionType defaultCompletionType;
+
+    public OpenAIChatCompletion(
+            OpenAIAsyncClient client, String modelId, CompletionType defaultCompletionType) {
         super(client, modelId);
+        this.defaultCompletionType = defaultCompletionType;
     }
 
     @Override
@@ -50,7 +54,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 
     @Override
     public CompletionType defaultCompletionType() {
-        return CompletionType.STREAMING;
+        return defaultCompletionType;
     }
 
     public static class Builder implements ChatCompletion.Builder<OpenAIChatHistory> {
@@ -59,9 +63,15 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
 
         @Nullable private OpenAIAsyncClient client;
         @Nullable private String modelId;
+        private CompletionType defaultCompletionType = CompletionType.STREAMING;
 
         public Builder withOpenAIClient(OpenAIAsyncClient client) {
             this.client = client;
+            return this;
+        }
+
+        public Builder withDefaultCompletionType(CompletionType completionType) {
+            this.defaultCompletionType = completionType;
             return this;
         }
 
@@ -78,7 +88,7 @@ public class OpenAIChatCompletion extends ClientBase implements ChatCompletion<O
             if (modelId == null) {
                 throw new NotSupportedException(ErrorCodes.NOT_SUPPORTED, "Model ID not set");
             }
-            return new OpenAIChatCompletion(client, modelId);
+            return new OpenAIChatCompletion(client, modelId, defaultCompletionType);
         }
     }
 

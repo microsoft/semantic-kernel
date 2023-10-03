@@ -9,6 +9,7 @@
     </parent>
 
     <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
+    <name>Semantic Kernel JDBC Memory Connector</name>
 
     <dependencies>
         <dependency>

@@ -300,10 +300,18 @@ public class NativeSKFunction extends AbstractSkFunction<Void> {
                                                 } else {
                                                     return method.invoke(instance, args.toArray());
                                                 }
-                                            } catch (IllegalAccessException
-                                                    | InvocationTargetException e) {
+                                            } catch (InvocationTargetException e) {
                                                 throw new AIException(
-                                                        ErrorCodes.INVALID_REQUEST, e.getMessage());
+                                                        ErrorCodes.INVALID_REQUEST,
+                                                        "Function threw an exception: "
+                                                                + method.getName(),
+                                                        e.getCause());
+                                            } catch (IllegalAccessException e) {
+                                                throw new AIException(
+                                                        ErrorCodes.INVALID_REQUEST,
+                                                        "Unable to access function "
+                                                                + method.getName(),
+                                                        e);
                                             }
                                         })
                                 .subscribeOn(Schedulers.boundedElastic()));
