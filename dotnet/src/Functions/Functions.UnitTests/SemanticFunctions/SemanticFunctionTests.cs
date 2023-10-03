@@ -56,7 +56,7 @@ public class SemanticFunctionTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Models.Add(new OpenAIRequestSettings()
+        templateConfig.ModelSettings.Add(new OpenAIRequestSettings()
         {
             ChatSystemPrompt = providedSystemChatPrompt
         });
@@ -130,7 +130,7 @@ public class SemanticFunctionTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Models.Add(new AIRequestSettings() { ServiceId = "service1" });
+        templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service1" });
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act
@@ -154,7 +154,7 @@ public class SemanticFunctionTests
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
-        templateConfig.Models.Add(new AIRequestSettings() { ServiceId = "service3" });
+        templateConfig.ModelSettings.Add(new AIRequestSettings() { ServiceId = "service3" });
         var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
 
         // Act

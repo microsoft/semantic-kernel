@@ -88,7 +88,7 @@ public static class KernelSemanticFunctionExtensions
 
         if (requestSettings is not null)
         {
-            config.Models.Add(requestSettings);
+            config.ModelSettings.Add(requestSettings);
         }
 
         return kernel.CreateSemanticFunction(
@@ -289,10 +289,10 @@ public static class KernelSemanticFunctionExtensions
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultFunctionCollection(kernel.Functions);
 
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.DefaultRequestSettings());
+        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.GetDefaultRequestSettings());
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => kernel.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.DefaultRequestSettings()?.ServiceId ?? null));
+        func.SetAIService(() => kernel.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
 
         return func;
     }

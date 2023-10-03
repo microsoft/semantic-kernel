@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the namespace of IKernel
 using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel.SemanticFunctions;
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Planners;
 #pragma warning restore IDE0130
 
 /// <summary>
@@ -19,10 +20,10 @@ internal static class PromptTemplateConfigExtensions
     /// <param name="maxTokens">Value of max tokens to set</param>
     internal static void SetMaxTokens(this PromptTemplateConfig config, int maxTokens)
     {
-        AIRequestSettings requestSettings = config.DefaultRequestSettings() ?? new();
-        if (config.Models.Count == 0)
+        AIRequestSettings requestSettings = config.GetDefaultRequestSettings() ?? new();
+        if (config.ModelSettings.Count == 0)
         {
-            config.Models.Add(requestSettings);
+            config.ModelSettings.Add(requestSettings);
         }
         requestSettings.ExtensionData["max_tokens"] = maxTokens;
     }

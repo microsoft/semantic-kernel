@@ -85,14 +85,14 @@ public class PromptTemplateConfig
     [JsonPropertyName("models")]
     [JsonPropertyOrder(4)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<AIRequestSettings> Models { get; set; } = new();
+    public List<AIRequestSettings> ModelSettings { get; set; } = new();
 
     /// <summary>
-    /// Return the default AIRequestSettings
+    /// Return the default <see cref="AIRequestSettings"/>
     /// </summary>
-    public AIRequestSettings DefaultRequestSettings()
+    public AIRequestSettings GetDefaultRequestSettings()
     {
-        return this.Models.FirstOrDefault<AIRequestSettings>();
+        return this.ModelSettings.FirstOrDefault<AIRequestSettings>();
     }
 
     #region Obsolete
@@ -114,12 +114,12 @@ public class PromptTemplateConfig
     [Obsolete("Completion is no longer no longer supported. Use PromptTemplateConfig.Models collection instead. This will be removed in a future release.")]
     public AIRequestSettings? Completion
     {
-        get { return this.DefaultRequestSettings(); }
+        get { return this.GetDefaultRequestSettings(); }
         set
         {
             if (value is not null)
             {
-                this.Models.Add(value);
+                this.ModelSettings.Add(value);
             }
         }
     }

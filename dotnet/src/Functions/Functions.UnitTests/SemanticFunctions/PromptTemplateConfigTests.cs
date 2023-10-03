@@ -97,12 +97,8 @@ public class PromptTemplateConfigTests
 
         // Assert
         Assert.NotNull(promptTemplateConfig);
-#pragma warning disable CS0618 // Ensure backward compatibility
-        Assert.NotNull(promptTemplateConfig.Completion);
-        Assert.Equal("gpt-4", promptTemplateConfig.Completion.ModelId);
-#pragma warning restore CS0618 // Ensure backward compatibility
-        Assert.NotNull(promptTemplateConfig.Models);
-        Assert.Equal(2, promptTemplateConfig.Models.Count);
+        Assert.NotNull(promptTemplateConfig.ModelSettings);
+        Assert.Equal(2, promptTemplateConfig.ModelSettings.Count);
     }
 
     [Fact]
