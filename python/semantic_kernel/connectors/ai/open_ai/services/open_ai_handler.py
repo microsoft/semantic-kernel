@@ -124,8 +124,8 @@ class OpenAIHandler(AIServiceClientBase, ABC):
                 "OpenAI service failed to complete the prompt",
                 ex,
             ) from ex
-        
-        if not stream and 'usage' in response:
+
+        if not stream and "usage" in response:
             self.log.info(f"OpenAI usage: {response.usage}")
             self.prompt_tokens += response.usage.prompt_tokens
             self.completion_tokens += response.usage.completion_tokens
