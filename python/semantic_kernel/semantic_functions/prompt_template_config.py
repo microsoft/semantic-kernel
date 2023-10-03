@@ -42,28 +42,29 @@ class PromptTemplateConfig:
     @staticmethod
     def from_dict(data: dict) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
-        config.schema = data.get("schema")
-        config.type = data.get("type")
-        config.description = data.get("description")
+        keys = ["schema", "type", "description"]
+        for key in keys:
+            if key in data:
+                setattr(config, key, data[key])
 
         # Some skills may not have all completion parameters defined
         config.completion = PromptTemplateConfig.CompletionConfig()
         completion_dict = data["completion"]
-        config.completion.temperature = completion_dict.get("temperature")
-        config.completion.top_p = completion_dict.get("top_p")
-        config.completion.presence_penalty = completion_dict.get("presence_penalty")
-        config.completion.frequency_penalty = completion_dict.get("frequency_penalty")
-        config.completion.max_tokens = completion_dict.get("max_tokens")
-        config.completion.number_of_responses = completion_dict.get(
-            "number_of_responses"
-        )
-        config.completion.stop_sequences = completion_dict.get("stop_sequences", [])
-        config.completion.token_selection_biases = completion_dict.get(
-            "token_selection_biases", {}
-        )
-        config.completion.chat_system_prompt = completion_dict.get("chat_system_prompt")
-
-        config.default_services = data.get("default_services", [])
+        completion_keys = [
+            "temperature",
+            "top_p",
+            "presence_penalty",
+            "frequency_penalty",
+            "max_tokens",
+            "number_of_responses",
+            "stop_sequences",
+            "token_selection_biases",
+            "default_services",
+            "chat_system_prompt",
+        ]
+        for comp_key in completion_keys:
+            if comp_key in completion_dict:
+                setattr(config.completion, comp_key, completion_dict[comp_key])
 
         # Some skills may not have input parameters defined
         config.input = PromptTemplateConfig.InputConfig()

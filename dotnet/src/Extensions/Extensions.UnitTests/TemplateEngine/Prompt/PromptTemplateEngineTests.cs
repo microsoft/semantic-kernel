@@ -6,9 +6,9 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
 using Moq;
@@ -23,15 +23,17 @@ public sealed class PromptTemplateEngineTests
     private const string DateFormat = "M/d/yyyy";
     private readonly PromptTemplateEngine _target;
     private readonly ContextVariables _variables;
-    private readonly Mock<IReadOnlySkillCollection> _skills;
+    private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ITestOutputHelper _logger;
+    private readonly Mock<IKernel> _kernel;
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
         this._target = new PromptTemplateEngine(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
-        this._skills = new Mock<IReadOnlySkillCollection>();
+        this._functions = new Mock<IReadOnlyFunctionCollection>();
+        this._kernel = new Mock<IKernel>();
     }
 
     [Fact]
@@ -152,9 +154,9 @@ public sealed class PromptTemplateEngineTests
         var template = "foo-{{function}}-baz";
         {
             ISKFunction? outFunc = func;
-            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+            this._functions.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
         }
-        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        this._functions.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -181,9 +183,9 @@ public sealed class PromptTemplateEngineTests
         var template = "foo-{{function $myVar}}-baz";
         {
             ISKFunction? outFunc = func;
-            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+            this._functions.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
         }
-        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        this._functions.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -216,9 +218,9 @@ public sealed class PromptTemplateEngineTests
         var template = "foo-{{function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         {
             ISKFunction? outFunc = func;
-            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+            this._functions.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
         }
-        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        this._functions.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -251,9 +253,9 @@ public sealed class PromptTemplateEngineTests
         var template = "foo-{{function input=$input age=42 slogan='Let\\'s-a go!' date=$someDate}}-baz";
         {
             ISKFunction? outFunc = func;
-            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+            this._functions.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
         }
-        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        this._functions.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -284,9 +286,9 @@ public sealed class PromptTemplateEngineTests
         var template = "foo-{{function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
         {
             ISKFunction? outFunc = func;
-            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+            this._functions.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
         }
-        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        this._functions.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -315,9 +317,9 @@ public sealed class PromptTemplateEngineTests
         var template = "foo-{{function $myVar}}-baz";
         {
             ISKFunction? outFunc = func;
-            this._skills.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
+            this._functions.Setup(x => x.TryGetFunction("function", out outFunc)).Returns(true);
         }
-        this._skills.Setup(x => x.GetFunction("function")).Returns(func);
+        this._functions.Setup(x => x.GetFunction("function")).Returns(func);
         var context = this.MockContext();
 
         // Act
@@ -366,8 +368,8 @@ public sealed class PromptTemplateEngineTests
         {
             Assert.NotNull(func);
             ISKFunction? outFunc = func;
-            this._skills.Setup(x => x.GetFunction(It.Is<string>(s => s == func.SkillName))).Returns(func);
-            this._skills.Setup(x => x.TryGetFunction(It.Is<string>(s => s == func.SkillName), out outFunc)).Returns(true);
+            this._functions.Setup(x => x.GetFunction(It.Is<string>(s => s == func.PluginName))).Returns(func);
+            this._functions.Setup(x => x.TryGetFunction(It.Is<string>(s => s == func.PluginName), out outFunc)).Returns(true);
         }
 
         // Act
@@ -385,8 +387,8 @@ public sealed class PromptTemplateEngineTests
     private SKContext MockContext()
     {
         return new SKContext(
+            this._kernel.Object,
             this._variables,
-            skills: this._skills.Object,
-            loggerFactory: TestConsoleLogger.LoggerFactory);
+            functions: this._functions.Object);
     }
 }
