@@ -121,7 +121,9 @@ class RestApiOperation:
             content = self.request_body["content"]
             content_type = list(content.keys())[0]
             processed_headers["Content-Type"] = content_type
-            processed_headers["User-Agent"] = " ".join((HTTP_USER_AGENT, processed_headers.get("User-Agent", ""))).rstrip()
+            processed_headers["User-Agent"] = " ".join(
+                (HTTP_USER_AGENT, processed_headers.get("User-Agent", ""))
+            ).rstrip()
             processed_payload = request_body
 
         req = PreparedRestApiRequest(

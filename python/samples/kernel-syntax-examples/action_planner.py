@@ -13,7 +13,10 @@ async def main():
     deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
     deployment_name = "gpt-35-turbo"
     kernel.add_chat_service(
-        "chat-gpt", AzureChatCompletion(deployment_name=deployment_name, endpoint=endpoint, api_key=api_key)
+        "chat-gpt",
+        AzureChatCompletion(
+            deployment_name=deployment_name, endpoint=endpoint, api_key=api_key
+        ),
     )
     kernel.import_skill(MathSkill(), "math")
     kernel.import_skill(FileIOSkill(), "fileIO")

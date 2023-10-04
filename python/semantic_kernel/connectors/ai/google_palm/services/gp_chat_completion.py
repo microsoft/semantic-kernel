@@ -208,7 +208,7 @@ class GooglePalmChatCompletion(ChatCompletionClientBase, TextCompletionClientBas
                     candidate_count=request_settings.number_of_responses,
                     top_p=request_settings.top_p,
                     prompt=prompt,
-                    messages=messages[-1][1]
+                    messages=messages[-1][1],
                 )
             else:
                 response = self._message_history.reply(  # Continue the conversation

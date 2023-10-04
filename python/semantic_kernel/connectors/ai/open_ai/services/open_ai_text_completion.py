@@ -5,7 +5,6 @@ from typing import Any, List, Optional, Union
 
 import openai
 
-from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.complete_request_settings import (
     CompleteRequestSettings,
@@ -13,6 +12,7 @@ from semantic_kernel.connectors.ai.complete_request_settings import (
 from semantic_kernel.connectors.ai.text_completion_client_base import (
     TextCompletionClientBase,
 )
+from semantic_kernel.connectors.telemetry import APP_INFO
 from semantic_kernel.utils.null_logger import NullLogger
 
 
