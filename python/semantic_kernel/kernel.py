@@ -290,65 +290,70 @@ class Kernel:
 
         pipeline_step = 0
         for func in functions:
-            assert isinstance(func, SKFunctionBase), (
-                "All func arguments to Kernel.run*(inputs, func1, func2, ...) "
-                "must be SKFunctionBase instances"
-            )
-
-            if context.error_occurred:
-                self._log.error(
-                    f"Something went wrong in pipeline step {pipeline_step}. "
-                    f"Error description: '{context.last_error_description}'"
+            while True:
+                assert isinstance(func, SKFunctionBase), (
+                    "All func arguments to Kernel.run*(inputs, func1, func2, ...) "
+                    "must be SKFunctionBase instances"
                 )
-                return context
-
-            pipeline_step += 1
-
-            try:
-                function_details = func.describe()
-
-                function_invoking_args = self.on_function_invoking(
-                    function_details, context
-                )
-                if (
-                    isinstance(function_invoking_args, FunctionInvokingEventArgs)
-                    and function_invoking_args.is_skip_requested
-                ):
-                    skip_message = "Execution was skipped on function invoking event of pipeline step"
-                    self._log.info(
-                        f"{skip_message} {pipeline_step}: {func.skill_name}.{func.name}."
-                    )
-
-                context = await func.invoke_async(input=None, context=context)
 
                 if context.error_occurred:
                     self._log.error(
                         f"Something went wrong in pipeline step {pipeline_step}. "
-                        f"During function invocation: '{func.skill_name}.{func.name}'. "
                         f"Error description: '{context.last_error_description}'"
                     )
                     return context
 
-                function_invoked_args = self.on_function_invoked(
-                    function_details, context
-                )
-                if (
-                    isinstance(function_invoked_args, FunctionInvokedEventArgs)
-                    and function_invoked_args.is_repeat_requested
-                ):
-                    repeat_message = "Execution was repeated on function invoked event of pipeline step"
-                    self._log.info(
-                        f"{repeat_message} {pipeline_step}: {func.skill_name}.{func.name}."
-                    )
+                pipeline_step += 1
 
-            except Exception as ex:
-                self._log.error(
-                    f"Something went wrong in pipeline step {pipeline_step}. "
-                    f"During function invocation: '{func.skill_name}.{func.name}'. "
-                    f"Error description: '{str(ex)}'"
-                )
-                context.fail(str(ex), ex)
-                return context
+                try:
+                    function_details = func.describe()
+
+                    function_invoking_args = self.on_function_invoking(
+                        function_details, context
+                    )
+                    if (
+                        isinstance(function_invoking_args, FunctionInvokingEventArgs)
+                        and function_invoking_args.is_skip_requested
+                    ):
+                        skip_message = "Execution was skipped on function invoking event of pipeline step"
+                        self._log.info(
+                            f"{skip_message} {pipeline_step}: {func.skill_name}.{func.name}."
+                        )
+                        break
+
+                    context = await func.invoke_async(input=None, context=context)
+
+                    if context.error_occurred:
+                        self._log.error(
+                            f"Something went wrong in pipeline step {pipeline_step}. "
+                            f"During function invocation: '{func.skill_name}.{func.name}'. "
+                            f"Error description: '{context.last_error_description}'"
+                        )
+                        return context
+
+                    function_invoked_args = self.on_function_invoked(
+                        function_details, context
+                    )
+                    if (
+                        isinstance(function_invoked_args, FunctionInvokedEventArgs)
+                        and function_invoked_args.is_repeat_requested
+                    ):
+                        repeat_message = "Execution was repeated on function invoked event of pipeline step"
+                        self._log.info(
+                            f"{repeat_message} {pipeline_step}: {func.skill_name}.{func.name}."
+                        )
+                        continue
+                    else:
+                        break
+
+                except Exception as ex:
+                    self._log.error(
+                        f"Something went wrong in pipeline step {pipeline_step}. "
+                        f"During function invocation: '{func.skill_name}.{func.name}'. "
+                        f"Error description: '{str(ex)}'"
+                    )
+                    context.fail(str(ex), ex)
+                    return context
 
         return context
 
