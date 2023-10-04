@@ -17,16 +17,15 @@ Developers need to be able to use multiple models e.g., using chat completion to
 
 * Select Model Request Settings by Default Service Id
 * Select Model Request Settings by Model Id
-* Select Model By Semantic Function Preference
-* Select Model By Developer Defined Strategy
-* Select Model Request Settings By Developer Defined Strategy
+* Select AI Service and Model Request Settings By Developer Defined Strategy
 
 ## Decision Outcome
 
-Chosen option: "{title of option 1}", because
-{justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force {force} | … | comes out best (see below)}.
+Support just use cases listed in this ADR.
 
 ## Descriptions of the Use Cases
+
+**Note: All code is pseudo code and does not accurately reflect what the final implementations will look like.**
 
 ### Select Model Request Settings by Default Service Id
 
@@ -75,13 +74,15 @@ In this case the developer configures different settings based on the model id t
 In the example below the semantic function is executed with "OpenAIText" using `max_tokens=60` because "OpenAIText" is set as the default AI service.
 If "AzureText" was set as the default AI service, the  `max_tokens=60` would also be used if the deployment name matches the model id. [For Azure OpenAI the deployment name is used in code to call the model by using the client libraries and the REST APIs](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/create-resource?pivots=web-portal#deploy-a-model).
 
+**Note** For Azure OpenAI When registering an AI Service the `modelId` argument is optional (and a new argument). If none is provided the `deploymentName` is used instead. Because the `deploymentName` name can be set to anything this may not work. Developers can use the Azure API to query for the `modelId` associated with a deployment so that it is correctly set when registering the AI service.
+
 ```csharp
 // Configure a Kernel with multiple LLM's
 IKernel kernel = Kernel.Builder
     .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-    .WithAzureTextCompletionService(deploymentName: aoai.DeploymentName, // text-davinci-003
+    .WithAzureTextCompletionService(deploymentName: aoai.DeploymentName, modelId: aoai.ModelId,// text-davinci-003
         endpoint: aoai.Endpoint, serviceId: "AzureText", apiKey: aoai.ApiKey)
-    .WithAzureChatCompletionService(deploymentName: aoai.ChatDeploymentName, // gpt-35-turbo
+    .WithAzureChatCompletionService(deploymentName: aoai.ChatDeploymentName, modelId: aoai.ModelId, // gpt-35-turbo
         endpoint: aoai.Endpoint, serviceId: "AzureChat", apiKey: aoai.ApiKey)
     .WithOpenAITextCompletionService(modelId: oai.ModelId, // text-davinci-003
         serviceId: "OpenAIText", apiKey: oai.ApiKey, setAsDefault: true)
@@ -106,49 +107,9 @@ var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "Hello
 result = await kernel.RunAsync(func);
 ```
 
-### Select Model By Semantic Function Preference
+### Select AI Service and Model Request Settings By Developer Defined Strategy
 
-_As a developer using the Semantic Kernel I can configure multiple request settings for a semantic function, associate each one with a model id and order the models so that the best model is used with the optimum request settings when multiple LLM's are available to execute my semantic function._
-
-In this case the developer configures different settings based on the model id and specifies an order for each model.
-In the example below the semantic function is executed with "AzureChat" using `max_tokens=120` because "AzureChat" is configured to use the model that is preferred (lowest order) for the semantic function. If the "AzureChat" service is not available then the "OpenAIChat" AI service would be used.
-
-***Note: We want to allow developer defined strategies to be implemented for selecting which AI service to be used based on the request being executed.***
-
-```csharp
-// Configure a Kernel with multiple LLM's
-IKernel kernel = Kernel.Builder
-    .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-    .WithAzureTextCompletionService(deploymentName: aoai.DeploymentName, // text-davinci-003
-        endpoint: aoai.Endpoint, serviceId: "AzureText", apiKey: aoai.ApiKey)
-    .WithAzureChatCompletionService(deploymentName: aoai.ChatDeploymentName, // gpt-35-turbo
-        endpoint: aoai.Endpoint, serviceId: "AzureChat", apiKey: aoai.ApiKey)
-    .WithOpenAITextCompletionService(modelId: oai.ModelId, // text-davinci-003
-        serviceId: "OpenAIText", apiKey: oai.ApiKey, setAsDefault: true)
-    .WithOpenAIChatCompletionService(modelId: oai.ChatModelId, // gpt-3.5-turbo
-        serviceId: "OpenAIChat", apiKey: oai.ApiKey)
-    .Build();
-
-// Configure semantic function with multiple LLM request settings
-string configPayload = @"{
-  ""schema"": 1,
-  ""description"": ""Hello AI, what can you do for me?"",
-  ""models"": [
-    { ""model_id"": ""text-davinci-003"", ""order"": 3, ""max_tokens"": 60 },
-    { ""model_id"": ""gpt-35-turbo"", ""order"": 1, ""max_tokens"": 120 },
-    { ""model_id"": ""gpt-3.5-turbo"", ""order"": 2, ""max_tokens"": 180 }
-  ]
-}";
-var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
-
-// Semantic function is executed with AzureChat using max_tokens=120
-result = await kernel.RunAsync(func);
-```
-
-### Select Model By Developer Defined Strategy
-
-_As a developer using the Semantic Kernel I can configure multiple request settings for a semantic function and provide a factory which selects the AI service used to execute my function so that I can dynamically control which AI service is used to execute my semantic function._
+_As a developer using the Semantic Kernel I can provide factories which select the AI service and request settings used to execute my function so that I can dynamically control which AI service is used to execute my semantic function._
 
 In this case the developer configures different settings based on the model id and provides an AI Service factory which determines which AI Service will be used when the semantic function is executed.
 In the example below the semantic function is executed with whatever AI Service `myServiceFactory` returns.
@@ -179,43 +140,14 @@ string configPayload = @"{
 }";
 var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
 var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
-func.SetAIService(myServiceFactory);
 
 // Semantic function is executed with AI Service returned by custom AIService factory
-result = await kernel.RunAsync(func);
-```
-
-### Select Model Request Settings By Developer Defined Strategy
-
-_As a developer using the Semantic Kernel I can configure multiple request settings for a semantic function and provide a factory which selects the Request Settings used when executing my function so that I can dynamically control which Request Settings are used to execute my semantic function._
-
-In this case the developer configures different settings based on the model id and provides a Request Settings factory which determines which Request Settings will be used when the semantic function is executed.
-In the example below the semantic function is executed with the "OpenAIText" AI service because it is the default and the Request Settings are whatever `myRequestSettingsFactory` returns.
-
-```csharp
-// Configure a Kernel with multiple LLM's
-IKernel kernel = Kernel.Builder
-    .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-    .WithAzureChatCompletionService(deploymentName: aoai.ChatDeploymentName, // gpt-35-turbo
-        endpoint: aoai.Endpoint, serviceId: "AzureChat", apiKey: aoai.ApiKey)
-    .WithOpenAITextCompletionService(modelId: oai.ModelId, // text-davinci-003
-        serviceId: "OpenAIText", apiKey: oai.ApiKey, setAsDefault: true)
-    .WithOpenAIChatCompletionService(modelId: oai.ChatModelId, // gpt-3.5-turbo
-        serviceId: "OpenAIChat", apiKey: oai.ApiKey)
-    .Build();
-
-// Configure semantic function with multiple LLM request settings
-string configPayload = @"{
-  ""schema"": 1,
-  ""description"": ""Hello AI, what can you do for me?"",
-  ""models"": []
-}";
-var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
-func.SetRequestSettings(myRequestSettingsFactory);
-
-// Semantic function is executed with AI Service returned by custom AIService factory
-result = await kernel.RunAsync(func);
+var funcOptions = new FunctionOptions()
+{
+    AIServiceFactory: myAiServiceFactory,
+    RequestSettingsFactory: myRequestSettingsFactory
+}
+result = await kernel.RunAsync(func, funcOptions);
 ```
 
 ## More Information
