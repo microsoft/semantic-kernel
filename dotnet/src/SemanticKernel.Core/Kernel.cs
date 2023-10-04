@@ -252,7 +252,7 @@ repeat:
         CultureInfo? culture = null)
     {
         return new SKContext(
-            new FunctionExecutor(this),
+            new KernelFunctionRunner(this),
             variables,
             functions ?? this.Functions,
             loggerFactory ?? this.LoggerFactory,

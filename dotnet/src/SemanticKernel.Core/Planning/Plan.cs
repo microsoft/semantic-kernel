@@ -246,10 +246,9 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var kernelResult = await context.Executor.ExecuteAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
+            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
             // result.Context.Result is used for backward compatibility and can be removed in the future
-            var result = kernelResult.FunctionResults.First();
             var resultString = result.GetValue<string>() ?? result.Context.Result;
 
             var resultValue = resultString.Trim();

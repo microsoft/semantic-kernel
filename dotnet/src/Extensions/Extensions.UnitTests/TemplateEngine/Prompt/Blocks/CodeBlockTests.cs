@@ -20,7 +20,7 @@ public class CodeBlockTests
 {
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ILoggerFactory _logger = NullLoggerFactory.Instance;
-    private readonly Mock<IFunctionExecutor> _functionExecutor = new();
+    private readonly Mock<IFunctionRunner> _functionExecutor = new();
 
     public CodeBlockTests()
     {
@@ -31,7 +31,7 @@ public class CodeBlockTests
     public async Task ItThrowsIfAFunctionDoesntExistAsync()
     {
         // Arrange
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
         var context = new SKContext(this._functionExecutor.Object);
         this._functions.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._logger);

@@ -56,7 +56,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
                 x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<double>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .Returns(asyncEnumerable);
 
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(functionExecutor.Object, variables);
@@ -135,7 +135,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(functionExecutor.Object, variables, functions.Object);
@@ -205,7 +205,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
         functions.Setup(x => x.GetFunction(It.IsAny<string>(), It.IsAny<string>())).Returns(functionMock.Object);
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
 
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
 
         // Arrange GetAvailableFunctionsAsync parameters
         var context = new SKContext(functionExecutor.Object, variables, functions.Object);
@@ -242,7 +242,7 @@ public class ReadOnlyFunctionCollectionExtensionsTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
 
         var variables = new ContextVariables();
         var functions = new FunctionCollection();

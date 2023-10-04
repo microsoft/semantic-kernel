@@ -56,7 +56,7 @@ public sealed class SKContext
     /// <summary>
     /// Executes functions using the current resources loaded in the context
     /// </summary>
-    public IFunctionExecutor Executor { get; }
+    public IFunctionRunner Runner { get; }
 
     /// <summary>
     /// Constructor for the context.
@@ -67,7 +67,7 @@ public sealed class SKContext
     /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
-        IFunctionExecutor functionExecutor,
+        IFunctionRunner functionExecutor,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
         ILoggerFactory? loggerFactory = null,
@@ -75,7 +75,7 @@ public sealed class SKContext
     {
         Verify.NotNull(functionExecutor, nameof(functionExecutor));
 
-        this.Executor = functionExecutor;
+        this.Runner = functionExecutor;
         this.Variables = variables ?? new();
         this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -109,7 +109,7 @@ public sealed class SKContext
     public SKContext Clone(ContextVariables? variables, IReadOnlyFunctionCollection? functions)
     {
         return new SKContext(
-            this.Executor,
+            this.Runner,
             variables ?? this.Variables.Clone(),
             functions ?? this.Functions,
             this.LoggerFactory,

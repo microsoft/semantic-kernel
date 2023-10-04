@@ -1043,7 +1043,7 @@ public sealed class SKFunctionTests2
 
     private SKContext MockContext(string input)
     {
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
 
         return new SKContext(
             functionExecutor.Object,

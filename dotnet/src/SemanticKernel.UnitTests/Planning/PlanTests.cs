@@ -53,7 +53,7 @@ public sealed class PlanTests
         // Arrange
         var goal = "Write a poem or joke and send it in an e-mail to Kai.";
         var plan = new Plan(goal);
-        var kernel = new Mock<IFunctionExecutor>();
+        var kernel = new Mock<IFunctionRunner>();
 
         var context = new SKContext(kernel.Object, new ContextVariables("Some input"));
 
@@ -504,12 +504,12 @@ public sealed class PlanTests
         // Arrange
         var (kernel, functionExecutor) = this.SetupKernelMock();
 
-        functionExecutor.Setup(k => k.ExecuteAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CancellationToken>()))
-        .Returns<ISKFunction, ContextVariables, IReadOnlyFunctionCollection, CancellationToken>(async (function, variables, functions, ct) =>
+        functionExecutor.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+        .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, variables, ct) =>
         {
             var c = new SKContext(functionExecutor.Object, variables);
             var functionResult = await function.InvokeAsync(c, cancellationToken: ct);
-            return KernelResult.FromFunctionResults(functionResult?.Value, new[] { functionResult! });
+            return functionResult;
         });
 
         var returnContext = new SKContext(functionExecutor.Object);
@@ -666,12 +666,12 @@ public sealed class PlanTests
         // Arrange
         var (kernel, functionExecutor) = this.SetupKernelMock();
 
-        functionExecutor.Setup(k => k.ExecuteAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CancellationToken>()))
-        .Returns<ISKFunction, ContextVariables, IReadOnlyFunctionCollection, CancellationToken>(async (function, variables, functions, ct) =>
+        functionExecutor.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+        .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, variables, ct) =>
         {
             var c = new SKContext(functionExecutor.Object, variables);
             var functionResult = await function.InvokeAsync(c, cancellationToken: ct);
-            return KernelResult.FromFunctionResults(functionResult?.Value, new[] { functionResult! });
+            return functionResult;
         });
 
         var returnContext = new SKContext(functionExecutor.Object);
@@ -825,12 +825,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(expected, result.GetValue<string>());
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IFunctionExecutor> functionExecutorMock) SetupKernelMock(IFunctionCollection? functions = null)
+    private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionExecutorMock) SetupKernelMock(IFunctionCollection? functions = null)
     {
         functions ??= new Mock<IFunctionCollection>().Object;
 
         var kernel = new Mock<IKernel>();
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
 
         kernel.SetupGet(x => x.Functions).Returns(functions);
         kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
@@ -839,12 +839,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
             return new SKContext(functionExecutor.Object, contextVariables, functions);
         });
 
-        functionExecutor.Setup(k => k.ExecuteAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CancellationToken>()))
-        .Returns<ISKFunction, ContextVariables, IReadOnlyFunctionCollection, CancellationToken>(async (function, variables, functions, ct) =>
+        functionExecutor.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+        .Returns<ISKFunction, ContextVariables, CancellationToken>(async (function, variables, ct) =>
         {
             var c = new SKContext(functionExecutor.Object, variables);
             var functionResult = await function.InvokeAsync(c, cancellationToken: ct);
-            return KernelResult.FromFunctionResults(functionResult?.Value, new[] { functionResult! });
+            return functionResult;
         });
 
         return (kernel, functionExecutor);

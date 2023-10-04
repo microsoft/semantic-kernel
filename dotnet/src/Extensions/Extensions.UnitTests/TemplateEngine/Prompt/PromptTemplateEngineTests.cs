@@ -26,7 +26,7 @@ public sealed class PromptTemplateEngineTests
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IKernel> _kernel;
-    private readonly Mock<IFunctionExecutor> _functionExecutor;
+    private readonly Mock<IFunctionRunner> _functionExecutor;
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
@@ -35,7 +35,7 @@ public sealed class PromptTemplateEngineTests
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();
-        this._functionExecutor = new Mock<IFunctionExecutor>();
+        this._functionExecutor = new Mock<IFunctionRunner>();
     }
 
     [Fact]

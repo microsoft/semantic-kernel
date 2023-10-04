@@ -17,7 +17,7 @@ namespace SemanticKernel.UnitTests.Planning;
 
 public sealed class PlanSerializationTests
 {
-    private readonly Mock<IFunctionExecutor> _functionExecutor = new();
+    private readonly Mock<IFunctionRunner> _functionExecutor = new();
 
     [Fact]
     public void CanSerializePlan()
@@ -256,7 +256,7 @@ public sealed class PlanSerializationTests
         // Arrange
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
         kernel.SetupGet(x => x.Functions).Returns(functions.Object);
 
         kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
@@ -274,13 +274,13 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
-        this._functionExecutor.Setup(k => k.ExecuteAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CancellationToken>()))
-        .Returns<ISKFunction, ContextVariables, IReadOnlyFunctionCollection, CancellationToken>((function, variables, functions, ct) =>
+        this._functionExecutor.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+        .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
         {
-            var c = new SKContext(new Mock<IFunctionExecutor>().Object, variables);
+            var c = new SKContext(new Mock<IFunctionRunner>().Object, variables);
             returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input);
             var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
-            return Task.FromResult(KernelResult.FromFunctionResults(functionResult?.Value, new[] { functionResult! }));
+            return Task.FromResult(functionResult);
         });
 
         mockFunction.Setup(x => x.Describe()).Returns(() => new FunctionView("functionName", "pluginName"));
@@ -353,16 +353,16 @@ public sealed class PlanSerializationTests
 
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName"));
 
-        this._functionExecutor.Setup(k => k.ExecuteAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CancellationToken>()))
-                .Returns<ISKFunction, ContextVariables, IReadOnlyFunctionCollection, CancellationToken>((function, variables, functions, ct) =>
+        this._functionExecutor.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+                .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
                 {
-                    var c = new SKContext(new Mock<IFunctionExecutor>().Object, variables);
+                    var c = new SKContext(new Mock<IFunctionRunner>().Object, variables);
                     c.Variables.TryGetValue("variables", out string? v);
 
                     returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
                     var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
 
-                    return Task.FromResult(KernelResult.FromFunctionResults(functionResult?.Value, new[] { functionResult! }));
+                    return Task.FromResult(functionResult);
                 });
 
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName")
@@ -395,7 +395,7 @@ public sealed class PlanSerializationTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        this._functionExecutor.Verify(x => x.ExecuteAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        this._functionExecutor.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -456,15 +456,15 @@ public sealed class PlanSerializationTests
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
-        this._functionExecutor.Setup(k => k.ExecuteAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CancellationToken>()))
-                .Returns<ISKFunction, ContextVariables, IReadOnlyFunctionCollection, CancellationToken>((function, variables, functions, ct) =>
+        this._functionExecutor.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+                .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
                 {
-                    var c = new SKContext(new Mock<IFunctionExecutor>().Object, variables);
+                    var c = new SKContext(new Mock<IFunctionRunner>().Object, variables);
                     c.Variables.TryGetValue("variables", out string? v);
 
                     returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input + v);
                     var functionResult = new FunctionResult(function.Name, function.PluginName, returnContext);
-                    return Task.FromResult(KernelResult.FromFunctionResults(functionResult?.Value, new[] { functionResult! }));
+                    return Task.FromResult(functionResult);
                 });
 
         var serializedPlan = plan.ToJson();
@@ -496,7 +496,7 @@ public sealed class PlanSerializationTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        this._functionExecutor.Verify(x => x.ExecuteAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        this._functionExecutor.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();

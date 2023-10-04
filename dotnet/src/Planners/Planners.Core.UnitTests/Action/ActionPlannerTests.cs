@@ -162,7 +162,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             functions = new Mock<IFunctionCollection>();
             functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
         var kernel = new Mock<IKernel>();
 
         var returnContext = new SKContext(functionExecutor.Object, new ContextVariables(testPlanString), functions.Object);

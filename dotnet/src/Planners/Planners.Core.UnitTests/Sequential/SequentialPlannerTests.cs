@@ -59,7 +59,7 @@ public sealed class SequentialPlannerTests
         }
 
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
@@ -146,7 +146,7 @@ public sealed class SequentialPlannerTests
     public async Task InvalidXMLThrowsAsync()
     {
         // Arrange
-        var functionExecutor = new Mock<IFunctionExecutor>();
+        var functionExecutor = new Mock<IFunctionRunner>();
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 

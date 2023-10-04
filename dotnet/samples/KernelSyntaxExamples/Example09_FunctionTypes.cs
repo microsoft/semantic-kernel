@@ -132,7 +132,7 @@ public class LocalExamplePlugin
     public async Task<string> Type06Async(SKContext context)
     {
         var summarizer = context.Functions.GetFunction("SummarizePlugin", "Summarize");
-        var summary = await context.Executor.ExecuteAsync(summarizer, new ContextVariables("blah blah blah"));
+        var summary = await context.Runner.RunAsync(summarizer, new ContextVariables("blah blah blah"));
 
         Console.WriteLine($"Running function type 6 [{summary}]");
         return "";

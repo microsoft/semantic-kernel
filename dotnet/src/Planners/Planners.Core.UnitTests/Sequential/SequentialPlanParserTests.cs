@@ -37,7 +37,7 @@ public class SequentialPlanParserTests
     }
 
     private SKContext CreateSKContext(
-        IFunctionExecutor functionExecutor,
+        IFunctionRunner functionExecutor,
         ContextVariables? variables = null)
     {
         return new SKContext(functionExecutor, variables);
@@ -58,7 +58,7 @@ public class SequentialPlanParserTests
         var kernelMock = this.CreateKernelMock(out var functionCollection, out _);
         kernel = kernelMock.Object;
 
-        var functionExecutorMock = new Mock<IFunctionExecutor>();
+        var functionExecutorMock = new Mock<IFunctionRunner>();
 
         // For Create
         kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))

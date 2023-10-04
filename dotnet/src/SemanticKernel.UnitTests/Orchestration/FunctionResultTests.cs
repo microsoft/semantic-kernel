@@ -12,7 +12,7 @@ namespace SemanticKernel.UnitTests.Orchestration;
 /// </summary>
 public class FunctionResultTests
 {
-    private readonly Mock<IFunctionExecutor> _functionExecutor = new();
+    private readonly Mock<IFunctionRunner> _functionExecutor = new();
 
     private SKContext CreateContext()
     {
