@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -11,7 +11,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 internal static class Example48_GroundednessChecks
 {
-    private static string s_groundingText = @"""I am by birth a Genevese, and my family is one of the most distinguished of that republic.
+    private const string GroundingText = @"""I am by birth a Genevese, and my family is one of the most distinguished of that republic.
 My ancestors had been for many years counsellors and syndics, and my father had filled several public situations
 with honour and reputation.He was respected by all who knew him for his integrity and indefatigable attention
 to public business.He passed his younger days perpetually occupied by the affairs of his country; a variety
@@ -50,11 +50,11 @@ after this event Caroline became his wife.""";
 
     public static async Task RunAsync()
     {
-        await GroundednessCheckingSkillAsync();
+        await GroundednessCheckingAsync();
         await PlanningWithGroundednessAsync();
     }
 
-    public static async Task GroundednessCheckingSkillAsync()
+    public static async Task GroundednessCheckingAsync()
     {
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
@@ -94,7 +94,7 @@ her a beggar. My father came to her aid and two years later they married.
         Console.WriteLine(extractionResult);
 
         context.Variables.Update(extractionResult);
-        context.Variables.Set("reference_context", s_groundingText);
+        context.Variables.Set("reference_context", GroundingText);
 
         var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).GetValue<string>();
 
@@ -141,7 +141,7 @@ which are not grounded in the original.
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var results = await kernel.RunAsync(s_groundingText, plan);
+        var results = await kernel.RunAsync(GroundingText, plan);
         Console.WriteLine(results.GetValue<string>());
     }
 }
@@ -180,9 +180,9 @@ which are not grounded in the original.
 Steps:
   - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
   - SummarizePlugin.Summarize INPUT='' => RESULT__SUMMARY
-  - GroundingSkill.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
-  - GroundingSkill.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
-  - GroundingSkill.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
+  - GroundingPlugin.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
+  - GroundingPlugin.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
+  - GroundingPlugin.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
 A possible summary is:
 
 
