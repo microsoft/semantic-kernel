@@ -283,23 +283,6 @@ repeat:
         if (this._functionCollection is IDisposable reg) { reg.Dispose(); }
     }
 
-    internal Kernel Clone(IReadOnlyFunctionCollection? functions = null)
-    {
-        var kernelCopy = new Kernel(
-            (functions is null) ? this._functionCollection : new FunctionCollection(functions),
-            this._aiServiceProvider,
-            this._promptTemplateEngine,
-            this._memory,
-            this._httpHandlerFactory,
-            this.LoggerFactory
-        );
-
-        kernelCopy.FunctionInvoked = this.FunctionInvoked;
-        kernelCopy.FunctionInvoking = this.FunctionInvoking;
-
-        return kernelCopy;
-    }
-
     #region private ================================================================================
 
     private readonly IFunctionCollection _functionCollection;
