@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Functions.Grpc;
 /// <summary>
 /// Runs gRPC operation runner.
 /// </summary>
-internal class GrpcOperationRunner
+internal sealed class GrpcOperationRunner
 {
     /// <summary>
     /// An instance of the HttpClient class.
