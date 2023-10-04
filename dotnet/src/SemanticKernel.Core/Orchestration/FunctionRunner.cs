@@ -5,10 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Orchestration;
-internal class KernelFunctionRunner : IFunctionRunner
+
+internal class FunctionRunner : IFunctionRunner
 {
     private readonly IKernel _kernel;
-    public KernelFunctionRunner(IKernel kernel)
+    public FunctionRunner(IKernel kernel)
     {
         this._kernel = kernel;
     }

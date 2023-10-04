@@ -59,18 +59,18 @@ public sealed class SequentialPlannerTests
         }
 
         functions.Setup(x => x.GetFunctionViews()).Returns(functionsView);
-        var functionExecutor = new Mock<IFunctionRunner>();
+        var functionRunner = new Mock<IFunctionRunner>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
 
         var expectedFunctions = input.Select(x => x.name).ToList();
         var expectedPlugins = input.Select(x => x.pluginName).ToList();
 
         var context = new SKContext(
-            functionExecutor.Object,
+            functionRunner.Object,
             new ContextVariables());
 
         var returnContext = new SKContext(
-            functionExecutor.Object,
+            functionRunner.Object,
             new ContextVariables());
 
         var planString =
@@ -146,16 +146,16 @@ public sealed class SequentialPlannerTests
     public async Task InvalidXMLThrowsAsync()
     {
         // Arrange
-        var functionExecutor = new Mock<IFunctionRunner>();
+        var functionRunner = new Mock<IFunctionRunner>();
         var kernel = new Mock<IKernel>();
         var functions = new Mock<IFunctionCollection>();
 
         functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
 
         var planString = "<plan>notvalid<</plan>";
-        var returnContext = new SKContext(functionExecutor.Object, new ContextVariables(planString));
+        var returnContext = new SKContext(functionRunner.Object, new ContextVariables(planString));
 
-        var context = new SKContext(functionExecutor.Object, new ContextVariables());
+        var context = new SKContext(functionRunner.Object, new ContextVariables());
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(

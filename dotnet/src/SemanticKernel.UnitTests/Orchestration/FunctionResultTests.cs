@@ -12,11 +12,11 @@ namespace SemanticKernel.UnitTests.Orchestration;
 /// </summary>
 public class FunctionResultTests
 {
-    private readonly Mock<IFunctionRunner> _functionExecutor = new();
+    private readonly Mock<IFunctionRunner> _functionRunner = new();
 
     private SKContext CreateContext()
     {
-        return new SKContext(this._functionExecutor.Object);
+        return new SKContext(this._functionRunner.Object);
     }
 
     [Fact]

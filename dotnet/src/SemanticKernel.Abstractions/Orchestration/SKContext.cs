@@ -61,21 +61,21 @@ public sealed class SKContext
     /// <summary>
     /// Constructor for the context.
     /// </summary>
-    /// <param name="functionExecutor">Kernel reference</param>
+    /// <param name="functionRunner">Function runner reference</param>
     /// <param name="variables">Context variables to include in context.</param>
     /// <param name="functions">Functions to include in context.</param>
     /// <param name="loggerFactory">Logger factory to be used in context</param>
     /// <param name="culture">Culture related to the context</param>
     internal SKContext(
-        IFunctionRunner functionExecutor,
+        IFunctionRunner functionRunner,
         ContextVariables? variables = null,
         IReadOnlyFunctionCollection? functions = null,
         ILoggerFactory? loggerFactory = null,
         CultureInfo? culture = null)
     {
-        Verify.NotNull(functionExecutor, nameof(functionExecutor));
+        Verify.NotNull(functionRunner, nameof(functionRunner));
 
-        this.Runner = functionExecutor;
+        this.Runner = functionRunner;
         this.Variables = variables ?? new();
         this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;

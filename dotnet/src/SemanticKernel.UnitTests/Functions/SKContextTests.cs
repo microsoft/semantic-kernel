@@ -46,8 +46,8 @@ public class SKContextTests
         // Arrange
         IDictionary<string, ISKFunction> functions = KernelBuilder.Create().ImportFunctions(new Parrot(), "test");
         this._functions.Setup(x => x.GetFunction("func")).Returns(functions["say"]);
-        var (kernel, functionExecutor) = this.SetupKernelMock(this._functions.Object);
-        var target = new SKContext(functionExecutor.Object, new ContextVariables(), this._functions.Object);
+        var (kernel, functionRunner) = this.SetupKernelMock(this._functions.Object);
+        var target = new SKContext(functionRunner.Object, new ContextVariables(), this._functions.Object);
         Assert.NotNull(target.Functions);
 
         // Act
@@ -60,21 +60,21 @@ public class SKContextTests
         Assert.Equal("ciao", result.GetValue<string>());
     }
 
-    private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionExecutorMock) SetupKernelMock(IReadOnlyFunctionCollection? functions = null)
+    private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock) SetupKernelMock(IReadOnlyFunctionCollection? functions = null)
     {
         functions ??= new Mock<IFunctionCollection>().Object;
 
         var kernel = new Mock<IKernel>();
-        var functionExecutor = new Mock<IFunctionRunner>();
+        var functionRunner = new Mock<IFunctionRunner>();
 
         kernel.SetupGet(x => x.Functions).Returns(functions);
         kernel.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
             .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
         {
-            return new SKContext(functionExecutor.Object, contextVariables);
+            return new SKContext(functionRunner.Object, contextVariables);
         });
 
-        return (kernel, functionExecutor);
+        return (kernel, functionRunner);
     }
 
     private sealed class Parrot
