@@ -18,6 +18,7 @@ Empowers app owners to integrate cutting-edge LLM technology quickly and easily 
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" PrivateAssets="none" />
+    <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" PrivateAssets="none" />
     <ProjectReference Include="..\Planners\Planners.Core\Planners.Core.csproj" PrivateAssets="none" />
   </ItemGroup>
 </Project>
