@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
-using Moq;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
@@ -212,10 +211,10 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         var executionParameters = new OpenApiFunctionExecutionParameters();
         executionParameters.HttpClient = httpClient;
 
-        var fakePlugin = new Mock<IFakePlugin>();
+        var fakePlugin = new FakePlugin();
 
         var openApiPlugins = await this._kernel.ImportPluginFunctionsAsync("fakePlugin", this._openApiDocument, executionParameters);
-        var fakePlugins = this._kernel.ImportFunctions(fakePlugin.Object);
+        var fakePlugins = this._kernel.ImportFunctions(fakePlugin);
 
         var kernel = KernelBuilder.Create();
 
@@ -224,17 +223,22 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         arguments.Add("api-version", "fake-api-version");
 
         //Act
-        var res = await kernel.RunAsync(openApiPlugins["GetSecret"], arguments);
+        var res = await kernel.RunAsync(arguments, openApiPlugins["GetSecret"], fakePlugins["DoFakeAction"]);
 
         //Assert
-        var response = res.GetValue<RestApiOperationResponse>();
+        Assert.NotNull(res);
+
+        var openApiPluginResult = res.FunctionResults.FirstOrDefault();
+        Assert.NotNull(openApiPluginResult);
+
+        var result = openApiPluginResult.GetValue<RestApiOperationResponse>();
 
         //Check original response
-        Assert.NotNull(response);
-        Assert.Equal("fake-content", response.Content);
+        Assert.NotNull(result);
+        Assert.Equal("fake-content", result.Content);
 
         //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenApi plugin in the pipeline since there's no direct access to the context.
-        fakePlugin.Verify(fp => fp.FakeMethod("fake-content"));
+        Assert.Equal("fake-content", fakePlugin.ParameterValueFakeMethodCalledWith);
     }
 
     public void Dispose()
@@ -256,9 +260,15 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         return variables;
     }
 
-    private interface IFakePlugin
+    private sealed class FakePlugin
     {
-        void FakeMethod(string parameter);
+        public string? ParameterValueFakeMethodCalledWith { get; private set; }
+
+        [SKFunction]
+        public void DoFakeAction(string parameter)
+        {
+            this.ParameterValueFakeMethodCalledWith = parameter;
+        }
     }
 
     #endregion
