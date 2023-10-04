@@ -101,9 +101,9 @@ internal sealed class ReActEngine
             {
                 promptConfig = PromptTemplateConfig.FromJson(promptConfigString);
             }
-            else if (promptConfig.Completion is not null)
+            else
             {
-                promptConfig.Completion.ExtensionData["MaxTokens"] = config.MaxTokens;
+                promptConfig.SetMaxTokens(config.MaxTokens);
             }
         }
 
