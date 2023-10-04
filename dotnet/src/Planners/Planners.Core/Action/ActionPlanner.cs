@@ -65,7 +65,7 @@ public sealed class ActionPlanner : IActionPlanner
         this.Config = config ?? new();
         this.Config.ExcludedPlugins.Add(PluginName);
 
-        string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("skprompt.txt");
+        string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Action.skprompt.txt");
 
         this._plannerFunction = kernel.CreateSemanticFunction(
             pluginName: PluginName,
