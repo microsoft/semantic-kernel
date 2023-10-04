@@ -61,30 +61,15 @@ class TextMemorySkill(PydanticField):
         if context.memory is None:
             raise ValueError("Context has no memory")
 
-        collection = (
-            context.variables[TextMemorySkill.COLLECTION_PARAM]
-            if context.variables.contains_key(TextMemorySkill.COLLECTION_PARAM)
-            else TextMemorySkill.DEFAULT_COLLECTION
+        collection = context.variables.get(
+            TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
         )
-        if not collection:
-            raise ValueError("Memory collection not defined for TextMemorySkill")
-
-        relevance = (
-            context.variables[TextMemorySkill.RELEVANCE_PARAM]
-            if context.variables.contains_key(TextMemorySkill.RELEVANCE_PARAM)
-            else TextMemorySkill.DEFAULT_RELEVANCE
+        relevance = context.variables.get(
+            TextMemorySkill.RELEVANCE_PARAM, TextMemorySkill.DEFAULT_RELEVANCE
         )
-        if relevance is None or str(relevance).strip() == "":
-            relevance = TextMemorySkill.DEFAULT_RELEVANCE
-
-        limit = (
-            context.variables[TextMemorySkill.LIMIT_PARAM]
-            if context.variables.contains_key(TextMemorySkill.LIMIT_PARAM)
-            else TextMemorySkill.DEFAULT_LIMIT
+        limit = context.variables.get(
+            TextMemorySkill.LIMIT_PARAM, TextMemorySkill.DEFAULT_LIMIT
         )
-        if limit is None or str(limit).strip() == "":
-            limit = TextMemorySkill.DEFAULT_LIMIT
-
         results = await context.memory.search_async(
             collection=collection,
             query=ask,
@@ -130,19 +115,10 @@ class TextMemorySkill(PydanticField):
         if context.memory is None:
             raise ValueError("Context has no memory")
 
-        collection = (
-            context.variables[TextMemorySkill.COLLECTION_PARAM]
-            if context.variables.contains_key(TextMemorySkill.COLLECTION_PARAM)
-            else TextMemorySkill.DEFAULT_COLLECTION
+        collection = context.variables.get(
+            TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
         )
-        if not collection:
-            raise ValueError("Memory collection not defined for TextMemorySkill")
-
-        key = (
-            context.variables[TextMemorySkill.KEY_PARAM]
-            if context.variables.contains_key(TextMemorySkill.KEY_PARAM)
-            else None
-        )
+        key = context.variables.get(TextMemorySkill.KEY_PARAM, None)
         if not key:
             raise ValueError("Memory key not defined for TextMemorySkill")
 

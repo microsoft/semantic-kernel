@@ -57,11 +57,21 @@ class ContextVariables(SKBaseModel):
 
         return self
 
-    def get(self, name: str, fallback: Optional[str] = None) -> Optional[str]:
+    def get(self, name: str, value: Optional[str] = None) -> Optional[str]:
+        """Get a variable value by name, or return a default value if not found.
+
+        Arguments:
+            name {str} -- The variable name.
+            value {Optional[str]} -- The value to return if the variable is not found.
+                Defaults to None.
+
+        Returns:
+            Optional[str] -- The variable value, or the default value if not found.
+        """
         name = name.lower()
         if name in self.variables:
             return self.variables[name]
-        return fallback
+        return value
 
     def __getitem__(self, name: str) -> str:
         name = name.lower()
@@ -73,7 +83,7 @@ class ContextVariables(SKBaseModel):
         name = name.lower()
         self.variables[name] = value
 
-    def contains_key(self, name: str) -> bool:
+    def __contains__(self, name: str) -> bool:
         name = name.lower()
         return name in self.variables
 
