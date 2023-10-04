@@ -110,6 +110,35 @@ async def test_run_async_handles_post_invocation(pipeline_count):
 
 
 @pytest.mark.asyncio
+async def test_run_async_post_invocation_repeat_is_working():
+    # Arrange
+    kernel = Kernel()
+
+    mock_function = create_mock_function(name="RepeatMe")
+    mock_function.invoke_async = AsyncMock(side_effect=lambda input, context: context)
+
+    invoked = 0
+    repeat_times = 0
+
+    def invoked_handler(sender, e):
+        nonlocal invoked, repeat_times
+        invoked += 1
+
+        if repeat_times < 3:
+            e.repeat()
+            repeat_times += 1
+
+    kernel.add_function_invoked_handler(invoked_handler)
+
+    # Act
+    _ = await kernel.run_async(mock_function)
+
+    # Assert
+    assert invoked == 4
+    assert repeat_times == 3
+
+
+@pytest.mark.asyncio
 async def test_run_async_change_variable_invoking_handler():
     # Arrange
     kernel = Kernel()
