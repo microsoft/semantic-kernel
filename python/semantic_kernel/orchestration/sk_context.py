@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, Tuple, Union
+from typing import Any, Generic, Literal, Optional, Tuple, Union
 
 import pydantic as pdt
 
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import (
+    FunctionCall,
+)
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.semantic_text_memory_base import (
     SemanticTextMemoryBase,
@@ -19,11 +22,6 @@ from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
 )
 
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import (
-        FunctionCall,
-    )
-
 
 class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
     """Semantic Kernel context."""
@@ -36,7 +34,7 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
     _error_occurred: bool = pdt.PrivateAttr(False)
     _last_exception: Optional[Exception] = pdt.PrivateAttr(None)
     _last_error_description: str = pdt.PrivateAttr("")
-    _function_call: Optional["FunctionCall"] = pdt.PrivateAttr(None)
+    _function_call: Optional[FunctionCall] = pdt.PrivateAttr(None)
     _logger: Logger = pdt.PrivateAttr()
 
     def __init__(
@@ -125,7 +123,7 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
         return self._last_exception
 
     @property
-    def function_call(self) -> Optional["FunctionCall"]:
+    def function_call(self) -> Optional[FunctionCall]:
         """
         The function call.
 
@@ -134,7 +132,7 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
         """
         return self._function_call
 
-    def pop_function_call(self) -> Optional["FunctionCall"]:
+    def pop_function_call(self) -> Optional[FunctionCall]:
         """
         Pop the function call.
 
