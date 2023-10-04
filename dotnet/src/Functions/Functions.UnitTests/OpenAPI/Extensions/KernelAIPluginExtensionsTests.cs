@@ -5,11 +5,15 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
+using Moq;
 using SemanticKernel.Functions.UnitTests.OpenAPI.TestPlugins;
 using Xunit;
 
@@ -196,6 +200,43 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task ItShouldConvertPluginComplexResponseToStringToSaveItInContextAsync()
+    {
+        //Arrange
+        using var messageHandlerStub = new HttpMessageHandlerStub();
+        messageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        using var httpClient = new HttpClient(messageHandlerStub, false);
+
+        var executionParameters = new OpenApiFunctionExecutionParameters();
+        executionParameters.HttpClient = httpClient;
+
+        var fakePlugin = new Mock<IFakePlugin>();
+
+        var openApiPlugins = await this._kernel.ImportPluginFunctionsAsync("fakePlugin", this._openApiDocument, executionParameters);
+        var fakePlugins = this._kernel.ImportFunctions(fakePlugin.Object);
+
+        var kernel = KernelBuilder.Create();
+
+        var arguments = new ContextVariables();
+        arguments.Add("secret-name", "fake-secret-name");
+        arguments.Add("api-version", "fake-api-version");
+
+        //Act
+        var res = await kernel.RunAsync(openApiPlugins["GetSecret"], arguments);
+
+        //Assert
+        var response = res.GetValue<RestApiOperationResponse>();
+
+        //Check original response
+        Assert.NotNull(response);
+        Assert.Equal("fake-content", response.Content);
+
+        //Check the response, converted to a string indirectly through an argument passed to a fake plugin that follows the OpenApi plugin in the pipeline since there's no direct access to the context.
+        fakePlugin.Verify(fp => fp.FakeMethod("fake-content"));
+    }
+
     public void Dispose()
     {
         this._openApiDocument.Dispose();
@@ -213,6 +254,11 @@ public sealed class KernelAIPluginExtensionsTests : IDisposable
         variables["payload"] = "fake-payload";
 
         return variables;
+    }
+
+    private interface IFakePlugin
+    {
+        void FakeMethod(string parameter);
     }
 
     #endregion
