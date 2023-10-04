@@ -32,7 +32,7 @@ To download nightly builds follow the following steps:
       <packageSourceCredentials>
         <github>
             <add key="Username" value="<Your GitHub Id>" />
-            <add key="ClearTextPassword" value="<Your Person Access Token>" />
+            <add key="ClearTextPassword" value="<Your Personal Access Token>" />
           </github>
       </packageSourceCredentials>
     </configuration>
