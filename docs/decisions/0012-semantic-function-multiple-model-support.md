@@ -142,12 +142,10 @@ var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayl
 var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
 
 // Semantic function is executed with AI Service returned by custom AIService factory
-var funcOptions = new FunctionOptions()
-{
-    AIServiceFactory: myAiServiceFactory,
-    RequestSettingsFactory: myRequestSettingsFactory
-}
-result = await kernel.RunAsync(func, funcOptions);
+var funcOptions = new FunctionOptions();
+funcOptions.AddFactory<IAIService>(myAiServiceFactory);
+funcOptions.AddFactory<AIRequestSettings>(myRequestSettingsFactory);
+result = await kernel.RunAsync(func, funcVariables, funcOptions);
 ```
 
 ## More Information
