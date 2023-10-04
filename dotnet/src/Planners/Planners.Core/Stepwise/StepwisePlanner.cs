@@ -11,12 +11,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Stepwise;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
@@ -52,19 +50,15 @@ public class StepwisePlanner : IStepwisePlanner
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
         // Set up prompt templates
-        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Plugin.StepwiseStep.skprompt.txt");
-        this._manualTemplate = EmbeddedResource.Read("Plugin.RenderFunctionManual.skprompt.txt");
-        this._questionTemplate = EmbeddedResource.Read("Plugin.RenderQuestion.skprompt.txt");
+        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.Plugin.StepwiseStep.skprompt.txt");
+        this._manualTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderFunctionManual.skprompt.txt");
+        this._questionTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderQuestion.skprompt.txt");
 
         // Load or use default PromptConfig
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
-        if (this._promptConfig.Completion is null)
-        {
-            this._promptConfig.Completion = new AIRequestSettings();
-        }
-        this._promptConfig.Completion.ExtensionData["max_tokens"] = this.Config.MaxCompletionTokens;
+        this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
@@ -84,17 +78,13 @@ public class StepwisePlanner : IStepwisePlanner
             throw new SKException("The goal specified is empty");
         }
 
-        Plan planStep = new(this._nativeFunctions["ExecutePlan"]);
-        planStep.Parameters.Set("question", goal);
+        Plan plan = new(this._nativeFunctions["ExecutePlan"]);
+        plan.Parameters.Set("question", goal);
 
-        planStep.Outputs.Add("stepCount");
-        planStep.Outputs.Add("functionCount");
-        planStep.Outputs.Add("stepsTaken");
-        planStep.Outputs.Add("iterations");
-
-        Plan plan = new(goal);
-
-        plan.AddSteps(planStep);
+        plan.Outputs.Add("stepCount");
+        plan.Outputs.Add("functionCount");
+        plan.Outputs.Add("stepsTaken");
+        plan.Outputs.Add("iterations");
 
         return plan;
     }
@@ -120,7 +110,7 @@ public class StepwisePlanner : IStepwisePlanner
             return context;
         }
 
-        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this.CreateChatHistory(this._kernel, out var aiService), aiService, context, cancellationToken).ConfigureAwait(false);
+        ChatHistory chatHistory = await this.InitializeChatHistoryAsync(this.CreateChatHistory(this._kernel, out var aiService), aiService, question, context, cancellationToken).ConfigureAwait(false);
 
         if (aiService is null)
         {
@@ -321,9 +311,9 @@ public class StepwisePlanner : IStepwisePlanner
 
     #region setup helpers
 
-    private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, IAIService aiService, SKContext context, CancellationToken cancellationToken)
+    private async Task<ChatHistory> InitializeChatHistoryAsync(ChatHistory chatHistory, IAIService aiService, string question, SKContext context, CancellationToken cancellationToken)
     {
-        string userManual = await this.GetUserManualAsync(context, cancellationToken).ConfigureAwait(false);
+        string userManual = await this.GetUserManualAsync(question, context, cancellationToken).ConfigureAwait(false);
         string userQuestion = await this.GetUserQuestionAsync(context, cancellationToken).ConfigureAwait(false);
 
         var systemContext = this._kernel.CreateNewContext();
@@ -356,9 +346,9 @@ public class StepwisePlanner : IStepwisePlanner
         return chatHistory;
     }
 
-    private async Task<string> GetUserManualAsync(SKContext context, CancellationToken cancellationToken)
+    private async Task<string> GetUserManualAsync(string question, SKContext context, CancellationToken cancellationToken)
     {
-        var descriptions = await this.GetFunctionDescriptionsAsync(cancellationToken).ConfigureAwait(false);
+        var descriptions = await this._kernel.Functions.GetFunctionsManualAsync(this.Config, question, this._logger, cancellationToken).ConfigureAwait(false);
         context.Variables.Set("functionDescriptions", descriptions);
         return await this._promptRenderer.RenderAsync(this._manualTemplate, context, cancellationToken).ConfigureAwait(false);
     }
@@ -410,7 +400,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (aiService is IChatCompletion chatCompletion)
         {
-            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.Completion, token).ConfigureAwait(false));
+            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false));
             return llmResponse;
         }
         else if (aiService is ITextCompletion textCompletion)
@@ -425,7 +415,7 @@ public class StepwisePlanner : IStepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.Completion, token).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {
@@ -520,8 +510,16 @@ public class StepwisePlanner : IStepwisePlanner
 
     private async Task<string?> InvokeActionAsync(string actionName, Dictionary<string, string> actionVariables, CancellationToken cancellationToken)
     {
-        var availableFunctions = await this.GetAvailableFunctionsAsync(cancellationToken).ConfigureAwait(false);
-        var targetFunction = availableFunctions.FirstOrDefault(f => ToFullyQualifiedName(f) == actionName);
+        FunctionUtils.SplitPluginFunctionName(actionName, out var pluginName, out var functionName);
+        if (string.IsNullOrEmpty(functionName))
+        {
+            this._logger?.LogDebug("Attempt to invoke action {Action} failed", actionName);
+            return $"Could not parse functionName from actionName: {actionName}. Please try again using one of the [AVAILABLE FUNCTIONS].";
+        }
+
+        var getFunctionCallback = this.Config.GetFunctionCallback ?? this._kernel.Functions.GetFunctionCallback();
+        var targetFunction = getFunctionCallback(pluginName, functionName);
+
         if (targetFunction == null)
         {
             this._logger?.LogDebug("Attempt to invoke action {Action} failed", actionName);
@@ -530,10 +528,8 @@ public class StepwisePlanner : IStepwisePlanner
 
         try
         {
-            ISKFunction function = this.GetFunction(targetFunction);
-
             var vars = this.CreateActionContextVariables(actionVariables);
-            var kernelResult = await this._kernel.RunAsync(function, vars, cancellationToken).ConfigureAwait(false);
+            var kernelResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
             var result = kernelResult.GetValue<string>();
 
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
@@ -545,46 +541,6 @@ public class StepwisePlanner : IStepwisePlanner
             this._logger?.LogError(e, "Something went wrong in system step: {Plugin}.{Function}. Error: {Error}", targetFunction.PluginName, targetFunction.Name, e.Message);
             throw;
         }
-    }
-
-    private ISKFunction GetFunction(FunctionView targetFunction)
-    {
-        var getFunction = (string pluginName, string functionName) =>
-        {
-            return this._kernel.Functions.GetFunction(pluginName, functionName);
-        };
-        var getFunctionCallback = this.Config.GetFunctionCallback ?? getFunction;
-        var function = getFunctionCallback(targetFunction.PluginName, targetFunction.Name);
-        return function;
-    }
-
-    private async Task<string> GetFunctionDescriptionsAsync(CancellationToken cancellationToken)
-    {
-        // Use configured function provider if available, otherwise use the default SKContext function provider.
-        var availableFunctions = await this.GetAvailableFunctionsAsync(cancellationToken).ConfigureAwait(false);
-        var functionDescriptions = string.Join("\n\n", availableFunctions.Select(x => ToManualString(x)));
-        return functionDescriptions;
-    }
-
-    private Task<IOrderedEnumerable<FunctionView>> GetAvailableFunctionsAsync(CancellationToken cancellationToken)
-    {
-        if (this.Config.GetAvailableFunctionsAsync is null)
-        {
-            var functionsView = this._kernel.Functions!.GetFunctionViews();
-
-            var excludedPlugins = this.Config.ExcludedPlugins ?? new();
-            var excludedFunctions = this.Config.ExcludedFunctions ?? new();
-
-            var availableFunctions =
-                functionsView
-                    .Where(s => !excludedPlugins.Contains(s.PluginName) && !excludedFunctions.Contains(s.Name))
-                    .OrderBy(x => x.PluginName)
-                    .ThenBy(x => x.Name);
-
-            return Task.FromResult(availableFunctions);
-        }
-
-        return this.Config.GetAvailableFunctionsAsync(this.Config, null, cancellationToken);
     }
 
     private ContextVariables CreateActionContextVariables(Dictionary<string, string> actionVariables)
@@ -605,7 +561,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private static PromptTemplateConfig LoadPromptConfigFromResource()
     {
-        string promptConfigString = EmbeddedResource.Read("Plugin.StepwiseStep.config.json");
+        string promptConfigString = EmbeddedResource.Read("Stepwise.Plugin.StepwiseStep.config.json");
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
     }
 
@@ -649,29 +605,6 @@ public class StepwisePlanner : IStepwisePlanner
         context.Variables.Set("functionCount", $"{functionCallCountStr} ({functionCallListWithCounts})");
     }
 
-    private static string ToManualString(FunctionView function)
-    {
-        var inputs = string.Join("\n", function.Parameters.Select(parameter =>
-        {
-            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $"(default='{parameter.DefaultValue}')";
-            return $"  - {parameter.Name}: {parameter.Description} {defaultValueString}";
-        }));
-
-        var functionDescription = function.Description.Trim();
-
-        if (string.IsNullOrEmpty(inputs))
-        {
-            return $"{ToFullyQualifiedName(function)}: {functionDescription}\n";
-        }
-
-        return $"{ToFullyQualifiedName(function)}: {functionDescription}\n{inputs}\n";
-    }
-
-    private static string ToFullyQualifiedName(FunctionView function)
-    {
-        return $"{function.PluginName}.{function.Name}";
-    }
-
     #region private
 
     /// <summary>
@@ -686,32 +619,32 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// Planner native functions
     /// </summary>
-    private IDictionary<string, ISKFunction> _nativeFunctions = new Dictionary<string, ISKFunction>();
+    private readonly IDictionary<string, ISKFunction> _nativeFunctions = new Dictionary<string, ISKFunction>();
 
     /// <summary>
     /// The prompt template to use for the system step
     /// </summary>
-    private string _promptTemplate;
+    private readonly string _promptTemplate;
 
     /// <summary>
     /// The question template to use for the system step
     /// </summary>
-    private string _questionTemplate;
+    private readonly string _questionTemplate;
 
     /// <summary>
     /// The function manual template to use for the system step
     /// </summary>
-    private string _manualTemplate;
+    private readonly string _manualTemplate;
 
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private PromptTemplateEngine _promptRenderer;
+    private readonly PromptTemplateEngine _promptRenderer;
 
     /// <summary>
     /// The prompt config to use for the system step
     /// </summary>
-    private PromptTemplateConfig _promptConfig;
+    private readonly PromptTemplateConfig _promptConfig;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation

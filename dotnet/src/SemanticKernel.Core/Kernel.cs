@@ -7,13 +7,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
@@ -94,32 +92,13 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string functionName, SemanticFunctionConfig functionConfig)
-    {
-        return this.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsCollectionName, functionName, functionConfig);
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction RegisterSemanticFunction(string pluginName, string functionName, SemanticFunctionConfig functionConfig)
-    {
-        // Future-proofing the name not to contain special chars
-        Verify.ValidPluginName(pluginName);
-        Verify.ValidFunctionName(functionName);
-
-        ISKFunction function = this.CreateSemanticFunction(pluginName, functionName, functionConfig);
-        this._functionCollection.AddFunction(function);
-
-        return function;
-    }
-
-    /// <inheritdoc/>
     public IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null)
     {
         Verify.NotNull(functionsInstance);
 
         if (string.IsNullOrWhiteSpace(pluginName))
         {
-            pluginName = FunctionCollection.GlobalFunctionsCollectionName;
+            pluginName = FunctionCollection.GlobalFunctionsPluginName;
             this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", functionsInstance.GetType().FullName);
         }
         else
@@ -230,9 +209,16 @@ repeat:
 
                 context = functionResult.Context;
 
+                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
+
+                if (functionInvokedArgs is not null)
+                {
+                    // All changes to the SKContext by invoked handlers may reflect in the original function result
+                    functionResult = new FunctionResult(functionDetails.Name, functionDetails.PluginName, functionInvokedArgs.SKContext, functionInvokedArgs.SKContext.Result);
+                }
+
                 allFunctionResults.Add(functionResult);
 
-                var functionInvokedArgs = this.OnFunctionInvoked(functionDetails, functionResult);
                 if (functionInvokedArgs?.CancelToken.IsCancellationRequested ?? false)
                 {
                     this._logger.LogInformation("Execution was cancelled on function invoked event of pipeline step {StepCount}: {PluginName}.{FunctionName}.", pipelineStepCount, skFunction.PluginName, skFunction.Name);
@@ -334,35 +320,6 @@ repeat:
         }
 
         return null;
-    }
-
-    private ISKFunction CreateSemanticFunction(
-        string pluginName,
-        string functionName,
-        SemanticFunctionConfig functionConfig)
-    {
-        if (!functionConfig.PromptTemplateConfig.Type.Equals("completion", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new SKException($"Function type not supported: {functionConfig.PromptTemplateConfig}");
-        }
-
-        ISKFunction func = SemanticFunction.FromSemanticConfig(
-            pluginName,
-            functionName,
-            functionConfig,
-            this.LoggerFactory
-        );
-
-        // Connect the function to the current kernel function collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultFunctionCollection(this.Functions);
-
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.Completion);
-
-        // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => this.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.Completion?.ServiceId ?? null));
-
-        return func;
     }
 
     /// <summary>

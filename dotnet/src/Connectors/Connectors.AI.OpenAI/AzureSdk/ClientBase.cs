@@ -53,12 +53,12 @@ public abstract class ClientBase
     /// <summary>
     /// Instance of <see cref="Meter"/> for metrics.
     /// </summary>
-    private static Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
+    private static readonly Meter s_meter = new(typeof(ClientBase).Assembly.GetName().Name);
 
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of prompt tokens used.
     /// </summary>
-    private static Counter<int> s_promptTokensCounter =
+    private static readonly Counter<int> s_promptTokensCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Connectors.OpenAI.PromptTokens",
             description: "Number of prompt tokens used");
@@ -66,7 +66,7 @@ public abstract class ClientBase
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the number of completion tokens used.
     /// </summary>
-    private static Counter<int> s_completionTokensCounter =
+    private static readonly Counter<int> s_completionTokensCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Connectors.OpenAI.CompletionTokens",
             description: "Number of completion tokens used");
@@ -74,7 +74,7 @@ public abstract class ClientBase
     /// <summary>
     /// Instance of <see cref="Counter{T}"/> to keep track of the total number of tokens used.
     /// </summary>
-    private static Counter<int> s_totalTokensCounter =
+    private static readonly Counter<int> s_totalTokensCounter =
         s_meter.CreateCounter<int>(
             name: "SK.Connectors.OpenAI.TotalTokens",
             description: "Total number of tokens used");
@@ -349,8 +349,31 @@ public abstract class ClientBase
             NucleusSamplingFactor = (float?)requestSettings.TopP,
             FrequencyPenalty = (float?)requestSettings.FrequencyPenalty,
             PresencePenalty = (float?)requestSettings.PresencePenalty,
-            ChoiceCount = requestSettings.ResultsPerPrompt
+            ChoiceCount = requestSettings.ResultsPerPrompt,
         };
+
+        if (requestSettings.Functions is not null)
+        {
+            if (requestSettings.FunctionCall == OpenAIRequestSettings.FunctionCallAuto)
+            {
+                options.FunctionCall = FunctionDefinition.Auto;
+                options.Functions = requestSettings.Functions.Select(f => f.ToFunctionDefinition()).ToList();
+            }
+            else if (requestSettings.FunctionCall != OpenAIRequestSettings.FunctionCallNone
+                    && !requestSettings.FunctionCall.IsNullOrEmpty())
+            {
+                var filteredFunctions = requestSettings.Functions
+                    .Where(f => f.FullyQualifiedName.Equals(requestSettings.FunctionCall, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                OpenAIFunction? function = filteredFunctions.FirstOrDefault();
+                if (function is not null)
+                {
+                    options.FunctionCall = function.ToFunctionDefinition();
+                    options.Functions = filteredFunctions.Select(f => f.ToFunctionDefinition()).ToList();
+                }
+            }
+        }
 
         foreach (var keyValue in requestSettings.TokenSelectionBiases)
         {

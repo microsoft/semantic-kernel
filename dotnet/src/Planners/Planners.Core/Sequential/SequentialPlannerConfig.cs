@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Planning;
-
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
 namespace Microsoft.SemanticKernel.Planners;
@@ -13,9 +11,12 @@ namespace Microsoft.SemanticKernel.Planners;
 public sealed class SequentialPlannerConfig : PlannerConfigBase
 {
     /// <summary>
-    /// The maximum number of tokens to allow in a plan.
+    /// Initializes a new instance of the <see cref="SequentialPlannerConfig"/> class.
     /// </summary>
-    public int? MaxTokens { get; set; }
+    public SequentialPlannerConfig()
+    {
+        this.MaxTokens = 1024;
+    }
 
     /// <summary>
     /// Whether to allow missing functions in the plan on creation.
