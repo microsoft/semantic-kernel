@@ -4,6 +4,10 @@ using System.IO;
 using System.Reflection;
 using Microsoft.SemanticKernel.Diagnostics;
 
+#pragma warning disable IDE0130
+namespace Microsoft.SemanticKernel.Planners;
+#pragma warning restore IDE0130
+
 internal static class EmbeddedResource
 {
     private static readonly string? s_namespace = typeof(EmbeddedResource).Namespace;
