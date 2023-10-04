@@ -24,6 +24,9 @@ class OpenAITextCompletion(TextCompletionClientBase):
     _endpoint: Optional[str] = None
     _org_id: Optional[str] = None
     _log: Logger
+    _prompt_tokens: int
+    _completion_tokens: int
+    _total_tokens: int
 
     def __init__(
         self,
@@ -163,4 +166,23 @@ class OpenAITextCompletion(TextCompletionClientBase):
                 "OpenAI service failed to complete the prompt",
                 ex,
             )
+
+        if "usage" in response:
+            self._log.info(f"OpenAI usage: {response.usage}")
+            self._prompt_tokens += response.usage.prompt_tokens
+            self._completion_tokens += response.usage.completion_tokens
+            self._total_tokens += response.usage.total_tokens
+
         return response
+
+    @property
+    def prompt_tokens(self) -> int:
+        return self._prompt_tokens
+
+    @property
+    def completion_tokens(self) -> int:
+        return self._completion_tokens
+
+    @property
+    def total_tokens(self) -> int:
+        return self._total_tokens

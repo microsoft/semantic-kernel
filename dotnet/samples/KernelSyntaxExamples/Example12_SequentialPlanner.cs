@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using Plugins;
 using RepoUtils;
 
@@ -250,7 +251,7 @@ internal static class Example12_SequentialPlanner
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
         // IMPORTANT: To use memory and embeddings to find relevant plugins in the planner, set the 'Memory' property on the planner config.
-        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { RelevancyThreshold = 0.5, Memory = kernel.Memory });
+        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.5, Memory = kernel.Memory } });
 
         var plan = await planner.CreatePlanAsync(goal);
 

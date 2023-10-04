@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
@@ -26,6 +26,20 @@ namespace Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 /// </summary>
 public static class KernelAIPluginExtensions
 {
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string pluginName,
+        string filePath,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await kernel.ImportPluginFunctionsAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+    }
+#pragma warning restore CS1591
+
     /// <summary>
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
@@ -35,7 +49,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         string filePath,
@@ -65,6 +79,20 @@ public static class KernelAIPluginExtensions
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
+    [Obsolete("Methods and classes which includes Skill in the name have been renamed to use Plugin. Use Kernel.ImportPluginFunctionsAsync instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+        this IKernel kernel,
+        string pluginName,
+        Uri uri,
+        OpenApiFunctionExecutionParameters? executionParameters = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await kernel.ImportPluginFunctionsAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+    }
+#pragma warning restore CS1591
+
     /// <summary>
     /// Imports an AI plugin that is exposed as an OpenAPI v3 endpoint or through OpenAI's ChatGPT format.
     /// </summary>
@@ -74,7 +102,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         Uri uri,
@@ -114,7 +142,7 @@ public static class KernelAIPluginExtensions
     /// <param name="executionParameters">Plugin execution parameters.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A collection of invocable functions</returns>
-    public static async Task<IDictionary<string, ISKFunction>> ImportAIPluginAsync(
+    public static async Task<IDictionary<string, ISKFunction>> ImportPluginFunctionsAsync(
         this IKernel kernel,
         string pluginName,
         Stream stream,
@@ -153,7 +181,7 @@ public static class KernelAIPluginExtensions
         if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
             return await kernel
-                .ImportAIPluginAsync(
+                .ImportPluginFunctionsAsync(
                     pluginName,
                     new Uri(openApiUrl),
                     executionParameters,
@@ -187,7 +215,6 @@ public static class KernelAIPluginExtensions
             var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(
-                new OperationComponentBuilderFactory(),
                 httpClient,
                 executionParameters?.AuthCallback,
                 executionParameters?.UserAgent,
@@ -327,7 +354,7 @@ public static class KernelAIPluginExtensions
 
         var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)) : NullLogger.Instance;
 
-        async Task<SKContext> ExecuteAsync(SKContext context)
+        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context)
         {
             try
             {
@@ -362,20 +389,13 @@ public static class KernelAIPluginExtensions
                     ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };
 
-                var result = await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
-
-                if (result != null)
-                {
-                    context.Variables.Update(result.ToString());
-                }
+                return await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 logger.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", pluginName, operation.Id, ex.Message);
                 throw;
             }
-
-            return context;
         }
 
         var parameters = restOperationParameters
@@ -384,6 +404,7 @@ public static class KernelAIPluginExtensions
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
+                IsRequired = p.IsRequired,
             })
             .ToList();
 

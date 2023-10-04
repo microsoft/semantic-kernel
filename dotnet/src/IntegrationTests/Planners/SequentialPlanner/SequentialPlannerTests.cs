@@ -6,8 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Planners;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
@@ -32,8 +32,8 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
-    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
+    [InlineData(false, "Write a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
+    [InlineData(true, "Write a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
     public async Task CreatePlanFunctionFlowAsync(bool useChatModel, string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
@@ -78,7 +78,7 @@ public sealed class SequentialPlannerTests : IDisposable
     }
 
     [Theory]
-    [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", "_GLOBAL_FUNCTIONS_")]
+    [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
     public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
         // Arrange
@@ -90,7 +90,7 @@ public sealed class SequentialPlannerTests : IDisposable
         TestHelpers.ImportAllSamplePlugins(kernel);
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel,
-            new SequentialPlannerConfig { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory });
+            new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.65, MaxRelevantFunctions = 30, Memory = kernel.Memory } });
 
         // Act
         var plan = await planner.CreatePlanAsync(prompt);

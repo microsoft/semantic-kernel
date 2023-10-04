@@ -28,6 +28,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     _api_version: Optional[str] = None
     _endpoint: Optional[str] = None
     _log: Logger
+    _prompt_tokens: int = 0
+    _completion_tokens: int = 0
+    _total_tokens: int = 0
 
     def __init__(
         self,
@@ -67,7 +70,6 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         request_settings: ChatRequestSettings,
         logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
-        # TODO: tracking on token counts/etc.
         response = await self._send_chat_request(messages, request_settings, False)
 
         if len(response.choices) == 1:
@@ -238,9 +240,26 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 ex,
             )
 
-        # TODO: tracking on token counts/etc.
+        # streaming does not have usage info, therefore checking the type of the response
+        if not stream and "usage" in response:
+            self._log.info(f"OpenAI usage: {response.usage}")
+            self._prompt_tokens += response.usage.prompt_tokens
+            self._completion_tokens += response.usage.completion_tokens
+            self._total_tokens += response.usage.total_tokens
 
         return response
+
+    @property
+    def prompt_tokens(self) -> int:
+        return self._prompt_tokens
+
+    @property
+    def completion_tokens(self) -> int:
+        return self._completion_tokens
+
+    @property
+    def total_tokens(self) -> int:
+        return self._total_tokens
 
 
 def _parse_choices(chunk):

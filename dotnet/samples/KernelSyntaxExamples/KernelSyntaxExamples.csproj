@@ -46,8 +46,10 @@
     <ProjectReference Include="..\..\src\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
     <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
+    <ProjectReference Include="..\..\src\Functions\Functions.Semantic\Functions.Semantic.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
+    <ProjectReference Include="..\..\src\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.OpenAPI\Functions.OpenAPI.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.Grpc\Functions.Grpc.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Qdrant\Connectors.Memory.Qdrant.csproj" />

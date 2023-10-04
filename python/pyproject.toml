@@ -16,6 +16,7 @@ regex = "^2023.6.3"
 openapi_core = "^0.18.0"
 prance = "^23.6.21.0"
 pydantic = "<2"
+motor = "^3.3.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "3.3.3"
@@ -60,7 +61,7 @@ psycopg-binary = "^3.1.9"
 redis = "^4.6.0"
 
 [tool.poetry.group.azure_cognitive_search.dependencies]
-azure-search-documents = {version = "11.4.0b8", allow-prereleases = true}
+azure-search-documents = {version = "11.4.0b9", allow-prereleases = true}
 azure-core = "^1.28.0"
 azure-identity = "^1.13.0"
 

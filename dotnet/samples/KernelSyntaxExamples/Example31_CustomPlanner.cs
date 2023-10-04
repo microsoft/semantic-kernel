@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 
@@ -109,9 +109,9 @@ internal static class Example31_CustomPlanner
         }
     }
 
-    // ContextQuery is part of the QASkill
+    // ContextQuery is part of the QAPlugin
     // DependsOn: TimePlugin named "time"
-    // DependsOn: BingSkill named "bing"
+    // DependsOn: BingPlugin named "bing"
     private static IDictionary<string, ISKFunction> LoadQAPlugin(IKernel kernel)
     {
         string folder = RepoFiles.SamplePluginsPath();
@@ -141,7 +141,7 @@ internal static class Example31_CustomPlanner
     }
 }
 
-// Example Skill that can process XML Markup created by ContextQuery
+// Example Plugin that can process XML Markup created by ContextQuery
 public class MarkupPlugin
 {
     [SKFunction, Description("Run Markup")]
