@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -17,11 +16,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class SKContext
 {
     /// <summary>
-    /// The culture currently associated with this context.
-    /// </summary>
-    private CultureInfo _culture;
-
-    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
@@ -31,7 +25,8 @@ public sealed class SKContext
     /// When a prompt is processed, aka the current data after any model results processing occurred.
     /// (One prompt can have multiple results).
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
+    [Obsolete($"ModelResults are now part of {nameof(FunctionResult.Metadata)} property. Use 'ModelResults' key or available extension methods to get model results.")]
+    public IReadOnlyCollection<ModelResult> ModelResults => Array.Empty<ModelResult>();
 
     /// <summary>
     /// The culture currently associated with this context.
@@ -48,9 +43,9 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Read only skills collection
+    /// Read only functions collection
     /// </summary>
-    public IReadOnlySkillCollection Skills { get; }
+    public IReadOnlyFunctionCollection Functions { get; }
 
     /// <summary>
     /// App logger
@@ -58,65 +53,115 @@ public sealed class SKContext
     public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
+    /// Kernel context reference
+    /// </summary>
+    public IKernel Kernel => this.GetKernelContext();
+
+    /// <summary>
+    /// Spawns the kernel for the context.
+    /// </summary>
+    /// <remarks>
+    /// The kernel context is a lightweight instance of the main kernel with its services.
+    /// </remarks>
+    /// <returns>Kernel reference</returns>
+    private IKernel GetKernelContext()
+        => this._originalKernel; // TODO: Clone a lightweight kernel instead of returning the same instance
+
+    /// <summary>
     /// Constructor for the context.
     /// </summary>
+    /// <param name="kernel">Kernel reference</param>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <param name="functions">Functions to include in context.</param>
     public SKContext(
+        IKernel kernel,
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null,
-        ILoggerFactory? loggerFactory = null)
+        IReadOnlyFunctionCollection? functions = null)
     {
+        Verify.NotNull(kernel, nameof(kernel));
+
+        this._originalKernel = kernel;
         this.Variables = variables ?? new();
-        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
+        this.LoggerFactory = kernel.LoggerFactory;
         this._culture = CultureInfo.CurrentCulture;
     }
 
     /// <summary>
-    /// Print the processed input, aka the current data after any processing occurred.
-    /// If an error occurred, prints the last exception message instead.
+    /// Constructor for the context.
     /// </summary>
-    /// <returns>Processed input, aka result, or last exception message if any</returns>
-    public override string ToString()
+    /// <param name="kernel">Kernel instance parameter</param>
+    /// <param name="variables">Context variables to include in context.</param>
+    public SKContext(
+        IKernel kernel,
+        ContextVariables? variables = null) : this(kernel, variables, kernel.Functions)
     {
-        return this.ErrorOccurred ? $"Error: {this.LastException?.Message}" : this.Result;
     }
 
     /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// Constructor for the context.
+    /// </summary>
+    /// <param name="kernel">Kernel instance parameter</param>
+    /// <param name="functions">Functions to include in context.</param>
+    public SKContext(
+        IKernel kernel,
+        IReadOnlyFunctionCollection? functions = null) : this(kernel, null, functions)
+    {
+    }
+
+    /// <summary>
+    /// Constructor for the context.
+    /// </summary>
+    /// <param name="kernel">Kernel instance parameter</param>
+    public SKContext(IKernel kernel) : this(kernel, null, kernel.Functions)
+    {
+    }
+
+    /// <summary>
+    /// Print the processed input, aka the current data after any processing occurred.
+    /// </summary>
+    /// <returns>Processed input, aka result.</returns>
+    public override string ToString()
+    {
+        return this.Result;
+    }
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
     /// <returns>A new context copied from the current one</returns>
     public SKContext Clone()
     {
         return new SKContext(
-            variables: this.Variables.Clone(),
-            skills: this.Skills,
-            loggerFactory: this.LoggerFactory)
+            kernel: this._originalKernel,
+            variables: this.Variables.Clone())
         {
             Culture = this.Culture,
-            LastException = this.LastException
         };
     }
+
+    /// <summary>
+    /// The culture currently associated with this context.
+    /// </summary>
+    private CultureInfo _culture;
+
+    /// <summary>
+    /// Kernel instance reference for this context.
+    /// </summary>
+    private readonly IKernel _originalKernel;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
         get
         {
-            if (this.ErrorOccurred)
-            {
-                return $"Error: {this.LastException?.Message}";
-            }
-
             string display = this.Variables.DebuggerDisplay;
 
-            if (this.Skills is IReadOnlySkillCollection skills)
+            if (this.Functions is IReadOnlyFunctionCollection functions)
             {
-                var view = skills.GetFunctionsView();
-                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
+                var view = functions.GetFunctionViews();
+                display += $", Functions = {view.Count}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";
@@ -124,17 +169,4 @@ public sealed class SKContext
             return display;
         }
     }
-
-    #region Error handling
-    /// <summary>
-    /// Whether an error occurred while executing functions in the pipeline.
-    /// </summary>
-    public bool ErrorOccurred => this.LastException != null;
-
-    /// <summary>
-    /// When an error occurs, this is the most recent exception.
-    /// </summary>
-    public Exception? LastException { get; internal set; }
-
-    #endregion
 }

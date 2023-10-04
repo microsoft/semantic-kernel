@@ -1,5 +1,10 @@
 # Semantic Kernel Service API (For Learning Samples)
 
+> [!IMPORTANT]
+> This sample will be removed in a future release. If you are looking for samples that demonstrate
+> how to use Semantic Kernel, please refer to the sample folders in the root [python](../../../python/samples/)
+> and [dotnet](../../../dotnet/samples/) folders.
+
 Watch the [Service API Quick Start Video](https://aka.ms/SK-Local-API-Setup).
 
 This service API is written in Python against Azure Function Runtime v4 and exposes
@@ -70,15 +75,13 @@ They accept input in the JSON body of the request:
 ```json
 {
   "value": "", // the "input" of the prompt
-  "inputs": // a list of extra key-value parameters for ContextVariables or Plan State
-  [
-    {"key": "", "value": ""}
-  ],
+  // a list of extra key-value parameters for ContextVariables or Plan State
+  "inputs": [{ "key": "", "value": "" }],
   "skills": [] // list of skills to use (for the planner)
 }
 ```
 
-For planning, first create a plan with your prompt in the "value" parameter.  Take the JSON "state" response,
+For planning, first create a plan with your prompt in the "value" parameter. Take the JSON "state" response,
 rename "state" to "inputs", and use it for the input to ExecutePlan.
 
 ## Next steps
@@ -90,4 +93,4 @@ The service API will need to be run or running for each sample app you want to t
 Sample app learning examples:
 
 - [Book creator](../../apps/book-creator-webapp-react/README.md) – learn how Planner and chaining of
-    semantic functions can be used in your app
+  semantic functions can be used in your app

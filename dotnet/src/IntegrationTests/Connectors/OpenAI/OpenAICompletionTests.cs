@@ -7,11 +7,11 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -56,13 +56,13 @@ public sealed class OpenAICompletionTests : IDisposable
                 setAsDefault: true)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
+        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
 
         // Assert
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory(Skip = "OpenAI will often throttle requests. This test is for manual verification.")]
@@ -76,13 +76,13 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
+        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
 
         // Assert
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact(Skip = "Skipping while we investigate issue with GitHub actions.")]
@@ -97,12 +97,11 @@ public sealed class OpenAICompletionTests : IDisposable
         var func = target.CreateSemanticFunction(
             "List the two planets after '{{$input}}', excluding moons, using bullet points.");
 
-        var result = await func.InvokeAsync("Jupiter");
+        var result = await func.InvokeAsync("Jupiter", target);
 
         Assert.NotNull(result);
-        Assert.False(result.ErrorOccurred);
-        Assert.Contains("Saturn", result.Result, StringComparison.InvariantCultureIgnoreCase);
-        Assert.Contains("Uranus", result.Result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Saturn", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
     }
 
     [Theory]
@@ -124,15 +123,13 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
+        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
 
         // Assert
-        Assert.Null(actual.LastException);
-        Assert.False(actual.ErrorOccurred);
-        Assert.Contains(expectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     // If the test fails, please note that SK retry logic may not be fully integrated into the underlying code using Azure SDK
@@ -157,10 +154,10 @@ public sealed class OpenAICompletionTests : IDisposable
                 apiKey: "INVALID_KEY") // Use an invalid API key to force a 401 Unauthorized response
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
-        var context = await target.RunAsync(prompt, skill["Summarize"]);
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, plugins["Summarize"]));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -191,10 +188,10 @@ public sealed class OpenAICompletionTests : IDisposable
 
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
-        var context = await target.RunAsync(prompt, skill["Summarize"]);
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(prompt, plugins["Summarize"]));
 
         // Assert
         Assert.Contains(expectedOutput, this._testOutputHelper.GetLogs(), StringComparison.OrdinalIgnoreCase);
@@ -215,15 +212,12 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: openAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
-        // Act
-        var context = await target.RunAsync("Any", skill["Summarize"]);
+        // Act and Assert
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", plugins["Summarize"]));
 
-        // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<HttpOperationException>(context.LastException);
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
 
     [Fact]
@@ -242,15 +236,12 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
-        // Act
-        var context = await target.RunAsync("Any", skill["Summarize"]);
+        // Act and Assert
+        var ex = await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync("Any", plugins["Summarize"]));
 
-        // Assert
-        Assert.True(context.ErrorOccurred);
-        Assert.IsType<HttpOperationException>(context.LastException);
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)context.LastException).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)ex).StatusCode);
     }
 
     [Fact]
@@ -269,11 +260,11 @@ public sealed class OpenAICompletionTests : IDisposable
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "SummarizeSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "SummarizePlugin");
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<HttpOperationException>(() => skill["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000))));
+        await Assert.ThrowsAsync<HttpOperationException>(() => plugins["Summarize"].InvokeAsync(string.Join('.', Enumerable.Range(1, 40000)), target));
     }
 
     [Theory(Skip = "This test is for manual verification.")]
@@ -295,13 +286,13 @@ public sealed class OpenAICompletionTests : IDisposable
 
         this._serviceConfiguration[service](target);
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "ChatSkill");
+        IDictionary<string, ISKFunction> plugins = TestHelpers.ImportSamplePlugins(target, "ChatPlugin");
 
         // Act
-        SKContext actual = await target.RunAsync(prompt, skill["Chat"]);
+        KernelResult actual = await target.RunAsync(prompt, plugins["Chat"]);
 
         // Assert
-        Assert.Contains(ExpectedAnswerContains, actual.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(ExpectedAnswerContains, actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -315,12 +306,10 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        SKContext actual = await target.InvokeSemanticFunctionAsync(prompt, maxTokens: 150);
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
-        Assert.Null(actual.LastException);
-        Assert.False(actual.ErrorOccurred);
-        Assert.Contains("Pike Place", actual.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -331,15 +320,13 @@ public sealed class OpenAICompletionTests : IDisposable
         this.ConfigureAzureOpenAI(builder);
         IKernel target = builder.Build();
 
-        IDictionary<string, ISKFunction> skill = TestHelpers.GetSkills(target, "FunSkill");
+        IDictionary<string, ISKFunction> plugin = TestHelpers.ImportSamplePlugins(target, "FunPlugin");
 
         // Act
-        SKContext actual = await target.RunAsync(skill["Limerick"]);
+        KernelResult actual = await target.RunAsync(plugin["Limerick"]);
 
         // Assert
-        Assert.Null(actual.LastException?.Message);
-        Assert.False(actual.ErrorOccurred);
-        Assert.Contains("Bob", actual.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Bob", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -364,26 +351,23 @@ public sealed class OpenAICompletionTests : IDisposable
             }");
 
         var defaultFunc = target.RegisterSemanticFunction(
-            "WhereSkill", "FishMarket1",
+            "WherePlugin", "FishMarket1",
             new SemanticFunctionConfig(
                 defaultConfig,
                 new PromptTemplate(prompt, defaultConfig, target.PromptTemplateEngine)));
         var azureFunc = target.RegisterSemanticFunction(
-            "WhereSkill", "FishMarket2",
+            "WherePlugin", "FishMarket2",
             new SemanticFunctionConfig(
                 azureConfig,
                 new PromptTemplate(prompt, azureConfig, target.PromptTemplateEngine)));
 
         // Act
-        SKContext defaultResult = await target.RunAsync(defaultFunc);
-        SKContext azureResult = await target.RunAsync(azureFunc);
+        await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));
+
+        KernelResult azureResult = await target.RunAsync(azureFunc);
 
         // Assert
-        Assert.NotNull(defaultResult.LastException);
-        Assert.True(defaultResult.ErrorOccurred);
-        Assert.Null(azureResult.LastException);
-        Assert.False(azureResult.ErrorOccurred);
-        Assert.Contains("Pike Place", azureResult.Result, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Pike Place", azureResult.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
     }
 
     #region internals

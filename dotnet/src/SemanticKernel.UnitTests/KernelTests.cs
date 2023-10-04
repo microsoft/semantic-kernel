@@ -3,14 +3,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Moq;
 using Xunit;
 
@@ -21,7 +23,7 @@ namespace SemanticKernel.UnitTests;
 public class KernelTests
 {
     [Fact]
-    public void ItProvidesAccessToFunctionsViaSkillCollection()
+    public void ItProvidesAccessToFunctionsViaFunctionCollection()
     {
         // Arrange
         var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
@@ -29,49 +31,14 @@ public class KernelTests
             .WithDefaultAIService<ITextCompletion>(factory.Object)
             .Build();
 
-        var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
-        kernel.ImportSkill(nativeSkill, "mySk");
+        var nativePlugin = new MyPlugin();
+        kernel.ImportFunctions(nativePlugin, "mySk");
 
-        // Act
-        FunctionsView data = kernel.Skills.GetFunctionsView();
-
-        // Assert - 3 functions, var name is not case sensitive
-        Assert.True(data.IsSemantic("jk", "joker"));
-        Assert.True(data.IsSemantic("JK", "JOKER"));
-        Assert.False(data.IsNative("jk", "joker"));
-        Assert.False(data.IsNative("JK", "JOKER"));
-        Assert.True(data.IsNative("mySk", "sayhello"));
-        Assert.True(data.IsNative("MYSK", "SayHello"));
-        Assert.True(data.IsNative("mySk", "ReadSkillCollectionAsync"));
-        Assert.True(data.IsNative("MYSK", "readskillcollectionasync"));
-        Assert.Single(data.SemanticFunctions["Jk"]);
-        Assert.Equal(3, data.NativeFunctions["mySk"].Count);
-    }
-
-    [Fact]
-    public async Task ItProvidesAccessToFunctionsViaSKContextAsync()
-    {
-        // Arrange
-        var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("x", factory.Object)
-            .Build();
-
-        var nativeSkill = new MySkill();
-        kernel.CreateSemanticFunction("Tell me a joke", functionName: "joker", skillName: "jk", description: "Nice fun");
-        var skill = kernel.ImportSkill(nativeSkill, "mySk");
-
-        // Act
-        SKContext result = await kernel.RunAsync(skill["ReadSkillCollectionAsync"]);
-
-        // Assert - 3 functions, var name is not case sensitive
-        Assert.Equal("Nice fun", result.Variables["jk.joker"]);
-        Assert.Equal("Nice fun", result.Variables["JK.JOKER"]);
-        Assert.Equal("Just say hello", result.Variables["mySk.sayhello"]);
-        Assert.Equal("Just say hello", result.Variables["mySk.SayHello"]);
-        Assert.Equal("Export info.", result.Variables["mySk.ReadSkillCollectionAsync"]);
-        Assert.Equal("Export info.", result.Variables["mysk.readskillcollectionasync"]);
+        // Act & Assert - 3 functions, var name is not case sensitive
+        Assert.True(kernel.Functions.TryGetFunction("mySk", "sayhello", out _));
+        Assert.True(kernel.Functions.TryGetFunction("MYSK", "SayHello", out _));
+        Assert.True(kernel.Functions.TryGetFunction("mySk", "ReadFunctionCollectionAsync", out _));
+        Assert.True(kernel.Functions.TryGetFunction("MYSK", "ReadFunctionCollectionAsync", out _));
     }
 
     [Fact]
@@ -79,19 +46,14 @@ public class KernelTests
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
-        var nativeSkill = new MySkill();
-        var skill = kernel.ImportSkill(nativeSkill, "mySk");
+        var nativePlugin = new MyPlugin();
+        var functions = kernel.ImportFunctions(nativePlugin, "mySk");
 
         using CancellationTokenSource cts = new();
         cts.Cancel();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, skill["GetAnyValue"]);
-
-        // Assert
-        Assert.True(string.IsNullOrEmpty(result.Result));
-        Assert.True(result.ErrorOccurred);
-        Assert.True(result.LastException is OperationCanceledException);
+        await Assert.ThrowsAsync<OperationCanceledException>(() => kernel.RunAsync(cts.Token, functions["GetAnyValue"]));
     }
 
     [Fact]
@@ -99,213 +61,602 @@ public class KernelTests
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
-        var nativeSkill = new MySkill();
-        kernel.ImportSkill(nativeSkill, "mySk");
+        var nativePlugin = new MyPlugin();
+        kernel.ImportFunctions(nativePlugin, "mySk");
 
         using CancellationTokenSource cts = new();
 
         // Act
-        SKContext result = await kernel.RunAsync(cts.Token, kernel.Func("mySk", "GetAnyValue"));
+        KernelResult result = await kernel.RunAsync(cts.Token, kernel.Functions.GetFunction("mySk", "GetAnyValue"));
 
         // Assert
-        Assert.False(string.IsNullOrEmpty(result.Result));
-        Assert.False(result.ErrorOccurred);
-        Assert.False(result.LastException is OperationCanceledException);
+        Assert.False(string.IsNullOrEmpty(result.GetValue<string>()));
     }
 
     [Fact]
-    public void ItImportsSkillsNotCaseSensitive()
+    public void ItImportsPluginsNotCaseSensitive()
     {
         // Act
-        IDictionary<string, ISKFunction> skill = Kernel.Builder.Build().ImportSkill(new MySkill(), "test");
+        IDictionary<string, ISKFunction> functions = Kernel.Builder.Build().ImportFunctions(new MyPlugin(), "test");
 
         // Assert
-        Assert.Equal(3, skill.Count);
-        Assert.True(skill.ContainsKey("GetAnyValue"));
-        Assert.True(skill.ContainsKey("getanyvalue"));
-        Assert.True(skill.ContainsKey("GETANYVALUE"));
-    }
-
-    [Theory]
-    [InlineData(null, "Assistant is a large language model.")]
-    [InlineData("My Chat Prompt", "My Chat Prompt")]
-    public void ItUsesChatSystemPromptWhenProvided(string providedSystemChatPrompt, string expectedSystemChatPrompt)
-    {
-        // Arrange
-        var mockTextCompletion = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
-
-        mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
-
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
-            .Build();
-
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion.ChatSystemPrompt = providedSystemChatPrompt;
-
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
-
-        // Act
-        kernel.RunAsync(func);
-
-        // Assert
-        mockTextCompletion.Verify(a => a.GetCompletionsAsync("template", It.Is<CompleteRequestSettings>(c => c.ChatSystemPrompt == expectedSystemChatPrompt), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.Equal(3, functions.Count);
+        Assert.True(functions.ContainsKey("GetAnyValue"));
+        Assert.True(functions.ContainsKey("getanyvalue"));
+        Assert.True(functions.ContainsKey("GETANYVALUE"));
     }
 
     [Fact]
-    public void ItAllowsToImportSkillsInTheGlobalNamespace()
+    public void ItAllowsToImportFunctionsInTheGlobalNamespace()
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
 
         // Act
-        IDictionary<string, ISKFunction> skill = kernel.ImportSkill(new MySkill());
+        IDictionary<string, ISKFunction> functions = kernel.ImportFunctions(new MyPlugin());
 
         // Assert
-        Assert.Equal(3, skill.Count);
-        Assert.True(kernel.Skills.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
+        Assert.Equal(3, functions.Count);
+        Assert.True(kernel.Functions.TryGetFunction("GetAnyValue", out ISKFunction? functionInstance));
         Assert.NotNull(functionInstance);
     }
 
     [Fact]
-    public void ItAllowsToImportTheSameSkillMultipleTimes()
+    public void ItAllowsToImportTheSamePluginMultipleTimes()
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
 
         // Act - Assert no exception occurs
-        kernel.ImportSkill(new MySkill());
-        kernel.ImportSkill(new MySkill());
-        kernel.ImportSkill(new MySkill());
+        kernel.ImportFunctions(new MyPlugin());
+        kernel.ImportFunctions(new MyPlugin());
+        kernel.ImportFunctions(new MyPlugin());
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
+    {
+        // Arrange
+        var sut = Kernel.Builder.Build();
+        var myPlugin = new Mock<MyPlugin>();
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
+
+        var invoked = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            invoked++;
+        };
+        List<ISKFunction> pipeline = new();
+        for (int i = 0; i < pipelineCount; i++)
+        {
+            pipeline.Add(functions["SayHello"]);
+        }
+
+        // Act
+        var result = await sut.RunAsync(pipeline.ToArray());
+
+        // Assert
+        Assert.Equal(pipelineCount, invoked);
+        myPlugin.Verify(m => m.SayHello(), Times.Exactly(pipelineCount));
     }
 
     [Fact]
-    public void ItUsesDefaultServiceWhenSpecified()
+    public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var sut = Kernel.Builder.Build();
+        var functions = sut.ImportFunctions(new MyPlugin(), "MyPlugin");
 
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
-
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
-            .Build();
-
-        var templateConfig = new PromptTemplateConfig();
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var invoked = false;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            invoked = true;
+            e.Cancel();
+        };
 
         // Act
-        kernel.RunAsync(func);
+        var result = await sut.RunAsync(functions["GetAnyValue"]);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
+        Assert.True(invoked);
+        Assert.Null(result.GetValue<string>());
     }
 
     [Fact]
-    public void ItUsesServiceIdWhenProvided()
+    public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
-        var mockCompletionResult = new Mock<ITextResult>();
+        var sut = Kernel.Builder.Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var myPlugin = new Mock<MyPlugin>();
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
 
-        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
-        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
-
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
-            .Build();
-
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion.ServiceId = "service1";
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        var invoked = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            invoked++;
+            e.Cancel();
+        };
 
         // Act
-        kernel.RunAsync(func);
+        var result = await sut.RunAsync(functions["GetAnyValue"], functions["SayHello"]);
 
         // Assert
-        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Once());
-        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.IsAny<CompleteRequestSettings>(), It.IsAny<CancellationToken>()), Times.Never());
+        Assert.Equal(1, invoked);
+        myPlugin.Verify(m => m.GetAnyValue(), Times.Never);
+        myPlugin.Verify(m => m.SayHello(), Times.Never);
     }
 
     [Fact]
-    public async Task ItFailsIfInvalidServiceIdIsProvidedAsync()
+    public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var mockTextCompletion1 = new Mock<ITextCompletion>();
-        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var sut = Kernel.Builder.Build();
+        var functions = sut.ImportFunctions(new MyPlugin(), "MyPlugin");
 
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
-            .Build();
+        var invoked = 0;
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            e.Cancel();
+        };
 
-        var templateConfig = new PromptTemplateConfig();
-        templateConfig.Completion.ServiceId = "service3";
-        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "skillName");
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            invoked++;
+        };
 
         // Act
-        SKContext result = await kernel.RunAsync(func);
+        var result = await sut.RunAsync(functions["GetAnyValue"]);
 
         // Assert
-        Assert.NotNull(result.LastException);
-        Assert.Equal("Service of type Microsoft.SemanticKernel.AI.TextCompletion.ITextCompletion and name service3 not registered.", result.LastException.Message);
-        Assert.True(result.ErrorOccurred);
+        Assert.Equal(0, invoked);
     }
 
-    public class MySkill
+    [Fact]
+    public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
+    {
+        // Arrange
+        var sut = Kernel.Builder.Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var myPlugin = new Mock<MyPlugin>();
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
+
+        var invoked = 0;
+        var invoking = 0;
+        string invokedFunction = string.Empty;
+
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            invoking++;
+            if (e.FunctionView.Name == "GetAnyValue")
+            {
+                e.Skip();
+            }
+        };
+
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            invokedFunction = e.FunctionView.Name;
+            invoked++;
+        };
+
+        // Act
+        var result = await sut.RunAsync(functions["GetAnyValue"], functions["SayHello"]);
+
+        // Assert
+        Assert.Equal(2, invoking);
+        Assert.Equal(1, invoked);
+        myPlugin.Verify(m => m.GetAnyValue(), Times.Never);
+        myPlugin.Verify(m => m.SayHello(), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
+    {
+        // Arrange
+        var sut = Kernel.Builder.Build();
+        var myPlugin = new Mock<MyPlugin>();
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
+
+        var invoked = 0;
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            invoked++;
+        };
+
+        List<ISKFunction> pipeline = new();
+        for (int i = 0; i < pipelineCount; i++)
+        {
+            pipeline.Add(functions["GetAnyValue"]);
+        }
+
+        // Act
+        var result = await sut.RunAsync(pipeline.ToArray());
+
+        // Assert
+        Assert.Equal(pipelineCount, invoked);
+        myPlugin.Verify(m => m.GetAnyValue(), Times.Exactly(pipelineCount));
+    }
+
+    [Fact]
+    public async Task RunAsyncChangeVariableInvokingHandlerAsync()
+    {
+        var sut = Kernel.Builder.Build();
+        var myPlugin = new Mock<MyPlugin>();
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
+
+        var originalInput = "Importance";
+        var newInput = "Problems";
+
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        {
+            originalInput = newInput;
+        };
+
+        // Act
+        await sut.RunAsync(originalInput, functions["GetAnyValue"]);
+
+        // Assert
+        Assert.Equal(newInput, originalInput);
+    }
+
+    [Fact]
+    public async Task RunAsyncChangeVariableInvokedHandlerAsync()
+    {
+        var sut = Kernel.Builder.Build();
+        var myPlugin = new Mock<MyPlugin>();
+        var functions = sut.ImportFunctions(myPlugin.Object, "MyPlugin");
+
+        var originalInput = "Importance";
+        var newInput = "Problems";
+
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        {
+            originalInput = newInput;
+        };
+
+        // Act
+        await sut.RunAsync(originalInput, functions["GetAnyValue"]);
+
+        // Assert
+        Assert.Equal(newInput, originalInput);
+    }
+
+    [Fact]
+    public async Task ItReturnsFunctionResultsCorrectlyAsync()
+    {
+        // Arrange
+        [SKName("Function1")]
+        static string Function1() => "Result1";
+
+        [SKName("Function2")]
+        static string Function2() => "Result2";
+
+        const string PluginName = "MyPlugin";
+
+        var kernel = Kernel.Builder.Build();
+
+        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
+        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
+
+        // Act
+        var kernelResult = await kernel.RunAsync(function1, function2);
+        var functionResult1 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function1" && l.PluginName == PluginName);
+        var functionResult2 = kernelResult.FunctionResults.First(l => l.FunctionName == "Function2" && l.PluginName == PluginName);
+
+        // Assert
+        Assert.NotNull(kernelResult);
+        Assert.Equal("Result2", kernelResult.GetValue<string>());
+        Assert.Equal("Result1", functionResult1.GetValue<string>());
+        Assert.Equal("Result2", functionResult2.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task ItReturnsChangedResultsFromFunctionInvokedEventsAsync()
+    {
+        var kernel = Kernel.Builder.Build();
+
+        // Arrange
+        [SKName("Function1")]
+        static string Function1() => "Result1";
+        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: "MyPlugin");
+        const string ExpectedValue = "new result";
+
+        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
+        {
+            args.SKContext.Variables.Update(ExpectedValue);
+        };
+
+        // Act
+        var kernelResult = await kernel.RunAsync(function1);
+
+        // Assert
+        Assert.NotNull(kernelResult);
+        Assert.Equal(ExpectedValue, kernelResult.GetValue<string>());
+        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().GetValue<string>());
+        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Result);
+    }
+
+    [Fact]
+    public async Task ItReturnsChangedResultsFromFunctionInvokingEventsAsync()
+    {
+        // Arrange
+        var kernel = Kernel.Builder.Build();
+
+        [SKName("Function1")]
+        static string Function1(SKContext context) => context.Variables["injected variable"];
+        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: "MyPlugin");
+        const string ExpectedValue = "injected value";
+
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
+        {
+            args.SKContext.Variables["injected variable"] = ExpectedValue;
+        };
+
+        // Act
+        var kernelResult = await kernel.RunAsync(function1);
+
+        // Assert
+        Assert.NotNull(kernelResult);
+        Assert.Equal(ExpectedValue, kernelResult.GetValue<string>());
+        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().GetValue<string>());
+        Assert.Equal(ExpectedValue, kernelResult.FunctionResults.Single().Context.Result);
+    }
+
+    [Theory]
+    [InlineData("Function1", 5)]
+    [InlineData("Function2", 1)]
+    public async Task ItRepeatsFunctionInvokedEventsAsync(string retryFunction, int numberOfRepeats)
+    {
+        // Arrange
+        var kernel = Kernel.Builder.Build();
+
+        [SKName("Function1")]
+        static string Function1(SKContext context) => "Result1";
+        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: "MyPlugin");
+
+        [SKName("Function2")]
+        static string Function2(SKContext context) => "Result2";
+        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: "MyPlugin");
+
+        int numberOfInvocations = 0;
+        int repeatCount = 0;
+
+        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
+        {
+            if (args.FunctionView.Name == retryFunction && repeatCount < numberOfRepeats)
+            {
+                args.Repeat();
+                repeatCount++;
+            }
+
+            numberOfInvocations++;
+        };
+
+        // Act
+        var kernelResult = await kernel.RunAsync(function1, function2);
+
+        // Assert
+        Assert.NotNull(kernelResult);
+        Assert.Equal(2 + numberOfRepeats, kernelResult.FunctionResults.Count);
+        Assert.Equal(2 + numberOfRepeats, numberOfInvocations);
+    }
+
+    [Theory]
+    [InlineData("Function1", "Result2 Result3")]
+    [InlineData("Function2", "Result1 Result3")]
+    [InlineData("Function3", "Result1 Result2")]
+    public async Task ItSkipsFunctionsFromFunctionInvokingEventsAsync(string skipFunction, string expectedResult)
+    {
+        // Arrange
+        [SKName("Function1")]
+        static string Function1(string input) => input + " Result1";
+
+        [SKName("Function2")]
+        static string Function2(string input) => input + " Result2";
+
+        [SKName("Function3")]
+        static string Function3(string input) => input + " Result3";
+
+        const string PluginName = "MyPlugin";
+
+        var kernel = Kernel.Builder.Build();
+
+        var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
+        var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
+        var function3 = SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName);
+
+        const int ExpectedInvocations = 2;
+
+        int numberOfInvocations = 0;
+
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
+        {
+            if (args.FunctionView.Name == skipFunction)
+            {
+                args.Skip();
+            }
+        };
+
+        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
+        {
+            numberOfInvocations++;
+        };
+
+        // Act
+        var kernelResult = await kernel.RunAsync(string.Empty, function1, function2, function3);
+
+        // Assert
+        Assert.NotNull(kernelResult);
+        Assert.Equal(expectedResult, kernelResult.GetValue<string>()!.Trim());
+        Assert.Equal(ExpectedInvocations, numberOfInvocations);
+        Assert.Equal(ExpectedInvocations, kernelResult.FunctionResults.Count);
+    }
+
+    [Theory]
+    [InlineData(1, 0, 0)]
+    [InlineData(2, 0, 0)]
+    [InlineData(2, 1, 1)]
+    [InlineData(5, 2, 2)]
+    public async Task ItCancelsPipelineFromFunctionInvokingEventsAsync(int numberOfFunctions, int functionCancelIndex, int expectedInvocations)
+    {
+        List<ISKFunction> functions = new();
+        const string PluginName = "MyPlugin";
+
+        // Arrange
+        [SKName("Function1")]
+        static string Function1() => "Result1";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName));
+
+        [SKName("Function2")]
+        static string Function2() => "Result2";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+
+        [SKName("Function3")]
+        static string Function3() => "Result3";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+
+        [SKName("Function4")]
+        static string Function4() => "Result4";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function4), pluginName: PluginName));
+
+        [SKName("Function5")]
+        static string Function5() => "Result5";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function5), pluginName: PluginName));
+
+        var kernel = Kernel.Builder.Build();
+
+        int numberOfInvocations = 0;
+
+        kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs args) =>
+        {
+            if (args.FunctionView.Name == functions[functionCancelIndex].Name)
+            {
+                args.Cancel();
+            }
+        };
+
+        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
+        {
+            numberOfInvocations++;
+        };
+
+        // Act
+        var kernelResult = await kernel.RunAsync(functions.Take(numberOfFunctions).ToArray());
+
+        // Assert
+        Assert.NotNull(kernelResult);
+
+        // Kernel result is the same as the last invoked function
+        Assert.Equal(expectedInvocations, numberOfInvocations);
+        Assert.Equal(expectedInvocations, kernelResult.FunctionResults.Count);
+    }
+
+    [Theory]
+    [InlineData(1, 0, 1)]
+    [InlineData(2, 0, 1)]
+    [InlineData(2, 1, 2)]
+    [InlineData(5, 2, 3)]
+    public async Task ItCancelsPipelineFromFunctionInvokedEventsAsync(int numberOfFunctions, int functionCancelIndex, int expectedInvocations)
+    {
+        List<ISKFunction> functions = new();
+        const string PluginName = "MyPlugin";
+
+        // Arrange
+        [SKName("Function1")]
+        static string Function1() => "Result1";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName));
+
+        [SKName("Function2")]
+        static string Function2() => "Result2";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+
+        [SKName("Function3")]
+        static string Function3() => "Result3";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+
+        [SKName("Function4")]
+        static string Function4() => "Result4";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function4), pluginName: PluginName));
+
+        [SKName("Function5")]
+        static string Function5() => "Result5";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function5), pluginName: PluginName));
+
+        var kernel = Kernel.Builder.Build();
+
+        int numberOfInvocations = 0;
+
+        kernel.FunctionInvoked += (object? sender, FunctionInvokedEventArgs args) =>
+        {
+            numberOfInvocations++;
+            if (args.FunctionView.Name == functions[functionCancelIndex].Name)
+            {
+                args.Cancel();
+            }
+        };
+
+        // Act
+        var kernelResult = await kernel.RunAsync(functions.Take(numberOfFunctions).ToArray());
+
+        // Assert
+        Assert.NotNull(kernelResult);
+
+        // Kernel result is the same as the last invoked function
+        Assert.Equal($"Result{functionCancelIndex + 1}", kernelResult.GetValue<string>());
+        Assert.Equal(expectedInvocations, numberOfInvocations);
+    }
+
+    public class MyPlugin
     {
         [SKFunction, Description("Return any value.")]
-        public string GetAnyValue()
+        public virtual string GetAnyValue()
         {
             return Guid.NewGuid().ToString();
         }
 
         [SKFunction, Description("Just say hello")]
-        public void SayHello()
+        public virtual void SayHello()
         {
             Console.WriteLine("Hello folks!");
         }
 
-        [SKFunction, Description("Export info."), SKName("ReadSkillCollectionAsync")]
-        public async Task<SKContext> ReadSkillCollectionAsync(SKContext context)
+        [SKFunction, Description("Export info."), SKName("ReadFunctionCollectionAsync")]
+        public async Task<SKContext> ReadFunctionCollectionAsync(SKContext context)
         {
             await Task.Delay(0);
 
-            if (context.Skills == null)
+            if (context.Functions == null)
             {
-                Assert.Fail("Skills collection is missing");
+                Assert.Fail("Functions collection is missing");
             }
 
-            FunctionsView procMem = context.Skills.GetFunctionsView();
-
-            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.SemanticFunctions)
+            foreach (var function in context.Functions.GetFunctionViews())
             {
-                foreach (FunctionView f in list.Value)
-                {
-                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
-                }
-            }
-
-            foreach (KeyValuePair<string, List<FunctionView>> list in procMem.NativeFunctions)
-            {
-                foreach (FunctionView f in list.Value)
-                {
-                    context.Variables[$"{list.Key}.{f.Name}"] = f.Description;
-                }
+                context.Variables[$"{function.PluginName}.{function.Name}"] = function.Description;
             }
 
             return context;
         }
+    }
+
+    private (Mock<ITextResult> textResultMock, Mock<ITextCompletion> textCompletionMock) SetupMocks(string? completionResult = null)
+    {
+        var mockTextResult = new Mock<ITextResult>();
+        mockTextResult.Setup(m => m.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(completionResult ?? "LLM Result about UnitTests");
+
+        var mockTextCompletion = new Mock<ITextCompletion>();
+        mockTextCompletion.Setup(m => m.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ITextResult> { mockTextResult.Object });
+
+        return (mockTextResult, mockTextCompletion);
+    }
+
+    private static MethodInfo Method(Delegate method)
+    {
+        return method.Method;
     }
 }

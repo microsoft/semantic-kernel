@@ -232,13 +232,9 @@ public class ChromaMemoryStore : IMemoryStore
     private readonly IChromaClient _chromaClient;
     private readonly List<string> _defaultEmbeddingIncludeTypes = new() { IncludeMetadatas };
 
-    internal static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
-        Converters =
-        {
-            new ChromaBooleanConverter(),
-            new ReadOnlyMemoryConverter(),
-        }
+        Converters = { new ReadOnlyMemoryConverter() }
     };
 
     private async Task<ChromaCollectionModel> GetCollectionOrThrowAsync(string collectionName, CancellationToken cancellationToken)

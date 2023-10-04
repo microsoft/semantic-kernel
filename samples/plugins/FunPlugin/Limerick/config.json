@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "description": "Generate a funny limerick about a person",
+  "models": [
+    {
+      "max_tokens": 100,
+      "temperature": 0.7,
+      "top_p": 0,
+      "presence_penalty": 0,
+      "frequency_penalty": 0
+    }
+  ],
+  "input": {
+    "parameters": [
+      {
+        "name": "name",
+        "description": "",
+        "defaultValue": "Bob"
+      },
+      {
+        "name": "input",
+        "description": "",
+        "defaultValue": "Dogs"
+      }
+    ]
+  }
+}

@@ -10,49 +10,49 @@ namespace SemanticKernel.Connectors.UnitTests.Memory.Qdrant;
 
 public sealed class QdrantVectorDbClientTests : IDisposable
 {
-    private HttpMessageHandlerStub messageHandlerStub;
-    private HttpClient httpClient;
+    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly HttpClient _httpClient;
 
     public QdrantVectorDbClientTests()
     {
-        this.messageHandlerStub = new HttpMessageHandlerStub();
+        this._messageHandlerStub = new HttpMessageHandlerStub();
 
-        this.httpClient = new HttpClient(this.messageHandlerStub, false);
+        this._httpClient = new HttpClient(this._messageHandlerStub, false);
     }
 
     [Fact]
-    public async Task BaseAddressOfHttpClientShouldBeUsedIfNotOverrideProvided()
+    public async Task BaseAddressOfHttpClientShouldBeUsedIfNotOverrideProvidedAsync()
     {
         //Arrange
-        this.httpClient.BaseAddress = new Uri("https://fake-random-test-host:123/fake-path/");
+        this._httpClient.BaseAddress = new Uri("https://fake-random-test-host:123/fake-path/");
 
-        var sut = new QdrantVectorDbClient(this.httpClient, 123);
+        var sut = new QdrantVectorDbClient(this._httpClient, 123);
 
         //Act
         await sut.DoesCollectionExistAsync("fake-collection");
 
         //Assert
-        Assert.Equal("https://fake-random-test-host:123/fake-path/collections/fake-collection", this.messageHandlerStub.RequestUri?.AbsoluteUri);
+        Assert.Equal("https://fake-random-test-host:123/fake-path/collections/fake-collection", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     [Fact]
-    public async Task EndpointOverrideShouldBeUsedIfProvided()
+    public async Task EndpointOverrideShouldBeUsedIfProvidedAsync()
     {
         //Arrange
-        this.httpClient.BaseAddress = new Uri("https://fake-random-test-host:123/fake-path/");
+        this._httpClient.BaseAddress = new Uri("https://fake-random-test-host:123/fake-path/");
 
-        var sut = new QdrantVectorDbClient(this.httpClient, 123, "https://fake-random-test-host-override:123/");
+        var sut = new QdrantVectorDbClient(this._httpClient, 123, "https://fake-random-test-host-override:123/");
 
         //Act
         await sut.DoesCollectionExistAsync("fake-collection");
 
         //Assert
-        Assert.Equal("https://fake-random-test-host-override:123/collections/fake-collection", this.messageHandlerStub.RequestUri?.AbsoluteUri);
+        Assert.Equal("https://fake-random-test-host-override:123/collections/fake-collection", this._messageHandlerStub.RequestUri?.AbsoluteUri);
     }
 
     public void Dispose()
     {
-        this.httpClient.Dispose();
-        this.messageHandlerStub.Dispose();
+        this._httpClient.Dispose();
+        this._messageHandlerStub.Dispose();
     }
 }
