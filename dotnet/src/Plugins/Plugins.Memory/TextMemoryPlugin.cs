@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Plugins.Core;
+namespace Microsoft.SemanticKernel.Plugins.Memory;
 
 /// <summary>
 /// TextMemoryPlugin provides a plugin to save or recall information from the long or short term memory.

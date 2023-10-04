@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Plugins.Memory.Collections;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory.Collections;
+namespace SemanticKernel.Plugins.UnitTests.Memory.Collections;
 
 /// <summary>
 /// Contains tests for the <see cref="TopNCollection{T}"/> class.
@@ -50,9 +50,11 @@ public class TopNCollectionTests
         topNCollection.SortByScore();
 
         // Assert
+        var items = topNCollection.ToList();
+
         for (var i = 0; i < topNCollection.Count - 1; i++)
         {
-            Assert.True(topNCollection[i].Score > topNCollection[i + 1].Score);
+            Assert.True(items[i].Score > items[i + 1].Score);
         }
     }
 

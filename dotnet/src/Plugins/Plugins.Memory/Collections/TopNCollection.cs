@@ -3,14 +3,14 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Memory.Collections;
+namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
 
 /// <summary>
 /// A collector for Top N matches. Keeps only the best N matches by Score.
 /// Automatically flushes out any not in the top N.
 /// By default, items are not sorted by score until you call <see cref="TopNCollection{T}.SortByScore"/>.
 /// </summary>
-internal class TopNCollection<T> : IEnumerable<ScoredValue<T>>
+public class TopNCollection<T> : IEnumerable<ScoredValue<T>>
 {
     private readonly MinHeap<ScoredValue<T>> _heap;
     private bool _sorted = false;
