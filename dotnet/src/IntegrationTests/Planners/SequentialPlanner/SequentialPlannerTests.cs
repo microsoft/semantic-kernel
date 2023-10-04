@@ -61,7 +61,7 @@ public sealed class SequentialPlannerTests : IDisposable
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin");
+        TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel);
 
