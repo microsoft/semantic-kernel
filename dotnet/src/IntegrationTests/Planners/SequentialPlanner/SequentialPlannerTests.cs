@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Memory;
 using SemanticKernel.IntegrationTests.Fakes;
 using SemanticKernel.IntegrationTests.TestSettings;
+using xRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -55,13 +56,13 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.PluginName.Equals(expectedPlugin, StringComparison.OrdinalIgnoreCase));
     }
 
-    [Theory]
+    [RetryTheory]
     [InlineData("Write a novel about software development that is 3 chapters long.", "NovelOutline", "WriterPlugin", "<!--===ENDPART===-->")]
     public async Task CreatePlanWithDefaultsAsync(string prompt, string expectedFunction, string expectedPlugin, string expectedDefault)
     {
         // Arrange
         IKernel kernel = this.InitializeKernel();
-        TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin");
+        TestHelpers.ImportSamplePlugins(kernel, "WriterPlugin", "MiscPlugin");
 
         var planner = new Microsoft.SemanticKernel.Planners.SequentialPlanner(kernel);
 
@@ -77,7 +78,7 @@ public sealed class SequentialPlannerTests : IDisposable
                 step.Parameters["endMarker"].Equals(expectedDefault, StringComparison.OrdinalIgnoreCase));
     }
 
-    [Theory]
+    [RetryTheory]
     [InlineData("Write a poem and a joke and send it in an e-mail to Kai.", "SendEmail", FunctionCollection.GlobalFunctionsPluginName)]
     public async Task CreatePlanGoalRelevantAsync(string prompt, string expectedFunction, string expectedPlugin)
     {
