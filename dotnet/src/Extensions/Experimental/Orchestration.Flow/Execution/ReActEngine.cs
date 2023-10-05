@@ -186,7 +186,7 @@ internal sealed class ReActEngine
 
     private SKContext CreateActionContext(Dictionary<string, string> actionVariables, IKernel kernel, SKContext context)
     {
-        var actionContext = new SKContext(kernel, context.Variables.Clone());
+        var actionContext = context.Clone();
         foreach (var kvp in actionVariables)
         {
             actionContext.Variables.Set(kvp.Key, kvp.Value);
