@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.Memory.Collections;
+using Microsoft.SemanticKernel.Plugins.Memory.Collections;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Memory.Collections;
+namespace SemanticKernel.Plugins.UnitTests.Memory.Collections;
 
 /// <summary>
 /// Contains tests for the <see cref="MinHeap{T}"/> class.

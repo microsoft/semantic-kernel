@@ -124,7 +124,7 @@ public static class Example08_RetryHandler
         try
         {
             var answer = await kernel.RunAsync(question, qaPlugin["Question"]);
-            InfoLogger.Logger.LogInformation("Answer: {0}", answer);
+            InfoLogger.Logger.LogInformation("Answer: {0}", answer.GetValue<string>());
         }
         catch (Exception ex)
         {
