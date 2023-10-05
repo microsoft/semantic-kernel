@@ -33,8 +33,13 @@ public class CodeBlockTests
         // Arrange
         var functionRunner = new Mock<IFunctionRunner>();
         var context = new SKContext(this._functionRunner.Object);
-        this._functions.Setup(x => x.TryGetFunction("functionName", out It.Ref<ISKFunction?>.IsAny)).Returns(false);
         var target = new CodeBlock("functionName", this._logger);
+
+        this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+            .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
+            {
+                throw new SKException("No function was found");
+            });
 
         // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => target.RenderCodeAsync(context));
@@ -49,9 +54,9 @@ public class CodeBlockTests
         function
             .Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
             .Throws(new RuntimeWrappedException("error"));
-        ISKFunction? outFunc = function.Object;
-        this._functions.Setup(x => x.TryGetFunction("functionName", out outFunc)).Returns(true);
-        this._functions.Setup(x => x.GetFunction("functionName")).Returns(function.Object);
+
+        this.MockFunctionRunner(function.Object);
+
         var target = new CodeBlock("functionName", this._logger);
 
         // Act & Assert
@@ -225,9 +230,7 @@ public class CodeBlockTests
             })
             .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        ISKFunction? outFunc = function.Object;
-        this._functions.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._functions.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+        this.MockFunctionRunner(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId }, "", NullLoggerFactory.Instance);
@@ -268,9 +271,7 @@ public class CodeBlockTests
             })
             .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        ISKFunction? outFunc = function.Object;
-        this._functions.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._functions.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+        this.MockFunctionRunner(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, varBlock }, "", NullLoggerFactory.Instance);
@@ -303,9 +304,7 @@ public class CodeBlockTests
             })
             .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        ISKFunction? outFunc = function.Object;
-        this._functions.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._functions.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+        this.MockFunctionRunner(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, valBlock }, "", NullLoggerFactory.Instance);
@@ -346,9 +345,7 @@ public class CodeBlockTests
             })
             .ReturnsAsync((SKContext inputcontext, object _, CancellationToken _) => new FunctionResult(Func, Plugin, inputcontext));
 
-        ISKFunction? outFunc = function.Object;
-        this._functions.Setup(x => x.TryGetFunction(Func, out outFunc)).Returns(true);
-        this._functions.Setup(x => x.GetFunction(Func)).Returns(function.Object);
+        this.MockFunctionRunner(function.Object);
 
         // Act
         var codeBlock = new CodeBlock(new List<Block> { funcId, namedArgBlock1, namedArgBlock2 }, "", NullLoggerFactory.Instance);
@@ -358,5 +355,15 @@ public class CodeBlockTests
         Assert.Equal(FooValue, foo);
         Assert.Equal(BobValue, baz);
         Assert.Equal(Value, result);
+    }
+
+    private void MockFunctionRunner(ISKFunction function)
+    {
+        this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
+            .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
+            {
+                var context = new SKContext(this._functionRunner.Object, variables);
+                return function.InvokeAsync(context, null, cancellationToken);
+            });
     }
 }
