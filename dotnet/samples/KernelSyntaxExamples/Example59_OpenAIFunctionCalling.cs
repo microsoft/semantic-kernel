@@ -17,7 +17,6 @@ using RepoUtils;
  * This example shows how to use OpenAI's function calling capability via the chat completions interface.
  * For more information, see https://platform.openai.com/docs/guides/gpt/function-calling.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example59_OpenAIFunctionCalling
 {

@@ -8,7 +8,6 @@ using RepoUtils;
 /**
  * This example shows how to use GPT3.5 Chat model for prompts and semantic functions.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example27_SemanticFunctionsUsingChatGPT
 {
