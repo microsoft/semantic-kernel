@@ -172,6 +172,23 @@ def test_chat_prompt_template_with_system_prompt():
     assert chat_prompt_template.messages[0]["message"] == "Custom system prompt."
 
 
+def test_chat_prompt_template_restore_no_system_prompt():
+    prompt_template_config = PromptTemplateConfig()
+
+    messages = [{"role": "system", "message": "Custom system prompt."}]
+    chat_prompt_template = ChatPromptTemplate.restore(
+        messages,
+        "{{$user_input}}",
+        None,
+        prompt_config=prompt_template_config,
+    )
+
+    print(chat_prompt_template.messages)
+    assert len(chat_prompt_template.messages) == 1
+    assert chat_prompt_template.messages[0]["role"] == "system"
+    assert chat_prompt_template.messages[0]["message"] == "Custom system prompt."
+
+
 def test_chat_prompt_template_restore():
     prompt_template_config = PromptTemplateConfig(
         completion=PromptTemplateConfig.CompletionConfig(
