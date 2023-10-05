@@ -43,7 +43,6 @@ using Resources;
  *      var promptRenderer = new PromptTemplateEngine();
  *      string renderedPrompt = await promptRenderer.RenderAsync("...prompt template...", context);
  */
-
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
 public static class Example30_ChatWithPrompts

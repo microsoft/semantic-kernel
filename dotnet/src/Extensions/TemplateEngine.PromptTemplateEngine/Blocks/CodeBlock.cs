@@ -101,53 +101,25 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
     private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context)
     {
-        if (context.Functions == null)
-        {
-            throw new SKException("Function collection not found in the context");
-        }
-
-        if (!this.GetFunction(context.Functions!, fBlock, out ISKFunction? function))
-        {
-            var errorMsg = $"Function `{fBlock.Content}` not found";
-            this.Logger.LogError(errorMsg);
-            throw new SKException(errorMsg);
-        }
-
-        SKContext contextClone = context.Clone();
+        ContextVariables inputVariables = context.Variables.Clone();
 
         // If the code syntax is {{functionName $varName}} use $varName instead of $input
         // If the code syntax is {{functionName 'value'}} use "value" instead of $input
         if (this._tokens.Count > 1)
         {
-            contextClone = this.PopulateContextWithFunctionArguments(contextClone);
+            inputVariables = this.PopulateContextWithFunctionArguments(inputVariables);
         }
-
         try
         {
-            await function!.InvokeAsync(contextClone).ConfigureAwait(false);
+            await context.Runner.RunAsync(fBlock.PluginName, fBlock.FunctionName, inputVariables).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            this.Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", function!.PluginName, function.Name, ex.Message);
+            this.Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", fBlock.PluginName, fBlock.FunctionName, ex.Message);
             throw;
         }
 
-        return contextClone.Result;
-    }
-
-    private bool GetFunction(
-        IReadOnlyFunctionCollection functions,
-        FunctionIdBlock fBlock,
-        out ISKFunction? function)
-    {
-        if (string.IsNullOrEmpty(fBlock.PluginName))
-        {
-            // Function in the global plugin
-            return functions.TryGetFunction(fBlock.FunctionName, out function);
-        }
-
-        // Function within a specific plugin
-        return functions.TryGetFunction(fBlock.PluginName, fBlock.FunctionName, out function);
+        return inputVariables.ToString();
     }
 
     private bool IsValidFunctionCall(out string errorMsg)
@@ -180,10 +152,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
-    private SKContext PopulateContextWithFunctionArguments(SKContext context)
+    private ContextVariables PopulateContextWithFunctionArguments(ContextVariables variables)
     {
         // Clone the context to avoid unexpected and hard to test input mutation
-        var contextClone = context.Clone();
+        var variablesClone = variables.Clone();
         var firstArg = this._tokens[1];
 
         // Sensitive data, logging as trace, disabled by default
@@ -192,9 +164,9 @@ internal sealed class CodeBlock : Block, ICodeRendering
         var namedArgsStartIndex = 1;
         if (firstArg.Type is not BlockTypes.NamedArg)
         {
-            string input = ((ITextRendering)this._tokens[1]).Render(contextClone.Variables);
+            string input = ((ITextRendering)this._tokens[1]).Render(variablesClone);
             // Keep previous trust information when updating the input
-            contextClone.Variables.Update(input);
+            variablesClone.Update(input);
             namedArgsStartIndex++;
         }
 
@@ -213,10 +185,10 @@ internal sealed class CodeBlock : Block, ICodeRendering
             // Sensitive data, logging as trace, disabled by default
             this.Logger.LogTrace("Passing variable/value: `{Content}`", arg.Content);
 
-            contextClone.Variables.Set(arg.Name, arg.GetValue(context.Variables));
+            variablesClone.Set(arg.Name, arg.GetValue(variables));
         }
 
-        return contextClone;
+        return variablesClone;
     }
     #endregion
 }
