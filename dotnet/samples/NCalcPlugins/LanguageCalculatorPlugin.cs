@@ -99,8 +99,8 @@ Question: {{ $input }}
 
         try
         {
-            var kernelResult = await context.Runner.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
-            answer = kernelResult.GetValue<string>() ?? string.Empty;
+            var result = await context.Runner.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            answer = result.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)
         {

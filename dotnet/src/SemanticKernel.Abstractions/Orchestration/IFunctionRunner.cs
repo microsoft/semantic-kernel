@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Orchestration;
 
 /// <summary>
-/// Kernel execution context
+/// Function runner interface.
 /// </summary>
 public interface IFunctionRunner
 {
