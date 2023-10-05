@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -156,8 +157,16 @@ public interface IKernel
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
+    /// <param name="variables">Initializes the context with the provided variables</param>
+    /// <param name="functions">Provide specific scoped functions. Defaults to all existing in the kernel</param>
+    /// <param name="loggerFactory">Logged factory used within the context</param>
+    /// <param name="culture">Optional culture info related to the context</param>
     /// <returns>SK context</returns>
-    SKContext CreateNewContext();
+    SKContext CreateNewContext(
+        ContextVariables? variables = null,
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null);
 
     /// <summary>
     /// Get one of the configured services. Currently limited to AI services.
