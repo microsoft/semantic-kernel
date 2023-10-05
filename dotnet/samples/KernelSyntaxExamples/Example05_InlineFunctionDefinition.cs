@@ -52,14 +52,14 @@ Event: {{$input}}
         var excuseFunction = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var result = await kernel.RunAsync("I missed the F1 final race", excuseFunction);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         result = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
 
         result = await kernel.RunAsync(fixedFunction);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

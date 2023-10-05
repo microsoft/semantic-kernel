@@ -19,7 +19,7 @@ namespace NCalcPlugins;
 /// usage :
 /// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 /// var question = "what is the square root of 625";
-/// var calculatorPlugin = kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel));
+/// var calculatorPlugin = kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel));
 /// var summary = await kernel.RunAsync(questions, calculatorPlugin["Calculate"]);
 /// Console.WriteLine("Result :");
 /// Console.WriteLine(summary.Result);
@@ -99,7 +99,7 @@ Question: {{ $input }}
 
         try
         {
-            var result = await context.Kernel.RunAsync(input, this._mathTranslator).ConfigureAwait(false);
+            var result = await context.Runner.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
             answer = result.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)

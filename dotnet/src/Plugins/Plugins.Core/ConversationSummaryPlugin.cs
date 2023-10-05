@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <example>
 /// <code>
 /// var kernel Kernel.Builder.Build();
-/// kernel.ImportPlugin(new ConversationSummaryPlugin(kernel));
+/// kernel.ImportFunctions(new ConversationSummaryPlugin(kernel));
 /// </code>
 /// </example>
 public class ConversationSummaryPlugin
