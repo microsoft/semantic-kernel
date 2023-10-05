@@ -26,7 +26,6 @@ using Microsoft.SemanticKernel.Services;
 
 using Microsoft.SemanticKernel.TemplateEngine.Prompt;
 using Polly;
-using Polly.Retry;
 
 // ReSharper disable once InconsistentNaming
 public static class Example42_KernelBuilder
@@ -158,19 +157,37 @@ public static class Example42_KernelBuilder
             .Build();
 
         var logger = loggerFactory.CreateLogger<PollyHttpRetryHandlerFactory>();
-        var retryThreeTimesPolicy = Policy
-            .Handle<HttpOperationException>(ex
-                => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(new[]
+        var retryThreeTimesStrategy = new ResiliencePipelineBuilder<HttpResponseMessage>()
+            .AddRetry(new()
+            {
+                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                    .Handle<HttpOperationException>(ex => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests),
+                MaxRetryAttempts = 3,
+                DelayGenerator = args =>
                 {
-                    TimeSpan.FromSeconds(2),
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(8)
-                },
-                (ex, timespan, retryCount, _)
-                    => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms", retryCount, timespan.TotalMilliseconds));
+                    var delay = args.AttemptNumber switch
+                    {
+                        1 => TimeSpan.FromSeconds(2),
+                        2 => TimeSpan.FromSeconds(4),
+                        3 => TimeSpan.FromSeconds(8),
+                        _ => default
+                    };
 
-        var kernel9 = Kernel.Builder.WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesPolicy)).Build();
+                    return ValueTask.FromResult<TimeSpan?>(delay);
+                },
+                OnRetry = outcome =>
+                {
+                    logger?.LogWarning(
+                        outcome.Outcome.Exception,
+                        "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms",
+                        outcome.AttemptNumber,
+                        outcome.RetryDelay.TotalMilliseconds);
+                    return default;
+                }
+            })
+            .Build();
+
+        var kernel9 = Kernel.Builder.WithHttpHandlerFactory(new PollyHttpRetryHandlerFactory(retryThreeTimesStrategy)).Build();
 
         var kernel10 = Kernel.Builder.WithHttpHandlerFactory(new PollyRetryThreeTimesFactory()).Build();
 
@@ -190,21 +207,37 @@ public static class Example42_KernelBuilder
             return base.Create(loggerFactory);
         }
 
-        private static AsyncRetryPolicy GetPolicy(ILogger? logger)
+        private static ResiliencePipeline<HttpResponseMessage> GetPolicy(ILogger? logger)
         {
-            return Policy
-            .Handle<HttpOperationException>(ex
-                => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(new[]
+            return new ResiliencePipelineBuilder<HttpResponseMessage>()
+                .AddRetry(new()
                 {
-                    TimeSpan.FromSeconds(2),
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(8)
-                },
-                (ex, timespan, retryCount, _)
-                    => logger?.LogWarning(ex, "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms",
-                    retryCount,
-                    timespan.TotalMilliseconds));
+                    ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                        .Handle<HttpOperationException>(ex => ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests),
+                    MaxRetryAttempts = 3,
+                    DelayGenerator = args =>
+                    {
+                        var delay = args.AttemptNumber switch
+                        {
+                            1 => TimeSpan.FromSeconds(2),
+                            2 => TimeSpan.FromSeconds(4),
+                            3 => TimeSpan.FromSeconds(8),
+                            _ => default
+                        };
+
+                        return ValueTask.FromResult<TimeSpan?>(delay);
+                    },
+                    OnRetry = outcome =>
+                    {
+                        logger?.LogWarning(
+                            outcome.Outcome.Exception,
+                            "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms",
+                            outcome.AttemptNumber,
+                            outcome.RetryDelay.TotalMilliseconds);
+                        return default;
+                    }
+                })
+                .Build();
         }
     }
 

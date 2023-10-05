@@ -157,6 +157,144 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(expectedSendAsyncTimes), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.RequestTimeout)]
+    [InlineData(HttpStatusCode.ServiceUnavailable)]
+    [InlineData(HttpStatusCode.GatewayTimeout)]
+    [InlineData(HttpStatusCode.TooManyRequests)]
+    public async Task CustomStrategyNoOpShouldNotAvoidSendRequestsAsync(HttpStatusCode statusCode)
+    {
+        // Arrange
+        var resiliencePipeline = ResiliencePipeline<HttpResponseMessage>.Empty;
+        var (mockLoggerFactory, mockLogger) = GetLoggerMocks();
+        using var retry = new PollyHttpRetryHandler(resiliencePipeline);
+        using var mockResponse = new HttpResponseMessage(statusCode);
+        using var testContent = new StringContent("test");
+        var mockHandler = GetHttpMessageHandlerMock(mockResponse);
+
+        retry.InnerHandler = mockHandler.Object;
+        using var httpClient = new HttpClient(retry);
+
+        // Act
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
+
+        // Assert
+        mockHandler.Protected()
+            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+        Assert.Equal(statusCode, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.RequestTimeout)]
+    [InlineData(HttpStatusCode.ServiceUnavailable)]
+    [InlineData(HttpStatusCode.GatewayTimeout)]
+    [InlineData(HttpStatusCode.TooManyRequests)]
+    public async Task CustomStrategyStatusDontMatchNeverTriggersAsync(HttpStatusCode statusCode)
+    {
+        // Arrange
+        var resiliencePipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
+            .AddRetry(new()
+            {
+                ShouldHandle = new PredicateBuilder<HttpResponseMessage>().HandleResult(result => result.StatusCode != statusCode),
+                Delay = TimeSpan.FromMilliseconds(10),
+                MaxRetryAttempts = 1
+            })
+            .Build();
+        var (mockLoggerFactory, mockLogger) = GetLoggerMocks();
+        using var retry = new PollyHttpRetryHandler(resiliencePipeline);
+        using var mockResponse = new HttpResponseMessage(statusCode);
+        using var testContent = new StringContent("test");
+        var mockHandler = GetHttpMessageHandlerMock(mockResponse);
+
+        retry.InnerHandler = mockHandler.Object;
+        using var httpClient = new HttpClient(retry);
+
+        // Act
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
+
+        // Assert
+        mockHandler.Protected()
+            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+        Assert.Equal(statusCode, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.RequestTimeout, HttpStatusCode.TooManyRequests)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, HttpStatusCode.TooManyRequests)]
+    [InlineData(HttpStatusCode.GatewayTimeout, HttpStatusCode.TooManyRequests)]
+    [InlineData(HttpStatusCode.TooManyRequests, HttpStatusCode.TooManyRequests)]
+    public async Task CustomStrategyRetryStatusShouldTriggerRetrialsAsync(HttpStatusCode statusCode, HttpStatusCode retryStatusCode)
+    {
+        // Arrange
+        var retryCount = 3;
+        var resiliencePipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
+            .AddRetry(new()
+            {
+                ShouldHandle = new PredicateBuilder<HttpResponseMessage>().HandleResult(result => result.StatusCode == retryStatusCode),
+                Delay = TimeSpan.FromMilliseconds(10),
+                MaxRetryAttempts = retryCount
+            })
+            .Build();
+
+        var (mockLoggerFactory, mockLogger) = GetLoggerMocks();
+        using var retry = new PollyHttpRetryHandler(resiliencePipeline);
+        using var mockResponse = new HttpResponseMessage(statusCode);
+        using var testContent = new StringContent("test");
+        var mockHandler = GetHttpMessageHandlerMock(mockResponse);
+
+        retry.InnerHandler = mockHandler.Object;
+        using var httpClient = new HttpClient(retry);
+
+        // Act
+        var response = await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None);
+
+        // Assert
+        var expectedSendAsyncTimes = (statusCode == retryStatusCode)
+            ? retryCount + 1
+            : 1;
+
+        mockHandler.Protected()
+            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(expectedSendAsyncTimes), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+        Assert.Equal(statusCode, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(typeof(ApplicationException), typeof(HttpRequestException))]
+    [InlineData(typeof(HttpRequestException), typeof(HttpRequestException))]
+    public async Task CustomStrategyRetryExceptionsShouldTriggerRetrialsAsync(Type exceptionType, Type retryExceptionType)
+    {
+        // Arrange
+        var retryCount = 1;
+        var resiliencePipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
+            .AddRetry(new()
+            {
+                ShouldHandle = new PredicateBuilder<HttpResponseMessage>().Handle<Exception>(exception => exception.GetType() == retryExceptionType),
+                Delay = TimeSpan.FromMilliseconds(10),
+                MaxRetryAttempts = retryCount
+            })
+            .Build();
+
+        var (mockLoggerFactory, mockLogger) = GetLoggerMocks();
+        using var testContent = new StringContent("test");
+        var mockHandler = GetHttpMessageHandlerMock(exceptionType);
+        using var retry = new PollyHttpRetryHandler(resiliencePipeline);
+
+        retry.InnerHandler = mockHandler.Object;
+        using var httpClient = new HttpClient(retry);
+
+        // Act
+        var response = await Assert.ThrowsAsync(exceptionType,
+            async () => await httpClient.PostAsync(new Uri("https://www.microsoft.com"), testContent, CancellationToken.None));
+
+        // Assert
+        var expectedSendAsyncTimes = (exceptionType == retryExceptionType)
+            ? retryCount + 1
+            : 1;
+
+        mockHandler.Protected()
+            .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(expectedSendAsyncTimes), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
+    }
+
     private static (Mock<ILoggerFactory>, Mock<ILogger>) GetLoggerMocks()
     {
         var mockLoggerFactory = new Mock<ILoggerFactory>();

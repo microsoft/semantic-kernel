@@ -57,7 +57,7 @@ public static class Example08_RetryHandler
     {
         InfoLogger.Logger.LogInformation("============================== Using Reliability.Polly extension ==============================");
         var kernel = InitializeKernelBuilder()
-            .WithRetryPolly(GetPollyPolicy(InfoLogger.LoggerFactory))
+            .WithRetryPolly(GetPollyStrategy(InfoLogger.LoggerFactory))
             .Build();
 
         await ImportAndExecutePluginAsync(kernel);
@@ -81,7 +81,7 @@ public static class Example08_RetryHandler
                     .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, "BAD_KEY");
     }
 
-    private static AsyncPolicy<HttpResponseMessage> GetPollyPolicy(ILoggerFactory? logger)
+    private static ResiliencePipeline<HttpResponseMessage> GetPollyStrategy(ILoggerFactory? logger)
     {
         // Handle 429 and 401 errors
         // Typically 401 would not be something we retry but for demonstration
@@ -89,20 +89,35 @@ public static class Example08_RetryHandler
         const int TooManyRequests = 429;
         const int Unauthorized = 401;
 
-        return Policy
-            .HandleResult<HttpResponseMessage>(response =>
-                (int)response.StatusCode is TooManyRequests or Unauthorized)
-            .WaitAndRetryAsync(new[]
+        return new ResiliencePipelineBuilder<HttpResponseMessage>()
+            .AddRetry(new()
+            {
+                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                    .HandleResult(response => (int)response.StatusCode is TooManyRequests or Unauthorized),
+                MaxRetryAttempts = 3,
+                DelayGenerator = args =>
                 {
-                    TimeSpan.FromSeconds(2),
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(8)
+                    var delay = args.AttemptNumber switch
+                    {
+                        1 => TimeSpan.FromSeconds(2),
+                        2 => TimeSpan.FromSeconds(4),
+                        3 => TimeSpan.FromSeconds(8),
+                        _ => default
+                    };
+
+                    return ValueTask.FromResult<TimeSpan?>(delay);
                 },
-                (outcome, timespan, retryCount, _)
-                    => InfoLogger.Logger.LogWarning("Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms. Outcome: {StatusCode}",
-                        retryCount,
-                        timespan.TotalMilliseconds,
-                        outcome.Result.StatusCode));
+                OnRetry = outcome =>
+                {
+                    InfoLogger.Logger.LogWarning(
+                        "Error executing action [attempt {RetryCount} of 3], pausing {PausingMilliseconds}ms. Outcome: {StatusCode}",
+                        outcome.AttemptNumber,
+                        outcome.RetryDelay.TotalMilliseconds,
+                        outcome.Outcome.Result?.StatusCode);
+                    return default;
+                }
+            })
+            .Build();
     }
 
     private static async Task ImportAndExecutePluginAsync(IKernel kernel)
