@@ -14,7 +14,7 @@
   },
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": "active",
-  "python.formatting.provider": "none",
+  "python.formatting.provider": "autopep8",
   "python.formatting.autopep8Args": [
     "--max-line-length=120"
   ],
@@ -90,8 +90,5 @@
   },
   "java.debug.settings.onBuildFailureProceed": true,
   "java.compile.nullAnalysis.mode": "disabled",
-  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln",
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
-  }
+  "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln"
 }
