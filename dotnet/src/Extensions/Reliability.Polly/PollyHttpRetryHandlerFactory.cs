@@ -23,7 +23,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/>.
     /// </summary>
     /// <param name="typedAsyncPolicy">HttpResponseMessage typed AsyncPolicy</param> dedicated for <see cref="HttpResponseMessage"/> typed policies.
-    [Obsolete("Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).")]
+    [Obsolete("Use one of the overloads that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).")]
     public PollyHttpRetryHandlerFactory(AsyncPolicy<HttpResponseMessage> typedAsyncPolicy)
     {
         Verify.NotNull(typedAsyncPolicy);
@@ -35,7 +35,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/> dedicated for non-typed policies.
     /// </summary>
     /// <param name="asyncPolicy">A non-typed AsyncPolicy</param>
-    [Obsolete("Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).")]
+    [Obsolete("Use one of the overloads that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).")]
     public PollyHttpRetryHandlerFactory(AsyncPolicy asyncPolicy)
     {
         Verify.NotNull(asyncPolicy);
@@ -72,7 +72,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     /// <returns>Returns the created handler</returns>
     public override DelegatingHandler Create(ILoggerFactory? loggerFactory = null)
     {
-#pragma warning disable CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
+#pragma warning disable CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the overloads that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
         if (this._typedAsyncPolicy is not null)
         {
             return new PollyHttpRetryHandler(this._typedAsyncPolicy);
@@ -82,7 +82,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
         {
             return new PollyHttpRetryHandler(this._asyncPolicy);
         }
-#pragma warning restore CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
+#pragma warning restore CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the overloads that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
 
         if (this._typedResiliencePipeline is not null)
         {

@@ -28,7 +28,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
         SystemClock.Reset();
     }
 
-#pragma warning disable CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
+#pragma warning disable CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the overloads that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
 
     [Theory]
     [InlineData(HttpStatusCode.RequestTimeout)]
@@ -159,7 +159,7 @@ public sealed class PollyHttpRetryHandlerTests : IDisposable
             .Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(expectedSendAsyncTimes), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
     }
 
-#pragma warning restore CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
+#pragma warning restore CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the overloads that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
 
     [Theory]
     [InlineData(HttpStatusCode.RequestTimeout)]

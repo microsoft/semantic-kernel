@@ -23,7 +23,7 @@ public class PollyHttpRetryHandler : DelegatingHandler
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/>.
     /// </summary>
     /// <param name="typedAsyncPolicy">HttpResponseMessage typed AsyncPolicy</param> dedicated for <see cref="HttpResponseMessage"/> typed policies.
-    [Obsolete("Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).")]
+    [Obsolete("Use one of the overloads that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).")]
     public PollyHttpRetryHandler(AsyncPolicy<HttpResponseMessage> typedAsyncPolicy)
     {
         Verify.NotNull(typedAsyncPolicy);
@@ -35,7 +35,7 @@ public class PollyHttpRetryHandler : DelegatingHandler
     /// Creates a new instance of <see cref="PollyHttpRetryHandler"/> dedicated for non-typed policies.
     /// </summary>
     /// <param name="asyncPolicy">A non-typed AsyncPolicy</param>
-    [Obsolete("Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).")]
+    [Obsolete("Use one of the overloads that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).")]
     public PollyHttpRetryHandler(AsyncPolicy asyncPolicy)
     {
         Verify.NotNull(asyncPolicy);
