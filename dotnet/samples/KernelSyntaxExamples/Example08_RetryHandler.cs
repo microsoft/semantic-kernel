@@ -121,7 +121,7 @@ public static class Example08_RetryHandler
         InfoLogger.Logger.LogInformation("Question: {0}", question);
         // To see the retry policy in play, you can set the OpenAI.ApiKey to an invalid value
         var answer = await kernel.RunAsync(question, qaPlugin["Question"]);
-        InfoLogger.Logger.LogInformation("Answer: {0}", answer);
+        InfoLogger.Logger.LogInformation("Answer: {0}", answer.GetValue<string>());
     }
 
     // Basic custom retry handler factory

@@ -65,7 +65,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         // Show the result
         Console.WriteLine("--- Semantic Function result");
         var result = await kernel.RunAsync(context.Variables, haiku);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 

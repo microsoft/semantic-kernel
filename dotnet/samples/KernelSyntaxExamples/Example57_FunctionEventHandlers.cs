@@ -280,6 +280,6 @@ public static class Example57_FunctionEventHandlers
             }
         };
 
-        var context = await kernel.RunAsync("Repetition", repeatMeFunction);
+        await kernel.RunAsync("Repetition", repeatMeFunction);
     }
 }

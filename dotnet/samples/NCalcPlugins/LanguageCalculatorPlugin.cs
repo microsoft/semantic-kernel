@@ -19,7 +19,7 @@ namespace NCalcPlugins;
 /// usage :
 /// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 /// var question = "what is the square root of 625";
-/// var calculatorPlugin = kernel.ImportPlugin(new LanguageCalculatorPlugin(kernel));
+/// var calculatorPlugin = kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel));
 /// var summary = await kernel.RunAsync(questions, calculatorPlugin["Calculate"]);
 /// Console.WriteLine("Result :");
 /// Console.WriteLine(summary.Result);

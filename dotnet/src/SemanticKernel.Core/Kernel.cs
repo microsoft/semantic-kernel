@@ -121,7 +121,7 @@ public sealed class Kernel : IKernel, IDisposable
         return functions;
     }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable CS1591
     public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)

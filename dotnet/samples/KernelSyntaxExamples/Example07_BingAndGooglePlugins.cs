@@ -82,7 +82,7 @@ public static class Example07_BingAndGooglePlugins
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 

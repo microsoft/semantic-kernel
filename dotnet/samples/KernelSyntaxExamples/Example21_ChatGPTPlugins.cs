@@ -31,7 +31,7 @@ public static class Example21_ChatGptPlugins
         //Run
         var result = await kernel.RunAsync(contextVariables, plugin["productsUsingGET"]);
 
-        Console.WriteLine("Plugin execution result: {0}", result);
+        Console.WriteLine("Plugin execution result: {0}", result.GetValue<string>());
         Console.ReadLine();
 
         //--------------- Example of using Klarna ChatGPT plugin ------------------------

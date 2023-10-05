@@ -126,7 +126,7 @@ public static class Example40_DIContainer
 
             var result = await this._kernel.RunAsync(ask, summarizeFunctions["Summarize"]);
 
-            this._logger.LogWarning("Result - {0}", result);
+            this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }
     }
 }

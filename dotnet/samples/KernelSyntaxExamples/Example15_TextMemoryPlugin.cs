@@ -208,7 +208,7 @@ public static class Example15_TextMemoryPlugin
             [TextMemoryPlugin.KeyParam] = "info5"
         }, cancellationToken);
 
-        Console.WriteLine("Memory with key 'info5':" + result?.ToString() ?? "ERROR: memory not found");
+        Console.WriteLine("Memory with key 'info5':" + result.GetValue<string>() ?? "ERROR: memory not found");
         Console.WriteLine();
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ public static class Example15_TextMemoryPlugin
             ["input"] = "Ask: where do I live?"
         }, cancellationToken);
 
-        Console.WriteLine($"Answer: {result}");
+        Console.WriteLine($"Answer: {result.GetValue<string>()}");
         Console.WriteLine();
 
         /*
@@ -292,7 +292,7 @@ Answer:
         }, cancellationToken);
 
         Console.WriteLine("Ask: Do I live in the same town where I grew up?");
-        Console.WriteLine($"Answer: {result}");
+        Console.WriteLine($"Answer: {result.GetValue<string>()}");
 
         /*
         Approximate Output:
