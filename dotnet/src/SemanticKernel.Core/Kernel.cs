@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -176,7 +177,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
-        var context = new SKContext(this, variables);
+        var context = this.CreateNewContext(variables);
 
         FunctionResult? functionResult = null;
 
@@ -244,11 +245,18 @@ repeat:
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext()
+    public SKContext CreateNewContext(
+        ContextVariables? variables = null,
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null)
     {
         return new SKContext(
-            this,
-            functions: this._functionCollection);
+            new FunctionRunner(this),
+            variables,
+            functions ?? this.Functions,
+            loggerFactory ?? this.LoggerFactory,
+            culture);
     }
 
     /// <inheritdoc/>
@@ -367,6 +375,5 @@ repeat:
     {
         return this.Functions.GetFunction(pluginName, functionName);
     }
-
     #endregion
 }

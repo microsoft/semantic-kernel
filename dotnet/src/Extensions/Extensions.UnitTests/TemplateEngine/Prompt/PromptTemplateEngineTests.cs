@@ -26,6 +26,7 @@ public sealed class PromptTemplateEngineTests
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IKernel> _kernel;
+    private readonly Mock<IFunctionRunner> _functionRunner;
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
@@ -34,6 +35,7 @@ public sealed class PromptTemplateEngineTests
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();
+        this._functionRunner = new Mock<IFunctionRunner>();
     }
 
     [Fact]
@@ -387,8 +389,8 @@ public sealed class PromptTemplateEngineTests
     private SKContext MockContext()
     {
         return new SKContext(
-            this._kernel.Object,
+            this._functionRunner.Object,
             this._variables,
-            functions: this._functions.Object);
+            this._functions.Object);
     }
 }
