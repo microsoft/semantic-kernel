@@ -25,6 +25,12 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpResponseMessage ResponseToReturn { get; set; }
 
+    public HttpMessageHandlerStub()
+    {
+        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        this.ResponseToReturn.Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json);
+    }
+
     public HttpMessageHandlerStub(Stream responseToReturn)
     {
         this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK);

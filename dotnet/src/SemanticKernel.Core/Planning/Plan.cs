@@ -248,10 +248,7 @@ public sealed class Plan : IPlan
             // Execute the step
             var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
-            // result.Context.Result is used for backward compatibility and can be removed in the future
-            var resultString = result.GetValue<string>() ?? result.Context.Result;
-
-            var resultValue = resultString.Trim();
+            var resultValue = result.Context.Result.Trim();
 
             #region Update State
 
