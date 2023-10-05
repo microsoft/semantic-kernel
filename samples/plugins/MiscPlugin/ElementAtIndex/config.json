@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "Get an element from an array at a specified index",
+  "description": "Get an element from an array or list at a specified index",
   "models": [
     {
       "max_tokens": 1024,
@@ -14,7 +14,7 @@
     "parameters": [
       {
         "name": "input",
-        "description": "The input array",
+        "description": "The input array or list",
         "defaultValue": ""
       },
       {
