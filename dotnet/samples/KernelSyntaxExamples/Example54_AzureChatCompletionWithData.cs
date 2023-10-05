@@ -103,7 +103,7 @@ public static class Example54_AzureChatCompletionWithData
         // Ask: How did Emily and David meet?
         // Response: Emily and David, both passionate scientists, met during a research expedition to Antarctica.
         Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
+        Console.WriteLine($"Response: {response.GetValue<string>()}");
         Console.WriteLine();
 
         // Second question based on uploaded content.
@@ -115,7 +115,7 @@ public static class Example54_AzureChatCompletionWithData
         // Response: They are passionate scientists who study glaciology,
         // a branch of geology that deals with the study of ice and its effects.
         Console.WriteLine($"Ask: {ask}");
-        Console.WriteLine($"Response: {response}");
+        Console.WriteLine($"Response: {response.GetValue<string>()}");
         Console.WriteLine();
     }
 
