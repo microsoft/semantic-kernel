@@ -134,7 +134,7 @@ public class LocalExamplePlugin
         var summarizer = context.Functions.GetFunction("SummarizePlugin", "Summarize");
         var summary = await context.Kernel.RunAsync("blah blah blah", summarizer);
 
-        Console.WriteLine($"Running function type 6 [{summary}]");
+        Console.WriteLine($"Running function type 6 [{summary.GetValue<string>()}]");
         return "";
     }
 
