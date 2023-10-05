@@ -178,7 +178,7 @@ SK-dotnet
     │   ├── Planner.ActionPlanner*
     │   ├── Planner.SequentialPlanner*
     │   ├── Planner.StepwisePlanner
-    │   ├── TemplateEngine.PromptTemplateEngine*
+    │   ├── TemplateEngine.Prompt*
     │   └── Extensions.UnitTests
     ├── InternalUtilities/
     ├── skills/
@@ -208,7 +208,7 @@ SK-dotnet
 | Planner.ActionPlanner               | Semantic Kernel implementation of an action planner |
 | Planner.SequentialPlanner           | Semantic Kernel implementation of a sequential planner |
 | Planner.StepwisePlanner             | Semantic Kernel implementation of a stepwise planner |
-| TemplateEngine.PromptTemplateEngine | Prompt template engine implementation which is used by Semantic Functions only |
+| TemplateEngine.Prompt | Prompt template engine implementation which is used by Semantic Functions only |
 | Extensions.UnitTests                | Extensions unit tests |
 | InternalUtilities                   | Internal utilities which are reused by multiple NuGet packages (all internal)  |
 | Skills.Core                         | Core set of native functions which are provided to support Semantic Functions |
@@ -259,7 +259,7 @@ dotnet/
     │   ├── Planner.ActionPlanner
     │   ├── Planner.SequentialPlanner
     │   ├── Planner.StepwisePlanner
-    │   ├── TemplateEngine.PromptTemplateEngine
+    │   ├── TemplateEngine.Prompt
     │   └── Extensions.UnitTests
     ├── InternalUtilities/
     ├── Skills/

@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+    <ProjectReference Include="..\TemplateEngine.Prompt\TemplateEngine.Prompt.csproj" />
     <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
   </ItemGroup>
 

@@ -39,7 +39,7 @@
     <ProjectReference Include="..\Connectors\Connectors.Memory.Postgres\Connectors.Memory.Postgres.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Memory.Weaviate\Connectors.Memory.Weaviate.csproj" />
     <ProjectReference Include="..\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+    <ProjectReference Include="..\Extensions\TemplateEngine.Prompt\TemplateEngine.Prompt.csproj" />
     <ProjectReference Include="..\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
