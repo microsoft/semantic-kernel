@@ -15,9 +15,19 @@ Developers need to be able to use multiple models e.g., using chat completion to
 <!-- This is an optional element. Feel free to remove. -->
 ## Use Cases
 
-* Select Model Request Settings by Default Service Id
-* Select Model Request Settings by Model Id
-* Select AI Service and Model Request Settings By Developer Defined Strategy
+In scope for Semantic Kernel V1.0
+
+* Select Model Request Settings by Service Id.
+  * A Service Id uniquely identifies a registered AI Service and is typically defined in the scope of an application.
+* Select Model Request Settings by Model Id.
+  * A Model Id uniquely identifies a Large Language Model. Multiple AI service providers can support the same LLM.
+* Select AI Service and Model Request Settings By Developer Defined Strategy.
+  * A Developer Defined Strategy is a code first approach where a developer provides the logic.
+
+Out of scope for V1.0
+
+* Select Model Request Settings by Provider Id and Model Id
+  * A Provider Id uniquely identifies an AI provider e.g. "Azure OpenAI", "OpenAI", "Hugging Face"
 
 ## Decision Outcome
 
@@ -27,7 +37,7 @@ Support just use cases listed in this ADR.
 
 **Note: All code is pseudo code and does not accurately reflect what the final implementations will look like.**
 
-### Select Model Request Settings by Default Service Id
+### Select Model Request Settings by Service Id
 
 _As a developer using the Semantic Kernel I can configure multiple request settings for a semantic function and associate each one with a service id so that the correct request settings are used when different services are used to execute my semantic function._
 
