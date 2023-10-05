@@ -72,6 +72,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
     /// <returns>Returns the created handler</returns>
     public override DelegatingHandler Create(ILoggerFactory? loggerFactory = null)
     {
+#pragma warning disable CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
         if (this._typedAsyncPolicy is not null)
         {
             return new PollyHttpRetryHandler(this._typedAsyncPolicy);
@@ -81,6 +82,7 @@ public class PollyHttpRetryHandlerFactory : HttpHandlerFactory<PollyHttpRetryHan
         {
             return new PollyHttpRetryHandler(this._asyncPolicy);
         }
+#pragma warning restore CS0618 // PollyHttpRetryHandler.PollyHttpRetryHandler(AsyncPolicy)' is obsolete: 'Use one of the constructors that takes a ResiliencePipeline instead (https://www.pollydocs.org/migration-v8.html).
 
         if (this._typedResiliencePipeline is not null)
         {
