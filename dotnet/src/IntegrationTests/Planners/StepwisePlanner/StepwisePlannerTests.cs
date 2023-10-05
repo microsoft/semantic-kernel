@@ -90,7 +90,7 @@ public sealed class StepwisePlannerTests : IDisposable
 
         // Assert - should contain the expected answer
         Assert.NotNull(result);
-        //Assert.Contains(partialExpectedAnswer, result, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains(partialExpectedAnswer, result, StringComparison.InvariantCultureIgnoreCase);
         Assert.True(planResult.TryGetMetadataValue("iterations", out string iterations));
         Assert.True(int.Parse(iterations, System.Globalization.CultureInfo.InvariantCulture) > 0);
         Assert.True(int.Parse(iterations, System.Globalization.CultureInfo.InvariantCulture) <= 10);
