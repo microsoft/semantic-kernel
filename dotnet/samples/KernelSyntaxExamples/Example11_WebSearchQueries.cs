@@ -27,6 +27,6 @@ public static class Example11_WebSearchQueries
         );
 
         Console.WriteLine(ask + "\n");
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

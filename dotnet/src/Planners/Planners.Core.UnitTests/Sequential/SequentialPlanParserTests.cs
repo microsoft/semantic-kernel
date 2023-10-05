@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
@@ -36,10 +37,10 @@ public class SequentialPlanParserTests
     }
 
     private SKContext CreateSKContext(
-        IKernel kernel,
+        IFunctionRunner functionRunner,
         ContextVariables? variables = null)
     {
-        return new SKContext(kernel, variables, kernel.Functions);
+        return new SKContext(functionRunner, variables);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -57,8 +58,14 @@ public class SequentialPlanParserTests
         var kernelMock = this.CreateKernelMock(out var functionCollection, out _);
         kernel = kernelMock.Object;
 
+        var functionRunnerMock = new Mock<IFunctionRunner>();
+
         // For Create
-        kernelMock.Setup(k => k.CreateNewContext()).Returns(this.CreateSKContext(kernel));
+        kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
+            {
+                return this.CreateSKContext(functionRunnerMock.Object, contextVariables);
+            });
 
         var functionsView = new List<FunctionView>();
         foreach (var (name, pluginName, description, isSemantic, resultString) in functions)
@@ -70,10 +77,10 @@ public class SequentialPlanParserTests
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
-            var context = this.CreateSKContext(kernel);
-            context.Variables.Update(resultString);
+            var result = this.CreateSKContext(functionRunnerMock.Object);
+            result.Variables.Update(resultString);
             mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new FunctionResult(name, pluginName, context));
+                .ReturnsAsync(new FunctionResult(name, pluginName, result));
 
             if (string.IsNullOrEmpty(name))
             {
