@@ -60,7 +60,7 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         // Run
         var result = await kernel.RunAsync(contextVariables, plugin["GetSecret"]);
 
-        Console.WriteLine("GetSecret plugin response: {0}", result);
+        Console.WriteLine("GetSecret plugin response: {0}", result.GetValue<string>());
     }
 
     public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
@@ -88,6 +88,6 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         // Run
         var result = await kernel.RunAsync(contextVariables, plugin["SetSecret"]);
 
-        Console.WriteLine("SetSecret plugin response: {0}", result);
+        Console.WriteLine("SetSecret plugin response: {0}", result.GetValue<string>());
     }
 }
