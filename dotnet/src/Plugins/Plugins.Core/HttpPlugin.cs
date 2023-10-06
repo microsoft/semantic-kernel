@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// A plugin that provides HTTP functionality.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("http", new HttpPlugin());
+/// Usage: kernel.ImportFunctions(new HttpPlugin(), "http");
 /// Examples:
 /// SKContext.Variables["url"] = "https://www.bing.com"
 /// {{http.getAsync $url}}
