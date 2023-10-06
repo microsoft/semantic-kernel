@@ -24,7 +24,7 @@ using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Reliability.Polly;
 using Microsoft.SemanticKernel.Services;
 
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Polly;
 using Polly.Retry;
 
@@ -81,7 +81,7 @@ public static class Example42_KernelBuilder
 
         var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var plugins = new FunctionCollection();
-        var templateEngine = new PromptTemplateEngine(loggerFactory);
+        var templateEngine = new BasicPromptTemplateEngine(loggerFactory);
 
         var httpHandlerFactory = BasicHttpRetryHandlerFactory.Instance;
         //var httpHandlerFactory = new PollyHttpRetryHandlerFactory( your policy );

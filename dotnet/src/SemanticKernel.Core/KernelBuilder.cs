@@ -289,10 +289,10 @@ public sealed class KernelBuilder
     {
         try
         {
-            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.PromptTemplateEngine");
+            var assembly = Assembly.Load("Microsoft.SemanticKernel.TemplateEngine.Basic");
 
             return assembly.ExportedTypes.Single(type =>
-                type.Name.Equals("PromptTemplateEngine", StringComparison.Ordinal) &&
+                type.Name.Equals("BasicPromptTemplateEngine", StringComparison.Ordinal) &&
                 type.GetInterface(nameof(IPromptTemplateEngine)) is not null);
         }
         catch (Exception ex) when (!ex.IsCriticalException())
