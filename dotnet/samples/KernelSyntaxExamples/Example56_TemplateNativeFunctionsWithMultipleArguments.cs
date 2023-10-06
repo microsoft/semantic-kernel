@@ -21,7 +21,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string deploymentName = TestConfiguration.AzureOpenAI.DeploymentName;
+        string deploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
         if (serviceId == null || apiKey == null || deploymentName == null || endpoint == null)
