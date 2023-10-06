@@ -108,7 +108,7 @@ internal sealed class TemplateTokenizer
                 // While inside a text value, when the end quote is found
                 if (insideTextValue)
                 {
-                    if (currentChar == Symbols.EscapeChar && Block.CanBeEscaped(nextChar))
+                    if (currentChar == Symbols.EscapeChar && Symbols.CanBeEscaped(nextChar))
                     {
                         skipNextChar = true;
                         continue;
@@ -122,7 +122,7 @@ internal sealed class TemplateTokenizer
                 else
                 {
                     // A value starts here
-                    if (Block.IsQuote(currentChar))
+                    if (Symbols.IsQuote(currentChar))
                     {
                         insideTextValue = true;
                         textValueDelimiter = currentChar;

@@ -70,6 +70,6 @@ internal sealed class ValBlock : Block, ITextRendering
     {
         return !string.IsNullOrEmpty(text)
                && text!.Length > 0
-               && (IsQuote(text[0]));
+               && (Symbols.IsQuote(text[0]));
     }
 }
