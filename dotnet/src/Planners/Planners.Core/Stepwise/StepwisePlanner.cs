@@ -528,9 +528,18 @@ public class StepwisePlanner : IStepwisePlanner
 
         try
         {
+            string? result = null;
+
             var vars = this.CreateActionContextVariables(actionVariables);
             var kernelResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
-            var result = kernelResult.GetValue<string>();
+            var resultObject = kernelResult.GetValue<object>();
+
+            var converter = TypeDescriptor.GetConverter(resultObject);
+
+            if (converter.CanConvertTo(typeof(string)))
+            {
+                result = converter.ConvertToString(resultObject);
+            }
 
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
 
