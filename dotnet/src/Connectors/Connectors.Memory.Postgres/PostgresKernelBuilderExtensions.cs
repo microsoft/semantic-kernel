@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.ComponentModel;
 using System;
+using System.ComponentModel;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Npgsql;
 

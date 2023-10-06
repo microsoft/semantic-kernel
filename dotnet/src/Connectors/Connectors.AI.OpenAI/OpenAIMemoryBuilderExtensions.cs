@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
 using Azure.Core;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding;
-using System.Net.Http;
 using Microsoft.SemanticKernel.Plugins.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI;

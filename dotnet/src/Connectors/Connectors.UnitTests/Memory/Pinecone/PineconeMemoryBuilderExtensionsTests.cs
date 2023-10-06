@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-using System;
-using Xunit;
-using Microsoft.SemanticKernel.Plugins.Memory;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
-using Moq;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+using Microsoft.SemanticKernel.Plugins.Memory;
+using Moq;
+using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Pinecone;
 
