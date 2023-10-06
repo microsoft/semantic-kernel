@@ -64,8 +64,8 @@ public static class Example04_CombineLLMPromptsAndNativeCode
         );
 
         Console.WriteLine(ask + "\n");
-        Console.WriteLine("Bing Answer: " + result1 + "\n");
-        Console.WriteLine("Summary: " + result2 + "\n");
-        Console.WriteLine("Notes: " + result3 + "\n");
+        Console.WriteLine("Bing Answer: " + result1.GetValue<string>() + "\n");
+        Console.WriteLine("Summary: " + result2.GetValue<string>() + "\n");
+        Console.WriteLine("Notes: " + result3.GetValue<string>() + "\n");
     }
 }
