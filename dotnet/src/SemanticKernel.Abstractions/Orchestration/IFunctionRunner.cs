@@ -19,7 +19,7 @@ public interface IFunctionRunner
     /// <returns>Result of the function composition</returns>
     Task<FunctionResult> RunAsync(
         ISKFunction skFunction,
-        ContextVariables variables,
+        ContextVariables? variables = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -33,6 +33,6 @@ public interface IFunctionRunner
     Task<FunctionResult> RunAsync(
         string pluginName,
         string functionName,
-        ContextVariables variables,
+        ContextVariables? variables = null,
         CancellationToken cancellationToken = default);
 }

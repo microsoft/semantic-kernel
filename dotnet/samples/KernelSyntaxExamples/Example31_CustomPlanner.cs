@@ -145,7 +145,7 @@ internal static class Example31_CustomPlanner
 public class MarkupPlugin
 {
     [SKFunction, Description("Run Markup")]
-    public async Task<string> RunMarkupAsync(string docString, SKContext context, IKernel kernel)
+    public async Task<string> RunMarkupAsync(string docString, SKContext context)
     {
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
@@ -153,7 +153,7 @@ public class MarkupPlugin
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await plan.InvokeAsync(kernel);
+        var result = await context.Runner.RunAsync(plan);
         return result.GetValue<string>()!;
     }
 }

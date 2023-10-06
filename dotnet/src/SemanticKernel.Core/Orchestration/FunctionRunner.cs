@@ -23,14 +23,14 @@ internal class FunctionRunner : IFunctionRunner
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> RunAsync(ISKFunction skFunction, ContextVariables variables, CancellationToken cancellationToken = default)
+    public async Task<FunctionResult> RunAsync(ISKFunction skFunction, ContextVariables? variables = null, CancellationToken cancellationToken = default)
     {
         return (await this._kernel.RunAsync(skFunction, variables, cancellationToken).ConfigureAwait(false))
             .FunctionResults.First();
     }
 
     /// <inheritdoc/>
-    public Task<FunctionResult> RunAsync(string pluginName, string functionName, ContextVariables variables, CancellationToken cancellationToken = default)
+    public Task<FunctionResult> RunAsync(string pluginName, string functionName, ContextVariables? variables = null, CancellationToken cancellationToken = default)
     {
         var function = this._kernel.Functions.GetFunction(pluginName, functionName);
         return this.RunAsync(function, variables, cancellationToken);
