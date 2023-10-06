@@ -177,4 +177,4 @@ Cons:
 
 ## Decision Outcome
 
-TBD
+As for now, support Solution #1.1 and Solution #1.2 only, to keep Kernel as unit of single responsibility. Plugin dependencies should be resolved before passing Plugin instance to the Kernel.
