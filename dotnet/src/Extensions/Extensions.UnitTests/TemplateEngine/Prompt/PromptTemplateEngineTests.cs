@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Moq;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
@@ -21,7 +21,7 @@ namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
 public sealed class PromptTemplateEngineTests
 {
     private const string DateFormat = "M/d/yyyy";
-    private readonly PromptTemplateEngine _target;
+    private readonly BasicPromptTemplateEngine _target;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ITestOutputHelper _logger;
@@ -31,7 +31,7 @@ public sealed class PromptTemplateEngineTests
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
-        this._target = new PromptTemplateEngine(TestConsoleLogger.LoggerFactory);
+        this._target = new BasicPromptTemplateEngine(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();

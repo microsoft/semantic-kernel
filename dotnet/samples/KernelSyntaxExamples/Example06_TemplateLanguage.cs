@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -51,7 +51,7 @@ Is it weekend time (weekend/not weekend)?
 
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
-        var promptRenderer = new PromptTemplateEngine();
+        var promptRenderer = new BasicPromptTemplateEngine();
         var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, kernel.CreateNewContext());
         Console.WriteLine(renderedPrompt);
 
