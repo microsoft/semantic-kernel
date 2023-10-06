@@ -32,12 +32,13 @@ public static class TextChunker
     /// <param name="text">Text to split</param>
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
+    /// <param name="splitOptions">Options to split string. If not supplied, the default options will be used.</param>
     /// <returns>List of lines.</returns>
-    public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
+    public static List<string> SplitPlainTextLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null, string[]? splitOptions = null)
     {
         tokenCounter ??= DefaultTokenCounter;
 
-        return InternalSplitLines(text, maxTokensPerLine, trim: true, s_plaintextSplitOptions, tokenCounter);
+        return InternalSplitLines(text, maxTokensPerLine, trim: true, splitOptions ?? s_plaintextSplitOptions, tokenCounter);
     }
 
     /// <summary>
@@ -46,12 +47,13 @@ public static class TextChunker
     /// <param name="text">Text to split</param>
     /// <param name="maxTokensPerLine">Maximum number of tokens per line.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
+    /// <param name="splitOptions">Options to split string. If not supplied, the default options will be used.</param>
     /// <returns>List of lines.</returns>
-    public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null)
+    public static List<string> SplitMarkDownLines(string text, int maxTokensPerLine, TokenCounter? tokenCounter = null, string[]? splitOptions = null)
     {
         tokenCounter ??= DefaultTokenCounter;
 
-        return InternalSplitLines(text, maxTokensPerLine, trim: true, s_markdownSplitOptions, tokenCounter);
+        return InternalSplitLines(text, maxTokensPerLine, trim: true, splitOptions ?? s_markdownSplitOptions, tokenCounter);
     }
 
     /// <summary>
@@ -62,12 +64,13 @@ public static class TextChunker
     /// <param name="overlapTokens">Number of tokens to overlap between paragraphs.</param>
     /// <param name="chunkHeader">Text to be prepended to each individual chunk.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
+    /// <param name="splitOptions">Options to split string. If not supplied, the default options will be used.</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null)
+    public static List<string> SplitPlainTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null, string[]? splitOptions = null)
     {
         tokenCounter ??= DefaultTokenCounter;
 
-        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, s_plaintextSplitOptions, tokenCounter), tokenCounter);
+        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, splitOptions ?? s_plaintextSplitOptions, tokenCounter), tokenCounter);
     }
 
     /// <summary>
@@ -78,12 +81,13 @@ public static class TextChunker
     /// <param name="overlapTokens">Number of tokens to overlap between paragraphs.</param>
     /// <param name="chunkHeader">Text to be prepended to each individual chunk.</param>
     /// <param name="tokenCounter">Function to count tokens in a string. If not supplied, the default counter will be used.</param>
+    /// <param name="splitOptions">Options to split string. If not supplied, the default options will be used.</param>
     /// <returns>List of paragraphs.</returns>
-    public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null)
+    public static List<string> SplitMarkdownParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens = 0, string? chunkHeader = null, TokenCounter? tokenCounter = null, string[]? splitOptions = null)
     {
         tokenCounter ??= DefaultTokenCounter;
 
-        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, s_markdownSplitOptions, tokenCounter), tokenCounter);
+        return InternalSplitTextParagraphs(lines, maxTokensPerParagraph, overlapTokens, chunkHeader, (text, maxTokens) => InternalSplitLines(text, maxTokens, trim: false, splitOptions ?? s_markdownSplitOptions, tokenCounter), tokenCounter);
     }
 
     private static List<string> InternalSplitTextParagraphs(List<string> lines, int maxTokensPerParagraph, int overlapTokens, string? chunkHeader, Func<string, int, List<string>> longLinesSplitter, TokenCounter tokenCounter)
