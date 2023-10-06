@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Services;
 
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 /**
@@ -81,7 +81,7 @@ public static class Example40_DIContainer
         var collection = new ServiceCollection();
         collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
         collection.AddTransient<IFunctionCollection, FunctionCollection>();
-        collection.AddTransient<IPromptTemplateEngine, PromptTemplateEngine>();
+        collection.AddTransient<IPromptTemplateEngine, BasicPromptTemplateEngine>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 

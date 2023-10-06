@@ -44,7 +44,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Redis\Connectors.Memory.Redis.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Memory.Pinecone\Connectors.Memory.Pinecone.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\..\src\Extensions\TemplateEngine.Prompt\TemplateEngine.Prompt.csproj" />
+    <ProjectReference Include="..\..\src\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
     <ProjectReference Include="..\..\src\Extensions\Reliability.Polly\Reliability.Polly.csproj" />
     <ProjectReference Include="..\..\src\Functions\Functions.Semantic\Functions.Semantic.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />

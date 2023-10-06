@@ -146,7 +146,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsightsExample"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.Memory.Kusto", "src\Connectors\Connectors.Memory.Kusto\Connectors.Memory.Kusto.csproj", "{E07608CC-D710-4655-BB9E-D22CF3CDD193}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine.Prompt", "src\Extensions\TemplateEngine.Prompt\TemplateEngine.Prompt.csproj", "{10E4B697-D4E8-468D-872D-49670FD150FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TemplateEngine.Prompt", "src\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj", "{10E4B697-D4E8-468D-872D-49670FD150FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reliability.Polly", "src\Extensions\Reliability.Polly\Reliability.Polly.csproj", "{D4540A0F-98E3-4E70-9093-1948AE5B2AAD}"
 EndProject
