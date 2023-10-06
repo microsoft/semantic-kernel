@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
-    <Version>1.0.0</Version>
+    <Version>1.0.0-rc1</Version>
 
     <Configurations>Debug;Release;Publish</Configurations>
     <IsPackable>true</IsPackable>
