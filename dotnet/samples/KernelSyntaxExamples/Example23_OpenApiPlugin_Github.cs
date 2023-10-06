@@ -79,6 +79,6 @@ public static class Example23_OpenApiPlugin_GitHub
         // Run
         var result = await kernel.RunAsync(contextVariables, plugin["PullsGet"]);
 
-        Console.WriteLine("Successful GitHub Get Pull Request plugin response: {0}", result);
+        Console.WriteLine("Successful GitHub Get Pull Request plugin response: {0}", result.GetValue<string>());
     }
 }

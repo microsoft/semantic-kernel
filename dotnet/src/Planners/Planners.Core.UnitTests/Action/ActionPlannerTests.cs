@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -155,23 +157,17 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
 
     private Mock<IKernel> CreateMockKernelAndFunctionFlowWithTestString(string testPlanString, Mock<IFunctionCollection>? functions = null)
     {
-        var kernel = new Mock<IKernel>();
-
         if (functions is null)
         {
             functions = new Mock<IFunctionCollection>();
             functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
+        var functionRunner = new Mock<IFunctionRunner>();
+        var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext(kernel.Object,
-            new ContextVariables(testPlanString),
-            functions.Object
-        );
+        var returnContext = new SKContext(functionRunner.Object, new ContextVariables(testPlanString), functions.Object);
 
-        var context = new SKContext(
-            kernel.Object,
-            functions: functions.Object
-        );
+        var context = new SKContext(functionRunner.Object, functions: functions.Object);
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
@@ -182,9 +178,9 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             (c, s, ct) => c.Variables.Update("Hello world!")
         ).Returns(() => Task.FromResult(new FunctionResult("FunctionName", "PluginName", returnContext, testPlanString)));
 
-        // Mock Functions
+        kernel.Setup(x => x.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
+            .Returns(context);
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.CreateNewContext()).Returns(context);
         kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
