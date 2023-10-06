@@ -27,7 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\Reliability.Basic\Reliability.Basic.csproj" />
-    <ProjectReference Include="..\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+    <ProjectReference Include="..\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
     <ProjectReference Include="..\Reliability.Polly\Reliability.Polly.csproj" />
   </ItemGroup>
   <ItemGroup>
