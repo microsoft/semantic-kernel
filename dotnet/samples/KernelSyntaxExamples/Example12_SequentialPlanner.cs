@@ -149,7 +149,7 @@ internal static class Example12_SequentialPlanner
         Console.WriteLine("======== Sequential Planner - Find and Execute Saved Plan ========");
 
         // Save the plan for future use
-        var semanticMemory = GetMemory();
+        var semanticMemory = InitializeMemory();
         await semanticMemory.SaveInformationAsync(
             "plans",
             id: Guid.NewGuid().ToString(),
@@ -228,7 +228,8 @@ internal static class Example12_SequentialPlanner
     {
         Console.WriteLine("======== Sequential Planner - Create and Execute Plan using Memory ========");
 
-        var kernel = InitializeKernelWithMemory();
+        var kernel = InitializeKernel();
+        var memory = InitializeMemory();
 
         string folder = RepoFiles.SamplePluginsPath();
         kernel.ImportSemanticFunctionsFromDirectory(folder,
@@ -251,7 +252,7 @@ internal static class Example12_SequentialPlanner
         var goal = "Create a book with 3 chapters about a group of kids in a club called 'The Thinking Caps.'";
 
         // IMPORTANT: To use memory and embeddings to find relevant plugins in the planner, set the 'Memory' property on the planner config.
-        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.5, Memory = kernel.Memory } });
+        var planner = new SequentialPlanner(kernel, new SequentialPlannerConfig { SemanticMemoryConfig = new() { RelevancyThreshold = 0.5, Memory = memory } });
 
         var plan = await planner.CreatePlanAsync(goal);
 
@@ -274,7 +275,7 @@ internal static class Example12_SequentialPlanner
         return kernel;
     }
 
-    private static IKernel InitializeKernelWithMemory()
+    private static IKernel InitializeKernel()
     {
         // IMPORTANT: Register an embedding generation service and a memory store. The Planner will
         // use these to generate and store embeddings for the function descriptions.
@@ -288,24 +289,22 @@ internal static class Example12_SequentialPlanner
                 TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
                 TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
                 TestConfiguration.AzureOpenAIEmbeddings.ApiKey)
-            .WithMemoryStorage(new VolatileMemoryStore())
             .Build();
 
         return kernel;
     }
 
-    private static ISemanticTextMemory GetMemory(IKernel? kernel = null)
+    private static SemanticTextMemory InitializeMemory()
     {
-        if (kernel is not null)
-        {
-            return kernel.Memory;
-        }
         var memoryStorage = new VolatileMemoryStore();
+
         var textEmbeddingGenerator = new Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextEmbedding.AzureTextEmbeddingGeneration(
             modelId: TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
             endpoint: TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
             apiKey: TestConfiguration.AzureOpenAIEmbeddings.ApiKey);
+
         var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
+
         return memory;
     }
 
