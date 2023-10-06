@@ -259,7 +259,7 @@ dotnet/
     │   ├── Planner.ActionPlanner
     │   ├── Planner.SequentialPlanner
     │   ├── Planner.StepwisePlanner
-    │   ├── TemplateEngine.Prompt
+    │   ├── TemplateEngine.PromptTemplateEngine
     │   └── Extensions.UnitTests
     ├── InternalUtilities/
     ├── Skills/
