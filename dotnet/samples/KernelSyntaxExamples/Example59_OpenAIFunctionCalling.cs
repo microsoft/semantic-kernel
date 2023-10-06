@@ -93,8 +93,10 @@ public static class Example59_OpenAIFunctionCalling
             // you can invoke it using the following code.
             if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
             {
-                var kernelResult = (await kernel.RunAsync(func, context));
+                var kernelResult = await kernel.RunAsync(func, context);
+
                 var result = kernelResult.GetValue<object>();
+
                 string? resultMessage = null;
                 if (result is RestApiOperationResponse apiResponse)
                 {
