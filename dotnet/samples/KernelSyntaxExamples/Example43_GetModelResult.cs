@@ -4,12 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
@@ -75,7 +75,7 @@ public static class Example43_GetModelResult
         }
         catch (Exception ex)
         {
-            Console.WriteLine(OutputExceptionDetail(ex.InnerException));
+            Console.WriteLine(OutputExceptionDetail(ex));
         }
 #pragma warning restore CA1031 // Do not catch general exception types
 
@@ -83,7 +83,7 @@ public static class Example43_GetModelResult
         {
             return exception switch
             {
-                RequestFailedException httpException => new { StatusCode = httpException.Status, httpException.Message }.AsJson(),
+                HttpOperationException httpException => new { StatusCode = httpException.StatusCode?.ToString(), Message = httpException.Message, Response = httpException.ResponseContent }.AsJson(),
                 { } e => e.Message,
                 _ => string.Empty
             };
