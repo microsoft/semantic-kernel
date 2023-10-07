@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 /// <summary>
 /// Simple tokenizer used for default SK template language.
@@ -211,5 +211,6 @@ internal sealed class TemplateTokenizer
     {
         return text.Substring(startIndex, stopIndex - startIndex);
     }
+
     #endregion
 }

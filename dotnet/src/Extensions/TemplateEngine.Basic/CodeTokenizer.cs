@@ -6,9 +6,9 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 /// <summary>
 /// Simple tokenizer used for default SK template code language.

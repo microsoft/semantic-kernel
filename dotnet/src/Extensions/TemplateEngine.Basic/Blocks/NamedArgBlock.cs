@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
 /// <summary>
 /// A <see cref="Block"/> that represents a named argument for a function call.
