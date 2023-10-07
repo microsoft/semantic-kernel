@@ -3,6 +3,7 @@ import typing as t
 
 from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+from semantic_kernel.orchestration.context_variables import ContextVariables
 
 if t.TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
@@ -76,7 +77,7 @@ class MathSkill(PydanticField):
                 f"Initial value provided is not in numeric format: {initial_value_text}"
             )
 
-        context_amount = context["Amount"] if "Amount" in context else 0
+        context_amount = context["Amount"] if ("Amount" in context or isinstance(context, ContextVariables)) else 0
         if context_amount is not None:
             try:
                 amount = int(context_amount)
