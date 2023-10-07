@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Memory;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 
@@ -145,7 +145,7 @@ internal static class Example31_CustomPlanner
 public class MarkupPlugin
 {
     [SKFunction, Description("Run Markup")]
-    public async Task<string> RunMarkupAsync(string docString, SKContext context, IKernel kernel)
+    public async Task<string> RunMarkupAsync(string docString, SKContext context)
     {
         var plan = docString.FromMarkup("Run a piece of xml markup", context);
 
@@ -153,7 +153,7 @@ public class MarkupPlugin
         Console.WriteLine(plan.ToPlanWithGoalString());
         Console.WriteLine();
 
-        var result = await plan.InvokeAsync(kernel);
+        var result = await context.Runner.RunAsync(plan);
         return result.GetValue<string>()!;
     }
 }

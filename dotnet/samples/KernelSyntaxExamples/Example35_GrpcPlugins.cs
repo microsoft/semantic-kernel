@@ -10,7 +10,6 @@ using RepoUtils;
 /**
  * This example shows how to use gRPC plugins.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example35_GrpcPlugins
 {
@@ -31,6 +30,6 @@ public static class Example35_GrpcPlugins
         // Run
         var result = await kernel.RunAsync(contextVariables, plugin["<operation-name>"]);
 
-        Console.WriteLine("Plugin response: {0}", result);
+        Console.WriteLine("Plugin response: {0}", result.GetValue<string>());
     }
 }
