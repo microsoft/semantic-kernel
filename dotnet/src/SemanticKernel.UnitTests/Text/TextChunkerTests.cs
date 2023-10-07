@@ -26,6 +26,21 @@ public sealed class TextChunkerTests
     }
 
     [Fact]
+    public void CanSplitPlainTextLinesWithCustomSplitOptions()
+    {
+        const string Input = "The return of X is 0.5%\nThe return of X is 0.6%";
+        var expected = new[]
+        {
+            "The return of X is 0.5%",
+            "The return of X is 0.6%"
+        };
+
+        var result = TextChunker.SplitPlainTextLines(Input, 4, splitOptions: new string[] { "\n" });
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
     public void CanSplitMarkdownParagraphs()
     {
         List<string> input = new()
@@ -41,6 +56,26 @@ public sealed class TextChunkerTests
         };
 
         var result = TextChunker.SplitMarkdownParagraphs(input, 13);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void CanSplitMarkdownParagraphsWithCustomSplitOptions()
+    {
+        List<string> input = new()
+        {
+            "The return of X is 0.5%\nThe return of X is 0.6%",
+            "We repeat, this is only a test. A unit test."
+        };
+        var expected = new[]
+        {
+            "The return of X is 0.5%",
+            "The return of X is 0.6%",
+            "We repeat, this is only a test. A unit test."
+        };
+
+        var result = TextChunker.SplitMarkdownParagraphs(input, 4, splitOptions: new string[] { "\n" });
 
         Assert.Equal(expected, result);
     }
