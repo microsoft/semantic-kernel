@@ -1,16 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import itertools
 import json
 import os
 from logging import Logger
 from textwrap import dedent
-from typing import Optional
+from typing import List, Optional
 
 import regex
 
 from semantic_kernel import Kernel
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
+from semantic_kernel.planning.action_planner.action_planner_config import (
+    ActionPlannerConfig,
+)
 from semantic_kernel.planning.plan import Plan
 from semantic_kernel.planning.planning_exception import PlanningException
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
@@ -28,8 +32,9 @@ class ActionPlanner:
     "no function" if nothing relevant is available.
     """
 
+    RESTRICTED_SKILL_NAME = "ActionPlanner"
+    config: ActionPlannerConfig
     _stop_sequence: str = "#END-OF-PLAN"
-    _skill_name: str = "this"
 
     _planner_function: SKFunctionBase
 
@@ -40,6 +45,7 @@ class ActionPlanner:
     def __init__(
         self,
         kernel: Kernel,
+        config: Optional[ActionPlannerConfig] = None,
         prompt: Optional[str] = None,
         logger: Optional[Logger] = None,
     ) -> None:
@@ -50,6 +56,7 @@ class ActionPlanner:
             )
 
         self._logger = logger if logger else NullLogger()
+        self.config = config or ActionPlannerConfig()
 
         __cur_dir = os.path.dirname(os.path.abspath(__file__))
         __prompt_file = os.path.join(__cur_dir, "skprompt.txt")
@@ -57,12 +64,12 @@ class ActionPlanner:
         self._prompt_template = prompt if prompt else open(__prompt_file, "r").read()
 
         self._planner_function = kernel.create_semantic_function(
-            skill_name=self._skill_name,
+            skill_name=self.RESTRICTED_SKILL_NAME,
             prompt_template=self._prompt_template,
-            max_tokens=1024,
+            max_tokens=self.config.max_tokens,
             stop_sequences=[self._stop_sequence],
         )
-        kernel.import_skill(self, self._skill_name)
+        kernel.import_skill(self, self.RESTRICTED_SKILL_NAME)
 
         self._kernel = kernel
         self._context = kernel.create_new_context()
@@ -253,19 +260,22 @@ class ActionPlanner:
             )
 
         functions_view = context.skills.get_functions_view()
-        available_functions = []
 
-        for functions in functions_view.native_functions.values():
-            for func in functions:
-                if func.skill_name.lower() == self._skill_name.lower():
-                    continue
-                available_functions.append(self._create_function_string(func))
+        available_functions: List[FunctionView] = [
+            *functions_view.semantic_functions.values(),
+            *functions_view.native_functions.values(),
+        ]
+        available_functions = itertools.chain.from_iterable(available_functions)
 
-        for functions in functions_view.semantic_functions.values():
-            for func in functions:
-                if func.skill_name.lower() == self._skill_name.lower():
-                    continue
-                available_functions.append(self._create_function_string(func))
+        available_functions = [
+            self._create_function_string(func)
+            for func in available_functions
+            if (
+                func.skill_name != self.RESTRICTED_SKILL_NAME
+                and func.skill_name not in self.config.excluded_skills
+                and func.name not in self.config.excluded_functions
+            )
+        ]
 
         available_functions_str = "\n".join(available_functions)
 
