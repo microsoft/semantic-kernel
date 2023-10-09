@@ -6,7 +6,7 @@ import sys
 import threading
 from enum import Enum
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
     ChatCompletionClientBase,
@@ -137,7 +137,7 @@ class SKFunction(SKFunctionBase):
                 context.fail(str(e), e)
                 return context
 
-            as_chat_prompt = cast(ChatPromptTemplate, function_config.prompt_template)
+            as_chat_prompt = function_config.prompt_template
             # Similar to non-chat, render prompt (which renders to a
             # dict of <role, content, name> messages)
             messages = await as_chat_prompt.render_messages_async(context)
@@ -157,7 +157,9 @@ class SKFunction(SKFunctionBase):
                     ) = await client.complete_chat_with_functions_async(
                         messages, functions, request_settings
                     )
-                    as_chat_prompt.add_assistant_message(completion, function_call)
+                    as_chat_prompt.add_message(
+                        "assistant", message=completion, function_call=function_call
+                    )
                     if completion is not None:
                         context.variables.update(completion)
                     if function_call is not None:
@@ -180,9 +182,7 @@ class SKFunction(SKFunctionBase):
 
             try:
                 if function_config.has_chat_prompt:
-                    as_chat_prompt = cast(
-                        ChatPromptTemplate, function_config.prompt_template
-                    )
+                    as_chat_prompt = function_config.prompt_template
 
                     # Similar to non-chat, render prompt (which renders to a
                     # list of <role, content> messages)

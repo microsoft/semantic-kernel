@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-    from semantic_kernel.semantic_functions.chat_prompt_template import ChatMessage
+    from semantic_kernel.models.chat.chat_message import ChatMessage
 
 
 class ChatCompletionClientBase(ABC):

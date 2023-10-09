@@ -3,6 +3,9 @@ from typing import Any, Dict, List, Optional
 
 from semantic_kernel import Kernel, SKContext
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+    OpenAIChatPromptTemplate,
+)
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
 
 
@@ -152,6 +155,9 @@ async def chat_completion_with_function_call(
         chat_function = kernel.func(
             skill_name=chat_skill_name, function_name=chat_function_name
         )
+    assert isinstance(
+        chat_function._chat_prompt_template, OpenAIChatPromptTemplate
+    ), "Please make sure to initialize your chat function with the OpenAIChatPromptTemplate class."
     context = await chat_function.invoke_async(
         context=context,
         # when the maximum number of function calls is reached, execute the chat function without Functions.

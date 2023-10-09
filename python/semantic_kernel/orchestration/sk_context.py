@@ -26,10 +26,10 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
     memory: SemanticTextMemoryT
     variables: ContextVariables
     # This field can be used to hold anything that is not a string
-    objects: Dict[str, Any] = pdt.Field(default_factory=dict)
     skill_collection: ReadOnlySkillCollection = pdt.Field(
         default_factory=ReadOnlySkillCollection
     )
+    _objects: Dict[str, Any] = pdt.PrivateAttr(default_factory=dict)
     _error_occurred: bool = pdt.PrivateAttr(False)
     _last_exception: Optional[Exception] = pdt.PrivateAttr(None)
     _last_error_description: str = pdt.PrivateAttr("")
@@ -119,6 +119,16 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
             Exception -- The most recent exception.
         """
         return self._last_exception
+
+    @property
+    def objects(self) -> Dict[str, Any]:
+        """
+        The objects dictionary.
+
+        Returns:
+            Dict[str, Any] -- The objects dictionary.
+        """
+        return self._objects
 
     @property
     def skills(self) -> ReadOnlySkillCollectionBase:

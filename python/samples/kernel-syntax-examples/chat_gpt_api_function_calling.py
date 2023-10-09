@@ -6,6 +6,9 @@ from typing import Tuple
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
+from semantic_kernel.connectors.ai.open_ai.semantic_functions.open_ai_chat_prompt_template import (
+    OpenAIChatPromptTemplate,
+)
 from semantic_kernel.connectors.ai.open_ai.utils import (
     chat_completion_with_function_call,
     get_function_calling_object,
@@ -58,7 +61,7 @@ prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     function_call="auto",
     chat_system_prompt=system_message,
 )
-prompt_template = sk.ChatPromptTemplate(
+prompt_template = OpenAIChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
 )
 prompt_template.add_user_message("Hi there, who are you?")

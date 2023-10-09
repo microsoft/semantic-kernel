@@ -2,10 +2,9 @@
 
 import asyncio
 from logging import Logger
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar
 
-from semantic_kernel.connectors.ai.open_ai.models.chat.chat_message import ChatMessage
-from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.models.chat.chat_message import ChatMessage
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -17,9 +16,11 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
+ChatMessageT = TypeVar("ChatMessageT", bound=ChatMessage)
 
-class ChatPromptTemplate(PromptTemplate):
-    _messages: List[ChatMessage]
+
+class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
+    _messages: List[ChatMessageT]
 
     def __init__(
         self,
@@ -31,12 +32,7 @@ class ChatPromptTemplate(PromptTemplate):
         super().__init__(template, template_engine, prompt_config, log)
         self._messages = []
         if self._prompt_config.completion.chat_system_prompt:
-            self._messages.append(
-                ChatMessage(
-                    role="system",
-                    fixed_content=self._prompt_config.completion.chat_system_prompt,
-                )
-            )
+            self.add_system_message(self._prompt_config.completion.chat_system_prompt)
 
     async def render_async(self, context: "SKContext") -> str:
         raise NotImplementedError(
@@ -44,45 +40,34 @@ class ChatPromptTemplate(PromptTemplate):
             "Use render_messages_async instead."
         )
 
-    def add_system_message(self, message: str, name: Optional[str] = None) -> None:
+    def add_system_message(self, message: str) -> None:
         """Add a system message to the chat template."""
-        self.add_message("system", message, name)
+        self.add_message("system", message)
 
-    def add_user_message(self, message: str, name: Optional[str] = None) -> None:
+    def add_user_message(self, message: str) -> None:
         """Add a user message to the chat template."""
-        self.add_message("user", message, name)
+        self.add_message("user", message)
 
-    def add_function_response_message(self, name: str, content: Any) -> None:
-        """Add a function response message to the chat template."""
-        self._messages.append(
-            ChatMessage(role="function", name=name, fixed_content=str(content))
-        )
-
-    def add_assistant_message(
-        self,
-        message: Optional[str] = None,
-        function_call: Optional["FunctionCall"] = None,
-    ) -> None:
+    def add_assistant_message(self, message: str) -> None:
         """Add an assistant message to the chat template."""
-        self._messages.append(
-            ChatMessage(
-                role="assistant",
-                content_template=PromptTemplate(
-                    message, self._template_engine, self._prompt_config
-                ),
-                function_call=function_call,
-            )
-        )
+        self.add_message("assistant", message)
 
-    def add_message(self, role: str, message: str, name: Optional[str] = None) -> None:
-        """Add a message to the chat template."""
+    def add_message(
+        self, role: str, message: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """Add a message to the chat template.
+
+        Arguments:
+            role: The role of the message, one of "user", "assistant", "system".
+            message: The message to add, can include templating components.
+            kwargs: can be used by inherited classes.
+        """
         self._messages.append(
             ChatMessage(
                 role=role,
                 content_template=PromptTemplate(
                     message, self._template_engine, self._prompt_config
                 ),
-                name=name,
             )
         )
 
@@ -112,32 +97,28 @@ class ChatPromptTemplate(PromptTemplate):
         prompt_config: PromptTemplateConfig,
         log: Optional[Logger] = None,
     ) -> "ChatPromptTemplate":
-        """Restore a ChatPromptTemplate.
+        """Restore a ChatPromptTemplate from a list of role and message pairs.
 
-        Args:
-            messages (List[Dict[str, str]]): List of dicts with 'role', 'content', and optionally 'name'.
-            template (str): Template string.
-            template_engine (PromptTemplatingEngine): Template engine.
-            prompt_config (PromptTemplateConfig): Prompt config.
-            log (Optional[Logger], optional): Logger. Defaults to None.
-
-        Returns:
-            ChatPromptTemplate: ChatPromptTemplate restored from messages.
+        If there is a chat_system_prompt in the prompt_config.completion settings,
+        that takes precedence over the first message in the list of messages,
+        if that is a system message.
         """
         chat_template = cls(template, template_engine, prompt_config, log)
-
-        if prompt_config.chat_system_prompt:
-            chat_template.add_system_message(
-                prompt_config.completion.chat_system_prompt
-            )
-
-        for message in messages:
-            chat_template._messages.append(
-                ChatMessage(
-                    role=message["role"],
-                    fixed_content=message["content"],
-                    name=message.get("name"),
+        if (
+            prompt_config.completion.chat_system_prompt
+            and messages[0]["role"] == "system"
+        ):
+            existing_system_message = messages.pop(0)
+            if (
+                existing_system_message["message"]
+                != prompt_config.completion.chat_system_prompt
+            ):
+                chat_template._log.info(
+                    "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
+                    existing_system_message["message"],
+                    prompt_config.completion.chat_system_prompt,
                 )
-            )
+        for message in messages:
+            chat_template.add_message(message["role"], message["message"])
 
         return chat_template
