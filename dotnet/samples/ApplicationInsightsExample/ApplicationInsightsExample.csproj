@@ -21,7 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
     <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
-    <ProjectReference Include="..\..\src\Extensions\TemplateEngine.PromptTemplateEngine\TemplateEngine.PromptTemplateEngine.csproj" />
+    <ProjectReference Include="..\..\src\Extensions\TemplateEngine.Basic\TemplateEngine.Basic.csproj" />
     <ProjectReference Include="..\..\src\Planners\Planners.Core\Planners.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\..\src\Plugins\Plugins.Web\Plugins.Web.csproj" />
