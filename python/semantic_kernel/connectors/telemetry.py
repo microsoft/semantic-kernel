@@ -17,4 +17,5 @@ APP_INFO = {
     "version": pkg_resources.get_distribution("semantic-kernel").version
     if IS_TELEMETRY_ENABLED
     else "",
+    "url": "",
 }
