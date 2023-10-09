@@ -345,7 +345,7 @@ repeat:
     #region Obsolete ===============================================================================
 
     /// <inheritdoc/>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ISemanticTextMemory Memory => this._memory;
 
@@ -364,7 +364,7 @@ repeat:
     }
 
     /// <inheritdoc/>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void RegisterMemory(ISemanticTextMemory memory)
     {

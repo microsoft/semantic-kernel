@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Chroma memory connector.
 /// </summary>
-[Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+[Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use ChromaMemoryBuilderExtensions instead.")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class ChromaKernelBuilderExtensions
 {
@@ -22,7 +22,7 @@ public static class ChromaKernelBuilderExtensions
     /// <param name="builder">The <see cref="KernelBuilder"/> instance.</param>
     /// <param name="endpoint">Chroma server endpoint URL.</param>
     /// <returns>Self instance.</returns>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use ChromaMemoryBuilderExtensions.WithChromaMemoryStore instead.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithChromaMemoryStore(this KernelBuilder builder, string endpoint)
     {
@@ -44,7 +44,7 @@ public static class ChromaKernelBuilderExtensions
     /// <param name="httpClient">The <see cref="HttpClient"/> instance used for making HTTP requests.</param>
     /// <param name="endpoint">Chroma server endpoint URL. If not specified, the base address of the HTTP client is used.</param>
     /// <returns>Self instance.</returns>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use ChromaMemoryBuilderExtensions.WithChromaMemoryStore instead.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithChromaMemoryStore(this KernelBuilder builder,
         HttpClient httpClient,

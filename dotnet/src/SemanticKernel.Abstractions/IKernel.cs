@@ -170,7 +170,7 @@ public interface IKernel
     /// <summary>
     /// Semantic memory instance
     /// </summary>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     ISemanticTextMemory Memory { get; }
 
@@ -202,7 +202,7 @@ public interface IKernel
     /// </summary>
     /// <param name="memory">Semantic memory instance</param>
     /// <inheritdoc/>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     void RegisterMemory(ISemanticTextMemory memory);
 

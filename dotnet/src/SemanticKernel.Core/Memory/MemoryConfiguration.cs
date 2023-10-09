@@ -23,7 +23,7 @@ public static class MemoryConfiguration
     /// <param name="kernel">Kernel instance</param>
     /// <param name="storage">Memory storage</param>
     /// <param name="embeddingsServiceId">Kernel service id for embedding generation</param>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void UseMemory(this IKernel kernel, IMemoryStore storage, string? embeddingsServiceId = null)
     {
@@ -39,7 +39,7 @@ public static class MemoryConfiguration
     /// <param name="embeddingGenerator">Embedding generator</param>
     /// <param name="storage">Memory storage</param>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The embeddingGenerator object is disposed by the kernel")]
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void UseMemory(this IKernel kernel, ITextEmbeddingGeneration embeddingGenerator, IMemoryStore storage)
     {

@@ -85,7 +85,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="memory">Semantic text memory entity to add.</param>
     /// <returns>Updated kernel builder including the semantic text memory entity.</returns>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemory(ISemanticTextMemory memory)
     {
@@ -99,7 +99,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The store factory.</param>
     /// <returns>Updated kernel builder including the semantic text memory entity.</returns>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemory<TStore>(Func<ILoggerFactory, TStore> factory) where TStore : ISemanticTextMemory
     {
@@ -113,7 +113,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="storage">Storage to add.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemoryStorage(IMemoryStore storage)
     {
@@ -127,7 +127,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The storage factory.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, TStore> factory) where TStore : IMemoryStore
     {
@@ -141,7 +141,7 @@ public sealed class KernelBuilder
     /// </summary>
     /// <param name="factory">The storage factory.</param>
     /// <returns>Updated kernel builder including the memory storage.</returns>
-    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release.")]
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public KernelBuilder WithMemoryStorage<TStore>(Func<ILoggerFactory, IDelegatingHandlerFactory, TStore> factory) where TStore : IMemoryStore
     {
