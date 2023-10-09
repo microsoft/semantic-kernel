@@ -75,6 +75,8 @@ public static class Program
     private static void LoadUserSecrets()
     {
         IConfigurationRoot configRoot = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
             .AddUserSecrets<Env>()
             .Build();
