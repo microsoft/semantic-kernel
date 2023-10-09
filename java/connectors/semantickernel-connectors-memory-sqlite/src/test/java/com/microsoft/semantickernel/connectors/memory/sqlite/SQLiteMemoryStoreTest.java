@@ -30,6 +30,7 @@ import reactor.util.function.Tuple2;
 
 public class SQLiteMemoryStoreTest {
 
+    private static SQLiteMemoryStore.Builder builder;
     private static MemoryStore db;
     private static int collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -38,7 +39,8 @@ public class SQLiteMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        db = new SQLiteMemoryStore.Builder().withFilename(":memory:").buildAsync().block();
+        builder = new SQLiteMemoryStore.Builder().withFilename(":memory:");
+        db = builder.buildAsync().block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -77,6 +79,15 @@ public class SQLiteMemoryStoreTest {
 
     @Test
     void initializeDbConnectionSucceeds() {
+        assertNotNull(db);
+    }
+
+    @Test
+    void itDoesNotFailWithExistingTables() {
+        // Act
+        db = builder.buildAsync().block();
+
+        // Assert
         assertNotNull(db);
     }
 

@@ -29,6 +29,7 @@ public class MySQLMemoryStoreTest {
     private static final String MYSQL_USER = "test";
     private static final String MYSQL_PASSWORD = "test";
 
+    private static MySQLMemoryStore.Builder builder;
     private static MemoryStore db;
     private static int collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -37,13 +38,11 @@ public class MySQLMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        db =
-                new MySQLMemoryStore.Builder()
-                        .withConnection(
-                                DriverManager.getConnection(
-                                        CONTAINER.getJdbcUrl(), MYSQL_USER, MYSQL_PASSWORD))
-                        .buildAsync()
-                        .block();
+        builder = new MySQLMemoryStore.Builder()
+                .withConnection(
+                        DriverManager.getConnection(
+                                CONTAINER.getJdbcUrl(), MYSQL_USER, MYSQL_PASSWORD));
+        db = builder.buildAsync().block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -82,6 +81,15 @@ public class MySQLMemoryStoreTest {
 
     @Test
     void initializeDbConnectionSucceeds() {
+        assertNotNull(db);
+    }
+
+    @Test
+    void itDoesNotFailWithExistingTables() {
+        // Act
+        db = builder.buildAsync().block();
+
+        // Assert
         assertNotNull(db);
     }
 
