@@ -9,16 +9,20 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
+using Microsoft.SemanticKernel.Plugins.Memory;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Memory.Weaviate;
 
-public sealed class WeaviateKernelBuilderExtensionsTests : IDisposable
+public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
-    public WeaviateKernelBuilderExtensionsTests()
+    public WeaviateMemoryBuilderExtensionsTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
 
@@ -30,7 +34,9 @@ public sealed class WeaviateKernelBuilderExtensionsTests : IDisposable
     [InlineData("v2", "https://fake-random-test-weaviate-host/v2/objects/fake-key")]
     public async Task WeaviateMemoryStoreShouldBeProperlyInitializedAsync(string? apiVersion, string expectedAddress)
     {
-        //Arrange
+        // Arrange
+        var embeddingGenerationMock = Mock.Of<ITextEmbeddingGeneration>();
+
         var getResponse = new
         {
             Properties = new Dictionary<string, string> {
@@ -43,19 +49,16 @@ public sealed class WeaviateKernelBuilderExtensionsTests : IDisposable
 
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(JsonSerializer.Serialize(getResponse, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }), Encoding.UTF8, MediaTypeNames.Application.Json);
 
-        var builder = new KernelBuilder();
-#pragma warning disable CS0618 // This will be removed in a future release.
+        var builder = new MemoryBuilder();
         builder.WithWeaviateMemoryStore(this._httpClient, "https://fake-random-test-weaviate-host", "fake-api-key", apiVersion);
-#pragma warning restore CS0618 // This will be removed in a future release.
-        builder.WithAzureTextEmbeddingGenerationService("fake-deployment-name", "https://fake-random-test-host/fake-path", "fake -api-key");
-        var kernel = builder.Build(); //This call triggers the internal factory registered by WithWeaviateMemoryStore method to create an instance of the WeaviateMemoryStore class.
+        builder.WithTextEmbeddingGeneration(embeddingGenerationMock);
 
-        //Act
-#pragma warning disable CS0618 // This will be removed in a future release.
-        await kernel.Memory.GetAsync("fake-collection", "fake-key"); //This call triggers a subsequent call to Weaviate memory store.
-#pragma warning restore CS0618 // This will be removed in a future release.
+        var memory = builder.Build(); //This call triggers the internal factory registered by WithWeaviateMemoryStore method to create an instance of the WeaviateMemoryStore class.
 
-        //Assert
+        // Act
+        await memory.GetAsync("fake-collection", "fake-key"); //This call triggers a subsequent call to Weaviate memory store.
+
+        // Assert
         Assert.Equal(expectedAddress, this._messageHandlerStub?.RequestUri?.AbsoluteUri);
 
         var headerValues = Enumerable.Empty<string>();

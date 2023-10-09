@@ -152,7 +152,7 @@ public static class Example15_TextMemoryPlugin
 
         // The combination of the text embedding generator and the memory store makes up the 'SemanticTextMemory' object used to
         // store and retrieve memories.
-        using SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
+        SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // PART 1: Store and retrieve memories using the ISemanticTextMemory (textMemory) object.
