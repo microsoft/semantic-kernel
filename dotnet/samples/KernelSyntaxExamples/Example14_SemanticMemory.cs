@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Plugins.Memory;
@@ -35,13 +36,13 @@ public static class Example14_SemanticMemory
          * need to worry about embedding generation.
          */
 
-        var kernelWithACS = Kernel.Builder
+        var memoryWithACS = new MemoryBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStorage(new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey))
+            .WithMemoryStore(new AzureCognitiveSearchMemoryStore(TestConfiguration.ACS.Endpoint, TestConfiguration.ACS.ApiKey))
             .Build();
 
-        await RunExampleAsync(kernelWithACS);
+        await RunExampleAsync(memoryWithACS);
 
         Console.WriteLine("====================================================");
         Console.WriteLine("======== Semantic Memory (volatile, in RAM) ========");
@@ -56,20 +57,20 @@ public static class Example14_SemanticMemory
          * or implement your connectors for Pinecone, Vespa, Postgres + pgvector, SQLite VSS, etc.
          */
 
-        var kernelWithCustomDb = Kernel.Builder
+        var memoryWithCustomDb = new MemoryBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", TestConfiguration.OpenAI.ApiKey)
-            .WithMemoryStorage(new VolatileMemoryStore())
+            .WithMemoryStore(new VolatileMemoryStore())
             .Build();
 
-        await RunExampleAsync(kernelWithCustomDb);
+        await RunExampleAsync(memoryWithCustomDb);
     }
 
-    public static async Task RunExampleAsync(IKernel kernel)
+    public static async Task RunExampleAsync(ISemanticTextMemory memory)
     {
-        await StoreMemoryAsync(kernel);
+        await StoreMemoryAsync(memory);
 
-        await SearchMemoryAsync(kernel, "How do I get started?");
+        await SearchMemoryAsync(memory, "How do I get started?");
 
         /*
         Output:
@@ -86,7 +87,7 @@ public static class Example14_SemanticMemory
 
         */
 
-        await SearchMemoryAsync(kernel, "Can I build a chat with SK?");
+        await SearchMemoryAsync(memory, "Can I build a chat with SK?");
 
         /*
         Output:
@@ -104,26 +105,26 @@ public static class Example14_SemanticMemory
         */
     }
 
-    private static async Task SearchMemoryAsync(IKernel kernel, string query)
+    private static async Task SearchMemoryAsync(ISemanticTextMemory memory, string query)
     {
         Console.WriteLine("\nQuery: " + query + "\n");
 
-        var memories = kernel.Memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
+        var memoryResults = memory.SearchAsync(MemoryCollectionName, query, limit: 2, minRelevanceScore: 0.5);
 
         int i = 0;
-        await foreach (MemoryQueryResult memory in memories)
+        await foreach (MemoryQueryResult memoryResult in memoryResults)
         {
             Console.WriteLine($"Result {++i}:");
-            Console.WriteLine("  URL:     : " + memory.Metadata.Id);
-            Console.WriteLine("  Title    : " + memory.Metadata.Description);
-            Console.WriteLine("  Relevance: " + memory.Relevance);
+            Console.WriteLine("  URL:     : " + memoryResult.Metadata.Id);
+            Console.WriteLine("  Title    : " + memoryResult.Metadata.Description);
+            Console.WriteLine("  Relevance: " + memoryResult.Relevance);
             Console.WriteLine();
         }
 
         Console.WriteLine("----------------------");
     }
 
-    private static async Task StoreMemoryAsync(IKernel kernel)
+    private static async Task StoreMemoryAsync(ISemanticTextMemory memory)
     {
         /* Store some data in the semantic memory.
          *
@@ -138,7 +139,7 @@ public static class Example14_SemanticMemory
         var i = 0;
         foreach (var entry in githubFiles)
         {
-            await kernel.Memory.SaveReferenceAsync(
+            await memory.SaveReferenceAsync(
                 collection: MemoryCollectionName,
                 externalSourceName: "GitHub",
                 externalId: entry.Key,
