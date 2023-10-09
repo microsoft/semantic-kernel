@@ -1,0 +1,75 @@
+{
+  "OpenAI": {
+    "ModelId": "text-davinci-003",
+    "ChatModelId": "gpt-3.5-turbo",
+    "EmbeddingModelId": "",
+    "ApiKey": ""
+  },
+  "AzureOpenAI": {
+    "ServiceId": "azure-text-davinci-003",
+    "DeploymentName": "text-davinci-003",
+    "ChatDeploymentName": "gpt-4",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
+  "ACS": {
+    "ApiKey": "",
+    "Endpoint": "",
+    "IndexName": ""
+  },
+  "AzureOpenAIEmbeddings": {
+    "DeploymentName": "text-embedding-ada-002",
+    "Endpoint": "",
+    "ApiKey": ""
+  },
+  "Bing": {
+    "ApiKey": ""
+  },
+  "Chroma": {
+    "Endpoint": ""
+  },
+  "Github": {
+    "PAT": ""
+  },
+  "Google": {
+    "ApiKey": "",
+    "SearchEngineId": ""
+  },
+  "HuggingFace": {
+    "ApiKey": "",
+    "ModelId": ""
+  },
+  "Jira": {
+    "ApiKey": "",
+    "Domain": "",
+    "Email": ""
+  },
+  "KeyVault": {
+    "ClientId": "",
+    "Endpoint": "",
+    "TenantId": ""
+  },
+  "Kusto": {
+    "ConnectionString": ""
+  },
+  "Pinecone": {
+    "ApiKey": "",
+    "Environment": ""
+  },
+  "Postgres": {
+    "ConnectionString": ""
+  },
+  "Qdrant": {
+    "Endpoint": "",
+    "Port": ""
+  },
+  "Redis": {
+    "Configuration": ""
+  },
+  "Weaviate": {
+    "ApiKey": "",
+    "Endpoint": "",
+    "Port": "",
+    "Scheme": ""
+  }
+}
