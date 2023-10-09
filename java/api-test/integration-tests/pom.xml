@@ -72,7 +72,21 @@
 
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-memory-jdbc</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-connectors-memory-postgresql</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-memory-mysql</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
@@ -91,7 +105,11 @@
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>

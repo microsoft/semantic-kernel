@@ -69,6 +69,7 @@
         <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>
         <module>connectors/semantickernel-connectors-memory-jdbc</module>
         <module>connectors/semantickernel-connectors-memory-postgresql</module>
+        <module>connectors/semantickernel-connectors-memory-mysql</module>
 
         <module>extensions/semantickernel-planners</module>
         <module>extensions/semantickernel-gpt3-tokenizer</module>

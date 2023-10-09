@@ -1,22 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.postgresql;
+package com.microsoft.semantickernel.connectors.memory.mysql;
 
 import com.microsoft.semantickernel.connectors.memory.jdbc.DatabaseEntry;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnector;
 import com.microsoft.semantickernel.connectors.memory.jdbc.SQLConnectorException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
-    public PostgreSQLConnector(Connection connection) {
+public class MySQLConnector extends JDBCConnector implements SQLConnector {
+    public MySQLConnector(Connection connection) {
         super(connection);
     }
 
@@ -24,39 +21,41 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
     public Mono<Void> createTableAsync() {
         return Mono.fromRunnable(
                         () -> {
-                            String createCollectionKeyTable =
-                                    "CREATE TABLE IF NOT EXISTS "
-                                            + COLLECTIONS_TABLE_NAME
-                                            + " ("
-                                            + "id TEXT PRIMARY KEY"
-                                            + " )";
+                            try (Statement statement = connection.createStatement()) {
+                                String createCollectionKeyTable =
+                                        "CREATE TABLE IF NOT EXISTS "
+                                                + COLLECTIONS_TABLE_NAME
+                                                + " (id VARCHAR(255) PRIMARY KEY);";
 
-                            String createSKMemoryTable =
-                                    "CREATE TABLE IF NOT EXISTS "
-                                            + TABLE_NAME
-                                            + " ("
-                                            + "collectionId TEXT NOT NULL, "
-                                            + "id TEXT NOT NULL, "
-                                            + "metadata TEXT, "
-                                            + "embedding TEXT, "
-                                            + "timestamp TEXT, "
-                                            + "PRIMARY KEY (collectionId, id), "
-                                            + "FOREIGN KEY (collectionId) REFERENCES "
-                                            + COLLECTIONS_TABLE_NAME
-                                            + "(id)"
-                                            + " )";
+                                String createSKMemoryTable =
+                                        "CREATE TABLE IF NOT EXISTS "
+                                                + TABLE_NAME
+                                                + " ("
+                                                + "collectionId VARCHAR(255) NOT NULL, "
+                                                + "id VARCHAR(255) NOT NULL, "
+                                                + "metadata TEXT, "
+                                                + "embedding TEXT, "
+                                                + "timestamp TEXT, "
+                                                + "PRIMARY KEY (collectionId, id), "
+                                                + "FOREIGN KEY (collectionId) REFERENCES "
+                                                + COLLECTIONS_TABLE_NAME
+                                                + "(id));";
 
-                            String createIndex =
-                                    "CREATE INDEX IF NOT EXISTS "
-                                            + INDEX_NAME
-                                            + " ON "
-                                            + TABLE_NAME
-                                            + "(collectionId)";
-
-                            try (Statement statement = this.connection.createStatement()) {
                                 statement.addBatch(createCollectionKeyTable);
                                 statement.addBatch(createSKMemoryTable);
-                                statement.addBatch(createIndex);
+
+                                boolean indexExists = doesIndexExist(statement);
+
+                                if (!indexExists) {
+                                    String createIndex =
+                                            "CREATE INDEX "
+                                                    + INDEX_NAME
+                                                    + " ON "
+                                                    + TABLE_NAME
+                                                    + "(collectionId)";
+                                    statement.addBatch(createIndex);
+                                }
+
                                 statement.executeBatch();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
@@ -67,6 +66,19 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                         })
                 .subscribeOn(Schedulers.boundedElastic())
                 .then();
+    }
+
+    private boolean doesIndexExist(Statement statement) throws SQLException {
+        DatabaseMetaData meta = connection.getMetaData();
+        try (ResultSet indexes = meta.getIndexInfo(null, null, TABLE_NAME, false, false)) {
+            while (indexes.next()) {
+                String existingIndexName = indexes.getString("INDEX_NAME");
+                if (existingIndexName != null && existingIndexName.equalsIgnoreCase(INDEX_NAME)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -82,10 +94,9 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                     "INSERT INTO "
                                             + TABLE_NAME
                                             + " (collectionId, id, metadata, embedding, timestamp)"
-                                            + " VALUES (?, ?, ?, ?, ?) ON CONFLICT (collectionId,"
-                                            + " id) DO UPDATE SET metadata = EXCLUDED.metadata,"
-                                            + " embedding = EXCLUDED.embedding, timestamp ="
-                                            + " EXCLUDED.timestamp";
+                                            + " VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE"
+                                            + " metadata = VALUES(metadata), embedding ="
+                                            + " VALUES(embedding), timestamp = VALUES(timestamp)";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 String metadataString = metadata != null ? metadata : "";
@@ -118,10 +129,9 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                     "INSERT INTO "
                                             + TABLE_NAME
                                             + " (collectionId, id, metadata, embedding, timestamp)"
-                                            + " VALUES (?, ?, ?, ?, ?) ON CONFLICT (collectionId,"
-                                            + " id) DO UPDATE SET metadata = EXCLUDED.metadata,"
-                                            + " embedding = EXCLUDED.embedding, timestamp ="
-                                            + " EXCLUDED.timestamp";
+                                            + " VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE"
+                                            + " metadata = VALUES(metadata), embedding ="
+                                            + " VALUES(embedding), timestamp = VALUES(timestamp)";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 for (DatabaseEntry entry : records) {
