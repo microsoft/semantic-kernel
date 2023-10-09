@@ -44,7 +44,7 @@ public class MySQLConnector extends JDBCConnector implements SQLConnector {
                                 statement.addBatch(createCollectionKeyTable);
                                 statement.addBatch(createSKMemoryTable);
 
-                                boolean indexExists = doesIndexExist(statement);
+                                boolean indexExists = doesIndexExist();
 
                                 if (!indexExists) {
                                     String createIndex =
@@ -68,7 +68,7 @@ public class MySQLConnector extends JDBCConnector implements SQLConnector {
                 .then();
     }
 
-    private boolean doesIndexExist(Statement statement) throws SQLException {
+    private boolean doesIndexExist() throws SQLException {
         DatabaseMetaData meta = connection.getMetaData();
         try (ResultSet indexes = meta.getIndexInfo(null, null, TABLE_NAME, false, false)) {
             while (indexes.next()) {
