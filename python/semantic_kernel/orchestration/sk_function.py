@@ -161,7 +161,7 @@ class SKFunction(SKFunctionBase):
                     if completion is not None:
                         context.variables.update(completion)
                     if function_call is not None:
-                        context._function_call = function_call
+                        context.objects["function_call"] = function_call
                 else:
                     completion = await client.complete_chat_async(
                         messages, request_settings
