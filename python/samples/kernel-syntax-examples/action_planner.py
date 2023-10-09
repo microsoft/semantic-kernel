@@ -2,7 +2,7 @@
 
 import semantic_kernel as sk
 from semantic_kernel.connectors.ai.open_ai import (
-    AzureChatCompletion,
+    OpenAIChatCompletion,
 )
 from semantic_kernel.core_skills import FileIOSkill, MathSkill, TextSkill, TimeSkill
 from semantic_kernel.planning import ActionPlanner
@@ -10,13 +10,10 @@ from semantic_kernel.planning import ActionPlanner
 
 async def main():
     kernel = sk.Kernel()
-    deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
-    deployment_name = "gpt-35-turbo"
+    api_key, org_id = sk.openai_settings_from_dot_env()
+
     kernel.add_chat_service(
-        "chat-gpt",
-        AzureChatCompletion(
-            deployment_name=deployment_name, endpoint=endpoint, api_key=api_key
-        ),
+        "chat-gpt", OpenAIChatCompletion("gpt-3.5-turbo", api_key, org_id)
     )
     kernel.import_skill(MathSkill(), "math")
     kernel.import_skill(FileIOSkill(), "fileIO")
