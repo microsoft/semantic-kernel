@@ -27,11 +27,6 @@ public interface IKernel
     ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
-    /// Semantic memory instance
-    /// </summary>
-    ISemanticTextMemory Memory { get; }
-
-    /// <summary>
     /// Reference to the engine rendering prompt templates
     /// </summary>
     IPromptTemplateEngine PromptTemplateEngine { get; }
@@ -40,12 +35,6 @@ public interface IKernel
     /// Reference to the read-only function collection containing all the imported functions
     /// </summary>
     IReadOnlyFunctionCollection Functions { get; }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    IReadOnlyFunctionCollection Skills { get; }
-#pragma warning restore CS1591
 
     /// <summary>
     /// Reference to Http handler factory
@@ -67,18 +56,6 @@ public interface IKernel
     /// <param name="pluginName">Name of the plugin for function collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
     IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null);
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null);
-#pragma warning restore CS1591
-
-    /// <summary>
-    /// Set the semantic memory to use
-    /// </summary>
-    /// <param name="memory">Semantic memory instance</param>
-    void RegisterMemory(ISemanticTextMemory memory);
 
     /// <summary>
     /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
@@ -191,6 +168,19 @@ public interface IKernel
     #region Obsolete
 
     /// <summary>
+    /// Semantic memory instance
+    /// </summary>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    ISemanticTextMemory Memory { get; }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    IReadOnlyFunctionCollection Skills { get; }
+#pragma warning restore CS1591
+
+    /// <summary>
     /// Access registered functions by plugin name and function name. Not case sensitive.
     /// The function might be native or semantic, it's up to the caller handling it.
     /// </summary>
@@ -200,6 +190,21 @@ public interface IKernel
     [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Plugins collection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     ISKFunction Func(string pluginName, string functionName);
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null);
+#pragma warning restore CS1591
+
+    /// <summary>
+    /// Set the semantic memory to use
+    /// </summary>
+    /// <param name="memory">Semantic memory instance</param>
+    /// <inheritdoc/>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    void RegisterMemory(ISemanticTextMemory memory);
 
     #endregion
 }
