@@ -32,13 +32,34 @@ public class FunctionCollection : IFunctionCollection
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
     /// </summary>
+    /// <param name="readOnlyFunctionCollection">Optional skill collection to copy from</param>
     /// <param name="loggerFactory">The logger factory.</param>
-    public FunctionCollection(ILoggerFactory? loggerFactory = null)
+    public FunctionCollection(IReadOnlyFunctionCollection? readOnlyFunctionCollection = null, ILoggerFactory? loggerFactory = null)
     {
         this._logger = loggerFactory?.CreateLogger(typeof(FunctionCollection)) ?? NullLogger.Instance;
 
         // Important: names are case insensitive
         this._functionCollection = new(StringComparer.OrdinalIgnoreCase);
+
+        if (readOnlyFunctionCollection is not null)
+        {
+            this.Populate(readOnlyFunctionCollection);
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
+    /// </summary>
+    /// <param name="loggerFactory">The logger factory.</param>
+    public FunctionCollection(ILoggerFactory? loggerFactory = null) : this(null, loggerFactory)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionCollection"/> class.
+    /// </summary>
+    public FunctionCollection() : this(null, null)
+    {
     }
 
     /// <summary>
@@ -110,6 +131,19 @@ public class FunctionCollection : IFunctionCollection
     internal string DebuggerDisplay => $"Count = {this._functionCollection.Count}";
 
     #region private ================================================================================
+
+    /// <summary>
+    /// Populates the current functions collection from another.
+    /// </summary>
+    /// <param name="readOnlyCollection">The target read only functions collection</param>
+    /// <returns>A new editable functions collection copy</returns>
+    private void Populate(IReadOnlyFunctionCollection readOnlyCollection)
+    {
+        foreach (var functionView in readOnlyCollection.GetFunctionViews())
+        {
+            this.AddFunction(readOnlyCollection.GetFunction(functionView.PluginName, functionView.Name));
+        }
+    }
 
     [DoesNotReturn]
     private void ThrowFunctionNotAvailable(string pluginName, string functionName)

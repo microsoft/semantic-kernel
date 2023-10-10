@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
@@ -16,7 +17,6 @@ using RepoUtils;
  * This example shows how to use OpenAI's function calling capability via the chat completions interface.
  * For more information, see https://platform.openai.com/docs/guides/gpt/function-calling.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example59_OpenAIFunctionCalling
 {
@@ -93,13 +93,26 @@ public static class Example59_OpenAIFunctionCalling
             // you can invoke it using the following code.
             if (kernel.Functions.TryGetFunctionAndContext(functionResponse, out ISKFunction? func, out ContextVariables? context))
             {
-                var result = (await kernel.RunAsync(func, context)).GetValue<string>();
-                if (!string.IsNullOrEmpty(result))
+                var kernelResult = await kernel.RunAsync(func, context);
+
+                var result = kernelResult.GetValue<object>();
+
+                string? resultMessage = null;
+                if (result is RestApiOperationResponse apiResponse)
                 {
-                    Console.WriteLine(result);
+                    resultMessage = apiResponse.Content?.ToString();
+                }
+                else if (result is string str)
+                {
+                    resultMessage = str;
+                }
+
+                if (!string.IsNullOrEmpty(resultMessage))
+                {
+                    Console.WriteLine(resultMessage);
 
                     // Add the function result to chat history
-                    chatHistory.AddAssistantMessage(result);
+                    chatHistory.AddAssistantMessage(resultMessage);
                 }
             }
             else

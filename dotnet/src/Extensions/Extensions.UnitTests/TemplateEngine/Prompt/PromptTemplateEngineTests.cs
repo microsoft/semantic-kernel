@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Moq;
 using SemanticKernel.Extensions.UnitTests.XunitHelpers;
 using Xunit;
@@ -21,19 +21,21 @@ namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
 public sealed class PromptTemplateEngineTests
 {
     private const string DateFormat = "M/d/yyyy";
-    private readonly PromptTemplateEngine _target;
+    private readonly BasicPromptTemplateEngine _target;
     private readonly ContextVariables _variables;
     private readonly Mock<IReadOnlyFunctionCollection> _functions;
     private readonly ITestOutputHelper _logger;
     private readonly Mock<IKernel> _kernel;
+    private readonly Mock<IFunctionRunner> _functionRunner;
 
     public PromptTemplateEngineTests(ITestOutputHelper testOutputHelper)
     {
         this._logger = testOutputHelper;
-        this._target = new PromptTemplateEngine(TestConsoleLogger.LoggerFactory);
+        this._target = new BasicPromptTemplateEngine(TestConsoleLogger.LoggerFactory);
         this._variables = new ContextVariables(Guid.NewGuid().ToString("X"));
         this._functions = new Mock<IReadOnlyFunctionCollection>();
         this._kernel = new Mock<IKernel>();
+        this._functionRunner = new Mock<IFunctionRunner>();
     }
 
     [Fact]
@@ -387,8 +389,8 @@ public sealed class PromptTemplateEngineTests
     private SKContext MockContext()
     {
         return new SKContext(
-            this._kernel.Object,
+            this._functionRunner.Object,
             this._variables,
-            functions: this._functions.Object);
+            this._functions.Object);
     }
 }
