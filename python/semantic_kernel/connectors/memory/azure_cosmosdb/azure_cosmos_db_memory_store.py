@@ -109,16 +109,26 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
 
     async def ensure(self):
         assert self.mongoClient.is_mongos
-        self.collection = self.mongoClient[AZCOSMOS_DATABASE_NAME][AZCOSMOS_CONTAINER_NAME]
+        self.collection = self.mongoClient[AZCOSMOS_DATABASE_NAME][
+            AZCOSMOS_CONTAINER_NAME
+        ]
 
         indexes = self.collection.index_information()
         if indexes.get("embedding_cosmosSearch") is None:
             indexDefs: List[any] = [
-                {"name": "embedding_cosmosSearch", "key": {"embedding": "cosmosSearch"},
-                 "cosmosSearchOptions": {"kind": "vector-ivf", "similarity": "COS", "dimensions": VECTOR_DIMENSION}}
+                {
+                    "name": "embedding_cosmosSearch",
+                    "key": {"embedding": "cosmosSearch"},
+                    "cosmosSearchOptions": {
+                        "kind": "vector-ivf",
+                        "similarity": "COS",
+                        "dimensions": VECTOR_DIMENSION,
+                    },
+                }
             ]
-            self.mongoClient[AZCOSMOS_DATABASE_NAME].command("createIndexes", AZCOSMOS_CONTAINER_NAME,
-                                                             indexes=indexDefs)
+            self.mongoClient[AZCOSMOS_DATABASE_NAME].command(
+                "createIndexes", AZCOSMOS_CONTAINER_NAME, indexes=indexDefs
+            )
 
     async def create_collection_core(self, collection_name: str) -> None:
         pass
@@ -130,13 +140,18 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         return self.collection.drop()
 
     async def does_collection_exist_core(self, collection_name: str) -> bool:
-        return AZCOSMOS_CONTAINER_NAME in self.mongoClient[AZCOSMOS_DATABASE_NAME].list_collection_names()
+        return (
+            AZCOSMOS_CONTAINER_NAME
+            in self.mongoClient[AZCOSMOS_DATABASE_NAME].list_collection_names()
+        )
 
     async def upsert_core(self, collection_name: str, record: MemoryRecord) -> str:
         result = await self.upsert_batch_core(collection_name, [record])
         return result[0]
 
-    async def upsert_batch_core(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch_core(
+        self, collection_name: str, records: List[MemoryRecord]
+    ) -> List[str]:
         doc_ids: List[str] = []
         cosmosRecords: List[dict] = []
         for record in records:
@@ -145,7 +160,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 "embedding": record.embedding.tolist(),
                 "text": record.text,
                 "description": record.description,
-                "metadata": self.__serialize_metadata(record)
+                "metadata": self.__serialize_metadata(record),
             }
             if record.timestamp is not None:
                 cosmosRecord["timestamp"] = record.timestamp
@@ -155,23 +170,25 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         self.collection.insert_many(cosmosRecords)
         return doc_ids
 
-    async def get_core(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get_core(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
         if not with_embedding:
             result = self.collection.find_one({"_id": key}, {"embedding": 0})
         else:
             result = self.collection.find_one({"_id": key})
         return MemoryRecord.local_record(
             id=result["_id"],
-            embedding=np.array(result["embedding"])
-            if with_embedding
-            else np.array([]),
+            embedding=np.array(result["embedding"]) if with_embedding else np.array([]),
             text=result["text"],
             description=result["description"],
             additional_metadata=result["metadata"],
-            timestamp=result["timestamp"]
+            timestamp=result["timestamp"],
         )
 
-    async def get_batch_core(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch_core(
+        self, collection_name: str, keys: List[str], with_embeddings: bool
+    ) -> List[MemoryRecord]:
         if not with_embeddings:
             results = self.collection.find({"_id": {"$in": keys}}, {"embedding": 0})
         else:
@@ -186,7 +203,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 text=result["text"],
                 description=result["description"],
                 additional_metadata=result["metadata"],
-                timestamp=result["timestamp"]
+                timestamp=result["timestamp"],
             )
             for result in results
         ]
@@ -197,9 +214,14 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
     async def remove_batch_core(self, collection_name: str, keys: List[str]) -> None:
         self.collection.delete_many({"_id": {"$in": keys}})
 
-    async def get_nearest_matches_core(self, collection_name: str, embedding: ndarray, limit: int,
-                                       min_relevance_score: float, with_embeddings: bool) -> List[
-        Tuple[MemoryRecord, float]]:
+    async def get_nearest_matches_core(
+        self,
+        collection_name: str,
+        embedding: ndarray,
+        limit: int,
+        min_relevance_score: float,
+        with_embeddings: bool,
+    ) -> List[Tuple[MemoryRecord, float]]:
         pipeline = [
             {
                 "$search": {
@@ -237,14 +259,19 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                 nearest_results.append((result, aggResult["similarityScore"]))
         return nearest_results
 
-    async def get_nearest_match_core(self, collection_name: str, embedding: ndarray, min_relevance_score: float,
-                                     with_embedding: bool) -> Tuple[MemoryRecord, float]:
+    async def get_nearest_match_core(
+        self,
+        collection_name: str,
+        embedding: ndarray,
+        min_relevance_score: float,
+        with_embedding: bool,
+    ) -> Tuple[MemoryRecord, float]:
         nearest_results = await self.get_nearest_matches_core(
             collection_name=collection_name,
             embedding=embedding,
             min_relevance_score=min_relevance_score,
             with_embeddings=with_embedding,
-            limit=1
+            limit=1,
         )
 
         if len(nearest_results) > 0:
@@ -335,7 +362,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.upsert_core(str(), record)
 
-    async def upsert_batch_async(self, collection_name: str, records: List[MemoryRecord]) -> List[str]:
+    async def upsert_batch_async(
+        self, collection_name: str, records: List[MemoryRecord]
+    ) -> List[str]:
         """Upsert a batch of records.
 
         Arguments:
@@ -347,7 +376,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.upsert_batch_core(str(), records)
 
-    async def get_async(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
+    async def get_async(
+        self, collection_name: str, key: str, with_embedding: bool
+    ) -> MemoryRecord:
         """Gets a record.
 
         Arguments:
@@ -360,7 +391,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.get_core(str(), key, with_embedding)
 
-    async def get_batch_async(self, collection_name: str, keys: List[str], with_embeddings: bool) -> List[MemoryRecord]:
+    async def get_batch_async(
+        self, collection_name: str, keys: List[str], with_embeddings: bool
+    ) -> List[MemoryRecord]:
         """Gets a batch of records.
 
         Arguments:
@@ -397,9 +430,14 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """
         return await self.cosmosStore.remove_batch_core(str(), keys)
 
-    async def get_nearest_matches_async(self, collection_name: str, embedding: ndarray, limit: int,
-                                        min_relevance_score: float, with_embeddings: bool) -> List[
-        Tuple[MemoryRecord, float]]:
+    async def get_nearest_matches_async(
+        self,
+        collection_name: str,
+        embedding: ndarray,
+        limit: int,
+        min_relevance_score: float,
+        with_embeddings: bool,
+    ) -> List[Tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using vector configuration.
 
         Parameters:
@@ -412,11 +450,17 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
         """
-        return await self.cosmosStore.get_nearest_matches_core(str(), embedding, limit, min_relevance_score,
-                                                               with_embeddings)
+        return await self.cosmosStore.get_nearest_matches_core(
+            str(), embedding, limit, min_relevance_score, with_embeddings
+        )
 
-    async def get_nearest_match_async(self, collection_name: str, embedding: ndarray, min_relevance_score: float,
-                                      with_embedding: bool) -> Tuple[MemoryRecord, float]:
+    async def get_nearest_match_async(
+        self,
+        collection_name: str,
+        embedding: ndarray,
+        min_relevance_score: float,
+        with_embedding: bool,
+    ) -> Tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using vector configuration parameters.
 
         Arguments:
@@ -428,4 +472,6 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float] -- The record and the relevance score.
         """
-        return await self.cosmosStore.get_nearest_match_core(str(), embedding, min_relevance_score, with_embedding)
+        return await self.cosmosStore.get_nearest_match_core(
+            str(), embedding, min_relevance_score, with_embedding
+        )

@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Builders;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
@@ -216,7 +215,6 @@ public static class KernelAIPluginExtensions
             var operations = await parser.ParseAsync(documentStream, executionParameters?.IgnoreNonCompliantErrors ?? false, cancellationToken).ConfigureAwait(false);
 
             var runner = new RestApiOperationRunner(
-                new OperationComponentBuilderFactory(),
                 httpClient,
                 executionParameters?.AuthCallback,
                 executionParameters?.UserAgent,
@@ -356,7 +354,7 @@ public static class KernelAIPluginExtensions
 
         var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)) : NullLogger.Instance;
 
-        async Task<SKContext> ExecuteAsync(SKContext context)
+        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context)
         {
             try
             {
@@ -391,20 +389,13 @@ public static class KernelAIPluginExtensions
                     ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };
 
-                var result = await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
-
-                if (result != null)
-                {
-                    context.Variables.Update(result.ToString());
-                }
+                return await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 logger.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", pluginName, operation.Id, ex.Message);
                 throw;
             }
-
-            return context;
         }
 
         var parameters = restOperationParameters
@@ -413,6 +404,7 @@ public static class KernelAIPluginExtensions
                 Description = $"{p.Description ?? p.Name}{(p.IsRequired ? " (required)" : string.Empty)}",
                 DefaultValue = p.DefaultValue ?? string.Empty,
                 Type = string.IsNullOrEmpty(p.Type) ? null : new ParameterViewType(p.Type),
+                IsRequired = p.IsRequired,
             })
             .ToList();
 

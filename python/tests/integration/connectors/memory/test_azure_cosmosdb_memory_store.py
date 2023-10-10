@@ -1,12 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import pytest
-import numpy as np
-
 from datetime import datetime
 
-from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import \
-    AzureCosmosDBMemoryStore
+import numpy as np
+import pytest
+
+from semantic_kernel.connectors.memory.azure_cosmosdb.azure_cosmos_db_memory_store import (
+    AzureCosmosDBMemoryStore,
+)
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 
@@ -66,8 +67,7 @@ async def azurecosmosdb_memorystore() -> MemoryStoreBase:
 
 
 @pytest.mark.asyncio
-async def test_get_collection_async(
-):
+async def test_get_collection_async():
     store = await azurecosmosdb_memorystore()
     result = await store.get_collections_async()
     assert "semanticKernelTesting" in result
@@ -82,48 +82,49 @@ async def test_does_collection_async():
 
 @pytest.mark.asyncio
 async def test_upsert_async_and_get_async_and_remove_async(
-    memory_record1: MemoryRecord):
+    memory_record1: MemoryRecord,
+):
     store = await azurecosmosdb_memorystore()
     doc_id = await store.upsert_async(str(), memory_record1)
     assert doc_id == memory_record1._id
 
-    result = await store.get_async(
-        str(), memory_record1._id, with_embedding=True)
+    result = await store.get_async(str(), memory_record1._id, with_embedding=True)
 
     assert result is not None
     assert result._id == memory_record1._id
-    assert all(result._embedding[i] == memory_record1._embedding[i]
-               for i in range(len(result._embedding)))
+    assert all(
+        result._embedding[i] == memory_record1._embedding[i]
+        for i in range(len(result._embedding))
+    )
 
     await store.remove_async(str(), memory_record1._id)
 
 
 @pytest.mark.asyncio
 async def test_upsert_batch_async_and_get_batch_async_remove_batch_async(
-    memory_record2: MemoryRecord,
-    memory_record3: MemoryRecord):
+    memory_record2: MemoryRecord, memory_record3: MemoryRecord
+):
     store = await azurecosmosdb_memorystore()
     doc_ids = await store.upsert_batch_async(str(), [memory_record2, memory_record3])
     assert len(doc_ids) == 2
     assert all(doc_id in [memory_record2._id, memory_record3._id] for doc_id in doc_ids)
 
     results = await store.get_batch_async(
-        str(),
-        [memory_record2._id, memory_record3._id],
-        with_embeddings=True
+        str(), [memory_record2._id, memory_record3._id], with_embeddings=True
     )
 
     assert len(results) == 2
-    assert all(result._id in [memory_record2._id, memory_record3._id] for result in results)
+    assert all(
+        result._id in [memory_record2._id, memory_record3._id] for result in results
+    )
 
-    await store.remove_batch_async(
-        str(), [memory_record2._id, memory_record3._id])
+    await store.remove_batch_async(str(), [memory_record2._id, memory_record3._id])
 
 
 @pytest.mark.asyncio
 async def test_get_nearest_match_async(
-    memory_record1: MemoryRecord,
-    memory_record2: MemoryRecord):
+    memory_record1: MemoryRecord, memory_record2: MemoryRecord
+):
     store = await azurecosmosdb_memorystore()
     await store.upsert_batch_async(str(), [memory_record1, memory_record2])
     test_embedding = memory_record1.embedding.copy()
@@ -135,17 +136,20 @@ async def test_get_nearest_match_async(
 
     assert result is not None
     assert result[0]._id == memory_record1._id
-    assert all(result[0]._embedding[i] == memory_record1._embedding[i] for i in range(len(result[0]._embedding)))
+    assert all(
+        result[0]._embedding[i] == memory_record1._embedding[i]
+        for i in range(len(result[0]._embedding))
+    )
 
-    await store.remove_batch_async(
-        str(), [memory_record1._id, memory_record2._id])
+    await store.remove_batch_async(str(), [memory_record1._id, memory_record2._id])
 
 
 @pytest.mark.asyncio
 async def test__get_nearest_matches_async(
     memory_record1: MemoryRecord,
     memory_record2: MemoryRecord,
-    memory_record3: MemoryRecord):
+    memory_record3: MemoryRecord,
+):
     store = await azurecosmosdb_memorystore()
     await store.upsert_batch_async(
         str(), [memory_record1, memory_record2, memory_record3]
@@ -154,14 +158,13 @@ async def test__get_nearest_matches_async(
     test_embedding[0] = test_embedding[4] + 0.025
 
     result = await store.get_nearest_matches_async(
-        str(),
-        test_embedding,
-        limit=2,
-        min_relevance_score=0.0,
-        with_embeddings=True
+        str(), test_embedding, limit=2, min_relevance_score=0.0, with_embeddings=True
     )
     assert len(result) == 2
-    assert all(result[i][0]._id in [memory_record1._id, memory_record2._id] for i in range(2))
+    assert all(
+        result[i][0]._id in [memory_record1._id, memory_record2._id] for i in range(2)
+    )
 
     await store.remove_batch_async(
-        str(), [memory_record1._id, memory_record2._id, memory_record3._id])
+        str(), [memory_record1._id, memory_record2._id, memory_record3._id]
+    )

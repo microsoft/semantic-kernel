@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Functions.Grpc.Protobuf;
 /// <summary>
 /// Parser for .proto definition documents.
 /// </summary>
-internal class ProtoDocumentParser
+internal sealed class ProtoDocumentParser
 {
     /// <summary>
     /// Parses .proto document.

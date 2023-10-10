@@ -168,6 +168,20 @@ def bing_search_settings_from_dot_env() -> str:
     return api_key
 
 
+def mongodb_atlas_settings_from_dot_env() -> str:
+    """Returns the Atlas MongoDB Connection String from the .env file.
+
+    Returns:
+        str: MongoDB Connection String URI
+    """
+
+    config = dotenv_values(".env")
+    uri = config.get("MONGODB_ATLAS_CONNECTION_STRING")
+    assert uri is not None, "MongoDB Connection String not found in .env file"
+
+    return uri
+
+
 def google_palm_settings_from_dot_env() -> str:
     """
     Reads the Google PaLM API key from the .env file.
@@ -196,7 +210,7 @@ def azure_cosmos_db_settings_from_dot_env() -> dict:
         "AZCOSMOS_API": "mongo",  # Right now CosmosDB only supports vector search in Mongo.
         "AZCOSMOS_CONNSTR": config.get("AZCOSMOS_CONNSTR"),
         "AZCOSMOS_DATABASE_NAME": config.get("AZCOSMOS_DATABASE_NAME"),
-        "AZCOSMOS_CONTAINER_NAME": config.get("AZCOSMOS_CONTAINER_NAME")
+        "AZCOSMOS_CONTAINER_NAME": config.get("AZCOSMOS_CONTAINER_NAME"),
     }
 
     return env_variables

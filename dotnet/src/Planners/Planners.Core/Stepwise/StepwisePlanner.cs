@@ -11,12 +11,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Planners.Stepwise;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
@@ -52,19 +50,15 @@ public class StepwisePlanner : IStepwisePlanner
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
         // Set up prompt templates
-        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Plugin.StepwiseStep.skprompt.txt");
-        this._manualTemplate = EmbeddedResource.Read("Plugin.RenderFunctionManual.skprompt.txt");
-        this._questionTemplate = EmbeddedResource.Read("Plugin.RenderQuestion.skprompt.txt");
+        this._promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Stepwise.Plugin.StepwiseStep.skprompt.txt");
+        this._manualTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderFunctionManual.skprompt.txt");
+        this._questionTemplate = EmbeddedResource.Read("Stepwise.Plugin.RenderQuestion.skprompt.txt");
 
         // Load or use default PromptConfig
         this._promptConfig = this.Config.PromptUserConfig ?? LoadPromptConfigFromResource();
 
         // Set MaxTokens for the prompt config
-        if (this._promptConfig.Completion is null)
-        {
-            this._promptConfig.Completion = new AIRequestSettings();
-        }
-        this._promptConfig.Completion.ExtensionData["MaxTokens"] = this.Config.MaxCompletionTokens;
+        this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
         // Initialize prompt renderer
         this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
@@ -84,17 +78,13 @@ public class StepwisePlanner : IStepwisePlanner
             throw new SKException("The goal specified is empty");
         }
 
-        Plan planStep = new(this._nativeFunctions["ExecutePlan"]);
-        planStep.Parameters.Set("question", goal);
+        Plan plan = new(this._nativeFunctions["ExecutePlan"]);
+        plan.Parameters.Set("question", goal);
 
-        planStep.Outputs.Add("stepCount");
-        planStep.Outputs.Add("functionCount");
-        planStep.Outputs.Add("stepsTaken");
-        planStep.Outputs.Add("iterations");
-
-        Plan plan = new(goal);
-
-        plan.AddSteps(planStep);
+        plan.Outputs.Add("stepCount");
+        plan.Outputs.Add("functionCount");
+        plan.Outputs.Add("stepsTaken");
+        plan.Outputs.Add("iterations");
 
         return plan;
     }
@@ -410,7 +400,7 @@ public class StepwisePlanner : IStepwisePlanner
     {
         if (aiService is IChatCompletion chatCompletion)
         {
-            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.Completion, token).ConfigureAwait(false));
+            var llmResponse = (await chatCompletion.GenerateMessageAsync(chatHistory, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false));
             return llmResponse;
         }
         else if (aiService is ITextCompletion textCompletion)
@@ -425,7 +415,7 @@ public class StepwisePlanner : IStepwisePlanner
             }
 
             thoughtProcess = $"{thoughtProcess}\n";
-            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.Completion, token).ConfigureAwait(false);
+            IReadOnlyList<ITextResult> results = await textCompletion.GetCompletionsAsync(thoughtProcess, this._promptConfig.GetDefaultRequestSettings(), token).ConfigureAwait(false);
 
             if (results.Count == 0)
             {
@@ -571,7 +561,7 @@ public class StepwisePlanner : IStepwisePlanner
 
     private static PromptTemplateConfig LoadPromptConfigFromResource()
     {
-        string promptConfigString = EmbeddedResource.Read("Plugin.StepwiseStep.config.json");
+        string promptConfigString = EmbeddedResource.Read("Stepwise.Plugin.StepwiseStep.config.json");
         return !string.IsNullOrEmpty(promptConfigString) ? PromptTemplateConfig.FromJson(promptConfigString) : new PromptTemplateConfig();
     }
 
@@ -629,32 +619,32 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// Planner native functions
     /// </summary>
-    private IDictionary<string, ISKFunction> _nativeFunctions = new Dictionary<string, ISKFunction>();
+    private readonly IDictionary<string, ISKFunction> _nativeFunctions = new Dictionary<string, ISKFunction>();
 
     /// <summary>
     /// The prompt template to use for the system step
     /// </summary>
-    private string _promptTemplate;
+    private readonly string _promptTemplate;
 
     /// <summary>
     /// The question template to use for the system step
     /// </summary>
-    private string _questionTemplate;
+    private readonly string _questionTemplate;
 
     /// <summary>
     /// The function manual template to use for the system step
     /// </summary>
-    private string _manualTemplate;
+    private readonly string _manualTemplate;
 
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private PromptTemplateEngine _promptRenderer;
+    private readonly PromptTemplateEngine _promptRenderer;
 
     /// <summary>
     /// The prompt config to use for the system step
     /// </summary>
-    private PromptTemplateConfig _promptConfig;
+    private readonly PromptTemplateConfig _promptConfig;
 
     /// <summary>
     /// The name to use when creating semantic functions that are restricted from plan creation
