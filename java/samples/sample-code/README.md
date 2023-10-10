@@ -42,7 +42,7 @@ You can define the provider of Open AI (openai.com or Azure), this can be done b
 property or environment variable to either `OPENAI` or `AZURE_OPEN_AI`, i.e.:
 
 ```shell
-OPENAI_CLIENT_TYPE=OPENAI ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
+OPENAI_CLIENT_TYPE=OPEN_AI ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
 
 OR
 
@@ -64,7 +64,7 @@ You can set the location of a properties file, by setting the `CONF_PROPERTIES` 
 
 ```shell
 CONF_PROPERTIES=my.properties \
-OPENAI_CLIENT_TYPE=OPENAI \
+OPENAI_CLIENT_TYPE=OPEN_AI \
 ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
 
 OR
@@ -120,7 +120,7 @@ AZURE_OPEN_AI_ENDPOINT="endpoint url" \
 ../../mvnw clean package exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
 
 # OPENAI:
-OPENAI_CLIENT_TYPE=OPENAI \
+OPENAI_CLIENT_TYPE=OPEN_AI \
 OPEN_AI_KEY="my-key" \
 OPEN_AI_ORGANIZATION_ID="organisation id" \
 ../../mvnw clean package exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode

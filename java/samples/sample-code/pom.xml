@@ -98,7 +98,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>com.microsoft.semantickernel.syntaxexamples.${sample}</mainClass>
+                    <mainClass>com.microsoft.semantickernel.samples.syntaxexamples.${sample}</mainClass>
                 </configuration>
             </plugin>
         </plugins>
