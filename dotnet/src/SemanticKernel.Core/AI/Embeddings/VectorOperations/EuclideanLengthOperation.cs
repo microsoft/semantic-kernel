@@ -1,12 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
 /// <summary>
 /// Extension methods to calculate the Euclidean length of a vector.
 /// </summary>
+[Obsolete("Numerical operations will be removed in a future release. Use System.Numerics.Tensors.TensorPrimitives instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class EuclideanLengthOperation
 {
     /// <summary>
