@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.ComponentModel;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Weaviate;
 
@@ -10,6 +12,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Weaviate memory connector.
 /// </summary>
+[Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use WeaviateMemoryBuilderExtensions instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class WeaviateKernelBuilderExtensions
 {
     /// <summary>
@@ -20,6 +24,8 @@ public static class WeaviateKernelBuilderExtensions
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
     /// <param name="apiVersion">The API version to use.</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use WeaviateMemoryBuilderExtensions.WithWeaviateMemoryStore instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithWeaviateMemoryStore(
         this KernelBuilder builder,
         string endpoint,
@@ -48,6 +54,8 @@ public static class WeaviateKernelBuilderExtensions
     /// <param name="apiKey">The API key for accessing Weaviate server.</param>
     /// <param name="apiVersion">The API version to use.</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use WeaviateMemoryBuilderExtensions.WithWeaviateMemoryStore instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithWeaviateMemoryStore(this KernelBuilder builder,
         HttpClient httpClient,
         string? endpoint = null,
