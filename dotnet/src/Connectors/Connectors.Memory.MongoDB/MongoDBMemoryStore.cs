@@ -220,18 +220,6 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
     private static FilterDefinition<MongoDBMemoryEntry> GetFilterByIds(IEnumerable<string> ids) =>
         Builders<MongoDBMemoryEntry>.Filter.In(m => m.Id, ids);
 
-    private static PipelineStageDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry> GetVectorSearchStage(ReadOnlyMemory<float> embedding, double minRelevanceScore, int limit, string? index) =>
-        new BsonDocumentPipelineStageDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>(
-            new("$vectorSearch",
-                new BsonDocument()
-                {
-                    { "path", "embedding" },
-                    { "queryVector", new BsonArray(embedding.ToArray()) },
-                    { "limit", limit },
-                    { "numCandidates", limit * 10 },
-                    { "index", index ?? "default" },
-                }));
-
     private Task<IAsyncCursor<MongoDBMemoryEntry>> VectorSearch(
         string collectionName,
         ReadOnlyMemory<float> embedding,
@@ -240,8 +228,8 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        var vectorSearchStage = GetVectorSearchStage(embedding, minRelevanceScore, limit, this._indexName);
-        var projectionDefinition = Builders<MongoDBMemoryEntry>.Projection
+        var projectionDefinition = Builders<MongoDBMemoryEntry>
+            .Projection
             .Meta(nameof(MongoDBMemoryEntry.Score), "vectorSearchScore")
             .Include(e => e.Metadata)
             .Include(e => e.Timestamp);
@@ -253,7 +241,7 @@ public class MongoDBMemoryStore : IMemoryStore, IDisposable
 
         var aggregationPipeline = this.GetCollection(collectionName)
             .Aggregate()
-            .AppendStage(vectorSearchStage)
+            .VectorSearch(e => e.Embedding, embedding, limit)
             .Project<MongoDBMemoryEntry>(projectionDefinition);
 
         if (minRelevanceScore > 0)

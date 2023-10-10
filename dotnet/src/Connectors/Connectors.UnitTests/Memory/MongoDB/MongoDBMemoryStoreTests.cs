@@ -177,6 +177,8 @@ public class MongoDBMemoryStoreTests
     public async Task ItCanGetNearestMatchAsync()
     {
         // Arrange
+        const string ExpectedStage = "{ \"$vectorSearch\" : { \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 1, \"numCandidates\" : 10, \"index\" : \"default\" } }";
+
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         var memoryRecord = CreateRecord("id");
         using var cursorMock = new AsyncCursorMock<MongoDBMemoryEntry>(new MongoDBMemoryEntry(memoryRecord));
@@ -189,13 +191,15 @@ public class MongoDBMemoryStoreTests
 
         // Assert
         AssertMemoryRecordEqual(memoryRecord, match.Value.Item1);
-        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.IsAny<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(), It.IsAny<AggregateOptions>(), default), Times.Once());
+        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, ExpectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
     }
 
     [Fact]
     public async Task ItCanGetNearestMatchesAsync()
     {
         // Arrange
+        const string ExpectedStage = "{ \"$vectorSearch\" : { \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 100, \"numCandidates\" : 1000, \"index\" : \"default\" } }";
+
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         var (memoryRecords, keys) = CreateRecords(10);
         using var cursorMock = new AsyncCursorMock<MongoDBMemoryEntry>(memoryRecords.Select(r => new MongoDBMemoryEntry(r)).ToArray());
@@ -213,6 +217,8 @@ public class MongoDBMemoryStoreTests
         {
             AssertMemoryRecordEqual(memoryRecords[i], matches[i].Item1);
         }
+
+        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, ExpectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
     }
 
     [Fact]
@@ -380,6 +386,17 @@ public class MongoDBMemoryStoreTests
         {
             Assert.True(actualRecord.Embedding.Span.IsEmpty);
         }
+    }
+
+    private static bool VerifyPipeline(PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry> pipeline, string expectedStage)
+    {
+        if (pipeline.Stages.Count() != 2)
+        {
+            return false;
+        }
+
+        var actualStage = pipeline.Stages.First().ToString();
+        return actualStage == expectedStage;
     }
 
     #endregion
