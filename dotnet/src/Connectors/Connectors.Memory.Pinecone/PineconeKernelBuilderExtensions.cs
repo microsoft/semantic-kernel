@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.ComponentModel;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 
@@ -10,6 +12,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Pinecone connectors.
 /// </summary>
+[Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use PineconeMemoryBuilderExtensions instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class PineconeKernelBuilderExtensions
 {
     /// <summary>
@@ -20,6 +24,8 @@ public static class PineconeKernelBuilderExtensions
     /// <param name="apiKey">The API key for accessing Pinecone services.</param>
     /// <param name="httpClient">An optional HttpClient instance for making HTTP requests.</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use PineconeMemoryBuilderExtensions.WithPineconeMemoryStore instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithPineconeMemoryStore(this KernelBuilder builder,
         string environment,
         string apiKey,
