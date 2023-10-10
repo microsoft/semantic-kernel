@@ -3,7 +3,7 @@ cffi==1.15.1
 charset-normalizer==2.0.12
 click==8.0.4
 colorama==0.4.5
-cryptography==41.0.3
+cryptography==41.0.4
 dataclasses==0.6
 diffusers==0.2.2
 filelock==3.4.1
