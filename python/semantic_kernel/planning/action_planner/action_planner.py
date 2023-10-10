@@ -32,7 +32,7 @@ class ActionPlanner:
     "no function" if nothing relevant is available.
     """
 
-    RESTRICTED_SKILL_NAME = "ActionPlanner"
+    RESTRICTED_SKILL_NAME = "ActionPlanner_Excluded"
     config: ActionPlannerConfig
     _stop_sequence: str = "#END-OF-PLAN"
 
