@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using Microsoft.SemanticKernel.Plugins.Web.Google;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 /// <summary>
@@ -82,7 +82,7 @@ public static class Example07_BingAndGooglePlugins
 
         Console.WriteLine(question);
         Console.WriteLine($"----{searchPluginName}----");
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 
@@ -149,7 +149,7 @@ Answer: ";
         // If the answer contains commands, execute them using the prompt renderer.
         if (result.Contains("bing.search", StringComparison.OrdinalIgnoreCase))
         {
-            var promptRenderer = new PromptTemplateEngine();
+            var promptRenderer = new BasicPromptTemplateEngine();
 
             Console.WriteLine("---- Fetching information from Bing...");
             var information = await promptRenderer.RenderAsync(result, kernel.CreateNewContext());
