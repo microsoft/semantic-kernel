@@ -275,7 +275,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             throw new SKException("Invalid embedding size: the value must be greater than zero.");
         }
 
-        const string ProfileName = "searchConfig";
+        const string ProfileName = "searchProfile";
         const string AlgorithmName = "searchAlgorithm";
 
         var newIndex = new SearchIndex(indexName)
