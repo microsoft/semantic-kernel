@@ -36,6 +36,9 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             model_id {str} -- Hugging Face model card string, see
                 https://huggingface.co/models
             device {Optional[int]} -- Device to run the model on, -1 for CPU, 0+ for GPU.
+                                   -- None if using device_map instead. (If both device and device_map
+                                      are specified, device overrides device_map. If unintended, 
+                                      it can lead to unexpected behavior.)
             task {Optional[str]} -- Model completion task type, options are:
                 - summarization: takes a long text and returns a shorter summary.
                 - text-generation: takes incomplete text and returns a set of completion candidates.
@@ -68,7 +71,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             "cuda:" + str(device)
             if device >= 0 and torch.cuda.is_available()
             else "cpu"
-        )
+        ) if device is not None else None
 
         self.generator = transformers.pipeline(
             task=self._task,
