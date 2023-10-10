@@ -2,9 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.DeepDev;
+using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Text;
+using Resources;
 using SharpToken;
+using static Microsoft.SemanticKernel.Text.TextChunker;
 
 // ReSharper disable once InconsistentNaming
 public static class Example55_TextChunker
@@ -30,7 +36,10 @@ known as coral polyps.";
     public static Task RunAsync()
     {
         RunExample();
-        RunExampleWithCustomTokenCounter();
+        RunExampleForTokenCounterType(TokenCounterType.SharpToken);
+        RunExampleForTokenCounterType(TokenCounterType.MicrosoftML);
+        RunExampleForTokenCounterType(TokenCounterType.MicrosoftMLRoberta);
+        RunExampleForTokenCounterType(TokenCounterType.DeepDev);
         RunExampleWithHeader();
 
         return Task.CompletedTask;
@@ -46,13 +55,18 @@ known as coral polyps.";
         WriteParagraphsToConsole(paragraphs);
     }
 
-    private static void RunExampleWithCustomTokenCounter()
+    private static void RunExampleForTokenCounterType(TokenCounterType counterType)
     {
-        Console.WriteLine("=== Text chunking with a custom token counter ===");
+        Console.WriteLine($"=== Text chunking with a custom({counterType}) token counter ===");
+        var sw = new Stopwatch();
+        sw.Start();
+        var tokenCounter = s_tokenCounterFactory(counterType);
 
-        var lines = TextChunker.SplitPlainTextLines(Text, 40, CustomTokenCounter);
-        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: CustomTokenCounter);
+        var lines = TextChunker.SplitPlainTextLines(Text, 40, tokenCounter);
+        var paragraphs = TextChunker.SplitPlainTextParagraphs(lines, 120, tokenCounter: tokenCounter);
 
+        sw.Stop();
+        Console.WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
         WriteParagraphsToConsole(paragraphs);
     }
 
@@ -79,11 +93,19 @@ known as coral polyps.";
         }
     }
 
+    private enum TokenCounterType
+    {
+        SharpToken,
+        MicrosoftML,
+        DeepDev,
+        MicrosoftMLRoberta,
+    }
+
     /// <summary>
     /// Custom token counter implementation using SharpToken.
     /// Note: SharpToken is used for demonstration purposes only, it's possible to use any available or custom tokenization logic.
     /// </summary>
-    private static int CustomTokenCounter(string input)
+    private static TokenCounter SharpTokenTokenCounter => (string input) =>
     {
         // Initialize encoding by encoding name
         var encoding = GptEncoding.GetEncoding("cl100k_base");
@@ -94,5 +116,73 @@ known as coral polyps.";
         var tokens = encoding.Encode(input);
 
         return tokens.Count;
-    }
+    };
+
+    /// <summary>
+    /// MicrosoftML token counter implementation.
+    /// </summary>
+    private static TokenCounter MicrosoftMLTokenCounter => (string input) =>
+    {
+        Tokenizer tokenizer = new(new Bpe());
+        var tokens = tokenizer.Encode(input).Tokens;
+
+        return tokens.Count;
+    };
+
+    /// <summary>
+    /// MicrosoftML token counter implementation using Roberta and local vocab
+    /// </summary>
+    private static TokenCounter MicrosoftMLRobertaTokenCounter => (string input) =>
+    {
+        var encoder = EmbeddedResource.ReadStream("EnglishRoberta.encoder.json");
+        var vocab = EmbeddedResource.ReadStream("EnglishRoberta.vocab.bpe");
+        var dict = EmbeddedResource.ReadStream("EnglishRoberta.dict.txt");
+
+        if (encoder is null || vocab is null || dict is null)
+        {
+            throw new FileNotFoundException("Missing required resources");
+        }
+
+        EnglishRoberta model = new(encoder, vocab, dict);
+
+        model.AddMaskSymbol(); // Not sure what this does, but it's in the example
+        Tokenizer tokenizer = new(model, new RobertaPreTokenizer());
+        var tokens = tokenizer.Encode(input).Tokens;
+
+        return tokens.Count;
+    };
+
+    /// <summary>
+    /// DeepDev token counter implementation.
+    /// </summary>
+    private static TokenCounter DeepDevTokenCounter => (string input) =>
+    {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+        // Initialize encoding by encoding name
+        var tokenizer = TokenizerBuilder.CreateByEncoderNameAsync("cl100k_base").GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+
+        // Initialize encoding by model name
+        // var tokenizer = TokenizerBuilder.CreateByModelNameAsync("gpt-4").GetAwaiter().GetResult();
+
+        var tokens = tokenizer.Encode(input, new HashSet<string>());
+        return tokens.Count;
+    };
+
+    private static readonly Func<TokenCounterType, TokenCounter> s_tokenCounterFactory = (TokenCounterType counterType) =>
+    {
+        switch (counterType)
+        {
+            case TokenCounterType.SharpToken:
+                return (string input) => SharpTokenTokenCounter(input);
+            case TokenCounterType.MicrosoftML:
+                return (string input) => MicrosoftMLTokenCounter(input);
+            case TokenCounterType.DeepDev:
+                return (string input) => DeepDevTokenCounter(input);
+            case TokenCounterType.MicrosoftMLRoberta:
+                return (string input) => MicrosoftMLRobertaTokenCounter(input);
+            default:
+                throw new ArgumentOutOfRangeException(nameof(counterType), counterType, null);
+        }
+    };
 }

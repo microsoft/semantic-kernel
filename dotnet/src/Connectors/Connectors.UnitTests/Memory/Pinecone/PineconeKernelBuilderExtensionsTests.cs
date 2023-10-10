@@ -30,12 +30,16 @@ public sealed class PineconeKernelBuilderExtensionsTests : IDisposable
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent("[\"fake-index1\"]", Encoding.UTF8, MediaTypeNames.Application.Json);
 
         var builder = new KernelBuilder();
+#pragma warning disable CS0618 // This will be removed in a future release.
         builder.WithPineconeMemoryStore("fake-environment", "fake-api-key", this._httpClient);
+#pragma warning restore CS0618 // This will be removed in a future release.
         builder.WithAzureTextEmbeddingGenerationService("fake-deployment-name", "https://fake-random-test-host/fake-path", "fake -api-key");
         var kernel = builder.Build(); //This call triggers the internal factory registered by WithPineconeMemoryStore method to create an instance of the PineconeMemoryStore class.
 
         //Act
+#pragma warning disable CS0618 // This will be removed in a future release.
         await kernel.Memory.GetCollectionsAsync(); //This call triggers a subsequent call to Pinecone memory store.
+#pragma warning restore CS0618 // This will be removed in a future release.
 
         //Assert
         Assert.Equal("https://controller.fake-environment.pinecone.io/databases", this._messageHandlerStub?.RequestUri?.AbsoluteUri);

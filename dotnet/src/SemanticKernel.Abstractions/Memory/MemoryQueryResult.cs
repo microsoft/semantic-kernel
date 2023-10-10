@@ -48,13 +48,18 @@ public class MemoryQueryResult
         this.Embedding = embedding;
     }
 
-    internal static MemoryQueryResult FromMemoryRecord(
-        MemoryRecord rec,
+    /// <summary>
+    /// Creates instance of <see cref="MemoryQueryResult"/> based on <see cref="MemoryRecord"/> and search relevance.
+    /// </summary>
+    /// <param name="record">Instance of <see cref="MemoryRecord"/>.</param>
+    /// <param name="relevance">Search relevance, from 0 to 1, where 1 means perfect match.</param>
+    public static MemoryQueryResult FromMemoryRecord(
+        MemoryRecord record,
         double relevance)
     {
         return new MemoryQueryResult(
-            (MemoryRecordMetadata)rec.Metadata.Clone(),
+            (MemoryRecordMetadata)record.Metadata.Clone(),
             relevance,
-            rec.Embedding.IsEmpty ? null : rec.Embedding);
+            record.Embedding.IsEmpty ? null : record.Embedding);
     }
 }

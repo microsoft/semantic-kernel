@@ -33,7 +33,7 @@ public static class Example08_RetryHandler
         var kernel = InitializeKernelBuilder()
             .Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
+        await ImportAndExecutePluginAsync(kernel);
     }
 
     private static async Task ReliabilityBasicExtensionAsync()
@@ -50,7 +50,7 @@ public static class Example08_RetryHandler
             .WithRetryBasic(retryConfig)
             .Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
+        await ImportAndExecutePluginAsync(kernel);
     }
 
     private static async Task ReliabilityPollyExtensionAsync()
@@ -60,7 +60,7 @@ public static class Example08_RetryHandler
             .WithRetryPolly(GetPollyPolicy(InfoLogger.LoggerFactory))
             .Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
+        await ImportAndExecutePluginAsync(kernel);
     }
 
     private static async Task CustomHandlerAsync()
@@ -70,7 +70,7 @@ public static class Example08_RetryHandler
                         .WithHttpHandlerFactory(new MyCustomHandlerFactory())
                         .Build();
 
-        await ImportAndExecuteSkillAsync(kernel);
+        await ImportAndExecutePluginAsync(kernel);
     }
 
     private static KernelBuilder InitializeKernelBuilder()
@@ -105,23 +105,32 @@ public static class Example08_RetryHandler
                         outcome.Result.StatusCode));
     }
 
-    private static async Task ImportAndExecuteSkillAsync(IKernel kernel)
+    private static async Task ImportAndExecutePluginAsync(IKernel kernel)
     {
-        // Load semantic skill defined with prompt templates
-        string folder = RepoFiles.SampleSkillsPath();
+        // Load semantic plugin defined with prompt templates
+        string folder = RepoFiles.SamplePluginsPath();
 
-        kernel.ImportPlugin(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
-        var qaSkill = kernel.ImportSemanticPluginFromDirectory(
+        var qaPlugin = kernel.ImportSemanticFunctionsFromDirectory(
             folder,
-            "QASkill");
+            "QAPlugin");
 
         var question = "How popular is Polly library?";
 
         InfoLogger.Logger.LogInformation("Question: {0}", question);
         // To see the retry policy in play, you can set the OpenAI.ApiKey to an invalid value
-        var answer = await kernel.RunAsync(question, qaSkill["Question"]);
-        InfoLogger.Logger.LogInformation("Answer: {0}", answer);
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            var answer = await kernel.RunAsync(question, qaPlugin["Question"]);
+            InfoLogger.Logger.LogInformation("Answer: {0}", answer.GetValue<string>());
+        }
+        catch (Exception ex)
+        {
+            InfoLogger.Logger.LogInformation("Error: {0}", ex.Message);
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     // Basic custom retry handler factory
@@ -132,11 +141,17 @@ public static class Example08_RetryHandler
     // Basic custom empty retry handler
     public sealed class MyCustomHandler : DelegatingHandler
     {
+        public MyCustomHandler(ILoggerFactory loggerFactory)
+        {
+        }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // Your custom http handling implementation
-
-            throw new NotImplementedException();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("My custom bad request override")
+            });
         }
     }
 

@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,9 +30,15 @@ internal sealed class RestApiOperationRunner
     private readonly Dictionary<string, HttpContentFactory> _payloadFactoryByMediaType;
 
     /// <summary>
-    /// Factory for creating builders to construct REST API operation components, such as path, query string, payload, etc.
+    /// A dictionary containing the content type as the key and the corresponding content serializer as the value.
     /// </summary>
-    private readonly IOperationComponentBuilderFactory _componentBuilderFactory;
+    private static readonly Dictionary<string, HttpResponseContentSerializer> s_serializerByContentType = new()
+    {
+        { "image", async (content) => await content.ReadAsByteArrayAndTranslateExceptionAsync().ConfigureAwait(false) },
+        { "text", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false) },
+        { "application/json", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)},
+        { "application/xml", async (content) => await content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false)}
+    };
 
     /// <summary>
     /// An instance of the HttpClient class.
@@ -64,7 +70,6 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
-    /// <param name="componentBuilderFactory">Factory for creating builders to construct REST API operation components, such as path, query string, payload, etc...</param>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
     /// <param name="authCallback">Optional callback for adding auth data to the API requests.</param>
     /// <param name="userAgent">Optional request-header field containing information about the user agent originating the request.</param>
@@ -74,14 +79,12 @@ internal sealed class RestApiOperationRunner
     /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
     public RestApiOperationRunner(
-        IOperationComponentBuilderFactory componentBuilderFactory,
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
         string? userAgent = null,
         bool enableDynamicPayload = false,
         bool enablePayloadNamespacing = false)
     {
-        this._componentBuilderFactory = componentBuilderFactory;
         this._httpClient = httpClient;
         this._userAgent = userAgent ?? Telemetry.HttpUserAgent;
         this._enableDynamicPayload = enableDynamicPayload;
@@ -112,7 +115,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The task execution result.</returns>
-    public Task<JsonNode?> RunAsync(
+    public Task<RestApiOperationResponse> RunAsync(
         RestApiOperation operation,
         IDictionary<string, string> arguments,
         RestApiOperationRunOptions? options = null,
@@ -138,7 +141,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
-    private async Task<JsonNode?> SendAsync(
+    private async Task<RestApiOperationResponse> SendAsync(
         Uri url,
         HttpMethod method,
         IDictionary<string, string>? headers = null,
@@ -168,14 +171,43 @@ internal sealed class RestApiOperationRunner
 
         using var responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
-        var content = await responseMessage.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
+        return await SerializeResponseContentAsync(responseMessage.Content).ConfigureAwait(false);
+    }
 
-        // First iteration allowing to associate additional metadata with the returned content.
-        var result = new RestApiOperationResponse(
-            content,
-            responseMessage.Content.Headers.ContentType.ToString());
+    /// <summary>
+    /// Serializes the response content of an HTTP request.
+    /// </summary>
+    /// <param name="content">The HttpContent object containing the response content to be serialized.</param>
+    /// <returns>The serialized content.</returns>
+    private static async Task<RestApiOperationResponse> SerializeResponseContentAsync(HttpContent content)
+    {
+        var contentType = content.Headers.ContentType;
 
-        return JsonSerializer.SerializeToNode(result);
+        var mediaType = contentType.MediaType;
+
+        // Obtain the content serializer by media type (e.g., text/plain, application/json, image/jpg)  
+        if (!s_serializerByContentType.TryGetValue(mediaType, out var serializer))
+        {
+            // Split the media type into a primary-type and a sub-type  
+            var mediaTypeParts = mediaType.Split('/');
+            if (mediaTypeParts.Length != 2)
+            {
+                throw new SKException($"The string `{mediaType}` is not a valid media type.");
+            }
+
+            var primaryMediaType = mediaTypeParts.First();
+
+            // Try to obtain the content serializer by the primary type (e.g., text, application, image)  
+            if (!s_serializerByContentType.TryGetValue(primaryMediaType, out serializer))
+            {
+                throw new SKException($"The content type `{mediaType}` is not supported.");
+            }
+        }
+
+        // Serialize response content and return it  
+        var serializedContent = await serializer.Invoke(content).ConfigureAwait(false);
+
+        return new RestApiOperationResponse(serializedContent, contentType.ToString());
     }
 
     /// <summary>
@@ -219,7 +251,7 @@ internal sealed class RestApiOperationRunner
     private HttpContent BuildJsonPayload(RestApiOperationPayload? payloadMetadata, IDictionary<string, string> arguments)
     {
         //Build operation payload dynamically
-        if (this._enableDynamicPayload is true)
+        if (this._enableDynamicPayload)
         {
             if (payloadMetadata == null)
             {
@@ -353,7 +385,7 @@ internal sealed class RestApiOperationRunner
     /// <returns>The argument name for the payload property.</returns>
     private string GetArgumentNameForPayload(string propertyName, string? propertyNamespace)
     {
-        if (this._enablePayloadNamespacing is false)
+        if (!this._enablePayloadNamespacing)
         {
             return propertyName;
         }
@@ -375,9 +407,7 @@ internal sealed class RestApiOperationRunner
 
         var urlBuilder = new UriBuilder(url);
 
-        var queryStringBuilder = this._componentBuilderFactory.CreateQueryStringBuilder();
-
-        urlBuilder.Query = queryStringBuilder.Build(operation, arguments);
+        urlBuilder.Query = operation.BuildQueryString(arguments);
 
         return urlBuilder.Uri;
     }

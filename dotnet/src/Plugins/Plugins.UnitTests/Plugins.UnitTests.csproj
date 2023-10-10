@@ -26,11 +26,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins.Document\Plugins.Document.csproj" />
     <ProjectReference Include="..\Plugins.MsGraph\Plugins.MsGraph.csproj" />
     <ProjectReference Include="..\Plugins.Web\Plugins.Web.csproj" />
+    <ProjectReference Include="..\Plugins.Memory\Plugins.Memory.csproj" />
   </ItemGroup>
 
 </Project>

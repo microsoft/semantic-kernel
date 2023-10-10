@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SemanticKernel\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\src\Functions\Functions.Semantic\Functions.Semantic.csproj" />
+    <ProjectReference Include="..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
