@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// MathPlugin provides a set of functions to make Math calculations.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("math", new MathPlugin());
+/// Usage: kernel.ImportFunctions(new MathPlugin(), "math");
 /// Examples:
 /// {{math.Add}}         => Returns the sum of FirstNumber and SecondNumber (provided in the SKContext)
 /// </example>

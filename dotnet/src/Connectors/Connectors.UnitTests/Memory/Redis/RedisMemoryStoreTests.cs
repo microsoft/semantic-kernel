@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Connectors.Memory.Redis;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
@@ -906,9 +906,7 @@ public class RedisMemoryStoreTests
 
         foreach (var record in records)
         {
-            double similarity = compareEmbedding
-                .Span
-                .CosineSimilarity(record.Embedding.Span);
+            double similarity = TensorPrimitives.CosineSimilarity(compareEmbedding.Span, record.Embedding.Span);
             if (similarity >= threshold)
             {
                 embeddings.Add(new(record, similarity));

@@ -77,7 +77,7 @@ public static class Example52_ApimAuth
             "I have no homework",
             funFunctions["Excuses"]
         );
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         httpClient.Dispose();
     }
