@@ -253,10 +253,7 @@ public static class KernelAIPluginExtensions
     {
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
 
-        if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
-        {
-            requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
-        }
+        requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters?.UserAgent ?? Telemetry.HttpUserAgent));
 
         using var response = await httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
