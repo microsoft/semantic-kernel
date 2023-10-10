@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 import json
-import os
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
@@ -202,23 +201,40 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                                        min_relevance_score: float, with_embeddings: bool) -> List[
         Tuple[MemoryRecord, float]]:
         pipeline = [
-            {"$search": {"cosmosSearch": {"vector": embedding.tolist(), "path": "embedding", "k": limit}}}
+            {
+                "$search": {
+                    "cosmosSearch": {
+                        "vector": embedding.tolist(),
+                        "path": "embedding",
+                        "k": limit},
+                    "returnStoredSource": True}
+            },
+            {
+                "$project": {
+                    "similarityScore": {
+                        "$meta": "searchScore"
+                    },
+                    "document": "$$ROOT"
+                }
+            }
         ]
         nearest_results = []
         # Perform vector search
         for aggResult in self.collection.aggregate(pipeline):
-            # TODO: Add check for search score is not less than min_relevance_score (once it can ve satisfied)
             result = MemoryRecord.local_record(
                 id=aggResult["_id"],
-                embedding=np.array(aggResult["embedding"])
+                embedding=np.array(aggResult["document"]["embedding"])
                 if with_embeddings
                 else np.array([]),
-                text=aggResult["text"],
-                description=aggResult["description"],
-                additional_metadata=aggResult["metadata"],
-                timestamp=aggResult["timestamp"]
+                text=aggResult["document"]["text"],
+                description=aggResult["document"]["description"],
+                additional_metadata=aggResult["document"]["metadata"],
+                timestamp=aggResult["document"]["timestamp"]
             )
-            nearest_results.append((result, 1))  # TODO: Need to fill up score once there's meta queries.
+            if aggResult["similarityScore"] < min_relevance_score:
+                continue
+            else:
+                nearest_results.append((result, aggResult["similarityScore"]))
         return nearest_results
 
     async def get_nearest_match_core(self, collection_name: str, embedding: ndarray, min_relevance_score: float,
