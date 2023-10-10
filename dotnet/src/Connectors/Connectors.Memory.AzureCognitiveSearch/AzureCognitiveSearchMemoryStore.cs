@@ -275,7 +275,9 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             throw new SKException("Invalid embedding size: the value must be greater than zero.");
         }
 
-        var configName = "searchConfig";
+        const string ProfileName = "searchConfig";
+        const string AlgorithmName = "searchAlgorithm";
+
         var newIndex = new SearchIndex(indexName)
         {
             Fields = new List<SearchField>
@@ -285,7 +287,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
                 {
                     IsSearchable = true,
                     VectorSearchDimensions = embeddingSize,
-                    VectorSearchProfile = configName
+                    VectorSearchProfile = ProfileName,
                 },
                 new SearchField(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
@@ -297,11 +299,12 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             {
                 Algorithms =
                 {
-                    new HnswVectorSearchAlgorithmConfiguration(configName)
+                    new HnswVectorSearchAlgorithmConfiguration(AlgorithmName)
                     {
                         Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
                     }
-                }
+                },
+                Profiles = { new VectorSearchProfile(ProfileName, AlgorithmName) }
             }
         };
 
