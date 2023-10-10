@@ -2,7 +2,6 @@
 
 using System.ComponentModel;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
@@ -10,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// WaitPlugin provides a set of functions to wait before making the rest of operations.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("wait", new WaitPlugin());
+/// Usage: kernel.ImportFunctions(new WaitPlugin(), "wait");
 /// Examples:
 /// {{wait.seconds 10}}         => Wait 10 seconds
 /// </example>

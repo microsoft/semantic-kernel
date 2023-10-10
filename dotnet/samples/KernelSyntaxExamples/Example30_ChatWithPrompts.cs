@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 using Resources;
 
@@ -36,11 +36,11 @@ using Resources;
  * TLDR: how to render a prompt:
  *
  *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
- *      ... import skills and functions ...
+ *      ... import plugins and functions ...
  *      var context = kernel.CreateNewContext();
  *      ... set variables ...
  *
- *      var promptRenderer = new PromptTemplateEngine();
+ *      var promptRenderer = new BasicPromptTemplateEngine();
  *      string renderedPrompt = await promptRenderer.RenderAsync("...prompt template...", context);
  */
 
@@ -67,12 +67,12 @@ public static class Example30_ChatWithPrompts
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
-        // As an example, we import the time skill, which is used in system prompt to read the current date.
+        // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         // We need a kernel context to store some information to pass to the prompts and the list
-        // of available skills needed to render prompt templates.
+        // of available plugins needed to render prompt templates.
         var context = kernel.CreateNewContext();
 
         // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
@@ -87,7 +87,7 @@ public static class Example30_ChatWithPrompts
         // Instantiate the prompt renderer, which we will use to turn prompt templates
         // into strings, that we will store into a Chat history object, which is then sent
         // to the Chat Model.
-        var promptRenderer = new PromptTemplateEngine();
+        var promptRenderer = new BasicPromptTemplateEngine();
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.

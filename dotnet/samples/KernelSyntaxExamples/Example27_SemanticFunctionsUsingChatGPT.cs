@@ -8,7 +8,6 @@ using RepoUtils;
 /**
  * This example shows how to use GPT3.5 Chat model for prompts and semantic functions.
  */
-
 // ReSharper disable once InconsistentNaming
 public static class Example27_SemanticFunctionsUsingChatGPT
 {
@@ -18,14 +17,14 @@ public static class Example27_SemanticFunctionsUsingChatGPT
 
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
-            .WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, "https://....openai.azure.com/", "...API KEY...")
+            .WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         var func = kernel.CreateSemanticFunction(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.");
 
-        var result = await func.InvokeAsync("Jupiter");
-        Console.WriteLine(result);
+        var result = await func.InvokeAsync("Jupiter", kernel);
+        Console.WriteLine(result.GetValue<string>());
 
         /*
         Output:

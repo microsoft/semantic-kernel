@@ -4,13 +4,12 @@ using System.ComponentModel;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
-/// Organizational Hierarchy skill.
+/// Organizational Hierarchy plugin.
 /// Provides methods to get information about the organization hierarchy, such as direct reports and manager details.
 /// </summary>
 public sealed class OrganizationHierarchyPlugin

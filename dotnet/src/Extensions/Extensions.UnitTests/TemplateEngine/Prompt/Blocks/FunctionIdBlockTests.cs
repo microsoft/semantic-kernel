@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt.Blocks;
@@ -85,8 +85,8 @@ public class FunctionIdBlockTests
     {
         // Arrange
         var target1 = new FunctionIdBlock("functionName");
-        var target2 = new FunctionIdBlock("skillName.functionName");
-        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.skillName.functionName"));
+        var target2 = new FunctionIdBlock("pluginName.functionName");
+        Assert.Throws<SKException>(() => new FunctionIdBlock("foo.pluginName.functionName"));
 
         // Act + Assert
         Assert.True(target1.IsValid(out _));

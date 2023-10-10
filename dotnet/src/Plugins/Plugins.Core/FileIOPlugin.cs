@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
@@ -13,7 +12,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// Read and write from a file.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("file", new FileIOPlugin());
+/// Usage: kernel.ImportFunctions(new FileIOPlugin(), "file");
 /// Examples:
 /// {{file.readAsync $path }} => "hello world"
 /// {{file.writeAsync}}

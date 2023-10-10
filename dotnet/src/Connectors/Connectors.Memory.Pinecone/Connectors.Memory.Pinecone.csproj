@@ -14,7 +14,7 @@
     <PropertyGroup>
         <!-- NuGet Package Settings -->
         <Title>Semantic Kernel - Pinecone Connector</Title>
-        <Description>Pinecone connector for Semantic Kernel skills and semantic memory</Description>
+        <Description>Pinecone connector for Semantic Kernel plugins and semantic memory</Description>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,7 +22,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\SemanticKernel\SemanticKernel.csproj" />
+        <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
+        <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     </ItemGroup>
 
 </Project>

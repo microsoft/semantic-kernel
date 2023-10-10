@@ -27,9 +27,7 @@ public static class Example04_CombineLLMPromptsAndNativeCode
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, openAIApiKey)
             .Build();
 
-        // Load native skill
         string bingApiKey = TestConfiguration.Bing.ApiKey;
-
         if (bingApiKey == null)
         {
             Console.WriteLine("Bing credentials not found. Skipping example.");
@@ -38,36 +36,36 @@ public static class Example04_CombineLLMPromptsAndNativeCode
 
         var bingConnector = new BingConnector(bingApiKey);
         var bing = new WebSearchEnginePlugin(bingConnector);
-        var search = kernel.ImportSkill(bing, "bing");
+        var searchFunctions = kernel.ImportFunctions(bing, "bing");
 
-        // Load semantic skill defined with prompt templates
-        string folder = RepoFiles.SampleSkillsPath();
+        // Load semantic plugins defined with prompt templates
+        string folder = RepoFiles.SamplePluginsPath();
 
-        var sumSkill = kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill");
+        var summarizeFunctions = kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
         // Run
         var ask = "What's the tallest building in South America";
 
         var result1 = await kernel.RunAsync(
             ask,
-            search["Search"]
+            searchFunctions["Search"]
         );
 
         var result2 = await kernel.RunAsync(
             ask,
-            search["Search"],
-            sumSkill["Summarize"]
+            searchFunctions["Search"],
+            summarizeFunctions["Summarize"]
         );
 
         var result3 = await kernel.RunAsync(
             ask,
-            search["Search"],
-            sumSkill["Notegen"]
+            searchFunctions["Search"],
+            summarizeFunctions["Notegen"]
         );
 
         Console.WriteLine(ask + "\n");
-        Console.WriteLine("Bing Answer: " + result1 + "\n");
-        Console.WriteLine("Summary: " + result2 + "\n");
-        Console.WriteLine("Notes: " + result3 + "\n");
+        Console.WriteLine("Bing Answer: " + result1.GetValue<string>() + "\n");
+        Console.WriteLine("Summary: " + result2.GetValue<string>() + "\n");
+        Console.WriteLine("Notes: " + result3.GetValue<string>() + "\n");
     }
 }

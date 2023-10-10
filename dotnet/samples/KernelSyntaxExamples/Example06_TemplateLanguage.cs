@@ -3,8 +3,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -34,9 +35,9 @@ public static class Example06_TemplateLanguage
                 apiKey: openAIApiKey)
             .Build();
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
+        // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "time.*"
-        kernel.ImportSkill(new TimePlugin(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         // Semantic Function invoking time.Date and time.Time native functions
         const string FunctionDefinition = @"
@@ -50,17 +51,17 @@ Is it weekend time (weekend/not weekend)?
 
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
-        var promptRenderer = new PromptTemplateEngine();
+        var promptRenderer = new BasicPromptTemplateEngine();
         var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, kernel.CreateNewContext());
         Console.WriteLine(renderedPrompt);
 
         // Run the prompt / semantic function
-        var kindOfDay = kernel.CreateSemanticFunction(FunctionDefinition, maxTokens: 150);
+        var kindOfDay = kernel.CreateSemanticFunction(FunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
 
         // Show the result
         Console.WriteLine("--- Semantic Function result");
         var result = await kernel.RunAsync(kindOfDay);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 

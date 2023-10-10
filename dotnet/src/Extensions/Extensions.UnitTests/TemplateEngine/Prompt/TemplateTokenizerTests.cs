@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 using Xunit;
 
 namespace SemanticKernel.Extensions.UnitTests.TemplateEngine.Prompt;
@@ -36,7 +36,7 @@ public class TemplateTokenizerTests
         var blocks = this._target.Tokenize(text);
 
         // Assert
-        Assert.Equal(1, blocks.Count);
+        Assert.Single(blocks);
         Assert.Equal(type, blocks[0].Type);
     }
 
@@ -67,7 +67,7 @@ public class TemplateTokenizerTests
         var blocks = this._target.Tokenize(text);
 
         // Assert
-        Assert.Equal(1, blocks.Count);
+        Assert.Single(blocks);
         Assert.Equal(type, blocks[0].Type);
     }
 
@@ -98,9 +98,9 @@ public class TemplateTokenizerTests
 
         // Assert - Count
         Assert.Equal(2, blocks1.Count);
-        Assert.Equal(1, blocks2.Count);
-        Assert.Equal(1, blocks3.Count);
-        Assert.Equal(1, blocks4.Count);
+        Assert.Single(blocks2);
+        Assert.Single(blocks3);
+        Assert.Single(blocks4);
 
         // Assert - Type
         Assert.Equal(BlockTypes.Text, blocks1[0].Type);
@@ -183,7 +183,7 @@ public class TemplateTokenizerTests
         var blocks = this._target.Tokenize(template);
 
         // Assert
-        Assert.Equal(1, blocks.Count);
+        Assert.Single(blocks);
         Assert.Equal(BlockTypes.Code, blocks[0].Type);
         Assert.Equal(template[2..^2].Trim(), blocks[0].Content);
     }
@@ -257,6 +257,6 @@ public class TemplateTokenizerTests
             // Act
             this._target.Tokenize(template);
         });
-        Assert.Equal(ex.Message, "Code tokenizer returned an incorrect first token type NamedArg");
+        Assert.Equal("Code tokenizer returned an incorrect first token type NamedArg", ex.Message);
     }
 }

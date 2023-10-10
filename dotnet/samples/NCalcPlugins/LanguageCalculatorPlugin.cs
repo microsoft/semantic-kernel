@@ -1,32 +1,32 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using NCalc;
 
 namespace NCalcPlugins;
 
 /// <summary>
-/// Skill that enables the comprehension of mathematical problems presented in English / natural-language text, followed by the execution of the necessary calculations to solve those problems.
+/// Plugin that enables the comprehension of mathematical problems presented in English / natural-language text, followed by the execution of the necessary calculations to solve those problems.
 /// </summary>
 /// <example>
 /// usage :
 /// var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
 /// var question = "what is the square root of 625";
-/// var calculatorSkill = kernel.ImportSkill(new LanguageCalculatorPlugin(kernel));
-/// var summary = await kernel.RunAsync(questions, calculatorSkill["Calculate"]);
+/// var calculatorPlugin = kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel));
+/// var summary = await kernel.RunAsync(questions, calculatorPlugin["Calculate"]);
 /// Console.WriteLine("Result :");
 /// Console.WriteLine(summary.Result);
 /// </example>
 public class LanguageCalculatorPlugin
 {
     private readonly ISKFunction _mathTranslator;
-
     private const string MathTranslatorPrompt =
         @"Translate a math problem into a expression that can be executed using .net NCalc library. Use the output of running this code to answer the question.
 Available functions: Abs, Acos, Asin, Atan, Ceiling, Cos, Exp, Floor, IEEERemainder, Log, Log10, Max, Min, Pow, Round, Sign, Sin, Sqrt, Tan, and Truncate. in and if are also supported.
@@ -69,19 +69,25 @@ Question: {{ $input }}
     {
         this._mathTranslator = kernel.CreateSemanticFunction(
             MathTranslatorPrompt,
-            skillName: nameof(LanguageCalculatorPlugin),
+            pluginName: nameof(LanguageCalculatorPlugin),
             functionName: "TranslateMathProblem",
             description: "Used by 'Calculator' function.",
-            maxTokens: 256,
-            temperature: 0.0,
-            topP: 1);
+            requestSettings: new AIRequestSettings()
+            {
+                ExtensionData = new Dictionary<string, object>()
+                {
+                    { "MaxTokens", 256 },
+                    { "Temperature", 0.0 },
+                    { "TopP", 1 },
+                }
+            });
     }
 
     /// <summary>
     /// Calculates the result of a non-trivial math expression.
     /// </summary>
     /// <param name="input">A valid mathematical expression that could be executed by a calculator capable of more advanced math functions like sine/cosine/floor.</param>
-    /// <param name="context">The context for the skill execution.</param>
+    /// <param name="context">The context for the plugin execution.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     [SKFunction, SKName("Calculator"), Description("Useful for getting the result of a non-trivial math expression.")]
     public async Task<string> CalculateAsync(
@@ -89,11 +95,12 @@ Question: {{ $input }}
         string input,
         SKContext context)
     {
-        SKContext answer;
+        string answer;
 
         try
         {
-            answer = await this._mathTranslator.InvokeAsync(input).ConfigureAwait(false);
+            var result = await context.Runner.RunAsync(this._mathTranslator, new ContextVariables(input)).ConfigureAwait(false);
+            answer = result.GetValue<string>() ?? string.Empty;
         }
         catch (Exception ex)
         {
@@ -102,14 +109,14 @@ Question: {{ $input }}
 
         string pattern = @"```\s*(.*?)\s*```";
 
-        Match match = Regex.Match(answer.Result, pattern, RegexOptions.Singleline);
+        Match match = Regex.Match(answer, pattern, RegexOptions.Singleline);
         if (match.Success)
         {
             var result = EvaluateMathExpression(match);
             return result;
         }
 
-        throw new InvalidOperationException($"Input value [{input}] could not be understood, received following {answer.Result}");
+        throw new InvalidOperationException($"Input value [{input}] could not be understood, received following {answer}");
     }
 
     private static string EvaluateMathExpression(Match match)

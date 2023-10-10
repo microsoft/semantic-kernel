@@ -9,14 +9,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SkillDefinition;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
-/// Task list skill (e.g. Microsoft To-Do)
+/// Task list plugin (e.g. Microsoft To-Do)
 /// </summary>
 public sealed class TaskListPlugin
 {

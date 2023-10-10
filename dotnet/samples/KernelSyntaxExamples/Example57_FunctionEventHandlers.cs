@@ -6,23 +6,25 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Events;
+using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
 public static class Example57_FunctionEventHandlers
 {
-    private static string? openAIModelId;
-    private static string? openAIApiKey;
+    private static string? s_openAIModelId;
+    private static string? s_openAIApiKey;
 
     public static async Task RunAsync()
     {
         Console.WriteLine("\n======== Using Function Execution Handlers ========\n");
 
-        openAIModelId = TestConfiguration.OpenAI.ChatModelId;
-        openAIApiKey = TestConfiguration.OpenAI.ApiKey;
+        s_openAIModelId = TestConfiguration.OpenAI.ChatModelId;
+        s_openAIApiKey = TestConfiguration.OpenAI.ApiKey;
 
-        if (openAIModelId == null || openAIApiKey == null)
+        if (s_openAIModelId == null || s_openAIApiKey == null)
         {
             Console.WriteLine("OpenAI credentials not found. Skipping example.");
             return;
@@ -48,34 +50,33 @@ public static class Example57_FunctionEventHandlers
         IKernel kernel = new KernelBuilder()
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             .WithOpenAIChatCompletionService(
-                modelId: openAIModelId!,
-                apiKey: openAIApiKey!)
+                modelId: s_openAIModelId!,
+                apiKey: s_openAIApiKey!)
             .Build();
 
-        const string functionPrompt = "Write a random paragraph about: {{$input}}.";
+        const string FunctionPrompt = "Write a random paragraph about: {{$input}}.";
 
         var excuseFunction = kernel.CreateSemanticFunction(
-            functionPrompt,
-            skillName: "MySkill",
+            FunctionPrompt,
+            pluginName: "MyPlugin",
             functionName: "Excuse",
-            maxTokens: 100,
-            temperature: 0.4,
-            topP: 1);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyPreHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Triggered");
         }
 
         void MyRemovedPreExecutionHandler(object? sender, FunctionInvokingEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Pre Execution Handler - Should not trigger");
             e.Cancel();
         }
 
         void MyPostExecutionHandler(object? sender, FunctionInvokedEventArgs e)
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {e.SKContext.ModelResults.First().GetOpenAIChatResult().Usage.TotalTokens}");
+            var modelResults = e.Metadata["ModelResults"] as IReadOnlyCollection<ModelResult>;
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : Post Execution Handler - Total Tokens: {modelResults?.First().GetOpenAIChatResult().Usage.TotalTokens}");
         }
 
         kernel.FunctionInvoking += MyPreHandler;
@@ -85,9 +86,9 @@ public static class Example57_FunctionEventHandlers
         kernel.FunctionInvoking += MyRemovedPreExecutionHandler;
         kernel.FunctionInvoking -= MyRemovedPreExecutionHandler;
 
-        const string input = "I missed the F1 final race";
-        var result = await kernel.RunAsync(input, excuseFunction);
-        Console.WriteLine($"Function Result: {result}");
+        const string Input = "I missed the F1 final race";
+        var result = await kernel.RunAsync(Input, excuseFunction);
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     private static async Task ChangingResultAsync()
@@ -97,19 +98,17 @@ public static class Example57_FunctionEventHandlers
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
-               modelId: openAIModelId!,
-               apiKey: openAIApiKey!)
+               modelId: s_openAIModelId!,
+               apiKey: s_openAIApiKey!)
            .Build();
 
-        const string functionPrompt = "Write a paragraph about Handlers.";
+        const string FunctionPrompt = "Write a paragraph about Handlers.";
 
         var writerFunction = kernel.CreateSemanticFunction(
-            functionPrompt,
-            skillName: "MySkill",
+            FunctionPrompt,
+            pluginName: "MyPlugin",
             functionName: "Writer",
-            maxTokens: 100,
-            temperature: 0.4,
-            topP: 1);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         void MyChangeDataHandler(object? sender, FunctionInvokedEventArgs e)
         {
@@ -125,7 +124,7 @@ public static class Example57_FunctionEventHandlers
 
         var result = await kernel.RunAsync(writerFunction);
 
-        Console.WriteLine($"Function Result: {result}");
+        Console.WriteLine($"Function Result: {result.GetValue<string>()}");
     }
 
     private static async Task BeforeInvokeCancellationAsync()
@@ -135,24 +134,22 @@ public static class Example57_FunctionEventHandlers
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
-               modelId: openAIModelId!,
-               apiKey: openAIApiKey!)
+               modelId: s_openAIModelId!,
+               apiKey: s_openAIApiKey!)
            .Build();
 
-        const string functionPrompt = "Write a paragraph about: Cancellation.";
+        const string FunctionPrompt = "Write a paragraph about: Cancellation.";
 
         var writerFunction = kernel.CreateSemanticFunction(
-            functionPrompt,
-            skillName: "MySkill",
+            FunctionPrompt,
+            pluginName: "MyPlugin",
             functionName: "Writer",
-            maxTokens: 1000,
-            temperature: 1,
-            topP: 0.5);
+            requestSettings: new OpenAIRequestSettings() { MaxTokens = 1000, Temperature = 1, TopP = 0.5 });
 
         // Adding new inline handler to cancel/prevent function execution
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
-            Console.WriteLine($"{e.FunctionView.SkillName}.{e.FunctionView.Name} : FunctionInvoking - Cancelling all subsequent invocations");
+            Console.WriteLine($"{e.FunctionView.PluginName}.{e.FunctionView.Name} : FunctionInvoking - Cancelling all subsequent invocations");
             e.Cancel();
         };
 
@@ -174,8 +171,8 @@ public static class Example57_FunctionEventHandlers
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
-               modelId: openAIModelId!,
-               apiKey: openAIApiKey!)
+               modelId: s_openAIModelId!,
+               apiKey: s_openAIApiKey!)
            .Build();
 
         int functionInvokingCount = 0;
@@ -209,16 +206,16 @@ public static class Example57_FunctionEventHandlers
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
-               modelId: openAIModelId!,
-               apiKey: openAIApiKey!)
+               modelId: s_openAIModelId!,
+               apiKey: s_openAIApiKey!)
            .Build();
 
         var skipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Skipping",
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "SkipMe");
 
         var dontSkipMeFunction = kernel.CreateSemanticFunction("Write a paragraph about Handlers",
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "DontSkipMe");
 
         kernel.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
@@ -238,11 +235,11 @@ public static class Example57_FunctionEventHandlers
             Console.WriteLine($"Only not skipped functions will trigger invoked event - Function name: {e.FunctionView.Name}");
         };
 
-        var context = await kernel.RunAsync(
+        var result = await kernel.RunAsync(
             skipMeFunction,
             dontSkipMeFunction);
 
-        Console.WriteLine($"Final result: {context.Result}");
+        Console.WriteLine($"Final result: {result.GetValue<string>()}");
     }
 
     private static async Task RepeatFunctionsAsync()
@@ -252,14 +249,14 @@ public static class Example57_FunctionEventHandlers
         IKernel kernel = new KernelBuilder()
            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
            .WithOpenAIChatCompletionService(
-               modelId: openAIModelId!,
-               apiKey: openAIApiKey!)
+               modelId: s_openAIModelId!,
+               apiKey: s_openAIApiKey!)
            .Build();
 
         var repeatSubjects = new Queue<string>(new[] { "Life", "Work", "Leisure" });
 
         var repeatMeFunction = kernel.CreateSemanticFunction("Write a sentence about {{$input}}",
-            skillName: "MySkill",
+            pluginName: "MyPlugin",
             functionName: "RepeatMe");
 
         var repeatTimes = 0;
@@ -283,6 +280,6 @@ public static class Example57_FunctionEventHandlers
             }
         };
 
-        var context = await kernel.RunAsync("Repetition", repeatMeFunction);
+        await kernel.RunAsync("Repetition", repeatMeFunction);
     }
 }

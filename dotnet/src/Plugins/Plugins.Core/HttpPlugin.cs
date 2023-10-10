@@ -5,15 +5,14 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
 /// <summary>
-/// A skill that provides HTTP functionality.
+/// A plugin that provides HTTP functionality.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("http", new HttpPlugin());
+/// Usage: kernel.ImportFunctions(new HttpPlugin(), "http");
 /// Examples:
 /// SKContext.Variables["url"] = "https://www.bing.com"
 /// {{http.getAsync $url}}
@@ -39,7 +38,7 @@ public sealed class HttpPlugin
     /// </summary>
     /// <param name="client">The HTTP client to use.</param>
     /// <remarks>
-    /// <see cref="HttpPlugin"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the skill is disposed.
+    /// <see cref="HttpPlugin"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the plugin is disposed.
     /// </remarks>
     public HttpPlugin(HttpClient client) =>
         this._client = client;

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -17,11 +17,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class SKContext
 {
     /// <summary>
-    /// The culture currently associated with this context.
-    /// </summary>
-    private CultureInfo _culture;
-
-    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
@@ -31,7 +26,8 @@ public sealed class SKContext
     /// When a prompt is processed, aka the current data after any model results processing occurred.
     /// (One prompt can have multiple results).
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
+    [Obsolete($"ModelResults are now part of {nameof(FunctionResult.Metadata)} property. Use 'ModelResults' key or available extension methods to get model results.")]
+    public IReadOnlyCollection<ModelResult> ModelResults => Array.Empty<ModelResult>();
 
     /// <summary>
     /// The culture currently associated with this context.
@@ -48,9 +44,9 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Read only skills collection
+    /// Read only functions collection
     /// </summary>
-    public IReadOnlySkillCollection Skills { get; }
+    public IReadOnlyFunctionCollection Functions { get; }
 
     /// <summary>
     /// App logger
@@ -58,20 +54,32 @@ public sealed class SKContext
     public ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
+    /// Executes functions using the current resources loaded in the context
+    /// </summary>
+    public IFunctionRunner Runner { get; }
+
+    /// <summary>
     /// Constructor for the context.
     /// </summary>
+    /// <param name="functionRunner">Function runner reference</param>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public SKContext(
+    /// <param name="functions">Functions to include in context.</param>
+    /// <param name="loggerFactory">Logger factory to be used in context</param>
+    /// <param name="culture">Culture related to the context</param>
+    internal SKContext(
+        IFunctionRunner functionRunner,
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null,
-        ILoggerFactory? loggerFactory = null)
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null)
     {
+        Verify.NotNull(functionRunner, nameof(functionRunner));
+
+        this.Runner = functionRunner;
         this.Variables = variables ?? new();
-        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
+        this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
         this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._culture = CultureInfo.CurrentCulture;
+        this._culture = culture ?? CultureInfo.CurrentCulture;
     }
 
     /// <summary>
@@ -84,20 +92,34 @@ public sealed class SKContext
     }
 
     /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
-    /// <returns>A new context copied from the current one</returns>
+    /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
+        => this.Clone(null, null);
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
+    /// and optionally allows overriding the variables and functions.
+    /// </summary>
+    /// <param name="variables">Override the variables with the provided ones</param>
+    /// <param name="functions">Override the functions with the provided ones</param>
+    /// <returns>A new context cloned from the current one</returns>
+    public SKContext Clone(ContextVariables? variables, IReadOnlyFunctionCollection? functions)
     {
         return new SKContext(
-            variables: this.Variables.Clone(),
-            skills: this.Skills,
-            loggerFactory: this.LoggerFactory)
-        {
-            Culture = this.Culture,
-        };
+            this.Runner,
+            variables ?? this.Variables.Clone(),
+            functions ?? this.Functions,
+            this.LoggerFactory,
+            this.Culture);
     }
+
+    /// <summary>
+    /// The culture currently associated with this context.
+    /// </summary>
+    private CultureInfo _culture;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
@@ -106,10 +128,10 @@ public sealed class SKContext
         {
             string display = this.Variables.DebuggerDisplay;
 
-            if (this.Skills is IReadOnlySkillCollection skills)
+            if (this.Functions is IReadOnlyFunctionCollection functions)
             {
-                var view = skills.GetFunctionsView();
-                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
+                var view = functions.GetFunctionViews();
+                display += $", Functions = {view.Count}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";
