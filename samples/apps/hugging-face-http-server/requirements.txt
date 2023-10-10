@@ -18,7 +18,7 @@ joblib==1.2.0
 MarkupSafe==2.1.1
 numpy==1.22.0
 packaging==21.3
-Pillow==9.3.0
+Pillow==10.0.1
 pycparser==2.21
 pyparsing==3.0.9
 PyYAML==6.0
