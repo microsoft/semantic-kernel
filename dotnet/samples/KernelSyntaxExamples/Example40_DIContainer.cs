@@ -4,13 +4,15 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
+using Microsoft.SemanticKernel.AI.TextCompletion;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.TextCompletion;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Reliability.Basic;
 using Microsoft.SemanticKernel.Services;
 
 using Microsoft.SemanticKernel.TemplateEngine;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 /**
@@ -37,18 +39,18 @@ public static class Example40_DIContainer
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
-        collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
+        collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
 
         //Registering Kernel
         collection.AddTransient<IKernel>((serviceProvider) =>
         {
             return Kernel.Builder
-            .WithLoggerFactory(serviceProvider.GetRequiredService<LoggerFactory>())
-            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
+            .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
+            .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
         });
 
-        //Registering class that uses Kernel to execute a skill
+        //Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
 
         //Creating a service provider for resolving registered services
@@ -73,22 +75,21 @@ public static class Example40_DIContainer
 
         //Registering AI services Kernel is going to use
         var aiServicesCollection = new AIServiceCollection();
-        aiServicesCollection.SetService<IChatCompletion>(() => new AzureChatCompletion(TestConfiguration.OpenAI.ChatModelId,
-                        TestConfiguration.AzureOpenAI.Endpoint,
-                        TestConfiguration.AzureOpenAI.ApiKey));
+        aiServicesCollection.SetService<ITextCompletion>(() => new OpenAITextCompletion(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey));
 
         //Registering Kernel dependencies
         var collection = new ServiceCollection();
-        collection.AddTransient<ILogger>((_) => ConsoleLogger.Logger);
+        collection.AddTransient<ILoggerFactory>((_) => ConsoleLogger.LoggerFactory);
+        collection.AddTransient<IDelegatingHandlerFactory>((_) => BasicHttpRetryHandlerFactory.Instance);
         collection.AddTransient<IFunctionCollection, FunctionCollection>();
-        collection.AddTransient<IPromptTemplateEngine, PromptTemplateEngine>();
+        collection.AddTransient<IPromptTemplateEngine, BasicPromptTemplateEngine>();
         collection.AddTransient<ISemanticTextMemory>((_) => NullMemory.Instance);
         collection.AddTransient<IAIServiceProvider>((_) => aiServicesCollection.Build()); //Registering AI service provider that is used by Kernel to resolve AI services runtime
 
         //Registering Kernel
         collection.AddTransient<IKernel, Kernel>();
 
-        //Registering class that uses Kernel to execute a skill
+        //Registering class that uses Kernel to execute a plugin
         collection.AddTransient<KernelClient>();
 
         //Creating a service provider for resolving registered services
@@ -112,21 +113,21 @@ public static class Example40_DIContainer
         private readonly IKernel _kernel;
         private readonly ILogger _logger;
 
-        public KernelClient(IKernel kernel, ILogger logger)
+        public KernelClient(IKernel kernel, ILoggerFactory loggerFactory)
         {
             this._kernel = kernel;
-            this._logger = logger;
+            this._logger = loggerFactory.CreateLogger(nameof(KernelClient));
         }
 
         public async Task SummarizeAsync(string ask)
         {
-            string folder = RepoFiles.SampleSkillsPath();
+            string folder = RepoFiles.SamplePluginsPath();
 
-            var sumSkill = this._kernel.ImportSemanticPluginFromDirectory(folder, "SummarizeSkill");
+            var summarizeFunctions = this._kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
-            var result = await this._kernel.RunAsync(ask, sumSkill["Summarize"]);
+            var result = await this._kernel.RunAsync(ask, summarizeFunctions["Summarize"]);
 
-            this._logger.LogWarning("Result - {0}", result);
+            this._logger.LogWarning("Result - {0}", result.GetValue<string>());
         }
     }
 }

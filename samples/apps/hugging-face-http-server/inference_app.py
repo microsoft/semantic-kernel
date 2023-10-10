@@ -145,15 +145,17 @@ def process_image_generation_request(request, model):
         print(e)
         return "Sorry, unable to generate images with model {}".format(model)
 
+
 def save_api_key(request):
-    auth_header = request.headers.get('Authorization')
-    header_prefix = 'Bearer '
+    auth_header = request.headers.get("Authorization")
+    header_prefix = "Bearer "
 
     if auth_header and auth_header.startswith(header_prefix):
-        token = auth_header[len(header_prefix):]
+        token = auth_header[len(header_prefix) :]
 
         if token:
             HfFolder.save_token(token)
+
 
 # main driver function
 if __name__ == "__main__":

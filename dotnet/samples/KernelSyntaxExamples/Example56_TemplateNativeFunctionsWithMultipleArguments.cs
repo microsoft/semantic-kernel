@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Plugins.Core;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -21,7 +21,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         string serviceId = TestConfiguration.AzureOpenAI.ServiceId;
         string apiKey = TestConfiguration.AzureOpenAI.ApiKey;
-        string deploymentName = TestConfiguration.AzureOpenAI.DeploymentName;
+        string deploymentName = TestConfiguration.AzureOpenAI.ChatDeploymentName;
         string endpoint = TestConfiguration.AzureOpenAI.Endpoint;
 
         if (serviceId == null || apiKey == null || deploymentName == null || endpoint == null)
@@ -44,9 +44,9 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         var context = kernel.CreateNewContext();
         context.Variables[variableName] = variableValue;
 
-        // Load native skill into the kernel skill collection, sharing its functions with prompt templates
+        // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         // Functions loaded here are available as "text.*"
-        kernel.ImportPlugin(new TextPlugin(), "text");
+        kernel.ImportFunctions(new TextPlugin(), "text");
 
         // Semantic Function invoking text.Concat native function with named arguments input and input2 where input is a string and input2 is set to a variable from context called word2.
         const string FunctionDefinition = @"
@@ -55,7 +55,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
 
         // This allows to see the prompt before it's sent to OpenAI
         Console.WriteLine("--- Rendered Prompt");
-        var promptRenderer = new PromptTemplateEngine();
+        var promptRenderer = new BasicPromptTemplateEngine();
         var renderedPrompt = await promptRenderer.RenderAsync(FunctionDefinition, context);
         Console.WriteLine(renderedPrompt);
 
@@ -65,7 +65,7 @@ public static class Example56_TemplateNativeFunctionsWithMultipleArguments
         // Show the result
         Console.WriteLine("--- Semantic Function result");
         var result = await kernel.RunAsync(context.Variables, haiku);
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT:
 

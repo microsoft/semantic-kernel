@@ -71,11 +71,11 @@ Available meters:
   - `SK.Plan.Execution.ExecutionTotal` - total number of plan executions
   - `SK.Plan.Execution.ExecutionSuccess` - number of successful plan executions
   - `SK.Plan.Execution.ExecutionFailure` - number of failed plan executions
-- _Microsoft.SemanticKernel.SkillDefinition.SKFunction_ - captures metrics for `SKFunction`. List of metrics:
-  - `SK.<SkillName><FunctionName>.ExecutionTime` - function execution time (in milliseconds)
-  - `SK.<SkillName><FunctionName>.ExecutionTotal` - total number of function executions
-  - `SK.<SkillName><FunctionName>.ExecutionSuccess` - number of successful function executions
-  - `SK.<SkillName><FunctionName>.ExecutionFailure` - number of failed function executions
+- _Microsoft.SemanticKernel.SKFunction_ - captures metrics for `SKFunction`. List of metrics:
+  - `SK.<PluginName><FunctionName>.ExecutionTime` - function execution time (in milliseconds)
+  - `SK.<PluginName><FunctionName>.ExecutionTotal` - total number of function executions
+  - `SK.<PluginName><FunctionName>.ExecutionSuccess` - number of successful function executions
+  - `SK.<PluginName><FunctionName>.ExecutionFailure` - number of failed function executions
 - _Microsoft.SemanticKernel.Connectors.AI.OpenAI_ - captures metrics for OpenAI functionality. List of metrics:
   - `SK.Connectors.OpenAI.PromptTokens` - number of prompt tokens used.
   - `SK.Connectors.OpenAI.CompletionTokens` - number of completion tokens used.
@@ -115,7 +115,7 @@ instrument.Meter.Name.StartsWith("Microsoft.SemanticKernel", StringComparison.Or
 It's also possible to subscribe to specific meter. Following condition will allow to subscribe to meter for `SKFunction` only:
 
 ```csharp
-instrument.Meter.Name.Equals("Microsoft.SemanticKernel.SkillDefinition.SKFunction", StringComparison.Ordinal)
+instrument.Meter.Name.Equals("Microsoft.SemanticKernel.SKFunction", StringComparison.Ordinal)
 ```
 
 ## Tracing
@@ -128,7 +128,7 @@ Available activity sources:
 - _Microsoft.SemanticKernel.Planning.Sequential.InstrumentedSequentialPlanner_ - creates activities for `SequentialPlanner`.
 - _Microsoft.SemanticKernel.Planning.Stepwise.StepwisePlanner_ - creates activities for `StepwisePlanner`.
 - _Microsoft.SemanticKernel.Planning.Plan_ - creates activities for `Plan`.
-- _Microsoft.SemanticKernel.SkillDefinition.SKFunction_ - creates activities for `SKFunction`.
+- _Microsoft.SemanticKernel.SKFunction_ - creates activities for `SKFunction`.
 
 ### Examples
 
@@ -152,5 +152,5 @@ activitySource.Name.StartsWith("Microsoft.SemanticKernel", StringComparison.Ordi
 It's also possible to subscribe to specific activity source. Following condition will allow to subscribe to activity source for `SKFunction` only:
 
 ```csharp
-activitySource.Name.Equals("Microsoft.SemanticKernel.SkillDefinition.SKFunction", StringComparison.Ordinal)
+activitySource.Name.Equals("Microsoft.SemanticKernel.SKFunction", StringComparison.Ordinal)
 ```
