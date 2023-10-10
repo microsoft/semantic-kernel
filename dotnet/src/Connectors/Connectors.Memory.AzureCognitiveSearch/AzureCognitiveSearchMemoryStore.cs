@@ -287,7 +287,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
                 {
                     IsSearchable = true,
                     VectorSearchDimensions = embeddingSize,
-                    VectorSearchProfile = ProfileName,
+                    VectorSearchProfile = ProfileName
                 },
                 new SearchField(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
