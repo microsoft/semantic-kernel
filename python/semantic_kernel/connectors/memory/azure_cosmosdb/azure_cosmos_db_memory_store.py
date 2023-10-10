@@ -12,17 +12,7 @@ from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.utils.settings import azure_cosmos_db_settings_from_dot_env
 
 # Load environment variables
-config = azure_cosmos_db_settings_from_dot_env()
-
-# Read environment variables for Cosmos DB
-AZCOSMOS_API = config["AZCOSMOS_API"]
-AZCOSMOS_CONNSTR = config["AZCOSMOS_CONNSTR"]
-AZCOSMOS_DATABASE_NAME = config["AZCOSMOS_DATABASE_NAME"]
-AZCOSMOS_CONTAINER_NAME = config["AZCOSMOS_CONTAINER_NAME"]
-assert AZCOSMOS_API is not None
-assert AZCOSMOS_CONNSTR is not None
-assert AZCOSMOS_DATABASE_NAME is not None
-assert AZCOSMOS_CONTAINER_NAME is not None
+cosmos_api, cosmos_connstr, cosmos_database_name, cosmos_container_name = azure_cosmos_db_settings_from_dot_env()
 
 # OpenAI Ada Embeddings Dimension
 VECTOR_DIMENSION = 1536
@@ -109,8 +99,8 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
 
     async def ensure(self):
         assert self.mongoClient.is_mongos
-        self.collection = self.mongoClient[AZCOSMOS_DATABASE_NAME][
-            AZCOSMOS_CONTAINER_NAME
+        self.collection = self.mongoClient[cosmos_database_name][
+            cosmos_container_name
         ]
 
         indexes = self.collection.index_information()
@@ -126,23 +116,23 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                     },
                 }
             ]
-            self.mongoClient[AZCOSMOS_DATABASE_NAME].command(
-                "createIndexes", AZCOSMOS_CONTAINER_NAME, indexes=indexDefs
+            self.mongoClient[cosmos_database_name].command(
+                "createIndexes", cosmos_container_name, indexes=indexDefs
             )
 
     async def create_collection_core(self, collection_name: str) -> None:
         pass
 
     async def get_collections_core(self) -> List[str]:
-        return self.mongoClient[AZCOSMOS_DATABASE_NAME].list_collection_names()
+        return self.mongoClient[cosmos_database_name].list_collection_names()
 
     async def delete_collection_core(self, collection_name: str) -> None:
         return self.collection.drop()
 
     async def does_collection_exist_core(self, collection_name: str) -> bool:
         return (
-            AZCOSMOS_CONTAINER_NAME
-            in self.mongoClient[AZCOSMOS_DATABASE_NAME].list_collection_names()
+            cosmos_container_name
+            in self.mongoClient[cosmos_database_name].list_collection_names()
         )
 
     async def upsert_core(self, collection_name: str, record: MemoryRecord) -> str:
@@ -306,9 +296,9 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         """Creates the underlying data store based on the API definition"""
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
-        match AZCOSMOS_API:
+        match cosmos_api:
             case "mongo":
-                mongoClient = MongoClient(AZCOSMOS_CONNSTR)
+                mongoClient = MongoClient(cosmos_connstr)
                 apiStore = MongoStoreApi(mongoClient)
             case _:
                 raise NotImplementedError

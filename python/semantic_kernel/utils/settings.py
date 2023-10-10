@@ -198,7 +198,7 @@ def google_palm_settings_from_dot_env() -> str:
     return api_key
 
 
-def azure_cosmos_db_settings_from_dot_env() -> dict:
+def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str, str, str]:
     """
     Reads the Azure CosmosDB environment variables for the .env file.
 
@@ -206,14 +206,16 @@ def azure_cosmos_db_settings_from_dot_env() -> dict:
         dict: The Azure CosmosDB environment variables
     """
     config = dotenv_values(".env")
-    env_variables = {
-        "AZCOSMOS_API": "mongo",  # Right now CosmosDB only supports vector search in Mongo.
-        "AZCOSMOS_CONNSTR": config.get("AZCOSMOS_CONNSTR"),
-        "AZCOSMOS_DATABASE_NAME": config.get("AZCOSMOS_DATABASE_NAME"),
-        "AZCOSMOS_CONTAINER_NAME": config.get("AZCOSMOS_CONTAINER_NAME"),
-    }
+    cosmos_api = "mongo"
+    cosmos_connstr = config.get("AZCOSMOS_CONNSTR")
+    cosmos_database_name = config.get("AZCOSMOS_DATABASE_NAME")
+    cosmos_container_name = config.get("AZCOSMOS_CONTAINER_NAME")
 
-    return env_variables
+    assert cosmos_connstr is not None, "Azure Cosmos Connection String not found in .env file"
+    assert cosmos_database_name is not None, "Azure Cosmos Database Name not found in .env file"
+    assert cosmos_container_name is not None, "Azure Cosmos Container Name not found in .env file"
+
+    return cosmos_api, cosmos_connstr, cosmos_database_name, cosmos_container_name
 
 
 def redis_settings_from_dot_env() -> str:
