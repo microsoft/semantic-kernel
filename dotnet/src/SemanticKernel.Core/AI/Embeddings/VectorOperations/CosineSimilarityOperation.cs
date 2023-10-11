@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -12,6 +13,8 @@ namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 /// <remarks>
 /// https://en.wikipedia.org/wiki/Cosine_similarity
 /// </remarks>
+[Obsolete("Numerical operations will be removed in a future release. Use System.Numerics.Tensors.TensorPrimitives instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class CosineSimilarityOperation
 {
     /// <summary>

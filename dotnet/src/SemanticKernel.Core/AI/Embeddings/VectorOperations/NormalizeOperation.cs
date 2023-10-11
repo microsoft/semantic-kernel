@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 
 namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 
@@ -10,6 +11,8 @@ namespace Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 /// <remarks>
 /// https://en.wikipedia.org/wiki/Unit_vector
 /// </remarks>
+[Obsolete("Numerical operations will be removed in a future release. Use System.Numerics.Tensors.TensorPrimitives instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class NormalizeOperation
 {
     /// <summary>
