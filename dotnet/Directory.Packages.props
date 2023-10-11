@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.8" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.1" />
+    <PackageVersion Include="Azure.Identity" Version="1.10.2" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.5.0-beta.5" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.4" />
