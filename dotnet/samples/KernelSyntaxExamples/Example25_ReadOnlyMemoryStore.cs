@@ -3,12 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings.VectorOperations;
 using Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable CA2201 // System.Exception is not sufficiently specific - this is a sample
@@ -140,7 +140,7 @@ public static class Example25_ReadOnlyMemoryStore
 
             foreach (var item in this._memoryRecords)
             {
-                double similarity = embedding.Span.CosineSimilarity(item.Embedding.Span);
+                double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, item.Embedding.Span);
                 if (similarity >= minRelevanceScore)
                 {
                     embeddings.Add(new(item, similarity));

@@ -37,7 +37,7 @@ async def main():
     print(result)
     """
     Output:
-    1100
+    SUNDAY
     """
 
 
