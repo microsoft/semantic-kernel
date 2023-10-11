@@ -41,11 +41,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        var options = GetClientOptions();
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
+        var options = GetClientOptions(httpClient);
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey), options);
@@ -70,11 +66,7 @@ public abstract class AzureOpenAIClientBase : ClientBase
         Verify.NotNullOrWhiteSpace(endpoint);
         Verify.StartsWith(endpoint, "https://", "The Azure OpenAI endpoint must start with 'https://'");
 
-        var options = GetClientOptions();
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
+        var options = GetClientOptions(httpClient);
 
         this.ModelId = modelId;
         this.Client = new OpenAIClient(new Uri(endpoint), credential, options);
@@ -103,10 +95,11 @@ public abstract class AzureOpenAIClientBase : ClientBase
     /// <summary>
     /// Options used by the Azure OpenAI client, e.g. User Agent.
     /// </summary>
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
-    private static OpenAIClientOptions GetClientOptions()
+    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient)
     {
-        return new OpenAIClientOptions
+        var options = new OpenAIClientOptions
         {
             Diagnostics =
             {
@@ -114,6 +107,14 @@ public abstract class AzureOpenAIClientBase : ClientBase
                 ApplicationId = Telemetry.HttpUserAgent,
             }
         };
+
+        if (httpClient != null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
+        }
+
+        return options;
     }
 
     /// <summary>
