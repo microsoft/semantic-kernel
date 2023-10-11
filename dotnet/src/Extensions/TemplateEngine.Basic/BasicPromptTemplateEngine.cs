@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+using Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 /// <summary>
 /// Given a prompt, that might contain references to variables and functions:
@@ -23,20 +23,20 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Prompt;
 ///     - Functions do not receive the context variables, unless specified using a special variable
 ///     - Functions can be invoked in order and in parallel so the context variables must be immutable when invoked within the template
 /// </summary>
-public class PromptTemplateEngine : IPromptTemplateEngine
+public class BasicPromptTemplateEngine : IPromptTemplateEngine
 {
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly TemplateTokenizer _tokenizer;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PromptTemplateEngine"/> class.
+    /// Initializes a new instance of the <see cref="BasicPromptTemplateEngine"/> class.
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public PromptTemplateEngine(ILoggerFactory? loggerFactory = null)
+    public BasicPromptTemplateEngine(ILoggerFactory? loggerFactory = null)
     {
         this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._logger = this._loggerFactory.CreateLogger(typeof(PromptTemplateEngine));
+        this._logger = this._loggerFactory.CreateLogger(typeof(BasicPromptTemplateEngine));
         this._tokenizer = new TemplateTokenizer(loggerFactory);
     }
 

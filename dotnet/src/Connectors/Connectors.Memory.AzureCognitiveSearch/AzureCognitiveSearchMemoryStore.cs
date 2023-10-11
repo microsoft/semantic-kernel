@@ -179,16 +179,16 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
 
         var client = this.GetSearchClient(normalizedIndexName);
 
-        SearchQueryVector vectorQuery = new()
+        RawVectorQuery vectorQuery = new()
         {
             KNearestNeighborsCount = limit,
             Fields = { AzureCognitiveSearchMemoryRecord.EmbeddingField },
-            Value = MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray(),
+            Vector = MemoryMarshal.TryGetArray(embedding, out var array) && array.Count == embedding.Length ? array.Array! : embedding.ToArray(),
         };
 
         SearchOptions options = new()
         {
-            Vectors = { vectorQuery }
+            VectorQueries = { vectorQuery }
         };
 
         Response<SearchResults<AzureCognitiveSearchMemoryRecord>>? searchResult = null;
@@ -275,7 +275,9 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             throw new SKException("Invalid embedding size: the value must be greater than zero.");
         }
 
-        var configName = "searchConfig";
+        const string ProfileName = "searchProfile";
+        const string AlgorithmName = "searchAlgorithm";
+
         var newIndex = new SearchIndex(indexName)
         {
             Fields = new List<SearchField>
@@ -285,7 +287,7 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
                 {
                     IsSearchable = true,
                     VectorSearchDimensions = embeddingSize,
-                    VectorSearchConfiguration = configName
+                    VectorSearchProfile = ProfileName
                 },
                 new SearchField(AzureCognitiveSearchMemoryRecord.TextField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
                 new SimpleField(AzureCognitiveSearchMemoryRecord.DescriptionField, SearchFieldDataType.String) { IsFilterable = true, IsFacetable = true },
@@ -295,13 +297,14 @@ public class AzureCognitiveSearchMemoryStore : IMemoryStore
             },
             VectorSearch = new VectorSearch
             {
-                AlgorithmConfigurations =
+                Algorithms =
                 {
-                    new HnswVectorSearchAlgorithmConfiguration(configName)
+                    new HnswVectorSearchAlgorithmConfiguration(AlgorithmName)
                     {
                         Parameters = new HnswParameters { Metric = VectorSearchAlgorithmMetric.Cosine }
                     }
-                }
+                },
+                Profiles = { new VectorSearchProfile(ProfileName, AlgorithmName) }
             }
         };
 
