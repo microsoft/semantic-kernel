@@ -14,7 +14,7 @@
 
 ## Running the sample
 
-1. You will need an [Open AI Key](https://openai.com/api/) or
+1. You will need an [OpenAI Key](https://openai.com/product/) or
    [Azure OpenAI Service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart)
    for this sample
 2. Ensure the KernelHttpServer sample is already running at `http://localhost:7071`. If not, follow the steps
