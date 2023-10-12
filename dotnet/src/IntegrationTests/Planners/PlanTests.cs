@@ -507,7 +507,9 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        var builder = Kernel.Builder.WithLoggerFactory(this._loggerFactory);
+        var builder = Kernel.Builder
+            .WithLoggerFactory(this._loggerFactory)
+            .WithRetryBasic();
 
         if (useChatModel)
         {
