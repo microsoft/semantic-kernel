@@ -24,12 +24,12 @@ public class JDBCConnectorTest {
         assertEquals(
                 "SELECT * FROM "
                         + JDBCConnector.TABLE_NAME
-                        + " WHERE collectionId = ? AND id IN (?,?,?)",
+                        + " WHERE collection = ? AND key IN (?,?,?)",
                 read);
         assertEquals(
                 "DELETE FROM "
                         + JDBCConnector.TABLE_NAME
-                        + " WHERE collectionId = ? AND id IN (?,?,?)",
+                        + " WHERE collection = ? AND key IN (?,?,?)",
                 delete);
     }
 }

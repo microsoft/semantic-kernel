@@ -35,13 +35,13 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                     "CREATE TABLE IF NOT EXISTS "
                                             + TABLE_NAME
                                             + " ("
-                                            + "collectionId TEXT NOT NULL, "
-                                            + "id TEXT NOT NULL, "
+                                            + "collection TEXT NOT NULL, "
+                                            + "key TEXT NOT NULL, "
                                             + "metadata TEXT, "
                                             + "embedding TEXT, "
                                             + "timestamp TEXT, "
-                                            + "PRIMARY KEY (collectionId, id), "
-                                            + "FOREIGN KEY (collectionId) REFERENCES "
+                                            + "PRIMARY KEY (collection, key), "
+                                            + "FOREIGN KEY (collection) REFERENCES "
                                             + COLLECTIONS_TABLE_NAME
                                             + "(id)"
                                             + " )";
@@ -51,7 +51,7 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                             + INDEX_NAME
                                             + " ON "
                                             + TABLE_NAME
-                                            + "(collectionId)";
+                                            + "(collection)";
 
                             try (Statement statement = this.connection.createStatement()) {
                                 statement.addBatch(createCollectionKeyTable);
@@ -81,9 +81,9 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                             String query =
                                     "INSERT INTO "
                                             + TABLE_NAME
-                                            + " (collectionId, id, metadata, embedding, timestamp)"
-                                            + " VALUES (?, ?, ?, ?, ?) ON CONFLICT (collectionId,"
-                                            + " id) DO UPDATE SET metadata = EXCLUDED.metadata,"
+                                            + " (collection, key, metadata, embedding, timestamp)"
+                                            + " VALUES (?, ?, ?, ?, ?) ON CONFLICT (collection,"
+                                            + " key) DO UPDATE SET metadata = EXCLUDED.metadata,"
                                             + " embedding = EXCLUDED.embedding, timestamp ="
                                             + " EXCLUDED.timestamp";
                             try (PreparedStatement statement =
@@ -117,9 +117,9 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                             String query =
                                     "INSERT INTO "
                                             + TABLE_NAME
-                                            + " (collectionId, id, metadata, embedding, timestamp)"
-                                            + " VALUES (?, ?, ?, ?, ?) ON CONFLICT (collectionId,"
-                                            + " id) DO UPDATE SET metadata = EXCLUDED.metadata,"
+                                            + " (collection, key, metadata, embedding, timestamp)"
+                                            + " VALUES (?, ?, ?, ?, ?) ON CONFLICT (collection,"
+                                            + " key) DO UPDATE SET metadata = EXCLUDED.metadata,"
                                             + " embedding = EXCLUDED.embedding, timestamp ="
                                             + " EXCLUDED.timestamp";
                             try (PreparedStatement statement =

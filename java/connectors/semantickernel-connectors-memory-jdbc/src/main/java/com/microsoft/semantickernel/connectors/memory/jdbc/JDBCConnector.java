@@ -82,13 +82,13 @@ public class JDBCConnector implements SQLConnector, Closeable {
                                     "CREATE TABLE IF NOT EXISTS "
                                             + TABLE_NAME
                                             + " ("
-                                            + "collectionId TEXT NOT NULL, "
-                                            + "id TEXT NOT NULL, "
+                                            + "collection TEXT NOT NULL, "
+                                            + "key TEXT NOT NULL, "
                                             + "metadata TEXT, "
                                             + "embedding TEXT, "
                                             + "timestamp TEXT, "
-                                            + "PRIMARY KEY (collectionId, id), "
-                                            + "FOREIGN KEY (collectionId) REFERENCES "
+                                            + "PRIMARY KEY (collection, key), "
+                                            + "FOREIGN KEY (collection) REFERENCES "
                                             + COLLECTIONS_TABLE_NAME
                                             + "(id)"
                                             + " )";
@@ -98,7 +98,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
                                             + INDEX_NAME
                                             + " ON "
                                             + TABLE_NAME
-                                            + "(collectionId)";
+                                            + "(collection)";
 
                             try (Statement statement = this.connection.createStatement()) {
                                 statement.addBatch(createCollectionKeyTable);
@@ -147,7 +147,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             String query =
                                     "INSERT OR REPLACE INTO "
                                             + TABLE_NAME
-                                            + " (collectionId, id, metadata, embedding, timestamp)"
+                                            + " (collection, key, metadata, embedding, timestamp)"
                                             + " VALUES (?, ?, ?, ?, ?)";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
@@ -177,7 +177,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             String query =
                                     "INSERT OR REPLACE INTO "
                                             + TABLE_NAME
-                                            + " (collectionId, id, metadata, embedding, timestamp)"
+                                            + " (collection, key, metadata, embedding, timestamp)"
                                             + " VALUES (?, ?, ?, ?, ?)";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
@@ -251,14 +251,13 @@ public class JDBCConnector implements SQLConnector, Closeable {
         return Mono.defer(
                         () -> {
                             List<DatabaseEntry> entries = new ArrayList<>();
-                            String query =
-                                    "SELECT * FROM " + TABLE_NAME + " WHERE collectionId = ?";
+                            String query = "SELECT * FROM " + TABLE_NAME + " WHERE collection = ?";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 statement.setString(1, collectionName);
                                 ResultSet resultSet = statement.executeQuery();
                                 while (resultSet.next()) {
-                                    String key = resultSet.getString("id");
+                                    String key = resultSet.getString("key");
                                     String metadata = resultSet.getString("metadata");
                                     String embedding = resultSet.getString("embedding");
                                     String timestamp = resultSet.getString("timestamp");
@@ -285,8 +284,8 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             String query =
                                     "SELECT * FROM "
                                             + TABLE_NAME
-                                            + " WHERE collectionId = ?"
-                                            + " AND id = ?";
+                                            + " WHERE collection = ?"
+                                            + " AND key = ?";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 statement.setString(1, collectionName);
@@ -313,7 +312,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
-    enum BatchOperation {
+    protected enum BatchOperation {
         SELECT,
         DELETE
     }
@@ -322,16 +321,16 @@ public class JDBCConnector implements SQLConnector, Closeable {
         String queryPrefix;
         switch (operation) {
             case SELECT:
-                queryPrefix = "SELECT * FROM " + TABLE_NAME + " WHERE collectionId = ?";
+                queryPrefix = "SELECT * FROM " + TABLE_NAME + " WHERE collection = ?";
                 break;
             case DELETE:
-                queryPrefix = "DELETE FROM " + TABLE_NAME + " WHERE collectionId = ?";
+                queryPrefix = "DELETE FROM " + TABLE_NAME + " WHERE collection = ?";
                 break;
             default:
                 throw new IllegalArgumentException("Invalid batch operation");
         }
         StringBuilder queryBuilder = new StringBuilder(queryPrefix);
-        queryBuilder.append(" AND id IN (");
+        queryBuilder.append(" AND key IN (");
 
         // Add placeholders for each key
         for (int i = 0; i < keys.size(); i++) {
@@ -363,7 +362,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
                                 ResultSet resultSet = statement.executeQuery();
 
                                 while (resultSet.next()) {
-                                    String key = resultSet.getString("id");
+                                    String key = resultSet.getString("key");
                                     String metadata = resultSet.getString("metadata");
                                     String embedding = resultSet.getString("embedding");
                                     String timestamp = resultSet.getString("timestamp");
@@ -387,7 +386,7 @@ public class JDBCConnector implements SQLConnector, Closeable {
     public Mono<Void> deleteCollectionAsync(String collectionName) {
         return Mono.fromRunnable(
                         () -> {
-                            String query1 = "DELETE FROM " + TABLE_NAME + " WHERE collectionId = ?";
+                            String query1 = "DELETE FROM " + TABLE_NAME + " WHERE collection = ?";
                             String query2 =
                                     "DELETE FROM " + COLLECTIONS_TABLE_NAME + " WHERE id = ?";
                             try (PreparedStatement statement =
@@ -418,8 +417,8 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             String query =
                                     "DELETE FROM "
                                             + TABLE_NAME
-                                            + " WHERE collectionId = ?"
-                                            + " AND id = ?";
+                                            + " WHERE collection = ?"
+                                            + " AND key = ?";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 statement.setString(1, collectionName);
@@ -465,8 +464,8 @@ public class JDBCConnector implements SQLConnector, Closeable {
                             String query =
                                     "DELETE FROM "
                                             + TABLE_NAME
-                                            + " WHERE collectionId = ?"
-                                            + " AND id is NULL";
+                                            + " WHERE collection = ?"
+                                            + " AND key is NULL";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 statement.setString(1, collectionName);
