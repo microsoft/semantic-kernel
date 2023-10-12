@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,16 +36,7 @@ public sealed class Kernel : IKernel, IDisposable
     public ILoggerFactory LoggerFactory { get; }
 
     /// <inheritdoc/>
-    public ISemanticTextMemory Memory => this._memory;
-
-    /// <inheritdoc/>
     public IReadOnlyFunctionCollection Functions => this._functionCollection;
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public IReadOnlyFunctionCollection Skills => this._functionCollection;
-#pragma warning restore CS1591
 
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
@@ -121,15 +113,6 @@ public sealed class Kernel : IKernel, IDisposable
         return functions;
     }
 
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportPlugin instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)
-    {
-        return this.ImportFunctions(functionsInstance, pluginName);
-    }
-#pragma warning restore CS1591
-
     /// <inheritdoc/>
     public ISKFunction RegisterCustomFunction(ISKFunction customFunction)
     {
@@ -139,12 +122,6 @@ public sealed class Kernel : IKernel, IDisposable
         this._functionCollection.AddFunction(customFunction);
 
         return customFunction;
-    }
-
-    /// <inheritdoc/>
-    public void RegisterMemory(ISemanticTextMemory memory)
-    {
-        this._memory = memory;
     }
 
     /// <inheritdoc/>
@@ -176,7 +153,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
     {
-        var context = new SKContext(this, variables);
+        var context = this.CreateNewContext(variables);
 
         FunctionResult? functionResult = null;
 
@@ -244,11 +221,18 @@ repeat:
     }
 
     /// <inheritdoc/>
-    public SKContext CreateNewContext()
+    public SKContext CreateNewContext(
+        ContextVariables? variables = null,
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null)
     {
         return new SKContext(
-            this,
-            functions: this._functionCollection);
+            new FunctionRunner(this),
+            variables,
+            functions ?? this.Functions,
+            loggerFactory ?? this.LoggerFactory,
+            culture);
     }
 
     /// <inheritdoc/>
@@ -361,12 +345,40 @@ repeat:
     #region Obsolete ===============================================================================
 
     /// <inheritdoc/>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISemanticTextMemory Memory => this._memory;
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public IReadOnlyFunctionCollection Skills => this._functionCollection;
+#pragma warning restore CS1591
+
+    /// <inheritdoc/>
     [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Functions collection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ISKFunction Func(string pluginName, string functionName)
     {
         return this.Functions.GetFunction(pluginName, functionName);
     }
+
+    /// <inheritdoc/>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void RegisterMemory(ISemanticTextMemory memory)
+    {
+        this._memory = memory;
+    }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    public IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null)
+    {
+        return this.ImportFunctions(functionsInstance, pluginName);
+    }
+#pragma warning restore CS1591
 
     #endregion
 }

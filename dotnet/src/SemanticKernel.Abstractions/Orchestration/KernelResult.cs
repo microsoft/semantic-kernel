@@ -53,4 +53,7 @@ public sealed class KernelResult
             FunctionResults = functionResults
         };
     }
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Value?.ToString() ?? base.ToString();
 }

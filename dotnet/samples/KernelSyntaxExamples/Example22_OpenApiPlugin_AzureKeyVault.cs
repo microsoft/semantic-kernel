@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Plugins;
 using Microsoft.SemanticKernel.Orchestration;
 using RepoUtils;
@@ -58,9 +58,11 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         contextVariables.Set("api-version", "7.0");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, plugin["GetSecret"]);
+        var kernelResult = await kernel.RunAsync(contextVariables, plugin["GetSecret"]);
 
-        Console.WriteLine("GetSecret plugin response: {0}", result);
+        var result = kernelResult.GetValue<RestApiOperationResponse>();
+
+        Console.WriteLine("GetSecret function result: {0}", result?.Content?.ToString());
     }
 
     public static async Task AddSecretToAzureKeyVaultAsync(InteractiveMsalAuthenticationProvider authenticationProvider)
@@ -76,18 +78,25 @@ public static class Example22_OpenApiPlugin_AzureKeyVault
         var plugin = await kernel.ImportPluginFunctionsAsync(
             PluginResourceNames.AzureKeyVault,
             stream!,
-            new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
+            new OpenApiFunctionExecutionParameters
+            {
+                AuthCallback = authenticationProvider.AuthenticateRequestAsync,
+                EnableDynamicPayload = true
+            });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
         var contextVariables = new ContextVariables();
         contextVariables.Set("server-url", TestConfiguration.KeyVault.Endpoint);
         contextVariables.Set("secret-name", "<secret-name>");
         contextVariables.Set("api-version", "7.0");
-        contextVariables.Set("payload", JsonSerializer.Serialize(new { value = "<secret>", attributes = new { enabled = true } }));
+        contextVariables.Set("value", "<secret-value>");
+        contextVariables.Set("enabled", "<enabled>");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, plugin["SetSecret"]);
+        var kernelResult = await kernel.RunAsync(contextVariables, plugin["SetSecret"]);
 
-        Console.WriteLine("SetSecret plugin response: {0}", result);
+        var result = kernelResult.GetValue<RestApiOperationResponse>();
+
+        Console.WriteLine("SetSecret function result: {0}", result?.Content?.ToString());
     }
 }
