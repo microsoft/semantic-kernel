@@ -71,7 +71,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         if device is None and device_map is None:
             self.device = "cpu"
         elif device is not None and device_map:
-            self.device = self.device = ("cuda:"+str(device) 
+            self.device = ("cuda:"+str(device) 
                            if device >= 0 and torch.cuda.is_available() 
                            else "cpu")
         else:
