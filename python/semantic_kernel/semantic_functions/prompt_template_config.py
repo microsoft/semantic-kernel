@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -17,12 +17,17 @@ class PromptTemplateConfig:
         stop_sequences: List[str] = field(default_factory=list)
         token_selection_biases: Dict[int, int] = field(default_factory=dict)
         chat_system_prompt: str = None
+        # the function_call should be 'auto' or the name of a specific function in order to leverage function calling
+        # when not using auto, the format is 'SkillName-FunctionName', e.g. 'Weather-GetWeather'
+        function_call: Optional[str] = None
 
     @dataclass
     class InputParameter:
         name: str = ""
         description: str = ""
         default_value: str = ""
+        type_: str = "string"
+        required: bool = True
 
     @dataclass
     class InputConfig:
@@ -61,6 +66,7 @@ class PromptTemplateConfig:
             "token_selection_biases",
             "default_services",
             "chat_system_prompt",
+            "function_call",
         ]
         for comp_key in completion_keys:
             if comp_key in completion_dict:
@@ -92,11 +98,16 @@ class PromptTemplateConfig:
                         f"Input parameter '{name}' doesn't have a default value (function: {config.description})"
                     )
 
+                type_ = parameter.get("type")
+                required = parameter.get("required")
+
                 config.input.parameters.append(
                     PromptTemplateConfig.InputParameter(
                         name,
                         description,
                         defaultValue,
+                        type_,
+                        required,
                     )
                 )
         return config
@@ -123,6 +134,7 @@ class PromptTemplateConfig:
         stop_sequences: List[str] = [],
         token_selection_biases: Dict[int, int] = {},
         chat_system_prompt: str = None,
+        function_call: Optional[str] = None,
     ) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature
@@ -134,4 +146,5 @@ class PromptTemplateConfig:
         config.completion.stop_sequences = stop_sequences
         config.completion.token_selection_biases = token_selection_biases
         config.completion.chat_system_prompt = chat_system_prompt
+        config.completion.function_call = function_call
         return config
