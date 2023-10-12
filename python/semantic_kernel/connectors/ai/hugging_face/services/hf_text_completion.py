@@ -68,16 +68,12 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             )
 
         device_map = self._pipeline_kwargs.get("device_map", None)
-        if device is None and device_map is None:
-            self.device = "cpu"
-        elif device is not None and device_map:
-            self.device = ("cuda:"+str(device) 
-                           if device >= 0 and torch.cuda.is_available() 
-                           else "cpu")
+        if device is None:
+            self.device = "cpu" if device_map is None else None
         else:
             self.device = ("cuda:"+str(device) 
                            if device >= 0 and torch.cuda.is_available() 
-                           else "cpu") if not device_map else None
+                           else "cpu")
 
         self.generator = transformers.pipeline(
             task=self._task,
