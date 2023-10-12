@@ -1,8 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 from logging import Logger
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar
 
+from semantic_kernel.models.chat.chat_message import ChatMessage
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -14,9 +16,11 @@ from semantic_kernel.template_engine.protocols.prompt_templating_engine import (
 if TYPE_CHECKING:
     from semantic_kernel.orchestration.sk_context import SKContext
 
+ChatMessageT = TypeVar("ChatMessageT", bound=ChatMessage)
 
-class ChatPromptTemplate(PromptTemplate):
-    _messages: List[Tuple[str, PromptTemplate]]
+
+class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
+    _messages: List[ChatMessageT]
 
     def __init__(
         self,
@@ -37,40 +41,52 @@ class ChatPromptTemplate(PromptTemplate):
         )
 
     def add_system_message(self, message: str) -> None:
+        """Add a system message to the chat template."""
         self.add_message("system", message)
 
     def add_user_message(self, message: str) -> None:
+        """Add a user message to the chat template."""
         self.add_message("user", message)
 
     def add_assistant_message(self, message: str) -> None:
+        """Add an assistant message to the chat template."""
         self.add_message("assistant", message)
 
-    def add_message(self, role: str, message: str) -> None:
+    def add_message(
+        self, role: str, message: Optional[str] = None, **kwargs: Any
+    ) -> None:
+        """Add a message to the chat template.
+
+        Arguments:
+            role: The role of the message, one of "user", "assistant", "system".
+            message: The message to add, can include templating components.
+            kwargs: can be used by inherited classes.
+        """
         self._messages.append(
-            (role, PromptTemplate(message, self._template_engine, self._prompt_config))
+            ChatMessage(
+                role=role,
+                content_template=PromptTemplate(
+                    message, self._template_engine, self._prompt_config
+                ),
+            )
         )
 
-    async def render_messages_async(
-        self, context: "SKContext"
-    ) -> List[Tuple[str, str]]:
-        rendered_messages = []
-        for role, message in self._messages:
-            rendered_messages.append((role, await message.render_async(context)))
-
-        latest_user_message = await self._template_engine.render_async(
-            self._template, context
+    async def render_messages_async(self, context: "SKContext") -> List[Dict[str, str]]:
+        """Render the content of the message in the chat template, based on the context."""
+        if len(self._messages) == 0 or self._messages[-1].role in [
+            "assistant",
+            "system",
+        ]:
+            self.add_user_message(message=self._template)
+        await asyncio.gather(
+            *[message.render_message_async(context) for message in self._messages]
         )
-        rendered_messages.append(("user", latest_user_message))
-
-        return rendered_messages
+        return [message.as_dict() for message in self._messages]
 
     @property
     def messages(self) -> List[Dict[str, str]]:
-        """Return the messages as a list of tuples of role and message."""
-        return [
-            {"role": role, "message": message._template}
-            for role, message in self._messages
-        ]
+        """Return the messages as a list of dicts with role, content, name."""
+        return [message.as_dict() for message in self._messages]
 
     @classmethod
     def restore(
@@ -81,14 +97,27 @@ class ChatPromptTemplate(PromptTemplate):
         prompt_config: PromptTemplateConfig,
         log: Optional[Logger] = None,
     ) -> "ChatPromptTemplate":
-        """Restore a ChatPromptTemplate from a list of role and message pairs."""
+        """Restore a ChatPromptTemplate from a list of role and message pairs.
+
+        If there is a chat_system_prompt in the prompt_config.completion settings,
+        that takes precedence over the first message in the list of messages,
+        if that is a system message.
+        """
         chat_template = cls(template, template_engine, prompt_config, log)
-
-        if prompt_config.chat_system_prompt:
-            chat_template.add_system_message(
-                prompt_config.completion.chat_system_prompt
-            )
-
+        if (
+            prompt_config.completion.chat_system_prompt
+            and messages[0]["role"] == "system"
+        ):
+            existing_system_message = messages.pop(0)
+            if (
+                existing_system_message["message"]
+                != prompt_config.completion.chat_system_prompt
+            ):
+                chat_template._log.info(
+                    "Overriding system prompt with chat_system_prompt, old system message: %s, new system message: %s",
+                    existing_system_message["message"],
+                    prompt_config.completion.chat_system_prompt,
+                )
         for message in messages:
             chat_template.add_message(message["role"], message["message"])
 
