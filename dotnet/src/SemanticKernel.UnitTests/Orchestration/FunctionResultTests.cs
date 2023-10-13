@@ -130,4 +130,15 @@ public class FunctionResultTests
         Assert.Equal(context, target.Context);
         Assert.Equal(value, target.Value);
     }
+
+    [Fact]
+    public void ToStringWorksCorrectly()
+    {
+        // Arrange
+        string value = Guid.NewGuid().ToString();
+        FunctionResult target = new("functionName", "pluginName", this.CreateContext(), value);
+
+        // Act and Assert
+        Assert.Equal(value, target.ToString());
+    }
 }
