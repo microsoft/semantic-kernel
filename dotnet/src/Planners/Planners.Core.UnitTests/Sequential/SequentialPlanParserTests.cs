@@ -87,7 +87,8 @@ public class SequentialPlanParserTests
                 kernelMock.Setup(x => x.RegisterSemanticFunction(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<SemanticFunctionConfig>()
+                    It.IsAny<PromptTemplateConfig>(),
+                    It.IsAny<IPromptTemplate>()
                 )).Returns(mockFunction.Object);
             }
             else
