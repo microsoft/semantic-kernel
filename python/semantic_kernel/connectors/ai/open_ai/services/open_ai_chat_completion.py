@@ -63,7 +63,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._org_id = org_id
         self._api_type = api_type
         self._api_version = api_version
-        self._endpoint = endpoint
+        self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._log = log if log is not None else NullLogger()
         self._messages = []
 
@@ -271,7 +271,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
-                "OpenAI service failed to complete the chat",
+                f"{self.__class__.__name__} failed to complete the chat",
                 ex,
             ) from ex
 
