@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.TemplateEngine;
+
 namespace Microsoft.SemanticKernel.SemanticFunctions;
 
 /// <summary>
