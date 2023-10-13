@@ -240,12 +240,12 @@ async def test_azure_chat_completion_call_with_parameters_and_Stop_Defined() -> 
         await azure_chat_completion.complete_async(prompt, complete_request_settings)
 
         mock_openai.ChatCompletion.acreate.assert_called_once_with(
-            engine=deployment_name,
             api_key=api_key,
             api_type=api_type,
             api_base=endpoint,
             api_version=api_version,
             organization=None,
+            engine=deployment_name,
             messages=messages,
             temperature=complete_request_settings.temperature,
             top_p=complete_request_settings.top_p,
