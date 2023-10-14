@@ -86,9 +86,9 @@ class SKContext(SKGenericModel, Generic[SemanticTextMemoryT]):
         Returns:
             str -- Processed input, aka result.
         """
-        if isinstance(self.variables["input"], str):
-            return str(self.variables["input"])
-        return "\n".join(self.variables["input"])
+        if not isinstance(self.variables["input"], str):
+            self.variables["input"]="\n".join(self.variables["input"])
+        return str(self.variables)
 
     @property
     def error_occurred(self) -> bool:
