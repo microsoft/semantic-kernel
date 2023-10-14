@@ -13,7 +13,7 @@ public static class Example09_FunctionTypes
 {
     public static async Task RunAsync()
     {
-        Console.WriteLine("======== Native function types ========");
+        Console.WriteLine("======== Function types ========");
 
         var kernel = Kernel.Builder
             .WithLoggerFactory(ConsoleLogger.LoggerFactory)
@@ -22,7 +22,7 @@ public static class Example09_FunctionTypes
 
         var variables = new ContextVariables();
 
-        // Load native plugin into the kernel function collection, sharing its functions with prompt templates
+        // Load method-level plugin into the kernel function collection, sharing its functions with prompt templates
         var testFunctions = kernel.ImportFunctions(new LocalExamplePlugin(), "test");
 
         string folder = RepoFiles.SamplePluginsPath();

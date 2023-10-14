@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Semantic Kernel default function collection class.
-/// The class holds a list of all the functions, native and semantic, known to the kernel instance.
+/// The class holds a list of all the functions, method-level and semantic, known to the kernel instance.
 /// The list is used by the planner and when executing pipelines of function compositions.
 /// </summary>
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix")]

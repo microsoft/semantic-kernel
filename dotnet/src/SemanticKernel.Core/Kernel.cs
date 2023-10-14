@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Semantic kernel class.
-/// The kernel provides a function collection to define native and semantic functions, an orchestrator to execute a list of functions.
+/// The kernel provides a function collection to define method-level and semantic functions, an orchestrator to execute a list of functions.
 /// Semantic functions are automatically rendered and executed using an internal prompt template rendering engine.
 /// Future versions will allow to:
 /// * customize the rendering engine
@@ -307,9 +307,9 @@ repeat:
     }
 
     /// <summary>
-    /// Import a native functions into the kernel function collection, so that semantic functions and pipelines can consume its functions.
+    /// Import a method-level functions into the kernel function collection, so that semantic functions and pipelines can consume its functions.
     /// </summary>
-    /// <param name="pluginInstance">Class instance from which to import available native functions</param>
+    /// <param name="pluginInstance">Class instance from which to import available method-level functions</param>
     /// <param name="pluginName">Plugin name, used to group functions under a shared namespace</param>
     /// <param name="logger">Application logger</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
@@ -325,7 +325,7 @@ repeat:
         {
             if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
             {
-                ISKFunction function = SKFunction.FromNativeMethod(method, pluginInstance, pluginName, loggerFactory);
+                ISKFunction function = SKFunction.FromMethod(method, pluginInstance, pluginName, loggerFactory);
                 if (result.ContainsKey(function.Name))
                 {
                     throw new SKException("Function overloads are not supported, please differentiate function names");

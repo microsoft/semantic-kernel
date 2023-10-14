@@ -100,10 +100,10 @@ public interface ISKFunction
 
     /// <summary>
     /// Whether the function is defined using a prompt template.
-    /// IMPORTANT: native functions might use semantic functions internally,
+    /// IMPORTANT: method-level functions might use semantic functions internally,
     /// so when this property is False, executing the function might still involve AI calls.
     /// </summary>
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [Obsolete("Kernel no longer differentiates between Semantic and Method-level functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     bool IsSemantic { get; }
 

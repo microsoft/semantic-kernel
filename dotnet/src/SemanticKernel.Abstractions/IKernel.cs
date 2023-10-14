@@ -182,7 +182,7 @@ public interface IKernel
 
     /// <summary>
     /// Access registered functions by plugin name and function name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
+    /// The function might be method-level or semantic, it's up to the caller handling it.
     /// </summary>
     /// <param name="pluginName">Plugin name</param>
     /// <param name="functionName">Function name</param>

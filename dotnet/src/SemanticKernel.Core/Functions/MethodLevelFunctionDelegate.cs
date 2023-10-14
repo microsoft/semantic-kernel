@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Orchestration;
 namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
-internal delegate Task<FunctionResult> NativeFunctionDelegate(
+internal delegate Task<FunctionResult> MethodLevelFunctionDelegate(
     ITextCompletion? textCompletion,
     AIRequestSettings? requestSettings,
     SKContext context,

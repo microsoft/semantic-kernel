@@ -26,11 +26,11 @@ public static class Example10_DescribeAllPluginsAndFunctions
                 apiKey: TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        // Import a native plugin
+        // Import a method-level plugin
         var staticText = new StaticTextPlugin();
         kernel.ImportFunctions(staticText, "StaticTextPlugin");
 
-        // Import another native plugin
+        // Import another method-level plugin
         var text = new TextPlugin();
         kernel.ImportFunctions(text, "AnotherTextPlugin");
 
@@ -86,7 +86,7 @@ public static class Example10_DescribeAllPluginsAndFunctions
 /** Sample output:
 
 *****************************************
-****** Native plugins and functions ******
+****** Method-level plugins and functions ******
 *****************************************
 
 Plugin: StaticTextPlugin

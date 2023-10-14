@@ -101,7 +101,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
     }
 
     [Fact]
-    public async Task ListOfFunctionsIncludesNativeAndSemanticFunctionsAsync()
+    public async Task ListOfFunctionsIncludesMethodLevelAndSemanticFunctionsAsync()
     {
         // Arrange
         var plugins = this.CreateMockFunctionCollection();

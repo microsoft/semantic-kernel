@@ -33,7 +33,7 @@ namespace Microsoft.SemanticKernel;
 /// with additional methods required by the kernel.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal sealed class NativeFunction : ISKFunction, IDisposable
+internal sealed class MethodLevelFunction : ISKFunction, IDisposable
 {
     /// <inheritdoc/>
     public string Name { get; }
@@ -53,14 +53,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public IReadOnlyList<ParameterView> Parameters { get; }
 
     /// <summary>
-    /// Create a native function instance, wrapping a native object method
+    /// Create a Method-level function instance, wrapping a object method
     /// </summary>
     /// <param name="method">Signature of the method to invoke</param>
     /// <param name="target">Object containing the method to invoke</param>
     /// <param name="pluginName">SK plugin name</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
-    public static ISKFunction FromNativeMethod(
+    public static ISKFunction FromMethod(
         MethodInfo method,
         object? target = null,
         string? pluginName = null,
@@ -80,7 +80,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
         MethodDetails methodDetails = GetMethodDetails(method, target, pluginName!, logger);
 
-        return new NativeFunction(
+        return new MethodLevelFunction(
             delegateFunction: methodDetails.Function,
             parameters: methodDetails.Parameters,
             pluginName: pluginName!,
@@ -90,17 +90,17 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     /// <summary>
-    /// Create a native function instance, wrapping a delegate function
+    /// Create a method-level function instance, wrapping a delegate function
     /// </summary>
-    /// <param name="nativeFunction">Function to invoke</param>
+    /// <param name="delegatedFunction">Function to invoke</param>
     /// <param name="pluginName">SK plugin name</param>
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
-    public static ISKFunction FromNativeFunction(
-        Delegate nativeFunction,
+    public static ISKFunction FromMethod(
+        Delegate delegatedFunction,
         string? pluginName = null,
         string? functionName = null,
         string? description = null,
@@ -114,13 +114,13 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             pluginName = FunctionCollection.GlobalFunctionsPluginName;
         }
 
-        MethodDetails methodDetails = GetMethodDetails(nativeFunction.Method, nativeFunction.Target, pluginName!, logger);
+        MethodDetails methodDetails = GetMethodDetails(delegatedFunction.Method, delegatedFunction.Target, pluginName!, logger);
 
         functionName ??= methodDetails.Name;
         parameters ??= methodDetails.Parameters;
         description ??= methodDetails.Description;
 
-        return new NativeFunction(
+        return new MethodLevelFunction(
             delegateFunction: methodDetails.Function,
             parameters: parameters.ToList(),
             description: description,
@@ -145,7 +145,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-            this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, e.Message);
+            this._logger.LogError(e, "Method-level function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, e.Message);
             throw;
         }
     }
@@ -153,8 +153,8 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions)
     {
-        // No-op for native functions; do not throw, as both Plan and PromptFunctions use this,
-        // and we don't have a way to distinguish between a native function and a Plan.
+        // No-op for method-level functions; do not throw, as both Plan and PromptFunctions use this,
+        // and we don't have a way to distinguish between a method-level function and a Plan.
         return this;
     }
 
@@ -195,19 +195,19 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
 
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
-    private readonly NativeFunctionDelegate _function;
+    private readonly MethodLevelFunctionDelegate _function;
     private readonly ILogger _logger;
 
     private struct MethodDetails
     {
-        public NativeFunctionDelegate Function { get; set; }
+        public MethodLevelFunctionDelegate Function { get; set; }
         public List<ParameterView> Parameters { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }
 
-    internal NativeFunction(
-        NativeFunctionDelegate delegateFunction,
+    internal MethodLevelFunction(
+        MethodLevelFunctionDelegate delegateFunction,
         IReadOnlyList<ParameterView> parameters,
         string pluginName,
         string functionName,
@@ -306,7 +306,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     // Inspect a method and returns the corresponding delegate and related info
-    private static (NativeFunctionDelegate function, List<ParameterView>) GetDelegateInfo(
+    private static (MethodLevelFunctionDelegate function, List<ParameterView>) GetDelegateInfo(
         string functionName,
         string pluginName,
         object? instance,
@@ -887,7 +887,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public string SkillName => this.PluginName;
 
     /// <inheritdoc/>
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [Obsolete("Kernel no longer differentiates between Semantic and Method-level functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool IsSemantic => true;
 

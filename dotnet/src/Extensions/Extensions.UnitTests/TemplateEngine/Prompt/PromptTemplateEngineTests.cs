@@ -149,7 +149,7 @@ public sealed class PromptTemplateEngineTests
             return $"F({context.Variables.Input})";
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Update("INPUT-BAR");
@@ -178,7 +178,7 @@ public sealed class PromptTemplateEngineTests
             return $"F({context.Variables.Input})";
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -212,7 +212,7 @@ public sealed class PromptTemplateEngineTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("input", "Mario");
@@ -247,7 +247,7 @@ public sealed class PromptTemplateEngineTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("input", "Mario");
@@ -280,7 +280,7 @@ public sealed class PromptTemplateEngineTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("input", "Mario");
@@ -311,7 +311,7 @@ public sealed class PromptTemplateEngineTests
             return Task.FromResult(context.Variables.Input);
         }
 
-        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
+        ISKFunction func = SKFunction.FromMethod(Method(MyFunctionAsync), this);
         Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
@@ -361,9 +361,9 @@ public sealed class PromptTemplateEngineTests
 
         var functions = new List<ISKFunction>()
         {
-            SKFunction.FromNativeMethod(Method(MyFunction1Async), this, "func1"),
-            SKFunction.FromNativeMethod(Method(MyFunction2Async), this, "func2"),
-            SKFunction.FromNativeMethod(Method(MyFunction3Async), this, "func3")
+            SKFunction.FromMethod(Method(MyFunction1Async), this, "func1"),
+            SKFunction.FromMethod(Method(MyFunction2Async), this, "func2"),
+            SKFunction.FromMethod(Method(MyFunction3Async), this, "func3")
         };
 
         foreach (var func in functions)

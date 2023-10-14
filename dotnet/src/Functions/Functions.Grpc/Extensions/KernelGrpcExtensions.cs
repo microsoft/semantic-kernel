@@ -184,8 +184,8 @@ public static class KernelGrpcExtensions
             return context;
         }
 
-        var function = SKFunction.FromNativeFunction(
-            nativeFunction: ExecuteAsync,
+        var function = SKFunction.FromMethod(
+            delegatedFunction: ExecuteAsync,
             parameters: operationParameters.ToList(),
             description: operation.Name,
             pluginName: pluginName,

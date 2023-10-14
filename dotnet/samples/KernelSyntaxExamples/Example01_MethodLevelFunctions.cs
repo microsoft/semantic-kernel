@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.Core;
 
 // ReSharper disable once InconsistentNaming
-public static class Example01_NativeFunctions
+public static class Example01_MethodLevelFunctions
 {
     public static Task RunAsync()
     {
         Console.WriteLine("======== Functions ========");
 
-        // Load native plugin
+        // Load method-level plugin
         var text = new TextPlugin();
 
         // Use function without kernel

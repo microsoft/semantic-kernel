@@ -18,36 +18,36 @@ namespace Microsoft.SemanticKernel;
 public static class SKFunction
 {
     /// <summary>
-    /// Create a native function instance, wrapping a native object method
+    /// Create a method-level function instance, wrapping a object method
     /// </summary>
     /// <param name="method">Signature of the method to invoke</param>
     /// <param name="target">Object containing the method to invoke</param>
     /// <param name="pluginName">SK plugin name</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
-    public static ISKFunction FromNativeMethod(
+    public static ISKFunction FromMethod(
         MethodInfo method,
         object? target = null,
         string? pluginName = null,
         ILoggerFactory? loggerFactory = null)
-            => NativeFunction.FromNativeMethod(method, target, pluginName, loggerFactory);
+            => MethodLevelFunction.FromMethod(method, target, pluginName, loggerFactory);
 
     /// <summary>
-    /// Create a native function instance, wrapping a delegate function
+    /// Create a method-level function instance, wrapping a delegate function
     /// </summary>
-    /// <param name="nativeFunction">Function to invoke</param>
+    /// <param name="delegatedFunction">Function to invoke</param>
     /// <param name="pluginName">SK plugin name</param>
     /// <param name="functionName">SK function name</param>
     /// <param name="description">SK function description</param>
     /// <param name="parameters">SK function parameters</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>SK function instance</returns>
-    public static ISKFunction FromNativeFunction(
-        Delegate nativeFunction,
+    public static ISKFunction FromMethod(
+        Delegate delegatedFunction,
         string? pluginName = null,
         string? functionName = null,
         string? description = null,
         IEnumerable<ParameterView>? parameters = null,
         ILoggerFactory? loggerFactory = null)
-            => NativeFunction.FromNativeFunction(nativeFunction, pluginName, functionName, description, parameters, loggerFactory);
+            => MethodLevelFunction.FromMethod(delegatedFunction, pluginName, functionName, description, parameters, loggerFactory);
 }

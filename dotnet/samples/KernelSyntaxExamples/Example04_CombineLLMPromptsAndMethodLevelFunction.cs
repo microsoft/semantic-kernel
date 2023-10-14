@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Plugins.Web.Bing;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
-public static class Example04_CombineLLMPromptsAndNativeCode
+public static class Example04_CombineLLMPromptsAndMethodLevelFunction
 {
     public static async Task RunAsync()
     {

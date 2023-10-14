@@ -137,7 +137,7 @@ public sealed class ActionPlanner : IActionPlanner
 
     // TODO: use goal to find relevant functions in a plugin store
     /// <summary>
-    /// Native function returning a list of all the functions in the current context,
+    /// Method-level function returning a list of all the functions in the current context,
     /// excluding functions in the planner itself.
     /// </summary>
     /// <param name="goal">Currently unused. Will be used to handle long lists of functions.</param>
@@ -161,7 +161,7 @@ public sealed class ActionPlanner : IActionPlanner
     // TODO: generate string programmatically
     // TODO: use goal to find relevant examples
     /// <summary>
-    /// Native function that provides a list of good examples of plans to generate.
+    /// Method-level function that provides a list of good examples of plans to generate.
     /// </summary>
     /// <param name="goal">The current goal processed by the planner.</param>
     /// <param name="context">Function execution context.</param>
@@ -202,7 +202,7 @@ Goal: create a file called ""something.txt"".
 
     // TODO: generate string programmatically
     /// <summary>
-    /// Native function that provides a list of edge case examples of plans to handle.
+    /// Method-level function that provides a list of edge case examples of plans to handle.
     /// </summary>
     /// <param name="goal">The current goal processed by the planner.</param>
     /// <param name="context">Function execution context.</param>
@@ -247,7 +247,7 @@ Goal: tell me a joke.
     private ActionPlannerConfig Config { get; }
 
     /// <summary>
-    /// Native function that filters out good JSON from planner result in case additional text is present
+    /// Method-level function that filters out good JSON from planner result in case additional text is present
     /// using a similar regex to the balancing group regex defined here: https://learn.microsoft.com/en-us/dotnet/standard/base-types/grouping-constructs-in-regular-expressions#balancing-group-definitions
     /// </summary>
     /// <param name="plannerResult">Result of planner function.</param>

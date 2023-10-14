@@ -184,7 +184,7 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public string SkillName => this._function.PluginName;
 
     /// <inheritdoc/>
-    [Obsolete("Kernel no longer differentiates between Semantic and Native functions. This will be removed in a future release.")]
+    [Obsolete("Kernel no longer differentiates between Semantic and Method-level functions. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool IsSemantic => this._function.IsSemantic;
 

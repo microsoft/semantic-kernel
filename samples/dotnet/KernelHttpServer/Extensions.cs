@@ -93,14 +93,14 @@ internal static class Extensions
         return skills.GetFunction(skillName, functionName);
     }
 
-    internal static bool HasSemanticOrNativeFunction(this IReadOnlySkillCollection skills, string skillName, string functionName)
+    internal static bool HasSemanticOrMethodLevelFunction(this IReadOnlySkillCollection skills, string skillName, string functionName)
     {
         return skills.TryGetFunction(skillName, functionName, out _);
     }
 
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "The caller invokes native skills during a request and the HttpClient instance must remain alive for those requests to be successful.")]
-    internal static void RegisterNativeGraphSkills(this IKernel kernel, string graphToken, IEnumerable<string>? skillsToLoad = null)
+        Justification = "The caller invokes skills during a request and the HttpClient instance must remain alive for those requests to be successful.")]
+    internal static void RegisterGraphSkills(this IKernel kernel, string graphToken, IEnumerable<string>? skillsToLoad = null)
     {
         IList<DelegatingHandler> handlers = GraphClientFactory.CreateDefaultHandlers(new TokenAuthenticationProvider(graphToken));
         GraphServiceClient graphServiceClient = new(GraphClientFactory.Create(handlers));
@@ -135,7 +135,7 @@ internal static class Extensions
         _ = kernel.ImportSkill(new TextMemorySkill(kernel.Memory), nameof(TextMemorySkill));
     }
 
-    internal static void RegisterNativeSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
+    internal static void RegisterMethodLevelSkills(this IKernel kernel, IEnumerable<string>? skillsToLoad = null)
     {
         if (ShouldLoad(nameof(DocumentSkill), skillsToLoad))
         {

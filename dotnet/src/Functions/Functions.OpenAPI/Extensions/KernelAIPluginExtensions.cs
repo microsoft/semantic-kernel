@@ -405,8 +405,8 @@ public static class KernelAIPluginExtensions
             })
             .ToList();
 
-        var function = SKFunction.FromNativeFunction(
-            nativeFunction: ExecuteAsync,
+        var function = SKFunction.FromMethod(
+            delegatedFunction: ExecuteAsync,
             parameters: parameters,
             description: operation.Description,
             pluginName: pluginName,
