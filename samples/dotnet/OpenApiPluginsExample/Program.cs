@@ -51,7 +51,7 @@ internal sealed class Program
         AIServiceOptions aiOptions = configuration.GetRequiredSection(AIServiceOptions.PropertyName).Get<AIServiceOptions>()
             ?? throw new InvalidOperationException($"Missing configuration for {AIServiceOptions.PropertyName}.");
 
-        KernelBuilder kb = Kernel.Builder
+        KernelBuilder kb = new KernelBuilder()
             .WithLogger(loggerFactory.CreateLogger<IKernel>());
 
         switch (aiOptions.Type)

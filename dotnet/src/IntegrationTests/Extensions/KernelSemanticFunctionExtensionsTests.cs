@@ -27,7 +27,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsAsync()
     {
-        var builder = Kernel.Builder
+        var builder = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();
@@ -46,7 +46,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
     [Fact]
     public async Task ItSupportsFunctionCallsWithInputAsync()
     {
-        var builder = Kernel.Builder
+        var builder = new KernelBuilder()
                 .WithAIService<ITextCompletion>(null, new RedirectTextCompletion(), true)
                 .WithLoggerFactory(this._logger);
         IKernel target = builder.Build();

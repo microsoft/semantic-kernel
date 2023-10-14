@@ -28,7 +28,7 @@ public class SemanticFunctionTests
     {
         // Arrange
         var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithDefaultAIService<ITextCompletion>(factory.Object)
             .Build();
 
@@ -51,7 +51,7 @@ public class SemanticFunctionTests
         mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
             .Build();
 
@@ -74,7 +74,7 @@ public class SemanticFunctionTests
     public void ItAllowsToCreateFunctionsInTheGlobalNamespace()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         var templateConfig = new PromptTemplateConfig();
 
         // Act
@@ -96,7 +96,7 @@ public class SemanticFunctionTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
             .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
             .Build();
@@ -124,7 +124,7 @@ public class SemanticFunctionTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
             .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
             .Build();
@@ -148,7 +148,7 @@ public class SemanticFunctionTests
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
 
-        var kernel = Kernel.Builder
+        var kernel = new KernelBuilder()
             .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
             .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
             .Build();
@@ -170,7 +170,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
@@ -198,7 +198,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
@@ -220,7 +220,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
@@ -244,7 +244,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var invoked = 0;
 
@@ -269,7 +269,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var semanticFunction1 = sut.CreateSemanticFunction("Write one phrase about UnitTests", functionName: "SkipMe");
         var semanticFunction2 = sut.CreateSemanticFunction("Write two phrases about UnitTests", functionName: "DontSkipMe");
@@ -310,7 +310,7 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
@@ -339,7 +339,7 @@ public class SemanticFunctionTests
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var semanticFunction = sut.CreateSemanticFunction(prompt);
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -363,7 +363,7 @@ public class SemanticFunctionTests
     [Fact]
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var semanticFunction = sut.CreateSemanticFunction(prompt);
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
@@ -397,7 +397,7 @@ public class SemanticFunctionTests
         const string PluginName = "MyPlugin";
         const string Prompt = "Write a simple phrase about UnitTests";
 
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
         var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
