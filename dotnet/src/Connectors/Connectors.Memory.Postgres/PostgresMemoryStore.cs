@@ -210,7 +210,7 @@ public class PostgresMemoryStore : IMemoryStore, IDisposable
     {
         if (disposing)
         {
-            this._dataSource?.Dispose();
+            (this._dataSource as IDisposable)?.Dispose();
         }
     }
 
