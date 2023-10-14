@@ -31,8 +31,8 @@ This starter can be configured in two ways:
 - Or with HTTP Headers on each request
 
 Make sure you have an
-[Open AI API Key](https://openai.com/api/) or
-[Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
+[OpenAI API Key](https://openai.com/product/) or
+[Azure OpenAI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api)
 
 ### Configure with a .env file
 

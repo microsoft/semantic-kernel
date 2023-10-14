@@ -20,7 +20,7 @@ public static class Example09_FunctionTypes
             .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
-        var fakeContext = new SKContext(kernel);
+        var variables = new ContextVariables();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates
         var testFunctions = kernel.ImportFunctions(new LocalExamplePlugin(), "test");
@@ -60,17 +60,17 @@ public static class Example09_FunctionTypes
         await kernel.RunAsync(testFunctions["type03"]);
         await kernel.RunAsync(kernel.Functions.GetFunction("test", "type03"));
 
-        await kernel.RunAsync(testFunctions["type04"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type04"));
+        await kernel.RunAsync(testFunctions["type04"], variables);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type04"));
 
-        await kernel.RunAsync(testFunctions["type05"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type05"));
+        await kernel.RunAsync(testFunctions["type05"], variables);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type05"));
 
-        await kernel.RunAsync(testFunctions["type06"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type06"));
+        await kernel.RunAsync(testFunctions["type06"], variables);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type06"));
 
-        await kernel.RunAsync(testFunctions["type07"], fakeContext.Variables);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type07"));
+        await kernel.RunAsync(testFunctions["type07"], variables);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type07"));
 
         await kernel.RunAsync("", testFunctions["type08"]);
         await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type08"));
@@ -84,8 +84,8 @@ public static class Example09_FunctionTypes
         await kernel.RunAsync("", testFunctions["type11"]);
         await kernel.RunAsync("", kernel.Functions.GetFunction("test", "type11"));
 
-        await kernel.RunAsync(fakeContext.Variables, testFunctions["type12"]);
-        await kernel.RunAsync(fakeContext.Variables, kernel.Functions.GetFunction("test", "type12"));
+        await kernel.RunAsync(variables, testFunctions["type12"]);
+        await kernel.RunAsync(variables, kernel.Functions.GetFunction("test", "type12"));
 
         await kernel.RunAsync(testFunctions["type18"]);
         await kernel.RunAsync(kernel.Functions.GetFunction("test", "type18"));
@@ -132,9 +132,9 @@ public class LocalExamplePlugin
     public async Task<string> Type06Async(SKContext context)
     {
         var summarizer = context.Functions.GetFunction("SummarizePlugin", "Summarize");
-        var summary = await context.Kernel.RunAsync("blah blah blah", summarizer);
+        var summary = await context.Runner.RunAsync(summarizer, new ContextVariables("blah blah blah"));
 
-        Console.WriteLine($"Running function type 6 [{summary}]");
+        Console.WriteLine($"Running function type 6 [{summary.GetValue<string>()}]");
         return "";
     }
 

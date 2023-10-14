@@ -53,7 +53,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._api_key = api_key
         self._api_type = api_type
         self._api_version = api_version
-        self._endpoint = endpoint
+        self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
 
@@ -161,7 +161,7 @@ class OpenAITextCompletion(TextCompletionClientBase):
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
-                "OpenAI service failed to complete the prompt",
+                f"{self.__class__.__name__} failed to complete the prompt",
                 ex,
             )
 

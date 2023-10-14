@@ -2,7 +2,7 @@
 
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
 /// <summary>
 /// Interface of static blocks that don't need async IO to be rendered.
