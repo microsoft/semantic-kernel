@@ -106,7 +106,6 @@ public sealed class Kernel : IKernel, IDisposable
         );
         foreach (KeyValuePair<string, ISKFunction> f in functions)
         {
-            f.Value.SetDefaultFunctionCollection(this.Functions);
             this._functionCollection.AddFunction(f.Value);
         }
 
@@ -118,7 +117,6 @@ public sealed class Kernel : IKernel, IDisposable
     {
         Verify.NotNull(customFunction);
 
-        customFunction.SetDefaultFunctionCollection(this.Functions);
         this._functionCollection.AddFunction(customFunction);
 
         return customFunction;
