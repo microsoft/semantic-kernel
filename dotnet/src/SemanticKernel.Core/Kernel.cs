@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
@@ -47,7 +47,7 @@ public sealed class Kernel : IKernel, IDisposable
     public static KernelBuilder Builder => new();
 
     /// <inheritdoc/>
-    public IDelegatingHandlerFactory HttpHandlerFactory => this._httpHandlerFactory;
+    public IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <inheritdoc/>
     public event EventHandler<FunctionInvokingEventArgs>? FunctionInvoking;
@@ -70,10 +70,12 @@ public sealed class Kernel : IKernel, IDisposable
         IPromptTemplateEngine promptTemplateEngine,
         ISemanticTextMemory memory,
         IDelegatingHandlerFactory httpHandlerFactory,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory? loggerFactory)
     {
+        loggerFactory ??= NullLoggerFactory.Instance;
+
         this.LoggerFactory = loggerFactory;
-        this._httpHandlerFactory = httpHandlerFactory;
+        this.HttpHandlerFactory = httpHandlerFactory;
         this.PromptTemplateEngine = promptTemplateEngine;
         this._memory = memory;
         this._aiServiceProvider = aiServiceProvider;
@@ -81,36 +83,6 @@ public sealed class Kernel : IKernel, IDisposable
         this._functionCollection = functionCollection;
 
         this._logger = loggerFactory.CreateLogger(typeof(Kernel));
-    }
-
-    /// <inheritdoc/>
-    public IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null)
-    {
-        Verify.NotNull(functionsInstance);
-
-        if (string.IsNullOrWhiteSpace(pluginName))
-        {
-            pluginName = FunctionCollection.GlobalFunctionsPluginName;
-            this._logger.LogTrace("Importing functions from {0} to the global plugin namespace", functionsInstance.GetType().FullName);
-        }
-        else
-        {
-            this._logger.LogTrace("Importing functions from {0} to the {1} namespace", functionsInstance.GetType().FullName, pluginName);
-        }
-
-        Dictionary<string, ISKFunction> functions = ImportFunctions(
-            functionsInstance,
-            pluginName!,
-            this._logger,
-            this.LoggerFactory
-        );
-        foreach (KeyValuePair<string, ISKFunction> f in functions)
-        {
-            f.Value.SetDefaultFunctionCollection(this.Functions);
-            this._functionCollection.AddFunction(f.Value);
-        }
-
-        return functions;
     }
 
     /// <inheritdoc/>
@@ -123,32 +95,6 @@ public sealed class Kernel : IKernel, IDisposable
 
         return customFunction;
     }
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(ISKFunction skFunction,
-        ContextVariables? variables = null,
-        CancellationToken cancellationToken = default)
-        => this.RunAsync(variables ?? new(), cancellationToken, skFunction);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), pipeline);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(string input, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), pipeline);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(ContextVariables variables, params ISKFunction[] pipeline)
-        => this.RunAsync(variables, CancellationToken.None, pipeline);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(), cancellationToken, pipeline);
-
-    /// <inheritdoc/>
-    public Task<KernelResult> RunAsync(string input, CancellationToken cancellationToken, params ISKFunction[] pipeline)
-        => this.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
 
     /// <inheritdoc/>
     public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
@@ -266,7 +212,6 @@ repeat:
     private readonly IPromptTemplateEngine _promptTemplateEngine;
     private readonly IAIServiceProvider _aiServiceProvider;
     private readonly ILogger _logger;
-    private readonly IDelegatingHandlerFactory _httpHandlerFactory;
 
     /// <summary>
     /// Execute the OnFunctionInvoking event handlers.
@@ -304,40 +249,6 @@ repeat:
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Import a native functions into the kernel function collection, so that semantic functions and pipelines can consume its functions.
-    /// </summary>
-    /// <param name="pluginInstance">Class instance from which to import available native functions</param>
-    /// <param name="pluginName">Plugin name, used to group functions under a shared namespace</param>
-    /// <param name="logger">Application logger</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>Dictionary of functions imported from the given class instance, case-insensitively indexed by name.</returns>
-    private static Dictionary<string, ISKFunction> ImportFunctions(object pluginInstance, string pluginName, ILogger logger, ILoggerFactory loggerFactory)
-    {
-        MethodInfo[] methods = pluginInstance.GetType().GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
-        logger.LogTrace("Importing plugin name: {0}. Potential methods found: {1}", pluginName, methods.Length);
-
-        // Filter out non-SKFunctions and fail if two functions have the same name
-        Dictionary<string, ISKFunction> result = new(StringComparer.OrdinalIgnoreCase);
-        foreach (MethodInfo method in methods)
-        {
-            if (method.GetCustomAttribute<SKFunctionAttribute>() is not null)
-            {
-                ISKFunction function = SKFunction.FromNativeMethod(method, pluginInstance, pluginName, loggerFactory);
-                if (result.ContainsKey(function.Name))
-                {
-                    throw new SKException("Function overloads are not supported, please differentiate function names");
-                }
-
-                result.Add(function.Name, function);
-            }
-        }
-
-        logger.LogTrace("Methods imported {0}", result.Count);
-
-        return result;
     }
 
     #endregion
