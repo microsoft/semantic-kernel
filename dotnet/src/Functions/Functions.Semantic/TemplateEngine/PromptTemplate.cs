@@ -6,9 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.TemplateEngine;
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Prompt template.
