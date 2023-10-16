@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.DeepDev.TokenizerLib" />
     <PackageReference Include="System.Linq.Async" />
+    <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
