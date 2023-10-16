@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.Text;
 
 #pragma warning disable IDE0130
@@ -28,14 +28,16 @@ public static class KernelSemanticFunctionExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplate">Prompt template.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(
         this IKernel kernel,
         string functionName,
-        SemanticFunctionConfig functionConfig)
+        PromptTemplateConfig promptTemplateConfig,
+        IPromptTemplate promptTemplate)
     {
-        return kernel.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsPluginName, functionName, functionConfig);
+        return kernel.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsPluginName, functionName, promptTemplateConfig, promptTemplate);
     }
 
     /// <summary>
@@ -44,18 +46,20 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="pluginName">Name of the plugin containing the function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
-    /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplate">Prompt template.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(
         this IKernel kernel,
         string pluginName,
         string functionName,
-        SemanticFunctionConfig functionConfig)
+        PromptTemplateConfig promptTemplateConfig,
+        IPromptTemplate promptTemplate)
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidFunctionName(functionName);
 
-        ISKFunction function = kernel.CreateSemanticFunction(pluginName, functionName, functionConfig);
+        ISKFunction function = kernel.CreateSemanticFunction(pluginName, functionName, promptTemplateConfig, promptTemplate);
         return kernel.RegisterCustomFunction(function);
     }
 
@@ -81,19 +85,19 @@ public static class KernelSemanticFunctionExtensions
     {
         functionName ??= RandomFunctionName();
 
-        var config = new PromptTemplateConfig
+        var promptTemplateConfig = new PromptTemplateConfig
         {
             Description = description ?? "Generic function, unknown purpose",
         };
 
         if (requestSettings is not null)
         {
-            config.ModelSettings.Add(requestSettings);
+            promptTemplateConfig.ModelSettings.Add(requestSettings);
         }
 
         return kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,
-            config: config,
+            promptTemplateConfig: promptTemplateConfig,
             functionName: functionName,
             pluginName: pluginName);
     }
@@ -103,7 +107,7 @@ public static class KernelSemanticFunctionExtensions
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
     /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
-    /// <param name="config">Optional function settings</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="pluginName">An optional plugin name, e.g. to namespace functions with the same name. When empty,
     /// the function is added to the global namespace, overwriting functions with the same name</param>
@@ -111,7 +115,7 @@ public static class KernelSemanticFunctionExtensions
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
         string promptTemplate,
-        PromptTemplateConfig config,
+        PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
         string? pluginName = null)
     {
@@ -119,22 +123,19 @@ public static class KernelSemanticFunctionExtensions
         Verify.ValidFunctionName(functionName);
         if (!string.IsNullOrEmpty(pluginName)) { Verify.ValidPluginName(pluginName); }
 
-        var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
-
-        // Prepare lambda wrapping AI logic
-        var functionConfig = new SemanticFunctionConfig(config, template);
+        var template = new PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
 
         // TODO: manage overwrites, potentially error out
         return string.IsNullOrEmpty(pluginName)
-            ? kernel.RegisterSemanticFunction(functionName, functionConfig)
-            : kernel.RegisterSemanticFunction(pluginName!, functionName, functionConfig);
+            ? kernel.RegisterSemanticFunction(functionName, promptTemplateConfig, template)
+            : kernel.RegisterSemanticFunction(pluginName!, functionName, promptTemplateConfig, template);
     }
 
     /// <summary>
     /// Invoke a semantic function using the provided prompt template.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="template">Plain language definition of the semantic function, using SK template language</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="pluginName">Optional plugin name, for namespacing and avoid collisions</param>
     /// <param name="description">Optional description, useful for the planner</param>
@@ -142,14 +143,14 @@ public static class KernelSemanticFunctionExtensions
     /// <returns>Kernel execution result</returns>
     public static Task<KernelResult> InvokeSemanticFunctionAsync(
         this IKernel kernel,
-        string promptTemplate,
+        string template,
         string? functionName = null,
         string? pluginName = null,
         string? description = null,
         AIRequestSettings? requestSettings = null)
     {
         var skFunction = kernel.CreateSemanticFunction(
-            promptTemplate,
+            template,
             functionName,
             pluginName,
             description,
@@ -256,14 +257,12 @@ public static class KernelSemanticFunctionExtensions
                 // Load prompt template
                 var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);
 
-                var functionConfig = new SemanticFunctionConfig(config, template);
-
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
                     logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginDirectoryName, functionName, dir);
                 }
 
-                functions[functionName] = kernel.RegisterSemanticFunction(pluginDirectoryName, functionName, functionConfig);
+                functions[functionName] = kernel.RegisterSemanticFunction(pluginDirectoryName, functionName, config, template);
             }
         }
 
@@ -276,12 +275,14 @@ public static class KernelSemanticFunctionExtensions
         this IKernel kernel,
         string pluginName,
         string functionName,
-        SemanticFunctionConfig functionConfig)
+        PromptTemplateConfig promptTemplateConfig,
+        IPromptTemplate promptTemplate)
     {
         ISKFunction func = SemanticFunction.FromSemanticConfig(
             pluginName,
             functionName,
-            functionConfig,
+            promptTemplateConfig,
+            promptTemplate,
             kernel.LoggerFactory
         );
 
@@ -289,10 +290,10 @@ public static class KernelSemanticFunctionExtensions
         // is invoked manually without a context and without a way to find other functions.
         func.SetDefaultFunctionCollection(kernel.Functions);
 
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.GetDefaultRequestSettings());
+        func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => kernel.GetService<ITextCompletion>(functionConfig.PromptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
+        func.SetAIService(() => kernel.GetService<ITextCompletion>(promptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
 
         return func;
     }
