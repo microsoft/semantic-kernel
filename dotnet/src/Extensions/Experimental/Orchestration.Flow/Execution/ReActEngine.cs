@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 namespace Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 
@@ -198,9 +198,8 @@ internal sealed class ReActEngine
     private ISKFunction ImportSemanticFunction(IKernel kernel, string functionName, string promptTemplate, PromptTemplateConfig config)
     {
         var template = new PromptTemplate(promptTemplate, config, kernel.PromptTemplateEngine);
-        var functionConfig = new SemanticFunctionConfig(config, template);
 
-        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, functionConfig);
+        return kernel.RegisterSemanticFunction(RestrictedPluginName, functionName, config, template);
     }
 
     private string CreateScratchPad(List<ReActStep> stepsTaken)
