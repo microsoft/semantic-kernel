@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Memory.Collections;
 /// Structure for storing data which can be scored.
 /// </summary>
 /// <typeparam name="T">Data type.</typeparam>
-public readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
+internal readonly struct ScoredValue<T> : IComparable<ScoredValue<T>>, IEquatable<ScoredValue<T>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ScoredValue{T}"/> struct.
