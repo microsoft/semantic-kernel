@@ -21,7 +21,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
     _model_id: str
     _api_version: str
     _base_url: str
-    _log: Logger
+    _logger: Logger
     _prompt_tokens: int
     _completion_tokens: int
     _total_tokens: int
@@ -31,7 +31,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         model_id: str,
         api_version: Optional[str] = None,
         base_url: Optional[str] = None,
-        log: Optional[Logger] = None,
+        logger: Optional[Logger] = None,
     ) -> None:
         """
         Initializes a new instance of the OpenAITextCompletion class.
@@ -41,14 +41,14 @@ class OllamaTextCompletion(TextCompletionClientBase):
                 https://ollama.ai/library
         """
         self._model_id = model_id
-        self._api_version = api_version or "0.1.0"
+        self._api_version = api_version or "0.1.3"
         self._base_url = base_url or "http://127.0.0.1:11434"
-        self._log = log if log is not None else NullLogger()
+        self._logger = logger if logger is not None else NullLogger()
 
         # Ensure that the Ollama service is running and that the model is ready.
         try:
             show_info = asyncio.run(self.show(model_id))
-            self._log.debug(show_info)
+            self._logger.debug(show_info)
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
@@ -74,7 +74,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         # TODO Support choices/number_of_responses.
         assert request_settings.number_of_responses == 1
         result = ""
-        response = self._send_completion_request(prompt, request_settings, logger)
+        response = self._send_completion_request(prompt, request_settings, logger, stream=False)
         async for c in response:
             result += c
         return result
@@ -86,7 +86,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         request_settings: CompleteRequestSettings,
         logger: Optional[Logger] = None,
     ):
-        response = self._send_completion_request(prompt, request_settings, logger)
+        response = self._send_completion_request(prompt, request_settings, logger, stream=True)
 
         async for chunk in response:
             if request_settings.number_of_responses > 1:
@@ -102,7 +102,8 @@ class OllamaTextCompletion(TextCompletionClientBase):
         self,
         prompt: str,
         request_settings: CompleteRequestSettings,
-        logger: Optional[Logger] = None
+        logger: Optional[Logger] = None,
+        stream: bool = False,
     ):
         """
         Completes the given prompt. Returns a single string completion.
@@ -115,7 +116,7 @@ class OllamaTextCompletion(TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        logger = logger or self._log
+        logger = logger or self._logger
         if self._api_version != '0.1.0':
             raise ValueError(f"Unsupported Ollama API version: {self._api_version}. Only 0.1.0 is supported.")
         if not prompt:
@@ -141,10 +142,10 @@ class OllamaTextCompletion(TextCompletionClientBase):
         request = dict(
             model=self._model_id,
             prompt=prompt,
+            stream=stream,
         )
 
         try:
-            # Only streaming is supported.
             async with aiohttp.ClientSession() as session:
                 async with session.post(f'{self._base_url}/api/generate', json=request) as r:
                     async for chunk in r.content:

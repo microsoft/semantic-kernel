@@ -14,7 +14,7 @@ from semantic_kernel.connectors.ai.ollama import (
 
 # TODO Update this file for Ollama.
 
-def test_azure_text_completion_init() -> None:
+def test_ollama_text_completion_init() -> None:
     deployment_name = "test_deployment"
     endpoint = "https://test-endpoint.com"
     logger = Logger("test_logger")
