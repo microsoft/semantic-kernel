@@ -253,10 +253,7 @@ public static class KernelAIPluginExtensions
     {
         using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
 
-        if (!string.IsNullOrEmpty(executionParameters?.UserAgent))
-        {
-            requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters!.UserAgent));
-        }
+        requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters?.UserAgent ?? Telemetry.HttpUserAgent));
 
         using var response = await httpClient.SendWithSuccessCheckAsync(requestMessage, cancellationToken).ConfigureAwait(false);
 
@@ -354,7 +351,7 @@ public static class KernelAIPluginExtensions
 
         var logger = kernel.LoggerFactory is not null ? kernel.LoggerFactory.CreateLogger(typeof(KernelAIPluginExtensions)) : NullLogger.Instance;
 
-        async Task<SKContext> ExecuteAsync(SKContext context)
+        async Task<RestApiOperationResponse> ExecuteAsync(SKContext context)
         {
             try
             {
@@ -389,20 +386,13 @@ public static class KernelAIPluginExtensions
                     ApiHostUrl = documentUri is not null ? new Uri(documentUri.GetLeftPart(UriPartial.Authority)) : null
                 };
 
-                var result = await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
-
-                if (result != null)
-                {
-                    context.Variables.Update(result.ToString());
-                }
+                return await runner.RunAsync(operation, arguments, options, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 logger.LogError(ex, "RestAPI function {Plugin}.{Name} execution failed with error {Error}", pluginName, operation.Id, ex.Message);
                 throw;
             }
-
-            return context;
         }
 
         var parameters = restOperationParameters

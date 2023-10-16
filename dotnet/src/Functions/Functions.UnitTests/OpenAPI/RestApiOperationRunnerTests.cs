@@ -115,11 +115,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.NotNull(result);
 
-        var contentProperty = result["content"]?.ToString();
-        Assert.Equal("fake-content", contentProperty);
+        Assert.Equal("fake-content", result.Content);
 
-        var contentTypeProperty = result["contentType"]?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentTypeProperty);
+        Assert.Equal("application/json; charset=utf-8", result.ContentType);
 
         this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }
@@ -170,11 +168,9 @@ public sealed class RestApiOperationRunnerTests : IDisposable
 
         Assert.NotNull(result);
 
-        var contentProperty = result["content"]?.ToString();
-        Assert.Equal("fake-content", contentProperty);
+        Assert.Equal("fake-content", result.Content);
 
-        var contentTypeProperty = result["contentType"]?.ToString();
-        Assert.Equal("text/plain; charset=utf-8", contentTypeProperty);
+        Assert.Equal("text/plain; charset=utf-8", result.ContentType);
 
         this._authenticationHandlerMock.Verify(x => x(It.IsAny<HttpRequestMessage>()), Times.Once);
     }
@@ -895,6 +891,121 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act and Assert
+        await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
+    }
+
+    [Theory]
+    [InlineData(MediaTypeNames.Application.Json)]
+    [InlineData(MediaTypeNames.Application.Xml)]
+    [InlineData(MediaTypeNames.Text.Plain)]
+    [InlineData(MediaTypeNames.Text.Html)]
+    [InlineData(MediaTypeNames.Text.Xml)]
+    [InlineData("text/csv")]
+    [InlineData("text/markdown")]
+    public async Task ItShouldReadContentAsStringSuccessfullyAsync(string contentType)
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, contentType);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
+            payload: null
+        );
+
+        var arguments = new Dictionary<string, string>
+        {
+            { "payload", JsonSerializer.Serialize(new { value = "fake-value" }) },
+            { "content-type", "application/json" }
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Equal("fake-content", result.Content);
+
+        Assert.Equal($"{contentType}; charset=utf-8", result.ContentType);
+    }
+
+    [Theory]
+    [InlineData("image/jpeg")]
+    [InlineData("image/png")]
+    [InlineData("image/gif")]
+    [InlineData("image/svg+xml")]
+    [InlineData("image/bmp")]
+    [InlineData("image/x-icon")]
+    public async Task ItShouldReadContentAsBytesSuccessfullyAsync(string contentType)
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent(new byte[] { 00, 01, 02 });
+        this._httpMessageHandlerStub.ResponseToReturn.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
+            payload: null
+        );
+
+        var arguments = new Dictionary<string, string>
+        {
+            { "payload", JsonSerializer.Serialize(new { value = "fake-value" }) },
+            { "content-type", "application/json" }
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(result);
+
+        Assert.Equal(new byte[] { 00, 01, 02 }, result.Content);
+
+        Assert.Equal($"{contentType}", result.ContentType);
+    }
+
+    [Fact]
+    public async Task ItShouldThrowExceptionForUnsupportedContentTypeAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, "fake/type");
+
+        var operation = new RestApiOperation(
+            "fake-id",
+            new Uri("https://fake-random-test-host"),
+            "fake-path",
+            HttpMethod.Post,
+            "fake-description",
+            new List<RestApiOperationParameter>(),
+            new Dictionary<string, string>(),
+            payload: null
+        );
+
+        var arguments = new Dictionary<string, string>
+        {
+            { "payload", JsonSerializer.Serialize(new { value = "fake-value" }) },
+            { "content-type", "application/json" }
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
+
+        // Act & Assert
         await Assert.ThrowsAsync<SKException>(() => sut.RunAsync(operation, arguments));
     }
 

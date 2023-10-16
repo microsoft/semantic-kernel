@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
 using Microsoft.SemanticKernel.Orchestration;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RepoUtils;
 
@@ -35,7 +34,7 @@ public static class Example23_OpenApiPlugin_GitHub
 
         var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
-            "../../../samples/dotnet/OpenApiPluginsExample/GitHubPlugin/openapi.json",
+            "../../../../../../samples/dotnet/OpenApiPluginsExample/GitHubPlugin/openapi.json",
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
@@ -44,18 +43,20 @@ public static class Example23_OpenApiPlugin_GitHub
         contextVariables.Set("repo", "semantic-kernel");
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, plugin["PullsList"]);
+        var kernelResult = await kernel.RunAsync(contextVariables, plugin["PullList"]);
 
         Console.WriteLine("Successful GitHub List Pull Requests plugin response.");
-        var resultJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.GetValue<string>()!);
-        var pullRequests = JArray.Parse((string)resultJson!["content"]);
-
-        if (pullRequests != null && pullRequests.First != null)
+        var response = kernelResult.GetValue<RestApiOperationResponse>();
+        if (response != null)
         {
-            var number = pullRequests.First["number"];
-            return number?.ToString() ?? string.Empty;
-        }
+            var pullRequests = JArray.Parse(response.Content?.ToString() ?? "null");
 
+            if (pullRequests != null && pullRequests.First != null)
+            {
+                var number = pullRequests.First["number"];
+                return number?.ToString() ?? string.Empty;
+            }
+        }
         Console.WriteLine("No pull requests found.");
 
         return string.Empty;
@@ -67,7 +68,7 @@ public static class Example23_OpenApiPlugin_GitHub
 
         var plugin = await kernel.ImportPluginFunctionsAsync(
             "GitHubPlugin",
-            "../../../samples/apps/copilot-chat-app/webapi/Skills/OpenApiSkills/GitHubSkill/openapi.json",
+            "../../../../../../samples/dotnet/OpenApiPluginsExample/GitHubPlugin/openapi.json",
             new OpenApiFunctionExecutionParameters { AuthCallback = authenticationProvider.AuthenticateRequestAsync });
 
         // Add arguments for required parameters, arguments for optional ones can be skipped.
@@ -77,8 +78,8 @@ public static class Example23_OpenApiPlugin_GitHub
         contextVariables.Set("pull_number", pullNumber);
 
         // Run
-        var result = await kernel.RunAsync(contextVariables, plugin["PullsGet"]);
+        var kernelResult = await kernel.RunAsync(contextVariables, plugin["PullsGet"]);
 
-        Console.WriteLine("Successful GitHub Get Pull Request plugin response: {0}", result);
+        Console.WriteLine("Successful GitHub Get Pull Request plugin response: {0}", kernelResult.GetValue<RestApiOperationResponse>()?.Content);
     }
 }

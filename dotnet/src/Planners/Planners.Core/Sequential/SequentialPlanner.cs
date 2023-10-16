@@ -38,7 +38,7 @@ public sealed class SequentialPlanner : ISequentialPlanner
         this.Config.ExcludedPlugins.Add(RestrictedPluginName);
 
         // Set up prompt template
-        string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("skprompt.txt");
+        string promptTemplate = this.Config.GetPromptTemplate?.Invoke() ?? EmbeddedResource.Read("Sequential.skprompt.txt");
 
         this._functionFlowFunction = kernel.CreateSemanticFunction(
             promptTemplate: promptTemplate,

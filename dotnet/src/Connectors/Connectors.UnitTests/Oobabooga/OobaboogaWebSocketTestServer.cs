@@ -15,6 +15,7 @@ namespace SemanticKernel.Connectors.UnitTests.Oobabooga;
 /// The server accepts WebSocket connections, receives requests, and generates responses based on the Oobabooga text completion logic.
 /// The OobaboogaWebSocketTestServer class uses a delegate to handle the request and response logic, allowing customization of the behavior.
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 internal sealed class OobaboogaWebSocketTestServer : WebSocketTestServer
 {
     public OobaboogaWebSocketTestServer(string url, Func<string, List<string>> stringHandler, ILogger? logger = null)
