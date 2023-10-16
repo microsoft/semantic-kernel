@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -51,27 +51,30 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// </summary>
     /// <param name="pluginName">Name of the plugin to which the function being created belongs.</param>
     /// <param name="functionName">Name of the function to create.</param>
-    /// <param name="functionConfig">Semantic function configuration.</param>
+    /// <param name="promptTemplateConfig">Prompt template configuration.</param>
+    /// <param name="promptTemplate">Prompt template.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>SK function instance.</returns>
     public static ISKFunction FromSemanticConfig(
         string pluginName,
         string functionName,
-        SemanticFunctionConfig functionConfig,
+        PromptTemplateConfig promptTemplateConfig,
+        IPromptTemplate promptTemplate,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(functionConfig);
+        Verify.NotNull(promptTemplateConfig);
+        Verify.NotNull(promptTemplate);
 
         var func = new SemanticFunction(
-            template: functionConfig.PromptTemplate,
-            description: functionConfig.PromptTemplateConfig.Description,
+            template: promptTemplate,
+            description: promptTemplateConfig.Description,
             pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
         );
-        func.SetAIConfiguration(functionConfig.PromptTemplateConfig.GetDefaultRequestSettings());
+        func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
 
         return func;
     }
