@@ -103,13 +103,14 @@ steps:
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        var builder = Kernel.Builder.WithLoggerFactory(this._logger);
-
-        builder.WithAzureChatCompletionService(
-            deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
-            endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey,
-            alsoAsTextCompletion: true);
+        var builder = Kernel.Builder
+            .WithLoggerFactory(this._logger)
+            .WithRetryBasic()
+            .WithAzureChatCompletionService(
+                deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
+                endpoint: azureOpenAIConfiguration.Endpoint,
+                apiKey: azureOpenAIConfiguration.ApiKey,
+                alsoAsTextCompletion: true);
 
         return builder;
     }
