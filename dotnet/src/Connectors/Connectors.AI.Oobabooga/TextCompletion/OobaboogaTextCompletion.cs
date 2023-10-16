@@ -23,6 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.Oobabooga.TextCompletion;
 /// Oobabooga text completion service API.
 /// Adapted from <see href="https://github.com/oobabooga/text-generation-webui/tree/main/api-examples"/>
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 public sealed class OobaboogaTextCompletion : ITextCompletion
 {
     /// <summary>

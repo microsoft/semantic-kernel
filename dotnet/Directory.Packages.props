@@ -12,6 +12,7 @@
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="11.3.4" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="[1.1.0, )" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.0-rc.2.23479.6" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageVersion Include="Polly" Version="8.0.0" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="6.0.1" />
@@ -41,6 +42,7 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0-rc.2.23510.2" />
     <!-- Plugins -->
     <PackageVersion Include="DocumentFormat.OpenXml" Version="2.20.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="7.0.12" />
