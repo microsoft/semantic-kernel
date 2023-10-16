@@ -12,9 +12,6 @@
     <NoWarn>CA1050;CA1707;CA2007;VSTHRD111;CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="appsettings.json" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
@@ -69,5 +66,10 @@
     <EmbeddedResource Include="Resources\EnglishRoberta\dict.txt" />
     <EmbeddedResource Include="Resources\EnglishRoberta\encoder.json" />
     <EmbeddedResource Include="Resources\EnglishRoberta\vocab.bpe" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
