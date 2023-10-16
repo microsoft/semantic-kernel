@@ -126,7 +126,7 @@ class TextMemorySkill(PydanticField):
         )
         if not collection:
             raise ValueError("Memory collection not defined for TextMemorySkill")
-        
+
         key = context.variables.get(TextMemorySkill.KEY_PARAM, None)
         if not key:
             raise ValueError("Memory key not defined for TextMemorySkill")
