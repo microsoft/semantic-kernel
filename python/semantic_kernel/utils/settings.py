@@ -206,7 +206,7 @@ def azure_cosmos_db_settings_from_dot_env() -> Tuple[str, str, str, str]:
         dict: The Azure CosmosDB environment variables
     """
     config = dotenv_values(".env")
-    cosmos_api = "mongo"
+    cosmos_api = config.get("AZCOSMOS_API")
     cosmos_connstr = config.get("AZCOSMOS_CONNSTR")
     cosmos_database_name = config.get("AZCOSMOS_DATABASE_NAME")
     cosmos_container_name = config.get("AZCOSMOS_CONTAINER_NAME")

@@ -62,7 +62,7 @@ def memory_record3():
 
 
 async def azurecosmosdb_memorystore() -> MemoryStoreBase:
-    store = await AzureCosmosDBMemoryStore.create()
+    store = await AzureCosmosDBMemoryStore.create(num_lists=1, similarity= "COS", vector_dimensions= 8)
     return store
 
 

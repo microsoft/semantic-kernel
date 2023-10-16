@@ -21,7 +21,7 @@ VECTOR_DIMENSION = 1536
 # Abstract class similar to the original data store that allows API level abstraction
 class AzureCosmosDBStoreApi(ABC):
     @abstractmethod
-    async def ensure(self):
+    async def ensure(self, num_lists, similarity, vector_dimensions):
         raise NotImplementedError
 
     @abstractmethod
@@ -97,7 +97,7 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
         self.collection = None
         self.mongoClient = mongoClient
 
-    async def ensure(self):
+    async def ensure(self, num_lists, similarity, vector_dimensions):
         assert self.mongoClient.is_mongos
         self.collection = self.mongoClient[cosmos_database_name][
             cosmos_container_name
@@ -111,8 +111,9 @@ class MongoStoreApi(AzureCosmosDBStoreApi):
                     "key": {"embedding": "cosmosSearch"},
                     "cosmosSearchOptions": {
                         "kind": "vector-ivf",
-                        "similarity": "COS",
-                        "dimensions": VECTOR_DIMENSION,
+                        "numLists": num_lists,
+                        "similarity": similarity,
+                        "dimensions": vector_dimensions,
                     },
                 }
             ]
@@ -292,18 +293,18 @@ class AzureCosmosDBMemoryStore(MemoryStoreBase):
         self.cosmosStore = cosmosStore
 
     @staticmethod
-    async def create() -> MemoryStoreBase:
+    async def create(num_lists, similarity, vector_dimensions) -> MemoryStoreBase:
         """Creates the underlying data store based on the API definition"""
         # Right now this only supports Mongo, but set up to support more later.
         apiStore: AzureCosmosDBStoreApi = None
         match cosmos_api:
-            case "mongo":
+            case "mongo-vcore":
                 mongoClient = MongoClient(cosmos_connstr)
                 apiStore = MongoStoreApi(mongoClient)
             case _:
                 raise NotImplementedError
 
-        await apiStore.ensure()
+        await apiStore.ensure(num_lists, similarity, vector_dimensions)
         store = AzureCosmosDBMemoryStore(apiStore)
         return store
 
