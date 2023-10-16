@@ -64,12 +64,18 @@ class TextMemorySkill(PydanticField):
         collection = context.variables.get(
             TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
         )
+        if not collection:
+            raise ValueError("Memory collection not defined for TextMemorySkill")
         relevance = context.variables.get(
             TextMemorySkill.RELEVANCE_PARAM, TextMemorySkill.DEFAULT_RELEVANCE
         )
+        if not relevance:
+            raise ValueError("Relevance key not defined for TextMemorySkill")
         limit = context.variables.get(
             TextMemorySkill.LIMIT_PARAM, TextMemorySkill.DEFAULT_LIMIT
         )
+        if limit is None or str(limit).strip() == "":
+            raise ValueError("Limit key not defined for TextMemorySkill")
         results = await context.memory.search_async(
             collection=collection,
             query=ask,
@@ -118,6 +124,9 @@ class TextMemorySkill(PydanticField):
         collection = context.variables.get(
             TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
         )
+        if not collection:
+            raise ValueError("Memory collection not defined for TextMemorySkill")
+        
         key = context.variables.get(TextMemorySkill.KEY_PARAM, None)
         if not key:
             raise ValueError("Memory key not defined for TextMemorySkill")
