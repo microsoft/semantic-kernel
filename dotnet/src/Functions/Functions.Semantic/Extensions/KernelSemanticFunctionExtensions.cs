@@ -286,10 +286,6 @@ public static class KernelSemanticFunctionExtensions
             kernel.LoggerFactory
         );
 
-        // Connect the function to the current kernel function collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultFunctionCollection(kernel.Functions);
-
         func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked

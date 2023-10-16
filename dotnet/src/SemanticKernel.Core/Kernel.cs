@@ -90,7 +90,6 @@ public sealed class Kernel : IKernel, IDisposable
     {
         Verify.NotNull(customFunction);
 
-        customFunction.SetDefaultFunctionCollection(this.Functions);
         this._functionCollection.AddFunction(customFunction);
 
         return customFunction;
