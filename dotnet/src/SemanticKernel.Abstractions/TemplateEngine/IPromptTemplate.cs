@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Orchestration;
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Interface for prompt template.
