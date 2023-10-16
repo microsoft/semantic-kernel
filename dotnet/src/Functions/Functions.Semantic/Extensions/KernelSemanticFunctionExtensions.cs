@@ -251,7 +251,7 @@ public static class KernelSemanticFunctionExtensions
                 logger ??= kernel.LoggerFactory.CreateLogger(typeof(IKernel));
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    logger.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+                    logger.LogTrace("Config {0}: {1}", functionName, Json.Serialize(config));
                 }
 
                 // Load prompt template
