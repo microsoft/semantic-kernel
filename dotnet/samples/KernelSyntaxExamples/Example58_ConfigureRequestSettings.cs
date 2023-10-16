@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -68,7 +68,7 @@ public static class Example58_ConfigureRequestSettings
           }
         }";
         var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-        var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
+        var func = kernel.CreateSemanticFunction(prompt, templateConfig!, "HelloAI");
 
         result = await kernel.RunAsync(func);
         Console.WriteLine(result.GetValue<string>());

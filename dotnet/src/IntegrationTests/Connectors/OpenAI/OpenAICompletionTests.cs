@@ -11,7 +11,7 @@ using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Reliability.Basic;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -356,14 +356,12 @@ public sealed class OpenAICompletionTests : IDisposable
 
         var defaultFunc = target.RegisterSemanticFunction(
             "WherePlugin", "FishMarket1",
-            new SemanticFunctionConfig(
-                defaultConfig,
-                new PromptTemplate(prompt, defaultConfig, target.PromptTemplateEngine)));
+            defaultConfig,
+            new PromptTemplate(prompt, defaultConfig, target.PromptTemplateEngine));
         var azureFunc = target.RegisterSemanticFunction(
             "WherePlugin", "FishMarket2",
-            new SemanticFunctionConfig(
-                azureConfig,
-                new PromptTemplate(prompt, azureConfig, target.PromptTemplateEngine)));
+            azureConfig,
+            new PromptTemplate(prompt, azureConfig, target.PromptTemplateEngine));
 
         // Act
         await Assert.ThrowsAsync<HttpOperationException>(() => target.RunAsync(defaultFunc));

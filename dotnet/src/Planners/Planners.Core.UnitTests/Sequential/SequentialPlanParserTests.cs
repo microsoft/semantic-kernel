@@ -4,7 +4,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
@@ -87,7 +87,8 @@ public class SequentialPlanParserTests
                 kernelMock.Setup(x => x.RegisterSemanticFunction(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<SemanticFunctionConfig>()
+                    It.IsAny<PromptTemplateConfig>(),
+                    It.IsAny<IPromptTemplate>()
                 )).Returns(mockFunction.Object);
             }
             else
