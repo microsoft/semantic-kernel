@@ -41,7 +41,7 @@ internal sealed class OpenApiDocumentParser : IOpenApiDocumentParser
     {
         var jsonObject = await this.DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
 
-        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonObject.ToJson()));
+        using var memoryStream = new MemoryStream(Json.SerializeToUtf8Bytes(jsonObject));
 
         var result = await this._openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
 
