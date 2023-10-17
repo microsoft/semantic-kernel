@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Class for extensions methods for IKernel using OpenAI request settings.
+/// Class for extension methods for <see cref="IKernel"/> using OpenAI request settings.
 /// </summary>
 public static class KernelOpenAIExtensions
 {
