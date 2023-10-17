@@ -28,19 +28,27 @@ def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict:
     return ret_dict
 
 
-def milvus_dict_to_memoryrecord(milvus_dict: dict) -> MemoryRecord:
+def milvus_dict_to_memoryrecord(
+    milvus_dict: dict, with_embeddings: bool
+) -> MemoryRecord:
     """Convert Milvus search result dict into MemoryRecord.
 
     Args:
         milvus_dict (dict): Search hit
+        with_embeddings (bool): Whether to include the embedding in the results.
 
     Returns:
         MemoryRecord
     """
     # Embedding needs conversion to numpy array
     embedding = milvus_dict.get("embedding", None)
+
+    if not with_embeddings:
+        embedding = None
+
     if embedding is not None:
         embedding = array(embedding)
+
     return MemoryRecord(
         is_reference=milvus_dict.get("is_reference", None),
         external_source_name=milvus_dict.get("external_source_name", None),
@@ -280,9 +288,10 @@ class MilvusMemoryStore(MemoryStoreBase):
             gets = self._client.get(
                 collection_name=collection_name,
                 ids=keys,
-                output_fields=["*"] if not with_embeddings else ["*", EMBEDDING_FIELD],
+                output_fields=["*"],
             )
-            return [milvus_dict_to_memoryrecord(get) for get in gets]
+
+            return [milvus_dict_to_memoryrecord(get, with_embeddings) for get in gets]
         except Exception as e:
             self._logger.debug(f"Get failed due to: {e}")
             raise e
@@ -433,7 +442,10 @@ class MilvusMemoryStore(MemoryStoreBase):
                 res["entity"][EMBEDDING_FIELD] = vectors[res[ID_FIELD]]
 
         results = [
-            (milvus_dict_to_memoryrecord(result["entity"]), result["distance"])
+            (
+                milvus_dict_to_memoryrecord(result["entity"], with_embeddings),
+                result["distance"],
+            )
             for result in results
         ]
 
