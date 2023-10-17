@@ -41,6 +41,12 @@ public sealed class Kernel : IKernel, IDisposable
     /// <inheritdoc/>
     public IPromptTemplateEngine PromptTemplateEngine { get; }
 
+    /// <summary>
+    /// Return a new instance of the kernel builder, used to build and configure kernel instances.
+    /// </summary>
+    [Obsolete("This field will be removed in a future release. Initialize KernelBuilder through constructor instead (new KernelBuilder()).")]
+    public static KernelBuilder Builder => new();
+
     /// <inheritdoc/>
     public IDelegatingHandlerFactory HttpHandlerFactory { get; }
 

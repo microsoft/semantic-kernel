@@ -2,7 +2,7 @@
 
 // ==========================================================================================================
 // The easier way to instantiate the Semantic Kernel is to use KernelBuilder.
-// You can access the builder using either new KernelBuilder() or KernelBuilder.
+// You can access the builder using new KernelBuilder().
 
 #pragma warning disable CA1852
 
