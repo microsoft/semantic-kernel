@@ -5,8 +5,8 @@ import static com.microsoft.semantickernel.exceptions.ConfigurationException.Err
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.ai.openai.models.NonAzureOpenAIKeyCredential;
 import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import java.io.File;
 import java.util.Collections;
@@ -221,7 +221,7 @@ public class OpenAIClientProvider {
         }
 
         return new OpenAIClientBuilder()
-                .credential(new NonAzureOpenAIKeyCredential(settings.getKey()))
+                .credential(new KeyCredential(settings.getKey()))
                 .buildAsyncClient();
     }
 
