@@ -251,7 +251,7 @@ public static class KernelSemanticFunctionExtensions
                 logger ??= kernel.LoggerFactory.CreateLogger(typeof(IKernel));
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    logger.LogTrace("Config {0}: {1}", functionName, config.ToJson());
+                    logger.LogTrace("Config {0}: {1}", functionName, Json.Serialize(config));
                 }
 
                 // Load prompt template
@@ -285,10 +285,6 @@ public static class KernelSemanticFunctionExtensions
             promptTemplate,
             kernel.LoggerFactory
         );
-
-        // Connect the function to the current kernel function collection, in case the function
-        // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultFunctionCollection(kernel.Functions);
 
         func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
 

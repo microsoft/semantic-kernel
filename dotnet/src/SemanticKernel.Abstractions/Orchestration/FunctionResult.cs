@@ -10,6 +10,8 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// </summary>
 public sealed class FunctionResult
 {
+    internal Dictionary<string, object>? _metadata;
+
     /// <summary>
     /// Name of executed function.
     /// </summary>
@@ -23,7 +25,11 @@ public sealed class FunctionResult
     /// <summary>
     /// Metadata for storing additional information about function execution result.
     /// </summary>
-    public Dictionary<string, object> Metadata { get; internal set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata
+    {
+        get => this._metadata ??= new();
+        internal set => this._metadata = value;
+    }
 
     /// <summary>
     /// Function result object.
@@ -86,7 +92,8 @@ public sealed class FunctionResult
     /// </summary>
     public bool TryGetMetadataValue<T>(string key, out T value)
     {
-        if (this.Metadata.TryGetValue(key, out object? valueObject) &&
+        if (this._metadata is { } metadata &&
+            metadata.TryGetValue(key, out object? valueObject) &&
             valueObject is T typedValue)
         {
             value = typedValue;

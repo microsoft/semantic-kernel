@@ -86,10 +86,6 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
         this._function.SetAIService(serviceFactory);
 
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
-        this._function.SetDefaultFunctionCollection(functions);
-
     #region private ================================================================================
 
     private readonly ISKFunction _function;
@@ -189,9 +185,14 @@ public sealed class InstrumentedSKFunction : ISKFunction
     public bool IsSemantic => this._function.IsSemantic;
 
     /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [Obsolete("This method is a nop and will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this._function.SetDefaultFunctionCollection(skills);
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }
