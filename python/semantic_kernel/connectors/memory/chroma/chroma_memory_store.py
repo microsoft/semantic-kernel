@@ -100,11 +100,14 @@ class ChromaMemoryStore(MemoryStoreBase):
         self, collection_name: str
     ) -> Optional["Collection"]:
         try:
-            # Current version of ChromeDB rejects camel case collection names.
-            return self._client.get_collection(
-                name=camel_to_snake(collection_name),
-                embedding_function=self._default_embedding_function,
-            )
+            if camel_to_snake(collection_name) in await self.get_collections_async():
+                # Current version of ChromeDB rejects camel case collection names.
+                return self._client.get_collection(
+                    name=camel_to_snake(collection_name),
+                    embedding_function=self._default_embedding_function,
+                )
+            else:
+                return None
         except ValueError:
             return None
 
