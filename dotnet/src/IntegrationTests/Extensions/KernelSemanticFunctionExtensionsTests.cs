@@ -37,7 +37,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         var prompt = $"Hey {{{{{FunctionCollection.GlobalFunctionsPluginName}.GetEmailAddress}}}}";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Equal("Hey johndoe1234@example.com", actual.GetValue<string>());
@@ -56,7 +56,7 @@ public sealed class KernelSemanticFunctionExtensionsTests : IDisposable
         var prompt = $"Hey {{{{{FunctionCollection.GlobalFunctionsPluginName}.GetEmailAddress \"a person\"}}}}";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Equal("Hey a person@example.com", actual.GetValue<string>());
