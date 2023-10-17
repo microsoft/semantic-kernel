@@ -16,6 +16,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 /// <summary>
 /// Integration tests for <see cref=" OobaboogaTextCompletion"/>.
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {
     private const string Endpoint = "http://localhost";

@@ -49,7 +49,7 @@ public sealed class KernelBuilder
     public IKernel Build()
     {
         var instance = new Kernel(
-            new FunctionCollection(this._loggerFactory),
+            new FunctionCollection(),
             this._aiServices.Build(),
             this._promptTemplateEngine ?? this.CreateDefaultPromptTemplateEngine(this._loggerFactory),
             this._memoryFactory.Invoke(),
