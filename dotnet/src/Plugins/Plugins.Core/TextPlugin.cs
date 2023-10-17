@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// TextPlugin provides a set of functions to manipulate strings.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportPlugin("text", new TextPlugin());
+/// Usage: kernel.ImportFunctions(new TextPlugin(), "text");
 ///
 /// Examples:
 /// SKContext.Variables["input"] = "  hello world  "

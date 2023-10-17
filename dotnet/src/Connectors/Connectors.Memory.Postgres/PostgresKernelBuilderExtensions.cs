@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.ComponentModel;
 using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 using Npgsql;
 
@@ -10,6 +12,8 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides extension methods for the <see cref="KernelBuilder"/> class to configure Postgres connectors.
 /// </summary>
+[Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use PostgresMemoryBuilderExtensions instead.")]
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class PostgresKernelBuilderExtensions
 {
     /// <summary>
@@ -20,6 +24,8 @@ public static class PostgresKernelBuilderExtensions
     /// <param name="vectorSize">Embedding vector size.</param>
     /// <param name="schema">Schema of collection tables.</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use PostgresMemoryBuilderExtensions.WithPostgresMemoryStore instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithPostgresMemoryStore(this KernelBuilder builder,
         string connectionString,
         int vectorSize,
@@ -41,6 +47,8 @@ public static class PostgresKernelBuilderExtensions
     /// <param name="vectorSize">Embedding vector size.</param>
     /// <param name="schema">Schema of collection tables.</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use PostgresMemoryBuilderExtensions.WithPostgresMemoryStore instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithPostgresMemoryStore(this KernelBuilder builder,
         NpgsqlDataSource dataSource,
         int vectorSize,
@@ -60,6 +68,8 @@ public static class PostgresKernelBuilderExtensions
     /// <param name="builder">The <see cref="KernelBuilder"/> instance</param>
     /// <param name="postgresDbClient">Postgres database client.</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. Use PostgresMemoryBuilderExtensions.WithPostgresMemoryStore instead.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static KernelBuilder WithPostgresMemoryStore(this KernelBuilder builder, IPostgresDbClient postgresDbClient)
     {
         builder.WithMemoryStorage((loggerFactory) =>

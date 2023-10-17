@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
-using Microsoft.SemanticKernel.TemplateEngine.Prompt;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of Plan
@@ -61,7 +61,7 @@ public class StepwisePlanner : IStepwisePlanner
         this._promptConfig.SetMaxTokens(this.Config.MaxCompletionTokens);
 
         // Initialize prompt renderer
-        this._promptRenderer = new PromptTemplateEngine(this._kernel.LoggerFactory);
+        this._promptRenderer = new BasicPromptTemplateEngine(this._kernel.LoggerFactory);
 
         // Import native functions
         this._nativeFunctions = this._kernel.ImportFunctions(this, RestrictedPluginName);
@@ -528,9 +528,18 @@ public class StepwisePlanner : IStepwisePlanner
 
         try
         {
+            string? result = null;
+
             var vars = this.CreateActionContextVariables(actionVariables);
             var kernelResult = await this._kernel.RunAsync(targetFunction, vars, cancellationToken).ConfigureAwait(false);
-            var result = kernelResult.GetValue<string>();
+            var resultObject = kernelResult.GetValue<object>();
+
+            var converter = TypeDescriptor.GetConverter(resultObject);
+
+            if (converter.CanConvertTo(typeof(string)))
+            {
+                result = converter.ConvertToString(resultObject);
+            }
 
             this._logger?.LogTrace("Invoked {FunctionName}. Result: {Result}", targetFunction.Name, result);
 
@@ -639,7 +648,7 @@ public class StepwisePlanner : IStepwisePlanner
     /// <summary>
     /// The prompt renderer to use for the system step
     /// </summary>
-    private readonly PromptTemplateEngine _promptRenderer;
+    private readonly BasicPromptTemplateEngine _promptRenderer;
 
     /// <summary>
     /// The prompt config to use for the system step

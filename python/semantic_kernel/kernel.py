@@ -253,6 +253,7 @@ class Kernel:
         input_context: Optional[SKContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
+        **kwargs: Dict[str, Any],
     ) -> SKContext:
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
@@ -304,7 +305,6 @@ class Kernel:
                     return context
 
                 pipeline_step += 1
-
                 try:
                     function_details = func.describe()
 
@@ -321,7 +321,9 @@ class Kernel:
                         )
                         break
 
-                    context = await func.invoke_async(input=None, context=context)
+                    context = await func.invoke_async(
+                        input=None, context=context, **kwargs
+                    )
 
                     if context.error_occurred:
                         self._log.error(

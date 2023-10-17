@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Orchestration;
 using Moq;
 using Xunit;
@@ -13,13 +12,11 @@ namespace SemanticKernel.UnitTests.Orchestration;
 /// </summary>
 public class FunctionResultTests
 {
-    private readonly Mock<IKernel> _kernel = new();
+    private readonly Mock<IFunctionRunner> _functionRunner = new();
 
     private SKContext CreateContext()
     {
-        var functions = new Mock<IFunctionCollection>();
-
-        return new SKContext(this._kernel.Object);
+        return new SKContext(this._functionRunner.Object);
     }
 
     [Fact]
@@ -132,5 +129,16 @@ public class FunctionResultTests
         Assert.Equal(pluginName, target.PluginName);
         Assert.Equal(context, target.Context);
         Assert.Equal(value, target.Value);
+    }
+
+    [Fact]
+    public void ToStringWorksCorrectly()
+    {
+        // Arrange
+        string value = Guid.NewGuid().ToString();
+        FunctionResult target = new("functionName", "pluginName", this.CreateContext(), value);
+
+        // Act and Assert
+        Assert.Equal(value, target.ToString());
     }
 }

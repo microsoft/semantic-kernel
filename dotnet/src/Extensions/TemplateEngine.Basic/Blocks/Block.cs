@@ -3,7 +3,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Prompt.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine.Basic.Blocks;
 
 /// <summary>
 /// Base class for blocks parsed from a prompt template
