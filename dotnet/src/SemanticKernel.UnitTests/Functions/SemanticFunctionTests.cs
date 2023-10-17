@@ -19,7 +19,7 @@ using Xunit;
 
 // ReSharper disable StringLiteralTypo
 
-namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
+namespace SemanticKernel.UnitTests.Functions;
 
 public class SemanticFunctionTests
 {
