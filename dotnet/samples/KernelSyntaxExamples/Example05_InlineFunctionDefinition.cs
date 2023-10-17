@@ -3,6 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -48,7 +49,7 @@ Excuse: I've been too busy training my pet dragon.
 Event: {{$input}}
 ";
 
-        var excuseFunction = kernel.CreateSemanticFunctionForOpenAI(promptTemplate, maxTokens: 100, temperature: 0.4, topP: 1);
+        var excuseFunction = kernel.CreateSemanticFunction(promptTemplate, new OpenAIRequestSettings() { MaxTokens = 100, Temperature = 0.4, TopP = 1 });
 
         var result = await kernel.RunAsync("I missed the F1 final race", excuseFunction);
         Console.WriteLine(result.GetValue<string>());
@@ -56,7 +57,7 @@ Event: {{$input}}
         result = await kernel.RunAsync("sorry I forgot your birthday", excuseFunction);
         Console.WriteLine(result.GetValue<string>());
 
-        var fixedFunction = kernel.CreateSemanticFunctionForOpenAI($"Translate this date {DateTimeOffset.Now:f} to French format", maxTokens: 100);
+        var fixedFunction = kernel.CreateSemanticFunction($"Translate this date {DateTimeOffset.Now:f} to French format", new OpenAIRequestSettings() { MaxTokens = 100 });
 
         result = await kernel.RunAsync(fixedFunction);
         Console.WriteLine(result.GetValue<string>());

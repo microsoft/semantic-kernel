@@ -282,7 +282,7 @@ Question: {{$input}}
 Answer:
 ";
 
-        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, requestSettings: new OpenAIRequestSettings() { MaxTokens = 100 });
+        var aboutMeOracle = kernel.CreateSemanticFunction(RecallFunctionDefinition, new OpenAIRequestSettings() { MaxTokens = 100 });
 
         result = await kernel.RunAsync(aboutMeOracle, new()
         {
