@@ -45,30 +45,11 @@ public static class KernelOpenAISemanticFunctionExtensions
         double topP = 0,
         double presencePenalty = 0,
         double frequencyPenalty = 0,
-        ICollection<string>? stopSequences = null,
+        IEnumerable<string>? stopSequences = null,
         string? chatSystemPrompt = null,
         string? serviceId = null)
     {
-        var requestSettings = new OpenAIRequestSettings()
-        {
-            MaxTokens = maxTokens,
-            Temperature = temperature,
-            TopP = topP,
-            PresencePenalty = presencePenalty,
-            FrequencyPenalty = frequencyPenalty,
-            ServiceId = serviceId
-        };
-        if (stopSequences is not null)
-        {
-            foreach (var stopSequence in stopSequences)
-            {
-                requestSettings.StopSequences.Add(stopSequence);
-            }
-        }
-        if (!string.IsNullOrEmpty(chatSystemPrompt))
-        {
-            requestSettings.ChatSystemPrompt = chatSystemPrompt!;
-        }
+        OpenAIRequestSettings requestSettings = CreateRequestSettings(maxTokens, temperature, topP, presencePenalty, frequencyPenalty, stopSequences, chatSystemPrompt, serviceId);
         return kernel.CreateSemanticFunction(
             promptTemplate,
             functionName,
@@ -109,10 +90,7 @@ public static class KernelOpenAISemanticFunctionExtensions
         string? chatSystemPrompt = null,
         string? serviceId = null)
     {
-        var requestSettings = new OpenAIRequestSettings()
-        {
-
-        };
+        OpenAIRequestSettings requestSettings = CreateRequestSettings(maxTokens, temperature, topP, presencePenalty, frequencyPenalty, stopSequences, chatSystemPrompt, serviceId);
         return kernel.InvokeSemanticFunctionAsync(
             promptTemplate,
             functionName,
@@ -120,4 +98,32 @@ public static class KernelOpenAISemanticFunctionExtensions
             description,
             requestSettings);
     }
+
+    #region private
+    private static OpenAIRequestSettings CreateRequestSettings(int? maxTokens, double temperature, double topP, double presencePenalty, double frequencyPenalty, IEnumerable<string>? stopSequences, string? chatSystemPrompt, string? serviceId)
+    {
+        var requestSettings = new OpenAIRequestSettings()
+        {
+            MaxTokens = maxTokens,
+            Temperature = temperature,
+            TopP = topP,
+            PresencePenalty = presencePenalty,
+            FrequencyPenalty = frequencyPenalty,
+            ServiceId = serviceId
+        };
+        if (stopSequences is not null)
+        {
+            foreach (var stopSequence in stopSequences)
+            {
+                requestSettings.StopSequences.Add(stopSequence);
+            }
+        }
+        if (!string.IsNullOrEmpty(chatSystemPrompt))
+        {
+            requestSettings.ChatSystemPrompt = chatSystemPrompt!;
+        }
+
+        return requestSettings;
+    }
+    #endregion
 }
