@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Planners;
 /// Instrumented planner that uses set of semantic functions to select one function out of many and create a plan.
 /// Captures planner-related logs and metrics.
 /// </summary>
-public class InstrumentedActionPlanner : IActionPlanner
+internal sealed class InstrumentedActionPlanner : IActionPlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedActionPlanner"/> class.
