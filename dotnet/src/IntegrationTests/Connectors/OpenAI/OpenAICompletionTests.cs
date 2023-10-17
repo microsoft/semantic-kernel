@@ -99,7 +99,8 @@ public sealed class OpenAICompletionTests : IDisposable
         IKernel target = builder.Build();
 
         var func = target.CreateSemanticFunction(
-            "List the two planets after '{{$input}}', excluding moons, using bullet points.");
+            "List the two planets after '{{$input}}', excluding moons, using bullet points.",
+            new OpenAIRequestSettings());
 
         var result = await func.InvokeAsync("Jupiter", target);
 
@@ -310,7 +311,7 @@ public sealed class OpenAICompletionTests : IDisposable
         var prompt = "Where is the most famous fish market in Seattle, Washington, USA?";
 
         // Act
-        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        KernelResult actual = await target.InvokeSemanticFunctionAsync(prompt, new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Assert
         Assert.Contains("Pike Place", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);

@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Planners;
 /// Instrumented planner that uses semantic function to create a sequential plan.
 /// Captures planner-related logs and metrics.
 /// </summary>
-public sealed class InstrumentedSequentialPlanner : ISequentialPlanner
+internal sealed class InstrumentedSequentialPlanner : ISequentialPlanner
 {
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSequentialPlanner"/> class.
