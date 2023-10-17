@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -825,6 +828,39 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         Assert.Equal(expected, result.GetValue<string>());
     }
 
+    [Fact]
+    public async Task ItReturnsValidKernelResultOnPlanExecutionAsync()
+    {
+        // Arrange
+        const string PluginName = "MyPlugin";
+
+        var kernel = new KernelBuilder().Build();
+        var functions = new List<ISKFunction>();
+
+        [SKName("Function1")]
+        static string Function1() => "Result1";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName));
+
+        [SKName("Function2")]
+        static string Function2() => "Result2";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName));
+
+        [SKName("Function3")]
+        static string Function3() => "Result3";
+        functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
+
+        var plan = new Plan("my goal", functions[0], functions[1], functions[2]);
+
+        // Act
+        var result = await kernel.RunAsync(plan);
+        var functionResults = result.FunctionResults.ToList();
+
+        // Assert
+        Assert.Equal("Result1", functionResults[0].GetValue<string>());
+        Assert.Equal("Result2", functionResults[1].GetValue<string>());
+        Assert.Equal("Result3", functionResults[2].GetValue<string>());
+    }
+
     private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock) SetupKernelMock(IFunctionCollection? functions = null)
     {
         functions ??= new Mock<IFunctionCollection>().Object;
@@ -848,5 +884,10 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         });
 
         return (kernel, functionRunner);
+    }
+
+    private static MethodInfo Method(Delegate method)
+    {
+        return method.Method;
     }
 }
