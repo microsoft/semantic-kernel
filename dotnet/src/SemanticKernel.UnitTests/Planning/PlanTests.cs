@@ -853,12 +853,14 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Act
         var result = await kernel.RunAsync(plan);
-        var functionResults = result.FunctionResults.ToList();
+        var planResults = result.GetPlanResults().ToList();
 
         // Assert
-        Assert.Equal("Result1", functionResults[0].GetValue<string>());
-        Assert.Equal("Result2", functionResults[1].GetValue<string>());
-        Assert.Equal("Result3", functionResults[2].GetValue<string>());
+        Assert.Equal("Result3", result.GetValue<string>());
+
+        this.AssertFunctionResult(planResults[0], PluginName, "Function1", "Result1");
+        this.AssertFunctionResult(planResults[1], PluginName, "Function2", "Result2");
+        this.AssertFunctionResult(planResults[2], PluginName, "Function3", "Result3");
     }
 
     private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock) SetupKernelMock(IFunctionCollection? functions = null)
@@ -889,5 +891,12 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
     private static MethodInfo Method(Delegate method)
     {
         return method.Method;
+    }
+
+    private void AssertFunctionResult(FunctionResult actualResult, string pluginName, string functionName, object value)
+    {
+        Assert.Equal(pluginName, actualResult.PluginName);
+        Assert.Equal(functionName, actualResult.FunctionName);
+        Assert.Equal(value, actualResult.Value);
     }
 }

@@ -240,7 +240,7 @@ public sealed class Plan : IPlan
     {
         if (this.HasNextStep)
         {
-            var step = this.Steps[this.NextStepIndex];
+            var step = this.GetNextStep();
 
             // Merge the state with the current context variables for step execution
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
@@ -325,6 +325,7 @@ public sealed class Plan : IPlan
         CancellationToken cancellationToken = default)
     {
         var result = new FunctionResult(this.Name, this.PluginName, context);
+        var stepResults = new List<PlanResult>();
 
         if (this.Function is not null)
         {
@@ -340,23 +341,35 @@ public sealed class Plan : IPlan
                 .WithInstrumentation(context.LoggerFactory)
                 .InvokeAsync(functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-            this.UpdateFunctionResultWithOutputs(result);
         }
         else
         {
             // loop through steps and execute until completion
             while (this.HasNextStep)
             {
+                var step = this.GetNextStep();
+
                 AddVariablesToContext(this.State, context);
                 await this.InvokeNextStepAsync(context, cancellationToken).ConfigureAwait(false);
                 this.UpdateContextWithOutputs(context);
 
-                result = new FunctionResult(this.Name, this.PluginName, context, context.Result);
-                this.UpdateFunctionResultWithOutputs(result);
+                var stepResult = new PlanResult(step.Name, step.PluginName, context, context.Result);
+                this.UpdateFunctionResultWithOutputs(stepResult);
+
+                stepResults.Add(stepResult);
+
+                result = stepResult;
             }
         }
 
-        return result;
+        var planResult = new PlanResult(result.FunctionName, result.PluginName, result.Context, result.Value)
+        {
+            StepResults = stepResults
+        };
+
+        this.UpdateFunctionResultWithOutputs(planResult);
+
+        return planResult;
     }
 
     /// <inheritdoc/>
@@ -490,6 +503,14 @@ public sealed class Plan : IPlan
         }
 
         return functionResult;
+    }
+
+    /// <summary>
+    /// Returns instance of next step based on next step index.
+    /// </summary>
+    private Plan GetNextStep()
+    {
+        return this.Steps[this.NextStepIndex];
     }
 
     /// <summary>
