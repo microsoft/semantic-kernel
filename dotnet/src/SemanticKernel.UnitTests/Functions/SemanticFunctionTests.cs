@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
@@ -28,7 +29,7 @@ public class SemanticFunctionTests
         // Arrange
         var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
         var kernel = Kernel.Builder
-            .WithDefaultAIService(factory.Object)
+            .WithDefaultAIService<ITextCompletion>(factory.Object)
             .Build();
 
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
@@ -51,7 +52,7 @@ public class SemanticFunctionTests
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
         var kernel = Kernel.Builder
-            .WithAIService("x", mockTextCompletion.Object)
+            .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
@@ -96,8 +97,8 @@ public class SemanticFunctionTests
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
         var kernel = Kernel.Builder
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
@@ -124,8 +125,8 @@ public class SemanticFunctionTests
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
         var kernel = Kernel.Builder
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
@@ -148,8 +149,8 @@ public class SemanticFunctionTests
         var mockTextCompletion2 = new Mock<ITextCompletion>();
 
         var kernel = Kernel.Builder
-            .WithAIService("service1", mockTextCompletion1.Object, false)
-            .WithAIService("service2", mockTextCompletion2.Object, true)
+            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
+            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
@@ -175,7 +176,7 @@ public class SemanticFunctionTests
 
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
-        sut.FunctionInvoking += (sender, e) =>
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoked++;
         };
@@ -201,7 +202,7 @@ public class SemanticFunctionTests
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
-        sut.FunctionInvoking += (sender, e) =>
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoked = true;
             e.Cancel();
@@ -225,7 +226,7 @@ public class SemanticFunctionTests
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
 
         var invoked = 0;
-        sut.FunctionInvoking += (sender, e) =>
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoked++;
             e.Cancel();
@@ -247,12 +248,12 @@ public class SemanticFunctionTests
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var invoked = 0;
 
-        sut.FunctionInvoking += (sender, e) =>
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             e.Cancel();
         };
 
-        sut.FunctionInvoked += (sender, e) =>
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             invoked++;
         };
@@ -277,7 +278,7 @@ public class SemanticFunctionTests
         var invoking = 0;
         string invokedFunction = string.Empty;
 
-        sut.FunctionInvoking += (sender, e) =>
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             invoking++;
             if (e.FunctionView.Name == "SkipMe")
@@ -286,7 +287,7 @@ public class SemanticFunctionTests
             }
         };
 
-        sut.FunctionInvoked += (sender, e) =>
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             invokedFunction = e.FunctionView.Name;
             invoked++;
@@ -316,7 +317,7 @@ public class SemanticFunctionTests
         semanticFunction.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
 
-        sut.FunctionInvoked += (sender, e) =>
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             invoked++;
         };
@@ -347,7 +348,7 @@ public class SemanticFunctionTests
         var originalInput = "Importance";
         var newInput = "Problems";
 
-        sut.FunctionInvoking += (sender, e) =>
+        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
         {
             originalInput = newInput;
         };
@@ -371,7 +372,7 @@ public class SemanticFunctionTests
         var originalInput = "Importance";
         var newInput = "Problems";
 
-        sut.FunctionInvoked += (sender, e) =>
+        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
         {
             originalInput = newInput;
         };
