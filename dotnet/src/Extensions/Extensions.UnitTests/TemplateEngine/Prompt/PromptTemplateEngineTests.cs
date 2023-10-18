@@ -339,7 +339,6 @@ public sealed class PromptTemplateEngineTests
             SKFunction.FromNativeMethod(Method(MyFunction3Async), this, "func3")
         };
 
-
         this.MockFunctionRunner(functions);
 
         // Act
