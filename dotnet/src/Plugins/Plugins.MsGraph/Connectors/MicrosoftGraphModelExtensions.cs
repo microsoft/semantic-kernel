@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 
 /// <summary>
-/// Extensions for converting between Microsoft Graph models and skill models.
+/// Extensions for converting between Microsoft Graph models and plugin models.
 /// </summary>
 internal static class MicrosoftGraphModelExtensions
 {

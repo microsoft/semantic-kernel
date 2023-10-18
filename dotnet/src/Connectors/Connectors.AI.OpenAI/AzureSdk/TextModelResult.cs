@@ -32,7 +32,7 @@ public sealed class TextModelResult
     public CompletionsUsage Usage { get; }
 
     /// <summary> Initializes a new instance of TextModelResult. </summary>
-    /// <param name="completionsData"> A completions response object to populate the fields relative the the response.</param>
+    /// <param name="completionsData"> A completions response object to populate the fields relative the response.</param>
     /// <param name="choiceData"> A choice object to populate the fields relative to the resulting choice.</param>
     internal TextModelResult(Completions completionsData, Choice choiceData)
     {

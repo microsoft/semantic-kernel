@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -44,12 +44,12 @@ public static class Example58_ConfigureRequestSettings
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
         var result = await kernel.InvokeSemanticFunctionAsync(
             prompt,
-            requestSettings: new OpenAIRequestSettings()
+            new OpenAIRequestSettings()
             {
                 MaxTokens = 60,
                 Temperature = 0.7
             });
-        Console.WriteLine(result.Result);
+        Console.WriteLine(result.GetValue<string>());
 
         // Option 2:
         // Load prompt template configuration including the request settings from a JSON payload
@@ -68,10 +68,10 @@ public static class Example58_ConfigureRequestSettings
           }
         }";
         var templateConfig = JsonSerializer.Deserialize<PromptTemplateConfig>(configPayload);
-        var func = kernel.CreateSemanticFunction(prompt, config: templateConfig!, "HelloAI");
+        var func = kernel.CreateSemanticFunction(prompt, templateConfig!, "HelloAI");
 
         result = await kernel.RunAsync(func);
-        Console.WriteLine(result.Result);
+        Console.WriteLine(result.GetValue<string>());
 
         /* OUTPUT (using gpt4):
 Hello! As an AI language model, I can help you with a variety of

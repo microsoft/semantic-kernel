@@ -22,6 +22,7 @@ namespace SemanticKernel.Connectors.UnitTests.Oobabooga.TextCompletion;
 /// <summary>
 /// Unit tests for <see cref="OobaboogaTextCompletion"/> class.
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {
     private readonly XunitLogger<OobaboogaTextCompletion> _logger;
@@ -31,10 +32,10 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private const string CompletionText = "fake-test";
     private const string CompletionMultiText = "Hello, my name is";
 
-    private HttpMessageHandlerStub _messageHandlerStub;
-    private HttpClient _httpClient;
-    private Uri _endPointUri;
-    private string _streamCompletionResponseStub;
+    private readonly HttpMessageHandlerStub _messageHandlerStub;
+    private readonly HttpClient _httpClient;
+    private readonly Uri _endPointUri;
+    private readonly string _streamCompletionResponseStub;
 
     public OobaboogaTextCompletionTests(ITestOutputHelper output)
     {

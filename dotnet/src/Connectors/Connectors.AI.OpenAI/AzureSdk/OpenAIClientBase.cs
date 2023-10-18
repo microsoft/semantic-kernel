@@ -40,11 +40,7 @@ public abstract class OpenAIClientBase : ClientBase
 
         this.ModelId = modelId;
 
-        var options = GetClientOptions();
-        if (httpClient != null)
-        {
-            options.Transport = new HttpClientTransport(httpClient);
-        }
+        var options = GetClientOptions(httpClient);
 
         if (!string.IsNullOrWhiteSpace(organization))
         {
@@ -86,10 +82,11 @@ public abstract class OpenAIClientBase : ClientBase
     /// <summary>
     /// Options used by the OpenAI client, e.g. User Agent.
     /// </summary>
-    /// <returns>An instance of <see cref="OpenAIClientOptions"/> with the configured options.</returns>
-    private static OpenAIClientOptions GetClientOptions()
+    /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
+    /// <returns>An instance of <see cref="OpenAIClientOptions"/>.</returns>
+    private static OpenAIClientOptions GetClientOptions(HttpClient? httpClient)
     {
-        return new OpenAIClientOptions
+        var options = new OpenAIClientOptions
         {
             Diagnostics =
             {
@@ -97,5 +94,13 @@ public abstract class OpenAIClientBase : ClientBase
                 ApplicationId = Telemetry.HttpUserAgent,
             }
         };
+
+        if (httpClient != null)
+        {
+            options.Transport = new HttpClientTransport(httpClient);
+            options.RetryPolicy = new RetryPolicy(maxRetries: 0); //Disabling Azure SDK retry policy to use the one provided by the custom HTTP client.
+        }
+
+        return options;
     }
 }

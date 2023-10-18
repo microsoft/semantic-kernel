@@ -1,6 +1,11 @@
 # Local Hugging Face Model Inference Server
 
 > [!IMPORTANT]
+> This sample will be removed in a future release. If you are looking for samples that demonstrate
+> how to use Semantic Kernel, please refer to the sample folders in the root [python](../../../python/samples/)
+> and [dotnet](../../../dotnet/samples/) folders.
+
+> [!IMPORTANT]
 > This learning sample is for educational purposes only and should not be used in any production
 > use case. It is intended to make Semantic Kernel features more accessible for scenarios that
 > do not require an OpenAI or Azure OpenAI endpoint.

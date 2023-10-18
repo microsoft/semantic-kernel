@@ -412,6 +412,7 @@ FodyWeavers.xsd
 .env
 certs/
 launchSettings.json
+!samples/dotnet/MsGraphPluginsExample/Properties/launchSettings.json
 config.development.yaml
 *.development.config
 *.development.json

@@ -39,6 +39,10 @@ def _return_is_context(signature: Signature) -> bool:
     return _is_annotation_of_type(signature.return_annotation, SKContext)
 
 
+def _return_is_none(signature: Signature) -> bool:
+    return signature.return_annotation is None
+
+
 def _no_return(signature: Signature) -> bool:
     return signature.return_annotation is Signature.empty
 
@@ -79,7 +83,7 @@ class DelegateInference(PydanticField):
     @_infers(DelegateTypes.Void)
     def infer_void(signature: Signature, awaitable: bool) -> bool:
         matches = _has_no_params(signature)
-        matches = matches and _no_return(signature)
+        matches = matches and _return_is_none(signature)
         matches = matches and not awaitable
         return matches
 
@@ -103,7 +107,7 @@ class DelegateInference(PydanticField):
     @_infers(DelegateTypes.InSKContext)
     def infer_in_sk_context(signature: Signature, awaitable: bool) -> bool:
         matches = _first_param_is_context(signature)
-        matches = matches and _no_return(signature)
+        matches = matches and _return_is_none(signature)
         matches = matches and not awaitable
         return matches
 
@@ -139,7 +143,7 @@ class DelegateInference(PydanticField):
     @_infers(DelegateTypes.InString)
     def infer_in_string(signature: Signature, awaitable: bool) -> bool:
         matches = _first_param_is_str(signature)
-        matches = matches and _no_return(signature)
+        matches = matches and _return_is_none(signature)
         matches = matches and not awaitable
         return matches
 
@@ -164,7 +168,7 @@ class DelegateInference(PydanticField):
     def infer_in_string_and_context(signature: Signature, awaitable: bool) -> bool:
         matches = _first_param_is_str(signature, only=False)
         matches = matches and _has_two_params_second_is_context(signature)
-        matches = matches and _no_return(signature)
+        matches = matches and _return_is_none(signature)
         matches = matches and not awaitable
         return matches
 
@@ -205,7 +209,7 @@ class DelegateInference(PydanticField):
     @_infers(DelegateTypes.InStringOutTask)
     def infer_in_string_out_task(signature: Signature, awaitable: bool) -> bool:
         matches = _first_param_is_str(signature)
-        matches = matches and _no_return(signature)
+        matches = matches and _return_is_none(signature)
         matches = matches and awaitable
         return matches
 
@@ -213,7 +217,7 @@ class DelegateInference(PydanticField):
     @_infers(DelegateTypes.InContextOutTask)
     def infer_in_context_out_task(signature: Signature, awaitable: bool) -> bool:
         matches = _first_param_is_context(signature)
-        matches = matches and _no_return(signature)
+        matches = matches and _return_is_none(signature)
         matches = matches and awaitable
         return matches
 
@@ -224,7 +228,7 @@ class DelegateInference(PydanticField):
     ) -> bool:
         matches = _first_param_is_str(signature, only=False)
         matches = matches and _has_two_params_second_is_context(signature)
-        matches = matches and _no_return(signature)
+        matches = matches and _return_is_none(signature)
         matches = matches and awaitable
         return matches
 
@@ -232,7 +236,6 @@ class DelegateInference(PydanticField):
     @_infers(DelegateTypes.OutTask)
     def infer_out_task(signature: Signature, awaitable: bool) -> bool:
         matches = _has_no_params(signature)
-        matches = matches and _no_return(signature)
         matches = matches and awaitable
         return matches
 
@@ -249,6 +252,13 @@ class DelegateInference(PydanticField):
     def infer_delegate_type(function) -> DelegateTypes:
         # Get the function signature
         function_signature = signature(function)
+
+        if _no_return(function_signature):
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionTypeNotSupported,
+                "No return type specified, unable to infer DelegateType.",
+            )
+
         awaitable = iscoroutinefunction(function)
 
         for name, value in DelegateInference.__dict__.items():

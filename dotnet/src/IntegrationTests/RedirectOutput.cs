@@ -27,7 +27,7 @@ public class RedirectOutput : TextWriter, ILogger, ILoggerFactory
         this._logs.AppendLine(value);
     }
 
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull
     {
         return null!;
     }

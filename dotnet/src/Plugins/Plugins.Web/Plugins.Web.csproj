@@ -12,8 +12,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - Microsoft Bing Connector</Title>
-    <Description>Semantic Kernel Web Skill: search the web, download files, etc.</Description>
+    <Title>Semantic Kernel - Web Plugins</Title>
+    <Description>Semantic Kernel web plugins: search the web, download files, etc.</Description>
   </PropertyGroup>
 
   <ItemGroup>

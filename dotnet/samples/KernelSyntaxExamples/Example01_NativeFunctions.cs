@@ -11,7 +11,7 @@ public static class Example01_NativeFunctions
     {
         Console.WriteLine("======== Functions ========");
 
-        // Load native skill
+        // Load native plugin
         var text = new TextPlugin();
 
         // Use function without kernel

@@ -47,7 +47,10 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     {
         await foreach (var message in this._choice.GetMessageStreaming(cancellationToken))
         {
-            yield return new SKChatMessage(message);
+            if (message.Content is { Length: > 0 })
+            {
+                yield return new SKChatMessage(message);
+            }
         }
     }
 
@@ -62,7 +65,10 @@ internal sealed class ChatStreamingResult : IChatStreamingResult, ITextStreaming
     {
         await foreach (var result in this.GetStreamingChatMessageAsync(cancellationToken).ConfigureAwait(false))
         {
-            yield return result.Content;
+            if (result.Content is string content and { Length: > 0 })
+            {
+                yield return content;
+            }
         }
     }
 }

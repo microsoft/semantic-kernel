@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.SemanticKernel.Functions.Grpc.Model;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.SemanticKernel.Functions.Grpc.Extensions;
@@ -21,7 +20,7 @@ internal static class GrpcOperationExtensions
     /// <returns>The list of parameters.</returns>
     public static IReadOnlyList<ParameterView> GetParameters(this GrpcOperation operation)
     {
-        var parameters = new List<ParameterView>
+        var parameters = new ParameterView[]
         {
             // Register the "address" parameter so that it's possible to override it if needed.
             new ParameterView(GrpcOperation.AddressArgumentName,

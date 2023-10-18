@@ -16,6 +16,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Oobabooga;
 /// <summary>
 /// Integration tests for <see cref=" OobaboogaTextCompletion"/>.
 /// </summary>
+[Obsolete("This functionality is available as part of new NuGet package: https://www.nuget.org/packages/MyIA.SemanticKernel.Connectors.AI.Oobabooga/. This will be removed in a future release.")]
 public sealed class OobaboogaTextCompletionTests : IDisposable
 {
     private const string Endpoint = "http://localhost";
@@ -23,8 +24,8 @@ public sealed class OobaboogaTextCompletionTests : IDisposable
     private const int StreamingPort = 5005;
 
     private readonly IConfigurationRoot _configuration;
-    private List<ClientWebSocket> _webSockets = new();
-    private Func<ClientWebSocket> _webSocketFactory;
+    private readonly List<ClientWebSocket> _webSockets = new();
+    private readonly Func<ClientWebSocket> _webSocketFactory;
 
     public OobaboogaTextCompletionTests()
     {

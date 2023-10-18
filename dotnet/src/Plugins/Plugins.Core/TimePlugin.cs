@@ -2,7 +2,6 @@
 
 using System;
 using System.ComponentModel;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
@@ -10,7 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// TimePlugin provides a set of functions to get the current time and date.
 /// </summary>
 /// <example>
-/// Usage: kernel.ImportSkill("time", new TimePlugin());
+/// Usage: kernel.ImportFunctions(new TimePlugin(), "time");
 /// Examples:
 /// {{time.date}}            => Sunday, 12 January, 2031
 /// {{time.today}}           => Sunday, 12 January, 2031

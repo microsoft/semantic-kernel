@@ -461,7 +461,7 @@ public sealed class QdrantVectorDbClient : IQdrantVectorDbClient
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private readonly int _vectorSize;
-    private readonly Uri? _endpointOverride = null;
+    private readonly Uri? _endpointOverride;
 
     private static Uri SanitizeEndpoint(string endpoint, int? port = null)
     {

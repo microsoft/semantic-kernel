@@ -9,12 +9,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
-/// Cloud drive skill (e.g. OneDrive).
+/// Cloud drive plugin (e.g. OneDrive).
 /// </summary>
 public sealed class CloudDrivePlugin
 {

@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Planning;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Plugins.Core;
 using RepoUtils;
 
@@ -11,7 +11,7 @@ using RepoUtils;
 // ReSharper disable once InconsistentNaming
 internal static class Example48_GroundednessChecks
 {
-    private static string s_groundingText = @"""I am by birth a Genevese, and my family is one of the most distinguished of that republic.
+    private const string GroundingText = @"""I am by birth a Genevese, and my family is one of the most distinguished of that republic.
 My ancestors had been for many years counsellors and syndics, and my father had filled several public situations
 with honour and reputation.He was respected by all who knew him for his integrity and indefatigable attention
 to public business.He passed his younger days perpetually occupied by the affairs of his country; a variety
@@ -50,11 +50,11 @@ after this event Caroline became his wife.""";
 
     public static async Task RunAsync()
     {
-        await GroundednessCheckingSkillAsync();
+        await GroundednessCheckingAsync();
         await PlanningWithGroundednessAsync();
     }
 
-    public static async Task GroundednessCheckingSkillAsync()
+    public static async Task GroundednessCheckingAsync()
     {
         Console.WriteLine("======== Groundedness Checks ========");
         var kernel = new KernelBuilder()
@@ -65,10 +65,10 @@ after this event Caroline became his wife.""";
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        string folder = RepoFiles.SampleSkillsPath();
-        var functions = kernel.ImportSemanticSkillFromDirectory(folder,
-            "SummarizeSkill",
-            "GroundingSkill");
+        string folder = RepoFiles.SamplePluginsPath();
+        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
+            "SummarizePlugin",
+            "GroundingPlugin");
 
         var create_summary = functions["Summarize"];
         var entityExtraction = functions["ExtractEntities"];
@@ -88,15 +88,15 @@ her a beggar. My father came to her aid and two years later they married.
         context.Variables.Set("topic", "people and places");
         context.Variables.Set("example_entities", "John, Jane, mother, brother, Paris, Rome");
 
-        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).Result;
+        var extractionResult = (await kernel.RunAsync(context.Variables, entityExtraction)).GetValue<string>();
 
         Console.WriteLine("======== Extract Entities ========");
         Console.WriteLine(extractionResult);
 
         context.Variables.Update(extractionResult);
-        context.Variables.Set("reference_context", s_groundingText);
+        context.Variables.Set("reference_context", GroundingText);
 
-        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).Result;
+        var groundingResult = (await kernel.RunAsync(context.Variables, reference_check)).GetValue<string>();
 
         Console.WriteLine("======== Reference Check ========");
         Console.WriteLine(groundingResult);
@@ -106,7 +106,7 @@ her a beggar. My father came to her aid and two years later they married.
         var excisionResult = await kernel.RunAsync(context.Variables, entity_excision);
 
         Console.WriteLine("======== Excise Entities ========");
-        Console.WriteLine(excisionResult.Result);
+        Console.WriteLine(excisionResult.GetValue<string>());
     }
 
     public static async Task PlanningWithGroundednessAsync()
@@ -130,19 +130,19 @@ which are not grounded in the original.
                 TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
-        string folder = RepoFiles.SampleSkillsPath();
-        var functions = kernel.ImportSemanticSkillFromDirectory(folder,
-            "SummarizeSkill",
-            "GroundingSkill");
+        string folder = RepoFiles.SamplePluginsPath();
+        var functions = kernel.ImportSemanticFunctionsFromDirectory(folder,
+            "SummarizePlugin",
+            "GroundingPlugin");
 
-        kernel.ImportSkill(new TextPlugin());
+        kernel.ImportFunctions(new TextPlugin());
 
         var planner = new SequentialPlanner(kernel);
         var plan = await planner.CreatePlanAsync(ask);
         Console.WriteLine(plan.ToPlanWithGoalString());
 
-        var results = await kernel.RunAsync(s_groundingText, plan);
-        Console.WriteLine(results.Result);
+        var results = await kernel.RunAsync(GroundingText, plan);
+        Console.WriteLine(results.GetValue<string>());
     }
 }
 
@@ -179,10 +179,10 @@ which are not grounded in the original.
 
 Steps:
   - _GLOBAL_FUNCTIONS_.Echo INPUT='' => ORIGINAL_TEXT
-  - SummarizeSkill.Summarize INPUT='' => RESULT__SUMMARY
-  - GroundingSkill.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
-  - GroundingSkill.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
-  - GroundingSkill.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
+  - SummarizePlugin.Summarize INPUT='' => RESULT__SUMMARY
+  - GroundingPlugin.ExtractEntities example_entities='John;Jane;mother;brother;Paris;Rome' topic='people and places' INPUT='$RESULT__SUMMARY' => ENTITIES
+  - GroundingPlugin.ReferenceCheckEntities reference_context='$ORIGINAL_TEXT' INPUT='$ENTITIES' => RESULT__UNGROUND_ENTITIES
+  - GroundingPlugin.ExciseEntities ungrounded_entities='$RESULT__UNGROUND_ENTITIES' INPUT='$RESULT__SUMMARY' => RESULT__FINAL_SUMMARY
 A possible summary is:
 
 

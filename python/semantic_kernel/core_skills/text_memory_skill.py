@@ -111,7 +111,7 @@ class TextMemorySkill(PydanticField):
         name=KEY_PARAM,
         description="The unique key to associate with the information",
     )
-    async def save_async(self, text: str, context: "SKContext"):
+    async def save_async(self, text: str, context: "SKContext") -> None:
         """
         Save a fact to the long term memory.
 

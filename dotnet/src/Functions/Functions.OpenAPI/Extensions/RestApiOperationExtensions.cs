@@ -52,9 +52,10 @@ internal static class RestApiOperationExtensions
         {
             // Register the "server-url" parameter if override is provided
             new RestApiOperationParameter(
-                RestApiOperation.ServerUrlArgumentName,
-                "string",
-                false,
+                name: RestApiOperation.ServerUrlArgumentName,
+                type: "string",
+                isRequired: false,
+                expand: false,
                 RestApiOperationParameterLocation.Path,
                 RestApiOperationParameterStyle.Simple,
                 defaultValue: serverUrlString)
@@ -85,7 +86,7 @@ internal static class RestApiOperationExtensions
     /// <returns>A list of <see cref="RestApiOperationParameter"/> representing the payload parameters.</returns>
     private static List<RestApiOperationParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing)
     {
-        if (useParametersFromMetadata is true)
+        if (useParametersFromMetadata)
         {
             if (operation.Payload is null)
             {
@@ -120,6 +121,7 @@ internal static class RestApiOperationExtensions
             RestApiOperation.ContentTypeArgumentName,
             "string",
             isRequired: false,
+            expand: false,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
             description: "Content type of REST API request body.");
@@ -136,6 +138,7 @@ internal static class RestApiOperationExtensions
             RestApiOperation.PayloadArgumentName,
             operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object",
             isRequired: true,
+            expand: false,
             RestApiOperationParameterLocation.Body,
             RestApiOperationParameterStyle.Simple,
             description: operation.Payload?.Description ?? "REST API request body.");
@@ -164,6 +167,7 @@ internal static class RestApiOperationExtensions
                     parameterName,
                     property.Type,
                     property.IsRequired,
+                    expand: false,
                     RestApiOperationParameterLocation.Body,
                     RestApiOperationParameterStyle.Simple,
                     description: property.Description));
@@ -184,7 +188,7 @@ internal static class RestApiOperationExtensions
     /// <returns>The property name.</returns>
     private static string GetPropertyName(RestApiOperationPayloadProperty property, string? rootPropertyName, bool enableNamespacing = false)
     {
-        if (enableNamespacing is true)
+        if (enableNamespacing)
         {
             return string.IsNullOrEmpty(rootPropertyName) ? property.Name : $"{rootPropertyName}.{property.Name}";
         }
