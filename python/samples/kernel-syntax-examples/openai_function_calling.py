@@ -1,11 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-import os
 
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
-from semantic_kernel.core_skills import MathSkill
 
 system_message = """
 You are a chat bot. Your name is Mosscap and
@@ -33,13 +31,6 @@ kernel.add_chat_service(
         api_version=api_version,
     ),
 )
-
-skills_directory = os.path.join(__file__, "../../../../samples/skills")
-# adding skills to the kernel
-# the joke skill in the FunSkills is a semantic skill and has the function calling disabled.
-kernel.import_semantic_skill_from_directory(skills_directory, "FunSkill")
-# the math skill is a core skill and has the function calling enabled.
-kernel.import_skill(MathSkill(), skill_name="math")
 
 # enabling or disabling function calling is done by setting the function_call parameter for the completion.
 # when the function_call parameter is set to "auto" the model will decide which function to use, if any.
@@ -97,7 +88,7 @@ async def main() -> None:
     ] = "I want to find a hotel in Seattle with free wifi and a pool."
 
     context = await chat_function.invoke_async(context=context, functions=functions)
-    if function_call := context.pop_function_call():
+    if function_call := context.objects.pop('function_call', None):
         print(f"Function to be called: {function_call.name}")
         print(f"Function parameters: \n{function_call.arguments}")
         return
