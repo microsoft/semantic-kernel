@@ -1124,13 +1124,13 @@ tqdm = ["tqdm"]
 
 [[package]]
 name = "google-ai-generativelanguage"
-version = "0.2.0"
+version = "0.3.3"
 description = "Google Ai Generativelanguage API client library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google-ai-generativelanguage-0.2.0.tar.gz", hash = "sha256:4d5440a7df7f495f016e5ccd4d9903514264392b240c40d40d28a1356bd9fad3"},
-    {file = "google_ai_generativelanguage-0.2.0-py3-none-any.whl", hash = "sha256:1a82949622da9fbdfbcf10c65084d3789b671fec231ba2a5b2ede3392ebbfeb5"},
+    {file = "google-ai-generativelanguage-0.3.3.tar.gz", hash = "sha256:4b59993e0fd63593171cbb089e7f76f71a4333a62741d3929159aeb2e3532a83"},
+    {file = "google_ai_generativelanguage-0.3.3-py3-none-any.whl", hash = "sha256:2696fe952ceea233e1a95b89a428b7dd587eac6687bd20cc62edd5c8abc32b98"},
 ]
 
 [package.dependencies]
@@ -1198,19 +1198,23 @@ requests = ["requests (>=2.20.0,<3.0.0.dev0)"]
 
 [[package]]
 name = "google-generativeai"
-version = "0.1.0"
+version = "0.2.1"
 description = "Google Generative AI High level API client library and tools."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "google_generativeai-0.1.0-py3-none-any.whl", hash = "sha256:1cdfbef1bfc280a56172c48f480b71665122796f9f98f464e7918b840cc80c07"},
+    {file = "google_generativeai-0.2.1-py3-none-any.whl", hash = "sha256:892c80f33fda68f531e97de67c7796f9c10f68708599506bba2388c53d1d332e"},
 ]
 
 [package.dependencies]
-google-ai-generativelanguage = "0.2.0"
+google-ai-generativelanguage = "0.3.3"
+google-api-core = "*"
+google-auth = "*"
+protobuf = "*"
+tqdm = "*"
 
 [package.extras]
-dev = ["absl-py", "asynctest", "black", "nose2", "pandas", "pytype", "pyyaml"]
+dev = ["absl-py", "black", "nose2", "pandas", "pytype", "pyyaml"]
 
 [[package]]
 name = "googleapis-common-protos"
@@ -5562,4 +5566,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "a7c275ee553f0161330ca47bc9e1b9ca44a664154de6f6d7c5db227a5a55cf8e"
+content-hash = "c6888acd2c89afe448e390a7b3601df3546a0e0892ac31ec958a5830ed7088fa"
