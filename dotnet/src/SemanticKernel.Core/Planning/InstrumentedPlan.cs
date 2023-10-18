@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// <summary>
 /// Standard Semantic Kernel callable plan with instrumentation.
 /// </summary>
-public sealed class InstrumentedPlan : IPlan
+internal sealed class InstrumentedPlan : IPlan
 {
     /// <inheritdoc/>
     public string Name => this._plan.Name;
@@ -67,10 +67,6 @@ public sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
         this._plan.SetAIService(serviceFactory);
-
-    /// <inheritdoc/>
-    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) =>
-        this._plan.SetDefaultFunctionCollection(functions);
 
     #region private ================================================================================
 
@@ -170,9 +166,14 @@ public sealed class InstrumentedPlan : IPlan
     public bool IsSemantic => this._plan.IsSemantic;
 
     /// <inheritdoc/>
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.SetDefaultFunctionCollection instead. This will be removed in a future release.")]
+    [Obsolete("This method is a nop and will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this._plan.SetDefaultFunctionCollection(skills);
+    public ISKFunction SetDefaultSkillCollection(IReadOnlyFunctionCollection skills) => this;
+
+    /// <inheritdoc/>
+    [Obsolete("This method is a nop and will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public ISKFunction SetDefaultFunctionCollection(IReadOnlyFunctionCollection functions) => this;
 
     #endregion
 }

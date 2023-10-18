@@ -249,6 +249,7 @@ public static class PineconeUtils
             PodType.S1X2 => "s1x2",
             PodType.S1X4 => "s1x4",
             PodType.S1X8 => "s1x8",
+            PodType.Starter => "starter",
             _ => string.Empty
         };
     }

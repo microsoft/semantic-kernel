@@ -22,14 +22,9 @@ namespace Microsoft.SemanticKernel;
 public interface IKernel
 {
     /// <summary>
-    /// App logger
+    /// The ILoggerFactory used to create a logger for logging.
     /// </summary>
     ILoggerFactory LoggerFactory { get; }
-
-    /// <summary>
-    /// Semantic memory instance
-    /// </summary>
-    ISemanticTextMemory Memory { get; }
 
     /// <summary>
     /// Reference to the engine rendering prompt templates
@@ -40,12 +35,6 @@ public interface IKernel
     /// Reference to the read-only function collection containing all the imported functions
     /// </summary>
     IReadOnlyFunctionCollection Functions { get; }
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    IReadOnlyFunctionCollection Skills { get; }
-#pragma warning restore CS1591
 
     /// <summary>
     /// Reference to Http handler factory
@@ -58,89 +47,6 @@ public interface IKernel
     /// <param name="customFunction">The custom function to register.</param>
     /// <returns>A C# function wrapping the function execution logic.</returns>
     ISKFunction RegisterCustomFunction(ISKFunction customFunction);
-
-    /// <summary>
-    /// Import a set of functions as a plugin from the given object instance. Only the functions that have the `SKFunction` attribute will be included in the plugin.
-    /// Once these functions are imported, the prompt templates can use functions to import content at runtime.
-    /// </summary>
-    /// <param name="functionsInstance">Instance of a class containing functions</param>
-    /// <param name="pluginName">Name of the plugin for function collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
-    /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportFunctions(object functionsInstance, string? pluginName = null);
-
-    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-#pragma warning disable CS1591
-    IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null);
-#pragma warning restore CS1591
-
-    /// <summary>
-    /// Set the semantic memory to use
-    /// </summary>
-    /// <param name="memory">Semantic memory instance</param>
-    void RegisterMemory(ISemanticTextMemory memory);
-
-    /// <summary>
-    /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
-    /// </summary>
-    /// <param name="skFunction">A Semantic Kernel function to run</param>
-    /// <param name="variables">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>Result of the function</returns>
-    Task<KernelResult> RunAsync(
-        ISKFunction skFunction,
-        ContextVariables? variables = null,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<KernelResult> RunAsync(
-        params ISKFunction[] pipeline);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="input">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<KernelResult> RunAsync(
-        string input,
-        params ISKFunction[] pipeline);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="variables">Input to process</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<KernelResult> RunAsync(
-        ContextVariables variables,
-        params ISKFunction[] pipeline);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<KernelResult> RunAsync(
-        CancellationToken cancellationToken,
-        params ISKFunction[] pipeline);
-
-    /// <summary>
-    /// Run a pipeline composed of synchronous and asynchronous functions.
-    /// </summary>
-    /// <param name="input">Input to process</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <param name="pipeline">List of functions</param>
-    /// <returns>Result of the function composition</returns>
-    Task<KernelResult> RunAsync(
-        string input,
-        CancellationToken cancellationToken,
-        params ISKFunction[] pipeline);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -191,6 +97,19 @@ public interface IKernel
     #region Obsolete
 
     /// <summary>
+    /// Semantic memory instance
+    /// </summary>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    ISemanticTextMemory Memory { get; }
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.Functions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    IReadOnlyFunctionCollection Skills { get; }
+#pragma warning restore CS1591
+
+    /// <summary>
     /// Access registered functions by plugin name and function name. Not case sensitive.
     /// The function might be native or semantic, it's up to the caller handling it.
     /// </summary>
@@ -200,6 +119,21 @@ public interface IKernel
     [Obsolete("Func shorthand no longer no longer supported. Use Kernel.Plugins collection instead. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     ISKFunction Func(string pluginName, string functionName);
+
+    [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use Kernel.ImportFunctions instead. This will be removed in a future release.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CS1591
+    IDictionary<string, ISKFunction> ImportSkill(object functionsInstance, string? pluginName = null);
+#pragma warning restore CS1591
+
+    /// <summary>
+    /// Set the semantic memory to use
+    /// </summary>
+    /// <param name="memory">Semantic memory instance</param>
+    /// <inheritdoc/>
+    [Obsolete("Memory functionality will be placed in separate Microsoft.SemanticKernel.Plugins.Memory package. This will be removed in a future release. See sample dotnet/samples/KernelSyntaxExamples/Example14_SemanticMemory.cs in the semantic-kernel repository.")]
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    void RegisterMemory(ISemanticTextMemory memory);
 
     #endregion
 }
