@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -25,7 +25,7 @@ public sealed class ParseResultTests
     {
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         var planner = new StepwisePlanner(kernel.Object);
 
@@ -77,7 +77,7 @@ public sealed class ParseResultTests
 
         // Arrange
         var kernel = new Mock<IKernel>();
-        kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
+        kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
 
         var planner = new StepwisePlanner(kernel.Object);
 
