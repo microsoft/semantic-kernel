@@ -63,11 +63,11 @@ internal sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, IAIService?> serviceFactory) =>
+    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?> serviceFactory) =>
         this._plan.SetAIServiceFactory(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<IAIService, AIRequestSettings?> requestSettingsFactory) =>
+    public ISKFunction SetAIRequestSettingsFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?> requestSettingsFactory) =>
         this._plan.SetAIRequestSettingsFactory(requestSettingsFactory);
 
     #region private ================================================================================

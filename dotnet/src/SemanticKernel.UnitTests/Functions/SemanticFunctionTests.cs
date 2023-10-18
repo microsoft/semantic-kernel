@@ -173,7 +173,7 @@ public class SemanticFunctionTests
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
-        semanticFunction.SetAIServiceFactory((_) => mockTextCompletion.Object);
+        semanticFunction.SetAIServiceFactory((_, _) => mockTextCompletion.Object);
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
         {
@@ -222,7 +222,7 @@ public class SemanticFunctionTests
         var sut = Kernel.Builder.Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
-        semanticFunction.SetAIServiceFactory((_) => mockTextCompletion.Object);
+        semanticFunction.SetAIServiceFactory((_, _) => mockTextCompletion.Object);
 
         var invoked = 0;
         sut.FunctionInvoking += (sender, e) =>
@@ -272,7 +272,7 @@ public class SemanticFunctionTests
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
         var semanticFunction1 = sut.CreateSemanticFunction("Write one phrase about UnitTests", functionName: "SkipMe");
         var semanticFunction2 = sut.CreateSemanticFunction("Write two phrases about UnitTests", functionName: "DontSkipMe");
-        semanticFunction2.SetAIServiceFactory((_) => mockTextCompletion.Object);
+        semanticFunction2.SetAIServiceFactory((_, _) => mockTextCompletion.Object);
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
@@ -313,7 +313,7 @@ public class SemanticFunctionTests
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
 
-        semanticFunction.SetAIServiceFactory((_) => mockTextCompletion.Object);
+        semanticFunction.SetAIServiceFactory((_, _) => mockTextCompletion.Object);
         var invoked = 0;
 
         sut.FunctionInvoked += (sender, e) =>
@@ -342,7 +342,7 @@ public class SemanticFunctionTests
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var semanticFunction = sut.CreateSemanticFunction(prompt);
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        semanticFunction.SetAIServiceFactory((_) => mockTextCompletion.Object);
+        semanticFunction.SetAIServiceFactory((_, _) => mockTextCompletion.Object);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -366,7 +366,7 @@ public class SemanticFunctionTests
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var semanticFunction = sut.CreateSemanticFunction(prompt);
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        semanticFunction.SetAIServiceFactory((_) => mockTextCompletion.Object);
+        semanticFunction.SetAIServiceFactory((_, _) => mockTextCompletion.Object);
 
         var originalInput = "Importance";
         var newInput = "Problems";
@@ -404,7 +404,7 @@ public class SemanticFunctionTests
         var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", pluginName: PluginName);
         var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
 
-        function3.SetAIServiceFactory((_) => mockTextCompletion.Object);
+        function3.SetAIServiceFactory((_, _) => mockTextCompletion.Object);
 
         // Act
         var kernelResult = await kernel.RunAsync(function1, function2, function3);

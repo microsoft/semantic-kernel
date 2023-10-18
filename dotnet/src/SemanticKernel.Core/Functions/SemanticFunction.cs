@@ -100,24 +100,24 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         this.AddDefaultValues(context.Variables);
 
-        var aiService = this._serviceFactory?.Invoke(context.ServiceProvider);
+        var aiService = this._serviceFactory?.Invoke(context.ServiceProvider, this.ModelSettings);
         if (aiService is ITextCompletion textCompletion)
         {
-            return await this.RunPromptAsync(textCompletion, requestSettings ?? this.GetRequestSettings(aiService), context, cancellationToken).ConfigureAwait(false);
+            return await this.RunPromptAsync(textCompletion, requestSettings ?? this.GetRequestSettings(context.ServiceProvider), context, cancellationToken).ConfigureAwait(false);
         }
 
         throw new SKException($"Expected AI service that supports text completion but received: {aiService?.GetType()}");
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, IAIService?> serviceFactory)
+    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?> serviceFactory)
     {
         this._serviceFactory = serviceFactory;
         return this;
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<IAIService, AIRequestSettings?> requestSettingsFactory)
+    public ISKFunction SetAIRequestSettingsFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?> requestSettingsFactory)
     {
         this._requestSettingsFactory = requestSettingsFactory;
         return this;
@@ -170,8 +170,8 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private Func<IAIServiceProvider, IAIService?>? _serviceFactory;
-    private Func<IAIService, AIRequestSettings?>? _requestSettingsFactory;
+    private Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?>? _serviceFactory;
+    private Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?>? _requestSettingsFactory;
     public List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
@@ -231,11 +231,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return result;
     }
 
-    private AIRequestSettings? GetRequestSettings(IAIService service)
+    private AIRequestSettings? GetRequestSettings(IAIServiceProvider serviceProvider)
     {
         if (this._requestSettingsFactory is not null)
         {
-            return this._requestSettingsFactory(service);
+            return this._requestSettingsFactory(serviceProvider, this.ModelSettings);
         }
         return this.ModelSettings?.FirstOrDefault<AIRequestSettings>();
     }
@@ -253,14 +253,14 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
     {
         Verify.NotNull(serviceFactory);
-        return this.SetAIServiceFactory((_) => serviceFactory());
+        return this.SetAIServiceFactory((_, _) => serviceFactory());
     }
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        return this.SetAIRequestSettingsFactory((_) => requestSettings);
+        return this.SetAIRequestSettingsFactory((_, _) => requestSettings);
     }
 
     /// <inheritdoc/>

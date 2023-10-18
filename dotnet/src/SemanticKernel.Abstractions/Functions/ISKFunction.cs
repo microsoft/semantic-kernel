@@ -63,14 +63,14 @@ public interface ISKFunction
     /// </summary>
     /// <param name="serviceFactory">AI service factory</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, IAIService?> serviceFactory);
+    ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?> serviceFactory);
 
     /// <summary>
     /// Set a factory which returns the AI request settings used by the semantic function when invoked with the specified AI service.
     /// </summary>
     /// <param name="requestSettingsFactory">LLM completion settings</param>
     /// <returns>Self instance</returns>
-    ISKFunction SetAIRequestSettingsFactory(Func<IAIService, AIRequestSettings?> requestSettingsFactory);
+    ISKFunction SetAIRequestSettingsFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?> requestSettingsFactory);
 
     #region Obsolete
 

@@ -24,7 +24,7 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, AIRequestSettings requestSettings)
     {
-        return skFunction.SetAIRequestSettingsFactory((_) => requestSettings);
+        return skFunction.SetAIRequestSettingsFactory((_, _) => requestSettings);
     }
 
     /// <summary>
