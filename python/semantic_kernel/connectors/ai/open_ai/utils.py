@@ -143,7 +143,9 @@ async def chat_completion_with_function_call(
             chat_function_name: the function name of the chat function.
             chat_function: the chat function, if not provided, it will be retrieved from the kernel.
                 make sure to provide either the chat_function or the chat_skill_name and chat_function_name.
-            function_call_with_new_context: if True, the function call will be executed with a new context (default behaviour).
+            function_call_with_new_context: if True, the function call will be executed with a new context,
+                this is the default behaviour, if False, the existing context is updated with the parameters
+                from the function call and then used for the execution of the function call.
 
             log: the logger to use.
             max_function_calls: the maximum number of function calls to execute, defaults to 5.
