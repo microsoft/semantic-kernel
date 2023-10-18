@@ -16,7 +16,7 @@ public static class KernelResultPlanExtensions
     /// Returns plan execution results from <see cref="KernelResult"/>.
     /// </summary>
     /// <param name="kernelResult">Instance of <see cref="KernelResult"/>.</param>
-    public static IReadOnlyCollection<FunctionResult> GetPlanResults(this KernelResult kernelResult)
+    public static IReadOnlyCollection<PlanResult> GetPlanResults(this KernelResult kernelResult)
     {
         var functionResult = kernelResult.FunctionResults.FirstOrDefault();
 
@@ -25,6 +25,6 @@ public static class KernelResultPlanExtensions
             return planResult.StepResults;
         }
 
-        return Array.Empty<FunctionResult>();
+        return Array.Empty<PlanResult>();
     }
 }

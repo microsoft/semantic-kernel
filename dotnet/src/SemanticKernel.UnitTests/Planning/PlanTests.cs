@@ -849,18 +849,22 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
         static string Function3() => "Result3";
         functions.Add(SKFunction.FromNativeMethod(Method(Function3), pluginName: PluginName));
 
-        var plan = new Plan("my goal", functions[0], functions[1], functions[2]);
+        var childPlan = new Plan("sub goal", functions[0], functions[1]);
+        var parentPlan = new Plan("goal", functions[0], childPlan, functions[2]);
 
         // Act
-        var result = await kernel.RunAsync(plan);
-        var planResults = result.GetPlanResults().ToList();
+        var result = await kernel.RunAsync(parentPlan);
+        var parentPlanResults = result.GetPlanResults().ToList();
+        var childPlanResults = parentPlanResults[1].StepResults.ToList();
 
         // Assert
         Assert.Equal("Result3", result.GetValue<string>());
 
-        this.AssertFunctionResult(planResults[0], PluginName, "Function1", "Result1");
-        this.AssertFunctionResult(planResults[1], PluginName, "Function2", "Result2");
-        this.AssertFunctionResult(planResults[2], PluginName, "Function3", "Result3");
+        this.AssertFunctionResult(parentPlanResults[0], PluginName, "Function1", "Result1");
+        this.AssertFunctionResult(parentPlanResults[2], PluginName, "Function3", "Result3");
+
+        this.AssertFunctionResult(childPlanResults[0], PluginName, "Function1", "Result1");
+        this.AssertFunctionResult(childPlanResults[1], PluginName, "Function2", "Result2");
     }
 
     private (Mock<IKernel> kernelMock, Mock<IFunctionRunner> functionRunnerMock) SetupKernelMock(IFunctionCollection? functions = null)
