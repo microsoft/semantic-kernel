@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 /// <summary>
 /// Interface for text completion results.
 /// </summary>
-public interface ITextResult : IModelResult
+public interface ITextResult : IResultBase
 {
     /// <summary>
     /// Asynchronously retrieves the text completion result.

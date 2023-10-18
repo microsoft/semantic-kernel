@@ -7,7 +7,7 @@ namespace Microsoft.SemanticKernel.AI;
 /// <summary>
 /// Interface for model results
 /// </summary>
-public interface IModelResult
+public interface IResultBase
 {
     /// <summary>
     /// Gets the model result data.

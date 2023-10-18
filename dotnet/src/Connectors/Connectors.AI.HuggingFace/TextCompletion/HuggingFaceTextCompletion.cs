@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,15 +63,13 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
+    [Obsolete("Streaming capability is not supported, use GetCompletionsAsync instead")]
+    public IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
         string text,
         AIRequestSettings? requestSettings = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
-        foreach (var completion in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
-        {
-            yield return (ITextStreamingResult)completion;
-        }
+        throw new NotSupportedException("Streaming capability is not supported");
     }
 
     /// <inheritdoc/>
@@ -115,7 +112,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
             };
         }
 
-        return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
+        return completionResponse.ConvertAll(c => new TextCompletionResult(c));
     }
 
     /// <summary>
