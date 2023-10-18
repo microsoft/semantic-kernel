@@ -65,13 +65,11 @@ class FileIOSkill(PydanticField):
             Contains the 'path' for the Destination file and
             the 'content' of the file to write.
         """
-        has_path, path = context.variables.get("path")
-        has_content, content = context.variables.get("content")
+        path = context.variables.get("path")
+        content = context.variables.get("content")
 
-        assert has_path, "Path is required"
-        assert has_content, "Content is required"
-        assert content is not None, "Content is required and should not be empty"
-        assert path is not None, "Path is required and should not be empty"
+        assert path, "Path is required"
+        assert content, "Content is required"
 
         async with aiofiles.open(path, "w") as fp:
             await fp.write(content)
