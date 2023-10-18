@@ -357,8 +357,7 @@ class Kernel:
         self.use_memory(memory_store)
 
     def create_new_context(
-        self, 
-        variables: Optional[ContextVariables] = None
+        self, variables: Optional[ContextVariables] = None
     ) -> SKContext:
         return SKContext(
             ContextVariables() if not variables else variables,
