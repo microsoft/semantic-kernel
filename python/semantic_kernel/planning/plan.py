@@ -290,7 +290,8 @@ class Plan(SKFunctionBase):
         kernel: Kernel,
         variables: ContextVariables,
     ) -> "Plan":
-        context = kernel.create_new_context(variables)
+        context = kernel.create_new_context()
+        context.variables = variables
         return await self.invoke_next_step(context)
 
     async def invoke_next_step(self, context: SKContext) -> "Plan":
