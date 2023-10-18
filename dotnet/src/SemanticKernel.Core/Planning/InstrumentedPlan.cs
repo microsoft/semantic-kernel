@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -29,7 +31,7 @@ internal sealed class InstrumentedPlan : IPlan
     public string Description => this._plan.Description;
 
     /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
+    public List<AIRequestSettings>? ModelSettings => this._plan.ModelSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
@@ -61,12 +63,12 @@ internal sealed class InstrumentedPlan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._plan.SetAIConfiguration(requestSettings);
+    public ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory) =>
+        this._plan.SetAIServiceFactory(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._plan.SetAIService(serviceFactory);
+    public ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory) =>
+        this._plan.SetAIRequestSettingsFactory(requestSettingsFactory);
 
     #region private ================================================================================
 
@@ -154,6 +156,20 @@ internal sealed class InstrumentedPlan : IPlan
     #endregion
 
     #region Obsolete =======================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._plan.SetAIConfiguration(requestSettings);
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._plan.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

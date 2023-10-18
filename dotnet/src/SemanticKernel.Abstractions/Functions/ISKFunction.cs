@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -34,9 +36,9 @@ public interface ISKFunction
     string Description { get; }
 
     /// <summary>
-    /// AI service settings
+    /// Model request settings.
     /// </summary>
-    AIRequestSettings? RequestSettings { get; }
+    List<AIRequestSettings>? ModelSettings { get; }
 
     /// <summary>
     /// Returns a description of the function, including parameters.
@@ -57,11 +59,34 @@ public interface ISKFunction
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Set a factory which returns the AI service used by the semantic function.
+    /// </summary>
+    /// <param name="serviceFactory">AI service factory</param>
+    /// <returns>Self instance</returns>
+    ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory);
+
+    /// <summary>
+    /// Set a factory which returns the AI request settings used by the semantic function.
+    /// </summary>
+    /// <param name="requestSettingsFactory">LLM completion settings</param>
+    /// <returns>Self instance</returns>
+    ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory);
+
+    #region Obsolete
+
+    /// <summary>
+    /// AI service settings
+    /// </summary>
+    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
+    AIRequestSettings? RequestSettings { get; }
+
+    /// <summary>
     /// Set the AI service used by the semantic function, passing a factory method.
     /// The factory allows to lazily instantiate the client and to properly handle its disposal.
     /// </summary>
     /// <param name="serviceFactory">AI service factory</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
     ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
 
     /// <summary>
@@ -69,9 +94,8 @@ public interface ISKFunction
     /// </summary>
     /// <param name="requestSettings">LLM completion settings</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
-
-    #region Obsolete
 
     /// <summary>
     /// Name of the plugin containing the function. The name is used by the function collection and in prompt templates e.g. {{skillName.functionName}}

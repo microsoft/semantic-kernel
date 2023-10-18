@@ -24,7 +24,7 @@ public static class SKFunctionExtensions
     /// <returns>Self instance</returns>
     public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, AIRequestSettings requestSettings)
     {
-        return skFunction.SetAIConfiguration(requestSettings);
+        return skFunction.SetAIRequestSettingsFactory((_) => requestSettings);
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public static class SKFunctionExtensions
         CancellationToken cancellationToken = default)
     {
         var context = kernel.CreateNewContext(variables, functions, loggerFactory, culture);
-        return function.InvokeAsync(context, requestSettings ?? function.RequestSettings, cancellationToken);
+        return function.InvokeAsync(context, requestSettings, cancellationToken);
     }
 
     /// <summary>

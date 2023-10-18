@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -45,7 +46,7 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     public string Description { get; }
 
     /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings { get; }
+    public List<AIRequestSettings>? ModelSettings { get; }
 
     /// <summary>
     /// List of function parameters
@@ -151,14 +152,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    public ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory)
     {
         this.ThrowNotSemantic();
         return this;
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    public ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory)
     {
         this.ThrowNotSemantic();
         return this;
@@ -872,6 +873,26 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     #endregion
 
     #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings { get; }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        this.ThrowNotSemantic();
+        return this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        this.ThrowNotSemantic();
+        return this;
+    }
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

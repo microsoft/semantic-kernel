@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 
 #pragma warning disable IDE0130
@@ -39,7 +40,11 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     public string Description { get; }
 
     /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings { get; private set; }
+    public List<AIRequestSettings>? ModelSettings
+    {
+        get => this._modelSettings ??= new();
+        private set => this._modelSettings = value;
+    }
 
     /// <summary>
     /// List of function parameters
@@ -73,8 +78,10 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             pluginName: pluginName,
             functionName: functionName,
             loggerFactory: loggerFactory
-        );
-        func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
+        )
+        {
+            ModelSettings = promptTemplateConfig.ModelSettings
+        };
 
         return func;
     }
@@ -93,21 +100,26 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         this.AddDefaultValues(context.Variables);
 
-        return await this.RunPromptAsync(this._aiService?.Value, requestSettings ?? this.RequestSettings, context, cancellationToken).ConfigureAwait(false);
+        var aiService = this._serviceFactory?.Invoke(context);
+        if (aiService is ITextCompletion textCompletion)
+        {
+            return await this.RunPromptAsync(textCompletion, requestSettings ?? this.GetRequestSettings(context), context, cancellationToken).ConfigureAwait(false);
+        }
+
+        throw new SKException($"Expected AI service that supports text completion but received: {aiService?.GetType()}");
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    public ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory)
     {
-        Verify.NotNull(serviceFactory);
-        this._aiService = new Lazy<ITextCompletion>(serviceFactory);
+        this._serviceFactory = serviceFactory;
         return this;
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    public ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory)
     {
-        this.RequestSettings = requestSettings;
+        this._requestSettingsFactory = requestSettingsFactory;
         return this;
     }
 
@@ -116,10 +128,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (this._aiService is { IsValueCreated: true } aiService)
-        {
-            (aiService.Value as IDisposable)?.Dispose();
-        }
     }
 
     /// <summary>
@@ -162,7 +170,9 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private Lazy<ITextCompletion>? _aiService;
+    private Func<SKContext, IAIService>? _serviceFactory;
+    private Func<SKContext?, AIRequestSettings?>? _requestSettingsFactory;
+    public List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
 
@@ -221,9 +231,36 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         return result;
     }
 
+    private AIRequestSettings? GetRequestSettings(SKContext? context)
+    {
+        if (this._requestSettingsFactory is not null)
+        {
+            return this._requestSettingsFactory(context);
+        }
+        return this.ModelSettings?.FirstOrDefault<AIRequestSettings>();
+    }
+
     #endregion
 
     #region Obsolete
+
+    /// <inheritdoc/>
+    public AIRequestSettings? RequestSettings => this.GetRequestSettings(null);
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        Verify.NotNull(serviceFactory);
+        return this.SetAIServiceFactory((_) => serviceFactory());
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        return this.SetAIRequestSettingsFactory((_) => requestSettings);
+    }
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

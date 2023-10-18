@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -32,7 +34,7 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     public string Description => this._function.Description;
 
     /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings => this._function.RequestSettings;
+    public List<AIRequestSettings>? ModelSettings => this._function.ModelSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedSKFunction"/> class.
@@ -79,12 +81,12 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._function.SetAIConfiguration(requestSettings);
+    public ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory) =>
+        this._function.SetAIServiceFactory(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._function.SetAIService(serviceFactory);
+    public ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory) =>
+        this._function.SetAIRequestSettingsFactory(requestSettingsFactory);
 
     #region private ================================================================================
 
@@ -173,6 +175,20 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     #endregion
 
     #region Obsolete =======================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._function.RequestSettings;
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._function.SetAIConfiguration(requestSettings);
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._function.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]

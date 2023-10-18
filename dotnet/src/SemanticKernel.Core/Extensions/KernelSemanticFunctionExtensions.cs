@@ -10,6 +10,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Microsoft.SemanticKernel.Text;
 
@@ -286,10 +287,20 @@ public static class KernelSemanticFunctionExtensions
             kernel.LoggerFactory
         );
 
-        func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
+        AIRequestSettings? requestSettingsFactory(SKContext? context)
+        {
+            return promptTemplateConfig.GetDefaultRequestSettings();
+        };
+        func.SetAIRequestSettingsFactory(requestSettingsFactory);
+        //func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        func.SetAIService(() => kernel.GetService<ITextCompletion>(promptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
+        IAIService serviceFactory(SKContext context)
+        {
+            return kernel.GetService<ITextCompletion>(promptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null);
+        }
+        func.SetAIServiceFactory(serviceFactory);
+        //func.SetAIService(() => kernel.GetService<ITextCompletion>(promptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
 
         return func;
     }

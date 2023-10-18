@@ -14,6 +14,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -77,8 +78,8 @@ public sealed class Plan : IPlan
     public string Description { get; set; } = string.Empty;
 
     /// <inheritdoc/>
-    [JsonIgnore]
-    public AIRequestSettings? RequestSettings { get; private set; }
+    [JsonPropertyName("model_settings")]
+    public List<AIRequestSettings>? ModelSettings { get; private set; }
 
     #endregion ISKFunction implementation
 
@@ -360,15 +361,15 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    public ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory)
     {
-        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
+        return this.Function is not null ? this.Function.SetAIServiceFactory(serviceFactory) : this;
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    public ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory)
     {
-        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
+        return this.Function is not null ? this.Function.SetAIRequestSettingsFactory(requestSettingsFactory) : this;
     }
 
     #endregion ISKFunction implementation
@@ -597,9 +598,9 @@ public sealed class Plan : IPlan
         this.Name = function.Name;
         this.PluginName = function.PluginName;
         this.Description = function.Description;
-        this.RequestSettings = function.RequestSettings;
 
 #pragma warning disable CS0618 // Type or member is obsolete
+        this.RequestSettings = function.RequestSettings; // TODO Mark, can we remove these
         this.IsSemantic = function.IsSemantic;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
@@ -636,6 +637,24 @@ public sealed class Plan : IPlan
     }
 
     #region Obsolete
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings { get; private set; }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory)
+    {
+        return this.Function is not null ? this.Function.SetAIService(serviceFactory) : this;
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
+    {
+        return this.Function is not null ? this.Function.SetAIConfiguration(requestSettings) : this;
+    }
 
     /// <inheritdoc/>
     [JsonIgnore]
