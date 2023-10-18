@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Orchestration;
@@ -13,10 +12,10 @@ namespace Microsoft.SemanticKernel.Planning;
 public static class KernelResultPlanExtensions
 {
     /// <summary>
-    /// Returns plan execution results from <see cref="KernelResult"/>.
+    /// Returns plan execution results from <see cref="KernelResult"/> or null if result is not associated with a plan.
     /// </summary>
     /// <param name="kernelResult">Instance of <see cref="KernelResult"/>.</param>
-    public static IReadOnlyCollection<PlanResult> GetPlanResults(this KernelResult kernelResult)
+    public static IReadOnlyCollection<PlanResult>? GetPlanResults(this KernelResult kernelResult)
     {
         var functionResult = kernelResult.FunctionResults.FirstOrDefault();
 
@@ -25,6 +24,6 @@ public static class KernelResultPlanExtensions
             return planResult.StepResults;
         }
 
-        return Array.Empty<PlanResult>();
+        return null;
     }
 }
