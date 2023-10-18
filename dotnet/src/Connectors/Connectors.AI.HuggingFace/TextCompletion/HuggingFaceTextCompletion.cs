@@ -71,7 +71,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
     {
         foreach (var completion in await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false))
         {
-            yield return completion;
+            yield return (ITextStreamingResult)completion;
         }
     }
 
@@ -86,7 +86,7 @@ public sealed class HuggingFaceTextCompletion : ITextCompletion
 
     #region private ================================================================================
 
-    private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<ITextResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
     {
         var completionRequest = new TextCompletionRequest
         {

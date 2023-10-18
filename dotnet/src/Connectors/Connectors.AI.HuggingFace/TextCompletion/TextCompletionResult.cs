@@ -9,7 +9,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextCompletion;
 
-internal sealed class TextCompletionStreamingResult : ITextStreamingResult
+internal sealed class TextCompletionStreamingResult : ITextStreamingResult, ITextResult
 {
     private readonly ModelResult _responseData;
 
