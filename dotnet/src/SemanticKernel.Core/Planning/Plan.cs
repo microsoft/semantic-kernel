@@ -361,13 +361,13 @@ public sealed class Plan : IPlan
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory)
+    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, IAIService?> serviceFactory)
     {
         return this.Function is not null ? this.Function.SetAIServiceFactory(serviceFactory) : this;
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory)
+    public ISKFunction SetAIRequestSettingsFactory(Func<IAIService, AIRequestSettings?> requestSettingsFactory)
     {
         return this.Function is not null ? this.Function.SetAIRequestSettingsFactory(requestSettingsFactory) : this;
     }

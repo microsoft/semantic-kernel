@@ -152,14 +152,14 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory)
+    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, IAIService?> serviceFactory)
     {
         this.ThrowNotSemantic();
         return this;
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory)
+    public ISKFunction SetAIRequestSettingsFactory(Func<IAIService, AIRequestSettings?> requestSettingsFactory)
     {
         this.ThrowNotSemantic();
         return this;

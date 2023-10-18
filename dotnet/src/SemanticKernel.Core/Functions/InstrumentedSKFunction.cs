@@ -81,11 +81,11 @@ internal sealed class InstrumentedSKFunction : ISKFunction
     }
 
     /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<SKContext, IAIService> serviceFactory) =>
+    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, IAIService?> serviceFactory) =>
         this._function.SetAIServiceFactory(serviceFactory);
 
     /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<SKContext?, AIRequestSettings?> requestSettingsFactory) =>
+    public ISKFunction SetAIRequestSettingsFactory(Func<IAIService, AIRequestSettings?> requestSettingsFactory) =>
         this._function.SetAIRequestSettingsFactory(requestSettingsFactory);
 
     #region private ================================================================================

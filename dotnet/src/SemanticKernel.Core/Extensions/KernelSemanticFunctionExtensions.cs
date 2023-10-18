@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AI;
@@ -286,18 +287,75 @@ public static class KernelSemanticFunctionExtensions
             promptTemplate,
             kernel.LoggerFactory
         );
+        var semFunc = func as SemanticFunction;
 
-        AIRequestSettings? requestSettingsFactory(SKContext? context)
+        AIRequestSettings? requestSettingsFactory(IAIService service)
         {
-            return promptTemplateConfig.GetDefaultRequestSettings();
+            if (semFunc == null || semFunc.ModelSettings == null || semFunc.ModelSettings.Count == 0)
+            {
+                return null;
+            }
+            AIRequestSettings? defaultSettings = null;
+            foreach (var model in semFunc.ModelSettings)
+            {
+                if (model.ServiceId == service.ServiceId)
+                {
+                    return model;
+                }
+                else if (string.IsNullOrEmpty(model.ServiceId))
+                {
+                    defaultSettings ??= model;
+                }
+            }
+
+            if (defaultSettings is not null)
+            {
+                return defaultSettings;
+            }
+
+            return semFunc.ModelSettings.FirstOrDefault<AIRequestSettings>(); ;
         };
         func.SetAIRequestSettingsFactory(requestSettingsFactory);
         //func.SetAIConfiguration(promptTemplateConfig.GetDefaultRequestSettings());
 
         // Note: the service is instantiated using the kernel configuration state when the function is invoked
-        IAIService serviceFactory(SKContext context)
+        IAIService serviceFactory(IAIServiceProvider serviceProvider)
         {
-            return kernel.GetService<ITextCompletion>(promptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null);
+            if (semFunc == null || semFunc.ModelSettings == null || semFunc.ModelSettings.Count == 0)
+            {
+                var service = serviceProvider.GetService<ITextCompletion>(null);
+                if (service != null)
+                {
+                    return service;
+                }
+            }
+            else
+            {
+                var allowNull = false;
+                foreach (var model in semFunc.ModelSettings)
+                {
+                    if (model.ServiceId is not null)
+                    {
+                        var service = serviceProvider.GetService<ITextCompletion>(model.ServiceId);
+                        if (service != null)
+                        {
+                            return service;
+                        }
+                    }
+                    else
+                    {
+                        allowNull = true;
+                    }
+                }
+
+                if (allowNull)
+                {
+                    return kernel.GetService<ITextCompletion>(null);
+                }
+            }
+
+            var names = string.Join("|", semFunc.ModelSettings.Select(model => model.ServiceId).ToArray());
+            throw new SKException($"Service of type {typeof(ITextCompletion)} and name {names ?? "<NONE>"} not registered.");
         }
         func.SetAIServiceFactory(serviceFactory);
         //func.SetAIService(() => kernel.GetService<ITextCompletion>(promptTemplateConfig.GetDefaultRequestSettings()?.ServiceId ?? null));
