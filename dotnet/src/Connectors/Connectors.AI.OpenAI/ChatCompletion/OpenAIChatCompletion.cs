@@ -19,6 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.ChatCompletion;
 /// </summary>
 public sealed class OpenAIChatCompletion : OpenAIClientBase, IChatCompletion, ITextCompletion
 {
+    /// <inheritdoc/>
+    public string? ServiceId { get; protected set; }
+
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
