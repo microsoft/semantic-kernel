@@ -76,6 +76,11 @@ public class FunctionCollection : IFunctionCollection
     /// <inheritdoc/>
     public ISKFunction GetFunction(string pluginName, string functionName)
     {
+        if (string.IsNullOrWhiteSpace(pluginName))
+        {
+            return this.GetFunction(GlobalFunctionsPluginName, functionName);
+        }
+
         if (!this.TryGetFunction(pluginName, functionName, out ISKFunction? functionInstance))
         {
             throw new SKException($"Function not available {pluginName}.{functionName}");
