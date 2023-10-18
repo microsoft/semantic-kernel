@@ -97,11 +97,14 @@ def get_function_calling_object(
 
 
 async def execute_function_call(
-    kernel: Kernel, function_call: FunctionCall, log: Optional[Logger] = None
+    kernel: Kernel,
+    function_call: FunctionCall,
+    context: SKContext,
+    log: Optional[Logger] = None,
 ) -> str:
     result = await kernel.run_async(
         kernel.func(**function_call.split_name_dict()),
-        input_vars=function_call.to_context_variables(),
+        input_context=context,
     )
     if log:
         log.info(f"Function call result: {result}")
@@ -115,6 +118,7 @@ async def chat_completion_with_function_call(
     chat_skill_name: Optional[str] = None,
     chat_function_name: Optional[str] = None,
     chat_function: Optional[SKFunctionBase] = None,
+    function_call_with_new_context: bool = True,
     *,
     log: Optional[Logger] = None,
     **kwargs: Dict[str, Any],
@@ -139,6 +143,7 @@ async def chat_completion_with_function_call(
             chat_function_name: the function name of the chat function.
             chat_function: the chat function, if not provided, it will be retrieved from the kernel.
                 make sure to provide either the chat_function or the chat_skill_name and chat_function_name.
+            function_call_with_new_context: if True, the function call will be executed with a new context (default behaviour).
 
             log: the logger to use.
             max_function_calls: the maximum number of function calls to execute, defaults to 5.
@@ -167,7 +172,17 @@ async def chat_completion_with_function_call(
     # if there is no function_call or if the content is not a FunctionCall object, return the context
     if function_call is None or not isinstance(function_call, FunctionCall):
         return context
-    result = await execute_function_call(kernel, function_call, log=log)
+    if function_call_with_new_context:
+        fc_context = kernel.create_new_context()
+        fc_context.variables.merge_or_overwrite(function_call.to_context_variables())
+    else:
+        context.variables.merge_or_overwrite(function_call.to_context_variables())
+    result = await execute_function_call(
+        kernel,
+        function_call,
+        context=fc_context if function_call_with_new_context else context,
+        log=log,
+    )
     # add the result to the chat prompt template
     chat_function._chat_prompt_template.add_function_response_message(
         name=function_call.name, content=str(result)
@@ -178,6 +193,7 @@ async def chat_completion_with_function_call(
         chat_function=chat_function,
         functions=functions,
         context=context,
+        function_call_with_new_context=function_call_with_new_context,
         log=log,
         max_function_calls=max_function_calls,
         current_call_count=current_call_count + 1,

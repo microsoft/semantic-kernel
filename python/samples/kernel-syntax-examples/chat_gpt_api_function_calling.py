@@ -100,6 +100,7 @@ async def chat(context: sk.SKContext) -> Tuple[bool, sk.SKContext]:
         chat_function_name="Chat",
         context=context,
         functions=functions,
+        function_call_with_new_context=False,
     )
     print(f"Mosscap:> {context.result}")
     return True, context
