@@ -39,22 +39,6 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
 
-    private static T GetValue<T>([CallerMemberName] string? caller = null)
-    {
-        if (s_instance == null)
-        {
-            throw new InvalidOperationException(
-                "TestConfiguration must be initialized with a call to Initialize(IConfigurationRoot) before accessing configuration values.");
-        }
-
-        if (string.IsNullOrEmpty(caller))
-        {
-            throw new ArgumentNullException(nameof(caller));
-        }
-        return s_instance._configRoot.GetValue<T>(caller) ??
-            throw new ConfigurationNotFoundException(section: caller);
-    }
-
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
         if (s_instance == null)
