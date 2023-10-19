@@ -85,9 +85,9 @@ async def test_plan_creation_async():
 
     assert plan is not None
     assert plan.description == mock_function.description
-    assert plan.state.contains_key("translate_from")
-    assert plan.state.contains_key("translate_to")
-    assert plan.state.contains_key("input")
+    assert "translate_from" in plan.state
+    assert "translate_to" in plan.state
+    assert "input" in plan.state
 
 
 @pytest.fixture
