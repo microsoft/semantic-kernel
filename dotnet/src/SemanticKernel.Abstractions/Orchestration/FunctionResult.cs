@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Orchestration;
 /// <summary>
 /// Function result after execution.
 /// </summary>
-public class FunctionResult
+public sealed class FunctionResult
 {
     internal Dictionary<string, object>? _metadata;
 
