@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -79,14 +78,6 @@ internal sealed class InstrumentedSKFunction : ISKFunction
         return await this.InvokeWithInstrumentationAsync(() =>
             this._function.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?> serviceFactory) =>
-        this._function.SetAIServiceFactory(serviceFactory);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?> requestSettingsFactory) =>
-        this._function.SetAIRequestSettingsFactory(requestSettingsFactory);
 
     #region private ================================================================================
 

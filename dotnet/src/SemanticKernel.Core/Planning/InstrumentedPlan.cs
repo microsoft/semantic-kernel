@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -61,14 +60,6 @@ internal sealed class InstrumentedPlan : IPlan
         return await this.InvokeWithInstrumentationAsync(() =>
             this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?> serviceFactory) =>
-        this._plan.SetAIServiceFactory(serviceFactory);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?> requestSettingsFactory) =>
-        this._plan.SetAIRequestSettingsFactory(requestSettingsFactory);
 
     #region private ================================================================================
 

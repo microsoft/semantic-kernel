@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -58,20 +57,6 @@ public interface ISKFunction
         AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Set a factory which returns the AI service used by the semantic function.
-    /// </summary>
-    /// <param name="serviceFactory">AI service factory</param>
-    /// <returns>Self instance</returns>
-    ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?> serviceFactory);
-
-    /// <summary>
-    /// Set a factory which returns the AI request settings used by the semantic function when invoked with the specified AI service.
-    /// </summary>
-    /// <param name="requestSettingsFactory">LLM completion settings</param>
-    /// <returns>Self instance</returns>
-    ISKFunction SetAIRequestSettingsFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?> requestSettingsFactory);
-
     #region Obsolete
 
     /// <summary>
@@ -86,7 +71,7 @@ public interface ISKFunction
     /// </summary>
     /// <param name="serviceFactory">AI service factory</param>
     /// <returns>Self instance</returns>
-    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
     ISKFunction SetAIService(Func<ITextCompletion> serviceFactory);
 
     /// <summary>
@@ -94,7 +79,7 @@ public interface ISKFunction
     /// </summary>
     /// <param name="requestSettings">LLM completion settings</param>
     /// <returns>Self instance</returns>
-    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
     ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings);
 
     /// <summary>

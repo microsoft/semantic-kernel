@@ -19,7 +19,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using the main namespace
@@ -149,20 +148,6 @@ internal sealed class NativeFunction : ISKFunction, IDisposable
             this._logger.LogError(e, "Native function {Plugin}.{Name} execution failed with error {Error}", this.PluginName, this.Name, e.Message);
             throw;
         }
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?> serviceFactory)
-    {
-        this.ThrowNotSemantic();
-        return this;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?> requestSettingsFactory)
-    {
-        this.ThrowNotSemantic();
-        return this;
     }
 
     /// <summary>

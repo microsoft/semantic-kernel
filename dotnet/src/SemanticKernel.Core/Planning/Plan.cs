@@ -14,7 +14,6 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Planning;
 
@@ -358,18 +357,6 @@ public sealed class Plan : IPlan
         }
 
         return result;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIServiceFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, IAIService?> serviceFactory)
-    {
-        return this.Function is not null ? this.Function.SetAIServiceFactory(serviceFactory) : this;
-    }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIRequestSettingsFactory(Func<IAIServiceProvider, List<AIRequestSettings>?, AIRequestSettings?> requestSettingsFactory)
-    {
-        return this.Function is not null ? this.Function.SetAIRequestSettingsFactory(requestSettingsFactory) : this;
     }
 
     #endregion ISKFunction implementation
