@@ -101,6 +101,12 @@
   </Match>
 
   <Match>
+    <Class name="com.microsoft.semantickernel.connectors.memory.mysql.MySQLMemoryStore$Builder"/>
+    <Method name="withConnection"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <Match>
     <Class name="com.microsoft.semantickernel.connectors.memory.azurecognitivesearch.AzureCognitiveSearchMemoryRecord"/>
     <Bug pattern="EI_EXPOSE_REP"/>
   </Match>

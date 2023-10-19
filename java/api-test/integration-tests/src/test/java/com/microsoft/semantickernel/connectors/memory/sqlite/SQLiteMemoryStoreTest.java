@@ -1,35 +1,29 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.sqlite;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
+import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStore;
+import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCMemoryStoreTest;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
-import java.sql.SQLException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-public class SQLiteMemoryStoreTest {
+import java.sql.SQLException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+public class SQLiteMemoryStoreTest extends JDBCMemoryStoreTest {
+
+    private static SQLiteMemoryStore.Builder builder;
     private static MemoryStore db;
     private static int collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -38,7 +32,8 @@ public class SQLiteMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        db = new SQLiteMemoryStore.Builder().withFilename(":memory:").buildAsync().block();
+        builder = new SQLiteMemoryStore.Builder().withFilename(":memory:");
+        db = builder.buildAsync().block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -77,6 +72,15 @@ public class SQLiteMemoryStoreTest {
 
     @Test
     void initializeDbConnectionSucceeds() {
+        assertNotNull(db);
+    }
+
+    @Test
+    void itDoesNotFailWithExistingTables() {
+        // Act
+        db = builder.buildAsync().block();
+
+        // Assert
         assertNotNull(db);
     }
 

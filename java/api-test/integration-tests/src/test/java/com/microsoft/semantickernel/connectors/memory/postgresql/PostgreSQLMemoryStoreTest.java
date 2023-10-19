@@ -29,6 +29,7 @@ public class PostgreSQLMemoryStoreTest {
     private static final String POSTGRES_USER = "test";
     private static final String POSTGRES_PASSWORD = "test";
 
+    private static PostgreSQLMemoryStore.Builder builder;
     private static MemoryStore db;
     private static int collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -37,13 +38,11 @@ public class PostgreSQLMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        db =
-                new PostgreSQLMemoryStore.Builder()
+        builder = new PostgreSQLMemoryStore.Builder()
                         .withConnection(
                                 DriverManager.getConnection(
-                                        CONTAINER.getJdbcUrl(), POSTGRES_USER, POSTGRES_PASSWORD))
-                        .buildAsync()
-                        .block();
+                                        CONTAINER.getJdbcUrl(), POSTGRES_USER, POSTGRES_PASSWORD));
+        db = builder.buildAsync().block();
     }
 
     private Collection<MemoryRecord> createBatchRecords(int numRecords) {
@@ -82,6 +81,15 @@ public class PostgreSQLMemoryStoreTest {
 
     @Test
     void initializeDbConnectionSucceeds() {
+        assertNotNull(db);
+    }
+
+    @Test
+    void itDoesNotFailWithExistingTables() {
+        // Act
+        db = builder.buildAsync().block();
+
+        // Assert
         assertNotNull(db);
     }
 

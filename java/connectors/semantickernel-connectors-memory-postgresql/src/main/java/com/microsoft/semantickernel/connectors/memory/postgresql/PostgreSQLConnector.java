@@ -83,8 +83,9 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                             + TABLE_NAME
                                             + " (collection, key, metadata, embedding, timestamp)"
                                             + " VALUES (?, ?, ?, ?, ?) ON CONFLICT (collection,"
-                                            + " key) DO UPDATE SET metadata = ?, embedding = ?,"
-                                            + " timestamp = ?";
+                                            + " key) DO UPDATE SET metadata = EXCLUDED.metadata,"
+                                            + " embedding = EXCLUDED.embedding, timestamp ="
+                                            + " EXCLUDED.timestamp";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 String metadataString = metadata != null ? metadata : "";
@@ -95,9 +96,6 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                 statement.setString(3, metadataString);
                                 statement.setString(4, embeddingString);
                                 statement.setString(5, timestampString);
-                                statement.setString(6, metadataString);
-                                statement.setString(7, embeddingString);
-                                statement.setString(8, timestampString);
                                 statement.executeUpdate();
                             } catch (SQLException e) {
                                 throw new SQLConnectorException(
@@ -121,8 +119,9 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                             + TABLE_NAME
                                             + " (collection, key, metadata, embedding, timestamp)"
                                             + " VALUES (?, ?, ?, ?, ?) ON CONFLICT (collection,"
-                                            + " key) DO UPDATE SET metadata = ?, embedding = ?,"
-                                            + " timestamp = ?";
+                                            + " key) DO UPDATE SET metadata = EXCLUDED.metadata,"
+                                            + " embedding = EXCLUDED.embedding, timestamp ="
+                                            + " EXCLUDED.timestamp";
                             try (PreparedStatement statement =
                                     this.connection.prepareStatement(query)) {
                                 for (DatabaseEntry entry : records) {
@@ -138,9 +137,6 @@ public class PostgreSQLConnector extends JDBCConnector implements SQLConnector {
                                     statement.setString(3, metadataString);
                                     statement.setString(4, embeddingString);
                                     statement.setString(5, timestampString);
-                                    statement.setString(6, metadataString);
-                                    statement.setString(7, embeddingString);
-                                    statement.setString(8, timestampString);
                                     statement.addBatch();
                                     keys.add(entry.getKey());
                                 }

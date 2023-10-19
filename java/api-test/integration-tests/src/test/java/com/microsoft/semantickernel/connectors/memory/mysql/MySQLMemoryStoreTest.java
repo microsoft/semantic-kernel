@@ -1,38 +1,35 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.jdbc;
+package com.microsoft.semantickernel.connectors.memory.mysql;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.microsoft.semantickernel.ai.embeddings.Embedding;
 import com.microsoft.semantickernel.memory.MemoryException;
 import com.microsoft.semantickernel.memory.MemoryRecord;
 import com.microsoft.semantickernel.memory.MemoryStore;
-import java.awt.*;
+import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
 
-public class JDBCMemoryStoreTest {
+@Testcontainers
+public class MySQLMemoryStoreTest {
+    @Container private static final MySQLContainer CONTAINER = new MySQLContainer();
+    private static final String MYSQL_USER = "test";
+    private static final String MYSQL_PASSWORD = "test";
 
-    private static JDBCMemoryStore.Builder builder;
+    private static MySQLMemoryStore.Builder builder;
     private static MemoryStore db;
     private static int collectionNum = 0;
     private static final String NULL_ADDITIONAL_METADATA = null;
@@ -41,8 +38,10 @@ public class JDBCMemoryStoreTest {
 
     @BeforeAll
     static void setUp() throws SQLException {
-        builder = new JDBCMemoryStore.Builder()
-                        .withConnection(DriverManager.getConnection("jdbc:sqlite::memory:"));
+        builder = new MySQLMemoryStore.Builder()
+                .withConnection(
+                        DriverManager.getConnection(
+                                CONTAINER.getJdbcUrl(), MYSQL_USER, MYSQL_PASSWORD));
         db = builder.buildAsync().block();
     }
 
@@ -95,7 +94,7 @@ public class JDBCMemoryStoreTest {
     }
 
     @Test
-    void itCanCreateAndGetCollectionAsync() {
+    void itCanCreateAndGetCollectionAsync() throws IOException {
         // Arrange
         String collection = "test_collection" + collectionNum;
         collectionNum++;
