@@ -35,8 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -54,6 +56,7 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
     private final SearchIndexAsyncClient _adminClient;
 
     private final Map<String, SearchAsyncClient> _clientsByIndex = new ConcurrentHashMap<>();
+    private final Function<SearchDocument, MemoryRecord> memoryRecordMapper;
 
     /// <summary>
     /// Create a new instance of memory storage using Azure Cognitive Search.
@@ -74,7 +77,8 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
                         .endpoint(endpoint)
                         .credential(new AzureKeyCredential(apiKey))
                         .clientOptions(clientOptions())
-                        .buildAsyncClient());
+                        .buildAsyncClient(),
+                null);
     }
 
     /**
@@ -90,7 +94,8 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
                         .endpoint(endpoint)
                         .credential(credentials)
                         .clientOptions(clientOptions())
-                        .buildAsyncClient());
+                        .buildAsyncClient(),
+                null);
     }
 
     /**
@@ -98,8 +103,11 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
      *
      * @param searchIndexAsyncClient the Azure search documents index client to use
      */
-    public AzureCognitiveSearchMemoryStore(@Nonnull SearchIndexAsyncClient searchIndexAsyncClient) {
+    public AzureCognitiveSearchMemoryStore(
+            @Nonnull SearchIndexAsyncClient searchIndexAsyncClient,
+            @Nullable Function<SearchDocument, MemoryRecord> memoryRecordMapper) {
         this._adminClient = searchIndexAsyncClient;
+        this.memoryRecordMapper = memoryRecordMapper;
     }
 
     @Override
@@ -218,9 +226,15 @@ public class AzureCognitiveSearchMemoryStore implements MemoryStore {
                 .filter(result -> (double) minRelevanceScore <= result.getScore())
                 .map(
                         result -> {
-                            MemoryRecord memoryRecord =
-                                    result.getDocument(AzureCognitiveSearchMemoryRecord.class)
-                                            .toMemoryRecord(withEmbedding);
+                            MemoryRecord memoryRecord;
+                            if (memoryRecordMapper != null) {
+                                SearchDocument doc = result.getDocument(SearchDocument.class);
+                                memoryRecord = memoryRecordMapper.apply(doc);
+                            } else {
+                                AzureCognitiveSearchMemoryRecord doc =
+                                        result.getDocument(AzureCognitiveSearchMemoryRecord.class);
+                                memoryRecord = doc.toMemoryRecord(withEmbedding);
+                            }
                             float score = (float) result.getScore();
                             return Tuples.of(memoryRecord, score);
                         })

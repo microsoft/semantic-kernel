@@ -49,6 +49,16 @@
             <artifactId>log4j-slf4j2-impl</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-connectors-ai-openai</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
