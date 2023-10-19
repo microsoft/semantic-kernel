@@ -76,8 +76,8 @@ class VarBlock(Block):
             self.log.error(error_msg)
             raise ValueError(error_msg)
 
-        exists, value = variables.get(self.name)
-        if not exists:
+        value = variables.get(self.name, None)
+        if not value:
             self.log.warning(f"Variable `{Symbols.VAR_PREFIX}{self.name}` not found")
 
-        return value if exists else ""
+        return value or ""
