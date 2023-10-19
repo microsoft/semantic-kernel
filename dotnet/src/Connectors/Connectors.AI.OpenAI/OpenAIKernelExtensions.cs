@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class for extension methods for <see cref="IKernel"/> using OpenAI request settings.
 /// </summary>
-public static class KernelOpenAIExtensions
+public static class OpenAIKernelExtensions
 {
     /// <summary>
     /// Define a string-to-string semantic function, with no direct support for input context.
