@@ -378,7 +378,7 @@ public sealed class PromptTemplateEngineTests
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
             {
-                var context = new SKContext(this._functionRunner.Object, variables);
+                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, variables);
                 return function.InvokeAsync(context, null, cancellationToken);
             });
     }
@@ -388,7 +388,7 @@ public sealed class PromptTemplateEngineTests
         this._functionRunner.Setup(r => r.RunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
             .Returns<string, string, ContextVariables, CancellationToken>((pluginName, functionName, variables, cancellationToken) =>
             {
-                var context = new SKContext(this._functionRunner.Object, variables);
+                var context = new SKContext(this._functionRunner.Object, this._serviceProvider.Object, variables);
                 var function = functions.First(f => f.PluginName == functionName);
 
                 return function.InvokeAsync(context, null, cancellationToken);
