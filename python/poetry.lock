@@ -2059,6 +2059,21 @@ files = [
 client = ["pymilvus (>=2.2.0,!=2.2.14,<2.3.0)"]
 
 [[package]]
+name = "minio"
+version = "7.1.17"
+description = "MinIO Python SDK for Amazon S3 Compatible Cloud Storage"
+optional = false
+python-versions = "*"
+files = [
+    {file = "minio-7.1.17-py3-none-any.whl", hash = "sha256:0aa525d77a3bc61378444c2400b0ba2685ad4cd6ecb3fba4141a0d0765e25f40"},
+    {file = "minio-7.1.17.tar.gz", hash = "sha256:b0b687c1ec9be422a1f8b04c65fb8e43a1c090f9508178db57c434a17341c404"},
+]
+
+[package.dependencies]
+certifi = "*"
+urllib3 = "*"
+
+[[package]]
 name = "monotonic"
 version = "1.6"
 description = "An implementation of time.monotonic() for Python 2 & < 3.3"
@@ -3440,21 +3455,23 @@ tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
 name = "pymilvus"
-version = "2.3.0"
+version = "2.3.1"
 description = "Python Sdk for Milvus"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pymilvus-2.3.0-py3-none-any.whl", hash = "sha256:0be97b387eb1ef16520d33b2ee876f369bafd8e8f383affd3e17ddb2cab0bbba"},
-    {file = "pymilvus-2.3.0.tar.gz", hash = "sha256:0a1baafa99d37e6c2159bfb1462d2052f177b973375c60f487984130b036faf5"},
+    {file = "pymilvus-2.3.1-py3-none-any.whl", hash = "sha256:ce65e1de8700f33bd9aade20f013291629702e25b05726773208f1f0b22548ff"},
+    {file = "pymilvus-2.3.1.tar.gz", hash = "sha256:d460f6204d7deb2cff93716bd65670c1b440694b77701fb0ab0ead791aa582c6"},
 ]
 
 [package.dependencies]
 environs = "<=9.5.0"
-grpcio = ">=1.49.1,<=1.56.0"
+grpcio = ">=1.49.1,<=1.58.0"
+minio = "*"
 numpy = {version = "<1.25.0", markers = "python_version <= \"3.8\""}
 pandas = ">=1.2.4"
 protobuf = ">=3.20.0"
+requests = "*"
 ujson = ">=2.0.0"
 
 [[package]]
