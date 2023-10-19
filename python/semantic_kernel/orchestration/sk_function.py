@@ -138,8 +138,6 @@ class SKFunction(SKFunctionBase):
                 return context
 
             as_chat_prompt = function_config.prompt_template
-            # Similar to non-chat, render prompt (which renders to a
-            # dict of <role, content, name> messages)
             messages = await as_chat_prompt.render_messages_async(context)
 
             functions = (

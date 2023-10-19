@@ -5,6 +5,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar
 
 from semantic_kernel.models.chat.chat_message import ChatMessage
+from semantic_kernel.models.chat.roles import Role
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -74,8 +75,8 @@ class ChatPromptTemplate(PromptTemplate, Generic[ChatMessageT]):
     async def render_messages_async(self, context: "SKContext") -> List[Dict[str, str]]:
         """Render the content of the message in the chat template, based on the context."""
         if len(self._messages) == 0 or self._messages[-1].role in [
-            "assistant",
-            "system",
+            Role.ASSISTANT,
+            Role.SYSTEM,
         ]:
             self.add_user_message(message=self._template)
         await asyncio.gather(

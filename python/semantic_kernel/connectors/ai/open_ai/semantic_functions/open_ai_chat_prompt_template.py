@@ -7,6 +7,7 @@ from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import Func
 from semantic_kernel.connectors.ai.open_ai.models.chat.open_ai_chat_message import (
     OpenAIChatMessage,
 )
+from semantic_kernel.models.chat.roles import Role
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
@@ -21,7 +22,7 @@ class OpenAIChatPromptTemplate(ChatPromptTemplate):
     def add_function_response_message(self, name: str, content: Any) -> None:
         """Add a function response message to the chat template."""
         self._messages.append(
-            OpenAIChatMessage(role="function", name=name, fixed_content=str(content))
+            OpenAIChatMessage(role=Role.FUNCTION, name=name, fixed_content=str(content))
         )
 
     def add_message(

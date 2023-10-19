@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Dict, Optional
 
 from pydantic import Field
 
+from semantic_kernel.models.chat.roles import Role
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.sk_pydantic import SKBaseModel
 
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
 class ChatMessage(SKBaseModel):
     """Class to hold chat messages."""
 
-    role: Optional[str] = "assistant"
+    role: Optional[Role] = Field(default=Role.ASSISTANT)
     fixed_content: Optional[str] = Field(default=None, init=False, alias="content")
     content_template: Optional[PromptTemplate] = Field(
         default=None, init=True, repr=False

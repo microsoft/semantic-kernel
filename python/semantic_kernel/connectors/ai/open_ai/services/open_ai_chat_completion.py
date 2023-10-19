@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 import openai
 
 from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+from semantic_kernel.models.chat.roles import Role
 
 if TYPE_CHECKING:
     from openai.openai_object import OpenAIObject
@@ -141,7 +142,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        prompt_to_message = [{"role": "user", "content": prompt}]
+        prompt_to_message = [{"role": Role.USER, "content": prompt}]
         chat_settings = ChatRequestSettings.from_completion_config(request_settings)
         response = await self._send_chat_request(
             prompt_to_message, chat_settings, False
@@ -158,7 +159,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         request_settings: CompleteRequestSettings,
         logger: Optional[Logger] = None,
     ):
-        prompt_to_message = [{"role": "user", "content": prompt}]
+        prompt_to_message = [{"role": Role.USER, "content": prompt}]
         chat_settings = ChatRequestSettings(
             temperature=request_settings.temperature,
             top_p=request_settings.top_p,

@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from semantic_kernel.models.chat.roles import Role
 from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -168,7 +169,7 @@ def test_chat_prompt_template_with_system_prompt():
     )
     print(chat_prompt_template._messages)
     assert len(chat_prompt_template.messages) == 1
-    assert chat_prompt_template._messages[0].role == "system"
+    assert chat_prompt_template._messages[0].role == Role.SYSTEM
     assert (
         chat_prompt_template._messages[0].content_template._template
         == "Custom system prompt."
