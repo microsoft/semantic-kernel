@@ -20,6 +20,7 @@ public sealed class TestConfiguration
         s_instance = new TestConfiguration(configRoot);
     }
 
+    public static string OpenAIService => LoadSection<string>();
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
     public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
@@ -37,6 +38,23 @@ public sealed class TestConfiguration
     public static JiraConfig Jira => LoadSection<JiraConfig>();
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
+
+
+    private static T GetValue<T>([CallerMemberName] string? caller = null)
+    {
+        if (s_instance == null)
+        {
+            throw new InvalidOperationException(
+                "TestConfiguration must be initialized with a call to Initialize(IConfigurationRoot) before accessing configuration values.");
+        }
+
+        if (string.IsNullOrEmpty(caller))
+        {
+            throw new ArgumentNullException(nameof(caller));
+        }
+        return s_instance._configRoot.GetValue<T>(caller) ??
+            throw new ConfigurationNotFoundException(section: caller);
+    }
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
