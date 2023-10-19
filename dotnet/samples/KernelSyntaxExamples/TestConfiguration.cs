@@ -39,7 +39,6 @@ public sealed class TestConfiguration
     public static ChromaConfig Chroma => LoadSection<ChromaConfig>();
     public static KustoConfig Kusto => LoadSection<KustoConfig>();
 
-
     private static T GetValue<T>([CallerMemberName] string? caller = null)
     {
         if (s_instance == null)
