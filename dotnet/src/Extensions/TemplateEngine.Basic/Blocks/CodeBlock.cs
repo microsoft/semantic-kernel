@@ -101,6 +101,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
 
     private async Task<string> RenderFunctionCallAsync(FunctionIdBlock fBlock, SKContext context)
     {
+        // Clone the context to avoid unexpected variable mutations from the inner function execution
         ContextVariables inputVariables = context.Variables.Clone();
 
         // If the code syntax is {{functionName $varName}} use $varName instead of $input

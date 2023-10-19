@@ -182,17 +182,14 @@ public sealed class PromptTemplateEngineTests
             return $"F({context.Variables.Input})";
         }
 
-        var functions = new List<ISKFunction>()
-        {
-            SKFunction.FromNativeMethod(Method(MyFunctionAsync), this)
-        };
+        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
 
-        Assert.NotNull(functions[0]);
+        Assert.NotNull(func);
 
         this._variables.Set("myVar", "BAR");
         var template = "foo-{{function $myVar}}-baz";
 
-        this.MockFunctionRunner(functions[0]);
+        this.MockFunctionRunner(func);
         var context = this.MockContext();
 
         // Act
@@ -217,18 +214,15 @@ public sealed class PromptTemplateEngineTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var functions = new List<ISKFunction>()
-        {
-            SKFunction.FromNativeMethod(Method(MyFunctionAsync), this)
-        };
+        var func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
 
-        Assert.NotNull(functions[0]);
+        Assert.NotNull(func);
 
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
         var template = "foo-{{function input=$input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
 
-        this.MockFunctionRunner(functions[0]);
+        this.MockFunctionRunner(func);
         var context = this.MockContext();
 
         // Act
@@ -281,19 +275,16 @@ public sealed class PromptTemplateEngineTests
             return $"[{dateStr}] {name} ({age}): \"{slogan}\"";
         }
 
-        var functions = new List<ISKFunction>()
-        {
-            SKFunction.FromNativeMethod(Method(MyFunctionAsync), this),
-        };
+        ISKFunction func = SKFunction.FromNativeMethod(Method(MyFunctionAsync), this);
 
-        Assert.NotNull(functions[0]);
+        Assert.NotNull(func);
 
         this._variables.Set("input", "Mario");
         this._variables.Set("someDate", "2023-08-25T00:00:00");
 
         var template = "foo-{{function $input age='42' slogan='Let\\'s-a go!' date=$someDate}}-baz";
 
-        this.MockFunctionRunner(functions[0]);
+        this.MockFunctionRunner(func);
 
         var context = this.MockContext();
 
