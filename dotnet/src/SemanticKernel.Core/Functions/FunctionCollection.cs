@@ -76,10 +76,7 @@ public class FunctionCollection : IFunctionCollection
     /// <inheritdoc/>
     public ISKFunction GetFunction(string pluginName, string functionName)
     {
-        if (string.IsNullOrWhiteSpace(pluginName))
-        {
-            return this.GetFunction(GlobalFunctionsPluginName, functionName);
-        }
+        pluginName = !string.IsNullOrWhiteSpace(pluginName) ? pluginName : GlobalFunctionsPluginName;
 
         if (!this.TryGetFunction(pluginName, functionName, out ISKFunction? functionInstance))
         {
