@@ -170,7 +170,10 @@ def test_chat_prompt_template_with_system_prompt():
     assert len(chat_prompt_template.messages) == 1
     assert chat_prompt_template.messages[0]["role"] == "system"
     # chat messages are not rendered, so the template is not rendered, so referencing the template instead of content.
-    assert chat_prompt_template._messages[0].content_template._template == "Custom system prompt."
+    assert (
+        chat_prompt_template._messages[0].content_template._template
+        == "Custom system prompt."
+    )
 
 
 def test_chat_prompt_template_restore():
@@ -184,7 +187,10 @@ def test_chat_prompt_template_restore():
     print(chat_prompt_template._messages)
     assert len(chat_prompt_template.messages) == 1
     assert chat_prompt_template.messages[0]["role"] == "system"
-    assert chat_prompt_template._messages[0].content_template._template == "Custom system prompt."
+    assert (
+        chat_prompt_template._messages[0].content_template._template
+        == "Custom system prompt."
+    )
 
 
 def test_chat_prompt_template_restore_with_both_system_prompts():
@@ -205,7 +211,10 @@ def test_chat_prompt_template_restore_with_both_system_prompts():
     print(chat_prompt_template.messages)
     assert len(chat_prompt_template.messages) == 1
     assert chat_prompt_template.messages[0]["role"] == "system"
-    assert chat_prompt_template._messages[0].content_template._template == "Custom system prompt."
+    assert (
+        chat_prompt_template._messages[0].content_template._template
+        == "Custom system prompt."
+    )
 
 
 def test_chat_prompt_template_restore_with_updated_system_prompt():
@@ -226,4 +235,7 @@ def test_chat_prompt_template_restore_with_updated_system_prompt():
     print(chat_prompt_template.messages)
     assert len(chat_prompt_template.messages) == 1
     assert chat_prompt_template.messages[0]["role"] == "system"
-    assert chat_prompt_template._messages[0].content_template._template == "New custom system prompt."
+    assert (
+        chat_prompt_template._messages[0].content_template._template
+        == "New custom system prompt."
+    )
