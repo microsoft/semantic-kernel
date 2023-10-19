@@ -54,7 +54,7 @@ public sealed class Plan : IPlan
     /// Collection of step results
     /// </summary>
     [JsonIgnore]
-    public IList<PlanResult> StepResults { get; set; } = new List<PlanResult>();
+    public IList<FunctionResult> StepResults { get; set; } = new List<FunctionResult>();
 
     /// <summary>
     /// Gets whether the plan has a next step.
@@ -254,10 +254,7 @@ public sealed class Plan : IPlan
             // Execute the step
             var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
-            if (result is PlanResult planResult)
-            {
-                this.StepResults.Add(planResult);
-            }
+            this.StepResults.Add(result);
 
             var resultValue = result.Context.Result.Trim();
 
@@ -365,14 +362,14 @@ public sealed class Plan : IPlan
             }
         }
 
-        var planResult = new PlanResult(result.FunctionName, result.PluginName, result.Context, result.Value)
+        var parentResult = new FunctionResult(result.FunctionName, result.PluginName, result.Context, result.Value)
         {
-            StepResults = this.StepResults.ToList()
+            FunctionResults = this.StepResults.ToList()
         };
 
-        this.UpdateFunctionResultWithOutputs(planResult);
+        this.UpdateFunctionResultWithOutputs(parentResult);
 
-        return planResult;
+        return parentResult;
     }
 
     /// <inheritdoc/>

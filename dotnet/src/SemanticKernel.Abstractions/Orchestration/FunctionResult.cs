@@ -13,6 +13,11 @@ public class FunctionResult
     internal Dictionary<string, object>? _metadata;
 
     /// <summary>
+    /// Results from subsequent functions in pipeline.
+    /// </summary>
+    public IReadOnlyCollection<FunctionResult> FunctionResults { get; internal set; } = Array.Empty<FunctionResult>();
+
+    /// <summary>
     /// Name of executed function.
     /// </summary>
     public string FunctionName { get; internal set; }

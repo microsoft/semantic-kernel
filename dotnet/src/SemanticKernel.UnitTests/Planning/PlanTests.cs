@@ -854,16 +854,16 @@ Previously:Outline section #1 of 3: Here is a 3 chapter outline about NovelOutli
 
         // Act
         var result = await kernel.RunAsync(parentPlan);
-        var parentPlanResults = result.GetPlanResults()?.ToList();
+        var parentPlanResult = result.FunctionResults.First();
+        var parentPlanResults = parentPlanResult.FunctionResults.ToList();
 
         // Assert
         Assert.Equal("Result3", result.GetValue<string>());
-        Assert.NotNull(parentPlanResults);
 
         this.AssertFunctionResult(parentPlanResults[0], PluginName, "Function1", "Result1");
         this.AssertFunctionResult(parentPlanResults[2], PluginName, "Function3", "Result3");
 
-        var childPlanResults = parentPlanResults[1].StepResults.ToList();
+        var childPlanResults = parentPlanResults[1].FunctionResults.ToList();
 
         this.AssertFunctionResult(childPlanResults[0], PluginName, "Function1", "Result1");
         this.AssertFunctionResult(childPlanResults[1], PluginName, "Function2", "Result2");
