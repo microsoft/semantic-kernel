@@ -67,7 +67,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceConfigurationProvider? configurationProvider = null,
+        IAIServiceSelector? configurationProvider = null,
         ILoggerFactory? loggerFactory = null,
         CancellationToken cancellationToken = default)
     {
@@ -103,7 +103,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         this.AddDefaultValues(context.Variables);
 
-        (var textCompletion, var defaultRequestSettings) = this._configurationProvider.GetAIServiceConfiguration<ITextCompletion>(context.ServiceProvider, this.ModelSettings);
+        (var textCompletion, var defaultRequestSettings) = this._configurationProvider.SelectAIService<ITextCompletion>(context.ServiceProvider, this.ModelSettings);
         return await this.RunPromptAsync(textCompletion, requestSettings ?? defaultRequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
@@ -131,7 +131,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         string pluginName,
         string functionName,
         string description,
-        IAIServiceConfigurationProvider? configurationProvider = null,
+        IAIServiceSelector? configurationProvider = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(template);
@@ -147,7 +147,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
         this.PluginName = pluginName;
         this.Description = description;
 
-        this._configurationProvider = configurationProvider ?? new OrderedIAIServiceConfigurationProvider();
+        this._configurationProvider = configurationProvider ?? new OrderedIAIServiceSelector();
 
         this._view = new(() => new(functionName, pluginName, description, this.Parameters));
     }
@@ -157,7 +157,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     private static readonly JsonSerializerOptions s_toStringStandardSerialization = new();
     private static readonly JsonSerializerOptions s_toStringIndentedSerialization = new() { WriteIndented = true };
     private readonly ILogger _logger;
-    private IAIServiceConfigurationProvider _configurationProvider;
+    private IAIServiceSelector _configurationProvider;
     public List<AIRequestSettings>? _modelSettings;
     private readonly Lazy<FunctionView> _view;
     public IPromptTemplate _promptTemplate { get; }
@@ -231,13 +231,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         Verify.NotNull(serviceFactory);
 
-        if (this._configurationProvider is DelegatingAIServiceConfigurationProvider delegatingProvider)
+        if (this._configurationProvider is DelegatingAIServiceSelector delegatingProvider)
         {
             delegatingProvider.ServiceFactory = serviceFactory;
         }
         else
         {
-            var configurationProvider = new DelegatingAIServiceConfigurationProvider();
+            var configurationProvider = new DelegatingAIServiceSelector();
             configurationProvider.ServiceFactory = serviceFactory;
             this._configurationProvider = configurationProvider;
         }
@@ -248,13 +248,13 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
     public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings)
     {
-        if (this._configurationProvider is DelegatingAIServiceConfigurationProvider delegatingProvider)
+        if (this._configurationProvider is DelegatingAIServiceSelector delegatingProvider)
         {
             delegatingProvider.RequestSettings = requestSettings;
         }
         else
         {
-            var configurationProvider = new DelegatingAIServiceConfigurationProvider();
+            var configurationProvider = new DelegatingAIServiceSelector();
             configurationProvider.RequestSettings = requestSettings;
             this._configurationProvider = configurationProvider;
         }

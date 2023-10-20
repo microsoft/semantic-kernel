@@ -21,11 +21,11 @@ public class OrderedIAIServiceConfigurationProviderTests
         var serviceCollection = new AIServiceCollection();
         var serviceProvider = serviceCollection.Build();
         var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => configurationProvider.GetAIServiceConfiguration<ITextCompletion>(serviceProvider, modelSettings));
+        Assert.Throws<SKException>(() => configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings));
     }
 
     [Fact]
@@ -36,10 +36,10 @@ public class OrderedIAIServiceConfigurationProviderTests
         serviceCollection.SetService<IAIService>(new AIService());
         var serviceProvider = serviceCollection.Build();
         var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.GetAIServiceConfiguration<IAIService>(serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<IAIService>(serviceProvider, modelSettings);
 
         // Assert
         Assert.NotNull(aiService);
@@ -54,10 +54,10 @@ public class OrderedIAIServiceConfigurationProviderTests
         serviceCollection.SetService<ITextCompletion>(new TextCompletion());
         var serviceProvider = serviceCollection.Build();
         var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.GetAIServiceConfiguration<ITextCompletion>(serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings);
 
         // Assert
         Assert.NotNull(aiService);
@@ -73,10 +73,10 @@ public class OrderedIAIServiceConfigurationProviderTests
         serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion());
         var serviceProvider = serviceCollection.Build();
         var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.GetAIServiceConfiguration<ITextCompletion>(serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings);
 
         // Assert
         Assert.NotNull(aiService);
@@ -95,11 +95,11 @@ public class OrderedIAIServiceConfigurationProviderTests
         {
             new AIRequestSettings() { ServiceId = "service3" }
         };
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
         // Assert
-        Assert.Throws<SKException>(() => configurationProvider.GetAIServiceConfiguration<ITextCompletion>(serviceProvider, modelSettings));
+        Assert.Throws<SKException>(() => configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings));
     }
 
     [Fact]
@@ -110,10 +110,10 @@ public class OrderedIAIServiceConfigurationProviderTests
         serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
         serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion(), true);
         var serviceProvider = serviceCollection.Build();
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.GetAIServiceConfiguration<ITextCompletion>(serviceProvider, null);
+        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, null);
 
         // Assert
         Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
@@ -129,10 +129,10 @@ public class OrderedIAIServiceConfigurationProviderTests
         serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion(), true);
         var serviceProvider = serviceCollection.Build();
         var modelSettings = new List<AIRequestSettings>();
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.GetAIServiceConfiguration<ITextCompletion>(serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings);
 
         // Assert
         Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
@@ -151,10 +151,10 @@ public class OrderedIAIServiceConfigurationProviderTests
         {
             new AIRequestSettings()
         };
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.GetAIServiceConfiguration<ITextCompletion>(serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings);
 
         // Assert
         Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
@@ -179,10 +179,10 @@ public class OrderedIAIServiceConfigurationProviderTests
         {
             modelSettings.Add(new AIRequestSettings() { ServiceId = serviceId });
         }
-        var configurationProvider = new OrderedIAIServiceConfigurationProvider();
+        var configurationProvider = new OrderedIAIServiceSelector();
 
         // Act
-        (var aiService, var defaultRequestSettings) = configurationProvider.GetAIServiceConfiguration<ITextCompletion>(serviceProvider, modelSettings);
+        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings);
 
         // Assert
         Assert.Equal(serviceProvider.GetService<ITextCompletion>(expectedServiceId), aiService);

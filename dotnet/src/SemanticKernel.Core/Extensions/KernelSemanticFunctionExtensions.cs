@@ -36,7 +36,7 @@ public static class KernelSemanticFunctionExtensions
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceConfigurationProvider? configurationProvider = null)
+        IAIServiceSelector? configurationProvider = null)
     {
         return kernel.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsPluginName, functionName, promptTemplateConfig, promptTemplate);
     }
@@ -57,7 +57,7 @@ public static class KernelSemanticFunctionExtensions
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceConfigurationProvider? configurationProvider = null)
+        IAIServiceSelector? configurationProvider = null)
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidFunctionName(functionName);
@@ -280,7 +280,7 @@ public static class KernelSemanticFunctionExtensions
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceConfigurationProvider? configurationProvider = null)
+        IAIServiceSelector? configurationProvider = null)
     {
         return SemanticFunction.FromSemanticConfig(
             pluginName,

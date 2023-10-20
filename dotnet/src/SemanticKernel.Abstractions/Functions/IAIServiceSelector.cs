@@ -9,17 +9,17 @@ namespace Microsoft.SemanticKernel;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Factory which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="AIRequestSettings"/> from the specified provider based on the model settings.
+/// Selector which will return a tuple containing instances of <see cref="IAIService"/> and <see cref="AIRequestSettings"/> from the specified provider based on the model settings.
 /// </summary>
-public interface IAIServiceConfigurationProvider
+public interface IAIServiceSelector
 {
     /// <summary>
-    /// Return the AI service configuration from the specified provider based on the model settings.
-    /// The AI service configuration is a tuple containing instances of <see cref="IAIService"/> and <see cref="AIRequestSettings"/>
+    /// Return the AI service and requesting settings from the specified provider based on the model settings.
+    /// The returned value is a tuple containing instances of <see cref="IAIService"/> and <see cref="AIRequestSettings"/>
     /// </summary>
     /// <typeparam name="T">Type of AI service to return</typeparam>
     /// <param name="serviceProvider">AI service provider</param>
     /// <param name="modelSettings">Collection of model settings</param>
     /// <returns></returns>
-    (T?, AIRequestSettings?) GetAIServiceConfiguration<T>(IAIServiceProvider serviceProvider, List<AIRequestSettings>? modelSettings) where T : IAIService;
+    (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, List<AIRequestSettings>? modelSettings) where T : IAIService;
 }

@@ -10,13 +10,13 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Functions;
 
 /// <summary>
-/// Default implementation of <see cref="IAIServiceConfigurationProvider"/>
+/// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the model settings.
 /// Uses the service id to select the preferred service provider and then returns the service and associated model settings.
 /// </summary>
-internal class OrderedIAIServiceConfigurationProvider : IAIServiceConfigurationProvider
+internal class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) GetAIServiceConfiguration<T>(IAIServiceProvider serviceProvider, List<AIRequestSettings>? modelSettings) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, List<AIRequestSettings>? modelSettings) where T : IAIService
     {
         if (modelSettings == null || modelSettings.Count == 0)
         {
@@ -41,7 +41,8 @@ internal class OrderedIAIServiceConfigurationProvider : IAIServiceConfigurationP
                 }
                 else
                 {
-                    defaultRequestSettings = model;
+                    // First request settings with no service id is the default
+                    defaultRequestSettings ??= model;
                 }
             }
 

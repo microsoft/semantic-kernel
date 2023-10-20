@@ -92,7 +92,7 @@ public class SequentialPlanParserTests
                     It.IsAny<string>(),
                     It.IsAny<PromptTemplateConfig>(),
                     It.IsAny<IPromptTemplate>(),
-                    It.IsAny<IAIServiceConfigurationProvider>()
+                    It.IsAny<IAIServiceSelector>()
                 )).Returns(mockFunction.Object);
             }
             else
