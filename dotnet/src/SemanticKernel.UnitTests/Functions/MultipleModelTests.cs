@@ -104,4 +104,65 @@ public class MultipleModelTests
         mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service2"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[1]));
         mockTextCompletion3.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service3"), It.IsAny<CancellationToken>()), Times.Exactly(callCount[2]));
     }
+
+    [Fact]
+    public async Task ItUsesServiceIdWithJsonPromptTemplateConfigAsync()
+    {
+        // Arrange
+        var mockTextCompletion1 = new Mock<ITextCompletion>();
+        var mockTextCompletion2 = new Mock<ITextCompletion>();
+        var mockTextCompletion3 = new Mock<ITextCompletion>();
+        var mockCompletionResult = new Mock<ITextResult>();
+
+        mockTextCompletion1.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockTextCompletion3.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
+        mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
+
+        var kernel = Kernel.Builder
+            .WithAIService("service1", mockTextCompletion1.Object, true)
+            .WithAIService("service2", mockTextCompletion2.Object, false)
+            .WithAIService("service3", mockTextCompletion3.Object, false)
+            .Build();
+
+        var json = @"{
+  ""schema"": 1,
+  ""description"": ""Semantic function"",
+  ""models"": [
+    {
+      ""service_id"": ""service2"",
+      ""max_tokens"": 100,
+      ""temperature"": 0.2,
+      ""top_p"": 0.0,
+      ""presence_penalty"": 0.0,
+      ""frequency_penalty"": 0.0,
+      ""stop_sequences"": [
+        ""\n""
+      ]
+    },
+    {
+      ""service_id"": ""service3"",
+      ""max_tokens"": 100,
+      ""temperature"": 0.4,
+      ""top_p"": 0.0,
+      ""presence_penalty"": 0.0,
+      ""frequency_penalty"": 0.0,
+      ""stop_sequences"": [
+        ""\n""
+      ]
+    }
+  ]
+}";
+
+        var templateConfig = PromptTemplateConfig.FromJson(json);
+        var func = kernel.CreateSemanticFunction("template", templateConfig, "functionName", "pluginName");
+
+        // Act
+        await kernel.RunAsync(func);
+
+        // Assert
+        mockTextCompletion1.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service1"), It.IsAny<CancellationToken>()), Times.Never());
+        mockTextCompletion2.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service2"), It.IsAny<CancellationToken>()), Times.Once());
+        mockTextCompletion3.Verify(a => a.GetCompletionsAsync("template", It.Is<AIRequestSettings>(settings => settings.ServiceId == "service3"), It.IsAny<CancellationToken>()), Times.Never());
+    }
 }
