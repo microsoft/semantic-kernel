@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Functions;
 
 /// <summary>
-/// Added got backward compatability only, this will be removed when ISKFunction.SetAIService and ISKFunction.SetAIConfiguration are removed.
+/// Added for backward compatibility only, this will be removed when ISKFunction.SetAIService and ISKFunction.SetAIConfiguration are removed.
 /// </summary>
 [Obsolete("Remove this when ISKFunction.SetAIService and ISKFunction.SetAIConfiguration are removed.")]
 internal class DelegatingAIServiceConfigurationProvider : IAIServiceConfigurationProvider
