@@ -56,34 +56,31 @@ class TextMemorySkill(PydanticField):
         Returns:
             The nearest item from the memory store as a string or empty string if not found.
         """
-        if context.variables is None:
-            raise ValueError("Context has no variables")
-        if context.memory is None:
-            raise ValueError("Context has no memory")
 
-        collection = (
-            context.variables[TextMemorySkill.COLLECTION_PARAM]
-            if context.variables.contains_key(TextMemorySkill.COLLECTION_PARAM)
-            else TextMemorySkill.DEFAULT_COLLECTION
+        if context.variables is None:
+            raise ValueError(
+                "The context doesn't have the variables required to know how to recall memory"
+            )
+        if context.memory is None:
+            raise ValueError("The context doesn't have a memory instance to search")
+
+        collection = context.variables.get(
+            TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
         )
         if not collection:
             raise ValueError("Memory collection not defined for TextMemorySkill")
 
-        relevance = (
-            context.variables[TextMemorySkill.RELEVANCE_PARAM]
-            if context.variables.contains_key(TextMemorySkill.RELEVANCE_PARAM)
-            else TextMemorySkill.DEFAULT_RELEVANCE
+        relevance = context.variables.get(
+            TextMemorySkill.RELEVANCE_PARAM, TextMemorySkill.DEFAULT_RELEVANCE
         )
-        if relevance is None or str(relevance).strip() == "":
-            relevance = TextMemorySkill.DEFAULT_RELEVANCE
+        if not relevance:
+            raise ValueError("Relevance value not defined for TextMemorySkill")
 
-        limit = (
-            context.variables[TextMemorySkill.LIMIT_PARAM]
-            if context.variables.contains_key(TextMemorySkill.LIMIT_PARAM)
-            else TextMemorySkill.DEFAULT_LIMIT
+        limit = context.variables.get(
+            TextMemorySkill.LIMIT_PARAM, TextMemorySkill.DEFAULT_LIMIT
         )
         if limit is None or str(limit).strip() == "":
-            limit = TextMemorySkill.DEFAULT_LIMIT
+            raise ValueError("Limit value not defined for TextMemorySkill")
 
         results = await context.memory.search_async(
             collection=collection,
@@ -95,6 +92,7 @@ class TextMemorySkill(PydanticField):
             if context.log is not None:
                 context.log.warning(f"Memory not found in collection: {collection}")
             return ""
+
         return results[0].text if limit == 1 else json.dumps([r.text for r in results])
 
     @sk_function(
@@ -125,24 +123,21 @@ class TextMemorySkill(PydanticField):
             context -- Contains the 'collection' to save the information
                 and unique 'key' to associate with the information
         """
-        if context.variables is None:
-            raise ValueError("Context has no variables")
-        if context.memory is None:
-            raise ValueError("Context has no memory")
 
-        collection = (
-            context.variables[TextMemorySkill.COLLECTION_PARAM]
-            if context.variables.contains_key(TextMemorySkill.COLLECTION_PARAM)
-            else TextMemorySkill.DEFAULT_COLLECTION
+        if context.variables is None:
+            raise ValueError(
+                "The context doesn't have the variables required to know how to recall memory"
+            )
+        if context.memory is None:
+            raise ValueError("The context doesn't have a memory instance to search")
+
+        collection = context.variables.get(
+            TextMemorySkill.COLLECTION_PARAM, TextMemorySkill.DEFAULT_COLLECTION
         )
         if not collection:
             raise ValueError("Memory collection not defined for TextMemorySkill")
 
-        key = (
-            context.variables[TextMemorySkill.KEY_PARAM]
-            if context.variables.contains_key(TextMemorySkill.KEY_PARAM)
-            else None
-        )
+        key = context.variables.get(TextMemorySkill.KEY_PARAM, None)
         if not key:
             raise ValueError("Memory key not defined for TextMemorySkill")
 
