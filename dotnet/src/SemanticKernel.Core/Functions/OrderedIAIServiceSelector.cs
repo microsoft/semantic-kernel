@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.AI;
-using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
 
@@ -16,7 +15,7 @@ namespace Microsoft.SemanticKernel.Functions;
 internal class OrderedIAIServiceSelector : IAIServiceSelector
 {
     /// <inheritdoc/>
-    public (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, List<AIRequestSettings>? modelSettings) where T : IAIService
+    public (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
     {
         if (modelSettings == null || modelSettings.Count == 0)
         {
@@ -31,7 +30,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
             AIRequestSettings? defaultRequestSettings = null;
             foreach (var model in modelSettings)
             {
-                if (model.ServiceId is not null)
+                if (!string.IsNullOrEmpty(model.ServiceId))
                 {
                     var service = serviceProvider.GetService<T>(model.ServiceId);
                     if (service != null)
@@ -41,7 +40,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
                 }
                 else
                 {
-                    // First request settings with no service id is the default
+                    // First request settings with empty or null service id is the default
                     defaultRequestSettings ??= model;
                 }
             }
@@ -53,6 +52,6 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
         }
 
         var names = string.Join("|", modelSettings.Select(model => model.ServiceId).ToArray());
-        throw new SKException($"Service of type {typeof(ITextCompletion)} and name {names ?? "<NONE>"} not registered.");
+        throw new SKException($"Service of type {typeof(T)} and name {names ?? "<NONE>"} not registered.");
     }
 }

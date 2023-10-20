@@ -161,6 +161,28 @@ public class OrderedIAIServiceConfigurationProviderTests
         Assert.Equal(modelSettings[0], defaultRequestSettings);
     }
 
+    [Fact]
+    public void ItUsesDefaultServiceAndSettingsEmptyServiceId()
+    {
+        // Arrange
+        var serviceCollection = new AIServiceCollection();
+        serviceCollection.SetService<ITextCompletion>("service1", new TextCompletion());
+        serviceCollection.SetService<ITextCompletion>("service2", new TextCompletion(), true);
+        var serviceProvider = serviceCollection.Build();
+        var modelSettings = new List<AIRequestSettings>
+        {
+            new AIRequestSettings() { ServiceId = "" }
+        };
+        var configurationProvider = new OrderedIAIServiceSelector();
+
+        // Act
+        (var aiService, var defaultRequestSettings) = configurationProvider.SelectAIService<ITextCompletion>(serviceProvider, modelSettings);
+
+        // Assert
+        Assert.Equal(serviceProvider.GetService<ITextCompletion>("service2"), aiService);
+        Assert.Equal(modelSettings[0], defaultRequestSettings);
+    }
+
     [Theory]
     [InlineData(new string[] { "service1" }, "service1")]
     [InlineData(new string[] { "service2" }, "service2")]

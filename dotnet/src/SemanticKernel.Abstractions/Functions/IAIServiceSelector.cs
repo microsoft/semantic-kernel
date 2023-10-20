@@ -21,5 +21,5 @@ public interface IAIServiceSelector
     /// <param name="serviceProvider">AI service provider</param>
     /// <param name="modelSettings">Collection of model settings</param>
     /// <returns></returns>
-    (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, List<AIRequestSettings>? modelSettings) where T : IAIService;
+    (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService;
 }

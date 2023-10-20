@@ -29,14 +29,14 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="promptTemplate">Prompt template.</param>
-    /// <param name="configurationProvider">Optional, AI service configuration provider.</param>
+    /// <param name="serviceSelector">Optional, AI service selector.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(
         this IKernel kernel,
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceSelector? configurationProvider = null)
+        IAIServiceSelector? serviceSelector = null)
     {
         return kernel.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsPluginName, functionName, promptTemplateConfig, promptTemplate);
     }
@@ -49,7 +49,7 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="promptTemplate">Prompt template.</param>
-    /// <param name="configurationProvider">Optional, AI service configuration provider.</param>
+    /// <param name="serviceSelector">Optional, AI service selector.</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     public static ISKFunction RegisterSemanticFunction(
         this IKernel kernel,
@@ -57,7 +57,7 @@ public static class KernelSemanticFunctionExtensions
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceSelector? configurationProvider = null)
+        IAIServiceSelector? serviceSelector = null)
     {
         // Future-proofing the name not to contain special chars
         Verify.ValidFunctionName(functionName);
@@ -280,14 +280,14 @@ public static class KernelSemanticFunctionExtensions
         string functionName,
         PromptTemplateConfig promptTemplateConfig,
         IPromptTemplate promptTemplate,
-        IAIServiceSelector? configurationProvider = null)
+        IAIServiceSelector? serviceSelector = null)
     {
         return SemanticFunction.FromSemanticConfig(
             pluginName,
             functionName,
             promptTemplateConfig,
             promptTemplate,
-            configurationProvider,
+            serviceSelector,
             kernel.LoggerFactory
         );
     }

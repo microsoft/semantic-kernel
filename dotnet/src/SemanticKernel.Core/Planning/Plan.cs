@@ -587,7 +587,7 @@ public sealed class Plan : IPlan
         this.Description = function.Description;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-        this.RequestSettings = function.RequestSettings; // TODO Mark, can we remove these
+        this.RequestSettings = function.RequestSettings;
         this.IsSemantic = function.IsSemantic;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
