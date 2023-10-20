@@ -356,9 +356,11 @@ class Kernel:
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
 
-    def create_new_context(self) -> SKContext:
+    def create_new_context(
+        self, variables: Optional[ContextVariables] = None
+    ) -> SKContext:
         return SKContext(
-            ContextVariables(),
+            ContextVariables() if not variables else variables,
             self._memory,
             self.skills,
             self._log,

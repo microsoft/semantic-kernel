@@ -39,15 +39,15 @@ public static class Example10_DescribeAllPluginsAndFunctions
         kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin");
 
         // Define a semantic function inline, without naming
-        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+        var sFun1 = kernel.CreateSemanticFunction("tell a joke about {{$input}}", new OpenAIRequestSettings() { MaxTokens = 150 });
 
         // Define a semantic function inline, with plugin name
         var sFun2 = kernel.CreateSemanticFunction(
             "write a novel about {{$input}} in {{$language}} language",
+            new OpenAIRequestSettings() { MaxTokens = 150 },
             pluginName: "Writing",
             functionName: "Novel",
-            description: "Write a bedtime story",
-            requestSettings: new OpenAIRequestSettings() { MaxTokens = 150 });
+            description: "Write a bedtime story");
 
         var functions = kernel.Functions.GetFunctionViews();
 
