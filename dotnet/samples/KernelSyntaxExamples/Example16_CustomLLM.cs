@@ -43,7 +43,7 @@ public class MyTextCompletionService : ITextCompletion
     }
 }
 
-public class MyTextCompletionStreamingResult : ITextStreamingResult
+public class MyTextCompletionStreamingResult : ITextStreamingResult, ITextResult
 {
     private readonly ModelResult _modelResult = new(new
     {
