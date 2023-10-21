@@ -46,7 +46,7 @@ class ChromaMemoryStore(MemoryStoreBase):
             # Create a ChromaMemoryStore with a custom Settings instance
             chroma_remote_data_store = ChromaMemoryStore(
                 client_settings=Settings(
-                    chroma_api_impl="chromadb.api.fastapi.FastAPI"",
+                    chroma_api_impl="chromadb.api.fastapi.FastAPI",
                     chroma_server_host="xxx.xxx.xxx.xxx",
                     chroma_server_http_port="8000"
                 )
