@@ -197,8 +197,9 @@ class SequentialPlannerSKContextExtension:
         context: SKContext, available_functions: List[FunctionView]
     ):
         # Check if the functions have already been saved to memory.
-        if context.variables.contains_key(
+        if (
             SequentialPlannerSKContextExtension.PLAN_SK_FUNCTIONS_ARE_REMEMBERED
+            in context.variables
         ):
             return
 

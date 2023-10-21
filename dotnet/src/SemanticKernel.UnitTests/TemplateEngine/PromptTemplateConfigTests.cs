@@ -2,10 +2,10 @@
 
 using System.Text.Json;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
-using Microsoft.SemanticKernel.SemanticFunctions;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Xunit;
 
-namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
+namespace SemanticKernel.UnitTests.TemplateEngine;
 
 public class PromptTemplateConfigTests
 {
