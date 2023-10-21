@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,11 +34,6 @@ public interface ISKFunction
     string Description { get; }
 
     /// <summary>
-    /// Model request settings.
-    /// </summary>
-    List<AIRequestSettings>? ModelSettings { get; }
-
-    /// <summary>
     /// Returns a description of the function, including parameters.
     /// </summary>
     /// <returns>An instance of <see cref="FunctionView"/> describing the function</returns>
@@ -62,7 +56,7 @@ public interface ISKFunction
     /// <summary>
     /// AI service settings
     /// </summary>
-    [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
+    [Obsolete("Use PromptTemplateConfig.ModelSettings instead. This will be removed in a future release.")]
     AIRequestSettings? RequestSettings { get; }
 
     /// <summary>

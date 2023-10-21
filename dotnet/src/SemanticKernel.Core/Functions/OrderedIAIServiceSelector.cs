@@ -22,7 +22,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
             var service = serviceProvider.GetService<T>(null);
             if (service != null)
             {
-                return (service, modelSettings?.FirstOrDefault<AIRequestSettings>());
+                return (service, null);
             }
         }
         else

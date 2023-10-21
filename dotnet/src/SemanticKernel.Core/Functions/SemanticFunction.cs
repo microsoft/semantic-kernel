@@ -39,13 +39,6 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     /// <inheritdoc/>
     public string Description { get; }
 
-    /// <inheritdoc/>
-    public List<AIRequestSettings>? ModelSettings
-    {
-        get => this._modelSettings ??= new();
-        private set => this._modelSettings = value;
-    }
-
     /// <summary>
     /// List of function parameters
     /// </summary>
@@ -83,7 +76,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
             loggerFactory: loggerFactory
         )
         {
-            ModelSettings = promptTemplateConfig.ModelSettings
+            _modelSettings = promptTemplateConfig.ModelSettings
         };
 
         return func;
@@ -103,7 +96,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         this.AddDefaultValues(context.Variables);
 
-        (var textCompletion, var defaultRequestSettings) = this._serviceSelector.SelectAIService<ITextCompletion>(context.ServiceProvider, this.ModelSettings);
+        (var textCompletion, var defaultRequestSettings) = this._serviceSelector.SelectAIService<ITextCompletion>(context.ServiceProvider, this._modelSettings);
         return await this.RunPromptAsync(textCompletion, requestSettings ?? defaultRequestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
@@ -223,7 +216,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.ModelSettings instead. This will be removed in a future release.")]
-    public AIRequestSettings? RequestSettings => this.ModelSettings?.FirstOrDefault<AIRequestSettings>();
+    public AIRequestSettings? RequestSettings => this._modelSettings?.FirstOrDefault<AIRequestSettings>();
 
     /// <inheritdoc/>
     [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]

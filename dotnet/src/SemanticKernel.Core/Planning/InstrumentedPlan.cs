@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -28,9 +27,6 @@ internal sealed class InstrumentedPlan : IPlan
 
     /// <inheritdoc/>
     public string Description => this._plan.Description;
-
-    /// <inheritdoc/>
-    public List<AIRequestSettings>? ModelSettings => this._plan.ModelSettings;
 
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.

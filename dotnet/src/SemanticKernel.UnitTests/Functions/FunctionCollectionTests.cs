@@ -21,13 +21,11 @@ public class FunctionCollectionTests
         functionOne.SetupGet(x => x.Name).Returns("fName");
         functionOne.SetupGet(x => x.PluginName).Returns("sName");
         functionOne.SetupGet(x => x.Description).Returns("ONE");
-        functionOne.SetupGet(x => x.ModelSettings).Returns(modelSettings);
 
         var functionTwo = new Mock<ISKFunction>();
         functionTwo.SetupGet(x => x.Name).Returns("fName");
         functionTwo.SetupGet(x => x.PluginName).Returns("sName");
         functionTwo.SetupGet(x => x.Description).Returns("TWO");
-        functionTwo.SetupGet(x => x.ModelSettings).Returns(modelSettings);
 
         var target = new FunctionCollection();
 
