@@ -16,28 +16,18 @@ namespace Microsoft.SemanticKernel.Connectors.AI.HuggingFace.TextEmbedding;
 /// HuggingFace embedding generation service.
 /// </summary>
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneration
+public sealed class HuggingFaceTextEmbeddingGeneration : HuggingFaceClientBase, ITextEmbeddingGeneration
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {
-    private readonly string _model;
-    private readonly string? _endpoint;
-    private readonly HttpClient _httpClient;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HuggingFaceTextEmbeddingGeneration"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
-    public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model)
+    public HuggingFaceTextEmbeddingGeneration(Uri endpoint, string model) : base(endpoint, model)
     {
-        Verify.NotNull(endpoint);
-        Verify.NotNullOrWhiteSpace(model);
-
-        this._endpoint = endpoint.AbsoluteUri;
-        this._model = model;
-
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this.HuggingFaceApiEndpoint = null;
     }
 
     /// <summary>
@@ -45,15 +35,11 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// </summary>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="endpoint">Endpoint for service API call.</param>
-    public HuggingFaceTextEmbeddingGeneration(string model, string endpoint)
+    public HuggingFaceTextEmbeddingGeneration(string model, string endpoint) : base(model, endpoint: endpoint)
     {
-        Verify.NotNullOrWhiteSpace(model);
         Verify.NotNullOrWhiteSpace(endpoint);
 
-        this._model = model;
-        this._endpoint = endpoint;
-
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this.HuggingFaceApiEndpoint = null;
     }
 
     /// <summary>
@@ -62,14 +48,12 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
     /// <param name="endpoint">Endpoint for service API call. If not specified, the base address of the HTTP client is used.</param>
-    public HuggingFaceTextEmbeddingGeneration(string model, HttpClient httpClient, string? endpoint = null)
+    public HuggingFaceTextEmbeddingGeneration(string model, HttpClient httpClient, string? endpoint = null) : base(model, httpClient: httpClient, endpoint: endpoint)
     {
         Verify.NotNullOrWhiteSpace(model);
         Verify.NotNull(httpClient);
 
-        this._model = model;
-        this._endpoint = endpoint;
-        this._httpClient = httpClient;
+        this.HuggingFaceApiEndpoint = null;
 
         if (httpClient.BaseAddress == null && string.IsNullOrEmpty(endpoint))
         {
@@ -98,42 +82,13 @@ public sealed class HuggingFaceTextEmbeddingGeneration : ITextEmbeddingGeneratio
             Input = data
         };
 
-        using var httpRequestMessage = HttpRequest.CreatePostRequest(this.GetRequestUri(), embeddingRequest);
+        var response = await this.SendPostRequestAsync(embeddingRequest, cancellationToken).ConfigureAwait(false);
 
-        httpRequestMessage.Headers.Add("User-Agent", Telemetry.HttpUserAgent);
-
-        var response = await this._httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
 
         var embeddingResponse = JsonSerializer.Deserialize<TextEmbeddingResponse>(body);
 
         return embeddingResponse?.Embeddings?.Select(l => l.Embedding).ToList()!;
-    }
-
-    /// <summary>
-    /// Retrieves the request URI based on the provided endpoint and model information.
-    /// </summary>
-    /// <returns>
-    /// A <see cref="Uri"/> object representing the request URI.
-    /// </returns>
-    private Uri GetRequestUri()
-    {
-        string? baseUrl = null;
-
-        if (!string.IsNullOrEmpty(this._endpoint))
-        {
-            baseUrl = this._endpoint;
-        }
-        else if (this._httpClient.BaseAddress?.AbsoluteUri != null)
-        {
-            baseUrl = this._httpClient.BaseAddress!.AbsoluteUri;
-        }
-        else
-        {
-            throw new SKException("No endpoint or HTTP client base address has been provided");
-        }
-
-        return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
     }
 
     #endregion

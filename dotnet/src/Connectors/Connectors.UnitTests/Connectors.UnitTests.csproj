@@ -53,6 +53,9 @@
     <None Update="HuggingFace\TestData\embeddings_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="HuggingFace\TestData\image_response.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="OpenAI\TestData\image_result_test_response.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

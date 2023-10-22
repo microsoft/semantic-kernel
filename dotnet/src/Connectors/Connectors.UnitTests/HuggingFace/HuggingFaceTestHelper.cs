@@ -24,6 +24,15 @@ internal static class HuggingFaceTestHelper
     }
 
     /// <summary>
+    /// Returns a test image from file for mocking purposes.
+    /// </summary>
+    /// <returns></returns>
+    internal static Stream GetTestImageStreamResponse(string fileName)
+    {
+        return new MemoryStream(File.ReadAllBytes($"./HuggingFace/TestData/{fileName}"));
+    }
+
+    /// <summary>
     /// Returns mocked instance of <see cref="HttpClientHandler"/>.
     /// </summary>
     /// <param name="httpResponseMessage">Message to return for mocked <see cref="HttpClientHandler"/>.</param>
