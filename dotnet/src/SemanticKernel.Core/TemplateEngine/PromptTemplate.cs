@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// <summary>
 /// Prompt template.
 /// </summary>
+[Obsolete("IPromptTemplateEngine is being replaced with IPromptTemplateFactory. This will be removed in a future release.")]
 public sealed class PromptTemplate : IPromptTemplate
 {
     private readonly string _template;

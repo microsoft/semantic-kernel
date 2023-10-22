@@ -106,29 +106,43 @@ public static class KernelSemanticFunctionExtensions
     /// Allow to define a semantic function passing in the definition in natural language, i.e. the prompt template.
     /// </summary>
     /// <param name="kernel">Semantic Kernel instance</param>
-    /// <param name="promptTemplate">Plain language definition of the semantic function, using SK template language</param>
+    /// <param name="promptTemplate">Prompt template string</param>
     /// <param name="promptTemplateConfig">Prompt template configuration.</param>
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="pluginName">An optional plugin name, e.g. to namespace functions with the same name. When empty,
     /// the function is added to the global namespace, overwriting functions with the same name</param>
+    /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
         string promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
-        string? pluginName = null)
+        string? pluginName = null,
+        IPromptTemplateFactory? promptTemplateFactory = null)
     {
         functionName ??= RandomFunctionName();
         Verify.ValidFunctionName(functionName);
         if (!string.IsNullOrEmpty(pluginName)) { Verify.ValidPluginName(pluginName); }
 
-        var template = new PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
+        IPromptTemplate? promptTemplateInstance = null;
+        if (promptTemplateFactory is not null)
+        {
+            // Support for IPromptTemplateFactory
+            promptTemplateInstance = promptTemplateFactory.CreatePromptTemplate(promptTemplateConfig.TemplateFormat, promptTemplate);
+        }
+        else
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Compatability with existing template engines
+            promptTemplateInstance = new Microsoft.SemanticKernel.TemplateEngine.PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
 
         // TODO: manage overwrites, potentially error out
         return string.IsNullOrEmpty(pluginName)
-            ? kernel.RegisterSemanticFunction(functionName, promptTemplateConfig, template)
-            : kernel.RegisterSemanticFunction(pluginName!, functionName, promptTemplateConfig, template);
+            ? kernel.RegisterSemanticFunction(functionName, promptTemplateConfig, promptTemplateInstance)
+            : kernel.RegisterSemanticFunction(pluginName!, functionName, promptTemplateConfig, promptTemplateInstance);
     }
 
     /// <summary>
@@ -217,7 +231,26 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="pluginDirectoryNames">Name of the directories containing the selected plugins, e.g. "StrategyPlugin"</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by plugin name.</returns>
     public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
-        this IKernel kernel, string parentDirectory, params string[] pluginDirectoryNames)
+        this IKernel kernel,
+        string parentDirectory,
+        params string[] pluginDirectoryNames)
+    {
+        return kernel.ImportSemanticFunctionsFromDirectory(null, parentDirectory, pluginDirectoryNames);
+    }
+
+    /// <summary>
+    /// TODO Mark
+    /// </summary>
+    /// <param name="kernel"></param>
+    /// <param name="promptTemplateFactory"></param>
+    /// <param name="parentDirectory"></param>
+    /// <param name="pluginDirectoryNames"></param>
+    /// <returns></returns>
+    public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
+        this IKernel kernel,
+        IPromptTemplateFactory? promptTemplateFactory,
+        string parentDirectory,
+        params string[] pluginDirectoryNames)
     {
         const string ConfigFile = "config.json";
         const string PromptFile = "skprompt.txt";
@@ -241,34 +274,48 @@ public static class KernelSemanticFunctionExtensions
                 if (!File.Exists(promptPath)) { continue; }
 
                 // Load prompt configuration. Note: the configuration is optional.
-                var config = new PromptTemplateConfig();
+                var promptTemplateConfig = new PromptTemplateConfig();
                 var configPath = Path.Combine(dir, ConfigFile);
                 if (File.Exists(configPath))
                 {
-                    config = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
+                    promptTemplateConfig = PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
                 }
 
                 logger ??= kernel.LoggerFactory.CreateLogger(typeof(IKernel));
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    logger.LogTrace("Config {0}: {1}", functionName, Json.Serialize(config));
+                    logger.LogTrace("Config {0}: {1}", functionName, Json.Serialize(promptTemplateConfig));
                 }
 
                 // Load prompt template
-                var template = new PromptTemplate(File.ReadAllText(promptPath), config, kernel.PromptTemplateEngine);
+                var promptTemplate = File.ReadAllText(promptPath);
+                IPromptTemplate? promptTemplateInstance = null;
+                if (promptTemplateFactory is not null)
+                {
+                    // Support for IPromptTemplateFactory
+                    promptTemplateInstance = promptTemplateFactory.CreatePromptTemplate(promptTemplateConfig.TemplateFormat, promptTemplate);
+                }
+                else
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    // Compatability with existing template engines
+                    promptTemplateInstance = new Microsoft.SemanticKernel.TemplateEngine.PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
                     logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginDirectoryName, functionName, dir);
                 }
 
-                functions[functionName] = kernel.RegisterSemanticFunction(pluginDirectoryName, functionName, config, template);
+                functions[functionName] = kernel.RegisterSemanticFunction(pluginDirectoryName, functionName, promptTemplateConfig, promptTemplateInstance);
             }
         }
 
         return functions;
     }
 
+    #region private
     private static string RandomFunctionName() => "func" + Guid.NewGuid().ToString("N");
 
     private static ISKFunction CreateSemanticFunction(
@@ -293,4 +340,6 @@ public static class KernelSemanticFunctionExtensions
 
         return func;
     }
+
+    #endregion
 }
