@@ -57,11 +57,11 @@ public class PromptTemplateConfig
     }
 
     /// <summary>
-    /// Format of the prompt template.
+    /// Format of the prompt template e.g. f-string, semantic-kernel, handlebars, ...
     /// </summary>
     [JsonPropertyName("template_format")]
     [JsonPropertyOrder(1)]
-    public string TemplateFormat { get; set; } = "Basic"; // TODO Mark check with Matthew
+    public string TemplateFormat { get; set; } = "semantic-kernel"; // TODO Mark check with Matthew
 
     /// <summary>
     /// Description

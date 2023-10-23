@@ -129,7 +129,7 @@ public static class KernelSemanticFunctionExtensions
         if (promptTemplateFactory is not null)
         {
             // Support for IPromptTemplateFactory
-            promptTemplateInstance = promptTemplateFactory.CreatePromptTemplate(promptTemplateConfig.TemplateFormat, promptTemplate);
+            promptTemplateInstance = promptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
         }
         else
         {
@@ -293,7 +293,7 @@ public static class KernelSemanticFunctionExtensions
                 if (promptTemplateFactory is not null)
                 {
                     // Support for IPromptTemplateFactory
-                    promptTemplateInstance = promptTemplateFactory.CreatePromptTemplate(promptTemplateConfig.TemplateFormat, promptTemplate);
+                    promptTemplateInstance = promptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
                 }
                 else
                 {
@@ -340,6 +340,5 @@ public static class KernelSemanticFunctionExtensions
 
         return func;
     }
-
     #endregion
 }

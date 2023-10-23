@@ -3,15 +3,15 @@
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
-/// TODO
+/// TODO Mark
 /// </summary>
 public interface IPromptTemplateFactory
 {
     /// <summary>
-    /// TODO
+    /// TODO Mark
     /// </summary>
-    /// <param name="templateFormat"></param>
     /// <param name="templateString"></param>
+    /// <param name="promptTemplateConfig"></param>
     /// <returns></returns>
-    IPromptTemplate CreatePromptTemplate(string templateFormat, string templateString);
+    IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig);
 }
