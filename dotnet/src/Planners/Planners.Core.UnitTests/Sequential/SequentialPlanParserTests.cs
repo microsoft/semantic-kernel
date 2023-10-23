@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
@@ -38,9 +39,10 @@ public class SequentialPlanParserTests
 
     private SKContext CreateSKContext(
         IFunctionRunner functionRunner,
+        IAIServiceProvider serviceProvider,
         ContextVariables? variables = null)
     {
-        return new SKContext(functionRunner, variables);
+        return new SKContext(functionRunner, serviceProvider, variables);
     }
 
     private static Mock<ISKFunction> CreateMockFunction(FunctionView functionView, string result = "")
@@ -59,12 +61,13 @@ public class SequentialPlanParserTests
         kernel = kernelMock.Object;
 
         var functionRunnerMock = new Mock<IFunctionRunner>();
+        var serviceProviderMock = new Mock<IAIServiceProvider>();
 
         // For Create
         kernelMock.Setup(k => k.CreateNewContext(It.IsAny<ContextVariables>(), It.IsAny<IReadOnlyFunctionCollection>(), It.IsAny<ILoggerFactory>(), It.IsAny<CultureInfo>()))
             .Returns<ContextVariables, IReadOnlyFunctionCollection, ILoggerFactory, CultureInfo>((contextVariables, skills, loggerFactory, culture) =>
             {
-                return this.CreateSKContext(functionRunnerMock.Object, contextVariables);
+                return this.CreateSKContext(functionRunnerMock.Object, serviceProviderMock.Object, contextVariables);
             });
 
         var functionsView = new List<FunctionView>();
@@ -77,7 +80,7 @@ public class SequentialPlanParserTests
             var mockFunction = CreateMockFunction(functionView);
             functionsView.Add(functionView);
 
-            var result = this.CreateSKContext(functionRunnerMock.Object);
+            var result = this.CreateSKContext(functionRunnerMock.Object, serviceProviderMock.Object);
             result.Variables.Update(resultString);
             mockFunction.Setup(x => x.InvokeAsync(It.IsAny<SKContext>(), null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new FunctionResult(name, pluginName, result));
@@ -88,7 +91,8 @@ public class SequentialPlanParserTests
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<PromptTemplateConfig>(),
-                    It.IsAny<IPromptTemplate>()
+                    It.IsAny<IPromptTemplate>(),
+                    It.IsAny<IAIServiceSelector>()
                 )).Returns(mockFunction.Object);
             }
             else
