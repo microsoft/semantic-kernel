@@ -44,7 +44,7 @@ public static class Example58_ConfigureRequestSettings
         // Invoke the semantic function and pass an OpenAI specific instance containing the request settings
         var result = await kernel.InvokeSemanticFunctionAsync(
             prompt,
-            requestSettings: new OpenAIRequestSettings()
+            new OpenAIRequestSettings()
             {
                 MaxTokens = 60,
                 Temperature = 0.7
