@@ -29,7 +29,7 @@ import java.io.IOException;
  * "https://github.com/microsoft/semantic-kernel/tree/main/samples">samples</a>
  * folder.
  */
-public class Example02_RunnningPromptsFromFile {
+public class Example02_RunningPromptsFromFile {
 
     /**
      * Imports skill 'FunSkill' stored in the samples folder and then returns the

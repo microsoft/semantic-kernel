@@ -196,7 +196,7 @@ class AzureCognitiveSearchMemoryTests {
                                 "fake-index",
                                 "fake-text",
                                 "fake-externalId",
-                                "fake-exernalSourceName",
+                                "fake-externalSourceName",
                                 "fake-description",
                                 "fake-additionalMetadata")
                         .block();

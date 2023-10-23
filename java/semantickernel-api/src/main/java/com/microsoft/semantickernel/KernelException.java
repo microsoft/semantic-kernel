@@ -36,7 +36,7 @@ public class KernelException extends SKException {
         /// <summary>
         /// Unknown error.
         /// </summary>
-        UNKOWN_ERROR("Unknown error"),
+        UNKNOWN_ERROR("Unknown error"),
 
         INVALID_FUNCTION_DESCRIPTION("Invalid function description"),
 
