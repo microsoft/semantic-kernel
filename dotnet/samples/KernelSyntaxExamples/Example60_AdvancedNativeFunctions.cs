@@ -46,7 +46,7 @@ public static class Example60_AdvancedNativeFunctions
     /// <summary>
     /// Plugin example with two native functions, where one function is called from another.
     /// </summary>
-    private class FunctionsChainingPlugin
+    private sealed class FunctionsChainingPlugin
     {
         public const string PluginName = nameof(FunctionsChainingPlugin);
 
@@ -101,7 +101,7 @@ public static class Example60_AdvancedNativeFunctions
     /// <summary>
     /// Plugin example with two native functions, which will be called sequentially by Kernel.
     /// </summary>
-    private class FunctionsPipelinePlugin
+    private sealed class FunctionsPipelinePlugin
     {
         public const string PluginName = nameof(FunctionsPipelinePlugin);
 
@@ -157,7 +157,7 @@ public static class Example60_AdvancedNativeFunctions
     /// <summary>
     /// Plugin example with native function, which contains two parameters with primitive types.
     /// </summary>
-    private class PrimitiveTypesPlugin
+    private sealed class PrimitiveTypesPlugin
     {
         public const string PluginName = nameof(PrimitiveTypesPlugin);
 
@@ -193,7 +193,9 @@ public static class Example60_AdvancedNativeFunctions
     /// In this example, object instance is serialized with <see cref="JsonSerializer"/> from System.Text.Json,
     /// but it's possible to convert object to string using any other serialization logic.
     /// </summary>
+#pragma warning disable CA1812 // instantiated by Kernel
     private sealed class MyCustomTypeConverter : TypeConverter
+#pragma warning restore CA1812
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
