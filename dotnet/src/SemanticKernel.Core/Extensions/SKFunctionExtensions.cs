@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ public static class SKFunctionExtensions
     /// <param name="skFunction">Semantic function</param>
     /// <param name="requestSettings">Request settings</param>
     /// <returns>Self instance</returns>
+    [Obsolete("Use implementation of IAIServiceConfigurationProvider instead. This will be removed in a future release.")]
     public static ISKFunction UseCompletionSettings(this ISKFunction skFunction, AIRequestSettings requestSettings)
     {
         return skFunction.SetAIConfiguration(requestSettings);
@@ -49,7 +51,7 @@ public static class SKFunctionExtensions
         CancellationToken cancellationToken = default)
     {
         var context = kernel.CreateNewContext(variables, functions, loggerFactory, culture);
-        return function.InvokeAsync(context, requestSettings ?? function.RequestSettings, cancellationToken);
+        return function.InvokeAsync(context, requestSettings, cancellationToken);
     }
 
     /// <summary>
