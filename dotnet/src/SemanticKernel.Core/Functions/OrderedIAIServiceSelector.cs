@@ -17,10 +17,10 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
     /// <inheritdoc/>
     public (T?, AIRequestSettings?) SelectAIService<T>(IAIServiceProvider serviceProvider, IReadOnlyList<AIRequestSettings>? modelSettings) where T : IAIService
     {
-        if (modelSettings == null || modelSettings.Count == 0)
+        if (modelSettings is null || modelSettings.Count == 0)
         {
             var service = serviceProvider.GetService<T>(null);
-            if (service != null)
+            if (service is not null)
             {
                 return (service, null);
             }
@@ -33,7 +33,7 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
                 if (!string.IsNullOrEmpty(model.ServiceId))
                 {
                     var service = serviceProvider.GetService<T>(model.ServiceId);
-                    if (service != null)
+                    if (service is not null)
                     {
                         return (service, model);
                     }
@@ -47,7 +47,11 @@ internal class OrderedIAIServiceSelector : IAIServiceSelector
 
             if (defaultRequestSettings is not null)
             {
-                return (serviceProvider.GetService<T>(null), defaultRequestSettings);
+                var service = serviceProvider.GetService<T>(null);
+                if (service is not null)
+                {
+                    return (service, defaultRequestSettings);
+                }
             }
         }
 
