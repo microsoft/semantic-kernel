@@ -93,7 +93,7 @@ Make sure your pull request has an objective title and a clear description expla
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](../LICENSE).
 
 ## Code of Conduct
 
