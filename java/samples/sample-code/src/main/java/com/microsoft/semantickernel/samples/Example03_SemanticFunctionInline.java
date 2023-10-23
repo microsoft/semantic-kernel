@@ -99,7 +99,7 @@ public class Example03_SemanticFunctionInline {
      * @param kernel
      */
     public static void TLDR(Kernel kernel) {
-        String propmt = """
+        String prompt = """
                 {{$input}}
 
                 Give me the TLDR in 5 words.
@@ -116,7 +116,7 @@ public class Example03_SemanticFunctionInline {
                     does not conflict with the First or Second Law.
                 """;
 
-        inlineFunction(kernel, propmt, "tldr", text);
+        inlineFunction(kernel, prompt, "tldr", text);
     }
 
     public static void run(OpenAIAsyncClient client) throws IOException {
