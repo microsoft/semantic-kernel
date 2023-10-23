@@ -180,6 +180,11 @@ public static class Example60_AdvancedNativeFunctions
     /// In order to use custom types, <see cref="TypeConverter"/> should be specified,
     /// that will convert object instance to string representation.
     /// </summary>
+    /// <remarks>
+    /// <see cref="TypeConverter"/> is used to represent complex object as meaningful string, so
+    /// it can be passed to AI for further processing using semantic functions.
+    /// It's possible to choose any format (e.g. XML, JSON, YAML) to represent your object.
+    /// </remarks>
     [TypeConverter(typeof(MyCustomTypeConverter))]
     private sealed class MyCustomType
     {
@@ -199,11 +204,19 @@ public static class Example60_AdvancedNativeFunctions
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) => true;
 
+        /// <summary>
+        /// This method is used to convert object from string to actual type. This will allow to pass object to
+        /// native function which requires it.
+        /// </summary>
         public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             return JsonSerializer.Deserialize<MyCustomType>((string)value);
         }
 
+        /// <summary>
+        /// This method is used to convert actual type to string representation, so it can be passed to AI
+        /// for further processing.
+        /// </summary>
         public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
             return JsonSerializer.Serialize(value);
