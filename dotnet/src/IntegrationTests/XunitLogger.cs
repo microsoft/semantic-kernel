@@ -9,7 +9,7 @@ namespace SemanticKernel.IntegrationTests;
 /// <summary>
 /// A logger that writes to the Xunit test output
 /// </summary>
-internal sealed class XunitLogger<T> : ILogger<T>, IDisposable
+internal sealed class XunitLogger<T> : ILoggerFactory, ILogger, IDisposable
 {
     private readonly ITestOutputHelper _output;
 
@@ -28,7 +28,7 @@ internal sealed class XunitLogger<T> : ILogger<T>, IDisposable
     public bool IsEnabled(LogLevel logLevel) => true;
 
     /// <inheritdoc/>
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull
         => this;
 
     /// <inheritdoc/>
@@ -37,4 +37,8 @@ internal sealed class XunitLogger<T> : ILogger<T>, IDisposable
         // This class is marked as disposable to support the BeginScope method.
         // However, there is no need to dispose anything.
     }
+
+    public ILogger CreateLogger(string categoryName) => this;
+
+    public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
 }

@@ -15,14 +15,21 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// The role that instructs or sets the behavior of the assistant.
     /// </summary>
     public static readonly AuthorRole System = new("system");
+
     /// <summary>
     /// The role that provides responses to system-instructed, user-prompted input.
     /// </summary>
     public static readonly AuthorRole Assistant = new("assistant");
+
     /// <summary>
     /// The role that provides input for chat completions.
     /// </summary>
     public static readonly AuthorRole User = new("user");
+
+    /// <summary>
+    /// The role that provides additional information and references for chat completions.
+    /// </summary>
+    public static readonly AuthorRole Tool = new("tool");
 
     /// <summary>
     /// Gets the label associated with this AuthorRole.
@@ -51,16 +58,6 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(AuthorRole left, AuthorRole right)
     {
-        if (Object.ReferenceEquals(left, right))
-        {
-            return true;
-        }
-
-        if (Object.ReferenceEquals(left, null) || Object.ReferenceEquals(right, null))
-        {
-            return false;
-        }
-
         return left.Equals(right);
     }
 
@@ -86,8 +83,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
 
     /// <inheritdoc/>
     public bool Equals(AuthorRole other)
-        => !Object.ReferenceEquals(other, null)
-            && string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+        => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public override string ToString() => this.Label;

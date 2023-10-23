@@ -5,15 +5,15 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using RepoUtils;
 using Resources;
 
 /**
  * Scenario:
  *  - the user is reading a wikipedia page, they select a piece of text and they ask AI to extract some information.
- *  - the app explicitly uses the Chat model to get a result from gpt-3.5-turbo.
+ *  - the app explicitly uses the Chat model to get a result.
  *
  * The following example shows how to:
  *
@@ -36,14 +36,13 @@ using Resources;
  * TLDR: how to render a prompt:
  *
  *      var kernel = new KernelBuilder().WithLogger(ConsoleLogger.Logger).Build();
- *      ... import skills and functions ...
+ *      ... import plugins and functions ...
  *      var context = kernel.CreateNewContext();
  *      ... set variables ...
  *
- *      var promptRenderer = new PromptTemplateEngine();
+ *      var promptRenderer = new BasicPromptTemplateEngine();
  *      string renderedPrompt = await promptRenderer.RenderAsync("...prompt template...", context);
  */
-
 // ReSharper disable CommentTypo
 // ReSharper disable once InconsistentNaming
 public static class Example30_ChatWithPrompts
@@ -62,18 +61,17 @@ public static class Example30_ChatWithPrompts
         var selectedText = EmbeddedResource.Read("30-user-context.txt");
         var userPromptTemplate = EmbeddedResource.Read("30-user-prompt.txt");
 
-        // Usual kernel initialization, with GPT 3.5 Turbo
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, serviceId: "chat")
             .Build();
 
-        // As an example, we import the time skill, which is used in system prompt to read the current date.
+        // As an example, we import the time plugin, which is used in system prompt to read the current date.
         // We could also use a variable, this is just to show that the prompt can invoke functions.
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         // We need a kernel context to store some information to pass to the prompts and the list
-        // of available skills needed to render prompt templates.
+        // of available plugins needed to render prompt templates.
         var context = kernel.CreateNewContext();
 
         // Put the selected document into the variable used by the system prompt (see 28-system-prompt.txt).
@@ -88,7 +86,7 @@ public static class Example30_ChatWithPrompts
         // Instantiate the prompt renderer, which we will use to turn prompt templates
         // into strings, that we will store into a Chat history object, which is then sent
         // to the Chat Model.
-        var promptRenderer = new PromptTemplateEngine();
+        var promptRenderer = new BasicPromptTemplateEngine();
 
         // Render the system prompt. This string is used to configure the chat.
         // This contains the context, ie a piece of a wikipedia page selected by the user.
@@ -100,7 +98,7 @@ public static class Example30_ChatWithPrompts
         string userMessage = await promptRenderer.RenderAsync(userPromptTemplate, context);
         Console.WriteLine($"------------------------------------\n{userMessage}");
 
-        // Client used to request answers to gpt-3.5-turbo
+        // Client used to request answers
         var chatGPT = kernel.GetService<IChatCompletion>();
 
         // The full chat history. Depending on your scenario, you can pass the full chat if useful,

@@ -26,11 +26,11 @@ public static class Example18_DallE
         Console.WriteLine("======== OpenAI Dall-E 2 Image Generation ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
             .WithOpenAIImageGenerationService(TestConfiguration.OpenAI.ApiKey)
             // Add your chat completion service 
-            .WithOpenAIChatCompletionService("gpt-3.5-turbo", TestConfiguration.OpenAI.ApiKey)
+            .WithOpenAIChatCompletionService(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();
@@ -95,11 +95,11 @@ public static class Example18_DallE
         Console.WriteLine("========Azure OpenAI Dall-E 2 Image Generation ========");
 
         IKernel kernel = new KernelBuilder()
-            .WithLogger(ConsoleLogger.Logger)
+            .WithLoggerFactory(ConsoleLogger.LoggerFactory)
             // Add your image generation service
             .WithAzureOpenAIImageGenerationService(TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             // Add your chat completion service
-            .WithAzureChatCompletionService("gpt-35-turbo", TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
+            .WithAzureChatCompletionService(TestConfiguration.AzureOpenAI.ChatDeploymentName, TestConfiguration.AzureOpenAI.Endpoint, TestConfiguration.AzureOpenAI.ApiKey)
             .Build();
 
         IImageGeneration dallE = kernel.GetService<IImageGeneration>();

@@ -1,6 +1,10 @@
+import typing as t
+
 from semantic_kernel.connectors.search_engine.connector import ConnectorBase
-from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition import sk_function, sk_function_context_parameter
+
+if t.TYPE_CHECKING:
+    from semantic_kernel.orchestration.sk_context import SKContext
 
 
 class WebSearchEngineSkill:
@@ -36,7 +40,7 @@ class WebSearchEngineSkill:
         description="The number of search results to skip",
         default_value="0",
     )
-    async def search_async(self, query: str, context: SKContext) -> str:
+    async def search_async(self, query: str, context: "SKContext") -> str:
         """
         Returns the search results of the query provided.
         Returns `num_results` results and ignores the first `offset`.
@@ -46,7 +50,7 @@ class WebSearchEngineSkill:
         :return: stringified list of search results
         """
 
-        _, _num_results = context.variables.get("num_results")
-        _, _offset = context.variables.get("offset")
+        _num_results = context.variables.get("num_results")
+        _offset = context.variables.get("offset")
         result = await self._connector.search_async(query, _num_results, _offset)
         return str(result)

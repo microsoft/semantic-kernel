@@ -35,7 +35,7 @@ jobs:
           command=$(echo "$BODY" | head -1 | sed "s;^/;;")
           echo "COMMAND=$command" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Check out PR branch
         env:

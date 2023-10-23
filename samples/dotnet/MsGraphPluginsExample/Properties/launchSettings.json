@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "GraphSkillsTestApp": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "GraphSkillsTestApp_ClientId": "12345"
+      }
+    }
+  }
+}

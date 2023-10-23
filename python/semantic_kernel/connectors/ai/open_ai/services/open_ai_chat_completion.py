@@ -1,9 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from logging import Logger
-from typing import Any, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 import openai
+
+from semantic_kernel.connectors.ai.open_ai.models.chat.function_call import FunctionCall
+
+if TYPE_CHECKING:
+    from openai.openai_object import OpenAIObject
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
 from semantic_kernel.connectors.ai.chat_completion_client_base import (
@@ -27,6 +32,9 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
     _api_version: Optional[str] = None
     _endpoint: Optional[str] = None
     _log: Logger
+    _prompt_tokens: int = 0
+    _completion_tokens: int = 0
+    _total_tokens: int = 0
 
     def __init__(
         self,
@@ -55,25 +63,55 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         self._org_id = org_id
         self._api_type = api_type
         self._api_version = api_version
-        self._endpoint = endpoint
+        self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._log = log if log is not None else NullLogger()
         self._messages = []
 
     async def complete_chat_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+        self,
+        messages: List[Dict[str, str]],
+        request_settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
-        response = await self._send_chat_request(messages, request_settings, False)
+        response = await self._send_chat_request(
+            messages, request_settings, False, None
+        )
 
         if len(response.choices) == 1:
             return response.choices[0].message.content
+        return [choice.message.content for choice in response.choices]
+
+    async def complete_chat_with_functions_async(
+        self,
+        messages: List[Dict[str, str]],
+        functions: List[Dict[str, Any]],
+        request_settings: ChatRequestSettings,
+        logger: Optional[Logger] = None,
+    ) -> Union[
+        Tuple[Optional[str], Optional[FunctionCall]],
+        List[Tuple[Optional[str], Optional[FunctionCall]]],
+    ]:
+        # TODO: tracking on token counts/etc.
+
+        response = await self._send_chat_request(
+            messages, request_settings, False, functions
+        )
+
+        if len(response.choices) == 1:
+            return _parse_message(response.choices[0].message, self._log)
         else:
-            return [choice.message.content for choice in response.choices]
+            return [
+                _parse_message(choice.message, self._log) for choice in response.choices
+            ]
 
     async def complete_chat_stream_async(
-        self, messages: List[Tuple[str, str]], request_settings: ChatRequestSettings
+        self,
+        messages: List[Dict[str, str]],
+        request_settings: ChatRequestSettings,
     ):
-        response = await self._send_chat_request(messages, request_settings, True)
+        # TODO: enable function calling
+        response = await self._send_chat_request(messages, request_settings, True, None)
 
         # parse the completion text(s) and yield them
         async for chunk in response:
@@ -88,7 +126,10 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 yield text
 
     async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         """
         Completes the given prompt.
@@ -100,16 +141,8 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         Returns:
             str -- The completed text.
         """
-        prompt_to_message = [("user", prompt)]
-        chat_settings = ChatRequestSettings(
-            temperature=request_settings.temperature,
-            top_p=request_settings.top_p,
-            presence_penalty=request_settings.presence_penalty,
-            frequency_penalty=request_settings.frequency_penalty,
-            max_tokens=request_settings.max_tokens,
-            number_of_responses=request_settings.number_of_responses,
-            token_selection_biases=request_settings.token_selection_biases,
-        )
+        prompt_to_message = [{"role": "user", "content": prompt}]
+        chat_settings = ChatRequestSettings.from_completion_config(request_settings)
         response = await self._send_chat_request(
             prompt_to_message, chat_settings, False
         )
@@ -120,9 +153,12 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             return [choice.message.content for choice in response.choices]
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ):
-        prompt_to_message = [("user", prompt)]
+        prompt_to_message = [{"role": "user", "content": prompt}]
         chat_settings = ChatRequestSettings(
             temperature=request_settings.temperature,
             top_p=request_settings.top_p,
@@ -131,6 +167,7 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
             max_tokens=request_settings.max_tokens,
             number_of_responses=request_settings.number_of_responses,
             token_selection_biases=request_settings.token_selection_biases,
+            stop_sequences=request_settings.stop_sequences,
         )
         response = await self._send_chat_request(prompt_to_message, chat_settings, True)
 
@@ -151,13 +188,16 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
         messages: List[Tuple[str, str]],
         request_settings: ChatRequestSettings,
         stream: bool,
+        functions: Optional[List[Dict[str, Any]]] = None,
     ):
         """
         Completes the given user message with an asynchronous stream.
 
         Arguments:
-            user_message {str} -- The message (from a user) to respond to.
+            messages {List[Tuple[str,str]]} -- The messages (from a user) to respond to.
             request_settings {ChatRequestSettings} -- The request settings.
+            stream {bool} -- Whether to stream the response.
+            functions {List[Dict[str, Any]]} -- The functions available to the api.
 
         Returns:
             str -- The completed text.
@@ -178,55 +218,83 @@ class OpenAIChatCompletion(ChatCompletionClientBase, TextCompletionClientBase):
                 "To complete a chat you need at least one message",
             )
 
-        if messages[-1][0] != "user":
+        if messages[-1]["role"] in ["assistant", "system"]:
             raise AIException(
                 AIException.ErrorCodes.InvalidRequest,
-                "The last message must be from the user",
+                "The last message must be from the user or a function output",
             )
 
-        model_args = {}
-        if self._api_type in ["azure", "azure_ad"]:
-            model_args["engine"] = self._model_id
-        else:
-            model_args["model"] = self._model_id
+        model_args = {
+            "api_key": self._api_key,
+            "api_type": self._api_type,
+            "api_base": self._endpoint,
+            "api_version": self._api_version,
+            "organization": self._org_id,
+            "engine"
+            if self._api_type in ["azure", "azure_ad"]
+            else "model": self._model_id,
+            "messages": messages,
+            "temperature": request_settings.temperature,
+            "top_p": request_settings.top_p,
+            "n": request_settings.number_of_responses,
+            "stream": stream,
+            "stop": (
+                request_settings.stop_sequences
+                if request_settings.stop_sequences is not None
+                and len(request_settings.stop_sequences) > 0
+                else None
+            ),
+            "max_tokens": request_settings.max_tokens,
+            "presence_penalty": request_settings.presence_penalty,
+            "frequency_penalty": request_settings.frequency_penalty,
+            "logit_bias": (
+                request_settings.token_selection_biases
+                if request_settings.token_selection_biases is not None
+                and len(request_settings.token_selection_biases) > 0
+                else {}
+            ),
+        }
 
-        formatted_messages = [
-            {"role": role, "content": message} for role, message in messages
-        ]
+        if functions and request_settings.function_call is not None:
+            model_args["function_call"] = request_settings.function_call
+            if request_settings.function_call != "auto":
+                model_args["functions"] = [
+                    func
+                    for func in functions
+                    if func["name"] == request_settings.function_call
+                ]
+            else:
+                model_args["functions"] = functions
 
         try:
-            response: Any = await openai.ChatCompletion.acreate(
-                **model_args,
-                api_key=self._api_key,
-                api_type=self._api_type,
-                api_base=self._endpoint,
-                api_version=self._api_version,
-                organization=self._org_id,
-                messages=formatted_messages,
-                temperature=request_settings.temperature,
-                top_p=request_settings.top_p,
-                presence_penalty=request_settings.presence_penalty,
-                frequency_penalty=request_settings.frequency_penalty,
-                max_tokens=request_settings.max_tokens,
-                n=request_settings.number_of_responses,
-                stream=stream,
-                logit_bias=(
-                    request_settings.token_selection_biases
-                    if request_settings.token_selection_biases is not None
-                    and len(request_settings.token_selection_biases) > 0
-                    else {}
-                ),
-            )
+            response: Any = await openai.ChatCompletion.acreate(**model_args)
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
-                "OpenAI service failed to complete the chat",
+                f"{self.__class__.__name__} failed to complete the chat",
                 ex,
-            )
+            ) from ex
 
-        # TODO: tracking on token counts/etc.
+        # streaming does not have usage info, therefore checking the type of the response
+        if not stream and "usage" in response:
+            self._log.info(f"OpenAI usage: {response.usage}")
+            self._prompt_tokens += response.usage.prompt_tokens
+            self._completion_tokens += response.usage.completion_tokens
+            self._total_tokens += response.usage.total_tokens
 
         return response
+
+    @property
+    def prompt_tokens(self) -> int:
+        return self._prompt_tokens
+
+    @property
+    def completion_tokens(self) -> int:
+        return self._completion_tokens
+
+    @property
+    def total_tokens(self) -> int:
+        return self._total_tokens
 
 
 def _parse_choices(chunk):
@@ -235,6 +303,31 @@ def _parse_choices(chunk):
         message += chunk.choices[0].delta.role + ": "
     if "content" in chunk.choices[0].delta:
         message += chunk.choices[0].delta.content
+    if "function_call" in chunk.choices[0].delta:
+        message += chunk.choices[0].delta.function_call
 
     index = chunk.choices[0].index
     return message, index
+
+
+def _parse_message(
+    message: "OpenAIObject", logger: Optional[Logger] = None
+) -> Tuple[Optional[str], Optional[FunctionCall]]:
+    """
+    Parses the message.
+
+    Arguments:
+        message {OpenAIObject} -- The message to parse.
+
+    Returns:
+        Tuple[Optional[str], Optional[Dict]] -- The parsed message.
+    """
+    content = message.content if hasattr(message, "content") else None
+    function_call = message.function_call if hasattr(message, "function_call") else None
+    if function_call:
+        function_call = FunctionCall(
+            name=function_call.name,
+            arguments=function_call.arguments,
+        )
+
+    return (content, function_call)

@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using Microsoft.SemanticKernel.SkillDefinition;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
@@ -37,12 +36,12 @@ internal static class Verify
         }
     }
 
-    internal static void ValidSkillName([NotNull] string? skillName)
+    internal static void ValidPluginName([NotNull] string? pluginName)
     {
-        NotNullOrWhiteSpace(skillName);
-        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(skillName))
+        NotNullOrWhiteSpace(pluginName);
+        if (!s_asciiLettersDigitsUnderscoresRegex.IsMatch(pluginName))
         {
-            ThrowInvalidName("skill name", skillName);
+            ThrowInvalidName("plugin name", pluginName);
         }
     }
 
@@ -84,7 +83,7 @@ internal static class Verify
     /// Make sure every function parameter name is unique
     /// </summary>
     /// <param name="parameters">List of parameters</param>
-    internal static void ParametersUniqueness(IList<ParameterView> parameters)
+    internal static void ParametersUniqueness(IReadOnlyList<ParameterView> parameters)
     {
         int count = parameters.Count;
         if (count > 0)
@@ -108,9 +107,7 @@ internal static class Verify
 
                 if (!seen.Add(p.Name))
                 {
-                    throw new KernelException(
-                        KernelException.ErrorCodes.InvalidFunctionDescription,
-                        $"The function has two or more parameters with the same name '{p.Name}'");
+                    throw new SKException($"The function has two or more parameters with the same name '{p.Name}'");
                 }
             }
         }
@@ -118,9 +115,7 @@ internal static class Verify
 
     [DoesNotReturn]
     private static void ThrowInvalidName(string kind, string name) =>
-        throw new KernelException(
-            KernelException.ErrorCodes.InvalidFunctionDescription,
-            $"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
+        throw new SKException($"A {kind} can contain only ASCII letters, digits, and underscores: '{name}' is not a valid name.");
 
     [DoesNotReturn]
     internal static void ThrowArgumentNullException(string? paramName) =>

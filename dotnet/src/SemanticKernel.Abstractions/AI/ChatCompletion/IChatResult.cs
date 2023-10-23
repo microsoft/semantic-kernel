@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.AI.ChatCompletion;
 /// <summary>
 /// Interface for chat completion results
 /// </summary>
-public interface IChatResult
+public interface IChatResult : IResultBase
 {
     /// <summary>
     /// Get the chat message from the result.

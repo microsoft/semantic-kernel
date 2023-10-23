@@ -2,10 +2,11 @@
 
 import asyncio
 
+from semantic_kernel.sk_pydantic import PydanticField
 from semantic_kernel.skill_definition import sk_function
 
 
-class WaitSkill:
+class WaitSkill(PydanticField):
     """
     WaitSkill provides a set of functions to wait for a certain amount of time.
 
@@ -17,7 +18,7 @@ class WaitSkill:
     """
 
     @sk_function(description="Wait for a certain number of seconds.")
-    async def wait(self, seconds_text: str):
+    async def wait(self, seconds_text: str) -> None:
         try:
             seconds = max(float(seconds_text), 0)
         except ValueError:

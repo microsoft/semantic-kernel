@@ -3,7 +3,7 @@ version: '3.4'
 services:
   weaviate:
 
-    image: semitechnologies/weaviate:1.18.0
+    image: semitechnologies/weaviate:1.21.2
     links:
       - "contextionary:contextionary"
     ports:

@@ -40,8 +40,8 @@ public sealed class HuggingFaceTextCompletionTests
         var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey());
 
         // Act
-        var localResponse = await huggingFaceLocal.CompleteAsync(Input, new CompleteRequestSettings());
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input, new CompleteRequestSettings());
+        var localResponse = await huggingFaceLocal.CompleteAsync(Input);
+        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input);
 
         // Assert
         Assert.NotNull(localResponse);
@@ -63,7 +63,7 @@ public sealed class HuggingFaceTextCompletionTests
         var huggingFaceRemote = new HuggingFaceTextCompletion(Model, apiKey: this.GetApiKey(), httpClient: httpClient);
 
         // Act
-        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input, new CompleteRequestSettings());
+        var remoteResponse = await huggingFaceRemote.CompleteAsync(Input);
 
         // Assert
         Assert.NotNull(remoteResponse);

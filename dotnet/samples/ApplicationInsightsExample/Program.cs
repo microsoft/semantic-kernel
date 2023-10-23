@@ -12,14 +12,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Planners;
 using Microsoft.SemanticKernel.Planning;
-using Microsoft.SemanticKernel.Planning.Action;
-using Microsoft.SemanticKernel.Planning.Sequential;
-using Microsoft.SemanticKernel.Planning.Stepwise;
-using Microsoft.SemanticKernel.Skills.Core;
-using Microsoft.SemanticKernel.Skills.Web;
-using Microsoft.SemanticKernel.Skills.Web.Bing;
-using NCalcSkills;
+using Microsoft.SemanticKernel.Plugins.Core;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using NCalcPlugins;
 
 /// <summary>
 /// Example of telemetry in Semantic Kernel using Application Insights within console application.
@@ -33,14 +31,18 @@ public sealed class Program
     /// <see cref="LogLevel.Information"/> is set by default. <para />
     /// <see cref="LogLevel.Trace"/> will enable logging with more detailed information, including sensitive data. Should not be used in production. <para />
     /// </remarks>
-    private static LogLevel LogLevel = LogLevel.Information;
+    private const LogLevel MinLogLevel = LogLevel.Information;
 
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task Main()
     {
         var serviceProvider = GetServiceProvider();
 
         var telemetryClient = serviceProvider.GetRequiredService<TelemetryClient>();
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
         using var meterListener = new MeterListener();
         using var activityListener = new ActivityListener();
@@ -48,8 +50,8 @@ public sealed class Program
         ConfigureMetering(meterListener, telemetryClient);
         ConfigureTracing(activityListener, telemetryClient);
 
-        var kernel = GetKernel(logger);
-        var planner = GetSequentialPlanner(kernel, logger);
+        var kernel = GetKernel(loggerFactory);
+        var planner = GetSequentialPlanner(kernel, loggerFactory);
 
         try
         {
@@ -66,7 +68,7 @@ public sealed class Program
             var result = await kernel.RunAsync(plan);
 
             Console.WriteLine("Result:");
-            Console.WriteLine(result.Result);
+            Console.WriteLine(result.GetValue<string>());
         }
         finally
         {
@@ -92,8 +94,8 @@ public sealed class Program
 
         services.AddLogging(loggingBuilder =>
         {
-            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(typeof(Program).FullName, LogLevel);
-            loggingBuilder.SetMinimumLevel(LogLevel);
+            loggingBuilder.AddFilter<ApplicationInsightsLoggerProvider>(logLevel => logLevel == MinLogLevel);
+            loggingBuilder.SetMinimumLevel(MinLogLevel);
         });
 
         services.AddApplicationInsightsTelemetryWorkerService(options =>
@@ -102,49 +104,49 @@ public sealed class Program
         });
     }
 
-    private static IKernel GetKernel(ILogger logger)
+    private static IKernel GetKernel(ILoggerFactory loggerFactory)
     {
-        var folder = RepoFiles.SampleSkillsPath();
+        var folder = RepoFiles.SamplePluginsPath();
         var bingConnector = new BingConnector(Env.Var("Bing__ApiKey"));
-        var webSearchEngineSkill = new WebSearchEngineSkill(bingConnector);
+        var webSearchEnginePlugin = new WebSearchEnginePlugin(bingConnector);
 
         var kernel = new KernelBuilder()
-            .WithLogger(logger)
+            .WithLoggerFactory(loggerFactory)
             .WithAzureChatCompletionService(
                 Env.Var("AzureOpenAI__ChatDeploymentName"),
                 Env.Var("AzureOpenAI__Endpoint"),
                 Env.Var("AzureOpenAI__ApiKey"))
             .Build();
 
-        kernel.ImportSemanticSkillFromDirectory(folder, "SummarizeSkill", "WriterSkill");
+        kernel.ImportSemanticFunctionsFromDirectory(folder, "SummarizePlugin", "WriterPlugin");
 
-        kernel.ImportSkill(webSearchEngineSkill, "WebSearch");
-        kernel.ImportSkill(new LanguageCalculatorSkill(kernel), "advancedCalculator");
-        kernel.ImportSkill(new TimeSkill(), "time");
+        kernel.ImportFunctions(webSearchEnginePlugin, "WebSearch");
+        kernel.ImportFunctions(new LanguageCalculatorPlugin(kernel), "advancedCalculator");
+        kernel.ImportFunctions(new TimePlugin(), "time");
 
         return kernel;
     }
 
     private static ISequentialPlanner GetSequentialPlanner(
         IKernel kernel,
-        ILogger logger,
+        ILoggerFactory loggerFactory,
         int maxTokens = 1024)
     {
         var plannerConfig = new SequentialPlannerConfig { MaxTokens = maxTokens };
 
-        return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(logger);
+        return new SequentialPlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
 
     private static IActionPlanner GetActionPlanner(
         IKernel kernel,
-        ILogger logger)
+        ILoggerFactory loggerFactory)
     {
-        return new ActionPlanner(kernel).WithInstrumentation(logger);
+        return new ActionPlanner(kernel).WithInstrumentation(loggerFactory);
     }
 
     private static IStepwisePlanner GetStepwisePlanner(
         IKernel kernel,
-        ILogger logger,
+        ILoggerFactory loggerFactory,
         int minIterationTimeMs = 1500,
         int maxTokens = 2000)
     {
@@ -154,7 +156,7 @@ public sealed class Program
             MaxTokens = maxTokens
         };
 
-        return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(logger);
+        return new StepwisePlanner(kernel, plannerConfig).WithInstrumentation(loggerFactory);
     }
 
     /// <summary>
@@ -203,22 +205,22 @@ public sealed class Program
         var operations = new ConcurrentDictionary<string, IOperationHolder<DependencyTelemetry>>();
 
         // For more detailed tracing we need to attach Activity entity to Application Insights operation manually.
-        Action<Activity> activityStarted = activity =>
+        void activityStarted(Activity activity)
         {
             var operation = telemetryClient.StartOperation<DependencyTelemetry>(activity);
             operation.Telemetry.Type = activity.Kind.ToString();
 
             operations.TryAdd(activity.TraceId.ToString(), operation);
-        };
+        }
 
         // We also need to manually stop Application Insights operation when Activity entity is stopped.
-        Action<Activity> activityStopped = activity =>
+        void activityStopped(Activity activity)
         {
             if (operations.TryRemove(activity.TraceId.ToString(), out var operation))
             {
                 telemetryClient.StopOperation(operation);
             }
-        };
+        }
 
         // Subscribe to all traces in Semantic Kernel
         activityListener.ShouldListenTo =

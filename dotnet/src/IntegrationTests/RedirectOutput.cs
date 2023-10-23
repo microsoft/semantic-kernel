@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests;
 
-public class RedirectOutput : TextWriter, ILogger
+public class RedirectOutput : TextWriter, ILogger, ILoggerFactory
 {
     private readonly ITestOutputHelper _output;
     private readonly StringBuilder _logs;
@@ -27,7 +27,7 @@ public class RedirectOutput : TextWriter, ILogger
         this._logs.AppendLine(value);
     }
 
-    public IDisposable BeginScope<TState>(TState state)
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull
     {
         return null!;
     }
@@ -48,4 +48,8 @@ public class RedirectOutput : TextWriter, ILogger
         this._output?.WriteLine(message);
         this._logs.AppendLine(message);
     }
+
+    public ILogger CreateLogger(string categoryName) => this;
+
+    public void AddProvider(ILoggerProvider provider) => throw new NotSupportedException();
 }

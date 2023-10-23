@@ -5,7 +5,7 @@ import importlib
 import inspect
 import os
 from logging import Logger
-from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
 from uuid import uuid4
 
 from semantic_kernel.connectors.ai.ai_exception import AIException
@@ -35,7 +35,6 @@ from semantic_kernel.reliability.pass_through_without_retry import (
     PassThroughWithoutRetry,
 )
 from semantic_kernel.reliability.retry_mechanism_base import RetryMechanismBase
-from semantic_kernel.semantic_functions.chat_prompt_template import ChatPromptTemplate
 from semantic_kernel.semantic_functions.prompt_template import PromptTemplate
 from semantic_kernel.semantic_functions.prompt_template_config import (
     PromptTemplateConfig,
@@ -134,6 +133,39 @@ class Kernel:
 
         return function
 
+    def register_native_function(
+        self,
+        skill_name: Optional[str],
+        sk_function: Callable,
+    ) -> SKFunctionBase:
+        if not hasattr(sk_function, "__sk_function__"):
+            raise KernelException(
+                KernelException.ErrorCodes.InvalidFunctionType,
+                "sk_function argument must be decorated with @sk_function",
+            )
+        function_name = sk_function.__sk_function_name__
+
+        if skill_name is None or skill_name == "":
+            skill_name = SkillCollection.GLOBAL_SKILL
+        assert skill_name is not None  # for type checker
+
+        validate_skill_name(skill_name)
+        validate_function_name(function_name)
+
+        function = SKFunction.from_native_method(sk_function, skill_name, self.logger)
+
+        if self.skills.has_function(skill_name, function_name):
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                "Overloaded functions are not supported, "
+                "please differentiate function names.",
+            )
+
+        function.set_default_skill_collection(self.skills)
+        self._skill_collection.add_native_function(function)
+
+        return function
+
     async def run_stream_async(
         self,
         *functions: Any,
@@ -152,17 +184,19 @@ class Kernel:
 
         elif len(functions) == 1:
             stream_function = functions[0]
+
+            # TODO: Preparing context for function invoke can be refactored as code below are same as run_async
             # if the user passed in a context, prioritize it, but merge with any other inputs
             if input_context is not None:
                 context = input_context
                 if input_vars is not None:
-                    context._variables = input_vars.merge_or_overwrite(
-                        new_vars=context._variables, overwrite=False
+                    context.variables = input_vars.merge_or_overwrite(
+                        new_vars=context.variables, overwrite=False
                     )
 
                 if input_str is not None:
-                    context._variables = ContextVariables(input_str).merge_or_overwrite(
-                        new_vars=context._variables, overwrite=False
+                    context.variables = ContextVariables(input_str).merge_or_overwrite(
+                        new_vars=context.variables, overwrite=False
                     )
 
             # if the user did not pass in a context, prioritize an input string,
@@ -189,54 +223,24 @@ class Kernel:
             raise ValueError("No functions passed to run")
 
         try:
-            client: ChatCompletionClientBase | TextCompletionClientBase
-            client = stream_function._ai_service
+            completion = ""
+            async for stream_message in stream_function.invoke_stream_async(
+                input=None, context=context
+            ):
+                completion += stream_message
+                yield stream_message
 
-            # Get the closure variables from function for finding function_config
-            closure_vars = stream_function._function.__closure__
-            for var in closure_vars:
-                if isinstance(var.cell_contents, SemanticFunctionConfig):
-                    function_config = var.cell_contents
-                    break
-
-            if function_config.has_chat_prompt:
-                as_chat_prompt = cast(
-                    ChatPromptTemplate, function_config.prompt_template
-                )
-
-                # Similar to non-chat, render prompt (which renders to a
-                # list of <role, content> messages)
-                completion = ""
-                messages = await as_chat_prompt.render_messages_async(context)
-                async for steam_message in client.complete_chat_stream_async(
-                    messages, stream_function._chat_request_settings
-                ):
-                    completion += steam_message
-                    yield steam_message
-
-                # Add the last message from the rendered chat prompt
-                # (which will be the user message) and the response
-                # from the model (the assistant message)
-                _, content = messages[-1]
-                as_chat_prompt.add_user_message(content)
-                as_chat_prompt.add_assistant_message(completion)
-
-                # Update context
-                context.variables.update(completion)
-
-            else:
-                completion = ""
-                prompt = await function_config.prompt_template.render_async(context)
-                async for stream_message in client.complete_stream_async(
-                    prompt, stream_function._ai_request_settings
-                ):
-                    completion += stream_message
-                    yield stream_message
-                context.variables.update(completion)
-
-        except Exception as e:
+        except Exception as ex:
             # TODO: "critical exceptions"
-            context.fail(str(e), e)
+            self._log.error(
+                "Something went wrong in stream function. During function invocation:"
+                f" '{stream_function.skill_name}.{stream_function.name}'. Error"
+                f" description: '{str(ex)}'"
+            )
+            raise KernelException(
+                KernelException.ErrorCodes.FunctionInvokeError,
+                "Error occurred while invoking stream function",
+            )
 
     async def run_async(
         self,
@@ -244,18 +248,19 @@ class Kernel:
         input_context: Optional[SKContext] = None,
         input_vars: Optional[ContextVariables] = None,
         input_str: Optional[str] = None,
+        **kwargs: Dict[str, Any],
     ) -> SKContext:
         # if the user passed in a context, prioritize it, but merge with any other inputs
         if input_context is not None:
             context = input_context
             if input_vars is not None:
-                context._variables = input_vars.merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = input_vars.merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
 
             if input_str is not None:
-                context._variables = ContextVariables(input_str).merge_or_overwrite(
-                    new_vars=context._variables, overwrite=False
+                context.variables = ContextVariables(input_str).merge_or_overwrite(
+                    new_vars=context.variables, overwrite=False
                 )
 
         # if the user did not pass in a context, prioritize an input string,
@@ -296,7 +301,7 @@ class Kernel:
             pipeline_step += 1
 
             try:
-                context = await func.invoke_async(input=None, context=context)
+                context = await func.invoke_async(input=None, context=context, **kwargs)
 
                 if context.error_occurred:
                     self._log.error(
@@ -351,9 +356,11 @@ class Kernel:
     def register_memory_store(self, memory_store: MemoryStoreBase) -> None:
         self.use_memory(memory_store)
 
-    def create_new_context(self) -> SKContext:
+    def create_new_context(
+        self, variables: Optional[ContextVariables] = None
+    ) -> SKContext:
         return SKContext(
-            ContextVariables(),
+            ContextVariables() if not variables else variables,
             self._memory,
             self.skills,
             self._log,
@@ -369,8 +376,13 @@ class Kernel:
             self._log.debug(f"Importing skill {skill_name}")
 
         functions = []
+
+        if isinstance(skill_instance, dict):
+            candidates = skill_instance.items()
+        else:
+            candidates = inspect.getmembers(skill_instance, inspect.ismethod)
         # Read every method from the skill instance
-        for _, candidate in inspect.getmembers(skill_instance, inspect.ismethod):
+        for _, candidate in candidates:
             # If the method is a semantic function, register it
             if not hasattr(candidate, "__sk_function__"):
                 continue
@@ -386,8 +398,10 @@ class Kernel:
         if len(function_names) != len(set(function_names)):
             raise KernelException(
                 KernelException.ErrorCodes.FunctionOverloadNotSupported,
-                "Overloaded functions are not supported, "
-                "please differentiate function names.",
+                (
+                    "Overloaded functions are not supported, "
+                    "please differentiate function names."
+                ),
             )
 
         skill = {}
@@ -669,9 +683,11 @@ class Kernel:
             if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load chat service, unable to prepare semantic function. "
-                    "Function description: "
-                    "{function_config.prompt_template_config.description}",
+                    (
+                        "Could not load chat service, unable to prepare semantic"
+                        " function. Function description:"
+                        " {function_config.prompt_template_config.description}"
+                    ),
                 )
 
             function.set_chat_service(lambda: service(self))
@@ -692,9 +708,11 @@ class Kernel:
             if service is None:
                 raise AIException(
                     AIException.ErrorCodes.InvalidConfiguration,
-                    "Could not load text service, unable to prepare semantic function. "
-                    "Function description: "
-                    "{function_config.prompt_template_config.description}",
+                    (
+                        "Could not load text service, unable to prepare semantic"
+                        " function. Function description:"
+                        " {function_config.prompt_template_config.description}"
+                    ),
                 )
 
             function.set_ai_service(lambda: service(self))
@@ -719,26 +737,22 @@ class Kernel:
             )
 
         skill_name = os.path.basename(skill_directory)
-        try:
-            spec = importlib.util.spec_from_file_location(
-                MODULE_NAME, native_py_file_path
-            )
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
 
-            class_name = next(
-                (
-                    name
-                    for name, cls in inspect.getmembers(module, inspect.isclass)
-                    if cls.__module__ == MODULE_NAME
-                ),
-                None,
-            )
-            if class_name:
-                skill_obj = getattr(module, class_name)()
-                return self.import_skill(skill_obj, skill_name)
-        except Exception:
-            pass
+        spec = importlib.util.spec_from_file_location(MODULE_NAME, native_py_file_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        class_name = next(
+            (
+                name
+                for name, cls in inspect.getmembers(module, inspect.isclass)
+                if cls.__module__ == MODULE_NAME
+            ),
+            None,
+        )
+        if class_name:
+            skill_obj = getattr(module, class_name)()
+            return self.import_skill(skill_obj, skill_name)
 
         return {}
 

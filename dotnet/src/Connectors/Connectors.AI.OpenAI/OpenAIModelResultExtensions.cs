@@ -1,12 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure.AI.OpenAI;
+using Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130
 
 namespace Microsoft.SemanticKernel;
 
+/// <summary>
+/// Provides extension methods for working with OpenAI model results.
+/// </summary>
 public static class OpenAIModelResultExtension
 {
     /// <summary>
@@ -14,9 +18,9 @@ public static class OpenAIModelResultExtension
     /// </summary>
     /// <param name="resultBase">Current context</param>
     /// <returns>OpenAI / AzureOpenAI result<see cref="Completions"/></returns>
-    public static Completions GetOpenAITextResult(this ModelResult resultBase)
+    public static TextModelResult GetOpenAITextResult(this ModelResult resultBase)
     {
-        return resultBase.GetResult<Completions>();
+        return resultBase.GetResult<TextModelResult>();
     }
 
     /// <summary>
@@ -24,8 +28,8 @@ public static class OpenAIModelResultExtension
     /// </summary>
     /// <param name="resultBase">Current context</param>
     /// <returns>OpenAI / AzureOpenAI result<see cref="ChatCompletions"/></returns>
-    public static ChatCompletions GetOpenAIChatResult(this ModelResult resultBase)
+    public static ChatModelResult GetOpenAIChatResult(this ModelResult resultBase)
     {
-        return resultBase.GetResult<ChatCompletions>();
+        return resultBase.GetResult<ChatModelResult>();
     }
 }

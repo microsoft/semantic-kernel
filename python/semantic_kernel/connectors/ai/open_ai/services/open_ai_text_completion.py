@@ -23,6 +23,9 @@ class OpenAITextCompletion(TextCompletionClientBase):
     _endpoint: Optional[str] = None
     _org_id: Optional[str] = None
     _log: Logger
+    _prompt_tokens: int
+    _completion_tokens: int
+    _total_tokens: int
 
     def __init__(
         self,
@@ -50,12 +53,15 @@ class OpenAITextCompletion(TextCompletionClientBase):
         self._api_key = api_key
         self._api_type = api_type
         self._api_version = api_version
-        self._endpoint = endpoint
+        self._endpoint = endpoint.rstrip("/") if endpoint is not None else None
         self._org_id = org_id
         self._log = log if log is not None else NullLogger()
 
     async def complete_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ) -> Union[str, List[str]]:
         # TODO: tracking on token counts/etc.
         response = await self._send_completion_request(prompt, request_settings, False)
@@ -68,7 +74,10 @@ class OpenAITextCompletion(TextCompletionClientBase):
     # TODO: complete w/ multiple...
 
     async def complete_stream_async(
-        self, prompt: str, request_settings: CompleteRequestSettings
+        self,
+        prompt: str,
+        request_settings: CompleteRequestSettings,
+        logger: Optional[Logger] = None,
     ):
         response = await self._send_completion_request(prompt, request_settings, True)
 
@@ -152,7 +161,26 @@ class OpenAITextCompletion(TextCompletionClientBase):
         except Exception as ex:
             raise AIException(
                 AIException.ErrorCodes.ServiceError,
-                "OpenAI service failed to complete the prompt",
+                f"{self.__class__.__name__} failed to complete the prompt",
                 ex,
             )
+
+        if "usage" in response:
+            self._log.info(f"OpenAI usage: {response.usage}")
+            self._prompt_tokens += response.usage.prompt_tokens
+            self._completion_tokens += response.usage.completion_tokens
+            self._total_tokens += response.usage.total_tokens
+
         return response
+
+    @property
+    def prompt_tokens(self) -> int:
+        return self._prompt_tokens
+
+    @property
+    def completion_tokens(self) -> int:
+        return self._completion_tokens
+
+    @property
+    def total_tokens(self) -> int:
+        return self._total_tokens

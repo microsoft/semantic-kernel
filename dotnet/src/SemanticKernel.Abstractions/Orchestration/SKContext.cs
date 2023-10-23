@@ -4,11 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.SkillDefinition;
+using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -19,11 +17,6 @@ namespace Microsoft.SemanticKernel.Orchestration;
 public sealed class SKContext
 {
     /// <summary>
-    /// The culture currently associated with this context.
-    /// </summary>
-    private CultureInfo _culture;
-
-    /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
     /// </summary>
     /// <returns>Processed input, aka result</returns>
@@ -33,7 +26,8 @@ public sealed class SKContext
     /// When a prompt is processed, aka the current data after any model results processing occurred.
     /// (One prompt can have multiple results).
     /// </summary>
-    public IReadOnlyCollection<ModelResult> ModelResults { get; set; } = Array.Empty<ModelResult>();
+    [Obsolete($"ModelResults are now part of {nameof(FunctionResult.Metadata)} property. Use 'ModelResults' key or available extension methods to get model results.")]
+    public IReadOnlyCollection<ModelResult> ModelResults => Array.Empty<ModelResult>();
 
     /// <summary>
     /// The culture currently associated with this context.
@@ -50,95 +44,94 @@ public sealed class SKContext
     public ContextVariables Variables { get; }
 
     /// <summary>
-    /// Read only skills collection
+    /// Read only functions collection
     /// </summary>
-    public IReadOnlySkillCollection Skills { get; }
-
-    /// <summary>
-    /// Access registered functions by skill + name. Not case sensitive.
-    /// The function might be native or semantic, it's up to the caller handling it.
-    /// </summary>
-    /// <param name="skillName">Skill name</param>
-    /// <param name="functionName">Function name</param>
-    /// <returns>Delegate to execute the function</returns>
-    public ISKFunction Func(string skillName, string functionName)
-    {
-        return this.Skills.GetFunction(skillName, functionName);
-    }
-
-    /// <summary>
-    /// App logger (obsolete - use 'Logger' instead).
-    /// </summary>
-    [Obsolete("Use SKContext.Logger instead. This will be removed in a future release.")]
-    public ILogger Log => this.Logger;
+    public IReadOnlyFunctionCollection Functions { get; }
 
     /// <summary>
     /// App logger
     /// </summary>
-    public ILogger Logger { get; }
+    public ILoggerFactory LoggerFactory { get; }
+
+    /// <summary>
+    /// Executes functions using the current resources loaded in the context
+    /// </summary>
+    public IFunctionRunner Runner { get; }
 
     /// <summary>
     /// Constructor for the context.
     /// </summary>
+    /// <param name="functionRunner">Function runner reference</param>
     /// <param name="variables">Context variables to include in context.</param>
-    /// <param name="skills">Skills to include in context.</param>
-    /// <param name="logger">Logger for operations in context.</param>
-    public SKContext(
+    /// <param name="functions">Functions to include in context.</param>
+    /// <param name="loggerFactory">Logger factory to be used in context</param>
+    /// <param name="culture">Culture related to the context</param>
+    internal SKContext(
+        IFunctionRunner functionRunner,
         ContextVariables? variables = null,
-        IReadOnlySkillCollection? skills = null,
-        ILogger? logger = null)
+        IReadOnlyFunctionCollection? functions = null,
+        ILoggerFactory? loggerFactory = null,
+        CultureInfo? culture = null)
     {
+        Verify.NotNull(functionRunner, nameof(functionRunner));
+
+        this.Runner = functionRunner;
         this.Variables = variables ?? new();
-        this.Skills = skills ?? NullReadOnlySkillCollection.Instance;
-        this.Logger = logger ?? NullLogger.Instance;
-        this._culture = CultureInfo.CurrentCulture;
+        this.Functions = functions ?? NullReadOnlyFunctionCollection.Instance;
+        this.LoggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this._culture = culture ?? CultureInfo.CurrentCulture;
     }
 
     /// <summary>
     /// Print the processed input, aka the current data after any processing occurred.
-    /// If an error occurred, prints the last exception message instead.
     /// </summary>
-    /// <returns>Processed input, aka result, or last exception message if any</returns>
+    /// <returns>Processed input, aka result.</returns>
     public override string ToString()
     {
-        return this.ErrorOccurred ? $"Error: {this.LastErrorDescription}" : this.Result;
+        return this.Result;
     }
 
     /// <summary>
-    /// Create a clone of the current context, using the same kernel references (memory, skills, logger)
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
     /// and a new set variables, so that variables can be modified without affecting the original context.
     /// </summary>
-    /// <returns>A new context copied from the current one</returns>
+    /// <returns>A new context cloned from the current one</returns>
     public SKContext Clone()
+        => this.Clone(null, null);
+
+    /// <summary>
+    /// Create a clone of the current context, using the same kernel references (memory, functions, logger)
+    /// and optionally allows overriding the variables and functions.
+    /// </summary>
+    /// <param name="variables">Override the variables with the provided ones</param>
+    /// <param name="functions">Override the functions with the provided ones</param>
+    /// <returns>A new context cloned from the current one</returns>
+    public SKContext Clone(ContextVariables? variables, IReadOnlyFunctionCollection? functions)
     {
         return new SKContext(
-            variables: this.Variables.Clone(),
-            skills: this.Skills,
-            logger: this.Logger)
-        {
-            Culture = this.Culture,
-            ErrorOccurred = this.ErrorOccurred,
-            LastErrorDescription = this.LastErrorDescription,
-            LastException = this.LastException,
-        };
+            this.Runner,
+            variables ?? this.Variables.Clone(),
+            functions ?? this.Functions,
+            this.LoggerFactory,
+            this.Culture);
     }
+
+    /// <summary>
+    /// The culture currently associated with this context.
+    /// </summary>
+    private CultureInfo _culture;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
         get
         {
-            if (this.ErrorOccurred)
-            {
-                return $"Error: {this.LastErrorDescription}";
-            }
-
             string display = this.Variables.DebuggerDisplay;
 
-            if (this.Skills is IReadOnlySkillCollection skills)
+            if (this.Functions is IReadOnlyFunctionCollection functions)
             {
-                var view = skills.GetFunctionsView();
-                display += $", Skills = {view.NativeFunctions.Count + view.SemanticFunctions.Count}";
+                var view = functions.GetFunctionViews();
+                display += $", Functions = {view.Count}";
             }
 
             display += $", Culture = {this.Culture.EnglishName}";
@@ -146,65 +139,4 @@ public sealed class SKContext
             return display;
         }
     }
-
-    #region Error handling
-    /// <summary>
-    /// Whether an error occurred while executing functions in the pipeline.
-    /// </summary>
-    public bool ErrorOccurred { get; private set; }
-
-    /// <summary>
-    /// Error details.
-    /// </summary>
-    public string LastErrorDescription { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// When an error occurs, this is the most recent exception.
-    /// </summary>
-    public Exception? LastException { get; private set; }
-
-    /// <summary>
-    /// Call this method to signal when an error occurs.
-    /// In the usual scenarios this is also how execution is stopped, e.g. to inform the user or take necessary steps.
-    /// </summary>
-    /// <param name="errorDescription">Error description</param>
-    /// <param name="exception">If available, the exception occurred</param>
-    /// <returns>The current instance</returns>
-    public SKContext Fail(string errorDescription, Exception? exception = null)
-    {
-        this.ErrorOccurred = true;
-        this.LastErrorDescription = errorDescription;
-        this.LastException = exception;
-        return this;
-    }
-    #endregion
-
-    #region Obsolete
-    /// <summary>
-    /// Shortcut into user data, access variables by name
-    /// </summary>
-    /// <param name="name">Variable name</param>
-    [Obsolete("Use SKContext.Variables instead. The SKContext[...] indexer will be removed in a future release.")]
-    public string this[string name]
-    {
-        get => this.Variables[name];
-        set => this.Variables[name] = value;
-    }
-
-    /// <summary>
-    /// The token to monitor for cancellation requests.
-    /// </summary>
-    [Obsolete("Add a CancellationToken param to SKFunction method signatures instead of retrieving it from SKContext.")]
-    public CancellationToken CancellationToken { get; } = default;
-
-    /// <summary>
-    /// Semantic memory
-    /// </summary>
-    [Obsolete("Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.")]
-    public ISemanticTextMemory Memory
-    {
-        get => throw new InvalidOperationException(
-            "Memory no longer passed through SKContext. Instead, initialize your skill class with the memory provider it needs.");
-    }
-    #endregion
 }

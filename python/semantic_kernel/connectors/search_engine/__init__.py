@@ -1,3 +1,6 @@
-from semantic_kernel.connectors.search_engine.bing_connector import BingConnector
+# Copyright (c) Microsoft. All rights reserved.
 
-__all__ = ["BingConnector"]
+from semantic_kernel.connectors.search_engine.bing_connector import BingConnector
+from semantic_kernel.connectors.search_engine.google_connector import GoogleConnector
+
+__all__ = ["BingConnector", "GoogleConnector"]

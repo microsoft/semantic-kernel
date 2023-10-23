@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "description": "Render a plan question text for the agent",
+  "type": "completion",
+  "input": {
+    "parameters": [
+      {
+        "name": "question",
+        "description": "",
+        "defaultValue": ""
+      }
+    ]
+  }
+}

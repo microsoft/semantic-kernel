@@ -6,7 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.Orchestration;
 
 /**
  * The following example shows how to plug use a custom chat model.
@@ -30,15 +32,15 @@ public sealed class MyChatCompletionService : IChatCompletion
         return chatHistory;
     }
 
-    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<IChatResult>> GetChatCompletionsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<IChatResult>>(new List<IChatResult>
         {
-            new MyChatStreamingResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
+            new MyChatResult(MyRoles.Bot, "Hi I'm your SK Custom Assistant and I'm here to help you to create custom chats like this. :)")
         });
     }
 
-    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, ChatRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<IChatStreamingResult> GetStreamingChatCompletionsAsync(ChatHistory chat, AIRequestSettings? requestSettings = null, CancellationToken cancellationToken = default)
     {
         return (new List<IChatStreamingResult>
         {
@@ -51,18 +53,14 @@ public class MyChatStreamingResult : IChatStreamingResult
 {
     private readonly ChatMessageBase _message;
     private readonly MyRoles _role;
+    public ModelResult ModelResult { get; private set; }
 
     public MyChatStreamingResult(MyRoles role, string content)
     {
         this._role = role;
         this._message = new MyChatMessage(role, content);
+        this.ModelResult = new ModelResult(content);
     }
-
-    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(this._message);
-    }
-
     public async IAsyncEnumerable<ChatMessageBase> GetStreamingChatMessageAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var streamedOutput = this._message.Content.Split(' ');
@@ -71,6 +69,25 @@ public class MyChatStreamingResult : IChatStreamingResult
             await Task.Delay(100, cancellationToken);
             yield return new MyChatMessage(this._role, $"{word} ");
         }
+    }
+}
+
+public class MyChatResult : IChatResult
+{
+    private readonly ChatMessageBase _message;
+    private readonly MyRoles _role;
+    public ModelResult ModelResult { get; private set; }
+
+    public MyChatResult(MyRoles role, string content)
+    {
+        this._role = role;
+        this._message = new MyChatMessage(role, content);
+        this.ModelResult = new ModelResult(content);
+    }
+
+    public Task<ChatMessageBase> GetChatMessageAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(this._message);
     }
 }
 

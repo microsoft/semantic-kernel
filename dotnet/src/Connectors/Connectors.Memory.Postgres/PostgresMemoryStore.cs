@@ -1,39 +1,60 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Pgvector;
+using Pgvector.Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
 /// </summary>
-/// <remarks>The embedded data is saved to the Postgres database specified in the constructor.
+/// <remarks>
+/// The embedded data is saved to the Postgres database specified in the constructor.
 /// Similarity search capability is provided through the pgvector extension. Use Postgres's "Table" to implement "Collection".
 /// </remarks>
-public class PostgresMemoryStore : IMemoryStore
+public class PostgresMemoryStore : IMemoryStore, IDisposable
 {
     internal const string DefaultSchema = "public";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
     /// </summary>
+    /// <param name="connectionString">Postgres database connection string.</param>
+    /// <param name="vectorSize">Embedding vector size.</param>
+    /// <param name="schema">Database schema of collection tables.</param>
+    public PostgresMemoryStore(string connectionString, int vectorSize, string schema = DefaultSchema)
+    {
+        NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionString);
+        dataSourceBuilder.UseVector();
+        this._dataSource = dataSourceBuilder.Build();
+        this._postgresDbClient = new PostgresDbClient(this._dataSource, schema, vectorSize);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
+    /// </summary>
     /// <param name="dataSource">Postgres data source.</param>
     /// <param name="vectorSize">Embedding vector size.</param>
-    /// <param name="schema">Database schema of collection tables. The default value is "public".</param>
+    /// <param name="schema">Database schema of collection tables.</param>
     public PostgresMemoryStore(NpgsqlDataSource dataSource, int vectorSize, string schema = DefaultSchema)
         : this(new PostgresDbClient(dataSource, schema, vectorSize))
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PostgresMemoryStore"/> class.
+    /// </summary>
+    /// <param name="postgresDbClient">An instance of <see cref="IPostgresDbClient"/>.</param>
     public PostgresMemoryStore(IPostgresDbClient postgresDbClient)
     {
         this._postgresDbClient = postgresDbClient;
@@ -135,7 +156,7 @@ public class PostgresMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
         string collectionName,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         int limit,
         double minRelevanceScore = 0,
         bool withEmbeddings = false,
@@ -150,7 +171,7 @@ public class PostgresMemoryStore : IMemoryStore
 
         IAsyncEnumerable<(PostgresMemoryEntry, double)> results = this._postgresDbClient.GetNearestMatchesAsync(
             tableName: collectionName,
-            embedding: new Vector(embedding.Vector.ToArray()),
+            embedding: new Vector(GetOrCreateArray(embedding)),
             limit: limit,
             minRelevanceScore: minRelevanceScore,
             withEmbeddings: withEmbeddings,
@@ -163,7 +184,7 @@ public class PostgresMemoryStore : IMemoryStore
     }
 
     /// <inheritdoc/>
-    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, Embedding<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
+    public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(string collectionName, ReadOnlyMemory<float> embedding, double minRelevanceScore = 0, bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
         return await this.GetNearestMatchesAsync(
@@ -175,9 +196,28 @@ public class PostgresMemoryStore : IMemoryStore
             cancellationToken: cancellationToken).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes the managed resources.
+    /// </summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            this._dataSource?.Dispose();
+        }
+    }
+
     #region private ================================================================================
 
     private readonly IPostgresDbClient _postgresDbClient;
+    private readonly NpgsqlDataSource? _dataSource;
 
     private async Task<string> InternalUpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken)
     {
@@ -187,7 +227,7 @@ public class PostgresMemoryStore : IMemoryStore
             tableName: collectionName,
             key: record.Key,
             metadata: record.GetSerializedMetadata(),
-            embedding: new Vector(record.Embedding.Vector.ToArray()),
+            embedding: new Vector(GetOrCreateArray(record.Embedding)),
             timestamp: record.Timestamp?.UtcDateTime,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -198,10 +238,16 @@ public class PostgresMemoryStore : IMemoryStore
     {
         return MemoryRecord.FromJsonMetadata(
             json: entry.MetadataString,
-            embedding: entry.Embedding != null ? new Embedding<float>(entry.Embedding!.ToArray()) : Embedding<float>.Empty,
+            embedding: entry.Embedding?.ToArray() ?? ReadOnlyMemory<float>.Empty,
             key: entry.Key,
             timestamp: entry.Timestamp?.ToLocalTime());
     }
+
+    private static float[] GetOrCreateArray(ReadOnlyMemory<float> memory) =>
+        MemoryMarshal.TryGetArray(memory, out ArraySegment<float> array) &&
+        array.Count == array.Array!.Length ?
+            array.Array :
+            memory.ToArray();
 
     #endregion
 }

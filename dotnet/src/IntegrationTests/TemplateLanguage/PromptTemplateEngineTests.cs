@@ -6,8 +6,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.SkillDefinition;
-using Microsoft.SemanticKernel.TemplateEngine;
+using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.TemplateEngine.Basic;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,7 +21,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public PromptTemplateEngineTests(ITestOutputHelper output)
     {
         this._logger = new RedirectOutput(output);
-        this._target = new PromptTemplateEngine();
+        this._target = new BasicPromptTemplateEngine();
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Arrange
         const string Template = "== {{my.check123 $call}} ==";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
         context.Variables["call"] = "123";
 
@@ -87,7 +87,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Arrange
         const string Template = "== {{my.check123 '234'}} ==";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
 
         // Act
@@ -104,7 +104,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         const char Esc = '\\';
         string template = "== {{my.check123 'a" + Esc + "'b'}} ==";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
 
         // Act
@@ -121,7 +121,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         const char Esc = '\\';
         string template = "== {{my.check123 \"a" + Esc + "\"b\"}} ==";
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill(), "my");
+        kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
 
         // Act
@@ -131,20 +131,37 @@ public sealed class PromptTemplateEngineTests : IDisposable
         Assert.Equal("== a\"b != 123 ==", result);
     }
 
+    [Fact]
+    public async Task ItHandlesNamedArgsAsync()
+    {
+        // Arrange
+        string template = "Output: {{my.sayAge name=\"Mario\" birthdate=$birthdate exclamation='Wow, that\\'s surprising'}}";
+        var kernel = Kernel.Builder.Build();
+        kernel.ImportFunctions(new MyPlugin(), "my");
+        var context = kernel.CreateNewContext();
+        context.Variables["birthdate"] = "1981-08-20T00:00:00";
+
+        // Act
+        var result = await this._target.RenderAsync(template, context);
+
+        // Assert
+        Assert.Equal("Output: Mario is 42 today. Wow, that's surprising!", result);
+    }
+
     [Theory]
     [MemberData(nameof(GetTemplateLanguageTests))]
     public async Task ItHandleEdgeCasesAsync(string template, string expectedResult)
     {
         // Arrange
         var kernel = Kernel.Builder.Build();
-        kernel.ImportSkill(new MySkill());
+        kernel.ImportFunctions(new MyPlugin());
 
         // Act
         this._logger.WriteLine("template: " + template);
         this._logger.WriteLine("expected: " + expectedResult);
         if (expectedResult.StartsWith("ERROR", StringComparison.OrdinalIgnoreCase))
         {
-            await Assert.ThrowsAsync<TemplateException>(
+            await Assert.ThrowsAsync<SKException>(
                 async () => await this._target.RenderAsync(template, kernel.CreateNewContext()));
         }
         else
@@ -162,7 +179,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         return GetTestData("TemplateLanguage/tests.txt");
     }
 
-    public class MySkill
+    public class MyPlugin
     {
         [SKFunction, Description("This is a test"), SKName("check123")]
         public string MyFunction(string input)
@@ -171,16 +188,25 @@ public sealed class PromptTemplateEngineTests : IDisposable
         }
 
         [SKFunction, Description("This is a test"), SKName("asis")]
-        public string MyFunction2(string input)
+        public string? MyFunction2(string? input = null)
         {
             return input;
+        }
+
+        [SKFunction, Description("This is a test"), SKName("sayAge")]
+        public string MyFunction3(string name, DateTime birthdate, string exclamation)
+        {
+            var today = new DateTime(2023, 8, 25);
+            TimeSpan timespan = today - birthdate;
+            int age = (int)(timespan.TotalDays / 365.25);
+            return $"{name} is {age} today. {exclamation}!";
         }
     }
 
     #region internals
 
     private readonly RedirectOutput _logger;
-    private readonly PromptTemplateEngine _target;
+    private readonly BasicPromptTemplateEngine _target;
 
     private static IEnumerable<string[]> GetTestData(string file)
     {

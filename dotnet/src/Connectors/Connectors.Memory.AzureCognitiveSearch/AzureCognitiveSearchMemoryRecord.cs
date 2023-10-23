@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 
@@ -16,16 +14,37 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.AzureCognitiveSearch;
 /// </summary>
 public class AzureCognitiveSearchMemoryRecord
 {
+    /// <summary>
+    /// ID field name.
+    /// </summary>
     public const string IdField = "Id";
+    /// <summary>
+    /// Text field name.
+    /// </summary>
     public const string TextField = "Text";
+    /// <summary>
+    /// Embedding field name.
+    /// </summary>
     public const string EmbeddingField = "Embedding";
+    /// <summary>
+    /// External source name field name.
+    /// </summary>
     public const string ExternalSourceNameField = "ExternalSourceName";
+    /// <summary>
+    /// Description field name.
+    /// </summary>
     public const string DescriptionField = "Description";
+    /// <summary>
+    /// Additional metadata field name.
+    /// </summary>
     public const string AdditionalMetadataField = "AdditionalMetadata";
+    /// <summary>
+    /// Is reference field name.
+    /// </summary>
     public const string IsReferenceField = "IsReference";
 
     /// <summary>
-    /// Record Id.
+    /// Record ID.
     /// The record is not filterable to save quota, also SK uses only semantic search.
     /// </summary>
     [JsonPropertyName(IdField)]
@@ -41,7 +60,8 @@ public class AzureCognitiveSearchMemoryRecord
     /// Content embedding
     /// </summary>
     [JsonPropertyName(EmbeddingField)]
-    public List<float> Embedding { get; set; } = Array.Empty<float>().ToList();
+    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
+    public ReadOnlyMemory<float> Embedding { get; set; }
 
     /// <summary>
     /// Optional description of the content, e.g. a title. This can be useful when
@@ -58,7 +78,7 @@ public class AzureCognitiveSearchMemoryRecord
     public string? AdditionalMetadata { get; set; } = string.Empty;
 
     /// <summary>
-    /// Name of the external source, in cases where the content and the Id are
+    /// Name of the external source, in cases where the content and the ID are
     /// referenced to external information.
     /// </summary>
     [JsonPropertyName(ExternalSourceNameField)]
@@ -71,35 +91,54 @@ public class AzureCognitiveSearchMemoryRecord
     public bool IsReference { get; set; } = false;
 
     /// <summary>
-    /// Ctor required by JSON deserializer
+    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class.
+    /// Required by JSON deserializer.
     /// </summary>
     public AzureCognitiveSearchMemoryRecord()
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class with the specified ID.
+    /// </summary>
+    /// <param name="id">The record ID.</param>
     public AzureCognitiveSearchMemoryRecord(string id)
     {
         this.Id = EncodeId(id);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureCognitiveSearchMemoryRecord"/> class with the specified parameters.
+    /// </summary>
+    /// <param name="id">The record ID.</param>
+    /// <param name="text">The content stored in the record.</param>
+    /// <param name="externalSourceName">The name of the external source.</param>
+    /// <param name="isReference">Whether the record references external information.</param>
+    /// <param name="embedding">The content embedding.</param>
+    /// <param name="description">The optional description of the content.</param>
+    /// <param name="additionalMetadata">The additional metadata.</param>
     public AzureCognitiveSearchMemoryRecord(
         string id,
         string text,
         string externalSourceName,
         bool isReference,
-        Embedding<float> embedding,
+        ReadOnlyMemory<float> embedding,
         string? description = null,
         string? additionalMetadata = null)
     {
         this.Id = EncodeId(id);
         this.IsReference = isReference;
-        this.Embedding = embedding.Vector.ToList();
+        this.Embedding = embedding;
         this.Text = text;
         this.ExternalSourceName = externalSourceName;
         this.Description = description;
         this.AdditionalMetadata = additionalMetadata;
     }
 
+    /// <summary>
+    /// Converts the current instance to a <see cref="MemoryRecordMetadata"/> object.
+    /// </summary>
+    /// <returns>A <see cref="MemoryRecordMetadata"/> object.</returns>
     public MemoryRecordMetadata ToMemoryRecordMetadata()
     {
         return new MemoryRecordMetadata(
@@ -111,6 +150,11 @@ public class AzureCognitiveSearchMemoryRecord
             additionalMetadata: this.AdditionalMetadata ?? string.Empty);
     }
 
+    /// <summary>
+    /// Creates a new <see cref="AzureCognitiveSearchMemoryRecord"/> object from the specified <see cref="MemoryRecord"/>.
+    /// </summary>
+    /// <param name="record">The <see cref="MemoryRecord"/> object.</param>
+    /// <returns>A new <see cref="AzureCognitiveSearchMemoryRecord"/> object.</returns>
     public static AzureCognitiveSearchMemoryRecord FromMemoryRecord(MemoryRecord record)
     {
         return new AzureCognitiveSearchMemoryRecord(
@@ -124,26 +168,37 @@ public class AzureCognitiveSearchMemoryRecord
         );
     }
 
+    /// <summary>
+    /// Converts the current instance to a <see cref="MemoryRecord"/> object.
+    /// </summary>
+    /// <param name="withEmbeddings">Whether to include embeddings in the resulting <see cref="MemoryRecord"/>.</param>
+    /// <returns>A <see cref="MemoryRecord"/> object.</returns>
     public MemoryRecord ToMemoryRecord(bool withEmbeddings = true)
     {
         return new MemoryRecord(
             metadata: this.ToMemoryRecordMetadata(),
-            embedding: new Embedding<float>(withEmbeddings ? this.Embedding : Array.Empty<float>()),
+            embedding: withEmbeddings ? this.Embedding : default,
             key: this.Id);
     }
 
     /// <summary>
+    /// Encodes the specified ID using a URL-safe algorithm.
     /// ACS keys can contain only letters, digits, underscore, dash, equal sign, recommending
     /// to encode values with a URL-safe algorithm.
     /// </summary>
-    /// <param name="realId">Original Id</param>
-    /// <returns>Encoded id</returns>
+    /// <param name="realId">The original ID.</param>
+    /// <returns>The encoded ID.</returns>
     protected internal static string EncodeId(string realId)
     {
         var bytes = Encoding.UTF8.GetBytes(realId);
         return Convert.ToBase64String(bytes);
     }
 
+    /// <summary>
+    /// Decodes the specified encoded ID.
+    /// </summary>
+    /// <param name="encodedId">The encoded ID.</param>
+    /// <returns>The decoded ID.</returns>
     private protected static string DecodeId(string encodedId)
     {
         var bytes = Convert.FromBase64String(encodedId);

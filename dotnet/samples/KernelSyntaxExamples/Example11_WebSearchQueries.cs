@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Skills.Web;
+using Microsoft.SemanticKernel.Plugins.Web;
 using RepoUtils;
 
 // ReSharper disable once InconsistentNaming
@@ -13,11 +13,11 @@ public static class Example11_WebSearchQueries
     {
         Console.WriteLine("======== WebSearchQueries ========");
 
-        IKernel kernel = Kernel.Builder.WithLogger(ConsoleLogger.Logger).Build();
+        IKernel kernel = Kernel.Builder.WithLoggerFactory(ConsoleLogger.LoggerFactory).Build();
 
-        // Load native skills
-        var skill = new SearchUrlSkill();
-        var bing = kernel.ImportSkill(skill, "search");
+        // Load native plugins
+        var plugin = new SearchUrlPlugin();
+        var bing = kernel.ImportFunctions(plugin, "search");
 
         // Run
         var ask = "What's the tallest building in Europe?";
@@ -27,6 +27,6 @@ public static class Example11_WebSearchQueries
         );
 
         Console.WriteLine(ask + "\n");
-        Console.WriteLine(result);
+        Console.WriteLine(result.GetValue<string>());
     }
 }

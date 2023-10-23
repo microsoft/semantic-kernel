@@ -16,13 +16,8 @@
     <IsPackable>disable</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
+  <PropertyGroup Condition="'$(Configuration)'=='Publish'">
+    <Optimize>True</Optimize>
   </PropertyGroup>
 
   <PropertyGroup>
