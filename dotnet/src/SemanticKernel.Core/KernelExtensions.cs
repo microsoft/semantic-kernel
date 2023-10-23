@@ -85,7 +85,7 @@ public static class KernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        return kernel.RunAsync(variables ?? new(), cancellationToken, skFunction);
+        return kernel.RunAsync(variables ?? new(), null, cancellationToken, skFunction);
     }
 
     /// <summary>
@@ -131,7 +131,7 @@ public static class KernelExtensions
         params ISKFunction[] pipeline)
     {
         Verify.NotNull(kernel);
-        return kernel.RunAsync(variables, CancellationToken.None, pipeline);
+        return kernel.RunAsync(variables, null, CancellationToken.None, pipeline);
     }
 
     /// <summary>
@@ -147,7 +147,7 @@ public static class KernelExtensions
         params ISKFunction[] pipeline)
     {
         Verify.NotNull(kernel);
-        return kernel.RunAsync(new ContextVariables(), cancellationToken, pipeline);
+        return kernel.RunAsync(new ContextVariables(), null, cancellationToken, pipeline);
     }
 
     /// <summary>
@@ -165,6 +165,6 @@ public static class KernelExtensions
         params ISKFunction[] pipeline)
     {
         Verify.NotNull(kernel);
-        return kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+        return kernel.RunAsync(new ContextVariables(input), null, cancellationToken, pipeline);
     }
 }

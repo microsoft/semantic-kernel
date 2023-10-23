@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Planning;
@@ -274,8 +275,8 @@ public sealed class PlanSerializationTests
                 returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input))
             .Returns(() => Task.FromResult(new FunctionResult("functionName", "pluginName", returnContext)));
 
-        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-        .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
+        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
+        .Returns<ISKFunction, ContextVariables, AIRequestSettings, CancellationToken>((function, variables, settings, ct) =>
         {
             var c = new SKContext(new Mock<IFunctionRunner>().Object, variables);
             returnContext.Variables.Update(returnContext.Variables.Input + c.Variables.Input);
@@ -353,8 +354,8 @@ public sealed class PlanSerializationTests
 
         mockFunction.Setup(x => x.Describe()).Returns(new FunctionView("functionName", "pluginName"));
 
-        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-                .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
+        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
+                .Returns<ISKFunction, ContextVariables, AIRequestSettings, CancellationToken>((function, variables, settings, ct) =>
                 {
                     var c = new SKContext(new Mock<IFunctionRunner>().Object, variables);
                     c.Variables.TryGetValue("variables", out string? v);
@@ -395,7 +396,7 @@ public sealed class PlanSerializationTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        this._functionRunner.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        this._functionRunner.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();
@@ -456,8 +457,8 @@ public sealed class PlanSerializationTests
 
         plan.AddSteps(mockFunction.Object, mockFunction.Object);
 
-        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()))
-                .Returns<ISKFunction, ContextVariables, CancellationToken>((function, variables, ct) =>
+        this._functionRunner.Setup(k => k.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()))
+                .Returns<ISKFunction, ContextVariables, AIRequestSettings, CancellationToken>((function, variables, settings, ct) =>
                 {
                     var c = new SKContext(new Mock<IFunctionRunner>().Object, variables);
                     c.Variables.TryGetValue("variables", out string? v);
@@ -496,7 +497,7 @@ public sealed class PlanSerializationTests
         // Assert
         Assert.NotNull(plan);
         Assert.Equal($"{stepOutput}{planInput}foo{stepOutput}{planInput}foobar", plan.State.ToString());
-        this._functionRunner.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+        this._functionRunner.Verify(x => x.RunAsync(It.IsAny<ISKFunction>(), It.IsAny<ContextVariables>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
 
         // Act
         var serializedPlan2 = plan.ToJson();
