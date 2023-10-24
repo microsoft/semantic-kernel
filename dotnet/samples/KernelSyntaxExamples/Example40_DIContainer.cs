@@ -44,7 +44,7 @@ public static class Example40_DIContainer
         //Registering Kernel
         collection.AddTransient<IKernel>((serviceProvider) =>
         {
-            return Kernel.Builder
+            return new KernelBuilder()
             .WithLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
             .WithOpenAITextCompletionService(TestConfiguration.OpenAI.ModelId, TestConfiguration.OpenAI.ApiKey)
             .Build();

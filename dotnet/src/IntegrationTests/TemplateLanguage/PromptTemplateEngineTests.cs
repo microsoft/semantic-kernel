@@ -32,7 +32,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         const string Winner = "SK";
         const string Template = "And the winner\n of {{$input}} \nis: {{  $winner }}!";
 
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         var context = kernel.CreateNewContext();
         context.Variables["input"] = Input;
         context.Variables["winner"] = Winner;
@@ -54,7 +54,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         const string Template = "And the winner\n of {{'template\ntests'}} \nis: {{  \"SK\" }}!";
         const string Expected = "And the winner\n of template\ntests \nis: SK!";
 
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         var context = kernel.CreateNewContext();
 
         // Act
@@ -69,7 +69,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     {
         // Arrange
         const string Template = "== {{my.check123 $call}} ==";
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
         context.Variables["call"] = "123";
@@ -86,7 +86,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     {
         // Arrange
         const string Template = "== {{my.check123 '234'}} ==";
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
 
@@ -103,7 +103,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Arrange
         const char Esc = '\\';
         string template = "== {{my.check123 'a" + Esc + "'b'}} ==";
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
 
@@ -120,7 +120,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
         // Arrange
         const char Esc = '\\';
         string template = "== {{my.check123 \"a" + Esc + "\"b\"}} ==";
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
 
@@ -136,7 +136,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     {
         // Arrange
         string template = "Output: {{my.sayAge name=\"Mario\" birthdate=$birthdate exclamation='Wow, that\\'s surprising'}}";
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         kernel.ImportFunctions(new MyPlugin(), "my");
         var context = kernel.CreateNewContext();
         context.Variables["birthdate"] = "1981-08-20T00:00:00";
@@ -153,7 +153,7 @@ public sealed class PromptTemplateEngineTests : IDisposable
     public async Task ItHandleEdgeCasesAsync(string template, string expectedResult)
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         kernel.ImportFunctions(new MyPlugin());
 
         // Act

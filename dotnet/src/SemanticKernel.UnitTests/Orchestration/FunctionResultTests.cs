@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -13,10 +14,11 @@ namespace SemanticKernel.UnitTests.Orchestration;
 public class FunctionResultTests
 {
     private readonly Mock<IFunctionRunner> _functionRunner = new();
+    private readonly Mock<IAIServiceProvider> _serviceProvider = new();
 
     private SKContext CreateContext()
     {
-        return new SKContext(this._functionRunner.Object);
+        return new SKContext(this._functionRunner.Object, this._serviceProvider.Object);
     }
 
     [Fact]
