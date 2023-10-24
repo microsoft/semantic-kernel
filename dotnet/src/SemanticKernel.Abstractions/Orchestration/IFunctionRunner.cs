@@ -2,7 +2,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -16,13 +15,11 @@ public interface IFunctionRunner
     /// </summary>
     /// <param name="skFunction">Target function to run</param>
     /// <param name="variables">Input to process</param>
-    /// <param name="requestSettings">Request settings to override</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Result of the function composition</returns>
     Task<FunctionResult> RunAsync(
         ISKFunction skFunction,
         ContextVariables? variables = null,
-        AIRequestSettings? requestSettings = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
