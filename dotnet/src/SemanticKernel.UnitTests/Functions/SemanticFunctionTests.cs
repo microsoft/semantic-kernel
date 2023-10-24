@@ -12,14 +12,13 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.OpenAI;
 using Microsoft.SemanticKernel.Diagnostics;
-using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
 
 // ReSharper disable StringLiteralTypo
 
-namespace SemanticKernel.Functions.UnitTests.SemanticFunctions;
+namespace SemanticKernel.UnitTests.Functions;
 
 public class SemanticFunctionTests
 {
@@ -28,8 +27,8 @@ public class SemanticFunctionTests
     {
         // Arrange
         var factory = new Mock<Func<ILoggerFactory, ITextCompletion>>();
-        var kernel = Kernel.Builder
-            .WithDefaultAIService<ITextCompletion>(factory.Object)
+        var kernel = new KernelBuilder()
+            .WithDefaultAIService(factory.Object)
             .Build();
 
         kernel.CreateSemanticFunction(promptTemplate: "Tell me a joke", functionName: "joker", pluginName: "jk", description: "Nice fun");
@@ -51,8 +50,8 @@ public class SemanticFunctionTests
         mockTextCompletion.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("x", mockTextCompletion.Object)
+        var kernel = new KernelBuilder()
+            .WithAIService("x", mockTextCompletion.Object)
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
@@ -74,7 +73,7 @@ public class SemanticFunctionTests
     public void ItAllowsToCreateFunctionsInTheGlobalNamespace()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
         var templateConfig = new PromptTemplateConfig();
 
         // Act
@@ -96,9 +95,9 @@ public class SemanticFunctionTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+        var kernel = new KernelBuilder()
+            .WithAIService("service1", mockTextCompletion1.Object, false)
+            .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
@@ -124,9 +123,9 @@ public class SemanticFunctionTests
         mockTextCompletion2.Setup(c => c.GetCompletionsAsync(It.IsAny<string>(), It.IsAny<AIRequestSettings>(), It.IsAny<CancellationToken>())).ReturnsAsync(new[] { mockCompletionResult.Object });
         mockCompletionResult.Setup(cr => cr.GetCompletionAsync(It.IsAny<CancellationToken>())).ReturnsAsync("llmResult");
 
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+        var kernel = new KernelBuilder()
+            .WithAIService("service1", mockTextCompletion1.Object, false)
+            .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
@@ -148,9 +147,9 @@ public class SemanticFunctionTests
         var mockTextCompletion1 = new Mock<ITextCompletion>();
         var mockTextCompletion2 = new Mock<ITextCompletion>();
 
-        var kernel = Kernel.Builder
-            .WithAIService<ITextCompletion>("service1", mockTextCompletion1.Object, false)
-            .WithAIService<ITextCompletion>("service2", mockTextCompletion2.Object, true)
+        var kernel = new KernelBuilder()
+            .WithAIService("service1", mockTextCompletion1.Object, false)
+            .WithAIService("service2", mockTextCompletion2.Object, true)
             .Build();
 
         var templateConfig = new PromptTemplateConfig();
@@ -170,13 +169,12 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationAsync(int pipelineCount)
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
 
-        semanticFunction.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        sut.FunctionInvoking += (sender, e) =>
         {
             invoked++;
         };
@@ -198,11 +196,11 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationWasCancelledAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var input = "Test input";
         var invoked = false;
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        sut.FunctionInvoking += (sender, e) =>
         {
             invoked = true;
             e.Cancel();
@@ -220,13 +218,12 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPreInvocationCancelationDontRunSubsequentFunctionsInThePipelineAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
-        semanticFunction.SetAIService(() => mockTextCompletion.Object);
 
         var invoked = 0;
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        sut.FunctionInvoking += (sender, e) =>
         {
             invoked++;
             e.Cancel();
@@ -244,16 +241,16 @@ public class SemanticFunctionTests
     public async Task RunAsyncPreInvocationCancelationDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
+        var sut = new KernelBuilder().Build();
         var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var invoked = 0;
 
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        sut.FunctionInvoking += (sender, e) =>
         {
             e.Cancel();
         };
 
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        sut.FunctionInvoked += (sender, e) =>
         {
             invoked++;
         };
@@ -269,16 +266,15 @@ public class SemanticFunctionTests
     public async Task RunAsyncPreInvocationSkipDontTriggerInvokedHandlerAsync()
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var semanticFunction1 = sut.CreateSemanticFunction("Write one phrase about UnitTests", functionName: "SkipMe");
         var semanticFunction2 = sut.CreateSemanticFunction("Write two phrases about UnitTests", functionName: "DontSkipMe");
-        semanticFunction2.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
         var invoking = 0;
         string invokedFunction = string.Empty;
 
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        sut.FunctionInvoking += (sender, e) =>
         {
             invoking++;
             if (e.FunctionView.Name == "SkipMe")
@@ -287,7 +283,7 @@ public class SemanticFunctionTests
             }
         };
 
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        sut.FunctionInvoked += (sender, e) =>
         {
             invokedFunction = e.FunctionView.Name;
             invoked++;
@@ -310,14 +306,13 @@ public class SemanticFunctionTests
     public async Task RunAsyncHandlesPostInvocationAsync(int pipelineCount)
     {
         // Arrange
-        var sut = Kernel.Builder.Build();
-        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
         var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
+        var semanticFunction = sut.CreateSemanticFunction("Write a simple phrase about UnitTests");
 
-        semanticFunction.SetAIService(() => mockTextCompletion.Object);
         var invoked = 0;
 
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        sut.FunctionInvoked += (sender, e) =>
         {
             invoked++;
         };
@@ -339,16 +334,15 @@ public class SemanticFunctionTests
     [Fact]
     public async Task RunAsyncChangeVariableInvokingHandlerAsync()
     {
-        var sut = Kernel.Builder.Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var semanticFunction = sut.CreateSemanticFunction(prompt);
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        semanticFunction.SetAIService(() => mockTextCompletion.Object);
 
         var originalInput = "Importance";
         var newInput = "Problems";
 
-        sut.FunctionInvoking += (object? sender, FunctionInvokingEventArgs e) =>
+        sut.FunctionInvoking += (sender, e) =>
         {
             originalInput = newInput;
         };
@@ -363,16 +357,15 @@ public class SemanticFunctionTests
     [Fact]
     public async Task RunAsyncChangeVariableInvokedHandlerAsync()
     {
-        var sut = Kernel.Builder.Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
+        var sut = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
         var prompt = "Write a simple phrase about UnitTests {{$input}}";
         var semanticFunction = sut.CreateSemanticFunction(prompt);
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks();
-        semanticFunction.SetAIService(() => mockTextCompletion.Object);
 
         var originalInput = "Importance";
         var newInput = "Problems";
 
-        sut.FunctionInvoked += (object? sender, FunctionInvokedEventArgs e) =>
+        sut.FunctionInvoked += (sender, e) =>
         {
             originalInput = newInput;
         };
@@ -397,15 +390,13 @@ public class SemanticFunctionTests
         const string PluginName = "MyPlugin";
         const string Prompt = "Write a simple phrase about UnitTests";
 
-        var kernel = Kernel.Builder.Build();
+        var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
+        var kernel = new KernelBuilder().WithAIService<ITextCompletion>(null, mockTextCompletion.Object).Build();
 
         var function1 = SKFunction.FromNativeMethod(Method(Function1), pluginName: PluginName);
         var function2 = SKFunction.FromNativeMethod(Method(Function2), pluginName: PluginName);
 
         var function3 = kernel.CreateSemanticFunction(Prompt, functionName: "Function3", pluginName: PluginName);
-        var (mockTextResult, mockTextCompletion) = this.SetupMocks("Result3");
-
-        function3.SetAIService(() => mockTextCompletion.Object);
 
         // Act
         var kernelResult = await kernel.RunAsync(function1, function2, function3);

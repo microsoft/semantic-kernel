@@ -43,7 +43,7 @@ class TempWebSearchEngineSkill:
         description="The search query",
     )
     async def search_async(self, query: str, context: SKContext) -> str:
-        query = query or context.variables.get("query")[1]
+        query = query or context.variables.get("query")
         result = await self._connector.search_async(query, num_results=5, offset=0)
         return str(result)
 
