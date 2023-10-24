@@ -10,6 +10,9 @@ class SKEventArgs:
         self._function_view = function_view
         self._context = context
 
+        # Temporal cancellationToken to sync C#
+        self._is_cancel_requested = False
+
     @property
     def function_view(self):
         return self._function_view
@@ -17,3 +20,10 @@ class SKEventArgs:
     @property
     def context(self):
         return self._context
+
+    @property
+    def is_cancel_requested(self):
+        return self._is_cancel_requested
+
+    def cancel(self):
+        self._is_cancel_requested = True

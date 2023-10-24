@@ -313,6 +313,16 @@ class Kernel:
                     )
                     if (
                         isinstance(function_invoking_args, FunctionInvokingEventArgs)
+                        and function_invoking_args.is_cancel_requested
+                    ):
+                        cancel_message = "Execution was cancelled on function invoking event of pipeline step"
+                        self._log.info(
+                            f"{cancel_message} {pipeline_step}: {func.skill_name}.{func.name}."
+                        )
+                        return context
+
+                    if (
+                        isinstance(function_invoking_args, FunctionInvokingEventArgs)
                         and function_invoking_args.is_skip_requested
                     ):
                         skip_message = "Execution was skipped on function invoking event of pipeline step"
@@ -336,6 +346,16 @@ class Kernel:
                     function_invoked_args = self.on_function_invoked(
                         function_details, context
                     )
+
+                    if (
+                        isinstance(function_invoked_args, FunctionInvokedEventArgs)
+                        and function_invoked_args.is_cancel_requested
+                    ):
+                        cancel_message = "Execution was cancelled on function invoked event of pipeline step"
+                        self._log.info(
+                            f"{cancel_message} {pipeline_step}: {func.skill_name}.{func.name}."
+                        )
+                        return context
                     if (
                         isinstance(function_invoked_args, FunctionInvokedEventArgs)
                         and function_invoked_args.is_repeat_requested
