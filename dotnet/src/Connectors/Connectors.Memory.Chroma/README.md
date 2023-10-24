@@ -25,7 +25,7 @@ const string endpoint = "http://localhost:8000";
 
 ChromaMemoryStore memoryStore = new(endpoint);
 
-IKernel kernel = Kernel.Builder
+IKernel kernel = new KernelBuilder()
     .WithLogger(logger)
     .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", "OPENAI_API_KEY")
     .WithMemoryStorage(memoryStore)
