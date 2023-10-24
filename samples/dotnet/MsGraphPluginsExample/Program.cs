@@ -107,7 +107,7 @@ public sealed class Program
         EmailSkill outlookSkill = new(new OutlookMailConnector(graphServiceClient), loggerFactory.CreateLogger<EmailSkill>());
 
         // Initialize the Semantic Kernel and and register connections with OpenAI/Azure OpenAI instances.
-        KernelBuilder builder = Kernel.Builder
+        KernelBuilder builder = new KernelBuilder()
             .WithLogger(loggerFactory.CreateLogger<IKernel>());
 
         if (configuration.GetSection("AzureOpenAI:ServiceId").Value != null)
