@@ -29,13 +29,13 @@ So this ADR propose a solution for the above fore mentioned problem.
 
 This option is to add a new setting `Streaming` to the `AIRequestSettings` definition to flag the caller would like to stream the output from the kernel and functions if possible.
 
-Seggregate old Text/Chat Completion interfaces the into new `ITextStreamingCompletion` and `IChatStreamingCompletion` dedicated for streaming (interface segragation). **This becomes crutial to the Kernel knows if streaming is supported by the service.**
+Seggregate old Text/Chat Completion interfaces the into new `ITextStreamingCompletion` and `IChatStreamingCompletion` dedicated for streaming (interface segregation). **This becomes crucial to the Kernel knows if streaming is supported by the service.**
 
 #### Backward compatibility aspects:
 
 - SKContext was built on top of a non streaming functionality, so to keep the compatibility for streaming scenarios, SKContext needs to be updated into a Lazy loading strategy, where when used will enforce the buffering of the whole stream to be able to return to final result.
 
-- Streaming by defaullt will be `false`
+- Streaming by default will be `false`
   1. It wont force streaming results over legacy implementations.
   2. Providers like OpenAI/Azure OpenAI don't provide additional data like (Usage, Completion Tokens, Prompt Tokens, Total Tokens, ...) in streaming results.
 
