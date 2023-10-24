@@ -75,7 +75,8 @@ public interface SkillExecutor {
      * @throws KernelException if it is not possible to correctly load the skill
      */
     ReadOnlyFunctionCollection importSkillFromResources(
-            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException;
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz)
+            throws KernelException;
 
     /**
      * Imports the native functions annotated on the given object as a skill.

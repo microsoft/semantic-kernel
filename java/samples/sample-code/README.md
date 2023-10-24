@@ -34,10 +34,14 @@ They can then be run by:
 
 # Configuration
 
-You can define the provider of Open AI by setting the `OPENAI_CLIENT_TYPE`
+By default, the samples will use the Open AI client, but you can also use the Azure Open AI client.
+
+## Open AI client type
+
+You can define the provider of Open AI (openai.com or Azure), this can be done by setting the `OPENAI_CLIENT_TYPE`
 property or environment variable to either [`OPENAI`](https://openai.com/api/)
-or [`AZURE_OPEN_AI`](https://learn.microsoft.com/azure/cognitive-services/openai/).
-By default, the samples will use the Open AI client.
+or [`AZURE_OPEN_AI`](https://learn.microsoft.com/azure/cognitive-services/openai/). By default, the samples will use the
+Open AI client.
 
 ```shell
 OPENAI_CLIENT_TYPE=OPEN_AI ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
@@ -54,7 +58,6 @@ The samples search for the client settings in the following order:
 1. Environment variables.
 1. Properties file at `java/samples/conf.properties`.
 1. Properties file at `~/.sk/conf.properties`.
-
 
 ## Properties File
 
@@ -123,3 +126,15 @@ OPEN_AI_KEY="my-key" \
 OPEN_AI_ORGANIZATION_ID="organisation id" \
 ../../mvnw clean package exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
 ```
+
+## Managed Identity and Azure CLI Credentials (Azure only)
+
+The `credentialtype` setting (i.e `client.openai.credentialtype`):
+
+- `managed_identity`: will attempt to obtain credentials via Azure's managed identity.
+- `azure_cli`: will attempt to obtain credentials via Azure's CLI, to use this you must have logged in to the az client
+  for instance by running `az login`.
+
+To use either of these settings, the `azure-identity` dependency must be available to the application. Additionally, you
+must have the "Cognitive Services User" role assigned to your identity.
+

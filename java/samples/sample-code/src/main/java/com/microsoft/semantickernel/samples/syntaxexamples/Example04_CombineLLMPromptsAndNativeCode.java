@@ -34,24 +34,20 @@ public class Example04_CombineLLMPromptsAndNativeCode {
   public static void main(String[] args) throws ConfigurationException {
     OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        TextCompletion textCompletion = SKBuilders.textCompletion()
-                .withModelId("text-davinci-003")
+    TextCompletion textCompletion = SKBuilders.chatCompletion()
+        .withModelId("gpt-35-turbo-2")
         .withOpenAIClient(client)
         .build();
 
-        Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
+    Kernel kernel = SKBuilders.kernel().withDefaultAIService(textCompletion).build();
     kernel.importSkill(new SearchEngineSkill(), null);
     kernel.importSkillFromDirectory("SummarizeSkill", SampleSkillsUtil.detectSkillDirLocation(),
         "SummarizeSkill");
-
 
     // Run
     String ask = "What's the tallest building in South America?";
 
     Mono<SKContext> result =
-        kernel.runAsync(ask, kernel.getSkills().getFunction("Search", null));
-
-    result =
         kernel.runAsync(
             ask,
             kernel.getSkills().getFunction("Search", null),

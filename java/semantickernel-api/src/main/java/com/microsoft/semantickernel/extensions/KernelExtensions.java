@@ -97,7 +97,8 @@ public class KernelExtensions {
             String pluginName,
             String functionName,
             @Nullable Class clazz,
-            PromptTemplateEngine promptTemplateEngine) throws KernelException {
+            PromptTemplateEngine promptTemplateEngine)
+            throws KernelException {
 
         PromptTemplateConfig config =
                 getPromptTemplateConfig(pluginDirectory, pluginName, functionName, clazz);
@@ -150,7 +151,8 @@ public class KernelExtensions {
     }
 
     private static PromptTemplateConfig getPromptTemplateConfig(
-            String pluginDirectory, String pluginName, String functionName, @Nullable Class clazz) throws KernelException {
+            String pluginDirectory, String pluginName, String functionName, @Nullable Class clazz)
+            throws KernelException {
         String configFileName =
                 pluginDirectory
                         + File.separator
@@ -169,18 +171,19 @@ public class KernelExtensions {
                             ResourceLocation.CLASSPATH,
                             ResourceLocation.FILESYSTEM);
 
-          return new ObjectMapper().readValue(config, PromptTemplateConfig.class);
+            return new ObjectMapper().readValue(config, PromptTemplateConfig.class);
         } catch (IOException e) {
-          if (e instanceof JsonMappingException) {
-            LOGGER.error("Failed to parse config file " + configFileName, e);
+            if (e instanceof JsonMappingException) {
+                LOGGER.error("Failed to parse config file " + configFileName, e);
 
-            throw new KernelException(
-                ErrorCodes.FUNCTION_CONFIGURATION_ERROR,
-                "Failed to parse config file " + configFileName, e);
-          } else {
-            LOGGER.debug("No config for " + functionName + " in " + pluginName);
-          }
-          return null;
+                throw new KernelException(
+                        ErrorCodes.FUNCTION_CONFIGURATION_ERROR,
+                        "Failed to parse config file " + configFileName,
+                        e);
+            } else {
+                LOGGER.debug("No config for " + functionName + " in " + pluginName);
+            }
+            return null;
         }
     }
 }

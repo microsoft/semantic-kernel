@@ -24,10 +24,10 @@ public class Example17_ChatGPT {
 
         Kernel kernel = SKBuilders.kernel()
                 .withAIService(
-                        "chat-test",
+                        "gpt-35-turbo",
                         SKBuilders.chatCompletion()
                                 .withOpenAIClient(client)
-                                .withModelId("chat-test")
+                                .withModelId("gpt-35-turbo")
                                 .build(),
                         true,
                         ChatCompletion.class
