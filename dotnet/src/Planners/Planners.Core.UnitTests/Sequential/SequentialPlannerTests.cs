@@ -22,8 +22,8 @@ public sealed class SequentialPlannerTests
         // Arrange
         var kernel = new Mock<IKernel>();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
-        kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
-            .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
+        kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
+            .Returns<ContextVariables, AIRequestSettings, CancellationToken, ISKFunction[]>(async (vars, requestSettings, cancellationToken, functions) =>
             {
                 var functionResult = await functions[0].InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
                 return KernelResult.FromFunctionResults(functionResult.GetValue<string>(), new List<FunctionResult> { functionResult });
@@ -173,8 +173,8 @@ public sealed class SequentialPlannerTests
 
         // Mock Plugins
         kernel.Setup(x => x.Functions).Returns(functions.Object);
-        kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
-            .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
+        kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<AIRequestSettings?>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
+            .Returns<ContextVariables, AIRequestSettings, CancellationToken, ISKFunction[]>(async (vars, requestSettings, cancellationToken, functions) =>
             {
                 var functionResult = await functions[0].InvokeAsync(kernel.Object, vars, cancellationToken: cancellationToken);
                 return KernelResult.FromFunctionResults(functionResult.GetValue<string>(), new List<FunctionResult> { functionResult });
