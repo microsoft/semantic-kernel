@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 using Microsoft.SemanticKernel.Orchestration;
 using Xunit;
@@ -11,6 +14,60 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Plugins;
 public class PluginTests
 {
+    private static async Task AuthenticateRequestAsync(HttpRequestMessage request, OpenAIManifestAuthenticationConfig? authConfig = null)
+    {
+        if (authConfig?.Type == OpenAIAuthenticationType.OAuth)
+        {
+            var clientId = "YOUR_CLIENT_ID";
+            var clientSecret = "YOUR_CLIENT_SECRET";
+            // var authorizationCode = "AUTHORIZATION_CODE"; // Replace with the code you received.
+            // var redirectUri = "YOUR_REDIRECT_URI";
+
+            using var content = new FormUrlEncodedContent(new KeyValuePair<string, string>[] {
+                new("client_id", clientId),
+                new("client_secret", clientSecret),
+                new("scope", authConfig!.Scope ?? ""),
+                new("grant_type", "client_credentials"),
+                // new("grant_type", "authorization_code"),
+                // new("redirect_uri", redirectUri),
+                // new("code", authorizationCode),
+            });
+
+            using var client = new HttpClient();
+            var response = await client.PostAsync(authConfig.AuthorizationUrl, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var token = await response.Content.ReadAsStringAsync();
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            else
+            {
+                Assert.Fail("Error acquiring access token: " + response.ReasonPhrase);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("https://api.flow.microsoft.com/.well-known/ai-plugin.json", "PowerAutomate", "Foo")]
+    public async Task QueryPowerPlatforms(
+        string pluginEndpoint,
+        string name,
+        string functionName)
+    {
+        // Arrange
+        var kernel = new KernelBuilder().Build();
+        using HttpClient httpClient = new();
+
+        var plugin = await kernel.ImportPluginFunctionsAsync(
+            name,
+            new Uri(pluginEndpoint),
+            new OpenApiFunctionExecutionParameters { AuthCallback = AuthenticateRequestAsync });
+
+        // Act
+        await plugin[functionName].InvokeAsync(kernel.CreateNewContext());
+    }
+
     [Theory]
     [InlineData("https://www.klarna.com/.well-known/ai-plugin.json", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]
     [InlineData("https://www.klarna.com/us/shopping/public/openai/v0/api-docs/", "Klarna", "productsUsingGET", "Laptop", 3, 200, "US")]

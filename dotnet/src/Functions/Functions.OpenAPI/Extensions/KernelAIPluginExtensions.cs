@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions.OpenAPI.Model;
+using Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 using Microsoft.SemanticKernel.Functions.OpenAPI.OpenApi;
 using Microsoft.SemanticKernel.Orchestration;
 using Newtonsoft.Json;
@@ -189,9 +190,10 @@ public static class KernelAIPluginExtensions
                 TryParseAIPluginForAuth(pluginContents, out var openApiManifestAuth) &&
                 openApiManifestAuth!.Type != OpenAIAuthenticationType.None)
             {
+                var callback = executionParameters.AuthCallback;
                 executionParameters.AuthCallback = async (request, _) =>
                 {
-                    await executionParameters.AuthCallback.Invoke(request, openApiManifestAuth).ConfigureAwait(false);
+                    await callback.Invoke(request, openApiManifestAuth).ConfigureAwait(false);
                 };
 
                 using var request = CreateRequestWithAgent(uri, executionParameters);
@@ -359,7 +361,7 @@ public static class KernelAIPluginExtensions
             };
 
             JObject? gptPlugin = JsonConvert.DeserializeObject<JObject>(gptPluginJson, settings);
-            openApiManifestAuth = gptPlugin?["auth"]?.ToObject<OpenAIManifestAuthenticationConfig>();
+            openApiManifestAuth = gptPlugin?["auth"]?.ToObject<OpenAIManifestAuthenticationConfig>(JsonSerializer.Create(settings));
 
             return openApiManifestAuth != null;
         }
