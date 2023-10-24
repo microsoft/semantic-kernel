@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 
@@ -86,6 +87,25 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
         return kernel.RunAsync(variables ?? new(), null, cancellationToken, skFunction);
+    }
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="variables">Variables to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
+    public static Task<KernelResult> RunAsync(
+        this IKernel kernel,
+        ContextVariables variables,
+        CancellationToken cancellationToken = default,
+        params ISKFunction[] pipeline)
+    {
+        Verify.NotNull(kernel);
+
+        return kernel.RunAsync(variables, null, cancellationToken, pipeline);
     }
 
     /// <summary>

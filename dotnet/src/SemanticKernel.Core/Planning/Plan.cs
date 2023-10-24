@@ -344,11 +344,6 @@ public sealed class Plan : IPlan
                 cancellationToken)
                 .ConfigureAwait(false);
 
-            /*result = await this.Function
-                .WithInstrumentation(context.LoggerFactory)
-                .InvokeAsync(functionContext, requestSettings, cancellationToken)
-                .ConfigureAwait(false);*/
-
             this.UpdateFunctionResultWithOutputs(result);
         }
         else
