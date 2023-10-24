@@ -43,7 +43,7 @@ public sealed class WebPluginTests : IDisposable
     public async Task BingPluginTestAsync(string prompt, string expectedAnswerContains)
     {
         // Arrange
-        IKernel kernel = Kernel.Builder.WithLoggerFactory(this._logger).Build();
+        IKernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
 
         using XunitLogger<BingConnector> connectorLogger = new(this._output);
         BingConnector connector = new(this._bingApiKey, connectorLogger);
@@ -66,7 +66,7 @@ public sealed class WebPluginTests : IDisposable
     public async Task WebFileDownloadPluginFileTestAsync()
     {
         // Arrange
-        IKernel kernel = Kernel.Builder.WithLoggerFactory(this._logger).Build();
+        IKernel kernel = new KernelBuilder().WithLoggerFactory(this._logger).Build();
         using XunitLogger<WebFileDownloadPlugin> pluginLogger = new(this._output);
         var plugin = new WebFileDownloadPlugin(pluginLogger);
         var downloadFunctions = kernel.ImportFunctions(plugin, "WebFileDownload");
