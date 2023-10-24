@@ -26,7 +26,6 @@ namespace Microsoft.SemanticKernel.TemplateEngine.Basic;
 /// </summary>
 public sealed class BasicPromptTemplate : IPromptTemplate
 {
-
     /// <summary>
     /// Constructor for PromptTemplate.
     /// </summary>

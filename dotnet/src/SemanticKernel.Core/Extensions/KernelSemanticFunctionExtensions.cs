@@ -114,33 +114,19 @@ public static class KernelSemanticFunctionExtensions
     /// <param name="functionName">A name for the given function. The name can be referenced in templates and used by the pipeline planner.</param>
     /// <param name="pluginName">An optional plugin name, e.g. to namespace functions with the same name. When empty,
     /// the function is added to the global namespace, overwriting functions with the same name</param>
-    /// <param name="promptTemplateFactory">Prompt template factory</param>
     /// <returns>A function ready to use</returns>
     public static ISKFunction CreateSemanticFunction(
         this IKernel kernel,
         string promptTemplate,
         PromptTemplateConfig promptTemplateConfig,
         string? functionName = null,
-        string? pluginName = null,
-        IPromptTemplateFactory? promptTemplateFactory = null)
+        string? pluginName = null)
     {
         functionName ??= RandomFunctionName();
         Verify.ValidFunctionName(functionName);
         if (!string.IsNullOrEmpty(pluginName)) { Verify.ValidPluginName(pluginName); }
 
-        IPromptTemplate? promptTemplateInstance = null;
-        if (promptTemplateFactory is not null)
-        {
-            // Support for IPromptTemplateFactory
-            promptTemplateInstance = promptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
-        }
-        else
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            // Compatability with existing template engines
-            promptTemplateInstance = new Microsoft.SemanticKernel.TemplateEngine.PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
+        IPromptTemplate? promptTemplateInstance = kernel.PromptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
 
         // TODO: manage overwrites, potentially error out
         return string.IsNullOrEmpty(pluginName)
@@ -238,23 +224,6 @@ public static class KernelSemanticFunctionExtensions
         string parentDirectory,
         params string[] pluginDirectoryNames)
     {
-        return kernel.ImportSemanticFunctionsFromDirectory(null, parentDirectory, pluginDirectoryNames);
-    }
-
-    /// <summary>
-    /// TODO Mark
-    /// </summary>
-    /// <param name="kernel"></param>
-    /// <param name="promptTemplateFactory"></param>
-    /// <param name="parentDirectory"></param>
-    /// <param name="pluginDirectoryNames"></param>
-    /// <returns></returns>
-    public static IDictionary<string, ISKFunction> ImportSemanticFunctionsFromDirectory(
-        this IKernel kernel,
-        IPromptTemplateFactory? promptTemplateFactory,
-        string parentDirectory,
-        params string[] pluginDirectoryNames)
-    {
         const string ConfigFile = "config.json";
         const string PromptFile = "skprompt.txt";
 
@@ -292,19 +261,7 @@ public static class KernelSemanticFunctionExtensions
 
                 // Load prompt template
                 var promptTemplate = File.ReadAllText(promptPath);
-                IPromptTemplate? promptTemplateInstance = null;
-                if (promptTemplateFactory is not null)
-                {
-                    // Support for IPromptTemplateFactory
-                    promptTemplateInstance = promptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
-                }
-                else
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    // Compatability with existing template engines
-                    promptTemplateInstance = new Microsoft.SemanticKernel.TemplateEngine.PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
+                IPromptTemplate? promptTemplateInstance = kernel.PromptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {

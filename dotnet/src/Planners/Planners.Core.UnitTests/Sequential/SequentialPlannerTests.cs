@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
 
@@ -20,7 +21,7 @@ public sealed class SequentialPlannerTests
     public async Task ItCanCreatePlanAsync(string goal)
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
+        var kernel = CreateMockKernel();
         kernel.Setup(x => x.LoggerFactory).Returns(new Mock<ILoggerFactory>().Object);
         kernel.Setup(x => x.RunAsync(It.IsAny<ContextVariables>(), It.IsAny<CancellationToken>(), It.IsAny<ISKFunction>()))
             .Returns<ContextVariables, CancellationToken, ISKFunction[]>(async (vars, cancellationToken, functions) =>
@@ -138,7 +139,7 @@ public sealed class SequentialPlannerTests
     public async Task EmptyGoalThrowsAsync()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
+        var kernel = CreateMockKernel();
 
         var planner = new SequentialPlanner(kernel.Object);
 
@@ -152,7 +153,7 @@ public sealed class SequentialPlannerTests
         // Arrange
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
-        var kernel = new Mock<IKernel>();
+        var kernel = CreateMockKernel();
         var functions = new Mock<IFunctionCollection>();
 
         functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
@@ -196,7 +197,7 @@ public sealed class SequentialPlannerTests
     public void UsesPromptDelegateWhenProvided()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
+        var kernel = CreateMockKernel();
         var getPromptTemplateMock = new Mock<Func<string>>();
         var config = new SequentialPlannerConfig()
         {
@@ -218,5 +219,20 @@ public sealed class SequentialPlannerTests
         mockFunction.Setup(x => x.Name).Returns(functionView.Name);
         mockFunction.Setup(x => x.PluginName).Returns(functionView.PluginName);
         return mockFunction;
+    }
+
+    // Method to create Mock<IKernel> objects
+    private static Mock<IKernel> CreateMockKernel()
+    {
+        var promptTemplate = new Mock<IPromptTemplate>();
+        promptTemplate.SetupGet(x => x.Parameters).Returns(Array.Empty<ParameterView>());
+
+        var promptTemplateFactory = new Mock<IPromptTemplateFactory>();
+        promptTemplateFactory.Setup(x => x.CreatePromptTemplate(It.IsAny<string>(), It.IsAny<PromptTemplateConfig>()))
+            .Returns(promptTemplate.Object);
+        var kernel = new Mock<IKernel>();
+        kernel.Setup(x => x.PromptTemplateFactory).Returns(promptTemplateFactory.Object);
+
+        return kernel;
     }
 }

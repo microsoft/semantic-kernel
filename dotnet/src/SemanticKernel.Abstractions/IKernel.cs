@@ -37,6 +37,12 @@ public interface IKernel
     IDelegatingHandlerFactory HttpHandlerFactory { get; }
 
     /// <summary>
+    /// Reference to the factory to create prompt templates
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    IPromptTemplateFactory PromptTemplateFactory { get; }
+
+    /// <summary>
     /// Registers a custom function in the internal function collection.
     /// </summary>
     /// <param name="customFunction">The custom function to register.</param>
@@ -94,9 +100,9 @@ public interface IKernel
     /// <summary>
     /// Reference to the engine rendering prompt templates
     /// </summary>
-    [Obsolete("IPromptTemplateEngine is being replaced with IPromptTemplateFactory. This will be removed in a future release.")]
+    [Obsolete("PromptTemplateEngine has been replaced with PromptTemplateFactory and will be null. If you pass an PromptTemplateEngine instance when creating a Kernel it will be wrapped in an instance of IPromptTemplateFactory. This will be removed in a future release.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    IPromptTemplateEngine PromptTemplateEngine { get; }
+    IPromptTemplateEngine? PromptTemplateEngine { get; }
 
     /// <summary>
     /// Semantic memory instance

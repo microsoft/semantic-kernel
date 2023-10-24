@@ -22,6 +22,7 @@ public sealed class KernelBuilder
     private Func<IMemoryStore>? _memoryStorageFactory = null;
     private IDelegatingHandlerFactory _httpHandlerFactory = NullHttpHandlerFactory.Instance;
     private IPromptTemplateEngine? _promptTemplateEngine;
+    private IPromptTemplateFactory? _promptTemplateFactory;
     private readonly AIServiceCollection _aiServices = new();
 
     /// <summary>
@@ -44,7 +45,7 @@ public sealed class KernelBuilder
         var instance = new Kernel(
             new FunctionCollection(),
             this._aiServices.Build(),
-            this._promptTemplateEngine,
+            this._promptTemplateFactory,
             this._memoryFactory.Invoke(),
             this._httpHandlerFactory,
             this._loggerFactory
@@ -241,6 +242,18 @@ public sealed class KernelBuilder
         bool setAsDefault = false) where TService : IAIService
     {
         this._aiServices.SetService<TService>(serviceId, () => factory(this._loggerFactory, this._httpHandlerFactory), setAsDefault);
+        return this;
+    }
+
+    /// <summary>
+    /// TODO Mark
+    /// </summary>
+    /// <param name="promptTemplateFactory"></param>
+    /// <returns></returns>
+    public KernelBuilder WithPromptTemplateFactory(IPromptTemplateFactory promptTemplateFactory)
+    {
+        Verify.NotNull(promptTemplateFactory);
+        this._promptTemplateFactory = promptTemplateFactory;
         return this;
     }
 }

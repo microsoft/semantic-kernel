@@ -81,7 +81,7 @@ public static class Example42_KernelBuilder
 
         var memory = new SemanticTextMemory(memoryStorage, textEmbeddingGenerator);
         var plugins = new FunctionCollection();
-        var templateEngine = new BasicPromptTemplateEngine(loggerFactory);
+        var promptTemplateFactory = new BasicPromptTemplateFactory(loggerFactory);
 
         var httpHandlerFactory = BasicHttpRetryHandlerFactory.Instance;
         //var httpHandlerFactory = new PollyHttpRetryHandlerFactory( your policy );
@@ -99,7 +99,7 @@ public static class Example42_KernelBuilder
         IAIServiceProvider aiServiceProvider = aiServices.Build();
 
         // Create kernel manually injecting all the dependencies
-        using var kernel3 = new Kernel(plugins, aiServiceProvider, templateEngine, memory, httpHandlerFactory, loggerFactory);
+        using var kernel3 = new Kernel(plugins, aiServiceProvider, promptTemplateFactory, memory, httpHandlerFactory, loggerFactory);
 
         // ==========================================================================================================
         // The kernel builder purpose is to simplify this process, automating how dependencies

@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.Services;
+using Microsoft.SemanticKernel.TemplateEngine;
 using Moq;
 using Xunit;
 
@@ -55,7 +56,7 @@ public sealed class ActionPlannerTests
     public void UsesPromptDelegateWhenProvided()
     {
         // Arrange
-        var kernel = new Mock<IKernel>();
+        var kernel = CreateMockKernel();
         kernel.Setup(x => x.LoggerFactory).Returns(NullLoggerFactory.Instance);
         var getPromptTemplateMock = new Mock<Func<string>>();
         var config = new ActionPlannerConfig()
@@ -165,7 +166,7 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
         }
         var functionRunner = new Mock<IFunctionRunner>();
         var serviceProvider = new Mock<IAIServiceProvider>();
-        var kernel = new Mock<IKernel>();
+        var kernel = CreateMockKernel();
 
         var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, new ContextVariables(testPlanString), functions.Object);
 
@@ -187,6 +188,21 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
 
         kernel.Setup(x => x.RegisterCustomFunction(It.IsAny<ISKFunction>()))
             .Returns(mockFunctionFlowFunction.Object);
+
+        return kernel;
+    }
+
+    // Method to create Mock<IKernel> objects
+    private static Mock<IKernel> CreateMockKernel()
+    {
+        var promptTemplate = new Mock<IPromptTemplate>();
+        promptTemplate.SetupGet(x => x.Parameters).Returns(Array.Empty<ParameterView>());
+
+        var promptTemplateFactory = new Mock<IPromptTemplateFactory>();
+        promptTemplateFactory.Setup(x => x.CreatePromptTemplate(It.IsAny<string>(), It.IsAny<PromptTemplateConfig>()))
+            .Returns(promptTemplate.Object);
+        var kernel = new Mock<IKernel>();
+        kernel.Setup(x => x.PromptTemplateFactory).Returns(promptTemplateFactory.Object);
 
         return kernel;
     }
