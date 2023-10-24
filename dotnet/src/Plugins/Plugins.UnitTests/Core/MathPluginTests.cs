@@ -22,7 +22,7 @@ public class MathPluginTests
     public void ItCanBeImported()
     {
         // Arrange
-        var kernel = Kernel.Builder.Build();
+        var kernel = new KernelBuilder().Build();
 
         // Act - Assert no exception occurs e.g. due to reflection
         kernel.ImportFunctions(new MathPlugin(), "math");

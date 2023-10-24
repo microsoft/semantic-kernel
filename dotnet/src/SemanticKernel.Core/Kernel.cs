@@ -45,6 +45,7 @@ public sealed class Kernel : IKernel, IDisposable
     /// <summary>
     /// Return a new instance of the kernel builder, used to build and configure kernel instances.
     /// </summary>
+    [Obsolete("This field will be removed in a future release. Initialize KernelBuilder through constructor instead (new KernelBuilder()).")]
     public static KernelBuilder Builder => new();
 
     /// <inheritdoc/>
@@ -175,6 +176,7 @@ repeat:
     {
         return new SKContext(
             new FunctionRunner(this),
+            this._aiServiceProvider,
             variables,
             functions ?? this.Functions,
             loggerFactory ?? this.LoggerFactory,

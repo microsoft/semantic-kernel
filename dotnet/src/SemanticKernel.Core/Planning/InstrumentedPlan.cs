@@ -28,9 +28,6 @@ internal sealed class InstrumentedPlan : IPlan
     /// <inheritdoc/>
     public string Description => this._plan.Description;
 
-    /// <inheritdoc/>
-    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
-
     /// <summary>
     /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
     /// </summary>
@@ -59,14 +56,6 @@ internal sealed class InstrumentedPlan : IPlan
         return await this.InvokeWithInstrumentationAsync(() =>
             this._plan.InvokeAsync(context, requestSettings, cancellationToken)).ConfigureAwait(false);
     }
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
-        this._plan.SetAIConfiguration(requestSettings);
-
-    /// <inheritdoc/>
-    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
-        this._plan.SetAIService(serviceFactory);
 
     #region private ================================================================================
 
@@ -154,6 +143,20 @@ internal sealed class InstrumentedPlan : IPlan
     #endregion
 
     #region Obsolete =======================================================================
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.RequestSettingsFactory instead. This will be removed in a future release.")]
+    public AIRequestSettings? RequestSettings => this._plan.RequestSettings;
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIRequestSettingsFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIConfiguration(AIRequestSettings? requestSettings) =>
+        this._plan.SetAIConfiguration(requestSettings);
+
+    /// <inheritdoc/>
+    [Obsolete("Use ISKFunction.SetAIServiceFactory instead. This will be removed in a future release.")]
+    public ISKFunction SetAIService(Func<ITextCompletion> serviceFactory) =>
+        this._plan.SetAIService(serviceFactory);
 
     /// <inheritdoc/>
     [Obsolete("Methods, properties and classes which include Skill in the name have been renamed. Use ISKFunction.PluginName instead. This will be removed in a future release.")]
