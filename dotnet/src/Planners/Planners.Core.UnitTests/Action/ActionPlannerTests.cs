@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel.Services;
 using Moq;
 using Xunit;
 
@@ -163,11 +164,12 @@ This plan uses the `GitHubPlugin.PullsList` function to list the open pull reque
             functions.Setup(x => x.GetFunctionViews()).Returns(new List<FunctionView>());
         }
         var functionRunner = new Mock<IFunctionRunner>();
+        var serviceProvider = new Mock<IAIServiceProvider>();
         var kernel = new Mock<IKernel>();
 
-        var returnContext = new SKContext(functionRunner.Object, new ContextVariables(testPlanString), functions.Object);
+        var returnContext = new SKContext(functionRunner.Object, serviceProvider.Object, new ContextVariables(testPlanString), functions.Object);
 
-        var context = new SKContext(functionRunner.Object, functions: functions.Object);
+        var context = new SKContext(functionRunner.Object, serviceProvider.Object, functions: functions.Object);
 
         var mockFunctionFlowFunction = new Mock<ISKFunction>();
         mockFunctionFlowFunction.Setup(x => x.InvokeAsync(
