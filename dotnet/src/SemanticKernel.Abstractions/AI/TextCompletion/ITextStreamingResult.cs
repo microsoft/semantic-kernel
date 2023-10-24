@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.AI.TextCompletion;
 /// Interface for text completion streaming results.
 /// Provides an asynchronous enumerable of text completion results.
 /// </summary>
-public interface ITextStreamingResult : ITextResult
+public interface ITextStreamingResult : IResultBase
 {
     /// <summary>
     /// Gets an asynchronous enumerable of text completion results.
