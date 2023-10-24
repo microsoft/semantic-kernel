@@ -52,7 +52,7 @@ jobs:
 
       - name: Build Java
         if: ${{ matrix.language == 'java' }}
-        run: ./mvnw -B -DskipTests -Pcompile-jdk11 clean install --file pom.xml
+        run: ./mvnw -B -DskipTests -Pcompile-jdk17 clean install --file pom.xml
         working-directory: java
 
       # ℹ️ Command-line programs to run using the OS shell.
