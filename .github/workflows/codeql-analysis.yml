@@ -50,6 +50,14 @@ jobs:
         if: ${{ matrix.language != 'java' }}
         uses: github/codeql-action/autobuild@v2
 
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        if: ${{ matrix.language == 'java' }}
+        with:
+          java-version: 17
+          distribution: microsoft
+          cache: maven
+
       - name: Build Java
         if: ${{ matrix.language == 'java' }}
         run: ./mvnw -B -DskipTests -Pcompile-jdk17 clean install --file pom.xml
