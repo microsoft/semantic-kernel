@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
@@ -97,7 +98,7 @@ public sealed class Kernel : IKernel, IDisposable
     }
 
     /// <inheritdoc/>
-    public async Task<KernelResult> RunAsync(ContextVariables variables, CancellationToken cancellationToken, params ISKFunction[] pipeline)
+    public async Task<KernelResult> RunAsync(ContextVariables variables, AIRequestSettings? requestSettings, CancellationToken cancellationToken = default, params ISKFunction[] pipeline)
     {
         var context = this.CreateNewContext(variables);
 
@@ -128,7 +129,7 @@ repeat:
                     continue;
                 }
 
-                functionResult = await skFunction.InvokeAsync(context, cancellationToken: cancellationToken).ConfigureAwait(false);
+                functionResult = await skFunction.InvokeAsync(context, requestSettings, cancellationToken).ConfigureAwait(false);
 
                 context = functionResult.Context;
 

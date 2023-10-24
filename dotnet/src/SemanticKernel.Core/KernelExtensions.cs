@@ -85,7 +85,26 @@ public static class KernelExtensions
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
-        return kernel.RunAsync(variables ?? new(), cancellationToken, skFunction);
+        return kernel.RunAsync(variables ?? new(), null, cancellationToken, skFunction);
+    }
+
+    /// <summary>
+    /// Run a pipeline composed of synchronous and asynchronous functions.
+    /// </summary>
+    /// <param name="kernel">The kernel.</param>
+    /// <param name="variables">Variables to process</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <param name="pipeline">List of functions</param>
+    /// <returns>Result of the function composition</returns>
+    public static Task<KernelResult> RunAsync(
+        this IKernel kernel,
+        ContextVariables variables,
+        CancellationToken cancellationToken = default,
+        params ISKFunction[] pipeline)
+    {
+        Verify.NotNull(kernel);
+
+        return kernel.RunAsync(variables, null, cancellationToken, pipeline);
     }
 
     /// <summary>
@@ -131,7 +150,7 @@ public static class KernelExtensions
         params ISKFunction[] pipeline)
     {
         Verify.NotNull(kernel);
-        return kernel.RunAsync(variables, CancellationToken.None, pipeline);
+        return kernel.RunAsync(variables, null, CancellationToken.None, pipeline);
     }
 
     /// <summary>
@@ -147,7 +166,7 @@ public static class KernelExtensions
         params ISKFunction[] pipeline)
     {
         Verify.NotNull(kernel);
-        return kernel.RunAsync(new ContextVariables(), cancellationToken, pipeline);
+        return kernel.RunAsync(new ContextVariables(), null, cancellationToken, pipeline);
     }
 
     /// <summary>
@@ -165,6 +184,6 @@ public static class KernelExtensions
         params ISKFunction[] pipeline)
     {
         Verify.NotNull(kernel);
-        return kernel.RunAsync(new ContextVariables(input), cancellationToken, pipeline);
+        return kernel.RunAsync(new ContextVariables(input), null, cancellationToken, pipeline);
     }
 }

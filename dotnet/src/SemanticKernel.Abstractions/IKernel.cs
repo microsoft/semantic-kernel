@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Events;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
@@ -52,12 +53,14 @@ public interface IKernel
     /// Run a pipeline composed of synchronous and asynchronous functions.
     /// </summary>
     /// <param name="variables">Input to process</param>
+    /// <param name="requestSettings">Request settings to use in the functions call</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <param name="pipeline">List of functions</param>
     /// <returns>Result of the function composition</returns>
     Task<KernelResult> RunAsync(
         ContextVariables variables,
-        CancellationToken cancellationToken,
+        AIRequestSettings? requestSettings = null,
+        CancellationToken cancellationToken = default,
         params ISKFunction[] pipeline);
 
     /// <summary>
