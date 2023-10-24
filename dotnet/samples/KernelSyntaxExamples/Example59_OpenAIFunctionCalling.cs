@@ -80,7 +80,7 @@ public static class Example59_OpenAIFunctionCalling
         }
 
         // Check for function response
-        OpenAIFunctionResponse? functionResponse = chatResult.GetFunctionResponse();
+        OpenAIFunctionResponse? functionResponse = chatResult.GetOpenAIFunctionResponse();
         if (functionResponse is not null)
         {
             // Print function response details
@@ -144,7 +144,7 @@ public static class Example59_OpenAIFunctionCalling
             }
             chatHistory.AddAssistantMessage(chatContent.ToString());
 
-            var functionResponse = await chatResult.GetStreamingFunctionResponseAsync();
+            var functionResponse = await chatResult.GetOpenAIStreamingFunctionResponseAsync();
 
             if (functionResponse is not null)
             {

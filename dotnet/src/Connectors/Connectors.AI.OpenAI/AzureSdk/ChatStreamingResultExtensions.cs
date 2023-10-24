@@ -18,11 +18,11 @@ public static class ChatStreamingResultExtensions
     /// </summary>
     /// <param name="chatStreamingResult">Chat streaming result</param>
     /// <returns>The <see cref="OpenAIFunctionResponse"/>, or null if no function was returned by the model.</returns>
-    public static async Task<OpenAIFunctionResponse?> GetStreamingFunctionResponseAsync(this IChatStreamingResult chatStreamingResult)
+    public static async Task<OpenAIFunctionResponse?> GetOpenAIStreamingFunctionResponseAsync(this IChatStreamingResult chatStreamingResult)
     {
         if (chatStreamingResult is not ChatStreamingResult)
         {
-            throw new NotSupportedException($"Chat streaming result is not the {nameof(ChatStreamingResult)} supported type");
+            throw new NotSupportedException($"Chat streaming result is not OpenAI {nameof(ChatStreamingResult)} supported type");
         }
 
         StringBuilder arguments = new();
