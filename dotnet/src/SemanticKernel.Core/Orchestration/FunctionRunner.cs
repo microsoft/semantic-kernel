@@ -3,7 +3,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI;
 
 namespace Microsoft.SemanticKernel.Orchestration;
 
@@ -24,13 +23,9 @@ internal class FunctionRunner : IFunctionRunner
     }
 
     /// <inheritdoc/>
-    public async Task<FunctionResult> RunAsync(
-        ISKFunction skFunction,
-        ContextVariables? variables = null,
-        AIRequestSettings? requestSettings = null,
-        CancellationToken cancellationToken = default)
+    public async Task<FunctionResult> RunAsync(ISKFunction skFunction, ContextVariables? variables = null, CancellationToken cancellationToken = default)
     {
-        return (await this._kernel.RunAsync(variables ?? new(), requestSettings, cancellationToken, skFunction).ConfigureAwait(false))
+        return (await this._kernel.RunAsync(skFunction, variables, cancellationToken).ConfigureAwait(false))
             .FunctionResults.First();
     }
 
@@ -38,6 +33,6 @@ internal class FunctionRunner : IFunctionRunner
     public Task<FunctionResult> RunAsync(string pluginName, string functionName, ContextVariables? variables = null, CancellationToken cancellationToken = default)
     {
         var function = this._kernel.Functions.GetFunction(pluginName, functionName);
-        return this.RunAsync(function, variables, null, cancellationToken);
+        return this.RunAsync(function, variables, cancellationToken);
     }
 }
