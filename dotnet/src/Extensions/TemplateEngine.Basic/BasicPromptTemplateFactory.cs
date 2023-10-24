@@ -22,7 +22,7 @@ public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
     }
 
     /// <inheritdoc/>
-    public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    public IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
     {
         if (promptTemplateConfig.TemplateFormat.Equals(PromptTemplateConfig.SEMANTICKERNEL, System.StringComparison.Ordinal))
         {

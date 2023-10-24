@@ -209,8 +209,61 @@ Console.WriteLine(result.GetValue<string>());
 
 **Notes:**
 
+* `BasicPromptTemplateFactory` will be the default implementation and will be automatically loaded.
 * The factory uses the new `PromptTemplateConfig.TemplateFormat` to create the appropriate `IPromptTemplate` instance.
 * We should look to remove `promptTemplateConfig` as a parameter to `RegisterSemanticFunction`. That change is outside of the scope of this ADR.
+
+The `BasicPromptTemplateFactory` and `BasicPromptTemplate` implementations look as follows:
+
+```csharp
+public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
+{
+    private readonly ILoggerFactory _loggerFactory;
+
+    public BasicPromptTemplateFactory(ILoggerFactory? loggerFactory = null)
+    {
+        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+    }
+
+    public IPromptTemplate? CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
+    {
+        if (promptTemplateConfig.TemplateFormat.Equals(PromptTemplateConfig.SEMANTICKERNEL, System.StringComparison.Ordinal))
+        {
+            return new BasicPromptTemplate(templateString, promptTemplateConfig, this._loggerFactory);
+        }
+
+        return null;
+    }
+}
+
+public sealed class BasicPromptTemplate : IPromptTemplate
+{
+    public BasicPromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig, ILoggerFactory? loggerFactory = null)
+    {
+        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+        this._logger = this._loggerFactory.CreateLogger(typeof(BasicPromptTemplate));
+        this._templateString = templateString;
+        this._promptTemplateConfig = promptTemplateConfig;
+        this._parameters = new(() => this.InitParameters());
+        this._blocks = new(() => this.ExtractBlocks(this._templateString));
+        this._tokenizer = new TemplateTokenizer(this._loggerFactory);
+    }
+
+    public IReadOnlyList<ParameterView> Parameters => this._parameters.Value;
+
+    public async Task<string> RenderAsync(SKContext executionContext, CancellationToken cancellationToken = default)
+    {
+        return await this.RenderAsync(this._blocks.Value, executionContext, cancellationToken).ConfigureAwait(false);
+    }
+
+    // Not showing the implementation details
+}
+```
+
+**Note:**
+
+* The call to `ExtractBlocks` is called lazily once for each prompt template
+* The `RenderAsync` doesn't need to extract the blocks every time
 
 ## Decision Outcome
 
