@@ -22,7 +22,7 @@ namespace Microsoft.SemanticKernel.Planning;
 /// Plan is used to create trees of <see cref="ISKFunction"/>s.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class Plan : IPlan
+public sealed class Plan : ISKFunction
 {
     /// <summary>
     /// State of the plan
