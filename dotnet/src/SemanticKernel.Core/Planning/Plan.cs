@@ -246,7 +246,7 @@ public sealed class Plan : IPlan
             var functionVariables = this.GetNextStepVariables(context.Variables, step);
 
             // Execute the step
-            var result = await context.Runner.RunAsync(step, functionVariables, null, cancellationToken).ConfigureAwait(false);
+            var result = await context.Runner.RunAsync(step, functionVariables, cancellationToken).ConfigureAwait(false);
 
             var resultValue = result.Context.Result.Trim();
 
@@ -336,14 +336,10 @@ public sealed class Plan : IPlan
             var functionContext = context.Clone(functionVariables, context.Functions);
 
             // Execute the step
-
-            result = await context.Runner.RunAsync(
-                this.Function.WithInstrumentation(context.LoggerFactory),
-                functionVariables,
-                requestSettings,
-                cancellationToken)
+            result = await this.Function
+                .WithInstrumentation(context.LoggerFactory)
+                .InvokeAsync(functionContext, requestSettings, cancellationToken)
                 .ConfigureAwait(false);
-
             this.UpdateFunctionResultWithOutputs(result);
         }
         else
