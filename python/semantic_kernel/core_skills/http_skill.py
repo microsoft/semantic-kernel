@@ -59,7 +59,7 @@ class HttpSkill(PydanticField):
         if not url:
             raise ValueError("url cannot be `None` or empty")
 
-        _, body = context.variables.get("body")
+        body = context.variables.get("body")
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)
@@ -83,7 +83,7 @@ class HttpSkill(PydanticField):
         if not url:
             raise ValueError("url cannot be `None` or empty")
 
-        _, body = context.variables.get("body")
+        body = context.variables.get("body")
 
         headers = {"Content-Type": "application/json"}
         data = json.dumps(body)

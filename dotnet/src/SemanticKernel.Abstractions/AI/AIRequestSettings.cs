@@ -15,6 +15,8 @@ namespace Microsoft.SemanticKernel.AI;
 /// </summary>
 public class AIRequestSettings
 {
+    private Dictionary<string, object>? _extensionData;
+
     /// <summary>
     /// Service identifier.
     /// This identifies a service and is set when the AI service is registered.
@@ -33,5 +35,9 @@ public class AIRequestSettings
     /// Extra properties
     /// </summary>
     [JsonExtensionData]
-    public Dictionary<string, object> ExtensionData { get; set; } = new Dictionary<string, object>();
+    public Dictionary<string, object> ExtensionData
+    {
+        get => this._extensionData ??= new();
+        set => this._extensionData = value;
+    }
 }

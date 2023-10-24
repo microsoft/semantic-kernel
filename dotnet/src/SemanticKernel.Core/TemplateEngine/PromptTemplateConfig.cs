@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.SemanticFunctions;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
 /// <summary>
 /// Prompt template configuration.

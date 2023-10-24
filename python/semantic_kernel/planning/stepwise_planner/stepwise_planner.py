@@ -229,7 +229,7 @@ class StepwisePlanner:
 
         if thought_match:
             result.thought = thought_match.group(0).strip()
-        elif not input.contains(ACTION):
+        elif ACTION not in input:
             result.thought = input
         else:
             raise ValueError("Unexpected input format")

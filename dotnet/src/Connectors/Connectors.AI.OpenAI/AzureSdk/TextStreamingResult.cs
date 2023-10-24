@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Orchestration;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.OpenAI.AzureSdk;
 
-internal sealed class TextStreamingResult : ITextStreamingResult
+internal sealed class TextStreamingResult : ITextStreamingResult, ITextResult
 {
     private readonly StreamingChoice _choice;
 

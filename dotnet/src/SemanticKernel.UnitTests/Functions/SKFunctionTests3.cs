@@ -42,7 +42,7 @@ public sealed class SKFunctionTests3
             .Where(m => m.Name is not "GetType" and not "Equals" and not "GetHashCode" and not "ToString")
             .ToArray();
 
-        ISKFunction[] functions = Kernel.Builder.Build().ImportFunctions(pluginInstance).Select(s => s.Value).ToArray();
+        ISKFunction[] functions = new KernelBuilder().Build().ImportFunctions(pluginInstance).Select(s => s.Value).ToArray();
 
         // Act
         Assert.Equal(methods.Length, functions.Length);
@@ -81,7 +81,7 @@ public sealed class SKFunctionTests3
     public async Task ItCanImportNativeFunctionsAsync()
     {
         // Arrange
-        var context = Kernel.Builder.Build().CreateNewContext();
+        var context = new KernelBuilder().Build().CreateNewContext();
         context.Variables["done"] = "NO";
 
         // Note: the function doesn't have any SK attributes
@@ -113,7 +113,7 @@ public sealed class SKFunctionTests3
     public async Task ItCanImportNativeFunctionsWithExternalReferencesAsync()
     {
         // Arrange
-        var context = Kernel.Builder.Build().CreateNewContext();
+        var context = new KernelBuilder().Build().CreateNewContext();
         context.Variables["done"] = "NO";
 
         // Note: This is an important edge case that affects the function signature and how delegates
