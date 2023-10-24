@@ -74,7 +74,7 @@ public static class PlanExtensions
     /// </summary>
     /// <param name="plan">Instance of <see cref="Plan"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public static ISKFunction WithInstrumentation(this Plan plan, ILoggerFactory? loggerFactory = null)
+    public static ISKFunction WithInstrumentation(this ISKFunction plan, ILoggerFactory? loggerFactory = null)
     {
         return new InstrumentedPlan(plan, loggerFactory);
     }

@@ -37,24 +37,11 @@ internal sealed class InstrumentedPlan : ISKFunction
     /// <param name="plan">Instance of <see cref="Plan"/> to decorate.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public InstrumentedPlan(
-        Plan plan,
+        ISKFunction plan,
         ILoggerFactory? loggerFactory = null)
     {
         this._plan = plan;
         this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(InstrumentedPlan)) : NullLogger.Instance;
-    }
-
-    /// <summary>
-    /// Initialize a new instance of the <see cref="InstrumentedPlan"/> class.
-    /// </summary>
-    /// <param name="plan">Instance of <see cref="IPlan"/> to decorate.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    [Obsolete("Use the other concrete class Plan constructor instead")]
-    public InstrumentedPlan(
-        IPlan plan,
-        ILoggerFactory? loggerFactory = null)
-    {
-        throw new NotSupportedException("This constructor is obsolete, use concrete Plan class constructor instead");
     }
 
     /// <inheritdoc/>
@@ -83,7 +70,7 @@ internal sealed class InstrumentedPlan : ISKFunction
 
     #region private ================================================================================
 
-    private readonly Plan _plan;
+    private readonly ISKFunction _plan;
     private readonly ILogger _logger;
 
     /// <summary>
