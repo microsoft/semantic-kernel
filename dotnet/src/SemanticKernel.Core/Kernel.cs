@@ -175,6 +175,7 @@ repeat:
     {
         return new SKContext(
             new FunctionRunner(this),
+            this._aiServiceProvider,
             variables,
             functions ?? this.Functions,
             loggerFactory ?? this.LoggerFactory,
