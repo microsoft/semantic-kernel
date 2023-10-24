@@ -15,6 +15,11 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 public class PromptTemplateConfig
 {
     /// <summary>
+    /// Semantic Kernel template format.
+    /// </summary>
+    public static readonly string SEMANTICKERNEL = "semantic-kernel";
+
+    /// <summary>
     /// Input parameter for semantic functions.
     /// </summary>
     public class InputParameter
@@ -61,7 +66,7 @@ public class PromptTemplateConfig
     /// </summary>
     [JsonPropertyName("template_format")]
     [JsonPropertyOrder(1)]
-    public string TemplateFormat { get; set; } = "semantic-kernel"; // TODO Mark check with Matthew
+    public string TemplateFormat { get; set; } = SEMANTICKERNEL; // TODO Mark check with Matthew
 
     /// <summary>
     /// Description

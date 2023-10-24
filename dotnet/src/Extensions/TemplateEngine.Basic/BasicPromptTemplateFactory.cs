@@ -24,7 +24,11 @@ public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
     /// <inheritdoc/>
     public IPromptTemplate CreatePromptTemplate(string templateString, PromptTemplateConfig promptTemplateConfig)
     {
-        // TODO Mark Check the template format
-        return new BasicPromptTemplate(templateString, promptTemplateConfig, this._loggerFactory);
+        if (promptTemplateConfig.TemplateFormat.Equals(PromptTemplateConfig.SEMANTICKERNEL, System.StringComparison.Ordinal))
+        {
+            return new BasicPromptTemplate(templateString, promptTemplateConfig, this._loggerFactory);
+        }
+
+        return null;
     }
 }
