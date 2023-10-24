@@ -184,8 +184,6 @@ public static class KernelAIPluginExtensions
     {
         if (TryParseAIPluginForUrl(pluginContents, out var openApiUrl))
         {
-            var uri = new Uri(openApiUrl);
-
             if (executionParameters?.AuthCallback != null &&
                 TryParseAIPluginForAuth(pluginContents, out var openApiManifestAuth) &&
                 openApiManifestAuth!.Type != OpenAIAuthenticationType.None)
@@ -195,15 +193,12 @@ public static class KernelAIPluginExtensions
                 {
                     await callback.Invoke(request, openApiManifestAuth).ConfigureAwait(false);
                 };
-
-                using var request = CreateRequestWithAgent(uri, executionParameters);
-                await executionParameters.AuthCallback(request).ConfigureAwait(false);
             }
 
             return await kernel
                 .ImportPluginFunctionsAsync(
                     pluginName,
-                    uri,
+                    new Uri(openApiUrl),
                     executionParameters,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
@@ -271,19 +266,16 @@ public static class KernelAIPluginExtensions
         HttpClient httpClient,
         CancellationToken cancellationToken)
     {
-        using var request = CreateRequestWithAgent(uri, executionParameters);
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
+        request.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters?.UserAgent ?? Telemetry.HttpUserAgent));
+
+        if (executionParameters?.AuthCallback != null)
+        {
+            await executionParameters.AuthCallback(request).ConfigureAwait(false);
+        }
+
         using var response = await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-
         return await response.Content.ReadAsStringWithExceptionMappingAsync().ConfigureAwait(false);
-    }
-
-    private static HttpRequestMessage CreateRequestWithAgent(
-    Uri uri,
-    OpenApiFunctionExecutionParameters? executionParameters)
-    {
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Get, uri.ToString());
-        requestMessage.Headers.UserAgent.Add(ProductInfoHeaderValue.Parse(executionParameters?.UserAgent ?? Telemetry.HttpUserAgent));
-        return requestMessage;
     }
 
     private static async Task<string> LoadDocumentFromFilePathAsync(
