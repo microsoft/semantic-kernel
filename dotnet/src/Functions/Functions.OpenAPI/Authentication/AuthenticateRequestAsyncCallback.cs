@@ -2,7 +2,6 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Functions.OpenAPI.Extensions;
 
 namespace Microsoft.SemanticKernel.Functions.OpenAPI.Authentication;
 
