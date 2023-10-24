@@ -47,11 +47,11 @@ jobs:
       # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
       # If this step fails, then you should remove it and run the build manually (see below)
       - name: Autobuild
-        if: matrix.language != "java"
+        if: matrix.language != 'java'
         uses: github/codeql-action/autobuild@v2
 
       - name: Build Java
-        if: matrix.language == "java"
+        if: matrix.language == 'java'
         run: ./mvnw -B -DskipTests -Pcompile-jdk11 clean install --file pom.xml
         working-directory: java
 
