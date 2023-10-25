@@ -14,9 +14,11 @@ class TextMemorySkill(PydanticField):
     RELEVANCE_PARAM = "relevance"
     KEY_PARAM = "key"
     LIMIT_PARAM = "limit"
+    SEARCH_TYPE_PARAM = "search_type"
     DEFAULT_COLLECTION = "generic"
     DEFAULT_RELEVANCE = 0.75
     DEFAULT_LIMIT = 1
+    DEFAULT_SEARCH_TYPE = "near_vector"
 
     # @staticmethod
     @sk_function(
@@ -38,6 +40,11 @@ class TextMemorySkill(PydanticField):
         name=LIMIT_PARAM,
         description="The maximum number of relevant memories to recall.",
         default_value=DEFAULT_LIMIT,
+    )
+    @sk_function_context_parameter(
+        name="search_type",
+        description="The type of search to perform: 'nearVector' or 'hybrid'",
+        default_value=DEFAULT_SEARCH_TYPE,
     )
     async def recall_async(self, ask: str, context: "SKContext") -> str:
         """
@@ -82,11 +89,15 @@ class TextMemorySkill(PydanticField):
         if limit is None or str(limit).strip() == "":
             raise ValueError("Limit value not defined for TextMemorySkill")
 
+        search_type = context.variables.get(
+            TextMemorySkill.SEARCH_TYPE_PARAM, TextMemorySkill.DEFAULT_SEARCH_TYPE
+        )
         results = await context.memory.search_async(
             collection=collection,
             query=ask,
             limit=int(limit),
             min_relevance_score=float(relevance),
+            search_type=search_type,
         )
         if results is None or len(results) == 0:
             if context.log is not None:

@@ -82,6 +82,7 @@ class SemanticTextMemoryBase(PydanticField):
         query: str,
         limit: int = 1,
         min_relevance_score: float = 0.7,
+        search_type: str = "near_vector",
         # TODO: ctoken?
     ) -> List[MemoryQueryResult]:
         """Search the memory (calls the memory store's get_nearest_matches method).
@@ -92,6 +93,7 @@ class SemanticTextMemoryBase(PydanticField):
             limit {int} -- The maximum number of results to return. (default: {1})
             min_relevance_score {float} -- The minimum relevance score to return. (default: {0.0})
             with_embeddings {bool} -- Whether to return the embeddings of the results. (default: {False})
+            search_type {str} -- The type of search to perform. (default: {"near_vector"})
 
         Returns:
             List[MemoryQueryResult] -- The list of MemoryQueryResult found.

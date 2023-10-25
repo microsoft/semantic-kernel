@@ -319,3 +319,23 @@ async def test_get_nearest_match(memory_store_with_collection, documents):
 
     expected_result.__dict__["_embedding"] = None
     npt.assert_equal(expected_result.__dict__, actual_result[0].__dict__)
+
+
+@pytest.mark.asyncio
+async def test_get_hybrid_match(memory_store_with_collection, documents):
+    collection_name, memory_store = memory_store_with_collection
+
+    search_query = "The quick brown fox jumps over the lazy dog."
+
+    expected_result = documents[0]
+    actual_result = await memory_store.get_hybrid_match_async(
+        collection_name, search_query, with_embeddings=True
+    )
+
+    npt.assert_equal(expected_result.__dict__, actual_result[0].__dict__)
+
+    actual_result = await memory_store.get_hybrid_match_async(
+        collection_name, search_query, with_embeddings=False
+    )
+    expected_result.__dict__["_embedding"] = None
+    npt.assert_equal(expected_result.__dict__, actual_result[0].__dict__)

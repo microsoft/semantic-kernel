@@ -201,3 +201,54 @@ class MemoryStoreBase(ABC):
             Tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
         """
         pass
+
+    async def get_hybrid_matches_async(
+        self,
+        collection_name: str,
+        ask: str,
+        embedding: ndarray,
+        limit: int,
+        alpha: float,
+        with_embeddings: bool,
+    ) -> List[Tuple[MemoryRecord, float]]:
+        """Gets the hybrid searched result to a query string. Does not guarantee that the collection exists.
+
+        Arguments:
+            collection_name {str} -- The name associated with a collection of embeddings.
+            ask {str} -- The query string which will be used to search the collection.
+            embedding {ndarray} -- The embedding to compare the collection's embeddings with.
+            limit {int} -- The maximum number of similarity results to return.
+            alpha {float} -- Factor determining how BM25 and vector search are weighted. If 'None' the weaviate default of 0.75 is used.
+                            By default, None, alpha = 0 -> bm25, alpha=1 -> vector search
+            with_embedding {bool} -- If true, the embeddings will be returned in the memory record.
+
+
+        Returns:
+            List[Tuple[MemoryRecord, float]] -- A list of tuples where item1 is a MemoryRecord and item2
+                is its similarity score as a float.
+        """
+        pass
+
+    async def get_hybrid_match_async(
+        self,
+        collection_name: str,
+        ask: str,
+        embedding: ndarray,
+        alpha: float,
+        with_embeddings: bool,
+    ) -> Tuple[MemoryRecord, float]:
+        """Gets the hybrid searched result to a query string. Does not guarantee that the collection exists.
+
+        Arguments:
+            collection_name {str} -- The name associated with a collection of embeddings.
+            ask {str} -- The query string which will be used to search the collection.
+            embedding {ndarray} -- The embedding to compare the collection's embeddings with.
+            alpha {float} -- Factor determining how BM25 and vector search are weighted. If 'None' the weaviate default of 0.75 is used.
+                            By default, None, alpha = 0 -> bm25, alpha=1 -> vector search
+            with_embedding {bool} -- If true, the embeddings will be returned in the memory record.
+
+
+        Returns:
+            Tuple[MemoryRecord, float] -- A tuple consisting of the MemoryRecord and the similarity score as a float.
+        """
+        pass

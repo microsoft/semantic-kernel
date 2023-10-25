@@ -331,3 +331,64 @@ class WeaviateMemoryStore(MemoryStoreBase):
         )
 
         return results[0]
+
+    async def get_hybrid_matches_async(
+        self,
+        collection_name: str,
+        ask: str,
+        embedding: np.ndarray,
+        limit: int,
+        alpha: float,
+        with_embeddings: bool,
+    ) -> List[Tuple[MemoryRecord, float]]:
+        hybrid = {
+            "query": ask,
+            "vector": embedding,
+            "alpha": alpha,
+        }
+
+        additional = ["certainty"]
+        if with_embeddings:
+            additional.append("vector")
+
+        query = (
+            self.client.query.get(collection_name, ALL_PROPERTIES)
+            .with_hybrid(hybrid)
+            .with_additional(additional)
+            .with_limit(limit)
+        )
+
+        results = await asyncio.get_running_loop().run_in_executor(None, query.do)
+
+        get_dict = results.get("data", {}).get("Get", {})
+
+        memory_records_and_scores = [
+            (
+                self._convert_weaviate_doc_to_memory_record(doc),
+                item["_additional"]["certainty"],
+            )
+            for items in get_dict.values()
+            for item in items
+            for doc in [item]
+        ]
+
+        return memory_records_and_scores
+
+    async def get_hybrid_match_async(
+        self,
+        collection_name: str,
+        ask: str,
+        embedding: np.ndarray,
+        alpha: float,
+        with_embedding: bool,
+    ) -> Tuple[MemoryRecord, float]:
+        results = await self.get_hybrid_matches_async(
+            collection_name,
+            ask=ask,
+            embedding=embedding,
+            limit=1,
+            alpha=alpha,
+            with_embeddings=with_embedding,
+        )
+
+        return results[0]
