@@ -186,6 +186,8 @@ In no particular order:
 
 ### Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`
 
+<img src="./diagrams/prompt-template-factory.png" alt="ISKFunction class relationships" width="400"/>
+
 Below is an expanded example of how to create a semantic function from a prompt template string which uses the built-in Semantic Kernel format:
 
 ```csharp
