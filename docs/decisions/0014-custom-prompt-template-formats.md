@@ -32,9 +32,9 @@ IKernel kernel = Kernel.Builder
 
 kernel.ImportFunctions(new TimePlugin(), "time");
 
-string promptTemplate = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
+string templateString = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
 var promptTemplateConfig = new PromptTemplateConfig();
-var promptTemplate = new PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
+var promptTemplate = new PromptTemplate(templateString, promptTemplateConfig, kernel.PromptTemplateEngine);
 var kindOfDay = kernel.RegisterSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate)
 
 var result = await kernel.RunAsync(kindOfDay);
@@ -181,10 +181,10 @@ In no particular order:
 
 ## Considered Options
 
-* Use `IPromptTemplateFactory` and `IPromptTemplate` abstractions.
+* Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`.
 * 
 
-### Use `IPromptTemplateFactory` and `IPromptTemplate` abstractions
+### Obsolete `IPromptTemplateEngine` and replace with `IPromptTemplateFactory`
 
 Below is an expanded example of how to create a semantic function from a prompt template string which uses the built-in Semantic Kernel format:
 
@@ -198,9 +198,11 @@ IKernel kernel = Kernel.Builder
 
 kernel.ImportFunctions(new TimePlugin(), "time");
 
-string promptTemplate = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
+string templateString = "Today is: {{time.Date}} Is it weekend time (weekend/not weekend)?";
 var promptTemplateConfig = new PromptTemplateConfig();
-var promptTemplate = kernel.PromptTemplateFactory.CreatePromptTemplate(promptTemplate, promptTemplateConfig);
+// Line below will replace the commented out code
+var promptTemplate = kernel.PromptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
+// var promptTemplate = new PromptTemplate(promptTemplate, promptTemplateConfig, kernel.PromptTemplateEngine);
 var kindOfDay = kernel.RegisterSemanticFunction("KindOfDay", promptTemplateConfig, promptTemplate)
 
 var result = await kernel.RunAsync(kindOfDay);
