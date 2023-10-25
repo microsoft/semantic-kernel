@@ -154,26 +154,30 @@ public abstract class ClientBase
         IList<string> data,
         CancellationToken cancellationToken = default)
     {
-        var result = new List<ReadOnlyMemory<float>>(data.Count);
-        foreach (string text in data)
+        var options = new EmbeddingsOptions(data);
+
+        Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
+            () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
+
+        if (response is null)
         {
-            var options = new EmbeddingsOptions(text);
-
-            Response<Embeddings>? response = await RunRequestAsync<Response<Embeddings>?>(
-                () => this.Client.GetEmbeddingsAsync(this.ModelId, options, cancellationToken)).ConfigureAwait(false);
-
-            if (response is null)
-            {
-                throw new SKException("Text embedding null response");
-            }
-
-            if (response.Value.Data.Count == 0)
-            {
-                throw new SKException("Text embedding not found");
-            }
-
-            result.Add(response.Value.Data[0].Embedding.ToArray());
+            throw new SKException("Text embedding null response");
         }
+
+        if (response.Value.Data.Count == 0)
+        {
+            throw new SKException("Text embedding not found");
+        }
+
+        if (response.Value.Data.Count != data.Count)
+        {
+            throw new SKException($"Text embedding batch size mismatch: expected {data.Count}, actual {response.Value.Data.Count}");
+        }
+
+        var result = response.Value.Data
+            .OrderBy((x) => x.Index)
+            .Select((x) => (ReadOnlyMemory<float>)x.Embedding.ToArray())
+            .ToList();
 
         return result;
     }
