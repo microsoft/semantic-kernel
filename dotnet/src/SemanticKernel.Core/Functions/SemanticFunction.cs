@@ -96,8 +96,7 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     {
         this.AddDefaultValues(context.Variables);
 
-        (var textCompletion, var defaultRequestSettings) = this._serviceSelector.SelectAIService<ITextCompletion>(context.ServiceProvider, this._modelSettings);
-        return await this.RunPromptAsync(textCompletion, requestSettings ?? defaultRequestSettings, context, cancellationToken).ConfigureAwait(false);
+        return await this.RunPromptAsync(requestSettings, context, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -177,19 +176,18 @@ internal sealed class SemanticFunction : ISKFunction, IDisposable
     }
 
     private async Task<FunctionResult> RunPromptAsync(
-        ITextCompletion? client,
         AIRequestSettings? requestSettings,
         SKContext context,
         CancellationToken cancellationToken)
     {
-        Verify.NotNull(client);
-
         FunctionResult result;
 
         try
         {
             string renderedPrompt = await this._promptTemplate.RenderAsync(context, cancellationToken).ConfigureAwait(false);
-            IReadOnlyList<ITextResult> completionResults = await client.GetCompletionsAsync(renderedPrompt, requestSettings, cancellationToken).ConfigureAwait(false);
+            (var textCompletion, var defaultRequestSettings) = this._serviceSelector.SelectAIService<ITextCompletion>(renderedPrompt, context.ServiceProvider, this._modelSettings);
+            Verify.NotNull(textCompletion);
+            IReadOnlyList<ITextResult> completionResults = await textCompletion.GetCompletionsAsync(renderedPrompt, requestSettings ?? defaultRequestSettings, cancellationToken).ConfigureAwait(false);
             string completion = await GetCompletionsResultContentAsync(completionResults, cancellationToken).ConfigureAwait(false);
 
             // Update the result with the completion

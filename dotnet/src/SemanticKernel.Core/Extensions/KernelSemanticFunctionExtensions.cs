@@ -38,7 +38,7 @@ public static class KernelSemanticFunctionExtensions
         IPromptTemplate promptTemplate,
         IAIServiceSelector? serviceSelector = null)
     {
-        return kernel.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsPluginName, functionName, promptTemplateConfig, promptTemplate);
+        return kernel.RegisterSemanticFunction(FunctionCollection.GlobalFunctionsPluginName, functionName, promptTemplateConfig, promptTemplate, serviceSelector);
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public static class KernelSemanticFunctionExtensions
         // Future-proofing the name not to contain special chars
         Verify.ValidFunctionName(functionName);
 
-        ISKFunction function = kernel.CreateSemanticFunction(pluginName, functionName, promptTemplateConfig, promptTemplate);
+        ISKFunction function = kernel.CreateSemanticFunction(pluginName, functionName, promptTemplateConfig, promptTemplate, serviceSelector);
         return kernel.RegisterCustomFunction(function);
     }
 
