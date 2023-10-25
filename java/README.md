@@ -14,7 +14,7 @@ and frameworks.
 
 To run the LLM prompts and semantic functions in this kernel, make sure you have
 an [Open AI API Key](https://openai.com/api/)
-or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/quickstart?pivots=rest-api).
+or [Azure Open AI service key](https://learn.microsoft.com/azure/cognitive-services/openai/).
 
 ### Requirements
 
@@ -86,7 +86,7 @@ Also ensure that:
 - All new code is covered by unit tests
 - All new code is covered by integration tests
 
-Once your proposal is ready, submit a pull request to the `main` branch. The pull request will be reviewed by the
+Once your proposal is ready, submit a pull request to the `experimental-java` branch. The pull request will be reviewed by the
 project maintainers.
 
 Make sure your pull request has an objective title and a clear description explaining the problem and solution.
