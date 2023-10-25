@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "cdv-data-chat-webapp-streamlit"
+version = "0.1.0"
+description = "Learning app for Semantic Kernel on Streamlit"
+authors = ["Charles Calapini <7816568+calapsss@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+streamlit = "^1.27.2"
+semantic-kernel = "^0.3.14.dev0"
+pandas = "^2.1.1"
+matplotlib = "^3.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
