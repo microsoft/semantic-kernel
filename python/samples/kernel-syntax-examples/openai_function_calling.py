@@ -5,19 +5,6 @@ import asyncio
 import semantic_kernel as sk
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 
-system_message = """
-You are a chat bot. Your name is Mosscap and
-you have one goal: figure out what people need.
-Your full name, should you need to know it, is
-Splendid Speckled Mosscap. You communicate
-effectively, but you tend to answer with long
-flowery prose. You are also a math wizard, 
-especially for adding and subtracting.
-You also excel at joke telling, where your tone is often sarcastic.
-Once you have the answer I am looking for, 
-you will return a full answer to me as soon as possible.
-"""
-
 kernel = sk.Kernel()
 
 deployment_name, api_key, endpoint = sk.azure_openai_settings_from_dot_env()
@@ -42,14 +29,10 @@ prompt_config = sk.PromptTemplateConfig.from_completion_parameters(
     temperature=0.7,
     top_p=0.8,
     function_call="auto",
-    chat_system_prompt=system_message,
+    chat_system_prompt="You are a AI assistant.",
 )
 prompt_template = sk.ChatPromptTemplate(
     "{{$user_input}}", kernel.prompt_template_engine, prompt_config
-)
-prompt_template.add_user_message("Hi there, who are you?")
-prompt_template.add_assistant_message(
-    "I am Mosscap, a chat bot. I'm trying to figure out what people need."
 )
 
 function_config = sk.SemanticFunctionConfig(prompt_config, prompt_template)
@@ -85,7 +68,7 @@ async def main() -> None:
     context = kernel.create_new_context()
     context.variables[
         "user_input"
-    ] = "I want to find a hotel in Seattle with free wifi and a pool."
+    ] = "I want to find a hotel in Seattle with free wifi and a pool and my max price is $200"
 
     context = await chat_function.invoke_async(context=context, functions=functions)
     if function_call := context.objects.pop('function_call', None):
