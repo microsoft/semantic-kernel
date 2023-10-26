@@ -1,7 +1,8 @@
 ---
-status: {approved}
-date: {2023-10-26}
-deciders: mabolan, markwallace, semenshi, rbarreto
+status: approved
+contact: markwallace-microsoft
+date: 2023-10-26
+deciders: mabolan, markwallace-microsoft, semenshi, rbarreto
 consulted: dmytrostruk
 informed: 
 ---
