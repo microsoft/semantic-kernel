@@ -251,7 +251,7 @@ public sealed class BasicPromptTemplateFactory : IPromptTemplateFactory
             return this._promptTemplateFactory.CreatePromptTemplate(templateString, promptTemplateConfig);
         }
 
-        throw new SKContext($"Invalid prompt template format {promptTemplateConfig.TemplateFormat}");
+        throw new SKException($"Invalid prompt template format {promptTemplateConfig.TemplateFormat}");
     }
 }
 
