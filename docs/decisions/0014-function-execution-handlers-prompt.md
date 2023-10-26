@@ -268,3 +268,9 @@ Cons:
 - Functions need to implement behavior related to dependency events
 - Since Kernel needs to interact with the result of an event handler, a wrapper stragegy is needed to access results by reference at the kernel level (control of flow)
 - Passing Kernel event handlers full responsiblity downstream to the functions don't sound quite right (Single Responsibility)
+
+## Decision outcome
+
+Moving towards option 3 (further experimentations and examples...)
+
+change
