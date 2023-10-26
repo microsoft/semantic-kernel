@@ -46,6 +46,8 @@ public class KernelException extends SKException {
 
         FUNCTION_TYPE_NOT_SUPPORTED("Function type not supported"),
 
+        FUNCTION_CONFIGURATION_ERROR("Function configuration is not valid"),
+
         INVALID_FUNCTION_TYPE("Invalid function type"),
 
         INVALID_SERVICE_CONFIGURATION("Invalid service configuration"),

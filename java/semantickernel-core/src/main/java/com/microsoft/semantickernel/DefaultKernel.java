@@ -235,7 +235,7 @@ public class DefaultKernel implements Kernel {
 
     @Override
     public ReadOnlyFunctionCollection importSkillFromResources(
-            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) {
+            String pluginDirectory, String skillName, String functionName, @Nullable Class clazz) throws KernelException {
         Map<String, SemanticFunctionConfig> skills =
                 KernelExtensions.importSemanticSkillFromResourcesDirectory(
                         pluginDirectory, skillName, functionName, clazz, promptTemplateEngine);
